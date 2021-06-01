@@ -1,0 +1,39 @@
+{
+    "plugins": {
+        "SysEventSource": {
+            "path": "core",
+            "name": "sysevent_source"
+        }
+    },
+    "rules": [
+        {
+            "rule": [
+                {
+                    "rom": "1G",
+                    "ram": "1G"
+                }
+            ],
+            "info": {
+                "loadorder": {
+                    "SysEventSource": {
+                        "loadtime": 0
+                    }
+                },
+                "pipelines": {
+                    "SysEventPipeline": [
+                    ]
+                },
+                "pipelinegroups": {
+                    "SysEventSource": [
+                        "SysEventPipeline"
+                    ]
+                },
+                "threads": {
+                    "singledthread": {
+                        "SysEventSource": "sysevent_source"
+                    }
+                }
+            }
+        }
+    ]
+}
