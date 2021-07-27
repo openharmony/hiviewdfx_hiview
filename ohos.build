@@ -1,7 +1,7 @@
 {
   "subsystem": "hiviewdfx",
   "parts": {
-    "hiview_L2": {
+    "hiview": {
       "variants": [
         "phone",
         "ivi",

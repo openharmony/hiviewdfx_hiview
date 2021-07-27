@@ -59,7 +59,7 @@ ohos_shared_library("hiviewbase") {
     "logstore:log_store",
   ]
 
-  part_name = "hiview_L2"
+  part_name = "hiview"
   subsystem_name = "hiviewdfx"
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
 }

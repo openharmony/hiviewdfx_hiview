@@ -25,7 +25,7 @@
         <preparer>
             <option name="push" value="base/plugin_config -> /data/test/test_data/" src="res"/>
             <option name="push" value="base/plugin_config_incomplete -> /data/test/test_data/" src="res"/>
-            <option name="push" value="hiviewdfx/hiview_L2/libdynamicloadpluginexample.z.so -> /system/lib/" src="out"/>
+            <option name="push" value="hiviewdfx/hiview/libdynamicloadpluginexample.z.so -> /system/lib/" src="out"/>
         </preparer>
         <cleaner>
             <option name="shell" value="rm -rf /system/lib/libdynamicloadpluginexample.z.so"/>

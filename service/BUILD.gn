@@ -22,7 +22,7 @@ config("hiview_service_config") {
 ohos_prebuilt_etc("hiview.rc") {
   source = "config/hiview.rc"
   relative_install_dir = "init"
-  part_name = "hiview_L2"
+  part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
 
