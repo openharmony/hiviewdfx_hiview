@@ -19,6 +19,6 @@ ohos_shared_library("dynamicloadpluginexample") {
 
   deps = [ "$hiview_base:hiview_base" ]
 
-  part_name = "hiview_L2"
+  part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

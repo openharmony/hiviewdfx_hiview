@@ -13,7 +13,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 import("//build/test.gni")
-module_output_path = "hiviewdfx/hiview_L2"
+module_output_path = "hiviewdfx/hiview"
 group("moduletest") {
   testonly = true
   deps = [ ":HiviewPlatformModuleTest" ]

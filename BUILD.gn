@@ -25,7 +25,7 @@ copy_plugin_script =
     rebase_path("//base/hiviewdfx/hiview/build/copy_plugin_config.py")
 
 input_build_file =
-    rebase_path("//base/hiviewdfx/hiview/build/plugin_build_L2.json")
+    rebase_path("//base/hiviewdfx/hiview/build/plugin_build.json")
 
 out_plugin_config_file = "${target_gen_dir}/plugin_config"
 out_plugin_build_file = "${target_gen_dir}/plugin_build.gni"
@@ -77,7 +77,7 @@ import(out_plugin_build_file)
 ohos_prebuilt_etc("plugin_config") {
   source = out_plugin_config_file
   deps = [ ":copy_plugin_config" ]
-  part_name = "hiview_L2"
+  part_name = "hiview"
   subsystem_name = "hiviewdfx"
   relative_install_dir = "hiview"
 }
@@ -99,7 +99,7 @@ ohos_executable("hiview") {
   sources = [ "main.cpp" ]
 
   deps += plugin_static_deps
-  part_name = "hiview_L2"
+  part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
 
