@@ -15,6 +15,7 @@
 #ifndef UTILITY_TIME_UTIL_H
 #define UTILITY_TIME_UTIL_H
 #include <cstdint>
+#include <ctime>
 #include <string>
 namespace OHOS {
 namespace HiviewDFX {

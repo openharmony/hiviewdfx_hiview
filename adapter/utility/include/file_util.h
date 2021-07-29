@@ -16,6 +16,9 @@
 #ifndef UTILITY_FILE_UTIL_H
 #define UTILITY_FILE_UTIL_H
 
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
