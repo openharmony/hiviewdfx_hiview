@@ -25,6 +25,12 @@
 
 #include <securec.h>
 
+#ifdef USE_MUSL
+extern "C" {
+#include "init_socket.h"
+}
+#endif
+
 #include "logger.h"
 #include "socket_util.h"
 
@@ -33,12 +39,19 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventServer");
 namespace {
 constexpr int BUFFER_SIZE = 128 * 1024;
+#ifdef USE_MUSL
+#define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
+#else
+#define SOCKET_FILE_DIR "/dev/socket/hisysevent"
+#endif
 }
 void EventServer::InitSocket(int &socketId)
 {
     struct sockaddr_un serverAddr;
     serverAddr.sun_family = AF_UNIX;
-    if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), "/dev/socket/hisysevent") != EOK) {
+    if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), SOCKET_FILE_DIR) != EOK) {
+        socketId = -1;
+        HIVIEW_LOGE("copy hisysevent dev path fail %d", errno);
         return;
     }
     serverAddr.sun_path[sizeof(serverAddr.sun_path) - 1] = '\0';
@@ -49,6 +62,8 @@ void EventServer::InitSocket(int &socketId)
     }
     unlink(serverAddr.sun_path);
     if (TEMP_FAILURE_RETRY(bind(socketId, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) < 0) {
+        close(socketId);
+        socketId = -1;
         HIVIEW_LOGE("bind hisysevent socket fail %d", errno);
         return;
     }
@@ -57,7 +72,11 @@ void EventServer::InitSocket(int &socketId)
 void EventServer::Start()
 {
     HIVIEW_LOGE("start event server");
+#ifdef USE_MUSL
+    socketId_ = GetControlSocket("hisysevent");
+#else
     socketId_ = SocketUtil::GetHiviewExistingSocketServer("hisysevent", SOCK_DGRAM);
+#endif
     if (socketId_ < 0) {
         HIVIEW_LOGI("create hisysevent socket");
         InitSocket(socketId_);

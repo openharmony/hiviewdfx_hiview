@@ -21,7 +21,7 @@ on post-fs-data
 service hiview /system/bin/hiview
     class late_start
     user system
-    group system log readproc
+    group system log readproc external_storage ext_data_rw
     seclabel u:r:hiview:s0
     writepid /dev/cpuset/system-background/tasks
     socket hisysevent dgram+passcred 0666 root system
