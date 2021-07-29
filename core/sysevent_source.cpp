@@ -54,10 +54,12 @@ void SysEventSource::OnUnload()
 
 void SysEventSource::StartEventSource()
 {
+#ifndef USE_MUSL
     HIVIEW_LOGI("SysEventSource start");
     std::shared_ptr<EventReceiver> sysEventReceiver = std::make_shared<SysEventReceiver>(*this);
     eventServer.AddReceiver(sysEventReceiver);
     eventServer.Start();
+#endif
 }
 
 void SysEventSource::Recycle(PipelineEvent *event __UNUSED)
