@@ -43,87 +43,38 @@ std::string GetCmdResultFromPopen(const std::string& cmd)
     return result;
 }
 
-int GetHiviewPid()
+int GetServicePid(const std::string& serviceName)
 {
-    std::string pidStr = GetCmdResultFromPopen("pidof hiview");
+    std::string cmd = "pidof " + serviceName;
+    std::string pidStr = GetCmdResultFromPopen(cmd);
     int32_t pid = 0;
     OHOS::HiviewDFX::StringUtil::ConvertStringTo<int32_t>(pidStr, pid);
-    printf("the pid of hiview : %s \n", pidStr.c_str());
+    printf("the pid of service(%s) is %s \n", serviceName.c_str(), pidStr.c_str());
     return pid;
 }
 
-void WaitForHiviewReady()
+void WaitForServiceReady(const std::string& serviceName)
 {
-    int pid = GetHiviewPid();
+    int pid = GetServicePid(serviceName);
     if (pid <= 0) {
-        GetCmdResultFromPopen("start hiview");
+        std::string cmd = "start " + serviceName;
+        GetCmdResultFromPopen(cmd);
         const int sleepTime = 10; // 10 seconds
         sleep(sleepTime);
-        pid = GetHiviewPid();
+        pid = GetServicePid(serviceName);
     }
     ASSERT_GT(pid, 0);
 }
 }
 
 /**
- * @tc.name: PluginPlatfromModuleTest001
- * @tc.desc: check hiview running status from dumpsys cmdline
+ * @tc.name: HiviewStatusTest001
+ * @tc.desc: check hiview running status and ensure it has been started
  * @tc.type: FUNC
  * @tc.require: SR000DPTSQ
  */
-HWTEST_F(HiviewPluginPlatformModuleTest, PluginPlatfromModuleTest001, TestSize.Level3)
+HWTEST_F(HiviewPluginPlatformModuleTest, HiviewStatusTest001, TestSize.Level0)
 {
-    /**
-     * @tc.steps: step1. get the pid of hiview
-     * @tc.steps: step2. check loaded plugins in hiview
-     * @tc.steps: step3. check the thread existence of hiview
-     */
-    WaitForHiviewReady();
-    std::string dumpResult = GetCmdResultFromPopen("dumpsys hiviewdfx");
-    printf("the current loaded plugins of hiview : %s \n", dumpResult.c_str());
-
-    int pid = GetHiviewPid();
-    std::string cmd = "ps -AT |grep " + std::to_string(pid);
-    std::string threadResult = GetCmdResultFromPopen(cmd);
-    printf("the current threads of hiview : %s \n", threadResult.c_str());
-}
-
-/**
- * @tc.name: FaultloggerPluginDumpTest001
- * @tc.desc: check dumpsys faultlogger functions
- * @tc.type: FUNC
- * @tc.require: SR000F80AS AR000F87HK
- */
-HWTEST_F(HiviewPluginPlatformModuleTest, FaultloggerPluginDumpTest001, TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. run shell common to get dump result
-     * @tc.steps: step2. check the content of the result
-     */
-    WaitForHiviewReady();
-    std::string dumpResult = GetCmdResultFromPopen("dumpsys hiviewdfx -p Faultlogger");
-    printf("the current fault logs :\n%s\n", dumpResult.c_str());
-    ASSERT_GE(dumpResult.length(), 0ul);
-}
-
-/**
- * @tc.name: FaultloggerPluginDumpTest002
- * @tc.desc: check dumpsys faultlogger functions
- * @tc.type: FUNC
- * @tc.require: SR000F80AS AR000F83AG
- */
-HWTEST_F(HiviewPluginPlatformModuleTest, FaultloggerPluginDumpTest002, TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. run shell common to get dump result
-     * @tc.steps: step2. check the content of the result
-     */
-    WaitForHiviewReady();
-    std::string dumpResult = GetCmdResultFromPopen("dumpsys hiviewdfx -p Faultlogger -l");
-    printf("the current fault log list:\n%s\n", dumpResult.c_str());
-    ASSERT_GE(dumpResult.length(), 0ul);
-
-    dumpResult = GetCmdResultFromPopen("dumpsys hiviewdfx_faultlogger");
-    printf("the current fault log detail:\n%s\n", dumpResult.c_str());
-    ASSERT_GE(dumpResult.length(), 0ul);
+    WaitForServiceReady("hiview");
+    WaitForServiceReady("faultloggerd");
 }
