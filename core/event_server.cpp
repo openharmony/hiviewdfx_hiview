@@ -38,7 +38,7 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventServer");
 namespace {
-constexpr int BUFFER_SIZE = 128 * 1024;
+constexpr int BUFFER_SIZE = 384 * 1024;
 #ifdef USE_MUSL
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
 #else
@@ -93,9 +93,11 @@ void EventServer::Start()
     while (isStart_) {
         struct sockaddr_un clientAddr;
         socklen_t clientLen = sizeof(clientAddr);
-        char recvbuf[BUFFER_SIZE] = {0};
-        int n = recvfrom(socketId_, recvbuf, sizeof(recvbuf), 0, reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
+        char* recvbuf = new char[BUFFER_SIZE];
+        int n = recvfrom(socketId_, recvbuf, sizeof(char) * BUFFER_SIZE, 0,
+            reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
         if (n <= 0) {
+            delete[] recvbuf;
             continue;
         }
         recvbuf[BUFFER_SIZE - 1] = 0;
@@ -103,6 +105,7 @@ void EventServer::Start()
         for (auto receiver = receivers_.begin(); receiver != receivers_.end(); receiver++) {
             (*receiver)->HandlerEvent(std::string(recvbuf));
         }
+        delete[] recvbuf;
     }
 }
 
