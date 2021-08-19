@@ -98,7 +98,7 @@ bool StrToInt(const string& str, int& value)
     errno = 0;
     auto addr = str.c_str();
     auto result = strtol(addr, &end, base);
-    if (end == addr || end[0] != '\0' || errno == ERANGE || result > INT_MAX || result < INT_MIN) {
+    if (end == addr || end[0] != '\0' || errno == ERANGE) {
         return false;
     }
 
