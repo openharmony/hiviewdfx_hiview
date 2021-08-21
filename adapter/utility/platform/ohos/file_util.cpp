@@ -40,6 +40,11 @@ bool LoadStringFromFile(const std::string& filePath, std::string& content)
     return OHOS::LoadStringFromFile(filePath, content);
 }
 
+bool LoadStringFromFd(int fd, std::string& content)
+{
+    return OHOS::LoadStringFromFd(fd, content);
+}
+
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated)
 {
     return OHOS::SaveStringToFile(filePath, content, truncated);
@@ -180,6 +185,122 @@ void FormatPath2UnixStyle(std::string &path)
 void RemoveFolderBeginWith(const std::string &path, const std::string &folderName)
 {
     // unimplemented
+}
+
+bool WriteBufferToFd(int fd, const char* buffer, size_t size)
+{
+    if (fd < 0) {
+        return false;
+    }
+
+    if (buffer == nullptr) {
+        return false;
+    }
+
+    ssize_t writeSize = size;
+    if (writeSize != TEMP_FAILURE_RETRY(write(fd, buffer, size))) {
+        return false;
+    }
+
+    return true;
+}
+
+int CreateFile(const std::string &path, mode_t mode)
+{
+    if (FileExists(path)) {
+        return 0;
+    } else {
+        std::ofstream fout(path);
+        if (!fout.is_open()) {
+            return -1;
+        }
+        fout.flush();
+        fout.close();
+        if (ChangeMode(path, mode) != 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int CopyFile(const std::string &src, const std::string &des)
+{
+    std::ifstream fin(src);
+    std::ofstream fout(des);
+    if (!fin.is_open()) {
+        return -1;
+    }
+    if (!fout.is_open()) {
+        return -1;
+    }
+    fout << fin.rdbuf();
+    if (fout.fail()) {
+        fout.clear();
+    }
+    fout.flush();
+    return 0;
+}
+
+bool IsDirectory(const std::string &path)
+{
+    struct stat statBuffer;
+    if (stat(path.c_str(), &statBuffer) == 0 && S_ISDIR(statBuffer.st_mode)) {
+        return true;
+    }
+    return false;
+}
+
+bool GetLastLine(std::istream &fin, std::string &line)
+{
+    if (fin.tellg() <= 0) {
+        return false;
+    } else {
+        fin.seekg(-1, fin.cur);
+    }
+    uint32_t count = 0;
+    while (fin.good() && fin.peek() == fin.widen('\n') && fin.tellg() > 0 && count < MAX_LINE_LEN) {
+        fin.seekg(-1, fin.cur);
+        count++;
+    }
+    if (!fin.good() || count >= MAX_LINE_LEN) {
+        return false;
+    }
+    if (fin.tellg() == 0) {
+        return true;
+    }
+    count = 0;
+    while (fin.good() && fin.peek() != fin.widen('\n') && fin.tellg() > 0 && count < MAX_LINE_LEN) {
+        fin.seekg(-1, fin.cur);
+        count++;
+    }
+    if (!fin.good() || count >= MAX_LINE_LEN) {
+        return false;
+    }
+    if (fin.tellg() != 0) {
+        fin.seekg(1, fin.cur);
+    }
+    auto oldPos = fin.tellg();
+    getline(fin, line);
+    fin.seekg(oldPos);
+    return true;
+}
+
+std::string GetParentDir(const std::string &path)
+{
+    string str = ExtractFilePath(path);
+    if (str.empty()) {
+        return "";
+    }
+    return str.substr(0, str.size() - 1);
+}
+
+bool IsLegalPath(const std::string& path)
+{
+    if (path.find("./") != std::string::npos ||
+        path.find("../") != std::string::npos) {
+        return false;
+    }
+    return true;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX

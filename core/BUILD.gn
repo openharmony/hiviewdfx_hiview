@@ -56,13 +56,9 @@ ohos_source_set("sysevent_source") {
   ]
 
   if (use_musl) {
-    include_dirs = [
-      "//base/startup/init_lite/interfaces/innerkits/include",
-    ]
+    include_dirs = [ "//base/startup/init_lite/interfaces/innerkits/include" ]
 
-    deps += [
-      "//base/startup/init_lite/interfaces/innerkits/socket:libsocket",
-    ]
+    deps += [ "//base/startup/init_lite/interfaces/innerkits/socket:libsocket" ]
   }
 
   if (build_public_version) {
@@ -70,4 +66,14 @@ ohos_source_set("sysevent_source") {
   } else {
     deps += [ "//utils/native/base:utilsecurec" ]
   }
+}
+
+group("unittest") {
+  testonly = true
+  deps = []
+}
+
+group("moduletest") {
+  testonly = true
+  deps = []
 }

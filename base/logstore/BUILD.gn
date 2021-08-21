@@ -34,5 +34,5 @@ ohos_source_set("log_store") {
     "$hiview_base:hiview_base",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }

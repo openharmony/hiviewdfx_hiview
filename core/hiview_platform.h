@@ -52,6 +52,8 @@ public:
     std::list<std::weak_ptr<Plugin>> GetPipelineSequenceByName(const std::string& name) override;
     std::shared_ptr<EventLoop> GetSharedWorkLoop() override;
     std::string GetHiViewDirectory(DirectoryType type) override;
+    std::string GetHiviewProperty(const std::string& key, const std::string& defaultValue) override;
+    bool SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate) override;
     void PublishPluginCapacity(PluginCapacityInfo &pluginCapacityInfo) override;
     void GetRemoteByCapacity(const std::string& plugin, const std::string& capacity,
         std::list<std::string> &deviceIdList) override;
@@ -115,6 +117,7 @@ private:
     std::map<std::string, std::shared_ptr<Plugin>> pluginMap_;
     std::map<std::string, std::shared_ptr<Pipeline>> pipelines_;
     std::map<std::string, std::shared_ptr<EventLoop>> privateWorkLoopMap_;
+    std::map<std::string, std::string> hiviewProperty_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

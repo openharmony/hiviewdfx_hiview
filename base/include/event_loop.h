@@ -20,19 +20,29 @@
 #include <map>
 #include <memory>
 #include <queue>
-#include <sys/types.h>
 #include <utility>
+
+#include <sys/types.h>
 
 #include "defines.h"
 #include "event.h"
 
+#if defined(__HIVIEW_OHOS__)
 #include "unique_fd.h"
+#ifdef USE_POLL
+#include <poll.h>
+#endif
+#elif defined(_WIN32)
+#include <Windows.h>
+#include <winnt.h>
+#endif
 
 namespace OHOS {
 namespace HiviewDFX {
 constexpr int LOOP_WAKEUP_HANDLE_INDEX = 0;
 constexpr int MAX_EVENT_SIZE = 16;
 constexpr int MAX_HANDLE_ARRAY_SIZE = 1;
+constexpr int MAX_WATCHED_FDS = 64;
 constexpr uint64_t SECOND_TO_MICROSECOND = 1000000;
 constexpr uint64_t SECOND_TO_NANOSECOND = 1000000000;
 constexpr uint64_t NANOSECOND_TO_MILLSECOND = 1000000;
@@ -99,9 +109,13 @@ public:
 class FileDescriptorEventCallback {
 public:
     virtual ~FileDescriptorEventCallback(){};
+#if defined(__HIVIEW_OHOS__)
     virtual bool OnFileDescriptorEvent(int fd, int Type) = 0;
     virtual int32_t GetPollFd() = 0;
     virtual int32_t GetPollType() = 0;
+#elif defined(_WIN32)
+    virtual bool OnHandleEvent(std::string fileName, DWORD action) = 0;
+#endif
 };
 class DllExport EventLoop {
 public:
@@ -146,7 +160,7 @@ private:
     void Run();
     void WakeUp();
     uint64_t ProcessQueuedEvent();
-    void WaitNextEvent(uint64_t leftTimeNanosecond);
+    void WaitNextEvent(uint64_t leftTimeMill);
     bool FetchNextEvent(uint64_t now, uint64_t& leftTimeNanosecond, LoopEvent& event);
     void ProcessEvent(LoopEvent &event);
     void ReInsertPeriodicEvent(uint64_t now, LoopEvent &event);
@@ -159,10 +173,23 @@ private:
     EventLoopPriorityQueue pendingEvents_;
     std::unique_ptr<std::thread> thread_;
     std::mutex queueMutex_;
+#if defined(__HIVIEW_OHOS__)
+#ifdef USE_POLL
+    void ModifyFdStatus();
+    void PollNextEvent(uint64_t timeout);
+    volatile bool modifyFdStatus_ = false;
+    int32_t eventQueueFd_[2] = {-1, -1}; // 2:event queue fd size
+    int32_t watchedFdSize_ = 1;
+    struct pollfd watchFds_[MAX_WATCHED_FDS];
+#else
     UniqueFd pendingEventQueueFd_;
     UniqueFd sharedPollingFd_;
+#endif
     std::map<int32_t, std::shared_ptr<FileDescriptorEventCallback>> eventSourceMap_;
     std::map<std::string, int32_t> eventSourceNameMap_;
+#elif defined(_WIN32)
+    HANDLE watchHandleList_[MAX_HANDLE_ARRAY_SIZE] = {NULL};
+#endif
     uint64_t nextWakeupTime_;
     std::atomic<LoopEvent *> currentProcessingEvent_;
 };

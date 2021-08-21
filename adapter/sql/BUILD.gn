@@ -41,4 +41,6 @@ ohos_source_set("hiview_sqlhelper") {
     "//third_party/sqlite:libsqlite",
     "//utils/native/base:utils",
   ]
+
+  external_deps = [ "hilog_native:libhilog" ]
 }

@@ -20,15 +20,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace TimeUtil {
-time_t StrToTimeStamp(const std::string &tmStr, const std::string& format)
-{
-    std::string stTime = tmStr;
-    struct tm tmFormat;
-    strptime(stTime.c_str(), format.c_str(), &tmFormat);
-    tmFormat.tm_isdst = -1;
-    return mktime(&tmFormat);
-}
-
 uint64_t GetNanoTime()
 {
     auto nanoNow = std::chrono::steady_clock::now().time_since_epoch();

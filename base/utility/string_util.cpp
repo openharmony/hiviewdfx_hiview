@@ -17,7 +17,9 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace StringUtil {
@@ -26,7 +28,7 @@ const char INDICATE_VALUE_CHAR = ':';
 const char KEY_VALUE_END_CHAR = ';';
 constexpr int SKIP_NEXT_INDEX_LENGTH = 2;
 const std::string EMPTY_STRING = "";
-std::string ConvertListToStr(const std::vector<std::string> &listStr, const std::string &split)
+std::string ConvertVectorToStr(const std::vector<std::string> &listStr, const std::string &split)
 {
     std::string str("");
     for (auto &item : listStr) {
@@ -106,6 +108,13 @@ bool StrToInt(const string& str, int& value)
     return true;
 }
 
+int StrToInt(const string& str)
+{
+    int id = -1;
+    StrToInt(str, id);
+    return id;
+}
+
 string DexToHexString(int value, bool upper)
 {
     stringstream ioss;
@@ -164,7 +173,7 @@ bool IsValidFloatNum(const std::string &value)
 {
     int len = value.size();
     int pointNum = 0;
-    
+
     for (int i = 0; i < len; i++) {
         if (isdigit(value[i])) {
             continue;
@@ -183,6 +192,7 @@ bool IsValidFloatNum(const std::string &value)
     // the string format is .111/111.
     return isdigit(value[0]) && isdigit(value[len - 1]);
 }
+
 std::list<std::string> SplitStr(const std::string& str, char delimiter)
 {
     std::list<std::string> tokens;
@@ -193,6 +203,167 @@ std::list<std::string> SplitStr(const std::string& str, char delimiter)
     }
     return tokens;
 }
-} // namespace StrUtil
+
+string GetLeftSubstr(const string& input, const string& split)
+{
+    size_t pos = input.find(split, 0);
+    if (pos == string::npos) {
+        return input;
+    }
+    return input.substr(0, pos);
+}
+
+string GetRightSubstr(const string& input, const string& split)
+{
+    size_t pos = input.find(split, 0);
+    if (pos == string::npos) {
+        return "none";
+    }
+    return input.substr(pos + split.size(), input.size() - pos);
+}
+
+string GetRleftSubstr(const string& input, const string& split)
+{
+    size_t pos = input.rfind(split, string::npos);
+    if (pos == string::npos) {
+        return input;
+    }
+    return input.substr(0, pos);
+}
+
+string GetRrightSubstr(const string& input, const string& split)
+{
+    size_t pos = input.rfind(split, string::npos);
+    if (pos == string::npos) {
+        return "none";
+    }
+    return input.substr(pos + 1, input.size() - pos);
+}
+
+string EraseString(const string& input, const string& toErase)
+{
+    size_t pos = 0;
+    string out = input;
+    while ((pos = out.find(toErase, pos)) != string::npos) {
+        out.erase(pos, toErase.size());
+        pos = (pos == 0) ? (0) : (pos - 1);
+    }
+    return out;
+}
+
+string GetMidSubstr(const string& input, const string& begin, const string& end)
+{
+    string midstr = "";
+    size_t beginPos = input.find(begin, 0);
+    if (beginPos == string::npos) {
+        return midstr;
+    }
+    beginPos = beginPos + begin.size();
+    size_t endPos = input.find(end, beginPos);
+    if (endPos == string::npos) {
+        return midstr;
+    }
+    return input.substr(beginPos, endPos - beginPos);
+}
+
+string VectorToString(const vector<string>& src, bool reverse, const string& tag)
+{
+    string str;
+    for (auto elment : src) {
+        if (elment.empty()) {
+            continue;
+        }
+        if (reverse) {
+            str = elment + tag + str;
+        } else {
+            str = str + elment + tag;
+        }
+    }
+    return str;
+}
+
+uint64_t StringToUl(const string& flag, int base)
+{
+    uint64_t ret = strtoul(flag.c_str(), NULL, base);
+    if (ret == ULONG_MAX) {
+        return 0;
+    }
+    return ret;
+}
+
+double StringToDouble(const string& input)
+{
+    if (input.empty()) {
+        return 0;
+    }
+    char *e = nullptr;
+    errno = 0;
+    double temp = std::strtod(input.c_str(), &e);
+
+    if (errno != 0) { // error, overflow or underflow
+        return 0;
+    }
+    return temp;
+}
+
+std::string FindMatchSubString(const std::string& target, const std::string& begin, int offset,
+    const std::string& end)
+{
+    auto matchPos = target.find_first_of(begin);
+    if (matchPos == std::string::npos) {
+        return "";
+    }
+    auto beginPos = matchPos + offset;
+    if (beginPos > target.length()) {
+        return "";
+    }
+    auto endPos = target.find_first_of(end, beginPos);
+    if (endPos == std::string::npos) {
+        return target.substr(beginPos);
+    }
+    return target.substr(beginPos, endPos);
+}
+
+std::string EscapeJsonStringValue(const std::string &value)
+{
+    std::string escapeValue;
+    for (auto it = value.begin(); it != value.end(); it++) {
+        switch (*it) {
+            case '\\':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('\\');
+                break;
+            case '\"':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('"');
+                break;
+            case '\b':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('b');
+                break;
+            case '\f':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('f');
+                break;
+            case '\n':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('n');
+                break;
+            case '\r':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('r');
+                break;
+            case '\t':
+                escapeValue.push_back('\\');
+                escapeValue.push_back('t');
+                break;
+            default:
+                escapeValue.push_back(*it);
+                break;
+        }
+    }
+    return escapeValue;
+}
+} // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS

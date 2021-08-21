@@ -18,10 +18,18 @@
 #include <functional>
 #include <thread>
 
+#if defined(__HIVIEW_OHOS__)
 #include <pthread.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/prctl.h>
+#elif defined(_WIN32)
+#include <processthreadsapi.h>
+#include <sstream>
+#include <Synchapi.h>
+#include <tchar.h>
+#include <windows.h>
+#endif
 
 #include "audit.h"
 #include "file_util.h"
@@ -50,6 +58,24 @@ EventLoop::~EventLoop()
 
 bool EventLoop::InitEventQueueNotifier()
 {
+#if defined(__HIVIEW_OHOS__)
+#if defined(USE_POLL)
+    for (int i = 0; i < 2; i++) { // 2:event queue fd size
+        if (eventQueueFd_[i] > 0) {
+            close(eventQueueFd_[i]);
+            eventQueueFd_[i] = -1;
+        }
+    }
+
+    if (pipe2(eventQueueFd_, O_CLOEXEC) != 0) {
+        HIVIEW_LOGW("Failed to create event queue fd.");
+        return false;
+    }
+
+    watchFds_[0].fd = eventQueueFd_[0];
+    watchFds_[0].events = POLLIN;
+    watchedFdSize_ = 1;
+#else
 #if defined EPOLL_CLOEXEC
     sharedPollingFd_ = UniqueFd(epoll_create1(EPOLL_CLOEXEC));
 #else
@@ -64,15 +90,30 @@ bool EventLoop::InitEventQueueNotifier()
         HIVIEW_LOGE("Fail to Create event poll queue.");
         return false;
     }
+#endif
+#elif defined(_WIN32)
+    watchHandleList_[LOOP_WAKEUP_HANDLE_INDEX] = CreateEventA(NULL, FALSE, FALSE, NULL);
+#endif
     return true;
 }
 
 void EventLoop::WakeUp()
 {
+#if defined(__HIVIEW_OHOS__)
+#ifdef USE_POLL
+    if (eventQueueFd_[1] > 0) {
+        int32_t count = 1;
+        write(eventQueueFd_[1], &count, sizeof(count));
+    }
+#else
     if (pendingEventQueueFd_.Get() > 0) {
         eventfd_t count = 1;
         write(pendingEventQueueFd_.Get(), &count, sizeof(count));
     }
+#endif
+#elif defined(_WIN32)
+    SetEvent(watchHandleList_[LOOP_WAKEUP_HANDLE_INDEX]);
+#endif
 }
 
 void EventLoop::StartLoop(bool createNewThread)
@@ -233,6 +274,12 @@ bool EventLoop::AddFileDescriptorEventCallback(
     }
 
     std::lock_guard<std::mutex> lock(queueMutex_);
+#if defined(__HIVIEW_OHOS__)
+    if (eventSourceNameMap_.size() >= (MAX_WATCHED_FDS - 1)) {
+        HIVIEW_LOGW("Watched fds exceed 64.");
+        return false;
+    }
+
     if (eventSourceNameMap_.find(name) != eventSourceNameMap_.end()) {
         HIVIEW_LOGW("Exist fd callback with same name.");
         return false;
@@ -244,6 +291,12 @@ bool EventLoop::AddFileDescriptorEventCallback(
         return false;
     }
 
+#ifdef USE_POLL
+    eventSourceNameMap_[name] = fd;
+    eventSourceMap_[fd] = source;
+    modifyFdStatus_ = true;
+    WakeUp();
+#else
     struct epoll_event eventItem;
     eventItem.events = source->GetPollType();
     eventItem.data.fd = fd;
@@ -255,13 +308,17 @@ bool EventLoop::AddFileDescriptorEventCallback(
 
     eventSourceNameMap_[name] = fd;
     eventSourceMap_[fd] = source;
-
+#endif
+#elif defined(_WIN32)
+    // not supported yet
+#endif
     return true;
 }
 
 bool EventLoop::RemoveFileDescriptorEventCallback(const std::string &name)
 {
     std::lock_guard<std::mutex> lock(queueMutex_);
+#if defined(__HIVIEW_OHOS__)
     if (eventSourceNameMap_.find(name) == eventSourceNameMap_.end()) {
         HIVIEW_LOGW("fd callback name is not existed.");
         return false;
@@ -269,13 +326,71 @@ bool EventLoop::RemoveFileDescriptorEventCallback(const std::string &name)
 
     int fd = eventSourceNameMap_[name];
     eventSourceNameMap_.erase(name);
+    eventSourceMap_.erase(fd);
+
+#ifdef USE_POLL
+    modifyFdStatus_ = true;
+    WakeUp();
+#else
     if (epoll_ctl(sharedPollingFd_.Get(), EPOLL_CTL_DEL, fd, nullptr) == -1) {
         HIVIEW_LOGW("fail to remove watched fd.");
     }
-    eventSourceMap_.erase(fd);
-
+#endif
+#elif defined(_WIN32)
+    // not supported yet
+#endif
     return true;
 }
+
+#ifdef USE_POLL
+void EventLoop::ModifyFdStatus()
+{
+    std::lock_guard<std::mutex> lock(queueMutex_);
+    modifyFdStatus_ = false;
+    int index = 1;
+    for (auto it = eventSourceMap_.begin(); it != eventSourceMap_.end(); it++) {
+        if (index > MAX_WATCHED_FDS - 1) {
+            break;
+        }
+
+        watchFds_[index].fd = it->first;
+        watchFds_[index].events = it->second->GetPollType();
+        index++;
+        watchedFdSize_ = index;
+    }
+}
+
+void EventLoop::PollNextEvent(uint64_t timeout)
+{
+    poll(watchFds_, watchedFdSize_, timeout);
+    isWaken_ = true;
+    if (modifyFdStatus_) {
+        ModifyFdStatus();
+        return;
+    }
+
+    if (watchFds_[0].revents & POLLIN) {
+        // new queued event arrived
+        int32_t val = 0;
+        read(watchFds_[0].fd, &val, sizeof(val));
+        return;
+    }
+
+    for (int i = 1; i < watchedFdSize_; i++) {
+        int32_t fd = watchFds_[i].fd;
+        std::lock_guard<std::mutex> lock(queueMutex_);
+        auto it = eventSourceMap_.find(fd);
+        if (it == eventSourceMap_.end()) {
+            continue;
+        }
+
+        int32_t pollType = it->second->GetPollType();
+        if (watchFds_[i].revents & pollType) {
+            it->second->OnFileDescriptorEvent(fd, watchFds_[i].revents);
+        }
+    }
+}
+#endif
 
 void EventLoop::Run()
 {
@@ -283,7 +398,7 @@ void EventLoop::Run()
     const int maxLength = 16;
     std::string restrictedName = name_;
     if (name_.length() >= maxLength) {
-        HIVIEW_LOGW("%s is too long for thread, please change to a shorter one.", name_.c_str());
+        HIVIEW_LOGW("%{public}s is too long for thread, please change to a shorter one.", name_.c_str());
         restrictedName = name_.substr(0, maxLength - 1);
     }
     Thread::SetThreadDescription(restrictedName);
@@ -292,7 +407,11 @@ void EventLoop::Run()
 
     while (true) {
         uint64_t leftTimeNanosecond = ProcessQueuedEvent();
-        WaitNextEvent(leftTimeNanosecond);
+        uint64_t leftTimeMill = INT_MAX;
+        if (leftTimeNanosecond != INT_MAX) {
+            leftTimeMill = (leftTimeNanosecond / NANOSECOND_TO_MILLSECOND);
+        }
+        WaitNextEvent(leftTimeMill);
         if (needQuit_) {
             break;
         }
@@ -395,11 +514,14 @@ void EventLoop::ReInsertPeriodicEvent(uint64_t now, LoopEvent &event)
     ResetTimerIfNeedLocked();
 }
 
-void EventLoop::WaitNextEvent(uint64_t leftTimeNanosecond)
+void EventLoop::WaitNextEvent(uint64_t leftTimeMill)
 {
+#if defined(__HIVIEW_OHOS__)
+#ifdef USE_POLL
+    PollNextEvent(leftTimeMill);
+#else
     struct epoll_event eventItems[MAX_EVENT_SIZE];
-    int eventCount = epoll_wait(sharedPollingFd_.Get(), eventItems, MAX_EVENT_SIZE,
-        (leftTimeNanosecond / NANOSECOND_TO_MILLSECOND));
+    int eventCount = epoll_wait(sharedPollingFd_.Get(), eventItems, MAX_EVENT_SIZE, leftTimeMill);
     isWaken_ = true;
     if (eventCount <= 0) {
         // no event read from watched fd, process queued events
@@ -422,12 +544,17 @@ void EventLoop::WaitNextEvent(uint64_t leftTimeNanosecond)
             }
         }
     }
+#endif
+#elif defined(_WIN32)
+    DWORD dWaitTime = (leftTimeMill >= INFINITE) ? INFINITE : static_cast<DWORD>(leftTimeMill);
+    DWORD result = WaitForMultipleObjects(MAX_HANDLE_ARRAY_SIZE, watchHandleList_, TRUE, dWaitTime);
+#endif
 }
 
 uint64_t EventLoop::NanoSecondSinceSystemStart()
 {
     auto nanoNow = std::chrono::steady_clock::now().time_since_epoch();
-    return nanoNow.count();
+    return static_cast<uint64_t>(nanoNow.count());
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

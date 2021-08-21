@@ -52,7 +52,7 @@ bool PluginConfig::StartParse()
 
             field = StringUtil::TrimStr(result[fieldNameField]);
             fieldCount = atoi(std::string(result[fieldCountField]).c_str());
-            HIVIEW_LOGD("find field:%s.", field.c_str());
+            HIVIEW_LOGD("find field:%{public}s.", field.c_str());
             continue;
         }
 

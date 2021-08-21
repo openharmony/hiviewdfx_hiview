@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,17 +16,15 @@
 #include "socket_util.h"
 
 #include "hilog/log.h"
-#include "socket_server_adapter.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace SocketUtil {
 static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D03, "HIVIEWSOCKET" };
-
-int GetHiviewExistingSocketServer(const char *name, int type)
+int GetExistingSocketServer(const char *, int)
 {
-    HiLog::Error(LABEL, "get socket");
-    return GetExistingSocketServer(name, type);
+    HiLog::Error(LABEL, "get empty socket");
+    return -1;
 }
 } // namespace SocketUtil
 } // namespace HiviewDFX

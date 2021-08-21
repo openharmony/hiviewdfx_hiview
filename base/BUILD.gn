@@ -21,12 +21,19 @@ config("hiview_base_config") {
     "//utils/native/base/include",
     "include",
     "utility/include",
+    "event_store/include",
     "$hiview_root/include",
     "$hiview_adapter/utility/include",
     "logstore/include",
+    "$hiview_adapter/dbstore/include",
   ]
 
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
+  if (is_standard_system) {
+    cflags_cc += [ "-D__OHOS_STANDARD_SYSTEM__" ]
+  } else if (is_large_system) {
+    cflags_cc += [ "-D__OHOS_LARGE_SYSTEM__" ]
+  }
 }
 
 ohos_source_set("hiview_base") {
@@ -35,19 +42,27 @@ ohos_source_set("hiview_base") {
   sources = [
     "audit.cpp",
     "audit_log_parser.cpp",
+    "default_logger.cpp",
     "event.cpp",
     "event_dispatch_queue.cpp",
+    "event_dispatcher.cpp",
     "event_loop.cpp",
     "event_source.cpp",
+    "hi_logger.cpp",
     "hiview_global.cpp",
     "logger.cpp",
     "pipeline.cpp",
     "plugin.cpp",
     "plugin_factory.cpp",
+    "sys_event.cpp",
   ]
 
-  deps = [ "utility:hiview_utility" ]
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  deps = [
+    "$hiview_adapter/dbstore:db_store_source",
+    "event_store:event_store_source",
+    "utility:hiview_utility",
+  ]
+  external_deps = [ "hilog_native:libhilog" ]
 }
 
 ohos_shared_library("hiviewbase") {
@@ -61,5 +76,5 @@ ohos_shared_library("hiviewbase") {
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }

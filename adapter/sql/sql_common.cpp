@@ -32,14 +32,14 @@ namespace sql {
 string IntToStr(int value)
 {
     char buffer[INT_TO_STR_BUFF];
-    sprintf_s(buffer, sizeof(buffer), "%d", value);
+    (void)sprintf_s(buffer, sizeof(buffer), "%d", value);
     return buffer;
 }
 
 string IntegerToStr(Integer value)
 {
     char buffer[INTEGER_TO_STR_BUFF];
-    sprintf_s(buffer, sizeof(buffer), "%lld", value);
+    (void)sprintf_s(buffer, sizeof(buffer), "%lld", value);
     return buffer;
 }
 

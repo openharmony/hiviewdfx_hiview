@@ -99,7 +99,7 @@ void EventDispatchQueue::ProcessOrderedEvent(Event& event)
             }
 
             if (stop) {
-                HIVIEW_LOGI("Event %d consumed by %s.", event.eventId_, sp->GetListenerName().c_str());
+                HIVIEW_LOGI("Event %d consumed by %{public}s.", event.eventId_, sp->GetListenerName().c_str());
                 break;
             }
         }
@@ -119,6 +119,17 @@ void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
 
 bool EventDispatchQueue::IsEventMatchCurrentListener(const Event& event, std::shared_ptr<EventListener> listener)
 {
+    if (!event.eventName_.empty() && !event.domain_.empty()) {
+        auto eventName = event.domain_ + "_" + event.eventName_;
+        std::set<std::string> strListenerInfo;
+        if (listener->GetListenerInfo(event.messageType_, strListenerInfo)) {
+            return std::any_of(strListenerInfo.begin(), strListenerInfo.end(), [&](const std::string& name) {
+                return (eventName.find(name) != std::string::npos);
+            });
+        }
+        return false;
+    }
+
     std::set<EventListener::EventIdRange> listenerInfo;
     if (listener->GetListenerInfo(event.messageType_, listenerInfo)) {
         return std::any_of(listenerInfo.begin(), listenerInfo.end(), [&](const EventListener::EventIdRange& range) {

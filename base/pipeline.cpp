@@ -33,7 +33,6 @@ void PipelineEvent::OnPending()
 
 bool PipelineEvent::OnContinue()
 {
-    HIVIEW_LOGD("PipelineEvent OnContinue %s", std::to_string(createTime_).c_str());
     if ((!hasFinish_) && processors_.empty()) {
         return OnFinish();
     }
@@ -76,7 +75,6 @@ bool PipelineEvent::OnContinue()
 
 bool PipelineEvent::OnFinish()
 {
-    HIVIEW_LOGD("PipelineEvent OnFinish");
     if (handler_ != nullptr) {
         handler_->Recycle(this);
     }
@@ -130,7 +128,6 @@ void PipelineEvent::FillPipelineInfo(std::shared_ptr<Plugin> caller, const std::
 
 bool Pipeline::CanProcessEvent(std::shared_ptr<PipelineEvent> event)
 {
-    HIVIEW_LOGD("Pipeline CanProcessEvent");
     if (processors_.empty()) {
         HIVIEW_LOGI("no processor in this pipeline.");
         return false;
@@ -145,7 +142,6 @@ bool Pipeline::CanProcessEvent(std::shared_ptr<PipelineEvent> event)
 
 void Pipeline::ProcessEvent(std::shared_ptr<PipelineEvent> event)
 {
-    HIVIEW_LOGD("Pipeline ProcessEvent");
     event->SetPipelineInfo(name_, processors_);
     event->OnContinue();
 }

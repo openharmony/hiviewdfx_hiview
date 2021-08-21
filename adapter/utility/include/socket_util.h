@@ -18,7 +18,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace SocketUtil {
-int GetHiviewExistingSocketServer(const char *name, int type);
+int GetExistingSocketServer(const char *name, int type);
 } // namespace SocketUtil
 } // namespace HiviewDFX
 } // namespace OHOS

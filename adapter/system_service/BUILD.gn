@@ -26,11 +26,15 @@ ohos_source_set("system_service") {
   public_configs = [ ":system_service_config" ]
 
   sources = [
-    "parameter.cpp",
-    "platform/ohos/parameter.cpp",
+    "parameter_ex.cpp",
+    "platform/ohos/parameter_ex.cpp",
   ]
 
   deps = [ "//utils/native/base:utils" ]
 
-  external_deps = [ "startup_l2:syspara" ]
+  if (is_standard_system) {
+    external_deps = [ "startup_l2:syspara" ]
+  } else {
+    external_deps = [ "startup:syspara" ]
+  }
 }

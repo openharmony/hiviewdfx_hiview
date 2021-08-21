@@ -20,5 +20,7 @@ group("moduletest") {
   testonly = true
   deps = []
 
-  deps += []
+  if (is_large_system) {
+    deps += [ "plugins/faultlogger:moduletest" ]
+  }
 }

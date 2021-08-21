@@ -190,6 +190,16 @@ public:
     {
         return "";
     }
+    virtual std::string GetHiviewProperty(const std::string& key __UNUSED, const std::string& defaultValue)
+    {
+        return defaultValue;
+    }
+
+    virtual bool SetHiviewProperty(const std::string& key __UNUSED, const std::string& value __UNUSED,
+        bool forceUpdate __UNUSED)
+    {
+        return true;
+    }
 };
 } // namespace HiviewDFX
 } // namespace OHOS

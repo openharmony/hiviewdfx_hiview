@@ -12,11 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
+
 import argparse
-import os
 import json
+import os
+import sys
+
 from collections import OrderedDict
+from os.path import join
+from os.path import realpath
 
 
 DEBUG = False
@@ -45,17 +49,29 @@ def write_json_file(output_file, content):
 def get_gn_build_content(plugins, plugin_so):
     so_items = []
     items = []
+    build_path = os.path.split(realpath(__file__))[0]
+    root_path = realpath(join(build_path, ".."))
+    ut_items = []
+    mst_items = []
     for plugin_info in plugins:
         for plugin, info in plugin_info.items():
+            gn_path = realpath(join(root_path, info['path'], "BUILD.gn"))
+            if not os.path.exists(gn_path):
+                print('%s %s' % (gn_path, 'is not exist.'))
+                break
             if 'loadType' in info:
                 if info['loadType'] == 'dynamic':
                     target = 'lib%s' % (plugin.lower())
                     so_items.append('\"%s:%s\",\n' % (info['path'], target))
             else:
                 items.append('\"%s:%s\",\n' % (info['path'], info['name']))
+            ut_items.append('\"%s:unittest\",\n' % (info['path']))
+            mst_items.append('\"%s:moduletest\",\n' % (info['path']))
     dynamic_info = 'plugin_dynamic_deps = [\n%s\n]\n' % (''.join(so_items))
-    static_info = ('plugin_static_deps = [\n%s\n]' % (''.join(items)))
-    return '%s%s' % (dynamic_info, static_info)
+    static_info = ('plugin_static_deps = [\n%s\n]\n' % (''.join(items)))
+    ut_deps = ('plugin_ut_deps = [\n%s\n]\n' % (''.join(list(set(ut_items)))))
+    mst_deps = ('plugin_mst_deps = [\n%s\n]' % (''.join(list(set(mst_items)))))
+    return '%s%s%s%s' % (dynamic_info, static_info, ut_deps, mst_deps)
 
 
 def write_build_file(output_file, plugins, plugin_so, cnt_type):
@@ -268,7 +284,7 @@ def add_pipeline_groups(pipelinegrps, cfg_pipelinegrps, pipelines, plugins):
             raise Exception("[{}] not exist in plugins".format(plugin))
         for pipeline in pipeline_list:
             if pipeline not in pipelines:
-                raise Exception("[{}] notexist in pipeline".format(pipelines))
+                raise Exception("[{}] not exist in pipeline".format(pipelines))
         pipelinegrps.append({plugin: pipeline_list})
 
 
