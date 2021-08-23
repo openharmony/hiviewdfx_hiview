@@ -16,8 +16,6 @@
 #define UTILS_H
 
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include <string>
 
@@ -41,6 +39,9 @@ static constexpr uint32_t MAX_LINE_LEN = 1024;
 namespace CommonUtils {
 std::string GetProcNameByPid(int32_t pid);
 pid_t GetPidByName(const std::string& processName);
+int32_t ExecCommand(const std::string &cmd, const std::vector<std::string> &args);
+bool IsSpecificCmdExist(const std::string& fullPath);
+bool WriteCommandResultToFile(int fd, const std::string& cmd);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

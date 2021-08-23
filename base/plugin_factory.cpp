@@ -29,13 +29,17 @@ std::shared_ptr<std::map<std::string, PluginInstance>> PluginFactory::GetGlobalP
 void PluginFactory::RegisterPlugin(const std::string& name, PluginInstance func)
 {
     if (func == nullptr) {
-        HIVIEW_LOGW("Register null plugin constructor from %s.", name.c_str());
+        HIVIEW_LOGW("Register null plugin constructor from %{public}s.", name.c_str());
         return;
     }
     // force update plugin constructor
     auto pluginMap = GetGlobalPluginRegistryMap();
     pluginMap->insert(std::make_pair(name, func));
-    HIVIEW_LOGD("Register plugin constructor from %s.", name.c_str());
+#ifdef _WIN32
+    // When PluginFactory is loading, the logger is not loaded.
+#else
+    HIVIEW_LOGD("Register plugin constructor from %{public}s.", name.c_str());
+#endif // _WIN32
 }
 
 void PluginFactory::UnregisterPlugin(const std::string& name)
@@ -49,7 +53,7 @@ std::shared_ptr<Plugin> PluginFactory::GetPlugin(const std::string& name)
     auto pluginMap = GetGlobalPluginRegistryMap();
     auto it = pluginMap->find(name);
     if (it == pluginMap->end()) {
-        HIVIEW_LOGW("Could not find plugin with name:%s.", name.c_str());
+        HIVIEW_LOGW("Could not find plugin with name:%{public}s.", name.c_str());
         return nullptr;
     }
     return it->second();

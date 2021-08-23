@@ -43,10 +43,10 @@ bool EventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
 void EventSource::AddPipeline(std::shared_ptr<Pipeline> pipeline)
 {
     if (pipeline == nullptr) {
-        HIVIEW_LOGW("Add nullptr pipeline to %s.", GetName().c_str());
+        HIVIEW_LOGW("Add nullptr pipeline to %{public}s.", GetName().c_str());
         return;
     }
-    HIVIEW_LOGD("EventSource add pipeline %s.", pipeline->GetName().c_str());
+    HIVIEW_LOGD("EventSource add pipeline %{public}s.", pipeline->GetName().c_str());
     listeners_.push_back(pipeline);
 }
 

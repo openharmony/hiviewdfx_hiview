@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 #include "hiview_platform.h"
-
+#ifndef _WIN32
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#endif
 #include <cinttypes>
 #include <csignal>
 #include <fstream>
@@ -28,12 +28,13 @@
 #include "common_utils.h"
 #include "defines.h"
 #include "dynamic_module.h"
+#include "engine_event_dispatcher.h"
 #include "file_util.h"
 #include "hiview_global.h"
 #include "logger.h"
+#include "parameter_ex.h"
 #include "plugin_config.h"
 #include "plugin_factory.h"
-#include "parameter.h"
 #include "string_util.h"
 #include "time_util.h"
 #include "file_util.h"
@@ -43,6 +44,7 @@ namespace HiviewDFX {
 namespace {
 constexpr uint32_t AID_ROOT = 0;
 constexpr uint32_t AID_SYSTEM = 1000;
+constexpr char ENGINE_EVENT_DISPATCHER[] = "EngineEventDispatcher";
 static const char VERSION[] = "xx.x.x.xxx";
 static const char SEPARATOR_VERSION[] = " ";
 static const char RECORDER_VERSION[] = "01.00";
@@ -114,7 +116,7 @@ bool HiviewPlatform::InitEnvironment(const std::string& defaultDir, const std::s
 
 void HiviewPlatform::UpdateBetaConfigIfNeed()
 {
-    int32_t userType = Parameter::GetInteger(KEY_HIVIEW_USER_TYPE, Parameter::UserType::COMMERCIAL);
+    int32_t userType = Parameter::GetInteger(KEY_HIVIEW_USER_TYPE, Parameter::UserType::UNKNOWN_TYPE);
     if (userType == Parameter::UserType::BETA) {
         // init audit status
         Audit::GetInstance().Init(true);
@@ -123,7 +125,7 @@ void HiviewPlatform::UpdateBetaConfigIfNeed()
     if (userType == Parameter::UserType::COMMERCIAL || userType == Parameter::UserType::OVERSEAS_COMMERCIAL) {
         if (defaultWorkDir_ == std::string(DEFAULT_WORK_DIR)) {
             defaultWorkDir_ = DEFAULT_COMMERCIAL_WORK_DIR;
-            FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_ROOT, AID_SYSTEM);
+            FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_SYSTEM, AID_SYSTEM);
         }
     }
 }
@@ -134,7 +136,7 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
     // 1. create plugin
     auto const& pluginInfoList = config.GetPluginInfoList();
     for (auto const& pluginInfo : pluginInfoList) {
-        HIVIEW_LOGD("Start to create plugin %s delay:%d", pluginInfo.name.c_str(),
+        HIVIEW_LOGI("Start to create plugin %{public}s delay:%{public}d", pluginInfo.name.c_str(),
                     pluginInfo.loadDelay);
         if (pluginInfo.loadDelay > 0) {
             auto task = std::bind(&HiviewPlatform::ScheduleCreateAndInitPlugin, this, pluginInfo);
@@ -146,13 +148,13 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
     // 2. create pipelines
     auto const& pipelineInfoList = config.GetPipelineInfoList();
     for (auto const& pipelineInfo : pipelineInfoList) {
-        HIVIEW_LOGD("Start to create pipeline %s", pipelineInfo.name.c_str());
+        HIVIEW_LOGI("Start to create pipeline %{public}s", pipelineInfo.name.c_str());
         CreatePipeline(pipelineInfo);
     }
 
     // 3. bind pipeline and call onload of event source
     for (auto const& pluginInfo : pluginInfoList) {
-        HIVIEW_LOGD("Start to Load plugin %s", pluginInfo.name.c_str());
+        HIVIEW_LOGI("Start to Load plugin %{public}s", pluginInfo.name.c_str());
         InitPlugin(config, pluginInfo);
     }
 
@@ -161,6 +163,7 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
 
 void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
 {
+#ifndef _WIN32
     umask(0002); // 0002 is block other write permissions, -------w-
     signal(SIGPIPE, SIG_IGN);
     int ch = -1;
@@ -172,6 +175,7 @@ void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
             exit(1);
         }
     }
+#endif // !_WIN32
 }
 
 DynamicModule HiviewPlatform::LoadDynamicPluginIfNeed(const PluginConfig::PluginInfo& pluginInfo) const
@@ -192,6 +196,7 @@ DynamicModule HiviewPlatform::LoadDynamicPluginIfNeed(const PluginConfig::Plugin
 
 std::string HiviewPlatform::GetDynamicLibName(const std::string& name, bool hasOhosSuffix) const
 {
+#ifdef __HIVIEW_OHOS__
     std::string tmp = "lib" + name;
     if (hasOhosSuffix) {
         tmp.append(".z.so");
@@ -203,6 +208,17 @@ std::string HiviewPlatform::GetDynamicLibName(const std::string& name, bool hasO
         tmp[i] = std::tolower(tmp[i]);
     }
     return tmp;
+#elif defined(_WIN32)
+    std::string dynamicLibName = "";
+    dynamicLibName.append(name);
+    dynamicLibName.append(".dll");
+    return dynamicLibName;
+#else
+    // dynamic plugins feature is only enabled in double framework version
+    (void)hasOhosSuffix;
+    HIVIEW_LOGI("could not load dynamic lib %s, not supported yet.", name.c_str());
+    return "";
+#endif
 }
 
 void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
@@ -239,7 +255,13 @@ void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineIn
 {
     std::list<std::weak_ptr<Plugin>> pluginList;
     for (auto& pluginName : pipelineInfo.pluginNameList) {
-        pluginList.push_back(pluginMap_[pluginName]);
+        auto& plugin = pluginMap_[pluginName];
+        if (plugin == nullptr) {
+            HIVIEW_LOGI("could not find plugin(%{public}s), skip adding to pipeline(%{public}s).",
+                pluginName.c_str(), pipelineInfo.name.c_str());
+            continue;
+        }
+        pluginList.push_back(plugin);
     }
     std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(pipelineInfo.name, pluginList);
     pipelines_[pipelineInfo.name] = std::move(pipeline);
@@ -271,7 +293,7 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         StartEventSource(sharedSource);
     }
     auto end = TimeUtil::GenerateTimestamp();
-    HIVIEW_LOGI("Plugin %s loadtime:%" PRIu64 ".", pluginInfo.name.c_str(), end - begin);
+    HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), end - begin);
 }
 
 void HiviewPlatform::NotifyPluginReady()
@@ -416,6 +438,13 @@ void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<EventListener>
 {
     if (unorderQueue_ != nullptr) {
         unorderQueue_->RegisterListener(listener);
+    }
+
+    // dispatch engine event
+    std::map<std::string, std::shared_ptr<Plugin>>::iterator it = pluginMap_.find(ENGINE_EVENT_DISPATCHER);
+    if ((it != pluginMap_.end()) && (it->second != nullptr)) {
+        auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
+        dispatcher->RegisterListener(listener);
     }
 }
 
@@ -573,6 +602,7 @@ void HiviewPlatform::ValidateAndCreateDirectories(const std::string& localPath, 
     }
 }
 
+#ifndef _WIN32
 void HiviewPlatform::ExitHiviewIfNeed()
 {
     int selfPid = getpid();
@@ -600,6 +630,11 @@ void HiviewPlatform::ExitHiviewIfNeed()
     }
     FileUtil::SaveStringToFile(pidFile, std::to_string(selfPid));
 }
+#else
+void HiviewPlatform::ExitHiviewIfNeed()
+{
+}
+#endif
 
 std::string HiviewPlatform::GetPluginConfigPath()
 {
@@ -665,6 +700,25 @@ std::shared_ptr<Plugin> HiviewPlatform::GetPluginByName(const std::string& name)
         return nullptr;
     }
     return it->second;
+}
+
+std::string HiviewPlatform::GetHiviewProperty(const std::string& key, const std::string& defaultValue)
+{
+    auto propPair = hiviewProperty_.find(key);
+    if (propPair != hiviewProperty_.end()) {
+        return propPair->second;
+    }
+    return Parameter::GetString(key, defaultValue);
+}
+
+bool HiviewPlatform::SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate)
+{
+    auto propPair = hiviewProperty_.find(key);
+    if (forceUpdate || (propPair == hiviewProperty_.end())) {
+        hiviewProperty_[key] = value;
+        return true;
+    }
+    return Parameter::SetProperty(key, value);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

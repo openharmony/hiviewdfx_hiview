@@ -49,7 +49,7 @@ size_t SqlRecord::GetColumnCount()
 
 SqlValue* SqlRecord::GetValue(size_t index)
 {
-    if ((index >= 0) && (index < values.size())) {
+    if (index < values.size()) {
         return &values.at(index);
     }
     return nullptr;

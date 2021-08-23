@@ -47,6 +47,16 @@ std::string HiviewGlobal::GetHiViewDirectory(HiviewContext::DirectoryType type) 
     return context_.GetHiViewDirectory(type);
 }
 
+std::string HiviewGlobal::GetHiviewProperty(const std::string& key, const std::string& defaultValue)
+{
+    return context_.GetHiviewProperty(key, defaultValue);
+}
+
+bool HiviewGlobal::SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate)
+{
+    return context_.SetHiviewProperty(key, value, forceUpdate);
+}
+
 void HiviewGlobal::PostAsyncEventToTarget(const std::string &targetPlugin, std::shared_ptr<Event> event)
 {
     context_.PostAsyncEventToTarget(nullptr, targetPlugin, event);
@@ -55,6 +65,11 @@ void HiviewGlobal::PostAsyncEventToTarget(const std::string &targetPlugin, std::
 bool HiviewGlobal::PostSyncEventToTarget(const std::string &targetPlugin, std::shared_ptr<Event> event)
 {
     return context_.PostSyncEventToTarget(nullptr, targetPlugin, event);
+}
+
+void HiviewGlobal::PostUnorderedEvent(std::shared_ptr<Event> event)
+{
+    context_.PostUnorderedEvent(nullptr, event);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

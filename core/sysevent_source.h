@@ -27,19 +27,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class SysEvent {
-public:
-    std::string domain;
-    std::string eventName;
-    int eventType;
-    unsigned int pid;
-    unsigned int tid;
-    std::string traceId;
-    std::string spanId;
-    std::string pspanId;
-    std::string traceFlag;
-};
-
 class SysEventParser {
 public:
     explicit SysEventParser(PipelineEventProducer* producer): pipeProducer(producer) {};

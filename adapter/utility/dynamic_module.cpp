@@ -16,18 +16,30 @@
 
 #include <string>
 
+#if defined(_WIN32)
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
 
 namespace OHOS {
 namespace HiviewDFX {
 DynamicModule LoadModule(const std::string &moduleName)
 {
-    return dlopen(moduleName.c_str(), RTLD_GLOBAL);
+#if defined(_WIN32)
+return LoadLibraryA(moduleName.c_str());
+#else
+return dlopen(moduleName.c_str(), RTLD_GLOBAL);
+#endif
 }
 
 void UnloadModule(DynamicModule module)
 {
+#if defined(_WIN32)
+    FreeLibrary(module);
+#else
     dlclose(module);
+#endif
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

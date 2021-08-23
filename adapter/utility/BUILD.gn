@@ -20,7 +20,6 @@ config("hiview_adapter_utils_config") {
     ".",
     "include",
     "$hiview_adapter/system_service/include",
-    "//base/hiviewdfx/hilog/adapter"
   ]
 }
 
@@ -40,10 +39,9 @@ ohos_source_set("hiview_adapter_utility") {
   deps = [
     "$hiview_adapter/system_service:system_service",
     "//utils/native/base:utils",
-    "//base/hiviewdfx/hilog/adapter:libhilog_os_adapter"
   ]
 
-  part_name = "hiview"
+  part_name = "hiview_L2"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }

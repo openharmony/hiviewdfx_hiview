@@ -20,6 +20,7 @@
 #include "defines.h"
 #include "logger.h"
 #include "plugin_factory.h"
+#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,14 +29,19 @@ DEFINE_LOG_TAG("HiView-SysEventSource");
 
 std::shared_ptr<PipelineEvent> SysEventParser::Parser(const std::string& rawMsg) const
 {
-    HIVIEW_LOGD("parser raw message %s", rawMsg.c_str());
-    auto baseEvent = std::make_shared<PipelineEvent>("SysEventSource", pipeProducer);
+    HIVIEW_LOGD("parser raw message size=%{public}d, %{public}s", rawMsg.length(), rawMsg.c_str());
+    auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawMsg);
+    if (baseEvent->PaserJson() != 0) {
+        HIVIEW_LOGI("parser sys event error");
+        return nullptr;
+    }
+    HIVIEW_LOGI("parser result domain_=%{public}s eventName_=%{public}s",
+        baseEvent->domain_.c_str(), baseEvent->eventName_.c_str());
     return baseEvent;
 }
 
 void SysEventReceiver::HandlerEvent(const std::string& rawMsg)
 {
-    HIVIEW_LOGI("SysEventSource load");
     SysEventParser sysEventParser(static_cast<PipelineEventProducer *>(&eventSource));
     std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawMsg);
     eventSource.PublishPipelineEvent(event);

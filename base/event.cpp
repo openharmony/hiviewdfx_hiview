@@ -66,6 +66,11 @@ void Event::SetKeyValuePairs(std::map<std::string, std::string> keyValuePairs)
     bundle_.insert(keyValuePairs.begin(), keyValuePairs.end());
 }
 
+std::map<std::string, std::string> Event::GetKeyValuePairs() const
+{
+    return bundle_;
+}
+
 void EventListener::AddListenerInfo(uint32_t type, const EventIdRange& range)
 {
     auto it = listenerInfo_.find(type);
@@ -95,6 +100,40 @@ bool EventListener::GetListenerInfo(uint32_t type, std::set<EventIdRange> &liste
     if (it != listenerInfo_.end()) {
         listenerInfo.clear();
         listenerInfo.insert(it->second.begin(), it->second.end());
+        return true;
+    }
+    return false;
+}
+
+void EventListener::AddListenerInfo(uint32_t type, const std::string& eventName)
+{
+    auto it = strListenerInfo_.find(type);
+    if (it != strListenerInfo_.end()) {
+        it->second.insert(eventName);
+        return;
+    }
+
+    std::set<std::string> listenNamesSet;
+    listenNamesSet.insert(eventName);
+    strListenerInfo_[type] = std::move(listenNamesSet);
+}
+
+void EventListener::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
+{
+    auto it = strListenerInfo_.find(type);
+    if (it != strListenerInfo_.end()) {
+        it->second.insert(eventNames.begin(), eventNames.end());
+        return;
+    }
+    strListenerInfo_[type] = eventNames;
+}
+
+bool EventListener::GetListenerInfo(uint32_t type, std::set<std::string> &eventNames)
+{
+    auto it = strListenerInfo_.find(type);
+    if (it != strListenerInfo_.end()) {
+        eventNames.clear();
+        eventNames.insert(it->second.begin(), it->second.end());
         return true;
     }
     return false;

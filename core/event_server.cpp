@@ -34,16 +34,37 @@ extern "C" {
 #include "logger.h"
 #include "socket_util.h"
 
-namespace OHOS {
-namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-EventServer");
-namespace {
-constexpr int BUFFER_SIZE = 384 * 1024;
 #ifdef USE_MUSL
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
 #else
 #define SOCKET_FILE_DIR "/dev/socket/hisysevent"
 #endif
+
+namespace OHOS {
+namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-EventServer");
+namespace {
+constexpr int BUFFER_SIZE = 384 * 1024;
+static void InitRecvBuffer(int socketId)
+{
+    int oldN = 0;
+    socklen_t oldOutSize = sizeof(int);
+    if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&oldN), &oldOutSize) < 0) {
+        HIVIEW_LOGE("get socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
+    }
+
+    int sendBuffSize = BUFFER_SIZE;
+    if (setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&sendBuffSize), sizeof(int)) < 0) {
+        HIVIEW_LOGE("set socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
+    }
+
+    int newN = 0;
+    socklen_t newOutSize = sizeof(int);
+    if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&newN), &newOutSize) < 0) {
+        HIVIEW_LOGE("get new socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
+    }
+    HIVIEW_LOGI("reset recv buffer size old=%{public}d, new=%{public}d", oldN, newN);
+}
 }
 void EventServer::InitSocket(int &socketId)
 {
@@ -51,20 +72,21 @@ void EventServer::InitSocket(int &socketId)
     serverAddr.sun_family = AF_UNIX;
     if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), SOCKET_FILE_DIR) != EOK) {
         socketId = -1;
-        HIVIEW_LOGE("copy hisysevent dev path fail %d", errno);
+        HIVIEW_LOGE("copy hisysevent dev path fail %{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
     serverAddr.sun_path[sizeof(serverAddr.sun_path) - 1] = '\0';
     socketId = TEMP_FAILURE_RETRY(socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
     if (socketId < 0) {
-        HIVIEW_LOGE("create hisysevent socket fail %d", errno);
+        HIVIEW_LOGE("create hisysevent socket fail %{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
+    InitRecvBuffer(socketId_);
     unlink(serverAddr.sun_path);
     if (TEMP_FAILURE_RETRY(bind(socketId, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) < 0) {
         close(socketId);
         socketId = -1;
-        HIVIEW_LOGE("bind hisysevent socket fail %d", errno);
+        HIVIEW_LOGE("bind hisysevent socket fail %{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
 }
@@ -81,6 +103,7 @@ void EventServer::Start()
         HIVIEW_LOGI("create hisysevent socket");
         InitSocket(socketId_);
     } else {
+        InitRecvBuffer(socketId_);
         HIVIEW_LOGI("use hisysevent exist socket");
     }
 

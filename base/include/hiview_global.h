@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class HiviewGlobal {
+class DllExport HiviewGlobal {
 public:
     explicit HiviewGlobal(HiviewContext& context) : context_(context) {}
     ~HiviewGlobal() {};
@@ -29,8 +29,11 @@ public:
     // maybe null reference, check before use
     static std::unique_ptr<HiviewGlobal>& GetInstance();
     std::string GetHiViewDirectory(HiviewContext::DirectoryType type) const;
+    std::string GetHiviewProperty(const std::string& key, const std::string& defaultValue);
+    bool SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate);
     void PostAsyncEventToTarget(const std::string& targetPlugin, std::shared_ptr<Event> event);
     bool PostSyncEventToTarget(const std::string& targetPlugin, std::shared_ptr<Event> event);
+    void PostUnorderedEvent(std::shared_ptr<Event> event);
 private:
     HiviewContext& context_;
 };

@@ -26,6 +26,10 @@
 #endif
 
 #endif
+#ifdef _WIN32
+#define DllExport __declspec (dllexport)
+#else
 #define DllExport
+#endif // _WIN32
 
 #endif // HIVIEW_BASE_DEFINES_H

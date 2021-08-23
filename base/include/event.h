@@ -36,6 +36,7 @@ public:
           targetDispatchTime_(0),
           createTime_(0),
           sender_(sender),
+          domain_(""),
           eventName_(""),
           isPipeline_(false),
           hasFinish_(false),
@@ -59,6 +60,7 @@ public:
           targetDispatchTime_(0),
           createTime_(0),
           sender_(sender),
+          domain_(""),
           eventName_(name),
           isPipeline_(false),
           hasFinish_(false),
@@ -110,8 +112,10 @@ public:
         FAULT_EVENT,
         STATISTICS_EVENT,
         RAW_EVENT,
+        SYS_EVENT,
         UE_EVENT,
         EXTERNAL_EVENT,
+        EXTERNAL_REMOTE_EVENT,
         CROSS_PLATFORM,
         PRIVATE_MESSAGE_TYPE // Expand macro from public_defines.h
     };
@@ -134,6 +138,7 @@ public:
     uint64_t targetDispatchTime_;
     uint64_t createTime_;
     std::string sender_;
+    std::string domain_;
     std::string eventName_;
     bool isPipeline_;
     bool hasFinish_;
@@ -150,6 +155,7 @@ public:
     void SetKeyValuePairs(std::map<std::string, std::string> keyValuePairs);
     const std::string GetValue(const std::string &name) const;
     int32_t GetIntValue(const std::string &name) const;
+    std::map<std::string, std::string> GetKeyValuePairs() const;
     void ResetTimestamp();
     void ResetPendingStatus()
     {
@@ -269,8 +275,13 @@ public:
     void AddListenerInfo(uint32_t type, const std::set<EventIdRange> &listenerInfo);
     bool GetListenerInfo(uint32_t type, std::set<EventIdRange> &listenerInfo);
 
+    void AddListenerInfo(uint32_t type, const std::string& eventName);
+    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
+    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
+
 private:
     std::map<uint32_t, std::set<EventIdRange>> listenerInfo_;
+    std::map<uint32_t, std::set<std::string>> strListenerInfo_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

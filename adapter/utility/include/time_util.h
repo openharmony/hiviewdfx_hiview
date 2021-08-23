@@ -27,13 +27,16 @@ constexpr int64_t MILLISEC_TO_NANOSEC = 1000000;
 constexpr int64_t MICROSEC_TO_NANOSEC = 1000;
 constexpr int SECONDS_PER_HOUR = 3600; // 60 * 60
 constexpr int SECONDS_PER_DAY = 86400; // 60 * 60 * 24
+constexpr int MAX_TIME_BUFF = 64; // 64 : for example 2021-05-27-01-01-01
 uint64_t GetNanoTime();
 uint64_t GetTimeOfDay();
 uint64_t GenerateTimestamp();
+uint64_t GetMilliseconds();
 time_t StrToTimeStamp(const std::string &tmStr, const std::string& format);
-std::string GetFormatTime(time_t time);
 void Sleep(unsigned int seconds);
 int GetMillSecOfSec();
+std::string TimestampFormatToDate(time_t timeStamp, const std::string& format);
+std::string GetTimeZone();
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

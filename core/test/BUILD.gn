@@ -13,7 +13,7 @@
 import("//base/hiviewdfx/hiview/build/hiview_var.gni")
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
-module_output_path = "hiview/hiview/plugin_management"
+module_output_path = "hiview/hiview/core"
 group("unittest") {
   testonly = true
   deps = [
@@ -46,7 +46,7 @@ ohos_unittest("PlatformConfigTest") {
   ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }
 
 ohos_unittest("PluginPlatformWithLocalPluginBaseTest") {
@@ -73,7 +73,7 @@ ohos_unittest("PluginPlatformWithLocalPluginBaseTest") {
   ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }
 
 ohos_source_set("hiview_plugin_management_test") {
@@ -86,5 +86,5 @@ ohos_source_set("hiview_plugin_management_test") {
     "$hiview_core:hiview_core",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 }

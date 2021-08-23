@@ -26,3 +26,4 @@ hiview_test = "//base/hiviewdfx/hiview/test"
 
 # hiview plugin path definitions
 hiview_faultlogger = "//base/hiviewdfx/hiview/plugins/faultlogger"
+hiview_eventlogger = "//base/hiviewdfx/hiview/plugins/eventlogger"

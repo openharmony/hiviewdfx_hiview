@@ -122,7 +122,7 @@ void SqlValue::SetString(string tempValue)
 void SqlValue::SetInteger(Integer tempValue)
 {
     char buffer[MAX_BUFFER_LEN];
-    sprintf_s(buffer, sizeof(buffer), "%lld", tempValue);
+    (void)sprintf_s(buffer, sizeof(buffer), "%lld", tempValue);
     isNull = false;
     value = buffer;
 }
@@ -130,7 +130,7 @@ void SqlValue::SetInteger(Integer tempValue)
 void SqlValue::SetDouble(double tempValue)
 {
     char buffer[MAX_BUFFER_LEN];
-    sprintf_s(buffer, sizeof(buffer), "%0.8f", tempValue);
+    (void)sprintf_s(buffer, sizeof(buffer), "%0.8f", tempValue);
     isNull = false;
     value = buffer;
 }

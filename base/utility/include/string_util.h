@@ -89,11 +89,12 @@ bool IsValidFloatNum(const std::string &value);
  * The StrToInt function convert str to int.
  */
 bool StrToInt(const std::string& str, int& value);
+int StrToInt(const std::string& str);
 
 /**
  * Append the strings in list with specific delimiter
  */
-std::string ConvertListToStr(const std::vector<std::string> &listStr, const std::string &split);
+std::string ConvertVectorToStr(const std::vector<std::string> &listStr, const std::string &split);
 
 /**
  * The DexToHexString function convert dex to hex string.
@@ -116,7 +117,41 @@ std::string ConvertToUTF8(const std::basic_string<T, std::char_traits<T>, std::a
 }
 
 std::list<std::string> SplitStr(const std::string& str, char delimiter = ' ');
-} // namespace StrUtil
+/**
+ * Get substring in input string between begin and end
+ */
+std::string GetMidSubstr(const std::string& input, const std::string& begin, const std::string& end);
+/**
+ * Gets the substring to the left of the input string
+ */
+std::string GetLeftSubstr(const std::string& input, const std::string& split);
+/**
+ * Gets the substring to the right of the input string
+ */
+std::string GetRightSubstr(const std::string& input, const std::string& split);
+/**
+ * Gets the substring to the left of the input string when finding first split from the left
+ */
+std::string GetRleftSubstr(const std::string& input, const std::string& split);
+/**
+ * Gets the substring to the right of the input string when finding first split from the right
+ */
+std::string GetRrightSubstr(const std::string& input, const std::string& split);
+/**
+ * Gets the substring when erasing all same string in the input string
+ */
+std::string EraseString(const std::string& input, const std::string& toerase);
+
+std::string VectorToString(const std::vector<std::string>& src, bool reverse, const std::string& tag = "\r\n");
+
+uint64_t StringToUl(const std::string& flag, int base = 10); // 10 : default base
+double StringToDouble(const std::string& input);
+
+std::string FindMatchSubString(const std::string& target, const std::string& begin, int offset,
+    const std::string& end);
+
+std::string EscapeJsonStringValue(const std::string &value);
+} // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // UTILITY_STR_UTIL_H
