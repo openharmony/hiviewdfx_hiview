@@ -7,6 +7,10 @@
         "SysEventService": {
             "path": "plugins/eventservice",
             "name": "sys_event_service"
+        },
+        "Faultlogger": {
+            "path": "plugins/faultlogger",
+            "name": "faultlogger"
         }
     },
     "rules": [
@@ -22,13 +26,17 @@
                     "SysEventSource": {
                         "loadtime": 0
                     },
+                    "Faultlogger": {
+                        "loadtime": 0
+                    },
                     "SysEventService": {
                         "loadtime": 0
                     }
                 },
                 "pipelines": {
                     "SysEventPipeline": [
-                        "SysEventService"
+                        "SysEventService",
+                        "Faultlogger"
                     ]
                 },
                 "pipelinegroups": {

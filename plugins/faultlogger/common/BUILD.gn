@@ -27,11 +27,12 @@ ohos_source_set("faultlogger_common") {
   deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
-    "appexecfwk:appexecfwk_base",
-    "appexecfwk:appexecfwk_core",
+    "aafwk_standard:want",
+    "appexecfwk_standard:appexecfwk_base",
+    "appexecfwk_standard:appexecfwk_core",
     "hilog_native:libhilog",
-    "intent:base",
-    "intent:intent",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr_L2:samgr_proxy",
   ]
 }

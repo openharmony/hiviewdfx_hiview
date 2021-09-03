@@ -19,16 +19,38 @@
 #include <vector>
 
 #include "bundle_info.h"
-#include "bundlemgr/bundle_manager.h"
+#include "bundle_mgr_interface.h"
+#include "if_system_ability_manager.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
 
 #include "constants.h"
 #include "faultlog_info.h"
 #include "string_util.h"
 #include "time_util.h"
+
+using namespace OHOS::AAFwk;
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int DEFAULT_BUFFER_SIZE = 64;
+
+sptr<AppExecFwk::IBundleMgr> GetBundleMgrProxy()
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        return nullptr;
+    }
+
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        return nullptr;
+    }
+
+    return iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+}
 } // namespace
 
 std::string GetFormatedTime(uint64_t time)
@@ -127,8 +149,10 @@ std::string RegulateModuleNameIfNeed(const std::string& name)
 std::vector<std::string> GetApplicationNamesById(int32_t uid)
 {
     std::vector<std::string> bundleNames;
-    AppExecFwk::BundleManager bundleManager;
-    bundleManager.GetBundlesForUid(uid, bundleNames);
+    sptr<AppExecFwk::IBundleMgr> mgr = GetBundleMgrProxy();
+    if (mgr != nullptr) {
+        mgr->GetBundlesForUid(uid, bundleNames);
+    }
     return bundleNames;
 }
 
@@ -144,9 +168,10 @@ std::string GetApplicationNameById(int32_t uid)
 
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
 {
-    AppExecFwk::BundleManager bundleManager;
+    sptr<AppExecFwk::IBundleMgr> mgr = GetBundleMgrProxy();
     AppExecFwk::BundleInfo info;
-    if (bundleManager.GetBundleInfo(bundleName, 0, info) != ERR_OK) {
+    if ((mgr != nullptr) &&
+        (mgr->GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info) != ERR_OK)) {
         return "";
     }
     return info.versionName;
@@ -156,7 +181,7 @@ bool IsOhosApplication(int32_t uid, const std::string& bundleName)
 {
     auto bundleNames = GetApplicationNamesById(uid);
     for (const auto& name : bundleNames) {
-        if (name.find(bundleName) != std::string::npos) {
+        if (bundleName.find(name) != std::string::npos) {
             return true;
         }
     }
