@@ -53,16 +53,19 @@ Note:If the text contains special characters, please escape them according to th
 -->
 <configuration>
     <oatconfig>
-	<filefilterlist>
-	    <filefilter name="defaultPolicyFilter" desc="Filters for compatibility, license header policies">
-		<filteritem type="filename" name="plugin_config*" desc="build and load config file, not support comments"/>
-		<filteritem type="filename" name="event_logger_config" desc="build and load config file, not support comments"/>
-		<filteritem type="filename" name="*.json" desc="build and load config file, not support comments"/>
-	    </filefilter>
-	    <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
-		<filteritem type="filename" name="plugin_config*" desc="build and load config file, not support comments"/>
-		<filteritem type="filename" name="event_logger_config" desc="build and load config file, not support comments"/>
-	    </filefilter>
-	</filefilterlist>
+        <filefilterlist>
+            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility, license header policies">
+                <filteritem type="filename" name="plugin_config*" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="event_logger_config" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="*.json" desc="build and load config file, not support comments"/>
+            </filefilter>
+                <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
+                <filteritem type="filename" name="plugin_config*" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="event_logger_config" desc="build and load config file, not support comments"/>
+            </filefilter>
+            <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
+                <filteritem type="filepath" name="figures/.*" desc="self developed pictures used in readme documents"/>
+            </filefilter>
+        </filefilterlist>
     </oatconfig>
 </configuration>
