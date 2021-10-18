@@ -48,7 +48,7 @@ ohos_source_set("hiview_service_impl") {
     "hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "samgr_L2:samgr_proxy",
+    "samgr_standard:samgr_proxy",
   ]
   part_name = "hiview_L2"
   subsystem_name = "hiviewdfx"
