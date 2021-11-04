@@ -438,7 +438,7 @@ void FeatureAnalysis::SetStackRegex(const std::string& key, const std::string& r
 
 void FeatureAnalysis::ExtraProcess()
 {
-    if (eventType_ == "Crash" && eventInfo_.find("END_STACK") != eventInfo_.end()) {
+    if (eventType_ == "JAVA_CRASH" && eventInfo_.find("END_STACK") != eventInfo_.end()) {
         string lastLine;
         GetCrashFaultLine(featureSet_.fullPath, lastLine);
         eventInfo_["END_STACK"] = lastLine + LogUtil::SPLIT_PATTERN + eventInfo_["END_STACK"];
@@ -474,32 +474,31 @@ void FeatureAnalysis::SegmentAnalysis(FeatureSet& featureSet,
     auto segAnalysis = SegmentAnalysisFactory::GetInstance().CreateParser(featureSet.segmentType);
     if (segAnalysis != nullptr) {
         auto startSeg = featureSet.startSegVec; // like: ["BasicParam.s_process", "main"]
-        if (UpdateStartSegment(paramSeekRecord, startSeg)) {
-            segAnalysis->SetSegStatusCfg(segStatusCfg);
-            if (segAnalysis->Analyze(featureSet.fullPath, paramSeekRecord, startSeg, featureSet.segStackVec)) {
-                std::map<std::string, std::string> segEventInfo;
-                segAnalysis->GetResult(segEventInfo);
-                for (const auto& seg : segEventInfo) {
-                    eventInfo_[seg.first] = seg.second;
-                }
+        UpdateStartSegment(paramSeekRecord, startSeg);
+        if (!startSeg.empty() && startSeg.front() == "system") {
+            startSeg[0] = "system_server";
+        }
+        segAnalysis->SetSegStatusCfg(segStatusCfg);
+        if (segAnalysis->Analyze(featureSet.fullPath, paramSeekRecord, startSeg, featureSet.segStackVec)) {
+            std::map<std::string, std::string> segEventInfo;
+            segAnalysis->GetResult(segEventInfo);
+            for (const auto& seg : segEventInfo) {
+                eventInfo_[seg.first] = seg.second;
             }
         }
     }
 }
 
-bool FeatureAnalysis::UpdateStartSegment(const vector<pair<string, LineFeature>>& rec,
+void FeatureAnalysis::UpdateStartSegment(const vector<pair<string, LineFeature>>& rec,
     vector<string>& startSeg) const
 {
-    bool hasStartSeg = false;
     for (auto&& name : startSeg) {
         auto isEqual = [&](const pair<string, LineFeature> &p) {return p.first == name;};
         auto iter = find_if(begin(rec), end(rec), isEqual);
         if (iter != end(rec)) {
             name = iter->second.value;  // replace with the actual feature value
-            hasStartSeg = true;
         }
     }
-    return hasStartSeg;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

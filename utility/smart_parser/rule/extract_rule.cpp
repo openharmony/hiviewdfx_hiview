@@ -66,6 +66,10 @@ void ExtractRule::ParseSegStatusCfg(const Json::Value& json)
 
     Json::Value arrayObj = json[L1_SEG_STATUS];
     int arrayObjSize = static_cast<int>(arrayObj.size());
+    if (arrayObjSize > JSON_ARRAY_THRESHOLD) {
+        arrayObjSize = JSON_ARRAY_THRESHOLD;
+        HIVIEW_LOGI("json array has been resized to threshold value.");
+    }
     for (int i = 0; i < arrayObjSize; i++) {
         string name = arrayObj[i]["namespace"].asString();
         vector<string> cfg;
@@ -121,7 +125,8 @@ vector<string> ExtractRule::GetFeatureId()
 
 bool ExtractRule::IsMatchId(const string& eventType, const string& featureId) const
 {
-    if (StringUtil::GetMidSubstr(featureId, "_", "_") == eventType) {
+    string firstMatch = StringUtil::GetRightSubstr(featureId, "_");
+    if (StringUtil::GetRleftSubstr(firstMatch, "_") == eventType) {
         return true;
     }
     return false;
@@ -134,8 +139,12 @@ std::vector<std::string> ExtractRule::GetJsonArray(const Json::Value& json, cons
         return {};
     }
 
-    std::vector<std::string> result;
     int jsonSize = static_cast<int>(json[param].size());
+    if (jsonSize > JSON_ARRAY_THRESHOLD) {
+        jsonSize = JSON_ARRAY_THRESHOLD;
+        HIVIEW_LOGI("json array has been resized to threshold value.");
+    }
+    std::vector<std::string> result;
     for (int i = 0; i < jsonSize; i++) {
         result.push_back(json[param][i].asString());
     }
@@ -161,7 +170,7 @@ bool ExtractRule::IsMatchPath(const string& sourceFile, const string& name, cons
 
     if (pattern.empty()) {
         desPath = name;
-        return (LogUtil::GetFileFd(desPath) >= 0);
+        return LogUtil::FileExist(desPath);
     }
 
     std::vector<std::string> parts;
@@ -176,7 +185,7 @@ bool ExtractRule::IsMatchPath(const string& sourceFile, const string& name, cons
         }
     }
     desPath = out.substr(0, out.size() - 1);
-    return (LogUtil::GetFileFd(desPath) >= 0);
+    return LogUtil::FileExist(desPath);
 }
 
 vector<string> ExtractRule::SplitFeatureId(const Json::Value& object) const
@@ -207,6 +216,10 @@ void ExtractRule::ParseRule(const Json::Value& object, list<FeatureRule>& featur
 void ExtractRule::ParseRuleParam(const Json::Value& object, list<FeatureRule>& features, const string& type) const
 {
     int objectSize = static_cast<int>(object.size());
+    if (objectSize > JSON_ARRAY_THRESHOLD) {
+        objectSize = JSON_ARRAY_THRESHOLD;
+        HIVIEW_LOGI("json array has been resized to threshold value.");
+    }
     for (int i = 0; i < objectSize; i++) {
         FeatureRule command{};
         command.cmdType = type;

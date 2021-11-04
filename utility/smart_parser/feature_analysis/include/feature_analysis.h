@@ -55,7 +55,7 @@ public:
     std::vector<std::pair<std::string, LineFeature>> GetParamSeekRecord() {return paramSeekRecord_;};
 
 private:
-    bool UpdateStartSegment(const std::vector<std::pair<std::string, LineFeature>>& rec,
+    void UpdateStartSegment(const std::vector<std::pair<std::string, LineFeature>>& rec,
         std::vector<std::string>& startSeg) const;
     void Extract();
     void ExtraProcess();
