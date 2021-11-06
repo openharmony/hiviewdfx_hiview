@@ -58,9 +58,7 @@ ohos_source_set("sysevent_source") {
   if (use_musl) {
     include_dirs = [ "//base/startup/init_lite/interfaces/innerkits/include" ]
 
-    deps += [
-      "//base/startup/init_lite/interfaces/innerkits/socket:libsocket_shared",
-    ]
+    deps += [ "//base/startup/init_lite/interfaces/innerkits/socket:libsocket" ]
   }
 
   if (build_public_version) {
