@@ -18,8 +18,6 @@
 
 #if defined(__OHOS_STANDARD_SYSTEM__)
 #include "hiview_service_ability.h"
-#elif defined(__OHOS_LARGE_SYSTEM__)
-#include "hiview_service_aosp.h"
 #endif
 
 #include "hiview_service.h"
@@ -36,8 +34,6 @@ void HiviewServiceAdapter::StartService(HiviewService *service) const
     HIVIEW_LOGD("start service.");
 #if defined(__OHOS_STANDARD_SYSTEM__)
     HiviewServiceAbility::StartService(service);
-#elif defined(__OHOS_LARGE_SYSTEM__)
-    aosp::HiviewServiceAosp::StartService(service);
 #endif
 }
 }  // namespace HiviewDFX

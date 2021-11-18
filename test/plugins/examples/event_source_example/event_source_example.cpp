@@ -34,16 +34,16 @@ void EventSourceExample::OnLoad()
     printf("EventSourceExample::OnLoad.\n");
     SetName("EventSourceExample");
 
-    std::string folderPath = "/data/log/dropbox";
+    std::string folderPath = "/data/test/dropbox";
 
     int isCreate = ::mkdir(folderPath.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRWXG | S_IRWXO);
     if (!isCreate) {
         printf("create path:%s \n", folderPath.c_str());
     }
 
-    CreateWatchFile("/data/log/dropbox/aaa");
-    CreateWatchFile("/data/log/dropbox/bbb");
-    CreateWatchFile("/data/log/dropbox/ccc");
+    CreateWatchFile("/data/test/dropbox/aaa");
+    CreateWatchFile("/data/test/dropbox/bbb");
+    CreateWatchFile("/data/test/dropbox/ccc");
 }
 
 void EventSourceExample::CreateWatchFile(const std::string& path)
@@ -158,11 +158,11 @@ void EventSourceExample::CreateAndPublishEvent(const std::string &file)
 
     // add special information
     event->messageType_ = Event::MessageType::FAULT_EVENT;
-    if (file == "/data/log/dropbox/aaa") {
+    if (file == "/data/test/dropbox/aaa") {
         event->eventId_ = PIPELINE_EVENT_ID_AAA;
-    } else if (file == "/data/log/dropbox/bbb") {
+    } else if (file == "/data/test/dropbox/bbb") {
         event->eventId_ = PIPELINE_EVENT_ID_BBB;
-    } else if (file == "/data/log/dropbox/ccc")  {
+    } else if (file == "/data/test/dropbox/ccc")  {
         event->eventId_ = PIPELINE_EVENT_ID_CCC;
         event->SetValue("Pipeline", "Repack");
     } else {
