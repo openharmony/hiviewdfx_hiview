@@ -18,7 +18,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-
+#include <cinttypes>
 #include <gtest/gtest.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
@@ -62,7 +62,7 @@ void EventLoopTest::TearDown()
 
 bool RealEventHandler::OnEvent(std::shared_ptr<Event>& event)
 {
-    printf("OnEvent id:%d sender:%s pid:%d time:%ld. index:%d\n", event->eventId_, event->sender_.c_str(),
+    printf("OnEvent id:%d sender:%s pid:%d time:%" PRId64 ". index:%d\n", event->eventId_, event->sender_.c_str(),
            gettid(), time(nullptr), event->what_);
     lastProcessId_ = event->eventId_;
     if ((event->what_ % 10) == 0) { // 10 : add delay in processing some event
@@ -76,7 +76,7 @@ bool RealEventHandler::OnEvent(std::shared_ptr<Event>& event)
 
 void RealEventHandler::DoTask()
 {
-    printf("RealEventHandler::DoTask pid:%d time:%ld.\n", gettid(), time(nullptr));
+    printf("RealEventHandler::DoTask pid:%d time:%" PRId64 ".\n", gettid(), time(nullptr));
     processedEventCount_++;
 }
 
