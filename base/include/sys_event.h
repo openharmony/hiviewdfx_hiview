@@ -106,8 +106,6 @@ public:
     {
         if constexpr(is_one_of<T, char, signed char, unsigned char>::value) {
             return static_cast<short>(item);
-        } else if constexpr(is_one_of<T, char *, char const *, std::string>::value) {
-            return std::quoted(EscapeStringValue(item));
         } else {
             return std::forward<T>(item);
         }
@@ -116,13 +114,23 @@ public:
     template<typename K, typename V>
     SysEventCreator& SetKeyValue(K&& key, V&& value)
     {
-        jsonStr_ << GetItem(std::forward<K>(key)) << ":";
+        jsonStr_ << std::quoted(GetItem(std::forward<K>(key))) << ":";
         if constexpr(is_type_value_base_v<V>) {
-            jsonStr_ << GetItem(std::forward<V>(value)) << ",";
+            if constexpr(is_one_of<V, char *, char const *, std::string>::value) {
+                jsonStr_ << std::quoted(EscapeStringValue(GetItem(std::forward<V>(value)))) << ",";
+            } else {
+                jsonStr_ << GetItem(std::forward<V>(value)) << ",";
+            }
         } else if constexpr(is_type_value_vector_v<V>) {
             jsonStr_ << "[";
-            for (const auto &it : value) {
-                jsonStr_ << GetItem(it) << ",";
+            if constexpr(is_one_of<typename std::decay_t<V>::value_type, char *, char const *, std::string>::value) {
+                for (const auto &it : value) {
+                        jsonStr_ << std::quoted(EscapeStringValue(GetItem(it))) << ",";
+                    }
+            } else {
+                for (const auto &it : value) {
+                    jsonStr_ << GetItem(it) << ",";
+                }
             }
             if (!value.empty()) {
                 jsonStr_.seekp(-1, std::ios_base::end);
