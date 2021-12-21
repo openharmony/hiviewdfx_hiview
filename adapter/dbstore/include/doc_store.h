@@ -15,6 +15,7 @@
 
 #ifndef HIVIEW_ADAPTER_DBSTORE_INCLUDE_DOC_STORE_H
 #define HIVIEW_ADAPTER_DBSTORE_INCLUDE_DOC_STORE_H
+
 #include <functional>
 #include <memory>
 #include <vector>

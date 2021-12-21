@@ -25,20 +25,14 @@
 
 #include <securec.h>
 
-#ifdef USE_MUSL
 extern "C" {
 #include "init_socket.h"
 }
-#endif
 
 #include "logger.h"
 #include "socket_util.h"
 
-#ifdef USE_MUSL
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
-#else
-#define SOCKET_FILE_DIR "/dev/socket/hisysevent"
-#endif
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -93,12 +87,8 @@ void EventServer::InitSocket(int &socketId)
 
 void EventServer::Start()
 {
-    HIVIEW_LOGE("start event server");
-#ifdef USE_MUSL
+    HIVIEW_LOGD("start event server");
     socketId_ = GetControlSocket("hisysevent");
-#else
-    socketId_ = SocketUtil::GetHiviewExistingSocketServer("hisysevent", SOCK_DGRAM);
-#endif
     if (socketId_ < 0) {
         HIVIEW_LOGI("create hisysevent socket");
         InitSocket(socketId_);

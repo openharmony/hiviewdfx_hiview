@@ -13,11 +13,8 @@
 import("//base/hiviewdfx/hiview/build/hiview_var.gni")
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
-if (is_standard_system) {
-  module_output_path = "hiview_L2/hiview_L2/eventlogger"
-} else {
-  module_output_path = "hiview/hiview/eventlogger"
-}
+
+module_output_path = "hiview/hiview/eventlogger"
 
 config("unittest_config") {
   include_dirs = [

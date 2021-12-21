@@ -12,12 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "sys_event_service.h"
 
 #include <cstdio>
 #include <memory>
 
 #include "event.h"
+#include "hiview_global.h"
 #include "logger.h"
 #include "plugin_factory.h"
 #include "sys_event.h"
@@ -28,7 +30,7 @@ namespace OHOS {
 namespace HiviewDFX {
 REGISTER(SysEventService);
 DEFINE_LOG_TAG("HiView-SysEventService");
-SysEventService::SysEventService()
+SysEventService::SysEventService() : hasLoaded_(false)
 {
     sysEventDbMgr_ = std::make_unique<SysEventDbMgr>();
     sysEventStat_ = std::make_unique<SysEventStat>();
@@ -38,9 +40,18 @@ SysEventService::~SysEventService() {}
 
 void SysEventService::OnLoad()
 {
-    HIVIEW_LOGI("sys event service load");
-    SysEventServiceAdapter::StartService(this);
+    auto notifyFunc = [&] (std::shared_ptr<Event> event) -> void {
+        SysEventService& servicePlugin = *this;
+        servicePlugin.SendEvent(event);
+    };
+    SysEventServiceAdapter::StartService(this, notifyFunc);
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
+    hasLoaded_ = true;
+}
+
+void SysEventService::SendEvent(std::shared_ptr<Event>& event)
+{
+    GetHiviewContext()->PostUnorderedEvent(shared_from_this(), event);
 }
 
 void SysEventService::OnUnload()
@@ -68,12 +79,15 @@ std::shared_ptr<SysEvent> SysEventService::Convert2SysEvent(std::shared_ptr<Even
 
 bool SysEventService::OnEvent(std::shared_ptr<Event>& event)
 {
+    if (!hasLoaded_) {
+        HIVIEW_LOGE("SysEventService not ready");
+        return false;
+    }
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent == nullptr) {
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
-
     sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
     SysEventServiceAdapter::OnSysEvent(sysEvent);
     sysEventDbMgr_->SaveToStore(sysEvent);

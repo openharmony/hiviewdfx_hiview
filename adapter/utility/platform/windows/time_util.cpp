@@ -14,10 +14,12 @@
  */
 
 #include "time_util.h"
+
 #include <chrono>
 #include <iomanip>
 #include <sstream>
 #include <thread>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace TimeUtil {
@@ -74,6 +76,20 @@ std::string GetTimeZone()
 {
     std::string timeZone = "";
     return timeZone;
+}
+
+int64_t Get0ClockStampMs()
+{
+    time_t now = std::time(nullptr);
+    int64_t zero = now;
+    struct tm *l = std::localtime(&now);
+    if (l != nullptr) {
+        l->tm_hour = 0;
+        l->tm_min = 0;
+        l->tm_sec = 0;
+        zero = std::mktime(l) * SEC_TO_MILLISEC;  // time is 00:00:00
+    }
+    return zero;
 }
 } // namespace TimeUtil
 } // namespace HiviewDFX

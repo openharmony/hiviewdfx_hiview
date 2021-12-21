@@ -12,17 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_DOC_DB_H
 #define HIVIEW_DOC_DB_H
+
 #include <string>
+
 #include "ejdb2.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class DocDB {
 public:
     DocDB(): db_(0) {};
     ~DocDB() {};
-    int OpenDB(std::string dbFile, iwkv_openflags flag);
+    int OpenDB(const std::string &dbFile, iwkv_openflags flag);
+    int OnlineBackupDB(const std::string &bakFile);
     int CloseDB();
 private:
     friend class DocStore;

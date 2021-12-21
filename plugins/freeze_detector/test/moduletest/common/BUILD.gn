@@ -34,14 +34,12 @@ ohos_moduletest("FreezeDetectorPluginModuleTest") {
   ]
 
   deps = [
-    "$closed_source_base/raw_event:raw_event_base",
     "$closed_source_base/system:hiview_oal_system",
     "$closed_source_utility:hiview_json_utility",
     "$hiview_adapter/sql:hiview_sqlhelper",
     "$hiview_base:hiviewbase",
     "$hiview_base:hiviewbase",
     "$hiview_base_root/plugins/engine/engine_event_dispatcher:engine_event_dispatcher",
-    "$hiview_base_root/plugins/engine/raw_event_db:raw_event_db",
     "$hiview_base_root/plugins/eventlogger:event_logger",
     "$hiview_base_root/plugins/reliability/common/common_utils:hiview_reliability_common_utils",
     "$hiview_root/plugin_management:hiview_plugin_management",

@@ -225,8 +225,8 @@ int CreateFile(const std::string &path, mode_t mode)
 
 int CopyFile(const std::string &src, const std::string &des)
 {
-    std::ifstream fin(src);
-    std::ofstream fout(des);
+    std::ifstream fin(src, ios::binary);
+    std::ofstream fout(des, ios::binary);
     if (!fin.is_open()) {
         return -1;
     }
@@ -301,6 +301,14 @@ bool IsLegalPath(const std::string& path)
         return false;
     }
     return true;
+}
+
+bool RenameFile(const std::string& src, const std::string& dest)
+{
+    if (std::rename(src.c_str(), dest.c_str()) == 0) {
+        return true;
+    }
+    return false;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX

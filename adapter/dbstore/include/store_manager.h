@@ -15,6 +15,7 @@
 
 #ifndef HIVIEW_ADAPTER_DBSTORE_INCLUDE_SOTRE_MANAGER_H
 #define HIVIEW_ADAPTER_DBSTORE_INCLUDE_SOTRE_MANAGER_H
+
 #include <map>
 #include <memory>
 #include <mutex>
@@ -45,10 +46,13 @@ public:
 
     DOCSTORE_API std::shared_ptr<DocStore> GetDocStore(const Option& option);
 
+    DOCSTORE_API int OnlineBackupDocStore(const Option& option, const std::string &bakFile);
+
     DOCSTORE_API int CloseDocStore(const Option& option);
 
     DOCSTORE_API int DeleteDocStore(const Option& option);
 private:
+    int InnerCloseDocStore(const Option& option);
     std::mutex mutex_;
     std::map<std::string, std::shared_ptr<DocStore>> stores_;
 }; // StoreManager

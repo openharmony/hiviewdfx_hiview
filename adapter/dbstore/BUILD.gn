@@ -30,6 +30,7 @@ ohos_source_set("db_store_source") {
     "data_query.cpp",
     "doc_db.cpp",
     "doc_store.cpp",
+    "doc_util.cpp",
     "store_manager.cpp",
   ]
 

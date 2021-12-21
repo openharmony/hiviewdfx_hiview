@@ -33,9 +33,9 @@ HWTEST_F(PluginFactoryTest, PluginFactoryRegisterTest001, TestSize.Level3)
      * @tc.steps: step1. create PluginExample by plugin factory
      */
     printf("PluginFactoryTest.\n");
-    auto plugin = PluginFactory::GetPlugin("PluginExample");
+    auto plugin = PluginFactory::GetGlobalPluginInfo("PluginExample");
     ASSERT_NE(plugin.get(), nullptr);
-    auto examplePlugin = std::static_pointer_cast<PluginExample>(plugin);
+    auto examplePlugin = std::static_pointer_cast<PluginExample>(plugin->getPluginObject());
     ASSERT_EQ(examplePlugin->isConstructed_, true);
 }
 
@@ -51,11 +51,12 @@ HWTEST_F(PluginFactoryTest, PluginFactoryRegisterTest002, TestSize.Level3)
      * @tc.steps: step1. create PluginExample by plugin factory
      */
     printf("PluginFactoryTest.\n");
-    auto plugin = PluginFactory::GetPlugin("PluginExample2");
+    auto plugin = PluginFactory::GetGlobalPluginInfo("PluginExample2");
     ASSERT_EQ(plugin, nullptr);
-    PluginFactory::RegisterPlugin("PluginExample2", CreatePluginExampleInstance);
-    plugin = PluginFactory::GetPlugin("PluginExample2");
+    PluginFactory::RegisterPlugin("PluginExample2",
+        std::make_shared<PluginRegistInfo>(RegisterPluginExample2::GetObject, false, false));
+    plugin = PluginFactory::GetGlobalPluginInfo("PluginExample2");
     ASSERT_NE(plugin, nullptr);
-    auto examplePlugin = std::static_pointer_cast<PluginExample>(plugin);
+    auto examplePlugin = std::static_pointer_cast<PluginExample>(plugin->getPluginObject());
     ASSERT_EQ(examplePlugin->isConstructed_, true);
 }

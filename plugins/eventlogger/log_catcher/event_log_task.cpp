@@ -33,7 +33,7 @@ namespace {
 const std::string SYSTEM_STACK[] = {
     "system_server",
     "surfaceflinger",
-    "fondation",
+    "foundation",
 };
 }
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-EventLogTask");
@@ -188,7 +188,8 @@ bool EventLogTask::AppStackCapture(const std::string &cmd)
 {
     if (cmd == "s") {
         auto capture = std::make_shared<OpenStacktraceCatcher>();
-        int pid = event_->GetPid();
+        int pid = event_->GetEventIntValue("PID");
+        pid = pid ? pid : event_->GetPid();
         capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
         tasks_.push_back(capture);
         return true;
@@ -233,8 +234,9 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
         return false;
     }
 
-    int pid = event_->GetPid();
     int layer = 0;
+    int pid = event_->GetEventIntValue("PID");
+    pid = pid ? pid : event_->GetPid();
     StringUtil::StrToInt(cmdList.back(), layer);
     HIVIEW_LOGI("pid:%{public}d, value:%{public}d ", pid, layer);
 
@@ -250,7 +252,8 @@ bool EventLogTask::CpuUtilizationCapture(const std::string &cmd)
 {
     if (cmd == "c") {
         auto capture = std::make_shared<CpuUtilizationCatcher>();
-        int pid = event_->GetPid();
+        int pid = event_->GetEventIntValue("PID");
+        pid = pid ? pid : event_->GetPid();
         capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
         tasks_.push_back(capture);
         return true;
@@ -262,7 +265,8 @@ bool EventLogTask::MemoryUsageCapture(const std::string &cmd)
 {
     if (cmd == "m") {
         auto capture = std::make_shared<MemoryUsageCatcher>();
-        int pid = event_->GetPid();
+        int pid = event_->GetEventIntValue("PID");
+        pid = pid ? pid : event_->GetPid();
         capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
         tasks_.push_back(capture);
         return true;

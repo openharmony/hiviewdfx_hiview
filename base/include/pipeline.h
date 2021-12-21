@@ -132,7 +132,8 @@ public:
     {
         return processors_;
     };
-
+    void AppendProcessor(std::weak_ptr<Plugin> plugin);
+    void RemoveProcessor(std::weak_ptr<Plugin> plugin);
 private:
     std::string name_;
     std::list<std::weak_ptr<Plugin>> processors_;

@@ -55,10 +55,12 @@ HWTEST_F(PluginPlatformTest, PluginPlatformInit001, TestSize.Level3)
     char* argv[argc] = {arg0, arg1};
     platform.ProcessArgsRequest(argc, argv);
 
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
+    listener->SetName("testListener");
+    listener->SetHiviewContext(&platform);
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901004006));
     platform.RegisterUnorderedEventListener(listener);
     sleep(1);
@@ -115,11 +117,13 @@ HWTEST_F(PluginPlatformTest, PluginPlatformRepackPipelienEventTest001, TestSize.
      */
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
 
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
+    listener->SetName("testListener");
+    listener->SetHiviewContext(&platform);
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
     platform.RegisterUnorderedEventListener(listener);
     sleep(1);
@@ -151,10 +155,12 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
      */
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
+    listener->SetName("testListener");
+    listener->SetHiviewContext(&platform);
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
     platform.RegisterUnorderedEventListener(listener);
 
@@ -164,7 +170,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
     auto size = pluginList.size();
     ASSERT_EQ(size, 6ul);
 
-    // the example4 plugin will be unload after receiving the ccc message
+    // the example4 plugin will be unloaded after receiving the ccc message
     std::ofstream fileC("/data/test/dropbox/ccc");
     fileC << "create ccc event" << std::endl;
     fileC.close();
@@ -194,8 +200,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginPendLoadTest001, TestSize.Level
      */
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    platform.SetPluginConfigName("plugin_config_incomplete");
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config1")) {
         printf("Fail to init environment. \n");
     }
 
@@ -230,17 +235,18 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginSyncEventCallTest001, TestSize.
      */
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
+    listener->SetName("testListener");
+    listener->SetHiviewContext(&platform);
     std::set<EventListener::EventIdRange> set;
     set.emplace(EventListener::EventIdRange(901000000));
     set.emplace(EventListener::EventIdRange(901000001));
     set.emplace(EventListener::EventIdRange(901000002));
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, set);
     platform.RegisterUnorderedEventListener(listener);
-    platform.RegisterOrderedEventListener(listener);
     sleep(1);
     ASSERT_EQ(true, platform.IsReady());
     auto& pluginList = platform.GetPluginMap();
@@ -267,7 +273,6 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginSyncEventCallTest001, TestSize.
     platform.PostAsyncEventToTarget(plugin, "EventProcessorExample4", event);
     sleep(1);
     ASSERT_EQ(listener->unorderEventCount_, 2ul);
-    ASSERT_EQ(listener->orderEventCount_, 2ul);
 
     auto pipeEvent = std::make_shared<PipelineEvent>("test", nullptr);
     PipelineEvent::FillPipelineInfo(plugin, "NormalPipeline", pipeEvent, true);
@@ -310,7 +315,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformDynamicPluginUnloadTest001, TestSize.
      */
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
 

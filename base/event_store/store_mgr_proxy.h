@@ -12,13 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_BASE_EVENT_STORE_STORE_MGR_PROXY_H
 #define HIVIEW_BASE_EVENT_STORE_STORE_MGR_PROXY_H
+
 #include <memory>
 #include <string>
 
 #include "singleton.h"
 #include "store_manager.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class StoreMgrProxy : public OHOS::DelayedRefSingleton<StoreMgrProxy> {
@@ -27,8 +30,9 @@ public:
     ~StoreMgrProxy() {}
 
     std::shared_ptr<DocStore> GetDocStore(const std::string& db);
-    void CloseDocStore(const std::string& db);
-
+    int BackupDocStore(const std::string& db, const std::string &backupFile);
+    int CloseDocStore(const std::string& db);
+    int DeleteDocStore(const std::string& db);
 private:
     StoreManager storeManager_;
 }; // StoreInsManager

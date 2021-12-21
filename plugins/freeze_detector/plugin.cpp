@@ -15,7 +15,7 @@
 
 #include "plugin.h"
 
-#include "freeze_detector_utils.h"
+#include "logger.h"
 #include "plugin_factory.h"
 #include "resolver.h"
 #include "string_util.h"
@@ -25,7 +25,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(FreezeDetectorPlugin);
-DEFINE_RELIABILITY_LOG_TAG("FreezeDetector");
+DEFINE_LOG_TAG("FreezeDetector");
 
 std::string FreezeDetectorPlugin::GetListenerName()
 {
@@ -43,7 +43,6 @@ void FreezeDetectorPlugin::OnLoad()
     SetName(FREEZE_DETECTOR_PLUGIN_NAME);
     SetVersion(FREEZE_DETECTOR_PLUGIN_VERSION);
 
-    flag = false;
     threadLoop_ = GetWorkLoop();
     if (threadLoop_ == nullptr) {
         HIVIEW_LOGW("thread loop is null.");
@@ -52,7 +51,6 @@ void FreezeDetectorPlugin::OnLoad()
     threadLoop_->StartLoop();
 
     AddFreezeListener();
-    AddMaintenanceListener();
 }
 
 void FreezeDetectorPlugin::OnUnload()
@@ -71,22 +69,7 @@ void FreezeDetectorPlugin::AddFreezeListener()
     }
 }
 
-void FreezeDetectorPlugin::AddMaintenanceListener()
-{
-    AddListenerInfo(Event::MessageType::PLUGIN_MAINTENANCE, EventListener::EventIdRange(Event::EventId::PLUGIN_LOADED));
-
-    auto context = GetHiviewContext();
-    if (context != nullptr) {
-        context->RegisterUnorderedEventListener(std::static_pointer_cast<FreezeDetectorPlugin>(shared_from_this()));
-    }
-}
-
 bool FreezeDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
-{
-    return false;
-}
-
-bool FreezeDetectorPlugin::OnOrderedEvent(Event& msg)
 {
     return false;
 }
@@ -94,12 +77,6 @@ bool FreezeDetectorPlugin::OnOrderedEvent(Event& msg)
 bool FreezeDetectorPlugin::CanProcessEvent(std::shared_ptr<Event> event)
 {
     return false;
-}
-
-bool FreezeDetectorPlugin::CanProcessRebootEvent(const Event &event)
-{
-    return (event.messageType_ == Event::MessageType::PLUGIN_MAINTENANCE) &&
-        (event.eventId_ == Event::EventId::PLUGIN_LOADED);
 }
 
 std::string FreezeDetectorPlugin::RemoveRedundantNewline(const std::string& content)
@@ -120,12 +97,21 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
     SysEvent& sysEvent = static_cast<SysEvent&>(eventRef);
 
     long seq = sysEvent.GetSeq();
-    long pid = sysEvent.GetPid();
     long tid = sysEvent.GetTid();
-    long uid = sysEvent.GetUid();
+    long pid = sysEvent.GetEventIntValue(EVENT_PID);
+    pid = pid ? pid : sysEvent.GetPid();
+    long uid = sysEvent.GetEventIntValue(EVENT_UID);
+    uid = uid ? uid : sysEvent.GetUid();
     std::string packageName = sysEvent.GetEventValue(EVENT_PACKAGE_NAME);
     std::string processName = sysEvent.GetEventValue(EVENT_PROCESS_NAME);
     std::string msg = RemoveRedundantNewline(sysEvent.GetEventValue(EVENT_MSG));
+    std::string info = sysEvent.GetEventValue(EventStore::EventCol::INFO);
+    std::regex reg("logPath:([^,]+)");
+    std::smatch result;
+    std::string logPath = "";
+    if (std::regex_search(info, result, reg)) {
+        logPath = result[1].str();
+    }
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitSeq(seq)
         .InitDomain(event.domain_)
@@ -137,11 +123,12 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
         .InitPackageName(packageName)
         .InitProcessName(processName)
         .InitMsg(msg)
+        .InitLogPath(logPath)
         .Build();
     HIVIEW_LOGI("watchpoint domain=%{public}s, stringid=%{public}s, pid=%{public}ld, uid=%{public}ld, "
-        "seq=%{public}ld, packageName=%{public}s, processName=%{public}s, msg=%{public}s.",
+        "seq=%{public}ld, packageName=%{public}s, processName=%{public}s, msg=%{public}s logPath=%{public}s.",
         event.domain_.c_str(), event.eventName_.c_str(), pid, uid,
-        seq, packageName.c_str(), processName.c_str(), msg.c_str());
+        seq, packageName.c_str(), processName.c_str(), msg.c_str(), logPath.c_str());
 
     return watchPoint;
 }
@@ -150,13 +137,6 @@ void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
 {
     HIVIEW_LOGD("received event id=%{public}u, domain=%{public}s, stringid=%{public}s, extraInfo=%{public}s.",
         event.eventId_, event.domain_.c_str(), event.eventName_.c_str(), event.jsonExtraInfo_.c_str());
-
-    if (CanProcessRebootEvent(event)) {
-        // dispatcher context, send task to our thread
-        auto task = std::bind(&FreezeDetectorPlugin::ProcessRebootEvent, this);
-        threadLoop_->AddEvent(nullptr, nullptr, task);
-        return;
-    }
 
     if (Vendor::GetInstance().IsFreezeEvent(event.domain_, event.eventName_) == false) {
         HIVIEW_LOGE("not freeze event.");
@@ -169,45 +149,8 @@ void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
     threadLoop_->AddEvent(nullptr, nullptr, task);
 }
 
-void FreezeDetectorPlugin::ProcessRebootEvent()
-{
-    flag = true;
-    if (Vendor::GetInstance().GetInitFlag() == false) {
-        HIVIEW_LOGE("vendor is not inited. skip reboot event");
-        return;
-    }
-
-    auto event = FreezeResolver::GetInstance().ProcessHardwareEvent();
-    if (event != nullptr) {
-        PipelineEvent::FillPipelineInfo(shared_from_this(), SYSEVENT_PIPELINE, event, false); //sysevent pipeline
-        event->OnContinue();
-    }
-
-    event = FreezeResolver::GetInstance().ProcessLongPressEvent();
-    if (event != nullptr) {
-        PipelineEvent::FillPipelineInfo(shared_from_this(), SYSEVENT_PIPELINE, event, false); //sysevent pipeline
-        event->OnContinue();
-        //GetHiviewContext()->PostAsyncEventToTarget(shared_from_this(), "EventLogger", event);
-    }
-
-    if (FreezeResolver::GetInstance().ResolveLongPressEvent() == true ||
-        Vendor::GetInstance().IsBetaVersion() == false) {
-        return;
-    }
-
-    event = FreezeResolver::GetInstance().ProcessSystemEvent();
-    if (event != nullptr) {
-        PublishPipelineEvent(std::dynamic_pointer_cast<PipelineEvent>(event));
-    }
-}
-
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)
 {
-    if (flag == false || Vendor::GetInstance().GetInitFlag() == false) {
-        HIVIEW_LOGE("vendor is not inited. skip event");
-        return;
-    }
-
     auto event = FreezeResolver::GetInstance().ProcessEvent(watchPoint);
     if (event != nullptr) {
         PublishPipelineEvent(std::dynamic_pointer_cast<PipelineEvent>(event));

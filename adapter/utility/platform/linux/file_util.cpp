@@ -108,6 +108,14 @@ bool SaveStringToFd(int fd, const std::string& content)
 
     return true;
 }
+
+bool RenameFile(const std::string& src, const std::string& dest)
+{
+    if (std::rename(src.c_str(), dest.c_str()) == 0) {
+        return true;
+    }
+    return false;
+}
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -25,6 +25,7 @@
 #include "event_source.h"
 #include "pipeline.h"
 #include "plugin.h"
+#include "plugin_bundle.h"
 #include "plugin_config.h"
 #include "plugin_extra_info.h"
 
@@ -35,19 +36,18 @@ class HiviewPlatform : public HiviewContext, public Singleton<HiviewPlatform> {
 public:
     HiviewPlatform();
     ~HiviewPlatform();
-    bool InitEnvironment(const std::string& defaultDir = "", const std::string& cloudUpdateDir = "",
-                         const std::string& workDir = "", const std::string& persistDir = "");
+    bool InitEnvironment(const std::string& platformConfigDir = "");
     void ProcessArgsRequest(int argc, char* argv[]);
     void StartLoop();
+    void SetMaxProxyIdleTime(time_t idleTime);
+    void SetCheckProxyIdlePeriod(time_t period);
 
-    void PostOrderedEvent(std::shared_ptr<Plugin> plugin, std::shared_ptr<Event> event) override;
     void PostUnorderedEvent(std::shared_ptr<Plugin> plugin, std::shared_ptr<Event> event) override;
-    void RegisterOrderedEventListener(std::weak_ptr<EventListener> listener) override;
-    void RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener) override;
+    void RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener) override;
     bool PostSyncEventToTarget(std::shared_ptr<Plugin> caller, const std::string& calleeName,
-                               std::shared_ptr<Event> event) override;
+        std::shared_ptr<Event> event) override;
     void PostAsyncEventToTarget(std::shared_ptr<Plugin> caller, const std::string& calleeName,
-                                std::shared_ptr<Event> event) override;
+        std::shared_ptr<Event> event) override;
     void RequestUnloadPlugin(std::shared_ptr<Plugin> caller) override;
     std::list<std::weak_ptr<Plugin>> GetPipelineSequenceByName(const std::string& name) override;
     std::shared_ptr<EventLoop> GetSharedWorkLoop() override;
@@ -59,13 +59,20 @@ public:
         std::list<std::string> &deviceIdList) override;
     int32_t PostEventToRemote(std::shared_ptr<Plugin> caller, const std::string& deviceId,
         const std::string& targetPlugin, std::shared_ptr<Event> event) override;
+    bool IsReady() override;
+    void AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, const std::string& pipelineName) override;
+    void RequestLoadBundle(const std::string& bundleName __UNUSED) override;
+    std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy) override;
+    std::shared_ptr<Plugin> GetPluginByName(const std::string& name) override;
+    void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin, const std::set<std::string>& eventNames,
+        const std::set<EventListener::EventIdRange>& listenerInfo) override;
+    std::vector<std::weak_ptr<Plugin>> GetListenerInfo(uint32_t type,
+        const std::string& eventNames, uint32_t eventId) override;
+    bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+        std::set<EventListener::EventIdRange> &listenerInfo) override;
+    bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+        std::set<std::string> &eventNames) override;
 
-    bool IsReady() override
-    {
-        return isReady_;
-    }
-
-    std::shared_ptr<Plugin> GetPluginByName(const std::string& name);
     const std::map<std::string, std::shared_ptr<Plugin>>& GetPluginMap()
     {
         return pluginMap_;
@@ -81,19 +88,25 @@ public:
         return privateWorkLoopMap_;
     }
 
-    void SetPluginConfigName(const std::string& configName)
+    const std::map<std::string, PluginBundle>& GetPluginBundleInfoMap()
     {
-        defaultConfigName_ = configName;
+        return pluginBundleInfos_;
     }
 
 private:
+    struct ListenerInfo {
+        std::weak_ptr<Plugin> listener;
+        std::map<uint32_t, std::set<EventListener::EventIdRange>> idListenerInfo;
+        std::map<uint32_t, std::set<std::string>> strListenerInfo;
+    };
+
     void StartPlatformDispatchQueue();
     void CreatePlugin(const PluginConfig::PluginInfo& pluginInfo);
     void CreatePipeline(const PluginConfig::PipelineInfo& pipelineInfo);
     void InitPlugin(const PluginConfig& config __UNUSED, const PluginConfig::PluginInfo& pluginInfo);
     void NotifyPluginReady();
     void ScheduleCreateAndInitPlugin(const PluginConfig::PluginInfo& pluginInfo);
-    DynamicModule LoadDynamicPluginIfNeed(const PluginConfig::PluginInfo& pluginInfo) const;
+    DynamicModule LoadDynamicPlugin(const std::string& name) const;
     std::string GetDynamicLibName(const std::string& name, bool hasOhosSuffix) const;
     std::shared_ptr<EventLoop> GetAvaliableWorkLoop(const std::string& name);
     void CleanupUnusedResources();
@@ -104,20 +117,37 @@ private:
     void LoadBusinessPlugin(const PluginConfig& config);
     void ExitHiviewIfNeed();
     std::string GetPluginConfigPath();
+    std::string SplitBundleNameFromPath(const std::string& path);
     void UpdateBetaConfigIfNeed();
+    void LoadPluginBundles();
+    void LoadPluginBundle(const std::string& bundleName, const std::string& config);
+    void ScheduleCheckUnloadablePlugins();
+    void CheckUnloadablePlugins();
+    std::string SearchPluginBundle(const std::string& name) const;
+
     bool isReady_;
     std::string defaultConfigDir_;
     std::string cloudUpdateConfigDir_;
     std::string defaultWorkDir_;
+    std::string defaultCommercialWorkDir_;
     std::string defaultPersistDir_;
     std::string defaultConfigName_;
-    std::unique_ptr<EventDispatchQueue> orderQueue_;
+    std::vector<std::string> dynamicLibSearchDir_;
     std::unique_ptr<EventDispatchQueue> unorderQueue_;
     std::shared_ptr<EventLoop> sharedWorkLoop_;
     std::map<std::string, std::shared_ptr<Plugin>> pluginMap_;
     std::map<std::string, std::shared_ptr<Pipeline>> pipelines_;
     std::map<std::string, std::shared_ptr<EventLoop>> privateWorkLoopMap_;
     std::map<std::string, std::string> hiviewProperty_;
+    std::map<std::string, PluginBundle> pluginBundleInfos_;
+
+    // Listener data structure:<pluginName, <domain_eventName, Plugin>>
+    std::unordered_map<std::string, ListenerInfo> listeners_;
+
+    // the max waited time before destroy plugin instance
+    const time_t DEFAULT_IDLE_TIME = 300; // 300 seconds
+    time_t maxIdleTime_ = DEFAULT_IDLE_TIME;
+    time_t checkIdlePeriod_ = DEFAULT_IDLE_TIME / 2; // 2 : half idle time
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -18,5 +18,5 @@ ohos_source_set("event_processor_example3") {
     "../event_source_example",
   ]
   sources = [ "event_processor_example3.cpp" ]
-  deps = [ "$hiview_base:hiview_base" ]
+  deps = [ "$hiview_base:hiviewbase" ]
 }

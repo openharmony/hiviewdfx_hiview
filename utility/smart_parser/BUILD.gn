@@ -48,7 +48,7 @@ ohos_source_set("smart_parser") {
 
   configs = [ ":smart_parser_config" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [ "hilog_native:libhilog" ]
 
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",

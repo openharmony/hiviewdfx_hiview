@@ -17,11 +17,11 @@ import("//build/test.gni")
 group("unittest") {
   testonly = true
   deps = []
-  deps += []
+  deps += [ "eventservice:unittest" ]
 }
 
 group("moduletest") {
   testonly = true
   deps = []
-  deps += []
+  deps += [ "faultlogger:moduletest" ]
 }

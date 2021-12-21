@@ -15,8 +15,11 @@
 
 #ifndef HIVIEW_ADAPTER_DBSTORE_INCLUDE_TYPES_H
 #define HIVIEW_ADAPTER_DBSTORE_INCLUDE_TYPES_H
-#include "visibility.h"
+
 #include <string>
+
+#include "visibility.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 struct Entry {

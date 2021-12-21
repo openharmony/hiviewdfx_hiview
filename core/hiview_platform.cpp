@@ -31,21 +31,20 @@
 #include "engine_event_dispatcher.h"
 #include "file_util.h"
 #include "hiview_global.h"
+#include "hiview_platform_config.h"
 #include "logger.h"
 #include "parameter_ex.h"
 #include "plugin_config.h"
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "time_util.h"
-#include "file_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr uint32_t AID_ROOT = 0;
 constexpr uint32_t AID_SYSTEM = 1000;
 constexpr char ENGINE_EVENT_DISPATCHER[] = "EngineEventDispatcher";
-static const char VERSION[] = "xx.x.x.xxx";
+static const char VERSION[] = "1.0.0.0";
 static const char SEPARATOR_VERSION[] = " ";
 static const char RECORDER_VERSION[] = "01.00";
 static const char PLUGIN_CONFIG_NAME[] = "plugin_config";
@@ -62,9 +61,9 @@ HiviewPlatform::HiviewPlatform()
       defaultConfigDir_(DEFAULT_CONFIG_DIR),
       cloudUpdateConfigDir_(CLOUD_UPDATE_CONFIG_DIR),
       defaultWorkDir_(DEFAULT_WORK_DIR),
+      defaultCommercialWorkDir_(DEFAULT_COMMERCIAL_WORK_DIR),
       defaultPersistDir_(DEFAULT_PERSIST_DIR),
       defaultConfigName_(PLUGIN_CONFIG_NAME),
-      orderQueue_(nullptr),
       unorderQueue_(nullptr),
       sharedWorkLoop_(nullptr)
 {
@@ -72,10 +71,6 @@ HiviewPlatform::HiviewPlatform()
 
 HiviewPlatform::~HiviewPlatform()
 {
-    if (orderQueue_ != nullptr) {
-        orderQueue_->Stop();
-    }
-
     if (unorderQueue_ != nullptr) {
         unorderQueue_->Stop();
     }
@@ -85,11 +80,37 @@ HiviewPlatform::~HiviewPlatform()
     }
 }
 
-bool HiviewPlatform::InitEnvironment(const std::string& defaultDir, const std::string& cloudUpdateDir,
-                                     const std::string& workDir, const std::string& persistDir)
+void HiviewPlatform::SetMaxProxyIdleTime(time_t idleTime)
+{
+    maxIdleTime_ = idleTime;
+}
+
+void HiviewPlatform::SetCheckProxyIdlePeriod(time_t period)
+{
+    checkIdlePeriod_ = period;
+}
+
+bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
 {
     // force create hiview working directories
-    ValidateAndCreateDirectories(defaultDir, cloudUpdateDir, workDir, persistDir);
+    HiviewPlatformConfig platformConfig = HiviewPlatformConfig(platformConfigDir);
+    HiviewPlatformConfig::PlatformConfigInfo platformConfigInfo;
+    bool state = platformConfig.ParsesConfig(platformConfigInfo);
+    if (state) {
+        if (platformConfigInfo.defaultPluginConfigName != "") {
+        defaultConfigName_ = platformConfigInfo.defaultPluginConfigName;
+        }
+        if (FileUtil::IsDirectory(platformConfigInfo.commercialWorkDir)) {
+            defaultCommercialWorkDir_ = platformConfigInfo.commercialWorkDir;
+        }
+        dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLib64SearchDir);
+        dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLibSearchDir);
+
+        ValidateAndCreateDirectories(platformConfigInfo.pluginConfigFileDir,
+                                     platformConfigInfo.cloudUpdateConfigDir,
+                                     platformConfigInfo.workDir,
+                                     platformConfigInfo.persistDir);
+    }
 
     // update beta config
     UpdateBetaConfigIfNeed();
@@ -109,8 +130,12 @@ bool HiviewPlatform::InitEnvironment(const std::string& defaultDir, const std::s
     HiviewGlobal::CreateInstance(static_cast<HiviewContext&>(*this));
     LoadBusinessPlugin(config);
 
+    // start load plugin bundles
+    LoadPluginBundles();
+
     isReady_ = true;
     NotifyPluginReady();
+    ScheduleCheckUnloadablePlugins();
     return true;
 }
 
@@ -124,7 +149,7 @@ void HiviewPlatform::UpdateBetaConfigIfNeed()
 
     if (userType == Parameter::UserType::COMMERCIAL || userType == Parameter::UserType::OVERSEAS_COMMERCIAL) {
         if (defaultWorkDir_ == std::string(DEFAULT_WORK_DIR)) {
-            defaultWorkDir_ = DEFAULT_COMMERCIAL_WORK_DIR;
+            defaultWorkDir_ = defaultCommercialWorkDir_;
             FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_SYSTEM, AID_SYSTEM);
         }
     }
@@ -161,6 +186,76 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
     CleanupUnusedResources();
 }
 
+std::string HiviewPlatform::SplitBundleNameFromPath(const std::string& filePath)
+{
+        // the path should be like /system/etc/hiview/bundleName_plugin_config
+        auto pos = filePath.find_last_of("/\\");
+        if (pos == std::string::npos) {
+            return "";
+        }
+
+        std::string fileName = filePath.substr(pos + 1);
+        pos = fileName.find(defaultConfigName_);
+        if (pos == std::string::npos || pos == 0) {
+            return "";
+        }
+
+        pos = fileName.find_first_of("_");
+        if (pos == std::string::npos) {
+            return "";
+        }
+
+        return fileName.substr(0, pos);
+}
+
+std::string HiviewPlatform::SearchPluginBundle(const std::string& name) const
+{
+    for (const auto& pathPrefix : dynamicLibSearchDir_) {
+        std::string bundlePath = pathPrefix  + GetDynamicLibName(name, true);
+        printf("bundlePath is %s\n", bundlePath.c_str());
+        if (FileUtil::FileExists(bundlePath)) {
+            return bundlePath;
+        }
+    }
+    return "";
+}
+
+void HiviewPlatform::LoadPluginBundle(const std::string& bundleName, const std::string& filePath)
+{
+    PluginConfig config(filePath);
+    if (!config.StartParse()) {
+        HIVIEW_LOGE("Fail to parse plugin config (%s)", bundleName.c_str());
+        return;
+    }
+
+    std::string bundlePath = SearchPluginBundle(bundleName);
+    if (bundlePath == "") {
+        HIVIEW_LOGE("bundleName: %s doesn't exist", bundleName.c_str());
+        return;
+    }
+    auto handle = LoadModule(bundlePath);
+    if (handle == DynamicModuleDefault) {
+        return;
+    }
+
+    LoadBusinessPlugin(config);
+    PluginBundle bundle(bundleName, config, handle);
+    pluginBundleInfos_.insert(std::pair<std::string, PluginBundle>(bundleName, bundle));
+}
+
+void HiviewPlatform::LoadPluginBundles()
+{
+    std::vector<std::string> configFiles;
+    FileUtil::GetDirFiles(defaultConfigDir_, configFiles);
+    for (const auto& filePath : configFiles) {
+        auto bundleName = SplitBundleNameFromPath(filePath);
+        if (bundleName.empty()) {
+            continue;
+        }
+        LoadPluginBundle(bundleName, filePath);
+    }
+}
+
 void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
 {
 #ifndef _WIN32
@@ -172,26 +267,23 @@ void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
             HIVIEW_LOGI("hiview version: %s%s%s", VERSION, SEPARATOR_VERSION,
                             RECORDER_VERSION);
             printf("hiview version: %s%s%s\n", VERSION, SEPARATOR_VERSION, RECORDER_VERSION);
-            exit(1);
+            _exit(1);
         }
     }
 #endif // !_WIN32
 }
 
-DynamicModule HiviewPlatform::LoadDynamicPluginIfNeed(const PluginConfig::PluginInfo& pluginInfo) const
+DynamicModule HiviewPlatform::LoadDynamicPlugin(const std::string& name) const
 {
-    if (!pluginInfo.isStatic) {
-        // if the plugin Class is AbcPlugin, the so name should be libabcplugin.z.so
-        std::string dynamicPluginName = GetDynamicLibName(pluginInfo.name, true);
-        auto handle = LoadModule(dynamicPluginName.c_str());
-        if (handle == nullptr) {
-            // retry load library
-            dynamicPluginName = GetDynamicLibName(pluginInfo.name, false);
-            handle = LoadModule(dynamicPluginName.c_str());
-        }
-        return handle;
+    // if the plugin Class is AbcPlugin, the so name should be libabcplugin.z.so
+    std::string dynamicPluginName = GetDynamicLibName(name, true);
+    auto handle = LoadModule(dynamicPluginName.c_str());
+    if (handle == nullptr) {
+        // retry load library
+        dynamicPluginName = GetDynamicLibName(name, false);
+        handle = LoadModule(dynamicPluginName.c_str());
     }
-    return DynamicModuleDefault;
+    return handle;
 }
 
 std::string HiviewPlatform::GetDynamicLibName(const std::string& name, bool hasOhosSuffix) const
@@ -228,13 +320,26 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
     }
     // the dynamic plugin will register it's constructor to factory automatically after opening the binary
     // if we get null in factory, it means something must go wrong.
-    DynamicModule handle = LoadDynamicPluginIfNeed(pluginInfo);
-    std::shared_ptr<Plugin> plugin = PluginFactory::GetPlugin(pluginInfo.name);
-    if (plugin == nullptr) {
-        if (handle != nullptr) {
+    DynamicModule handle = DynamicModuleDefault;
+    if (!pluginInfo.isStatic) {
+        handle = LoadDynamicPlugin(pluginInfo.name);
+    }
+
+    std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
+    if (registInfo == nullptr) {
+        if (handle != DynamicModuleDefault) {
             UnloadModule(handle);
         }
         return;
+    }
+
+    std::shared_ptr<Plugin> plugin = nullptr;
+    if (registInfo->needCreateProxy) {
+        plugin = std::make_shared<PluginProxy>();
+        plugin->SetType(Plugin::PluginType::PROXY);
+        (std::static_pointer_cast<PluginProxy>(plugin))->SetPluginConfig(pluginInfo);
+    } else {
+        plugin = registInfo->getPluginObject();
     }
 
     // Initialize plugin parameters
@@ -292,6 +397,13 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         }
         StartEventSource(sharedSource);
     }
+
+    std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
+    if (plugin->GetType() == Plugin::PluginType::PROXY && registInfo->needStartupLoading) {
+        std::shared_ptr<PluginProxy> pluginProxy = std::static_pointer_cast<PluginProxy>(plugin);
+        pluginProxy->LoadPluginIfNeed();
+    }
+
     auto end = TimeUtil::GenerateTimestamp();
     HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), end - begin);
 }
@@ -370,13 +482,8 @@ void HiviewPlatform::StartLoop()
 
 void HiviewPlatform::StartPlatformDispatchQueue()
 {
-    if (orderQueue_ == nullptr) {
-        orderQueue_ = std::make_unique<EventDispatchQueue>("plat_order", Event::ManageType::ORDERED);
-        orderQueue_->Start();
-    }
-
     if (unorderQueue_ == nullptr) {
-        unorderQueue_ = std::make_unique<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED);
+        unorderQueue_ = std::make_unique<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED, this);
         unorderQueue_->Start();
     }
 
@@ -399,18 +506,6 @@ std::list<std::weak_ptr<Plugin>> HiviewPlatform::GetPipelineSequenceByName(const
     return std::list<std::weak_ptr<Plugin>>(0);
 }
 
-void HiviewPlatform::PostOrderedEvent(std::shared_ptr<Plugin> plugin, std::shared_ptr<Event> event)
-{
-    if (!isReady_) {
-        return;
-    }
-
-    if (plugin != nullptr && orderQueue_ != nullptr && event != nullptr) {
-        event->processType_ = Event::ManageType::ORDERED;
-        orderQueue_->Enqueue(event);
-    }
-}
-
 void HiviewPlatform::PostUnorderedEvent(std::shared_ptr<Plugin> plugin, std::shared_ptr<Event> event)
 {
     if (!isReady_) {
@@ -427,17 +522,12 @@ void HiviewPlatform::PostUnorderedEvent(std::shared_ptr<Plugin> plugin, std::sha
     }
 }
 
-void HiviewPlatform::RegisterOrderedEventListener(std::weak_ptr<EventListener> listener)
-{
-    if (orderQueue_ != nullptr) {
-        orderQueue_->RegisterListener(listener);
-    }
-}
-
-void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener)
+void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener)
 {
     if (unorderQueue_ != nullptr) {
-        unorderQueue_->RegisterListener(listener);
+        std::set<std::string> eventNames;
+        std::set<EventListener::EventIdRange> listenerInfo;
+        AddListenerInfo(0, listener, eventNames, listenerInfo);
     }
 
     // dispatch engine event
@@ -505,6 +595,11 @@ std::shared_ptr<EventLoop> HiviewPlatform::GetSharedWorkLoop()
     return sharedWorkLoop_;
 }
 
+bool HiviewPlatform::IsReady()
+{
+    return isReady_;
+}
+
 void HiviewPlatform::RequestUnloadPlugin(std::shared_ptr<Plugin> caller)
 {
     if (caller == nullptr) {
@@ -555,7 +650,7 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
         HIVIEW_LOGI("Stop %s done.", looperName.c_str());
     }
 
-    if (target->IsDynamic()) {
+    if (target->GetType() == Plugin::PluginType::DYNAMIC) {
         // remove static register before closing the dynamic library handle
         PluginFactory::UnregisterPlugin(target->GetName());
     }
@@ -581,24 +676,32 @@ std::string HiviewPlatform::GetHiViewDirectory(HiviewContext::DirectoryType type
 void HiviewPlatform::ValidateAndCreateDirectories(const std::string& localPath, const std::string& cloudUpdatePath,
                                                   const std::string& workPath, const std::string& persistPath)
 {
-    if (!localPath.empty()) {
+    if (defaultConfigDir_ != localPath) {
         defaultConfigDir_ = localPath;
-        FileUtil::CreateDirWithDefaultPerm(defaultConfigDir_, AID_ROOT, AID_SYSTEM);
+        if (!FileUtil::IsDirectory(localPath)) {
+            FileUtil::CreateDirWithDefaultPerm(defaultConfigDir_, AID_SYSTEM, AID_SYSTEM);
+        }
     }
 
-    if (!cloudUpdatePath.empty()) {
+    if (cloudUpdateConfigDir_ != cloudUpdatePath) {
         cloudUpdateConfigDir_ = cloudUpdatePath;
-        FileUtil::CreateDirWithDefaultPerm(cloudUpdateConfigDir_, AID_ROOT, AID_SYSTEM);
+        if (!FileUtil::IsDirectory(cloudUpdatePath)) {
+            FileUtil::CreateDirWithDefaultPerm(cloudUpdateConfigDir_, AID_SYSTEM, AID_SYSTEM);
+        }
     }
 
-    if (!workPath.empty()) {
+    if (defaultWorkDir_ != workPath) {
         defaultWorkDir_ = workPath;
-        FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_ROOT, AID_SYSTEM);
+        if (!FileUtil::IsDirectory(workPath)) {
+            FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_SYSTEM, AID_SYSTEM);
+        }
     }
 
-    if (!persistPath.empty()) {
+    if (defaultPersistDir_ != persistPath) {
         defaultPersistDir_ = persistPath;
-        FileUtil::CreateDirWithDefaultPerm(defaultPersistDir_, AID_ROOT, AID_SYSTEM);
+        if (!FileUtil::IsDirectory(persistPath)) {
+            FileUtil::CreateDirWithDefaultPerm(defaultPersistDir_, AID_SYSTEM, AID_SYSTEM);
+        }
     }
 }
 
@@ -693,6 +796,56 @@ int32_t HiviewPlatform::PostEventToRemote(std::shared_ptr<Plugin> caller, const 
     return -1;
 }
 
+void HiviewPlatform::AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, const std::string& pipelineName)
+{
+    auto it = pipelines_.find(pipelineName);
+    if (it == pipelines_.end()) {
+        HIVIEW_LOGW("Fail to find pipeline with name :%s", pipelineName.c_str());
+        return;
+    }
+    it->second->AppendProcessor(plugin);
+}
+
+void HiviewPlatform::RequestLoadBundle(const std::string& bundleName)
+{
+    if (pluginBundleInfos_.find(bundleName) != pluginBundleInfos_.end()) {
+        HIVIEW_LOGW("Bundle already loaded.");
+        return;
+    }
+
+    std::string configPath = defaultConfigDir_ + bundleName + "_plugin_config";
+    LoadPluginBundle(bundleName, configPath);
+}
+
+std::shared_ptr<Plugin> HiviewPlatform::InstancePluginByProxy(std::shared_ptr<Plugin> proxy)
+{
+    if (proxy == nullptr) {
+        return nullptr;
+    }
+
+    auto proxyPtr = std::static_pointer_cast<PluginProxy>(proxy);
+    std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(proxyPtr->GetName());
+    if (registInfo == nullptr) {
+        HIVIEW_LOGE("Failed to find registInfo:%{public}s", proxyPtr->GetName().c_str());
+        return nullptr;
+    }
+
+    auto plugin = registInfo->getPluginObject();
+    plugin->SetName(proxyPtr->GetName());
+    plugin->SetHiviewContext(this);
+    plugin->BindWorkLoop(proxyPtr->GetWorkLoop());
+    plugin->OnLoad();
+    auto config = proxyPtr->GetPluginConfig();
+    if (config.isEventSource) {
+        auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
+        for (auto& pipelineName : config.pipelineNameList) {
+            sharedSource->AddPipeline(pipelines_[pipelineName]);
+        }
+        StartEventSource(sharedSource);
+    }
+    return plugin;
+}
+
 std::shared_ptr<Plugin> HiviewPlatform::GetPluginByName(const std::string& name)
 {
     auto it = pluginMap_.find(name);
@@ -719,6 +872,125 @@ bool HiviewPlatform::SetHiviewProperty(const std::string& key, const std::string
         return true;
     }
     return Parameter::SetProperty(key, value);
+}
+
+void HiviewPlatform::CheckUnloadablePlugins()
+{
+    for (auto const &pluginKv : pluginMap_) {
+        if (pluginKv.second->GetType() == Plugin::PluginType::PROXY) {
+            auto ptr = std::static_pointer_cast<PluginProxy>(pluginKv.second);
+            if (ptr != nullptr) {
+                ptr->DestroyInstanceIfNeed(maxIdleTime_);
+            }
+        }
+    }
+}
+
+void HiviewPlatform::ScheduleCheckUnloadablePlugins()
+{
+    auto task = std::bind(&HiviewPlatform::CheckUnloadablePlugins, this);
+    sharedWorkLoop_->AddTimerEvent(nullptr, nullptr, task, checkIdlePeriod_, true);
+}
+
+void HiviewPlatform::AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+{
+    if (plugin.lock() == nullptr) {
+        return;
+    }
+    auto name = plugin.lock()->GetName();
+    auto itListenerInfo = listeners_.find(name);
+    if (itListenerInfo == listeners_.end()) {
+        ListenerInfo tmp = {
+            .listener = plugin,
+        };
+        tmp.idListenerInfo.insert(std::pair<uint32_t, std::set<EventListener::EventIdRange>>(type, listenerInfo));
+        tmp.strListenerInfo.insert(std::pair<uint32_t, std::set<std::string>>(type, eventNames));
+        listeners_[name] = tmp;
+        return;
+    }
+
+    auto& data = itListenerInfo->second;
+    if (!eventNames.size()) {
+        auto it = data.strListenerInfo.find(type);
+        if (it != data.strListenerInfo.end()) {
+            it->second.insert(eventNames.begin(), eventNames.end());
+        } else {
+            data.strListenerInfo[type] = eventNames;
+        }
+    }
+
+    if (!listenerInfo.size()) {
+        auto it = data.idListenerInfo.find(type);
+        if (it != data.idListenerInfo.end()) {
+            it->second.insert(listenerInfo.begin(), listenerInfo.end());
+        } else {
+            data.idListenerInfo[type] = listenerInfo;
+        }
+    }
+}
+
+std::vector<std::weak_ptr<Plugin>> HiviewPlatform::GetListenerInfo(uint32_t type,
+    const std::string& eventName, uint32_t eventId)
+{
+    std::vector<std::weak_ptr<Plugin>> ret;
+    for (auto& tmp : listeners_) {
+        auto& data = tmp.second;
+
+        bool retString = false;
+        auto itStrInfo = data.strListenerInfo.find(type);
+        if (itStrInfo != data.strListenerInfo.end()) {
+            retString = std::any_of(itStrInfo->second.begin(), itStrInfo->second.end(),
+                [&](const std::string& name) {
+                    return (eventName.find(name) != std::string::npos);
+                });
+        }
+
+        bool retId = false;
+        auto itIdInfo = data.idListenerInfo.find(type);
+        if (itIdInfo != data.idListenerInfo.end()) {
+            retId = std::any_of(itIdInfo->second.begin(), itIdInfo->second.end(),
+                [&](const EventListener::EventIdRange& range) {
+                    return ((eventId >= range.begin) && (eventId <= range.end));
+                });
+        }
+
+        if (retString || retId) {
+            ret.push_back(data.listener);
+        }
+    }
+    return ret;
+}
+
+bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+    std::set<EventListener::EventIdRange> &listenerInfo)
+{
+    auto it = listeners_.find(plugin->GetName());
+    if (it == listeners_.end()) {
+        return false;
+    }
+    auto tmp = it->second.idListenerInfo.find(type);
+    if (tmp != it->second.idListenerInfo.end()) {
+        listenerInfo = tmp->second;
+        return true;
+    }
+    return false;
+}
+
+bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+    std::set<std::string> &eventNames)
+{
+    auto it = listeners_.find(plugin->GetName());
+    if (it == listeners_.end()) {
+        return false;
+    }
+
+    auto tmp = it->second.strListenerInfo.find(type);
+    if (tmp != it->second.strListenerInfo.end()) {
+        eventNames = tmp->second;
+        return true;
+    }
+    return false;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -49,22 +49,17 @@ public:
     void OnLoad() override;
     void OnUnload() override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
-    bool OnOrderedEvent(Event& msg) override;
     void OnUnorderedEvent(const Event& msg) override;
     std::string GetListenerName() override;
-    void Recycle(PipelineEvent* event) {};
-    void PauseDispatch(std::weak_ptr<Plugin> plugin) {};
+    void Recycle(PipelineEvent* event) override {};
+    void PauseDispatch(std::weak_ptr<Plugin> plugin) override {};
 
 private:
     std::string RemoveRedundantNewline(const std::string& line);
     WatchPoint MakeWatchPoint(const Event& event);
     void ProcessEvent(WatchPoint watchPoint);
-    bool CanProcessRebootEvent(const Event &event);
-    void ProcessRebootEvent();
     void AddFreezeListener();
-    void AddMaintenanceListener();
     std::shared_ptr<EventLoop> threadLoop_;
-    bool flag;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

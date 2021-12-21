@@ -15,9 +15,11 @@
 
 #ifndef HIVIEW_ADAPTER_DBSTORE_INCLUDE_DATA_QUERY_H
 #define HIVIEW_ADAPTER_DBSTORE_INCLUDE_DATA_QUERY_H
+
 #include <string>
 #include <vector>
 #include <sstream>
+
 #include "visibility.h"
 
 namespace OHOS {

@@ -38,7 +38,7 @@ void FreezeDetectorPluginModuleTest::TearDown()
 void FreezeDetectorPluginModuleTest::SetUpTestCase()
 {
     OHOS::HiviewDFX::PluginPlatform &platform = PluginPlatform::GetInstance();
-    if (!platform.InitEnvironment("/data/test/test_data/")) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment.\n");
     }
 }

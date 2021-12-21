@@ -62,11 +62,6 @@ bool HiCollieCollector::OnEvent(std::shared_ptr<Event> &event)
     return true;
 }
 
-bool HiCollieCollector::OnOrderedEvent(Event &event)
-{
-    return false;
-}
-
 void HiCollieCollector::OnUnorderedEvent(const Event &event)
 {
     HIVIEW_LOGI("received event domain=%{public}s, stringid=%{public}s.\n",

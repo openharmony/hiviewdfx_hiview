@@ -16,17 +16,15 @@
 #define HIVIEW_PLATFORM_TEST_RESULT_LISTENER_H
 #include <map>
 #include "event.h"
-class PlatformTestResultListener : public OHOS::HiviewDFX::EventListener {
+#include "plugin.h"
+class PlatformTestResultListener : public OHOS::HiviewDFX::Plugin {
 public:
     explicit PlatformTestResultListener(const std::string& name)
-        : orderEventCount_(0), unorderEventCount_(0), name_(name){};
+        : unorderEventCount_(0), name_(name){};
     ~PlatformTestResultListener(){};
-    bool OnOrderedEvent(OHOS::HiviewDFX::Event& msg) override;
     void OnUnorderedEvent(const OHOS::HiviewDFX::Event& msg) override;
     std::string GetListenerName() override;
-    std::map<std::string, std::string> processedOrderedEvents_;
     std::map<std::string, std::string> processedUnorderedEvents_;
-    uint32_t orderEventCount_;
     uint32_t unorderEventCount_;
 
 private:

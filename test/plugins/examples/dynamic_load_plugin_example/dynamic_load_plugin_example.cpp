@@ -44,12 +44,6 @@ void DynamicLoadPluginExample::OnUnload()
     printf("DynamicLoadPluginExample OnUnload \n");
 }
 
-bool DynamicLoadPluginExample::OnOrderedEvent(Event &msg)
-{
-    printf("DynamicLoadPluginExample OnOrderedEvent \n");
-    return false;
-}
-
 void DynamicLoadPluginExample::OnUnorderedEvent(const Event &msg)
 {
     printf("DynamicLoadPluginExample OnUnorderedEvent.\n");

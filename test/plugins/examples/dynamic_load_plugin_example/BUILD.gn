@@ -14,11 +14,8 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 ohos_shared_library("dynamicloadpluginexample") {
   include_dirs = [ "." ]
-
   sources = [ "dynamic_load_plugin_example.cpp" ]
-
-  deps = [ "$hiview_base:hiview_base" ]
-
+  deps = [ "$hiview_base:hiviewbase" ]
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

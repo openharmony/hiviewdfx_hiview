@@ -53,6 +53,7 @@ constexpr mode_t DEFAULT_FILE_MODE = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_I
 constexpr mode_t FILE_PERM_755 = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 constexpr mode_t FILE_PERM_775 = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 constexpr mode_t FILE_PERM_770 = S_IRWXU | S_IRWXG;
+constexpr mode_t FILE_PERM_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
 static constexpr uint32_t MAX_LINE_LEN = 1024;
 // file_ex.h
 bool LoadStringFromFile(const std::string& filePath, std::string& content);
@@ -91,6 +92,7 @@ bool IsDirectory(const std::string &path);
 bool GetLastLine(std::istream &fin, std::string &line);
 std::string GetParentDir(const std::string &path);
 bool IsLegalPath(const std::string& path);
+bool RenameFile(const std::string& src, const std::string& dest);
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

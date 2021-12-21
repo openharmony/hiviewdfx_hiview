@@ -110,14 +110,19 @@ bool EventLogger::PostEvent(std::shared_ptr<SysEvent> event)
 
 bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 {
+    long pid = event->GetEventIntValue("PID");
+    pid = pid ? pid : event->GetPid();
+    long uid = event->GetEventIntValue("UID");
+    uid = uid ? uid : event->GetUid();
     FileUtil::SaveStringToFd(fd, event->eventName_ + "\n");
-    std::string str = "PID = " + std::to_string(event->GetPid());
+    std::string str = "PID = " + std::to_string(pid);
     FileUtil::SaveStringToFd(fd, str + "\n");
-    str = "UID = " + std::to_string(event->GetUid());
+    str = "UID = " + std::to_string(uid);
     FileUtil::SaveStringToFd(fd, str + "\n");
     event->GetEventValue("PACKAGE_NAME");
     event->GetEventValue("PROCESS_NAME");
     event->GetEventValue("PLATFORM");
+    event->SetEventValue("MSG", StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n"));
     event->GetEventValue("MSG");
 
     std::map<std::string, std::string> eventPairs = event->GetKeyValuePairs();
@@ -132,8 +137,10 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 
 bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
 {
+    long pid = event->GetEventIntValue("PID");
+    pid = pid ? pid : event->GetPid();
     std::string eventName = event->eventName_;
-    std::string eventPid = std::to_string(event->GetPid());
+    std::string eventPid = std::to_string(pid);
     auto interval = event->GetIntValue("eventLog_interval");
 
     std::string tagTimeName = eventName + eventPid;
@@ -186,8 +193,13 @@ bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
         auto record = set.Next();
         if (record->GetSeq() == event->GetSeq()) {
             HIVIEW_LOGI("Seq match success.");
-            auto logPath = R"~(logPath:)~" + LOGGER_FAULT_LOG_PATH + "/" + logFile;
-            event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
+            if (logFile == "nolog") {
+                HIVIEW_LOGI("set info_ with nolog into db.");
+                event->SetEventValue(EventStore::EventCol::INFO, "nolog", false);
+            } else {
+                auto logPath = R"~(logPath:)~" + LOGGER_FAULT_LOG_PATH + "/" + logFile;
+                event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
+            }
 
             auto retCode = EventStore::SysEventDao::Update(event, false);
             if (retCode == 0) {

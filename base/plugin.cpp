@@ -73,12 +73,53 @@ bool Plugin::OnEventProxy(std::shared_ptr<Event> event)
 
 void Plugin::DelayProcessEvent(std::shared_ptr<Event> event, uint64_t delay)
 {
-    if (workLoop_ != nullptr && event != nullptr) {
-        event->OnPending();
-        auto task = std::bind(&Plugin::OnEventProxy, this, event);
-        workLoop_->AddTimerEvent(nullptr, nullptr, task, delay, false);
+    if (workLoop_ == nullptr || event == nullptr) {
         return;
     }
+
+    UpdateTimeByDelay(delay);
+    event->OnPending();
+    auto task = std::bind(&Plugin::OnEventProxy, this, event);
+    workLoop_->AddTimerEvent(nullptr, nullptr, task, delay, false);
+    return;
+}
+
+void Plugin::AddListenerInfo(uint32_t type, const EventListener::EventIdRange& range)
+{
+    std::set<std::string> eventNames;
+    std::set<EventListener::EventIdRange> listenerInfo;
+    listenerInfo.insert(range);
+    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
+}
+
+void Plugin::AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
+{
+    std::set<std::string> eventNames;
+    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
+}
+
+bool Plugin::GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
+{
+    return context_->GetListenerInfo(type, shared_from_this(), listenerInfo);
+}
+
+void Plugin::AddListenerInfo(uint32_t type, const std::string& eventName)
+{
+    std::set<std::string> eventNames;
+    eventNames.insert(eventName);
+    std::set<EventListener::EventIdRange> listenerInfo;
+    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
+}
+
+void Plugin::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
+{
+    std::set<EventListener::EventIdRange> listenerInfo;
+    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
+}
+
+bool Plugin::GetListenerInfo(uint32_t type, std::set<std::string> &eventNames)
+{
+    return context_->GetListenerInfo(type, shared_from_this(), eventNames);
 }
 
 std::string Plugin::GetPluginInfo()
@@ -119,6 +160,16 @@ void Plugin::BindWorkLoop(std::shared_ptr<EventLoop> loop)
 std::shared_ptr<EventLoop> Plugin::GetWorkLoop()
 {
     return workLoop_;
+}
+
+void Plugin::UpdateActiveTime()
+{
+    lastActiveTime_ = time(nullptr);
+}
+
+void Plugin::UpdateTimeByDelay(time_t delay)
+{
+    lastActiveTime_ = time(nullptr) + delay;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

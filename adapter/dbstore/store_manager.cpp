@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "store_manager.h"
 
 #include <cstdio>
@@ -48,7 +49,8 @@ std::shared_ptr<DocStore> StoreManager::GetDocStore(const Option& option)
 
     std::shared_ptr<DocStore> docStore = std::make_shared<DocStore>();
     docStore->dbPtr = std::make_shared<DocDB>();
-    if (docStore->dbPtr->OpenDB(option.db, GetEjdbFlag(option)) != 0) {
+    int retCode = docStore->dbPtr->OpenDB(option.db, GetEjdbFlag(option));
+    if (retCode != 0) {
         HiLog::Error(LABEL, "can not open doc store");
     } else {
         HiLog::Info(LABEL, "open doc store");
@@ -57,41 +59,84 @@ std::shared_ptr<DocStore> StoreManager::GetDocStore(const Option& option)
     return docStore;
 }
 
-int StoreManager::CloseDocStore(const Option& option)
+int StoreManager::OnlineBackupDocStore(const Option& option, const std::string &bakFile)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = stores_.find(option.db);
     if (it == stores_.end()) {
-        return -1;
+        HiLog::Error(LABEL, "can not find db to backup");
+        return 1;
     }
 
     std::shared_ptr<DocStore> docStore = it->second;
     if (docStore->dbPtr == nullptr) {
+        HiLog::Error(LABEL, "do not init db ptr");
         return -1;
     }
-    if (docStore->dbPtr->CloseDB() != 0) {
-        HiLog::Error(LABEL, "can not close doc store");
-        return -1;
+
+    int retCode = docStore->dbPtr->OnlineBackupDB(bakFile);
+    if (retCode != 0) {
+        HiLog::Error(LABEL, "can not backup doc store");
+        return retCode;
     }
     return 0;
+}
+
+int StoreManager::InnerCloseDocStore(const Option& option)
+{
+    auto it = stores_.find(option.db);
+    if (it == stores_.end()) {
+        HiLog::Error(LABEL, "can not find db to close");
+        return 1;
+    }
+
+    std::shared_ptr<DocStore> docStore = it->second;
+    if (docStore->dbPtr == nullptr) {
+        stores_.erase(it);
+        return -1;
+    }
+    int retCode = docStore->dbPtr->CloseDB();
+    if (retCode != 0) {
+        HiLog::Error(LABEL, "can not close doc store");
+        return retCode;
+    }
+    stores_.erase(it);
+    return 0;
+}
+
+int StoreManager::CloseDocStore(const Option& option)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return InnerCloseDocStore(option);
 }
 
 int StoreManager::DeleteDocStore(const Option& option)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    int retCode = CloseDocStore(option);
+    int retCode = InnerCloseDocStore(option);
     if (retCode != 0) {
-        HiLog::Error(LABEL, "close doc store fail");
-        return -1;
+        if (retCode > 0) {
+            return retCode;
+        }
+        HiLog::Error(LABEL, "close doc store fail to delete");
+        return retCode;
     }
+
+    HiLog::Debug(LABEL, "delete ejdb file %{public}s", option.db.c_str());
     retCode = std::remove(option.db.c_str());
     if (retCode != 0) {
         HiLog::Error(LABEL, "remove doc store fail");
         return -1;
     }
 
+    const std::string walDbFile = option.db + "-wal";
+    HiLog::Debug(LABEL, "delete ejdb wal file %{public}s", walDbFile.c_str());
+    retCode = std::remove(walDbFile.c_str());
+    if (retCode != 0) {
+        HiLog::Error(LABEL, "remove wal doc store fail");
+        return -1;
+    }
     HiLog::Info(LABEL, "remove doc store success");
-    stores_.erase(option.db.c_str());
     return 0;
 }
 } // HiviewDFX

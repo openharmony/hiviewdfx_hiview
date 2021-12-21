@@ -17,7 +17,10 @@ module_output_path = "hiview/hiview/core"
 group("unittest") {
   testonly = true
   deps = [
+    ":EventDispatchQueueTest",
+    ":HiviewPlatformConfigTest",
     ":PlatformConfigTest",
+    ":PluginBundleTest",
     ":PluginPlatformWithLocalPluginBaseTest",
   ]
 }
@@ -41,7 +44,8 @@ ohos_unittest("PlatformConfigTest") {
   sources = [ "unittest/common/platform_config_test.cpp" ]
 
   deps = [
-    ":hiview_plugin_management_test",
+    "$hiview_base:hiviewbase",
+    "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -76,15 +80,49 @@ ohos_unittest("PluginPlatformWithLocalPluginBaseTest") {
   external_deps = [ "hilog_native:libhilog" ]
 }
 
-ohos_source_set("hiview_plugin_management_test") {
+ohos_unittest("PluginBundleTest") {
+  module_out_path = module_output_path
   configs = [ ":unittest_config" ]
-
-  public_configs = [ ":unittest_config" ]
+  sources = [
+    "unittest/common/platform_test_result_listener.cpp",
+    "unittest/common/plugin_bundle_test.cpp",
+  ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_core:hiview_core",
+    "$hiview_root/test/plugins/examples:bundletest",
+    "//third_party/googletest:gtest_main",
   ]
 
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
   external_deps = [ "hilog_native:libhilog" ]
+}
+
+ohos_unittest("EventDispatchQueueTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/event_dispatch_queue_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiview_base",
+    "$hiview_core:hiview_core",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
+ohos_unittest("HiviewPlatformConfigTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/hiview_platform_config_test.cpp" ]
+
+  deps = [
+    "$hiview_adapter/utility:hiview_adapter_utility",
+    "$hiview_base:hiview_base",
+    "$hiview_core:hiview_core",
+    "../platform_config:hiviewplatform_config",
+    "//third_party/googletest:gtest_main",
+  ]
 }

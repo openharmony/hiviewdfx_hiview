@@ -13,11 +13,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
 
-if (is_standard_system) {
-  module_output_path = "hiview_L2/base/event_store"
-} else {
-  module_output_path = "hiview/base/event_store"
-}
+module_output_path = "hiview/base/event_store"
 
 group("unittest") {
   testonly = true

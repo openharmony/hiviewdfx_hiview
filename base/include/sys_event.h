@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_BASE_SYS_EVENT_H
 #define HIVIEW_BASE_SYS_EVENT_H
 
@@ -23,9 +24,33 @@
 #include <vector>
 
 #include "pipeline.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventCreator;
+enum ParseStatus {
+    STATE_PARSING_DOMAIN,
+    STATE_PARSING_NAME,
+    STATE_PARSING_TYPE,
+    STATE_PARSING_TIME,
+    STATE_PARSING_TZONE,
+    STATE_PARSING_PID,
+    STATE_PARSING_TID,
+    STATE_PARSING_UID,
+    STATE_PARSING_TRACE_ID,
+    STATE_PARSING_SPAN_ID,
+    STATE_PARSING_PARENT_SPAN_ID,
+    STATE_PARSING_TRACE_FLAG,
+};
+struct ParseItem {
+    const char* keyString;
+    const char* valueStart;
+    const char* valueEnd1;
+    const char* valueEnd2;
+    ParseStatus status;
+    bool parseContine;
+};
+
 class SysEvent : public PipelineEvent {
 public:
     SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr);
@@ -40,6 +65,7 @@ public:
     void SetSeq(int64_t);
     int64_t GetSeq() const;
     std::string GetEventValue(const std::string& key);
+    uint64_t GetEventIntValue(const std::string& key);
     void SetEventValue(const std::string& key, int64_t value);
     void SetEventValue(const std::string& key, const std::string& value, bool append = false);
 
@@ -49,6 +75,7 @@ private:
     int32_t tid_;
     int32_t uid_;
     int16_t tz_;
+    void InitialMember(ParseStatus status, const std::string &content);
 };
 
 class SysEventCreator {
@@ -80,7 +107,7 @@ public:
     template <typename T>
     struct is_type_key : is_one_of<T, char *, char const *, std::string>::type {};
 
-    template <typename T> 
+    template <typename T>
     inline static constexpr bool is_type_key_v = is_type_key<T>::value;
 
     // supported base types of the value
@@ -106,6 +133,8 @@ public:
     {
         if constexpr(is_one_of<T, char, signed char, unsigned char>::value) {
             return static_cast<short>(item);
+        } else if constexpr(is_one_of<T, char *, char const *, std::string>::value) {
+            return std::quoted(EscapeStringValue(item));
         } else {
             return std::forward<T>(item);
         }
@@ -114,23 +143,13 @@ public:
     template<typename K, typename V>
     SysEventCreator& SetKeyValue(K&& key, V&& value)
     {
-        jsonStr_ << std::quoted(GetItem(std::forward<K>(key))) << ":";
+        jsonStr_ << GetItem(std::forward<K>(key)) << ":";
         if constexpr(is_type_value_base_v<V>) {
-            if constexpr(is_one_of<V, char *, char const *, std::string>::value) {
-                jsonStr_ << std::quoted(EscapeStringValue(GetItem(std::forward<V>(value)))) << ",";
-            } else {
-                jsonStr_ << GetItem(std::forward<V>(value)) << ",";
-            }
+            jsonStr_ << GetItem(std::forward<V>(value)) << ",";
         } else if constexpr(is_type_value_vector_v<V>) {
             jsonStr_ << "[";
-            if constexpr(is_one_of<typename std::decay_t<V>::value_type, char *, char const *, std::string>::value) {
-                for (const auto &it : value) {
-                        jsonStr_ << std::quoted(EscapeStringValue(GetItem(it))) << ",";
-                    }
-            } else {
-                for (const auto &it : value) {
-                    jsonStr_ << GetItem(it) << ",";
-                }
+            for (const auto &it : value) {
+                jsonStr_ << GetItem(it) << ",";
             }
             if (!value.empty()) {
                 jsonStr_.seekp(-1, std::ios_base::end);

@@ -54,18 +54,15 @@ public:
     // implementations of FaultloggerPlugin interfaces
     void AddFaultLog(FaultLogInfo info) override;
     std::unique_ptr<FaultLogInfo> GetFaultLogInfo(const std::string& logPath) override;
-    std::unique_ptr<FaultLogQueryResultInner> QuerySelfFaultLog(int32_t id, int32_t faultType, int32_t maxNum) override;
+    std::unique_ptr<FaultLogQueryResultInner> QuerySelfFaultLog(int32_t uid,
+        int32_t pid, int32_t faultType, int32_t maxNum) override;
 
     // implementations of EventListener interfaces
     // for intercepting JsCrash from engine pipeline
     void OnUnorderedEvent(const Event &msg) override;
     std::string GetListenerName() override;
-    bool OnOrderedEvent(Event &msg) override
-    {
-        return true;
-    };
+
 private:
-    bool IsOhosApplication(const FaultLogInfo& info);
     void AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event);
     void AddPublicInfo(FaultLogInfo& info);
     void Dump(int fd, const DumpRequest& request) const;

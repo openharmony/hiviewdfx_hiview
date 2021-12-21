@@ -20,18 +20,21 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <unordered_map>
+
 #include "event.h"
+#include "plugin.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class EventDispatchQueue {
 public:
-    EventDispatchQueue(const std::string& name, Event::ManageType type);
+    EventDispatchQueue(const std::string& name, Event::ManageType type, HiviewContext* context_);
     ~EventDispatchQueue();
 
     void Stop();
     void Start();
     void Enqueue(std::shared_ptr<Event> event);
-    void RegisterListener(std::weak_ptr<EventListener> listener);
     int GetWaitQueueSize() const;
     bool IsRunning() const
     {
@@ -40,18 +43,16 @@ public:
 
 private:
     void Run();
-    void ProcessOrderedEvent(Event &event);
     void ProcessUnorderedEvent(const Event &event);
-    bool IsEventMatchCurrentListener(const Event& event, std::shared_ptr<EventListener> listener);
 
     volatile bool stop_;
     bool isRunning_ = false;
     std::string threadName_;
     Event::ManageType type_;
+    HiviewContext* context_;
     mutable std::mutex mutexLock_;
     std::condition_variable condition_;
     std::list<std::shared_ptr<Event>> pendingEvents_;
-    std::list<std::weak_ptr<EventListener>> listeners_;
     std::unique_ptr<std::thread> thread_;
 };
 } // namespace HiviewDFX

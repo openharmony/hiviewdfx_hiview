@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER(EventProcessorExample2)
+REGISTER(EventProcessorExample2);
 bool EventProcessorExample2::CanProcessEvent(std::shared_ptr<Event> event)
 {
     return false;

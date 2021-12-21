@@ -17,15 +17,16 @@
 
 #include <regex>
 
-#include "freeze_detector_utils.h"
+#include "logger.h"
 #include "plugin.h"
+#include "string_util.h"
 #include "sys_event_dao.h"
 #include "vendor.h"
 #include "watch_point.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_RELIABILITY_LOG_TAG("FreezeDetector");
+DEFINE_LOG_TAG("FreezeDetector");
 
 void DBHelper::SelectEventFromDB(
     bool all, unsigned long start, unsigned long end, std::list<WatchPoint>& list)
@@ -58,14 +59,10 @@ void DBHelper::SelectEventFromDB(
             continue;
         }
 
-        long pid = std::strtoul(record->GetEventValue(FreezeDetectorPlugin::EVENT_PID).c_str(), nullptr, 0);
-        if (pid == 0) {
-            pid = std::strtoul(record->GetEventValue(EventStore::EventCol::PID).c_str(), nullptr, 0);
-        }
-        long uid = std::strtoul(record->GetEventValue(FreezeDetectorPlugin::EVENT_UID).c_str(), nullptr, 0);
-        if (uid == 0) {
-            uid = std::strtoul(record->GetEventValue(EventStore::EventCol::UID).c_str(), nullptr, 0);
-        }
+        long pid = record->GetEventIntValue(FreezeDetectorPlugin::EVENT_PID);
+        pid = pid ? pid : record->GetPid();
+        long uid = record->GetEventIntValue(FreezeDetectorPlugin::EVENT_UID);
+        uid = uid ? uid : record->GetUid();
         long tid = std::strtoul(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
 
         WatchPoint watchPoint = WatchPoint::Builder()
@@ -78,7 +75,7 @@ void DBHelper::SelectEventFromDB(
             .InitTid(tid)
             .InitPackageName(record->GetEventValue(FreezeDetectorPlugin::EVENT_PACKAGE_NAME))
             .InitProcessName(record->GetEventValue(FreezeDetectorPlugin::EVENT_PROCESS_NAME))
-            .InitMsg(record->GetEventValue(FreezeDetectorPlugin::EVENT_MSG))
+            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeDetectorPlugin::EVENT_MSG), "\\n", "\n"))
             .Build();
 
         std::string info = record->GetEventValue(EventStore::EventCol::INFO);
