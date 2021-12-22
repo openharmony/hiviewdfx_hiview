@@ -23,7 +23,6 @@ public:
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnLoad() override;
     void OnUnload() override;
-    bool OnOrderedEvent(Event &msg) override;
     void OnUnorderedEvent(const Event &msg) override;
     std::string GetListenerName() override;
 };

@@ -13,7 +13,6 @@
 
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
-
 config("freezedetectors_test_config") {
   visibility = [ ":*" ]
 

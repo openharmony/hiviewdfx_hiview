@@ -125,7 +125,7 @@ int32_t EventSourceExample::GetPollFd()
 
     int wd = inotify_add_watch(inotifyFd_, SYSTEM_FAULT_LOG_PATH.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
     if (wd < 0) {
-        printf("failed to add watch entry : %s.\n", strerror(errno));
+        printf("failed to add watch entry : %s(%s).\n", strerror(errno), SYSTEM_FAULT_LOG_PATH.c_str());
         close(inotifyFd_);
         inotifyFd_ = -1;
         return -1;

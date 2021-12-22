@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_PUBLIC_DEFINES_H
 #define HIVIEW_PUBLIC_DEFINES_H
 
@@ -43,7 +44,9 @@
         ENGINE_ROLLBACK_USED_TRAFFIC, \
         ENGINE_CAR_UPDATE_CONFIG, \
         ENGINE_CAPTURE_CAR_LOG, \
-        ENGINE_CAPTURE_CAR_LOG_FINISH
+        ENGINE_CAPTURE_CAR_LOG_FINISH, \
+        ENGINE_SYSEVENT_DEBUG_MODE, \
+        ENGINE_ROLLBACK_TRAFFIC_BY_INFO
 
 // define your audit event type here
 #define PRIVATE_AUDIT_EVENT_TYPE \

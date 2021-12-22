@@ -20,9 +20,10 @@
 #include <string>
 #include <vector>
 
-#include "fault_detect_event.h"
+#include "faultlog_info.h"
 #include "pipeline.h"
 #include "resolver.h"
+#include "smart_parser.h"
 #include "singleton.h"
 #include "watch_point.h"
 
@@ -33,42 +34,39 @@ class Vendor : public Singleton<Vendor> {
 
 public:
     bool Init();
-    bool GetInitFlag();
-    std::string GetRebootReason();
     bool IsFreezeEvent(const std::string& domain, const std::string& stringId) const;
     bool IsApplicationEvent(const std::string& domain, const std::string& stringId) const;
-    bool IsHardwareEvent(const std::string& domain, const std::string& stringId) const;
     bool IsBetaVersion() const;
     std::set<std::string> GetFreezeStringIds() const;
-    std::shared_ptr<PipelineEvent> ProcessHardwareEvent(unsigned long timestamp);
+    std::string GetTimeString(unsigned long timestamp) const;
+    std::string MergeEventLog(
+        const WatchPoint &watchPoint, const std::list<WatchPoint>& list,
+        const FreezeResult& result, std::string& digest) const;
     std::shared_ptr<PipelineEvent> MakeEvent(
         const WatchPoint &watchPoint, const WatchPoint& matchedWatchPoint,
-        const std::list<WatchPoint>& list, const FreezeResult& result) const;
+        const std::list<WatchPoint>& list, const FreezeResult& result,
+        const std::string& logPath, const std::string& digest) const;
     bool ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const;
-    FreezeResult MakeSystemResult() const;
-    void UpdateHardwareEventLog(WatchPoint& watchPoint) const;
-    void SetCmdlinePath(const std::string& path)
-    {
-        cmdlinePath_ = path;
-    };
 
 private:
     static const int MAX_LINE_NUM = 100;
     static const int SYSTEM_RESULT_ID = 1;
     static const int APPLICATION_RESULT_ID = 0;
-    static const inline std::string AP_S_PRESS6S = "AP_S_PRESS6S";
-    static const inline std::string BR_PRESS10S = "BR_PRESS_10S";
-    static const inline std::string LONG_PRESS = "LONG_PRESS";
-    static const inline std::string PRESS10S = "press10s";
-    static const inline std::string REBOOT_REASON = "reboot_reason";
-    static const inline std::string NORMAL_RESET_TYPE = "normal_reset_type";
-    static const inline std::string PATTERN_WITH_SPACE = "\\s*[^\\n\\r]*";
-    static const inline std::string PATTERN_WITHOUT_SPACE = "\\s*=\\s*([^ \\n]*)";
-    static const inline std::string SYSTEM_SCOPE = "sys";
+    static const int TIME_STRING_LEN = 16;
+    static const int MAX_FILE_NUM = 500;
+    static const int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
+    static const inline std::string HEADER = "*******************************************";
+    static const inline std::string HYPHEN = "-";
+    static const inline std::string NEW_LINE = "\n";
+    static const inline std::string EVENT_SUMMARY = "SUMMARY";
+    static const inline std::string POSTFIX = ".tmp";
+    static const inline std::string APPFREEZE = "appfreeze";
+    static const inline std::string SP_SYSTEMHUNGFAULT = "SystemHungFault";
+    static const inline std::string SP_APPFREEZE = "AppFreeze";
+    static const inline std::string SP_ENDSTACK = "END_STACK";
+    static const inline std::string FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
+    static const inline std::string SMART_PARSER_PATH = "/system/etc/hiview/";
 
-    void GetCmdlineContent();
-    void GetRebootReasonConfig();
-    void GetRelevanceConfig(std::vector<std::string>& values) const;
     bool GetMatchString(const std::string& src, std::string& dst, const std::string& key) const;
     bool IsSystemEvent(const std::string& domain, const std::string& stringId) const;
     bool IsSystemResult(const FreezeResult& result) const;
@@ -76,11 +74,6 @@ private:
 
     static const std::vector<std::pair<std::string, std::string>> applicationPairs_;
     static const std::vector<std::pair<std::string, std::string>> systemPairs_;
-    static const std::vector<std::pair<std::string, std::string>> hardwarePairs_;
-
-    std::string cmdlinePath_;
-    std::string cmdlineContent_;
-    std::vector<std::string> rebootReasons_;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

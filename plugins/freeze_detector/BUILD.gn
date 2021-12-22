@@ -17,15 +17,13 @@ import("//build/ohos.gni")
 config("freeze_detector_config") {
   visibility = [ ":*" ]
   include_dirs = [
-    "//base/hiviewdfx/hiview/base/event_store/include",
-    "//base/hiviewdfx/hiview/plugins/reliability/smart_parser",
+    "//third_party/libxml2/include",
     "//base/hiviewdfx/hiview/base/include",
+    "//base/hiviewdfx/hiview/utility/smart_parser",
+    "//base/hiviewdfx/hiview/base/event_store/include",
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
-    "//base/hiviewdfx/hiview/adapter/plugins/faultlogger/interfaces/cpp/innerkits/include",
-    "../../../../plugins/detectors/freezedetector",
-    "../../../include",
+    "//base/hiviewdfx/hiview/plugins/faultlogger/interfaces/cpp/innerkits/include",
     ".",
-    "$hiview_plugin/reliability/common/common_utils/include",
   ]
 }
 
@@ -42,16 +40,17 @@ ohos_source_set("freeze_detector") {
   configs = [ ":freeze_detector_config" ]
 
   external_deps = [
-    "hilog:libhilog",
+    "hilog_native:libhilog",
+    "hisysevent_native:libhisysevent",
     "hiview:libfaultlogger",
   ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
-    "$hiview_root/plugins/reliability/common/common_utils:hiview_reliability_common_utils",
-    "$hiview_root/plugins/reliability/smart_parser:smart_parser",
+    "$hiview_root/utility/smart_parser:smart_parser",
     "config:config",
+    "//third_party/libxml2:xml2",
   ]
 }
 

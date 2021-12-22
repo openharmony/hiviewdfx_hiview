@@ -12,14 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "doc_store.h"
 
 #include <cinttypes>
 #include <memory>
 
 #include "doc_db.h"
+#include "doc_util.h"
 #include "ejdb2.h"
 #include "hilog/log.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DOCDB"};
@@ -85,7 +88,7 @@ FINISH:
     if (rc != 0) {
         iwlog_ecode_error3(rc);
         HiLog::Error(LABEL, "put data to doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
-        return -1;
+        return MapErrorCode(rc);
     }
     return 0;
 }
@@ -116,7 +119,7 @@ int DocStore::Merge(const Entry &entry)
     iwrc rc = ejdb_patch(dbPtr->db_, COLLECTION, entry.value.c_str(), entry.id);
     if (rc != 0) {
         HiLog::Error(LABEL, "merge data to doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
-        return -1;
+        return MapErrorCode(rc);
     }
     return 0;
 }
@@ -126,7 +129,7 @@ int DocStore::Delete(const DataQuery &query)
     if (dbPtr == nullptr) {
         return -1;
     }
-    std::string delSql = query.ToDelString();
+    std::string delSql = query.ToDelString(query.limit_);
     HiLog::Debug(LABEL, "delete=%{public}s", delSql.c_str());
     JQL q = 0;
     iwrc rc = jql_create(&q, COLLECTION, delSql.c_str());
@@ -151,7 +154,7 @@ FINISH:
     if (rc != 0) {
         iwlog_ecode_error3(rc);
         HiLog::Error(LABEL, "delete data from doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
-        return -1;
+        return MapErrorCode(rc);
     }
     return 0;
 }
@@ -203,7 +206,7 @@ FINISH:
     } else {
         iwlog_ecode_error3(rc);
         HiLog::Error(LABEL, "query data from doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
-        return -1;
+        return MapErrorCode(rc);
     }
     return 0;
 }
@@ -266,7 +269,7 @@ FINISH:
     if (rc != 0) {
         iwlog_ecode_error3(rc);
         HiLog::Error(LABEL, "query data from doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
-        return -1;
+        return MapErrorCode(rc);
     }
     return 0;
 }

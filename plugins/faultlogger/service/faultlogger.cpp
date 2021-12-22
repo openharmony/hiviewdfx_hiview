@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "common_utils.h"
 #include "constants.h"
 #include "event.h"
 #include "file_util.h"
@@ -360,7 +361,8 @@ std::unique_ptr<FaultLogInfo> Faultlogger::GetFaultLogInfo(const std::string &lo
     return info;
 }
 
-std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t id, int32_t faultType, int32_t maxNum)
+std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t id,
+    int32_t pid, int32_t faultType, int32_t maxNum)
 {
     if (!hasInit_) {
         return nullptr;
@@ -378,60 +380,48 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
     std::string name = "";
     if (id != ROOT_UID) {
         auto appNames = GetApplicationNamesById(id);
-        if (appNames.empty()) {
-            HIVIEW_LOGE("Fail to request module name.");
-            return nullptr;
+        if (!appNames.empty()) {
+            name = appNames.front();
+        } else {
+            name = CommonUtils::GetProcNameByPid(pid);
         }
-        name = appNames.front();
     }
     return std::make_unique<FaultLogQueryResultInner>(mgr_->GetFaultInfoList(name, id, faultType, maxNum));
-}
-
-bool Faultlogger::IsOhosApplication(const FaultLogInfo& info)
-{
-    if (info.id == ROOT_UID) {
-        // record root fault logs
-        return true;
-    }
-
-    if (::OHOS::HiviewDFX::IsOhosApplication(info.id, info.module)) {
-        return true;
-    }
-
-    HIVIEW_LOGI("skip non-ohos apps:%{public}s", info.module.c_str());
-    return false;
 }
 
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
 {
     if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::APP_FREEZE)) {
-        HIVIEW_LOGI("Unsupported fault type");
+        HIVIEW_LOGW("Unsupported fault type");
         return;
     }
 
     std::string appName = GetApplicationNameById(info.id);
     if (!appName.empty()) {
         info.module = appName;
+    } else {
+        if (info.id != ROOT_UID) {
+            info.module = CommonUtils::GetProcNameByPid(info.pid);
+        }
     }
 
+    HIVIEW_LOGD("nameProc %{public}s", info.module.c_str());
     if ((info.module.empty()) || (!IsModuleNameValid(info.module))) {
-        HIVIEW_LOGI("Invalid module name %{public}s", info.module.c_str());
+        HIVIEW_LOGW("Invalid module name %{public}s", info.module.c_str());
         return;
     }
 
-    if (IsOhosApplication(info)) {
-        AddPublicInfo(info);
-        mgr_->SaveFaultLogToFile(info);
-        mgr_->SaveFaultInfoToRawDb(info);
-        HIVIEW_LOGW("\nSave Faultlog of Process:%{public}d\n"
-                    "ModuleName:%{public}s\n"
-                    "Reason:%{public}s\n"
-                    "Summary:%{public}s\n",
-                    info.pid,
-                    info.module.c_str(),
-                    info.reason.c_str(),
-                    info.summary.c_str());
-    }
+    AddPublicInfo(info);
+    mgr_->SaveFaultLogToFile(info);
+    mgr_->SaveFaultInfoToRawDb(info);
+    HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"
+                "ModuleName:%{public}s\n"
+                "Reason:%{public}s\n"
+                "Summary:%{public}s\n",
+                info.pid,
+                info.module.c_str(),
+                info.reason.c_str(),
+                info.summary.c_str());
 }
 
 void Faultlogger::OnUnorderedEvent(const Event &msg)

@@ -18,11 +18,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <chrono>
-#include <ctime>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace TimeUtil {
-constexpr int SECS_IN_MINUTE = 60;
 time_t StrToTimeStamp(const std::string& tmStr, const std::string& format)
 {
     std::string stTime = tmStr;
@@ -77,7 +76,7 @@ std::string GetTimeZone()
     if (gettimeofday(&tv, &tz) != 0) {
         return "";
     }
-    int tzHour = (-tz.tz_minuteswest) / SECS_IN_MINUTE;
+    int tzHour = (-tz.tz_minuteswest) / SECONDS_PER_MINUTE;
     std::string timeZone = (tzHour >= 0) ? "+" : "-";
     int absTzHour = std::abs(tzHour);
     if (absTzHour < 10) { // less than 10 hour
@@ -85,13 +84,27 @@ std::string GetTimeZone()
     }
     timeZone.append(std::to_string(absTzHour));
 
-    int tzMin = (-tz.tz_minuteswest) % SECS_IN_MINUTE;
+    int tzMin = (-tz.tz_minuteswest) % SECONDS_PER_MINUTE;
     int absTzMin = std::abs(tzMin);
     if (absTzMin < 10) { // less than 10 minute
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absTzMin));
     return timeZone;
+}
+
+int64_t Get0ClockStampMs()
+{
+    time_t now = std::time(nullptr);
+    int64_t zero = now;
+    struct tm *l = std::localtime(&now);
+    if (l != nullptr) {
+        l->tm_hour = 0;
+        l->tm_min = 0;
+        l->tm_sec = 0;
+        zero = std::mktime(l) * SEC_TO_MILLISEC;  // time is 00:00:00
+    }
+    return zero;
 }
 } // namespace TimeUtil
 } // namespace HiviewDFX

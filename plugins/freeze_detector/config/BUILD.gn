@@ -20,12 +20,7 @@ group("config") {
 
 ohos_prebuilt_etc("freeze_detector_rules") {
   source = "freeze_rules.xml"
-  if (is_standard_system) {
-    part_name = "hiview_L2"
-    subsystem_name = "hiviewdfx"
-  } else {
-    part_name = "hiview"
-    subsystem_name = "hiviewdfx"
-  }
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
   relative_install_dir = "hiview"
 }

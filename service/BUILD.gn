@@ -20,11 +20,7 @@ config("hiview_service_config") {
 }
 
 ohos_prebuilt_etc("hiview.rc") {
-  if (use_musl) {
-    source = "config/hiview.cfg"
-  } else {
-    source = "config/hiview.rc"
-  }
+  source = "config/hiview.cfg"
   relative_install_dir = "init"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

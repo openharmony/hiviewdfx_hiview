@@ -15,6 +15,7 @@
 #ifndef FEATURE_ANALYSIS_H
 #define FEATURE_ANALYSIS_H
 
+#include <ctime>
 #include <list>
 #include <map>
 #include <memory>
@@ -40,7 +41,7 @@ class FeatureAnalysis {
     };
 public:
     FeatureAnalysis(FeatureSet featureSet, std::map<std::string, std::string> composeRule,
-        const std::string& eventType) : taskId_(time(NULL)), eventType_(eventType), lineCursor_(0),
+        const std::string& eventType) : taskId_(time(nullptr)), eventType_(eventType), lineCursor_(0),
         errorCode_(DEFAULT), line_(""), featureSet_(featureSet), composeRule_(composeRule) {};
     ~FeatureAnalysis();
     FeatureAnalysis(const FeatureAnalysis&) = delete;

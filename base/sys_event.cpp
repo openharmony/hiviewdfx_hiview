@@ -171,6 +171,14 @@ std::string SysEvent::GetEventValue(const std::string& key)
     return value;
 }
 
+uint64_t SysEvent::GetEventIntValue(const std::string& key)
+{
+    uint64_t value = 0;
+    std::string regexStr = "\"" + key + "\":(\\d+)"; // "PID":PID
+    GetValueFromJson(jsonExtraInfo_, regexStr, value);
+    return value;
+}
+
 void SysEvent::SetEventValue(const std::string& key, int64_t value)
 {
     std::smatch keyMatch;

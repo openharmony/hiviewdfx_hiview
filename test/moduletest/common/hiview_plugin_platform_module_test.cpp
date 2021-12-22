@@ -76,5 +76,4 @@ void WaitForServiceReady(const std::string& serviceName)
 HWTEST_F(HiviewPluginPlatformModuleTest, HiviewStatusTest001, TestSize.Level0)
 {
     WaitForServiceReady("hiview");
-    WaitForServiceReady("faultloggerd");
 }

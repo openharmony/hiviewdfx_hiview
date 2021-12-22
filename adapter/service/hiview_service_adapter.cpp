@@ -16,9 +16,7 @@
 
 #include "logger.h"
 
-#if defined(__OHOS_STANDARD_SYSTEM__)
 #include "hiview_service_ability.h"
-#endif
 
 #include "hiview_service.h"
 namespace OHOS {
@@ -32,9 +30,7 @@ void HiviewServiceAdapter::StartService(HiviewService *service) const
     }
 
     HIVIEW_LOGD("start service.");
-#if defined(__OHOS_STANDARD_SYSTEM__)
     HiviewServiceAbility::StartService(service);
-#endif
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

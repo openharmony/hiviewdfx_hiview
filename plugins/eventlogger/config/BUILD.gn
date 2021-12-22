@@ -20,13 +20,8 @@ config("eventlogger_config_config") {
 
 ohos_prebuilt_etc("event_logger_config") {
   source = "event_logger_config"
-  if (is_standard_system) {
-    part_name = "hiview_L2"
-    subsystem_name = "hiviewdfx"
-  } else {
-    part_name = "hiview"
-    subsystem_name = "hiviewdfx"
-  }
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
   relative_install_dir = "hiview"
 }
 

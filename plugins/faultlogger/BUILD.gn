@@ -12,6 +12,15 @@
 # limitations under the License.
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
+
+ohos_shared_library("libfaultlogger") {
+  configs = [ "service/idl:faultlogger_service_impl_config" ]
+  public_configs = [ "interfaces/cpp/innerkits:faultlogger_innerkits_config" ]
+  deps = [ "interfaces/cpp/innerkits:faultlogger_client_impl" ]
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
 ohos_source_set("faultlogger") {
   deps = [ "service:faultlogger_service" ]
 
@@ -21,6 +30,7 @@ ohos_source_set("faultlogger") {
 group("unittest") {
   testonly = true
   deps = [
+    "interfaces/js/test/unittest:unittest",
     "test:FaultloggerClientUnittest",
     "test:FaultloggerUnittest",
   ]
@@ -28,5 +38,5 @@ group("unittest") {
 
 group("moduletest") {
   testonly = true
-  deps = []
+  deps = [ "interfaces/cpp/innerkits/test:FaultloggerNativeInterfaceTest" ]
 }

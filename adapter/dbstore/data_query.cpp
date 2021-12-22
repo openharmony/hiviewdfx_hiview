@@ -12,7 +12,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 #include "data_query.h"
+
 #include <string>
 
 namespace OHOS {
@@ -99,7 +101,7 @@ std::string DataQuery::ToString() const
     if (!selects_.empty()) {
         sql << " | ";
         sql << "/{";
-        for (int index = 0; index < selects_.size(); index++) {
+        for (std::size_t index = 0; index < selects_.size(); index++) {
             if (index != (selects_.size() - 1)) {
                 sql << selects_[index] << ", ";
             } else {
@@ -111,7 +113,7 @@ std::string DataQuery::ToString() const
     sql << " |";
     if (!orderFields_.empty()) {
         sql << " ";
-        for (int index = 0; index < orderFields_.size(); index++) {
+        for (std::size_t index = 0; index < orderFields_.size(); index++) {
             std::pair<bool, std::string> pair = orderFields_[index];
             std::string order = pair.first ? "asc" : "desc";
             sql << order << " /" << pair.second << " ";

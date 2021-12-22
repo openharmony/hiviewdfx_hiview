@@ -13,14 +13,10 @@
 import("//build/test.gni")
 group("unittest") {
   testonly = true
-  deps = []
+  deps = [ "plugins/eventservice/service:unittest" ]
 }
 
 group("moduletest") {
   testonly = true
   deps = []
-
-  if (is_large_system) {
-    deps += [ "plugins/faultlogger:moduletest" ]
-  }
 }

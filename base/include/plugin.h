@@ -15,9 +15,9 @@
 #ifndef HIVIEW_BASE_PLUGIN_H
 #define HIVIEW_BASE_PLUGIN_H
 
+#include <atomic>
 #include <ctime>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -32,6 +32,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class HiviewContext;
 class DllExport Plugin : public EventHandler, public std::enable_shared_from_this<Plugin> {
+public:
+    enum class PluginType {
+        STATIC,
+        DYNAMIC,
+        PROXY,
+    };
 public:
     Plugin() : handle_(DynamicModuleDefault), context_(nullptr){};
     virtual ~Plugin();
@@ -75,6 +81,26 @@ public:
     // called by audit module
     virtual std::string GetPluginInfo();
 
+    // EventListener
+    virtual void OnUnorderedEvent(const Event &msg)
+    {
+        return;
+    }
+
+    virtual std::string GetListenerName()
+    {
+        return GetName();
+    }
+
+    // Make sure that you insert non-overlayed range
+    void AddListenerInfo(uint32_t type, const EventListener::EventIdRange &range = EventListener::EventIdRange(0));
+    void AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo);
+    bool GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo);
+
+    void AddListenerInfo(uint32_t type, const std::string& eventName);
+    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
+    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
+
     // reinsert the event into the workloop
     // delay in seconds
     void DelayProcessEvent(std::shared_ptr<Event> event, uint64_t delay);
@@ -84,12 +110,9 @@ public:
     void SetName(const std::string& name);
     void SetVersion(const std::string& version);
     void BindWorkLoop(std::shared_ptr<EventLoop> loop);
+    void UpdateActiveTime();
+    void UpdateTimeByDelay(time_t delay);
     std::shared_ptr<EventLoop> GetWorkLoop();
-
-    bool IsDynamic() const
-    {
-        return (handle_ != DynamicModuleDefault);
-    };
 
     HiviewContext* GetHiviewContext()
     {
@@ -104,12 +127,47 @@ public:
     void SetHandle(DynamicModule handle)
     {
         handle_ = handle;
+        if (handle_ != nullptr) {
+            type_ = PluginType::DYNAMIC;
+        }
     };
 
+    void SetBundleName(const std::string& bundle)
+    {
+        bundle_ = bundle;
+    }
+
+    bool IsBundlePlugin()
+    {
+        return bundle_.empty();
+    }
+
+    bool HasLoaded()
+    {
+        return loaded_;
+    }
+
+    void SetType(PluginType type)
+    {
+        type_ = type;
+    }
+
+    PluginType GetType() const
+    {
+        return type_;
+    }
+
+    time_t GetLastActiveTime() const
+    {
+        return lastActiveTime_;
+    }
 protected:
     std::string name_;
+    std::string bundle_;
     std::string version_;
     std::shared_ptr<EventLoop> workLoop_;
+    PluginType type_ = PluginType::STATIC;
+    std::atomic<time_t> lastActiveTime_;
 
 private:
     DynamicModule handle_;
@@ -117,22 +175,16 @@ private:
     // always available in framework callbacks
     HiviewContext* context_;
     std::once_flag contextSetFlag_;
+    std::atomic<bool> loaded_;
 };
 class HiviewContext {
 public:
     virtual ~HiviewContext(){};
-    // post event to broadcast queue, the event will be terminated delivering if consumed by one plugin
-    virtual void PostOrderedEvent(std::shared_ptr<Plugin> plugin __UNUSED, std::shared_ptr<Event> event __UNUSED) {};
-
     // post event to broadcast queue, the event will be delivered to all plugin that concern this event
     virtual void PostUnorderedEvent(std::shared_ptr<Plugin> plugin __UNUSED, std::shared_ptr<Event> event __UNUSED) {};
 
-    // register listener to ordered broadcast queue
-    // for the reason that no business use this interface, mark it as deprecated
-    virtual void RegisterOrderedEventListener(std::weak_ptr<EventListener> listener __UNUSED) {};
-
     // register listener to unordered broadcast queue
-    virtual void RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener __UNUSED) {};
+    virtual void RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener __UNUSED) {};
 
     // send a event to a specific plugin and wait the return of the OnEvent.
     virtual bool PostSyncEventToTarget(std::shared_ptr<Plugin> caller __UNUSED, const std::string& callee __UNUSED,
@@ -199,6 +251,39 @@ public:
         bool forceUpdate __UNUSED)
     {
         return true;
+    }
+
+    virtual void AppendPluginToPipeline(std::shared_ptr<Plugin> plugin __UNUSED,
+                                        const std::string& pipelineName __UNUSED) {};
+    virtual void RequestLoadBundle(const std::string& bundleName __UNUSED) {};
+    virtual std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy __UNUSED)
+    {
+        return nullptr;
+    }
+
+    virtual std::shared_ptr<Plugin> GetPluginByName(const std::string& name)
+    {
+        return nullptr;
+    }
+
+    virtual void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin, const std::set<std::string>& eventNames,
+        const std::set<EventListener::EventIdRange>& listenerInfo) {};
+
+    virtual std::vector<std::weak_ptr<Plugin>> GetListenerInfo(uint32_t type,
+        const std::string& eventNames, uint32_t eventId)
+    {
+        return std::vector<std::weak_ptr<Plugin>>();
+    }
+
+    virtual bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+        std::set<EventListener::EventIdRange> &listenerInfo)
+    {
+        return false;
+    }
+
+    virtual bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin, std::set<std::string> &eventNames)
+    {
+        return false;
     }
 };
 } // namespace HiviewDFX

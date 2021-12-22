@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace FileUtil {
@@ -84,6 +85,14 @@ void RemoveFolderBeginWith(const std::string &path, const std::string &folderNam
 bool WriteBufferToFd(int fd, const char* buffer, size_t size)
 {
     return true;
+}
+
+bool RenameFile(const std::string& src, const std::string& dest)
+{
+    if (std::rename(src.c_str(), dest.c_str()) == 0) {
+        return true;
+    }
+    return false;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX

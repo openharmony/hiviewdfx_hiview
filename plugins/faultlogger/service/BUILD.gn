@@ -13,6 +13,36 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
+config("faultlogger_service_adapter_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "." ]
+}
+
+ohos_source_set("faultlogger_service_ability") {
+  include_dirs = [
+    "//utils/native/base/include",
+    "$hiview_plugin/faultlogger/common",
+    "$hiview_plugin/faultlogger/service",
+  ]
+
+  public_configs = [ ":faultlogger_service_adapter_config" ]
+
+  sources = [ "faultlogger_adapter.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "idl:faultlogger_service_impl",
+  ]
+
+  external_deps = [
+    "hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+  ]
+}
+
 ohos_source_set("faultlogger_service") {
   include_dirs = [
     ".",
@@ -27,7 +57,7 @@ ohos_source_set("faultlogger_service") {
   ]
 
   deps = [
-    "$hiview_adapter/plugins/faultlogger:faultlogger_adapter",
+    ":faultlogger_service_ability",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
   ]

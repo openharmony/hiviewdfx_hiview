@@ -13,28 +13,50 @@
  * limitations under the License.
  */
 #include "plugin_factory.h"
+
 #include "logger.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-PluginFactory");
-std::shared_ptr<std::map<std::string, PluginInstance>> PluginFactory::GetGlobalPluginRegistryMap()
+std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<PluginRegistInfo>>> PluginFactory::GetGlobalPluginRegistryMap()
 {
-    static std::shared_ptr<std::map<std::string, PluginInstance>> pluginMap;
+    static std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<PluginRegistInfo>>> pluginMap;
     if (pluginMap == nullptr) {
-        pluginMap = std::make_shared<std::map<std::string, PluginInstance>>();
+        pluginMap = std::make_shared<std::unordered_map<std::string, std::shared_ptr<PluginRegistInfo>>>();
     }
     return pluginMap;
 }
 
-void PluginFactory::RegisterPlugin(const std::string& name, PluginInstance func)
+std::shared_ptr<PluginRegistInfo> PluginFactory::GetGlobalPluginInfo(const std::string& name)
 {
-    if (func == nullptr) {
+    auto map = GetGlobalPluginRegistryMap();
+    auto it = map->find(name);
+    if (it != map->end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Plugin> PluginFactory::GetPlugin(const std::string& name)
+{
+    auto info = GetGlobalPluginInfo(name);
+    if (info != nullptr) {
+        return info->getPluginObject();
+    }
+    return nullptr;
+}
+
+void PluginFactory::RegisterPlugin(const std::string& name, std::shared_ptr<PluginRegistInfo> func)
+{
+    if (func->getPluginObject == nullptr) {
         HIVIEW_LOGW("Register null plugin constructor from %{public}s.", name.c_str());
         return;
     }
     // force update plugin constructor
     auto pluginMap = GetGlobalPluginRegistryMap();
-    pluginMap->insert(std::make_pair(name, func));
+    if (pluginMap->find(name) == pluginMap->end()) {
+        pluginMap->insert(std::pair<std::string, std::shared_ptr<PluginRegistInfo>>(name, func));
+    }
 #ifdef _WIN32
     // When PluginFactory is loading, the logger is not loaded.
 #else
@@ -44,19 +66,9 @@ void PluginFactory::RegisterPlugin(const std::string& name, PluginInstance func)
 
 void PluginFactory::UnregisterPlugin(const std::string& name)
 {
+    HIVIEW_LOGD("UnregisterPlugin from %{public}s.", name.c_str());
     auto pluginMap = GetGlobalPluginRegistryMap();
     pluginMap->erase(name);
-}
-
-std::shared_ptr<Plugin> PluginFactory::GetPlugin(const std::string& name)
-{
-    auto pluginMap = GetGlobalPluginRegistryMap();
-    auto it = pluginMap->find(name);
-    if (it == pluginMap->end()) {
-        HIVIEW_LOGW("Could not find plugin with name:%{public}s.", name.c_str());
-        return nullptr;
-    }
-    return it->second();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

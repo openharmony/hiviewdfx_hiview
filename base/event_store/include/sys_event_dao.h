@@ -22,6 +22,7 @@
 
 #include "sys_event.h"
 #include "sys_event_query.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
@@ -31,6 +32,10 @@ public:
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
     static int Delete(SysEventQuery &sysEventQuery);
     static int Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange = true);
+    static int BackupDB(const std::string &dbBakFile);
+    static int CloseDB();
+    static int DeleteDB();
+    static std::string GetDataDir();
     static std::string GetDataFile();
 }; // SysEventDao
 } // EventStore

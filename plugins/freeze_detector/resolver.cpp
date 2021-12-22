@@ -17,13 +17,10 @@
 
 #include <sys/time.h>
 
-#include "common_defines.h"
 #include "db_helper.h"
-#include "faultlogger_client.h"
 #include "file_util.h"
 #include "logger.h"
 #include "plugin.h"
-//#include "smart_parser.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
@@ -31,7 +28,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_RELIABILITY_LOG_TAG("FreezeDetector");
+DEFINE_LOG_TAG("FreezeDetector");
 
 FreezeResolver::FreezeResolver() : startTime_(time(nullptr) * MILLISECOND)
 {
@@ -43,62 +40,13 @@ FreezeResolver::~FreezeResolver()
 
 bool FreezeResolver::Init()
 {
-    // freeze_config.xml
-    if (Vendor::GetInstance().Init() == false) {
-        HIVIEW_LOGE("failed to init vendor.");
-        return false;
-    }
-
     // freeze_rules.xml
     if (FreezeRuleCluster::GetInstance().Init() == false) {
         HIVIEW_LOGE("failed to init rule.");
         return false;
     }
+
     return true;
-}
-
-std::shared_ptr<PipelineEvent> FreezeResolver::ProcessHardwareEvent() const
-{
-    return Vendor::GetInstance().ProcessHardwareEvent(startTime_);
-}
-
-std::shared_ptr<PipelineEvent> FreezeResolver::ProcessLongPressEvent() const
-{
-    if (Vendor::GetInstance().GetRebootReason() == "") {
-        return nullptr;
-    }
-
-    auto event = std::make_shared<SysEvent>("FreezeResolver", nullptr, "");
-    event->domain_ = DOMAIN_LONGPRESS;
-    event->eventName_ = STRINGID_LONGPRESS;
-    event->happenTime_ = startTime_;
-    event->messageType_ = Event::MessageType::SYS_EVENT;
-    event->SetEventValue(EventStore::EventCol::DOMAIN, DOMAIN_LONGPRESS);
-    event->SetEventValue(EventStore::EventCol::NAME, STRINGID_LONGPRESS);
-    event->SetEventValue(EventStore::EventCol::TYPE, Event::MessageType::SYS_EVENT);
-    event->SetEventValue(EventStore::EventCol::TS, startTime_);
-    event->SetEventValue(EventStore::EventCol::TZ, GetTimeZone()); // +0800
-    event->SetEventValue(FreezeDetectorPlugin::EVENT_PID, "0");
-    event->SetEventValue(FreezeDetectorPlugin::EVENT_UID, "0");
-    event->SetEventValue(FreezeDetectorPlugin::EVENT_PACKAGE_NAME, STRINGID_LONGPRESS);
-    event->SetEventValue(FreezeDetectorPlugin::EVENT_PROCESS_NAME, STRINGID_LONGPRESS);
-    event->SetEventValue(FreezeDetectorPlugin::EVENT_MSG, STRINGID_LONGPRESS);
-    return event;
-}
-
-bool FreezeResolver::ResolveLongPressEvent() const
-{
-    if (Vendor::GetInstance().GetRebootReason() != "") {
-        WatchPoint matchedWatchPoint;
-        WatchPoint watchPoint = WatchPoint::Builder().InitDomain(DOMAIN_LONGPRESS)
-            .InitStringId(STRINGID_LONGPRESS).InitTimestamp(time(nullptr) * MILLISECOND).Build();
-        FreezeResult result;
-        std::list<WatchPoint> list;
-        if (ResolveEvent(watchPoint, matchedWatchPoint, list, result)) { // remove list size checking
-            return true;
-        }
-    }
-    return false;
 }
 
 bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint, WatchPoint& matchedWatchPoint,
@@ -127,33 +75,10 @@ bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint, WatchPoint& matchedWat
     return FreezeRuleCluster::GetInstance().GetResult(watchPoint, matchedWatchPoint, list, result);
 }
 
-std::shared_ptr<PipelineEvent> FreezeResolver::ProcessSystemEvent() const
-{
-    std::list<WatchPoint> list;
-    DBHelper::SelectEventFromDB(true, startTime_ - REBOOT_TIME_WINDOW * MILLISECOND, startTime_, list);
-    FreezeResult result = Vendor::GetInstance().MakeSystemResult();
-    if (Vendor::GetInstance().ReduceRelevanceEvents(list, result) == false) {
-        HIVIEW_LOGI("no relevance for default event");
-        return nullptr;
-    }
-
-    if (Vendor::GetInstance().IsHardwareEvent(list.front().GetDomain(), list.front().GetStringId())) {
-        result.SetScope(HARDWARE_SCOPE);
-    }
-
-    MergeEventLog(list.front(), list);
-
-    HIVIEW_LOGI("system events size %{public}zu", list.size());
-    WatchPoint dummyWatchPoint;
-    return Vendor::GetInstance().MakeEvent(list.front(), dummyWatchPoint, list, result);
-}
-
 std::shared_ptr<PipelineEvent> FreezeResolver::ProcessEvent(WatchPoint &watchPoint) const
 {
     HIVIEW_LOGI("process event [%{public}s, %{public}s]",
         watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
-
-    Vendor::GetInstance().UpdateHardwareEventLog(watchPoint);
 
     FreezeResult result;
     std::list<WatchPoint> list;
@@ -164,111 +89,31 @@ std::shared_ptr<PipelineEvent> FreezeResolver::ProcessEvent(WatchPoint &watchPoi
         return nullptr;
     }
 
-    if (Vendor::GetInstance().ReduceRelevanceEvents(list, result) == false) {
-        HIVIEW_LOGI("no relevance for event [%{public}s, %{public}s]",
-            watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
-        return nullptr;
-    }
-
-    MergeEventLog(watchPoint, list);
-
-    return Vendor::GetInstance().MakeEvent(watchPoint, matchedWatchPoint, list, result);
-}
-
-bool FreezeResolver::MergeEventLog(const WatchPoint &watchPoint, const std::list<WatchPoint>& list) const
-{
-    std::string domain = watchPoint.GetDomain();
-    std::string stringId = watchPoint.GetStringId();
-    std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
-    long pid = watchPoint.GetPid();
-    long uid = watchPoint.GetUid();
-    std::string packageName = watchPoint.GetPackageName();
-    std::string processName = watchPoint.GetProcessName();
-    std::string msg = watchPoint.GetMsg();
-
-    std::string logPath;
-    if (Vendor::GetInstance().IsApplicationEvent(domain, stringId)) {
-        logPath = FAULTLOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+    if (watchPoint.GetDomain() == matchedWatchPoint.GetDomain() &&
+        watchPoint.GetStringId() == matchedWatchPoint.GetStringId()) {
+        // self rule with non-zero time window
+        if (list.size() > 1) {
+            std::list<WatchPoint>::iterator it;
+            for (it = list.begin(); it != list.end();) {
+                if (it->GetDomain() == watchPoint.GetDomain() && it->GetStringId() == watchPoint.GetStringId()) {
+                    it++;
+                } else {
+                    it = list.erase(it);
+                }
+            }
+        }
+        // self rule with zero time window
     }
     else {
-        logPath = FAULTLOGGER_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        list.clear();
+        list.push_back(matchedWatchPoint);
+        list.push_back(watchPoint);
     }
 
-    std::ofstream output(logPath, std::ios::out);
-    if (!output.is_open()) {
-        HIVIEW_LOGE("cannot open log file for writing:%{public}s.\n", logPath.c_str());
-        return false;
-    }
-    output << HEADER << std::endl;
-    output << FreezeDetectorPlugin::EVENT_DOMAIN << FreezeDetectorPlugin::COLON << domain << std::endl;
-    output << FreezeDetectorPlugin::EVENT_STRINGID << FreezeDetectorPlugin::COLON << stringId << std::endl;
-    output << FreezeDetectorPlugin::EVENT_TIMESTAMP << FreezeDetectorPlugin::COLON <<
-        watchPoint.GetTimestamp() << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PID << FreezeDetectorPlugin::COLON << pid << std::endl;
-    output << FreezeDetectorPlugin::EVENT_UID << FreezeDetectorPlugin::COLON << uid << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << FreezeDetectorPlugin::COLON << packageName << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PROCESS_NAME << FreezeDetectorPlugin::COLON << processName << std::endl;
-    output << FreezeDetectorPlugin::EVENT_MSG << FreezeDetectorPlugin::COLON << msg << std::endl;
-    output.flush();
-    output.close();
+    std::string digest;
+    std::string logPath = Vendor::GetInstance().MergeEventLog(watchPoint, list, result, digest);
 
-    HIVIEW_LOGI("merging list size %{public}zu", list.size());
-    for (auto node : list) {
-        std::string filePath = node.GetLogPath();
-        HIVIEW_LOGI("merging file:%{public}s.\n", filePath.c_str());
-        if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
-            continue;
-        }
-
-        std::ifstream ifs(filePath, std::ios::in);
-        if (!ifs.is_open()) {
-            HIVIEW_LOGE("cannot open log file for reading:%{public}s.\n", filePath.c_str());
-            continue;
-        }
-
-        std::ofstream ofs(logPath, std::ios::out | std::ios::app);
-        if (!ofs.is_open()) {
-            ifs.close();
-            HIVIEW_LOGE("cannot open log file for writing:%{public}s.\n", logPath.c_str());
-            continue;
-        }
-
-        ofs << HEADER << std::endl;
-        ofs << ifs.rdbuf();
-
-        ofs.flush();
-        ofs.close();
-        ifs.close();
-    }
-
-    //auto eventInfos = SmartParser::Analysis(logPath, DEFAULT_PATH, SP_APPFREEZE);
-    //std::string summary = eventInfos[SP_ENDSTACK];
-
-    FaultLogInfoInner info;
-    info.time = watchPoint.GetTimestamp() / MILLISECOND;
-    info.id = uid;
-    info.pid = pid;
-    info.faultLogType = FaultLogType::APP_FREEZE;
-    info.module = packageName;
-    info.reason = stringId;
-    //info.summary = summary;
-    info.summary = stringId;
-    info.logPath = logPath;
-    AddFaultLog(info);
-
-    return true;
-}
-
-std::string FreezeResolver::GetTimeString(unsigned long timestamp) const
-{
-    struct tm tm;
-    time_t ts;
-    ts = timestamp / MILLISECOND; // ms
-    localtime_r(&ts, &tm);
-    char buf[TIME_STRING_LEN] = {0};
-
-    strftime(buf, TIME_STRING_LEN - 1, "%Y%m%d%H%M%S", &tm);
-    return std::string(buf, strlen(buf));
+    return Vendor::GetInstance().MakeEvent(watchPoint, matchedWatchPoint, list, result, logPath, digest);
 }
 
 std::string FreezeResolver::GetTimeZone() const

@@ -31,8 +31,6 @@ config("hiview_base_config") {
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
   if (is_standard_system) {
     cflags_cc += [ "-D__OHOS_STANDARD_SYSTEM__" ]
-  } else if (is_large_system) {
-    cflags_cc += [ "-D__OHOS_LARGE_SYSTEM__" ]
   }
 }
 
@@ -54,6 +52,7 @@ ohos_source_set("hiview_base") {
     "pipeline.cpp",
     "plugin.cpp",
     "plugin_factory.cpp",
+    "plugin_proxy.cpp",
     "sys_event.cpp",
   ]
 

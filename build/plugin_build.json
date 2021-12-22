@@ -11,6 +11,18 @@
         "Faultlogger": {
             "path": "plugins/faultlogger",
             "name": "faultlogger"
+        },
+        "EventLogger": {
+            "path": "plugins/eventlogger",
+            "name": "eventlogger"
+        },
+        "FreezeDetectorPlugin": {
+            "path": "plugins/freeze_detector",
+            "name": "freeze_detector"
+        },
+        "HiCollieCollector": {
+            "path": "plugins/hicollie_collector",
+            "name": "hicollie_collector"
         }
     },
     "rules": [
@@ -29,6 +41,15 @@
                     "Faultlogger": {
                         "loadtime": 0
                     },
+                    "EventLogger": {
+                        "loadtime": 0
+                    },
+                    "FreezeDetectorPlugin": {
+                        "loadtime": 0
+                    },
+                    "HiCollieCollector": {
+                        "loadtime": 0
+                    },
                     "SysEventService": {
                         "loadtime": 0
                     }
@@ -36,7 +57,8 @@
                 "pipelines": {
                     "SysEventPipeline": [
                         "SysEventService",
-                        "Faultlogger"
+                        "Faultlogger",
+                        "EventLogger"
                     ]
                 },
                 "pipelinegroups": {

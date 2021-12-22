@@ -17,7 +17,6 @@ group("unittest") {
   testonly = true
   deps = [
     ":AuditLogParserTest",
-    ":EventDispatchQueueTest",
     ":EventLoopTest",
     ":PluginFactoryTest",
     ":PluginPipelineTest",
@@ -55,18 +54,6 @@ ohos_unittest("PluginFactoryTest") {
     "unittest/common/plugin_example.cpp",
     "unittest/common/plugin_factory_test.cpp",
   ]
-
-  deps = [
-    "$hiview_base:hiview_base",
-    "//third_party/googletest:gtest_main",
-  ]
-}
-
-ohos_unittest("EventDispatchQueueTest") {
-  module_out_path = module_output_path
-  configs = [ ":unittest_config" ]
-
-  sources = [ "unittest/common/event_dispatch_queue_test.cpp" ]
 
   deps = [
     "$hiview_base:hiview_base",

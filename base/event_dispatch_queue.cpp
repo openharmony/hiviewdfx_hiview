@@ -18,14 +18,15 @@
 #include <memory>
 
 #include "file_util.h"
-#include "thread_util.h"
 #include "logger.h"
+#include "plugin.h"
+#include "thread_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventDispatchQueue");
-EventDispatchQueue::EventDispatchQueue(const std::string& name, Event::ManageType type)
-    : stop_(false), isRunning_(false), threadName_(name), type_(type)
+EventDispatchQueue::EventDispatchQueue(const std::string& name, Event::ManageType type, HiviewContext* context)
+    : stop_(false), isRunning_(false), threadName_(name), type_(type), context_(context)
 {}
 
 EventDispatchQueue::~EventDispatchQueue()
@@ -56,9 +57,7 @@ void EventDispatchQueue::Run()
             continue;
         }
 
-        if (type_ == Event::ManageType::ORDERED) {
-            ProcessOrderedEvent(*(event.get()));
-        } else {
+        if (type_ == Event::ManageType::UNORDERED) {
             ProcessUnorderedEvent(*(event.get()));
         }
 
@@ -68,75 +67,16 @@ void EventDispatchQueue::Run()
     }
 }
 
-void EventDispatchQueue::RegisterListener(std::weak_ptr<EventListener> listener)
-{
-    HIVIEW_LOGI("EventDispatchQueue RegisterListener");
-    listeners_.push_back(std::move(listener));
-}
-
-void EventDispatchQueue::ProcessOrderedEvent(Event& event)
-{
-    bool skip = true;
-    bool stop = false;
-    for (const auto& listener : listeners_) {
-        if (std::shared_ptr<EventListener> sp = listener.lock()) {
-            // dispatch anonymous event from head of the listeners
-            if (event.sender_.empty()) {
-                skip = false;
-            }
-
-            if (skip && (sp->GetListenerName() == event.sender_)) {
-                skip = false;
-                continue;
-            }
-
-            if (skip) {
-                continue;
-            }
-
-            if (IsEventMatchCurrentListener(event, sp)) {
-                stop = sp->OnOrderedEvent(event);
-            }
-
-            if (stop) {
-                HIVIEW_LOGI("Event %d consumed by %{public}s.", event.eventId_, sp->GetListenerName().c_str());
-                break;
-            }
-        }
-    }
-}
-
 void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
 {
-    for (const auto& listener : listeners_) {
-        if (std::shared_ptr<EventListener> sp = listener.lock()) {
-            if (IsEventMatchCurrentListener(event, sp)) {
-                sp->OnUnorderedEvent(event);
-            }
+    auto eventName = event.domain_ + "_" + event.eventName_;
+    auto listeners = context_->GetListenerInfo(event.messageType_, eventName, event.eventId_);
+    for (auto& tmp : listeners) {
+        auto listener = tmp.lock();
+        if (listener != nullptr) {
+            listener->OnUnorderedEvent(event);
         }
     }
-}
-
-bool EventDispatchQueue::IsEventMatchCurrentListener(const Event& event, std::shared_ptr<EventListener> listener)
-{
-    if (!event.eventName_.empty() && !event.domain_.empty()) {
-        auto eventName = event.domain_ + "_" + event.eventName_;
-        std::set<std::string> strListenerInfo;
-        if (listener->GetListenerInfo(event.messageType_, strListenerInfo)) {
-            return std::any_of(strListenerInfo.begin(), strListenerInfo.end(), [&](const std::string& name) {
-                return (eventName.find(name) != std::string::npos);
-            });
-        }
-        return false;
-    }
-
-    std::set<EventListener::EventIdRange> listenerInfo;
-    if (listener->GetListenerInfo(event.messageType_, listenerInfo)) {
-        return std::any_of(listenerInfo.begin(), listenerInfo.end(), [&](const EventListener::EventIdRange& range) {
-            return ((event.eventId_ >= range.begin) && (event.eventId_ <= range.end));
-        });
-    }
-    return false;
 }
 
 void EventDispatchQueue::Stop()

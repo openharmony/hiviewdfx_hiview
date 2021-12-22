@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include "defines.h"
 #include "public_defines.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class DllExport Event : public std::enable_shared_from_this<Event> {
@@ -266,22 +267,6 @@ public:
 
     EventListener() {};
     virtual ~EventListener(){};
-    virtual bool OnOrderedEvent(Event &msg) = 0;
-    virtual void OnUnorderedEvent(const Event &msg) = 0;
-    virtual std::string GetListenerName() = 0;
-
-    // Make sure that you insert non-overlayed range
-    void AddListenerInfo(uint32_t type, const EventIdRange &range = EventListener::EventIdRange(0));
-    void AddListenerInfo(uint32_t type, const std::set<EventIdRange> &listenerInfo);
-    bool GetListenerInfo(uint32_t type, std::set<EventIdRange> &listenerInfo);
-
-    void AddListenerInfo(uint32_t type, const std::string& eventName);
-    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
-    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
-
-private:
-    std::map<uint32_t, std::set<EventIdRange>> listenerInfo_;
-    std::map<uint32_t, std::set<std::string>> strListenerInfo_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

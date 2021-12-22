@@ -15,11 +15,14 @@
 
 #include "rule_cluster.h"
 
-#include "freeze_detector_utils.h"
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_RELIABILITY_LOG_TAG("FreezeDetector");
+DEFINE_LOG_TAG("FreezeDetector");
 
 FreezeRuleCluster::FreezeRuleCluster()
 {
@@ -262,6 +265,7 @@ bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, WatchPoint& matc
         }
     }
 
+    HIVIEW_LOGE("failed to match rule, domain:%{public}s stringid:%{public}s.", domain.c_str(), stringId.c_str());
     return false;
 }
 

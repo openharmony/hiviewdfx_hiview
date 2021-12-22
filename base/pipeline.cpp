@@ -145,5 +145,22 @@ void Pipeline::ProcessEvent(std::shared_ptr<PipelineEvent> event)
     event->SetPipelineInfo(name_, processors_);
     event->OnContinue();
 }
+
+void Pipeline::AppendProcessor(std::weak_ptr<Plugin> plugin)
+{
+    processors_.push_back(plugin);
+}
+
+void Pipeline::RemoveProcessor(std::weak_ptr<Plugin> plugin)
+{
+    processors_.remove_if([plugin](std::weak_ptr<Plugin> wp) {
+        std::shared_ptr<Plugin> cur = plugin.lock();
+        std::shared_ptr<Plugin> sp = wp.lock();
+        if (cur != nullptr && sp != nullptr) {
+            return cur == sp;
+        }
+        return false;
+    });
+}
 } // namespace HiviewDFX
 } // namespace OHOS

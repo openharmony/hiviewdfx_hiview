@@ -12,12 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "sys_event_dao.h"
 
 #include "file_util.h"
 #include "hiview_global.h"
 #include "logger.h"
 #include "store_mgr_proxy.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
@@ -77,22 +79,46 @@ int SysEventDao::Delete(SysEventQuery &sysEventQuery)
     return 0;
 }
 
-std::string SysEventDao::GetDataFile()
+int SysEventDao::BackupDB(const std::string &dbBakFile)
 {
-    std::string dbFile = HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
-    if (dbFile[dbFile.size() - 1] != '/') {
-        dbFile = dbFile + "/";
+    std::string dbFile = GetDataFile();
+    return StoreMgrProxy::GetInstance().BackupDocStore(dbFile, dbBakFile);
+}
+
+int SysEventDao::DeleteDB()
+{
+    std::string dbFile = GetDataFile();
+    return StoreMgrProxy::GetInstance().DeleteDocStore(dbFile);
+}
+
+int SysEventDao::CloseDB()
+{
+    std::string dbFile = GetDataFile();
+    return StoreMgrProxy::GetInstance().CloseDocStore(dbFile);
+}
+
+std::string SysEventDao::GetDataDir()
+{
+    std::string workPath = HiviewGlobal::GetInstance()->GetHiViewDirectory(
+        HiviewContext::DirectoryType::WORK_DIRECTORY);
+    if (workPath[workPath.size() - 1] != '/') {
+        workPath = workPath + "/";
     }
-    std::string sysEventDbFile = dbFile + "sys_event_db/";
-    if (!FileUtil::FileExists(sysEventDbFile)) {
-        if (FileUtil::ForceCreateDirectory(sysEventDbFile, FileUtil::FILE_PERM_770)) {
+    std::string sysEventDbFilePath = workPath + "sys_event_db/";
+    if (!FileUtil::FileExists(sysEventDbFilePath)) {
+        if (FileUtil::ForceCreateDirectory(sysEventDbFilePath, FileUtil::FILE_PERM_770)) {
             HIVIEW_LOGE("create sys_event_db path successful");
         } else {
-            sysEventDbFile = dbFile;
+            sysEventDbFilePath = workPath;
             HIVIEW_LOGE("create sys_event_db path fail, use default");
         }
     }
-    dbFile = sysEventDbFile + "hisysevent.db";
+    return sysEventDbFilePath;
+}
+
+std::string SysEventDao::GetDataFile()
+{
+    std::string dbFile = GetDataDir() + "hisysevent.db";
     return dbFile;
 }
 } // EventStore

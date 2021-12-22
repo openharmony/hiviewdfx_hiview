@@ -21,5 +21,5 @@ config("event_source_example_config") {
 ohos_source_set("event_source_example") {
   public_configs = [ ":event_source_example_config" ]
   sources = [ "event_source_example.cpp" ]
-  deps = [ "$hiview_base:hiview_base" ]
+  deps = [ "$hiview_base:hiviewbase" ]
 }

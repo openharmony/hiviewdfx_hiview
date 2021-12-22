@@ -22,10 +22,6 @@ config("hiview_core_config") {
     "$hiview_adapter/utility/include",
   ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
-
-  if (use_musl) {
-    cflags_cc += [ "-DUSE_MUSL" ]
-  }
 }
 
 ohos_source_set("hiview_core") {
@@ -33,12 +29,14 @@ ohos_source_set("hiview_core") {
 
   sources = [
     "hiview_platform.cpp",
+    "plugin_bundle.cpp",
     "plugin_config.cpp",
   ]
 
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
+    "platform_config:hiviewplatform_config",
   ]
 }
 
@@ -55,11 +53,9 @@ ohos_source_set("sysevent_source") {
     "$hiview_base:hiviewbase",
   ]
 
-  if (use_musl) {
-    include_dirs = [ "//base/startup/init_lite/interfaces/innerkits/include" ]
+  include_dirs = [ "//base/startup/init_lite/interfaces/innerkits/include" ]
 
-    deps += [ "//base/startup/init_lite/interfaces/innerkits/socket:libsocket" ]
-  }
+  deps += [ "//base/startup/init_lite/interfaces/innerkits/socket:libsocket" ]
 
   if (build_public_version) {
     deps += [ "//utils/native/base:utilsecurec_shared" ]

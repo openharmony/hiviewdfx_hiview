@@ -42,7 +42,8 @@ public:
     };
 
     // Query self fault log
-    virtual std::unique_ptr<FaultLogQueryResultInner> QuerySelfFaultLog(int32_t id, int32_t faultType, int32_t maxNum)
+    virtual std::unique_ptr<FaultLogQueryResultInner> QuerySelfFaultLog(int32_t uid, int32_t pid,
+        int32_t faultType, int32_t maxNum)
     {
         return nullptr;
     };

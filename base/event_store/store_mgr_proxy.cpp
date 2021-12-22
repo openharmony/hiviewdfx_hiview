@@ -12,10 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "store_mgr_proxy.h"
 
 #include <memory>
 #include <string>
+
 namespace OHOS {
 namespace HiviewDFX {
 std::shared_ptr<DocStore> StoreMgrProxy::GetDocStore(const std::string& db)
@@ -26,11 +28,25 @@ std::shared_ptr<DocStore> StoreMgrProxy::GetDocStore(const std::string& db)
     return storeManager_.GetDocStore(option);
 }
 
-void StoreMgrProxy::CloseDocStore(const std::string& db)
+int StoreMgrProxy::BackupDocStore(const std::string& db, const std::string &backupFile)
 {
     Option option;
     option.db = db;
-    storeManager_.CloseDocStore(option);
+    return storeManager_.OnlineBackupDocStore(option, backupFile);
+}
+
+int StoreMgrProxy::CloseDocStore(const std::string& db)
+{
+    Option option;
+    option.db = db;
+    return storeManager_.CloseDocStore(option);
+}
+
+int StoreMgrProxy::DeleteDocStore(const std::string& db)
+{
+    Option option;
+    option.db = db;
+    return storeManager_.DeleteDocStore(option);
 }
 } // HiviewDFX
 } // OHOS

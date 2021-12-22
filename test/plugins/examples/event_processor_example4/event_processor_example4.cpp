@@ -58,9 +58,6 @@ bool EventProcessorExample4::OnEvent(std::shared_ptr<Event>& event)
         if (GetHiviewContext() != nullptr) {
             printf("EventProcessorExample4 PostUnorderedEvent ccc\n ");
             GetHiviewContext()->PostUnorderedEvent(shared_from_this(), Event::Repack<Event, Event>(event, false));
-            auto newEvent = Event::Repack<Event, Event>(event, false);
-            newEvent->sender_ = "";
-            GetHiviewContext()->PostOrderedEvent(shared_from_this(), newEvent);
         }
     }
 

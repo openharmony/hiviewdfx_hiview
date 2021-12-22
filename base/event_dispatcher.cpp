@@ -51,7 +51,7 @@ void EventDispatcher::DispatchEvent(Event event)
 
     auto listeners = channelMapper_[event.messageType_];
     for (auto listener : listeners) {
-        std::shared_ptr<EventListener> sp = listener.lock();
+        auto sp = listener.lock();
         if (sp == nullptr) {
             continue;
         }
@@ -70,9 +70,9 @@ void EventDispatcher::DispatchEvent(Event event)
     }
 }
 
-void EventDispatcher::RegisterListener(std::weak_ptr<EventListener> listener)
+void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> listener)
 {
-    std::shared_ptr<EventListener> sp = listener.lock();
+    auto sp = listener.lock();
     if (sp == nullptr) {
         return;
     }

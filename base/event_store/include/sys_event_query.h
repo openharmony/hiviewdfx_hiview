@@ -58,8 +58,8 @@ public:
     FieldValue(int64_t value): valueType_(INTEGER), iValue_(value), fValue_(0), dValue_(0) {}
     FieldValue(float value): valueType_(FLOAT), iValue_(0), fValue_(value), dValue_(0) {}
     FieldValue(double value): valueType_(DOUBLE), iValue_(0), fValue_(0), dValue_(value) {}
-    FieldValue(const std::string &value): valueType_(STRING), sValue_(value) {}
-    ~FieldValue() {}
+    FieldValue(const std::string &value): valueType_(STRING), iValue_(0), fValue_(0), dValue_(0), sValue_(value) {}
+    ~FieldValue() {};
 
     bool IsInteger();
     bool IsFloat();

@@ -15,17 +15,25 @@
 
 #ifndef HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_MGR_H
 #define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_MGR_H
+
 #include <memory>
 
 #include "event_loop.h"
 #include "sys_event.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventDbMgr {
 public:
+    SysEventDbMgr() : backupTime_(0) {};
+    ~SysEventDbMgr() {};
+
     void SaveToStore(std::shared_ptr<SysEvent> event) const;
     void StartCheckStoreTask(std::shared_ptr<EventLoop> looper);
     void CheckStore();
+
+private:
+    int64_t backupTime_;
 }; // SysEventDbMgr
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -20,5 +20,5 @@ ohos_source_set("event_processor_example1") {
   include_dirs = [ "." ]
   configs = [ "../event_source_example:event_source_example_config" ]
   sources = [ "event_processor_example1.cpp" ]
-  deps = [ "$hiview_base:hiview_base" ]
+  deps = [ "$hiview_base:hiviewbase" ]
 }

@@ -26,6 +26,7 @@
 
 #include "constants.h"
 #include "faultlog_info.h"
+#include "logger.h"
 #include "string_util.h"
 #include "time_util.h"
 
@@ -33,6 +34,7 @@ using namespace OHOS::AAFwk;
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("Faultlogger-util");
 namespace {
 constexpr int DEFAULT_BUFFER_SIZE = 64;
 
@@ -151,13 +153,18 @@ std::vector<std::string> GetApplicationNamesById(int32_t uid)
     std::vector<std::string> bundleNames;
     sptr<AppExecFwk::IBundleMgr> mgr = GetBundleMgrProxy();
     if (mgr != nullptr) {
+        HIVIEW_LOGD("mgr != nullptr");
         mgr->GetBundlesForUid(uid, bundleNames);
+    } else {
+        HIVIEW_LOGD("mgr == nullptr");
     }
+    HIVIEW_LOGD("bundleNames is %{public}d", bundleNames.size());
     return bundleNames;
 }
 
 std::string GetApplicationNameById(int32_t uid)
 {
+    HIVIEW_LOGD("called");
     std::vector<std::string> bundleNames = GetApplicationNamesById(uid);
     if (bundleNames.empty()) {
         return "";
@@ -175,17 +182,6 @@ std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
         return "";
     }
     return info.versionName;
-}
-
-bool IsOhosApplication(int32_t uid, const std::string& bundleName)
-{
-    auto bundleNames = GetApplicationNamesById(uid);
-    for (const auto& name : bundleNames) {
-        if (bundleName.find(name) != std::string::npos) {
-            return true;
-        }
-    }
-    return false;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

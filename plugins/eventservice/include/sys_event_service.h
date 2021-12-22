@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_SERVICE_H
 #define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_SERVICE_H
 #include <memory>
@@ -20,6 +21,7 @@
 #include "plugin.h"
 #include "sys_event_db_mgr.h"
 #include "sys_event_stat.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventService : public Plugin {
@@ -34,9 +36,12 @@ public:
 private:
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
 private:
+    void SendEvent(std::shared_ptr<Event>& event);
     std::unique_ptr<SysEventDbMgr> sysEventDbMgr_;
     std::unique_ptr<SysEventStat> sysEventStat_;
+    std::atomic<bool> hasLoaded_;
 }; // SysEventService
+using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_SERVICE_H

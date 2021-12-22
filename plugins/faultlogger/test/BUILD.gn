@@ -42,13 +42,13 @@ ohos_unittest("FaultloggerUnittest") {
   ]
 
   deps = [
-    "$hiview_adapter/plugins/faultlogger:faultlogger_adapter",
     "$hiview_adapter/sql:hiview_sqlhelper",
     "$hiview_adapter/system_service:system_service",
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "$hiview_core:hiview_core",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
+    "$hiview_plugin/faultlogger/service:faultlogger_service_ability",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -70,8 +70,8 @@ ohos_unittest("FaultloggerClientUnittest") {
   ]
 
   deps = [
-    "$hiview_adapter/plugins/faultlogger:libfaultlogger",
     "$hiview_base:hiviewbase",
+    "$hiview_faultlogger:libfaultlogger",
     "//third_party/googletest:gtest_main",
   ]
 }

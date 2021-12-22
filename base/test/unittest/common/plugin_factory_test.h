@@ -16,9 +16,20 @@
 #define HIVIEW_PLATFORM_PLUGIN_FACTORY_TEST_H
 #include <gtest/gtest.h>
 
+#include "plugin.h"
+#include "plugin_example.h"
+
 class PluginFactoryTest : public testing::Test {
 public:
     void SetUp() {};
     void TearDown() {};
+};
+
+class RegisterPluginExample2 {
+public:
+    static std::shared_ptr<OHOS::HiviewDFX::Plugin> GetObject()
+    {
+        return std::make_shared<OHOS::HiviewDFX::PluginExample>();
+    }
 };
 #endif // HIVIEW_PLATFORM_PLUGIN_FACTORY_TEST_H

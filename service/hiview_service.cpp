@@ -120,7 +120,8 @@ void HiviewService::DumpLoadedPluginInfo(int fd) const
         auto const &pluginName = entry.first;
         if (entry.second != nullptr) {
             dprintf(fd, "PluginName:%s ", pluginName.c_str());
-            dprintf(fd, "IsDynamic:%s ", (entry.second->IsDynamic() ? "True" : "False"));
+            dprintf(fd, "IsDynamic:%s ",
+                (entry.second->GetType() == Plugin::PluginType::DYNAMIC) ? "True" : "False");
             dprintf(fd, "Version:%s ", (entry.second->GetVersion().c_str()));
             dprintf(fd,
                 "ThreadName:%s\n",

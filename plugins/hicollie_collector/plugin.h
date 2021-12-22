@@ -28,11 +28,10 @@ public:
     void OnLoad() override;
     void OnUnload() override;
     bool OnEvent(std::shared_ptr<Event> &event) override;
-    bool OnOrderedEvent(Event &event) override;
     void OnUnorderedEvent(const Event &event) override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
-    void Recycle(PipelineEvent* event) {};
-    void PauseDispatch(std::weak_ptr<Plugin> plugin) {};
+    void Recycle(PipelineEvent* event) override {};
+    void PauseDispatch(std::weak_ptr<Plugin> plugin) override {};
     std::string GetListenerName() override;
 
 private:

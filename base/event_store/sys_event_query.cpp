@@ -108,45 +108,45 @@ Cond::Cond(const std::string &col, Op op, const std::string &value): col_(col), 
 {
 }
 
-Cond::Cond(const std::string &col, Op op, const std::vector<int8_t> &ints): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<int8_t> &ints): op_(NONE), fieldValue_(0)
 {
     for (int8_t value : ints) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
 
-Cond::Cond(const std::string &col, Op op, const std::vector<int16_t> &ints): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<int16_t> &ints): op_(NONE), fieldValue_(0)
 {
     for (int16_t value : ints) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
 
-Cond::Cond(const std::string &col, Op op, const std::vector<int32_t> &ints): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<int32_t> &ints): op_(NONE), fieldValue_(0)
 {
     for (int32_t value : ints) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
-Cond::Cond(const std::string &col, Op op, const std::vector<int64_t> &longs): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<int64_t> &longs): op_(NONE), fieldValue_(0)
 {
     for (int64_t value : longs) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
-Cond::Cond(const std::string &col, Op op, const std::vector<float> &floats): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<float> &floats): op_(NONE), fieldValue_(0)
 {
     for (float value : floats) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
-Cond::Cond(const std::string &col, Op op, const std::vector<double> &doubles): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<double> &doubles): op_(NONE), fieldValue_(0)
 {
     for (double value : doubles) {
         orConds_.emplace_back(Cond(col, op, value));
     }
 }
-Cond::Cond(const std::string &col, Op op, const std::vector<std::string> &strings): fieldValue_(0)
+Cond::Cond(const std::string &col, Op op, const std::vector<std::string> &strings): op_(NONE), fieldValue_(0)
 {
     for (std::string value : strings) {
         orConds_.emplace_back(Cond(col, op, value));

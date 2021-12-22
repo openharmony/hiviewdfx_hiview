@@ -12,12 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_STAT_H
 #define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_STAT_H
+
 #include <map>
 #include <mutex>
 #include <string>
 #include <vector>
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventStat {

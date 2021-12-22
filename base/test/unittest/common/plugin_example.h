@@ -36,11 +36,6 @@ public:
     void OnUnload() override {};
     bool isConstructed_ = false;
 };
-
-__UNUSED static std::shared_ptr<Plugin> CreatePluginExampleInstance()
-{
-    return std::make_shared<PluginExample>();
-}
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLATFORM_PLUGIN_FACTORY_TEST_PLUGIN_EXAMPLE_H
