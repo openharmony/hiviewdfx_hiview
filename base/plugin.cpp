@@ -86,6 +86,9 @@ void Plugin::DelayProcessEvent(std::shared_ptr<Event> event, uint64_t delay)
 
 void Plugin::AddListenerInfo(uint32_t type, const EventListener::EventIdRange& range)
 {
+    if (context_ == nullptr) {
+        return;
+    }
     std::set<std::string> eventNames;
     std::set<EventListener::EventIdRange> listenerInfo;
     listenerInfo.insert(range);
@@ -94,17 +97,26 @@ void Plugin::AddListenerInfo(uint32_t type, const EventListener::EventIdRange& r
 
 void Plugin::AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
 {
+    if (context_ == nullptr) {
+        return;
+    }
     std::set<std::string> eventNames;
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
 bool Plugin::GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
 {
+    if (context_ == nullptr) {
+        return false;
+    }
     return context_->GetListenerInfo(type, shared_from_this(), listenerInfo);
 }
 
 void Plugin::AddListenerInfo(uint32_t type, const std::string& eventName)
 {
+    if (context_ == nullptr) {
+        return;
+    }
     std::set<std::string> eventNames;
     eventNames.insert(eventName);
     std::set<EventListener::EventIdRange> listenerInfo;
@@ -113,12 +125,18 @@ void Plugin::AddListenerInfo(uint32_t type, const std::string& eventName)
 
 void Plugin::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
 {
+    if (context_ == nullptr) {
+        return;
+    }
     std::set<EventListener::EventIdRange> listenerInfo;
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
 bool Plugin::GetListenerInfo(uint32_t type, std::set<std::string> &eventNames)
 {
+    if (context_ == nullptr) {
+        return false;
+    }
     return context_->GetListenerInfo(type, shared_from_this(), eventNames);
 }
 
