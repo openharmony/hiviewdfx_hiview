@@ -20,7 +20,7 @@ import { AsyncCallback } from "./basic";
  *
  * @since 8
  * @sysCap SystemCapability.HiviewDFX.Hiview.FaultLogger
- * @devices phone, tablet, wearable, PC, TV
+ * @devices phone, tablet, wearable, TV
  */
 declare namespace FaultLogger {
   enum faultType {
