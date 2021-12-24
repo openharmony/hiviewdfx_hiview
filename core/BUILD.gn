@@ -53,9 +53,7 @@ ohos_source_set("sysevent_source") {
     "$hiview_base:hiviewbase",
   ]
 
-  include_dirs = [ "//base/startup/init_lite/interfaces/innerkits/include" ]
-
-  deps += [ "//base/startup/init_lite/interfaces/innerkits/socket:libsocket" ]
+  external_deps = [ "init:libbegetutil" ]
 
   if (build_public_version) {
     deps += [ "//utils/native/base:utilsecurec_shared" ]
