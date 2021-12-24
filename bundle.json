@@ -1,7 +1,7 @@
 {
     "name": "@ohos/hiviewdfx_hiview",
     "version": "",
-    "description": "hiview服务，包含插件平台和开源插件，并闭源插件，包含轻鸿蒙A核事件、车机、PC等生态产品的hiview打点能力",
+    "description": "系统维测管理服务，包含插件平台和开源插件，提供事件记录以及故障记录的功能。",
     "homePage": "https://gitee.com/openharmony",
     "license": "Apache V2",
     "repository": "https://gitee.com/openharmony/hiviewdfx_hiview",
