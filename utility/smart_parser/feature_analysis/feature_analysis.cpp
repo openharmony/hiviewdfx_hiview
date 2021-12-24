@@ -475,9 +475,6 @@ void FeatureAnalysis::SegmentAnalysis(FeatureSet& featureSet,
     if (segAnalysis != nullptr) {
         auto startSeg = featureSet.startSegVec; // like: ["BasicParam.s_process", "main"]
         UpdateStartSegment(paramSeekRecord, startSeg);
-        if (!startSeg.empty() && startSeg.front() == "system") {
-            startSeg[0] = "system_server";
-        }
         segAnalysis->SetSegStatusCfg(segStatusCfg);
         if (segAnalysis->Analyze(featureSet.fullPath, paramSeekRecord, startSeg, featureSet.segStackVec)) {
             std::map<std::string, std::string> segEventInfo;
