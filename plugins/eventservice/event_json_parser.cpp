@@ -57,7 +57,7 @@ bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
 #ifdef JSONCPP_VERSION_STRING
     Json::CharReaderBuilder jsonRBuilder;
     Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
-    Json::CharReader* reader = jsonRBuilder.newCharReader();
+    std::unique_ptr<Json::CharReader> const reader(jsonRBuilder.newCharReader());
     JSONCPP_STRING errs;
     if (!reader->parse(jsonStr.data(), jsonStr.data() + jsonStr.size(), &eventJson, &errs)) {
 #else
