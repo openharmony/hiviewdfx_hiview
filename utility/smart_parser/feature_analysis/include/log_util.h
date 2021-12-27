@@ -49,9 +49,9 @@ public:
     static void GetTrace(std::stringstream& buffer, int cursor, const std::string& reg, std::string& result,
         std::string startReg = "");
     static bool ReadFileBuff(const std::string& file, std::stringstream& buffer);
-    static int GetFileFd(const std::string& file);
     static bool IsTestModel(const std::string& sourceFile, const std::string& name,
         const std::string& pattern, std::string& desPath);
+    static bool FileExist(const std::string& file);
 
 public:
     static const std::string SPLIT_PATTERN;
@@ -65,6 +65,7 @@ private:
     void GetIpcInfo(const std::string& line);
     IpcTrans ParseZeroIpc(const IpcTrans& beginIpc) const;
     void ParseIpcList(const std::string& clientPidTid, std::vector<IpcTrans>& IpcNode) const;
+    static int GetFileFd(const std::string& file);
 
 private:
     std::map<std::string, std::pair<std::string, IpcTrans>> IpcInfo_;

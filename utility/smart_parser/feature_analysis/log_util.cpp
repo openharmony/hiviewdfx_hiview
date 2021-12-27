@@ -37,7 +37,7 @@ namespace {
     const int TOTAL_SKIP_NUM = 4;
 }
 
-const std::string LogUtil::SPLIT_PATTERN = "\r\n";
+const std::string LogUtil::SPLIT_PATTERN = "\n";
 const std::string LogUtil::SMART_PARSER_TEST_DIR = "/data/test/test_data/SmartParser";
 const int LogUtil::TOTAL_LINE_NUM = 200;
 
@@ -186,7 +186,7 @@ void LogUtil::ParseIpcList(const string& clientPidTid, vector<IpcTrans>& IpcNode
  * buffer : log buffer
  * cursor : buffer seekg
  * reg : regex which is used to get trace line
- * result : all trace line will be spliced by "\r\n"
+ * result : all trace line will be spliced by "\n"
  * startReg : start place when regex is match, default empty string
  */
 void LogUtil::GetTrace(stringstream& buffer, int cursor, const string& reg, string& result, string startReg)
@@ -224,19 +224,40 @@ void LogUtil::GetTrace(stringstream& buffer, int cursor, const string& reg, stri
 bool LogUtil::ReadFileBuff(const string& file, stringstream& buffer)
 {
     int fd = LogUtil::GetFileFd(file);
+    if (fd < 0) {
+        HIVIEW_LOGE("%{public}s get fd fail, fd is %{public}d.", file.c_str(), fd);
+        return false;
+    }
 
     std::string content;
-    if (fd < 0 || !FileUtil::LoadStringFromFd(fd, content)) {
-        printf("read file: %s failed, fd is %d\n", file.c_str(), fd);
+    if (!FileUtil::LoadStringFromFd(fd, content)) {
+        HIVIEW_LOGE("read file: %s failed, fd is %d\n", file.c_str(), fd);
+        close(fd);
         return false;
     }
     buffer.str(content);
+    close(fd);
     return true;
 }
 
 int LogUtil::GetFileFd(const string& file)
 {
-    return open(file.c_str(), O_RDONLY);
+    if (file.empty() || !FileUtil::IsLegalPath(file)) {
+        HIVIEW_LOGE("the system file (%{public}s) is illegal.", file.c_str());
+        return -1;
+    }
+    std::string realFileName;
+    if (!FileUtil::PathToRealPath(file, realFileName) || realFileName.empty() ||
+        !FileUtil::FileExists(realFileName)) {
+        HIVIEW_LOGE("the system file (%{public}s) is not found.", realFileName.c_str());
+        return -1;
+    }
+    return open(realFileName.c_str(), O_RDONLY);
+}
+
+bool LogUtil::FileExist(const string& file)
+{
+    return FileUtil::FileExists(file);
 }
 
 bool LogUtil::IsTestModel(const string& sourceFile, const string& name,

@@ -30,9 +30,9 @@ public:
     Rule(const Rule&) = delete;
     Rule& operator=(const Rule&) = delete;
     void ParseRule();
-    std::map<std::string, FeatureSet>& GetExtractRule();
-    std::list<std::pair<std::string, std::map<std::string, std::string>>>& GetComposeRule();
-    std::map<std::string, std::vector<std::string>>& GetSegStatusCfg();
+    std::map<std::string, FeatureSet> GetExtractRule();
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> GetComposeRule();
+    std::map<std::string, std::vector<std::string>> GetSegStatusCfg();
 
 private:
     std::string eventPath_;

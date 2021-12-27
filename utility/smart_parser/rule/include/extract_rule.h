@@ -34,6 +34,8 @@ public:
     std::map<std::string, std::vector<std::string>> GetSegStatusCfg() { return segStatusCfgMap_; };
 
 private:
+    static constexpr int JSON_ARRAY_THRESHOLD = 50;
+    
     void ParseSegStatusCfg(const Json::Value& json);
     void ParseRule(const std::string& eventType, const Json::Value& json, const std::string& fullPath);
     bool IsMatchId(const std::string& eventType, const std::string& featureId) const;

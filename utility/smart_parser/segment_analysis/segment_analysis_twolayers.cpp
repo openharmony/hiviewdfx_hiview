@@ -263,12 +263,11 @@ void SegmentAnalysisTwoLayers::ExtractSegment(UniqSegment& seg)
     int num = 0;
     string line;
     while (getline(errLogBuf_, line) && !line.empty() && num++ < LogUtil::TOTAL_LINE_NUM) {
-        for (auto iter = segStatusCfg_.begin(); iter != segStatusCfg_.end();) {
+        for (auto iter = segStatusCfg_.begin(); iter != segStatusCfg_.end(); iter++) {
             smatch result;
             if (!iter->second[0].empty() && regex_search(line, result, regex(iter->second[0]))) {
                 seg->SetValue(iter->first, result.str(1));
             }
-            iter++;
         }
         if (segStatusCfg_.empty()) {
             break;
@@ -288,7 +287,7 @@ bool SegmentAnalysisTwoLayers::GetFirstBlockedIpcSeg(int pid, UniqSegment& seg)
             if (it->second->GetValue(SEGMENT_STATUS).empty()) { // hasn't been extracted yet
                 ExtractSegment(it->second);
             }
-            if (it->second->GetValue(SEGMENT_STATUS) == "Blocked") {
+            if (it->second->GetValue(SEGMENT_STATUS) != "Runnable") {
                 seg = move(it->second);
                 pairMap_.erase(it);
                 return true;

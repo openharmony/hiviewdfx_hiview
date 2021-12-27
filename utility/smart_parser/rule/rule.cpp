@@ -41,17 +41,17 @@ void Rule::ParseRule()
     composeRule_ = composeRule.GetComposeRule();
 }
 
-std::map<std::string, FeatureSet>& Rule::GetExtractRule()
+std::map<std::string, FeatureSet> Rule::GetExtractRule()
 {
     return extractRule_;
 }
 
-std::list<std::pair<std::string, std::map<std::string, std::string>>>& Rule::GetComposeRule()
+std::list<std::pair<std::string, std::map<std::string, std::string>>> Rule::GetComposeRule()
 {
     return composeRule_;
 }
 
-std::map<std::string, std::vector<std::string>>& Rule::GetSegStatusCfg()
+std::map<std::string, std::vector<std::string>> Rule::GetSegStatusCfg()
 {
     return segStatusCfg_;
 }
