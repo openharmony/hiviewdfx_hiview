@@ -48,13 +48,13 @@ void HiviewService::DumpRequestDispatcher(int fd, const std::vector<std::string>
         return;
     }
 
-    // dumpsys hiviewdfx -d
+    // hidumper hiviewdfx -d
     if ((cmds.size() == MIN_SUPPORT_CMD_SIZE) && (cmds[0] == "-d")) {
         DumpDetailedInfo(fd);
         return;
     }
 
-    // dumpsys hiviewdfx -p
+    // hidumper hiviewdfx -p
     if ((cmds.size() >= MIN_SUPPORT_CMD_SIZE) && (cmds[0] == "-p")) {
         DumpPluginInfo(fd, cmds);
         return;
@@ -208,7 +208,7 @@ void HiviewService::DumpPipelineUsageInfo(int fd, const std::string &pipelineNam
 void HiviewService::PrintUsage(int fd) const
 {
     dprintf(fd, "Hiview Plugin Platform dump options:\n");
-    dprintf(fd, "dumpsys hiviewdfx [-d(etail)]\n");
+    dprintf(fd, "hidumper hiviewdfx [-d(etail)]\n");
     dprintf(fd, "    [-p(lugin) pluginName]\n");
 }
 }  // namespace HiviewDFX
