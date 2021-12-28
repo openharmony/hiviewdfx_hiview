@@ -75,7 +75,7 @@ public:
 private:
     void CreateWatchFile(const std::string& path);
     void CreateAndPublishEvent(const std::string& file);
-    const static inline std::string SYSTEM_FAULT_LOG_PATH = "/data/test/dropbox";
+    const static inline std::string SYSTEM_FAULT_LOG_PATH = "/data/test/faultlog";
     int inotifyFd_;
     std::map<std::string, int> fileMap_;
 };

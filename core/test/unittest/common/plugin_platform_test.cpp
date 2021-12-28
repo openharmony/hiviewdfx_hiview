@@ -33,7 +33,7 @@ void PluginPlatformTest::SetUp()
      * @tc.setup: create work directories
      */
     printf("SetUp.\n");
-    FileUtil::ForceCreateDirectory("/data/test/dropbox");
+    FileUtil::ForceCreateDirectory("/data/test/faultlog");
 }
 
 /**
@@ -64,11 +64,11 @@ HWTEST_F(PluginPlatformTest, PluginPlatformInit001, TestSize.Level3)
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901004006));
     platform.RegisterUnorderedEventListener(listener);
     sleep(1);
-    std::ofstream fileA("/data/test/dropbox/aaa");
+    std::ofstream fileA("/data/test/faultlog/aaa");
     fileA << "create aaa event" << std::endl;
     fileA.close();
 
-    std::ofstream fileB("/data/test/dropbox/bbb");
+    std::ofstream fileB("/data/test/faultlog/bbb");
     fileB << "create bbb event" << std::endl;
     fileB.close();
     sleep(1);
@@ -127,15 +127,15 @@ HWTEST_F(PluginPlatformTest, PluginPlatformRepackPipelienEventTest001, TestSize.
     listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
     platform.RegisterUnorderedEventListener(listener);
     sleep(1);
-    std::ofstream fileA("/data/test/dropbox/aaa");
+    std::ofstream fileA("/data/test/faultlog/aaa");
     fileA << "create aaa event" << std::endl;
     fileA.close();
 
-    std::ofstream fileB("/data/test/dropbox/bbb");
+    std::ofstream fileB("/data/test/faultlog/bbb");
     fileB << "create bbb event" << std::endl;
     fileB.close();
 
-    std::ofstream fileC("/data/test/dropbox/ccc");
+    std::ofstream fileC("/data/test/faultlog/ccc");
     fileC << "create ccc event" << std::endl;
     fileC.close();
     sleep(1);
@@ -171,7 +171,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
     ASSERT_EQ(size, 6ul);
 
     // the example4 plugin will be unloaded after receiving the ccc message
-    std::ofstream fileC("/data/test/dropbox/ccc");
+    std::ofstream fileC("/data/test/faultlog/ccc");
     fileC << "create ccc event" << std::endl;
     fileC.close();
     sleep(2);
@@ -180,7 +180,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
     auto size2 = pluginList2.size();
     ASSERT_EQ(size2, 5ul);
 
-    std::ofstream fileC2("/data/test/dropbox/ccc");
+    std::ofstream fileC2("/data/test/faultlog/ccc");
     fileC2 << "create ccc event" << std::endl;
     fileC2.close();
     sleep(2);
