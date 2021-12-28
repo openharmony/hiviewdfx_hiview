@@ -35,7 +35,7 @@ void PluginBundleTest::SetUp()
      * @tc.setup: create work directories
      */
     printf("SetUp.\n");
-    FileUtil::ForceCreateDirectory("/data/test/dropbox");
+    FileUtil::ForceCreateDirectory("/data/test/faultlog");
 }
 
 /**
@@ -94,7 +94,7 @@ HWTEST_F(PluginBundleTest, PluginBundleLoadTest001, TestSize.Level3)
         FAIL();
     }
 
-    std::ofstream fileC("/data/test/dropbox/ccc");
+    std::ofstream fileC("/data/test/faultlog/ccc");
     fileC << "create ccc event" << std::endl;
     fileC.close();
     sleep(1);
