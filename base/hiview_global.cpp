@@ -17,10 +17,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-std::unique_ptr<HiviewGlobal>& GetOrSetGlobalReference(std::unique_ptr<HiviewGlobal> ref)
+std::unique_ptr<HiviewGlobal>& GetOrSetGlobalReference(std::unique_ptr<HiviewGlobal> ref, bool state = true)
 {
-    static std::unique_ptr<HiviewGlobal> globalRef;
-    if ((globalRef == nullptr) && (ref != nullptr)) {
+    static std::unique_ptr<HiviewGlobal> globalRef = nullptr;
+    if (!state) {
+        globalRef = nullptr;
+    } else if (ref != nullptr) {
         globalRef = std::move(ref);
     }
     return globalRef;
@@ -29,13 +31,14 @@ std::unique_ptr<HiviewGlobal>& GetOrSetGlobalReference(std::unique_ptr<HiviewGlo
 
 void HiviewGlobal::CreateInstance(HiviewContext& context)
 {
-    static std::once_flag flag;
-    std::call_once(flag, [&] {
-        auto globalRef = std::make_unique<HiviewGlobal>(context);
-        GetOrSetGlobalReference(std::move(globalRef));
-    });
+    auto globalRef = std::make_unique<HiviewGlobal>(context);
+    GetOrSetGlobalReference(std::move(globalRef));
 }
 
+void HiviewGlobal::ReleaseInstance()
+{
+    GetOrSetGlobalReference(nullptr, false);
+}
 // maybe null reference, check before use
 std::unique_ptr<HiviewGlobal>& HiviewGlobal::GetInstance()
 {
@@ -70,6 +73,23 @@ bool HiviewGlobal::PostSyncEventToTarget(const std::string &targetPlugin, std::s
 void HiviewGlobal::PostUnorderedEvent(std::shared_ptr<Event> event)
 {
     context_.PostUnorderedEvent(nullptr, event);
+}
+
+void HiviewGlobal::AddListenerInfo(uint32_t type, const std::string& name,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+{
+    context_.AddListenerInfo(type, name, eventNames, listenerInfo);
+}
+
+bool HiviewGlobal::GetListenerInfo(uint32_t type, const std::string& name,
+    std::set<EventListener::EventIdRange> &listenerInfo)
+{
+    return context_.GetListenerInfo(type, name, listenerInfo);
+}
+
+bool HiviewGlobal::GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames)
+{
+    return context_.GetListenerInfo(type, name, eventNames);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

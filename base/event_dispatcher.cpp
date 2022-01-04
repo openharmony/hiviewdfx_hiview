@@ -68,9 +68,28 @@ void EventDispatcher::DispatchEvent(Event event)
             sp->OnUnorderedEvent(event);
         }
     }
-}
 
-void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> listener)
+    auto plugins = channelPlugin_[event.messageType_];
+    for (auto listener : plugins) {
+        auto sp = listener.lock();
+        if (sp == nullptr) {
+            continue;
+        }
+
+        std::set<EventListener::EventIdRange> listenerInfo;
+        if (!sp->GetEventListenerInfo(event.messageType_, listenerInfo)) {
+            continue;
+        }
+
+        if (std::any_of(listenerInfo.begin(), listenerInfo.end(),
+            [&](const EventListener::EventIdRange &range) {
+            return ((event.eventId_ >= range.begin) && (event.eventId_ <= range.end));
+            })) {
+            sp->OnEventListeningCallback(event);
+        }
+    }
+}
+void EventDispatcher::RegisterListener(std::weak_ptr<EventListener> listener)
 {
     auto sp = listener.lock();
     if (sp == nullptr) {
@@ -82,6 +101,22 @@ void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> listener)
         if (sp->GetListenerInfo(type, listenerInfo) && (!listenerInfo.empty())) {
             std::lock_guard<std::mutex> lock(lock_);
             channelMapper_[type].push_back(listener);
+        }
+    }
+}
+
+void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> plugin)
+{
+    auto sp = plugin.lock();
+    if (sp == nullptr) {
+        return;
+    }
+
+    for (auto type : types_) {
+        std::set<EventListener::EventIdRange> listenerInfo;
+        if (sp->GetEventListenerInfo(type, listenerInfo) && (!listenerInfo.empty())) {
+            std::lock_guard<std::mutex> lock(lock_);
+            channelPlugin_[type].push_back(plugin);
         }
     }
 }

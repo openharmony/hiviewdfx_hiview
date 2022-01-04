@@ -15,15 +15,10 @@
 #include "platform_test_result_listener.h"
 using namespace OHOS::HiviewDFX;
 
-void PlatformTestResultListener::OnUnorderedEvent(const Event& msg)
+void PlatformTestResultListener::OnEventListeningCallback(const Event& msg)
 {
-    printf("cur listener:%s OnUnorderedEvent eventId_:%u \n", name_.c_str(), msg.eventId_);
+    printf("cur listener:%s OnEventListeningCallback eventId_:%u \n", name_.c_str(), msg.eventId_);
     unorderEventCount_++;
-    printf("cur listener unorderEventCount_:%d.\n", unorderEventCount_);
+    printf("cur listener unorderEventCount_:%u.\n", unorderEventCount_);
     processedUnorderedEvents_[msg.GetValue("message")] = msg.sender_;
-}
-
-std::string PlatformTestResultListener::GetListenerName()
-{
-    return name_;
 }

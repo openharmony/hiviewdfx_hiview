@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class PluginProxy : public Plugin, public EventListener {
+class PluginProxy : public Plugin {
 public:
     PluginProxy() {};
     virtual ~PluginProxy() {};
@@ -34,8 +34,7 @@ public:
     bool CanProcessMoreEvents() override;
     std::string GetHandlerInfo() override;
     void Dump(int fd __UNUSED, const std::vector<std::string>& cmds) override;
-    void OnUnorderedEvent(const Event &msg) override;
-    std::string GetListenerName() override;
+    void OnEventListeningCallback(const Event &msg) override;
     void LoadPluginIfNeed();
     void DestroyInstanceIfNeed(time_t maxIdleTime);
     bool HoldInstance()

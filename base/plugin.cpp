@@ -84,7 +84,7 @@ void Plugin::DelayProcessEvent(std::shared_ptr<Event> event, uint64_t delay)
     return;
 }
 
-void Plugin::AddListenerInfo(uint32_t type, const EventListener::EventIdRange& range)
+void Plugin::AddEventListenerInfo(uint32_t type, const EventListener::EventIdRange& range)
 {
     if (context_ == nullptr) {
         return;
@@ -95,7 +95,7 @@ void Plugin::AddListenerInfo(uint32_t type, const EventListener::EventIdRange& r
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
-void Plugin::AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
+void Plugin::AddEventListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
 {
     if (context_ == nullptr) {
         return;
@@ -104,15 +104,15 @@ void Plugin::AddListenerInfo(uint32_t type, const std::set<EventListener::EventI
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
-bool Plugin::GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
+bool Plugin::GetEventListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
 {
     if (context_ == nullptr) {
         return false;
     }
-    return context_->GetListenerInfo(type, shared_from_this(), listenerInfo);
+    return context_->GetListenerInfo(type, name_, listenerInfo);
 }
 
-void Plugin::AddListenerInfo(uint32_t type, const std::string& eventName)
+void Plugin::AddEventListenerInfo(uint32_t type, const std::string& eventName)
 {
     if (context_ == nullptr) {
         return;
@@ -123,7 +123,7 @@ void Plugin::AddListenerInfo(uint32_t type, const std::string& eventName)
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
-void Plugin::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
+void Plugin::AddEventListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
 {
     if (context_ == nullptr) {
         return;
@@ -132,12 +132,12 @@ void Plugin::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNa
     context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
 }
 
-bool Plugin::GetListenerInfo(uint32_t type, std::set<std::string> &eventNames)
+bool Plugin::GetEventListenerInfo(uint32_t type, std::set<std::string> &eventNames)
 {
     if (context_ == nullptr) {
         return false;
     }
-    return context_->GetListenerInfo(type, shared_from_this(), eventNames);
+    return context_->GetListenerInfo(type, name_, eventNames);
 }
 
 std::string Plugin::GetPluginInfo()

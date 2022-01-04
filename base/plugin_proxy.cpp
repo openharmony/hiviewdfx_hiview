@@ -61,22 +61,13 @@ void PluginProxy::Dump(int fd, const std::vector<std::string>& cmds)
     }
 }
 
-void PluginProxy::OnUnorderedEvent(const Event &msg)
+void PluginProxy::OnEventListeningCallback(const Event &msg)
 {
     LoadPluginIfNeed();
     if (plugin_ == nullptr) {
         return;
     }
-    plugin_->OnUnorderedEvent(msg);
-}
-
-std::string PluginProxy::GetListenerName()
-{
-    LoadPluginIfNeed();
-    if (plugin_ == nullptr) {
-        return GetName();
-    }
-    return plugin_->GetListenerName();
+    plugin_->OnEventListeningCallback(msg);
 }
 
 void PluginProxy::LoadPluginIfNeed()

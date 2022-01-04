@@ -43,7 +43,8 @@ public:
     void SetCheckProxyIdlePeriod(time_t period);
 
     void PostUnorderedEvent(std::shared_ptr<Plugin> plugin, std::shared_ptr<Event> event) override;
-    void RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener) override;
+    void RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener) override;
+    void RegisterDynamicListenerInfo(std::weak_ptr<Plugin> listener) override;
     bool PostSyncEventToTarget(std::shared_ptr<Plugin> caller, const std::string& calleeName,
         std::shared_ptr<Event> event) override;
     void PostAsyncEventToTarget(std::shared_ptr<Plugin> caller, const std::string& calleeName,
@@ -64,14 +65,15 @@ public:
     void RequestLoadBundle(const std::string& bundleName __UNUSED) override;
     std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy) override;
     std::shared_ptr<Plugin> GetPluginByName(const std::string& name) override;
-    void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin, const std::set<std::string>& eventNames,
-        const std::set<EventListener::EventIdRange>& listenerInfo) override;
-    std::vector<std::weak_ptr<Plugin>> GetListenerInfo(uint32_t type,
+    void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo) override;
+    void AddListenerInfo(uint32_t type, const std::string& name,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo) override;
+    std::vector<std::weak_ptr<InstanceInfo>> GetListenerInfo(uint32_t type,
         const std::string& eventNames, uint32_t eventId) override;
-    bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+    bool GetListenerInfo(uint32_t type, const std::string& name,
         std::set<EventListener::EventIdRange> &listenerInfo) override;
-    bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
-        std::set<std::string> &eventNames) override;
+    bool GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames) override;
 
     const std::map<std::string, std::shared_ptr<Plugin>>& GetPluginMap()
     {
@@ -95,7 +97,7 @@ public:
 
 private:
     struct ListenerInfo {
-        std::weak_ptr<Plugin> listener;
+        std::shared_ptr<InstanceInfo> instanceInfo;
         std::map<uint32_t, std::set<EventListener::EventIdRange>> idListenerInfo;
         std::map<uint32_t, std::set<std::string>> strListenerInfo;
     };
@@ -142,7 +144,7 @@ private:
     std::map<std::string, PluginBundle> pluginBundleInfos_;
 
     // Listener data structure:<pluginName, <domain_eventName, Plugin>>
-    std::unordered_map<std::string, ListenerInfo> listeners_;
+    std::unordered_map<std::string, std::shared_ptr<ListenerInfo>> listeners_;
 
     // the max waited time before destroy plugin instance
     const time_t DEFAULT_IDLE_TIME = 300; // 300 seconds

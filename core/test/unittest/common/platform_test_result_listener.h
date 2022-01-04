@@ -22,8 +22,7 @@ public:
     explicit PlatformTestResultListener(const std::string& name)
         : unorderEventCount_(0), name_(name){};
     ~PlatformTestResultListener(){};
-    void OnUnorderedEvent(const OHOS::HiviewDFX::Event& msg) override;
-    std::string GetListenerName() override;
+    void OnEventListeningCallback(const OHOS::HiviewDFX::Event& msg) override;
     std::map<std::string, std::string> processedUnorderedEvents_;
     uint32_t unorderEventCount_;
 

@@ -14,6 +14,7 @@
  */
 #ifndef HIVIEW_BASE_EVENT_H
 #define HIVIEW_BASE_EVENT_H
+#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
@@ -267,6 +268,22 @@ public:
 
     EventListener() {};
     virtual ~EventListener(){};
+
+    virtual bool OnOrderedEvent(const Event &msg)
+    {
+        return false;
+    }
+    virtual void OnUnorderedEvent(const Event &msg) = 0;
+    virtual std::string GetListenerName() = 0;
+
+    // Make sure that you insert non-overlayed range
+    void AddListenerInfo(uint32_t type, const EventListener::EventIdRange &range = EventListener::EventIdRange(0));
+    void AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo);
+    bool GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo);
+
+    void AddListenerInfo(uint32_t type, const std::string& eventName);
+    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
+    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
