@@ -26,6 +26,7 @@ public:
     explicit HiviewGlobal(HiviewContext& context) : context_(context) {}
     ~HiviewGlobal() {};
     static void CreateInstance(HiviewContext& context);
+    static void ReleaseInstance();
     // maybe null reference, check before use
     static std::unique_ptr<HiviewGlobal>& GetInstance();
     std::string GetHiViewDirectory(HiviewContext::DirectoryType type) const;
@@ -34,6 +35,10 @@ public:
     void PostAsyncEventToTarget(const std::string& targetPlugin, std::shared_ptr<Event> event);
     bool PostSyncEventToTarget(const std::string& targetPlugin, std::shared_ptr<Event> event);
     void PostUnorderedEvent(std::shared_ptr<Event> event);
+    void AddListenerInfo(uint32_t type, const std::string& name,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo);
+    bool GetListenerInfo(uint32_t type, const std::string& name, std::set<EventListener::EventIdRange> &listenerInfo);
+    bool GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames);
 private:
     HiviewContext& context_;
 };

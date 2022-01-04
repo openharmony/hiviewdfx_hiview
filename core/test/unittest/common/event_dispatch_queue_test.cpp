@@ -44,17 +44,12 @@ std::shared_ptr<Event> EventDispatchQueueTest::CreateEvent(const std::string& na
     return event;
 }
 
-void ExtendEventListener::OnUnorderedEvent(const Event& msg)
+void ExtendEventListener::OnEventListeningCallback(const Event& msg)
 {
-    printf("cur listener:%s OnUnorderedEvent eventId_:%u \n", name_.c_str(), msg.eventId_);
+    printf("cur listener:%s OnEventListeningCallback eventId_:%u \n", name_.c_str(), msg.eventId_);
     unorderEventCount_++;
     auto message = msg.GetValue("message");
     processedUnorderedEvents_[message] = msg.sender_;
-}
-
-std::string ExtendEventListener::GetListenerName()
-{
-    return name_;
 }
 
 /**
@@ -98,22 +93,22 @@ HWTEST_F(EventDispatchQueueTest, UnorderEventDispatchTest001, TestSize.Level3)
     auto listener1 = std::make_shared<ExtendEventListener>("listener1");
     listener1->SetName("listener1");
     listener1->SetHiviewContext(&platform);
-    listener1->AddListenerInfo(Event::MessageType::RAW_EVENT, EventListener::EventIdRange(EVENT_ID_0, EVENT_ID_2));
+    listener1->AddEventListenerInfo(Event::MessageType::RAW_EVENT, EventListener::EventIdRange(EVENT_ID_0, EVENT_ID_2));
 
     auto listener2 = std::make_shared<ExtendEventListener>("listener2");
     listener2->SetName("listener2");
     listener2->SetHiviewContext(&platform);
-    listener2->AddListenerInfo(Event::MessageType::RAW_EVENT, EVENT_ID_2);
+    listener2->AddEventListenerInfo(Event::MessageType::RAW_EVENT, EVENT_ID_2);
 
     std::set<EventListener::EventIdRange> listenerInfo1;
-    auto ret1 = platform.GetListenerInfo(Event::MessageType::RAW_EVENT, listener1, listenerInfo1);
+    auto ret1 = platform.GetListenerInfo(Event::MessageType::RAW_EVENT, listener1->GetName(), listenerInfo1);
     for (auto& temp : listenerInfo1) {
         printf("listenerInfo1 begin == %d end == %d\n", temp.begin, temp.end);
     }
     ASSERT_EQ(ret1, true);
 
     std::set<EventListener::EventIdRange> listenerInfo2;
-    auto ret2 = platform.GetListenerInfo(Event::MessageType::RAW_EVENT, listener2, listenerInfo2);
+    auto ret2 = platform.GetListenerInfo(Event::MessageType::RAW_EVENT, listener2->GetName(), listenerInfo2);
     for (auto& temp : listenerInfo2) {
         printf("listenerInfo2 begin == %d end == %d\n", temp.begin, temp.end);
     }

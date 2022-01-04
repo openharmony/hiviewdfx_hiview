@@ -32,11 +32,13 @@ public:
     void AddInterestType(int32_t type);
     void ClearInvalidListeners();
     void DispatchEvent(Event event);
+    void RegisterListener(std::weak_ptr<EventListener> listener);
     void RegisterListener(std::weak_ptr<Plugin> listener);
 
 protected:
     std::set<int32_t> types_;
-    std::map<int32_t, std::list<std::weak_ptr<Plugin>>> channelMapper_;
+    std::map<int32_t, std::list<std::weak_ptr<EventListener>>> channelMapper_;
+    std::map<int32_t, std::list<std::weak_ptr<Plugin>>> channelPlugin_;
 
 private:
     std::mutex lock_;

@@ -81,25 +81,20 @@ public:
     // called by audit module
     virtual std::string GetPluginInfo();
 
-    // EventListener
-    virtual void OnUnorderedEvent(const Event &msg)
+    // Listener callback
+    virtual void OnEventListeningCallback(const Event &msg)
     {
         return;
     }
 
-    virtual std::string GetListenerName()
-    {
-        return GetName();
-    }
-
     // Make sure that you insert non-overlayed range
-    void AddListenerInfo(uint32_t type, const EventListener::EventIdRange &range = EventListener::EventIdRange(0));
-    void AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo);
-    bool GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo);
+    void AddEventListenerInfo(uint32_t type, const EventListener::EventIdRange &range = EventListener::EventIdRange(0));
+    void AddEventListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo);
+    bool GetEventListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo);
 
-    void AddListenerInfo(uint32_t type, const std::string& eventName);
-    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
-    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
+    void AddEventListenerInfo(uint32_t type, const std::string& eventName);
+    void AddEventListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
+    bool GetEventListenerInfo(uint32_t type, std::set<std::string> &eventNames);
 
     // reinsert the event into the workloop
     // delay in seconds
@@ -179,12 +174,21 @@ private:
 };
 class HiviewContext {
 public:
+    struct InstanceInfo {
+        std::weak_ptr<Plugin> plugin;
+        std::weak_ptr<EventListener> listener;
+        bool isPlugin;
+    };
+    
     virtual ~HiviewContext(){};
     // post event to broadcast queue, the event will be delivered to all plugin that concern this event
     virtual void PostUnorderedEvent(std::shared_ptr<Plugin> plugin __UNUSED, std::shared_ptr<Event> event __UNUSED) {};
 
     // register listener to unordered broadcast queue
-    virtual void RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener __UNUSED) {};
+    virtual void RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener __UNUSED) {};
+
+     // register dynamic listener to queue
+    virtual void RegisterDynamicListenerInfo(std::weak_ptr<Plugin> listener __UNUSED) {};
 
     // send a event to a specific plugin and wait the return of the OnEvent.
     virtual bool PostSyncEventToTarget(std::shared_ptr<Plugin> caller __UNUSED, const std::string& callee __UNUSED,
@@ -266,22 +270,25 @@ public:
         return nullptr;
     }
 
-    virtual void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin, const std::set<std::string>& eventNames,
-        const std::set<EventListener::EventIdRange>& listenerInfo) {};
+    virtual void AddListenerInfo(uint32_t type, const std::string& name,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo) {};
 
-    virtual std::vector<std::weak_ptr<Plugin>> GetListenerInfo(uint32_t type,
+    virtual void AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin,
+        const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo) {};
+
+    virtual std::vector<std::weak_ptr<InstanceInfo>> GetListenerInfo(uint32_t type,
         const std::string& eventNames, uint32_t eventId)
     {
-        return std::vector<std::weak_ptr<Plugin>>();
+        return std::vector<std::weak_ptr<InstanceInfo>>();
     }
 
-    virtual bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+    virtual bool GetListenerInfo(uint32_t type, const std::string& name,
         std::set<EventListener::EventIdRange> &listenerInfo)
     {
         return false;
     }
 
-    virtual bool GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin, std::set<std::string> &eventNames)
+    virtual bool GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames)
     {
         return false;
     }

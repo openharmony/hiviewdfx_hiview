@@ -54,6 +54,8 @@ static const char CLOUD_UPDATE_CONFIG_DIR[] = "/data/system/hiview/";
 static const char DEFAULT_WORK_DIR[] = "/data/log/LogService/";
 static const char DEFAULT_COMMERCIAL_WORK_DIR[] = "/log/LogService/";
 static const char DEFAULT_PERSIST_DIR[] = "/log/hiview/";
+static const char LIB_SEARCH_DIR[] = "/system/lib/";
+static const char LIB64_SEARCH_DIR[] = "/system/lib64/";
 }
 DEFINE_LOG_TAG("HiView-HiviewPlatform");
 HiviewPlatform::HiviewPlatform()
@@ -67,6 +69,8 @@ HiviewPlatform::HiviewPlatform()
       unorderQueue_(nullptr),
       sharedWorkLoop_(nullptr)
 {
+    dynamicLibSearchDir_.push_back(LIB_SEARCH_DIR);
+    dynamicLibSearchDir_.push_back(LIB64_SEARCH_DIR);
 }
 
 HiviewPlatform::~HiviewPlatform()
@@ -78,6 +82,7 @@ HiviewPlatform::~HiviewPlatform()
     if (sharedWorkLoop_ != nullptr) {
         sharedWorkLoop_->StopLoop();
     }
+    HiviewGlobal::ReleaseInstance();
 }
 
 void HiviewPlatform::SetMaxProxyIdleTime(time_t idleTime)
@@ -103,9 +108,16 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
         if (FileUtil::IsDirectory(platformConfigInfo.commercialWorkDir)) {
             defaultCommercialWorkDir_ = platformConfigInfo.commercialWorkDir;
         }
-        dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLib64SearchDir);
-        dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLibSearchDir);
-
+        if (platformConfigInfo.dynamicLib64SearchDir != ""
+            || platformConfigInfo.dynamicLibSearchDir != "") {
+            dynamicLibSearchDir_.clear();
+        }
+        if (platformConfigInfo.dynamicLib64SearchDir != "") {
+            dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLib64SearchDir);
+        }
+        if (platformConfigInfo.dynamicLibSearchDir != "") {
+            dynamicLibSearchDir_.push_back(platformConfigInfo.dynamicLibSearchDir);
+        }
         ValidateAndCreateDirectories(platformConfigInfo.pluginConfigFileDir,
                                      platformConfigInfo.cloudUpdateConfigDir,
                                      platformConfigInfo.workDir,
@@ -522,12 +534,25 @@ void HiviewPlatform::PostUnorderedEvent(std::shared_ptr<Plugin> plugin, std::sha
     }
 }
 
-void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<Plugin> listener)
+void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<EventListener> listener)
 {
-    if (unorderQueue_ != nullptr) {
-        std::set<std::string> eventNames;
-        std::set<EventListener::EventIdRange> listenerInfo;
-        AddListenerInfo(0, listener, eventNames, listenerInfo);
+    auto ptr = listener.lock();
+    if (ptr == nullptr) {
+        return;
+    }
+
+    auto name = ptr->GetListenerName();
+    auto itListenerInfo = listeners_.find(name);
+    if (itListenerInfo == listeners_.end()) {
+        auto tmp = std::make_shared<ListenerInfo>();
+        tmp->instanceInfo = std::make_shared<InstanceInfo>();
+        tmp->instanceInfo->isPlugin = false;
+        tmp->instanceInfo->listener = listener;
+        listeners_[name] = tmp;
+    } else {
+        auto tmp = listeners_[name];
+        tmp->instanceInfo->isPlugin = false;
+        tmp->instanceInfo->listener = listener;
     }
 
     // dispatch engine event
@@ -535,6 +560,31 @@ void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<Plugin> listen
     if ((it != pluginMap_.end()) && (it->second != nullptr)) {
         auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
         dispatcher->RegisterListener(listener);
+    }
+}
+
+void HiviewPlatform::RegisterDynamicListenerInfo(std::weak_ptr<Plugin> plugin)
+{
+    auto ptr = plugin.lock();
+    if (ptr == nullptr) {
+        return;
+    }
+
+    auto name = ptr->GetName();
+    auto itListenerInfo = listeners_.find(name);
+    if (itListenerInfo == listeners_.end()) {
+        auto tmp = std::make_shared<ListenerInfo>();
+        tmp->instanceInfo = std::make_shared<InstanceInfo>();
+        tmp->instanceInfo->isPlugin = true;
+        tmp->instanceInfo->plugin = plugin;
+        listeners_[name] = tmp;
+    }
+
+    // dispatch engine event
+    std::map<std::string, std::shared_ptr<Plugin>>::iterator it = pluginMap_.find(ENGINE_EVENT_DISPATCHER);
+    if ((it != pluginMap_.end()) && (it->second != nullptr)) {
+        auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
+        dispatcher->RegisterListener(plugin);
     }
 }
 
@@ -895,51 +945,87 @@ void HiviewPlatform::ScheduleCheckUnloadablePlugins()
 void HiviewPlatform::AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin,
     const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
 {
-    if (plugin.lock() == nullptr) {
+    auto ptr = plugin.lock();
+    if (ptr == nullptr) {
         return;
     }
-    auto name = plugin.lock()->GetName();
+    auto name = ptr->GetName();
     auto itListenerInfo = listeners_.find(name);
+    std::shared_ptr<ListenerInfo> data = nullptr;
     if (itListenerInfo == listeners_.end()) {
-        ListenerInfo tmp = {
-            .listener = plugin,
-        };
-        tmp.idListenerInfo.insert(std::pair<uint32_t, std::set<EventListener::EventIdRange>>(type, listenerInfo));
-        tmp.strListenerInfo.insert(std::pair<uint32_t, std::set<std::string>>(type, eventNames));
+        auto tmp = std::make_shared<ListenerInfo>();
+        tmp->instanceInfo = std::make_shared<InstanceInfo>();
+        tmp->instanceInfo->isPlugin = true;
+        tmp->instanceInfo->plugin = plugin;
         listeners_[name] = tmp;
-        return;
+        data = listeners_[name];
+    } else {
+        data = itListenerInfo->second;
     }
 
-    auto& data = itListenerInfo->second;
-    if (!eventNames.size()) {
-        auto it = data.strListenerInfo.find(type);
-        if (it != data.strListenerInfo.end()) {
+    if (!eventNames.empty()) {
+        auto it = data->strListenerInfo.find(type);
+        if (it != data->strListenerInfo.end()) {
             it->second.insert(eventNames.begin(), eventNames.end());
         } else {
-            data.strListenerInfo[type] = eventNames;
+            data->strListenerInfo[type] = eventNames;
         }
     }
 
-    if (!listenerInfo.size()) {
-        auto it = data.idListenerInfo.find(type);
-        if (it != data.idListenerInfo.end()) {
+    if (!listenerInfo.empty()) {
+        auto it = data->idListenerInfo.find(type);
+        if (it != data->idListenerInfo.end()) {
             it->second.insert(listenerInfo.begin(), listenerInfo.end());
         } else {
-            data.idListenerInfo[type] = listenerInfo;
+            data->idListenerInfo[type] = listenerInfo;
         }
     }
 }
 
-std::vector<std::weak_ptr<Plugin>> HiviewPlatform::GetListenerInfo(uint32_t type,
+void HiviewPlatform::AddListenerInfo(uint32_t type, const std::string& name,
+    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+{
+    auto itListenerInfo = listeners_.find(name);
+    std::shared_ptr<ListenerInfo> data = nullptr;
+    if (itListenerInfo == listeners_.end()) {
+        auto tmp = std::make_shared<ListenerInfo>();
+        tmp->instanceInfo = std::make_shared<InstanceInfo>();
+        tmp->instanceInfo->isPlugin = false;
+        listeners_[name] = tmp;
+        data = listeners_[name];
+    } else {
+        data = itListenerInfo->second;
+    }
+
+    if (!eventNames.empty()) {
+        auto it = data->strListenerInfo.find(type);
+        if (it != data->strListenerInfo.end()) {
+            it->second.insert(eventNames.begin(), eventNames.end());
+        } else {
+            data->strListenerInfo[type] = eventNames;
+        }
+    }
+
+    if (!listenerInfo.empty()) {
+        auto it = data->idListenerInfo.find(type);
+        if (it != data->idListenerInfo.end()) {
+            it->second.insert(listenerInfo.begin(), listenerInfo.end());
+        } else {
+            data->idListenerInfo[type] = listenerInfo;
+        }
+    }
+}
+
+std::vector<std::weak_ptr<HiviewContext::InstanceInfo>> HiviewPlatform::GetListenerInfo(uint32_t type,
     const std::string& eventName, uint32_t eventId)
 {
-    std::vector<std::weak_ptr<Plugin>> ret;
+    std::vector<std::weak_ptr<InstanceInfo>> ret;
     for (auto& tmp : listeners_) {
-        auto& data = tmp.second;
+        auto data = tmp.second;
 
         bool retString = false;
-        auto itStrInfo = data.strListenerInfo.find(type);
-        if (itStrInfo != data.strListenerInfo.end()) {
+        auto itStrInfo = data->strListenerInfo.find(type);
+        if (itStrInfo != data->strListenerInfo.end()) {
             retString = std::any_of(itStrInfo->second.begin(), itStrInfo->second.end(),
                 [&](const std::string& name) {
                     return (eventName.find(name) != std::string::npos);
@@ -947,8 +1033,8 @@ std::vector<std::weak_ptr<Plugin>> HiviewPlatform::GetListenerInfo(uint32_t type
         }
 
         bool retId = false;
-        auto itIdInfo = data.idListenerInfo.find(type);
-        if (itIdInfo != data.idListenerInfo.end()) {
+        auto itIdInfo = data->idListenerInfo.find(type);
+        if (itIdInfo != data->idListenerInfo.end()) {
             retId = std::any_of(itIdInfo->second.begin(), itIdInfo->second.end(),
                 [&](const EventListener::EventIdRange& range) {
                     return ((eventId >= range.begin) && (eventId <= range.end));
@@ -956,37 +1042,37 @@ std::vector<std::weak_ptr<Plugin>> HiviewPlatform::GetListenerInfo(uint32_t type
         }
 
         if (retString || retId) {
-            ret.push_back(data.listener);
+            ret.push_back(data->instanceInfo);
         }
     }
     return ret;
 }
 
-bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::string& name,
     std::set<EventListener::EventIdRange> &listenerInfo)
 {
-    auto it = listeners_.find(plugin->GetName());
+    auto it = listeners_.find(name);
     if (it == listeners_.end()) {
         return false;
     }
-    auto tmp = it->second.idListenerInfo.find(type);
-    if (tmp != it->second.idListenerInfo.end()) {
+    auto tmp = it->second->idListenerInfo.find(type);
+    if (tmp != it->second->idListenerInfo.end()) {
         listenerInfo = tmp->second;
         return true;
     }
     return false;
 }
 
-bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::shared_ptr<Plugin> plugin,
+bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::string& name,
     std::set<std::string> &eventNames)
 {
-    auto it = listeners_.find(plugin->GetName());
+    auto it = listeners_.find(name);
     if (it == listeners_.end()) {
         return false;
     }
 
-    auto tmp = it->second.strListenerInfo.find(type);
-    if (tmp != it->second.strListenerInfo.end()) {
+    auto tmp = it->second->strListenerInfo.find(type);
+    if (tmp != it->second->strListenerInfo.end()) {
         eventNames = tmp->second;
         return true;
     }

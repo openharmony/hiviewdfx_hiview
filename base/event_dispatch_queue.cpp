@@ -73,8 +73,19 @@ void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
     auto listeners = context_->GetListenerInfo(event.messageType_, eventName, event.eventId_);
     for (auto& tmp : listeners) {
         auto listener = tmp.lock();
-        if (listener != nullptr) {
-            listener->OnUnorderedEvent(event);
+        if (listener == nullptr) {
+            continue;
+        }
+        if (listener->isPlugin) {
+            auto ptr = listener->plugin.lock();
+            if (ptr != nullptr) {
+                ptr->OnEventListeningCallback(event);
+            }
+        } else {
+            auto ptr = listener->listener.lock();
+            if (ptr != nullptr) {
+                ptr->OnUnorderedEvent(event);
+            }
         }
     }
 }

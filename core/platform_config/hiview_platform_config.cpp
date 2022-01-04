@@ -85,6 +85,9 @@ bool HiviewPlatformConfig::ParsesConfig(HiviewPlatformConfig::PlatformConfigInfo
         HIVIEW_LOGD("_%{public}s_", retString[index].c_str());
         RegexList_.pop_front();
         ++index;
+        if (RegexList_.empty()) {
+            break;
+        }
     }
     ret.defaultPluginConfigName = retString[CONFIG_NAME_NO];
     ret.pluginConfigFileDir = retString[CONFIG_FILE_DIR_NO];
