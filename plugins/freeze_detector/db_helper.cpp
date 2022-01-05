@@ -29,7 +29,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
 
 void DBHelper::SelectEventFromDB(
-    bool all, unsigned long start, unsigned long end, std::list<WatchPoint>& list)
+    bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list)
 {
     if (start > end) {
         return;

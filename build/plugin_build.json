@@ -69,7 +69,8 @@
                 "threads": {
                     "singledthread": {
                         "SysEventSource": "sysevent_source",
-                        "SysEventService": "sysevent_service"
+                        "SysEventService": "sysevent_service",
+                        "FreezeDetectorPlugin": "freeze_detector"
                     }
                 }
             }

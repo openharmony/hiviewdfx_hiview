@@ -28,7 +28,7 @@ public:
         Builder();
         ~Builder();
         Builder& InitSeq(long seq);
-        Builder& InitTimestamp(unsigned long timestamp);
+        Builder& InitTimestamp(unsigned long long timestamp);
         Builder& InitPid(long pid);
         Builder& InitTid(long tid);
         Builder& InitUid(long uid);
@@ -42,7 +42,7 @@ public:
 
     private:
         long seq_;
-        unsigned long timestamp_;
+        unsigned long long timestamp_;
         long pid_;
         long uid_;
         long tid_;
@@ -60,7 +60,7 @@ public:
     ~WatchPoint() {};
 
     long GetSeq() const;
-    unsigned long GetTimestamp() const;
+    unsigned long long GetTimestamp() const;
     long GetPid() const;
     long GetTid() const;
     long GetUid() const;
@@ -77,7 +77,7 @@ public:
 
 private:
     long seq_;
-    unsigned long timestamp_;
+    unsigned long long timestamp_;
     long pid_;
     long uid_;
     long tid_;

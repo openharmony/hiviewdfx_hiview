@@ -39,12 +39,12 @@ const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
 
 bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
 {
-    for (auto const pair : applicationPairs_) {
+    for (auto const &pair : applicationPairs_) {
         if (domain == pair.first && stringId == pair.second) {
             return true;
         }
     }
-    for (auto const pair : systemPairs_) {
+    for (auto const &pair : systemPairs_) {
         if (domain == pair.first && stringId == pair.second) {
             return true;
         }
@@ -54,7 +54,7 @@ bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringI
 
 bool Vendor::IsApplicationEvent(const std::string& domain, const std::string& stringId) const
 {
-    for (auto const pair : applicationPairs_) {
+    for (auto const &pair : applicationPairs_) {
         if (domain == pair.first && stringId == pair.second) {
             return true;
         }
@@ -64,7 +64,7 @@ bool Vendor::IsApplicationEvent(const std::string& domain, const std::string& st
 
 bool Vendor::IsSystemEvent(const std::string& domain, const std::string& stringId) const
 {
-    for (auto const pair : systemPairs_) {
+    for (auto const &pair : systemPairs_) {
         if (domain == pair.first && stringId == pair.second) {
             return true;
         }
@@ -91,10 +91,10 @@ std::set<std::string> Vendor::GetFreezeStringIds() const
 {
     std::set<std::string> set;
 
-    for (auto const pair : applicationPairs_) {
+    for (auto const &pair : applicationPairs_) {
         set.insert(pair.second);
     }
-    for (auto const pair : systemPairs_) {
+    for (auto const &pair : systemPairs_) {
         set.insert(pair.second);
     }
 
@@ -150,7 +150,7 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
     return list.size() != 0;
 }
 
-std::string Vendor::GetTimeString(unsigned long timestamp) const
+std::string Vendor::GetTimeString(unsigned long long timestamp) const
 {
     struct tm tm;
     time_t ts;
@@ -160,6 +160,20 @@ std::string Vendor::GetTimeString(unsigned long timestamp) const
 
     strftime(buf, TIME_STRING_LEN - 1, "%Y%m%d%H%M%S", &tm);
     return std::string(buf, strlen(buf));
+}
+
+void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const
+{
+    oss << header << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_DOMAIN << FreezeDetectorPlugin::COLON << watchPoint.GetDomain() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_STRINGID << FreezeDetectorPlugin::COLON << watchPoint.GetStringId() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_TIMESTAMP << FreezeDetectorPlugin::COLON <<
+        watchPoint.GetTimestamp() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_PID << FreezeDetectorPlugin::COLON << watchPoint.GetPid() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_UID << FreezeDetectorPlugin::COLON << watchPoint.GetUid() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << FreezeDetectorPlugin::COLON << watchPoint.GetPackageName() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_PROCESS_NAME << FreezeDetectorPlugin::COLON << watchPoint.GetProcessName() << std::endl;
+    oss << FreezeDetectorPlugin::EVENT_MSG << FreezeDetectorPlugin::COLON << watchPoint.GetMsg() << std::endl;
 }
 
 std::string Vendor::MergeEventLog(
@@ -181,26 +195,22 @@ std::string Vendor::MergeEventLog(
         packageName = stringId;
     }
 
-    std::string retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-    std::string logPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-
-    std::ofstream output(logPath, std::ios::out);
-    if (!output.is_open()) {
-        HIVIEW_LOGE("cannot open log file for writing:%{public}s.\n", logPath.c_str());
-        return "";
+    std::string retPath;
+    std::string logPath;
+    std::string logName;
+    if (IsApplicationResult(result)) {
+        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
-    output << HEADER << std::endl;
-    output << FreezeDetectorPlugin::EVENT_DOMAIN << FreezeDetectorPlugin::COLON << domain << std::endl;
-    output << FreezeDetectorPlugin::EVENT_STRINGID << FreezeDetectorPlugin::COLON << stringId << std::endl;
-    output << FreezeDetectorPlugin::EVENT_TIMESTAMP << FreezeDetectorPlugin::COLON <<
-        watchPoint.GetTimestamp() << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PID << FreezeDetectorPlugin::COLON << pid << std::endl;
-    output << FreezeDetectorPlugin::EVENT_UID << FreezeDetectorPlugin::COLON << uid << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << FreezeDetectorPlugin::COLON << packageName << std::endl;
-    output << FreezeDetectorPlugin::EVENT_PROCESS_NAME << FreezeDetectorPlugin::COLON << processName << std::endl;
-    output << FreezeDetectorPlugin::EVENT_MSG << FreezeDetectorPlugin::COLON << msg << std::endl;
-    output.flush();
-    output.close();
+    else {
+        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+    }
+
+    std::ostringstream header;
+    DumpEventInfo(header, TRIGGER_HEADER, watchPoint);
 
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::ostringstream body;
@@ -208,31 +218,35 @@ std::string Vendor::MergeEventLog(
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.\n", filePath.c_str());
         if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
+            HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
+                node.GetDomain().c_str(), node.GetStringId().c_str());
+            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
         std::ifstream ifs(filePath, std::ios::in);
         if (!ifs.is_open()) {
             HIVIEW_LOGE("cannot open log file for reading:%{public}s.\n", filePath.c_str());
+            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
-        std::ofstream ofs(logPath, std::ios::out | std::ios::app);
-        if (!ofs.is_open()) {
-            ifs.close();
-            HIVIEW_LOGE("cannot open log file for writing:%{public}s.\n", logPath.c_str());
-            continue;
-        }
+        body << HEADER << std::endl;
+        body << ifs.rdbuf();
 
-        ofs << HEADER << std::endl;
-        ofs << ifs.rdbuf();
-
-        ofs.flush();
-        ofs.close();
         ifs.close();
     }
 
-    std::string type = IsSystemResult(result) ? SP_SYSTEMHUNGFAULT : SP_APPFREEZE;
+    int fd = logStore_->CreateLogFile(logName);
+    if (fd < 0) {
+        HIVIEW_LOGE("failed to create log file %{public}s.\n", logPath.c_str());
+        return "";
+    }
+    FileUtil::SaveStringToFd(fd, header.str());
+    FileUtil::SaveStringToFd(fd, body.str());
+    close(fd);
+
+    std::string type = IsApplicationResult(result) ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
     auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
     digest = eventInfos[SP_ENDSTACK];
     std::string summary = eventInfos[SP_ENDSTACK];
@@ -249,14 +263,23 @@ std::string Vendor::MergeEventLog(
     info.logPath = logPath;
     AddFaultLog(info);
 
-    HiSysEvent::Write("RELIABILITY", IsSystemResult(result) ? "SYSTEM_FREEZE" : "APP_FREEZE", HiSysEvent::FAULT,
+    std::vector<std::string> paths = {retPath};
+    HiSysEvent::Write("RELIABILITY", IsApplicationResult(result) ? "APP_FREEZE" : "SYSTEM_FREEZE", HiSysEvent::FAULT,
         "SUB_EVENT_TYPE", stringId,
         "EVENT_TIME", timestamp,
         "MODULE", packageName,
         "PNAME", packageName,
         "REASON", stringId,
-        "DIAG_INFO", summary,
-        "STACK", summary);
+        "DIAG_INFO", digest,
+        "STACK", summary,
+        "HIVIEW_LOG_FILE_PATHS", paths,
+        "DOMAIN", domain,
+        "STRING_ID", stringId,
+        "PID", pid,
+        "UID", uid,
+        "PACKAGE_NAME", packageName,
+        "PROCESS_NAME", processName,
+        "MSG", msg);
 
     return retPath;
 }
@@ -271,6 +294,15 @@ std::shared_ptr<PipelineEvent> Vendor::MakeEvent(
     }
 
     return nullptr;
+}
+
+bool Vendor::Init()
+{
+    logStore_ = std::make_unique<LogStoreEx>(FREEZE_DETECTOR_PATH, true);
+    logStore_->SetMaxSize(MAX_FOLDER_SIZE);
+    logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
+    logStore_->Init();
+    return true;
 }
 
 Vendor::Vendor()
