@@ -63,8 +63,8 @@ bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint, WatchPoint& matchedWat
         }
     }
 
-    unsigned long start = watchPoint.GetTimestamp() - (window * MILLISECOND);
-    unsigned long end = watchPoint.GetTimestamp();
+    unsigned long long start = watchPoint.GetTimestamp() - (window * MILLISECOND);
+    unsigned long long end = watchPoint.GetTimestamp();
     if (window == 0) {
         list.push_back(watchPoint);
     } else {

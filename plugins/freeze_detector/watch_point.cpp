@@ -52,7 +52,7 @@ WatchPoint::Builder& WatchPoint::Builder::InitSeq(long seq)
     return *this;
 }
 
-WatchPoint::Builder& WatchPoint::Builder::InitTimestamp(unsigned long timestamp)
+WatchPoint::Builder& WatchPoint::Builder::InitTimestamp(unsigned long long timestamp)
 {
     timestamp_ = timestamp;
     return *this;
@@ -123,7 +123,7 @@ long WatchPoint::GetSeq() const
     return seq_;
 }
 
-unsigned long WatchPoint::GetTimestamp() const
+unsigned long long WatchPoint::GetTimestamp() const
 {
     return timestamp_;
 }

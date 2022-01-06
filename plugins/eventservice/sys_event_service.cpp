@@ -47,6 +47,12 @@ void SysEventService::OnLoad()
     SysEventServiceAdapter::StartService(this, notifyFunc);
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
     hasLoaded_ = true;
+
+    std::string dbFile =
+        HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
+    dbFile = (dbFile[dbFile.size() - 1] != '/') ? (dbFile + "/hisysevent.def") : (dbFile + "hisysevent.def");
+    HIVIEW_LOGE("dbFile is %{public}s", dbFile.c_str());
+    sysEventParser_ = std::make_unique<EventJsonParser>(dbFile);
 }
 
 void SysEventService::SendEvent(std::shared_ptr<Event>& event)
@@ -88,7 +94,16 @@ bool SysEventService::OnEvent(std::shared_ptr<Event>& event)
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
-    sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
+
+    if (!sysEventParser_->HandleEventJson(sysEvent)) {
+        HIVIEW_LOGE("HandleEventJson fail");
+        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
+    }
+    else {
+        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
+    }
+    HIVIEW_LOGI("SysEvent Json String is %{}s.", sysEvent->jsonExtraInfo_.c_str());
+
     SysEventServiceAdapter::OnSysEvent(sysEvent);
     sysEventDbMgr_->SaveToStore(sysEvent);
     return true;

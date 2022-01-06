@@ -25,7 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class DBHelper {
 public:
-    static void SelectEventFromDB(bool all, unsigned long start, unsigned long end, std::list<WatchPoint>& list);
+    static void SelectEventFromDB(bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list);
     static void UpdateEventIntoDB(const WatchPoint& watchPoint, int id);
 };
 } // namespace HiviewDFX

@@ -24,6 +24,8 @@ group("unittest") {
 config("unittest_config") {
   include_dirs = [
     "//utils/native/base/include",
+    "//third_party/cJSON",
+    "//third_party/jsoncpp/include",
     "unittest/common",
     "$hiview_plugin/eventservice/include",
     "$hiview_base/include",
@@ -37,6 +39,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
   configs = [ ":unittest_config" ]
 
   sources = [
+    "$hiview_plugin/eventservice/event_json_parser.cpp",
     "$hiview_plugin/eventservice/service/sys_event_stat.cpp",
     "$hiview_plugin/eventservice/store/sys_event_db_backup.cpp",
     "$hiview_plugin/eventservice/store/sys_event_db_clean.cpp",
@@ -53,7 +56,9 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
+    "//third_party/cJSON:cjson_static",
     "//third_party/googletest:gtest_main",
+    "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [

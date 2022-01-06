@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "event.h"
+#include "event_json_parser.h"
 #include "plugin.h"
 #include "sys_event_db_mgr.h"
 #include "sys_event_stat.h"
@@ -40,6 +41,7 @@ private:
     std::unique_ptr<SysEventDbMgr> sysEventDbMgr_;
     std::unique_ptr<SysEventStat> sysEventStat_;
     std::atomic<bool> hasLoaded_;
+    std::unique_ptr<EventJsonParser> sysEventParser_;
 }; // SysEventService
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
 } // namespace HiviewDFX

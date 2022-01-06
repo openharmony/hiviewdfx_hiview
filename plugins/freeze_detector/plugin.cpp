@@ -34,6 +34,7 @@ std::string FreezeDetectorPlugin::GetListenerName()
 
 bool FreezeDetectorPlugin::ReadyToLoad()
 {
+    Vendor::GetInstance().Init();
     return FreezeResolver::GetInstance().Init();
 }
 
