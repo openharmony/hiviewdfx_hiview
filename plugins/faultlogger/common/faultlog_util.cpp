@@ -61,7 +61,7 @@ std::string GetFormatedTime(uint64_t time)
         return "00000000000000";
     }
 
-    auto out = static_cast<time_t>(time);
+    time_t out = static_cast<time_t>(time);
     struct tm tmStruct {0};
     struct tm* timeInfo = localtime_r(&out, &tmStruct);
     if (timeInfo == nullptr) {
