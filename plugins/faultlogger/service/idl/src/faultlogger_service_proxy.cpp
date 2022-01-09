@@ -43,6 +43,8 @@ void FaultLoggerServiceProxy::AddFaultLog(const FaultLogInfoOhos& info)
         return;
     }
 
+    auto flags = option.GetFlags();
+    option.SetFlags(flags | 0x01); // 0X01 return immediately
     if (remote->SendRequest(static_cast<int>(IFaultLoggerService::IFaultLoggerService_ADD_FAULTLOG),
         data, reply, option) != ERR_OK) {
         return;
