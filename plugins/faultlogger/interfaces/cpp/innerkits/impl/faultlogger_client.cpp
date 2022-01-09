@@ -111,3 +111,8 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
+
+__attribute__((visibility ("default"))) void AddFaultLog(FaultLogInfoInner* info)
+{
+    OHOS::HiviewDFX::AddFaultLog(*info);
+}

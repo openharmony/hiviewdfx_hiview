@@ -18,16 +18,9 @@
 #include <map>
 #include <string>
 #include "faultlog_query_result.h"
-namespace OHOS {
-namespace HiviewDFX {
-enum FaultLogType {
-    NO_SPECIFIC = 0,
-    JAVA_CRASH,
-    CPP_CRASH,
-    JS_CRASH,
-    APP_FREEZE,
-};
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 struct FaultLogInfoInner {
     int64_t time {0};
     int32_t id {-1};
@@ -38,6 +31,20 @@ struct FaultLogInfoInner {
     std::string summary;
     std::string logPath;
     std::map<std::string, std::string> sectionMaps;
+};
+void AddFaultLog(FaultLogInfoInner* info);
+#ifdef __cplusplus
+}
+#endif
+
+namespace OHOS {
+namespace HiviewDFX {
+enum FaultLogType {
+    NO_SPECIFIC = 0,
+    JAVA_CRASH,
+    CPP_CRASH,
+    JS_CRASH,
+    APP_FREEZE,
 };
 
 // internal interface
