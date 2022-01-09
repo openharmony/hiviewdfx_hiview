@@ -62,8 +62,8 @@ void EventLoopTest::TearDown()
 
 bool RealEventHandler::OnEvent(std::shared_ptr<Event>& event)
 {
-    printf("OnEvent id:%d sender:%s pid:%d time:%lld. index:%d\n", event->eventId_, event->sender_.c_str(),
-           gettid(), time(nullptr), event->what_);
+    printf("OnEvent id:%d sender:%s pid:%d time:%" PRId64 ". index:%d\n", event->eventId_, event->sender_.c_str(),
+           gettid(), static_cast<int64_t>(time(nullptr)), event->what_);
     lastProcessId_ = event->eventId_;
     if ((event->what_ % 10) == 0) { // 10 : add delay in processing some event
         usleep(100); // 100 : 100us
@@ -76,7 +76,7 @@ bool RealEventHandler::OnEvent(std::shared_ptr<Event>& event)
 
 void RealEventHandler::DoTask()
 {
-    printf("RealEventHandler::DoTask pid:%d time:%lld.\n", gettid(), time(nullptr));
+    printf("RealEventHandler::DoTask pid:%d time:%" PRId64 ".\n", gettid(), static_cast<int64_t>(time(nullptr)));
     processedEventCount_++;
 }
 
@@ -99,6 +99,7 @@ bool DataFileEventReader::OnFileDescriptorEvent(int fd, int type)
         printf("Invalid inotify fd:%d", inotifyFd_);
         return false;
     }
+
     int len = read(inotifyFd_, buffer, bufSize);
     if (len <= 0) {
         printf("failed to read event");
@@ -106,7 +107,6 @@ bool DataFileEventReader::OnFileDescriptorEvent(int fd, int type)
     }
     offset = buffer;
     event = reinterpret_cast<struct inotify_event *>(buffer);
-
     while ((reinterpret_cast<char *>(event) - buffer) < len) {
         for (const auto &it : fileMap_) {
             if (it.second != event->wd) {
