@@ -22,6 +22,7 @@
 
 #include "faultlog_info.h"
 #include "faultlog_util.h"
+#include "hiview_global.h"
 #include "logger.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
@@ -35,7 +36,7 @@ static const std::vector<std::string> QUERY_ITEMS =
     { "time_", "name_", "uid_", "pid_", "module", "reason", "summary", "logPath" };
 std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
 {
-    auto jsonStr = "{\"domain_\":\"HIVIEWDFX\"}";
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     auto sysEvent = std::make_shared<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
     auto name = GetFaultNameByType(info.faultLogType);
     std::transform(name.begin(), name.end(), name.begin(), ::toupper);
@@ -89,7 +90,9 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
         return;
     }
 #ifndef UNITTEST
-    EventStore::SysEventDao::Insert(sysEvent);
+    // send event to event service
+    // thus we can both save event to rawdb and notify listeners
+    HiviewGlobal::GetInstance()->PostAsyncEventToTarget("SysEventService", sysEvent);
 #endif
 }
 
