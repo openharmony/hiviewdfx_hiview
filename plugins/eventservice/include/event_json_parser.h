@@ -29,6 +29,7 @@ public:
     EventJsonParser(const std::string &path);
     ~EventJsonParser();
 
+    bool AddEventJson(std::shared_ptr<SysEvent> &event) const;
     bool HandleEventJson(std::shared_ptr<SysEvent> &event) const;
     bool CheckBaseInfo(const Json::Value &baseJson, Json::Value &eventJson) const;
     bool CheckExtendInfo(const std::string &name, const Json::Value &sysEvent, const Json::Value &eventJson) const;

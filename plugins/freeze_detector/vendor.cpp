@@ -34,7 +34,8 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
-    {"HUNGTASK", "HUNGTASK"},
+    {"KERNEL_VENDOR", "HUNGTASK"},
+    {"KERNEL_VENDOR", "LONG_PRESS"},
 };
 
 bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
@@ -204,7 +205,7 @@ std::string Vendor::MergeEventLog(
         logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
     else {
-        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
@@ -216,7 +217,7 @@ std::string Vendor::MergeEventLog(
     std::ostringstream body;
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
-        HIVIEW_LOGI("merging file:%{public}s.\n", filePath.c_str());
+        HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
         if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
@@ -226,7 +227,7 @@ std::string Vendor::MergeEventLog(
 
         std::ifstream ifs(filePath, std::ios::in);
         if (!ifs.is_open()) {
-            HIVIEW_LOGE("cannot open log file for reading:%{public}s.\n", filePath.c_str());
+            HIVIEW_LOGE("cannot open log file for reading:%{public}s.", filePath.c_str());
             DumpEventInfo(body, HEADER, node);
             continue;
         }
@@ -239,7 +240,7 @@ std::string Vendor::MergeEventLog(
 
     int fd = logStore_->CreateLogFile(logName);
     if (fd < 0) {
-        HIVIEW_LOGE("failed to create log file %{public}s.\n", logPath.c_str());
+        HIVIEW_LOGE("failed to create log file %{public}s.", logPath.c_str());
         return "";
     }
     FileUtil::SaveStringToFd(fd, header.str());

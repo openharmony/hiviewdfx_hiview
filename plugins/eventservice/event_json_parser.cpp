@@ -50,6 +50,23 @@ EventJsonParser::EventJsonParser(const std::string &path) : jsonRootValid(false)
 
 EventJsonParser::~EventJsonParser() {}
 
+bool EventJsonParser::AddEventJson(std::shared_ptr<SysEvent> &event) const
+{
+    // convert JsonValue to the correct order by event->jsonExtraInfo_
+    std::string jsonStr = event->jsonExtraInfo_;
+    cJSON *cJsonArr = cJSON_Parse(jsonStr.c_str());
+    if (cJsonArr == NULL) {
+        return false;
+    }
+
+    // FreezeDetector needs to add
+    cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
+    jsonStr = cJSON_PrintUnformatted(cJsonArr);
+    cJSON_Delete(cJsonArr);
+    event->jsonExtraInfo_ = jsonStr;
+    return true;
+}
+
 bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
 {
     Json::Value eventJson;
