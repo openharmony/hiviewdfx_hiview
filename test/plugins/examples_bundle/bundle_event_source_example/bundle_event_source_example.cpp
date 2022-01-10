@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "event_source_example.h"
+#include "bundle_event_source_example.h"
 
 #include <fstream>
 #include <iostream>
@@ -28,39 +28,33 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER(EventSourceExample);
-std::set<std::string> EventSourceExample::count = std::set<std::string>();
-EventSourceExample::EventSourceExample() : inotifyFd_(0)
+REGISTER(BundleEventSourceExample);
+std::set<std::string> BundleEventSourceExample::count = std::set<std::string>();
+BundleEventSourceExample::BundleEventSourceExample() : inotifyFd_(0)
 {
-    printf("EventSourceExample::EventSourceExample()\n");
-    count.insert("EventSourceExample");
+    printf("BundleEventSourceExample::BundleEventSourceExample()\n");
+    count.insert("BundleEventSourceExample");
 }
 
-EventSourceExample::~EventSourceExample()
+BundleEventSourceExample::~BundleEventSourceExample()
 {
-    printf("EventSourceExample::~EventSourceExample()\n");
-    count.erase("EventSourceExample");
+    printf("BundleEventSourceExample::~BundleEventSourceExample()\n");
+    count.erase("BundleEventSourceExample");
 }
 
-void EventSourceExample::OnLoad()
+void BundleEventSourceExample::OnLoad()
 {
-    printf("EventSourceExample::OnLoad.\n");
+    printf("BundleEventSourceExample::OnLoad.\n");
 
     int isCreate = ::mkdir(SYSTEM_FAULT_LOG_PATH.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRWXG | S_IRWXO);
     if (!isCreate) {
         printf("create path:%s \n", SYSTEM_FAULT_LOG_PATH.c_str());
     }
-
-    CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/aaa");
-    CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/bbb");
-    CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/ccc");
-
-    CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/testaa");
     CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/testbb");
     CreateWatchFile(SYSTEM_FAULT_LOG_PATH + "/testcc");
 }
 
-void EventSourceExample::CreateWatchFile(const std::string& path)
+void BundleEventSourceExample::CreateWatchFile(const std::string& path)
 {
     std::ofstream file(path);
     if (!file.good()) {
@@ -71,33 +65,33 @@ void EventSourceExample::CreateWatchFile(const std::string& path)
     file.close();
 }
 
-void EventSourceExample::OnUnload()
+void BundleEventSourceExample::OnUnload()
 {
-    printf("EventSourceExample::OnUnload.\n");
+    printf("BundleEventSourceExample::OnUnload.\n");
 }
 
-void EventSourceExample::StartEventSource()
+void BundleEventSourceExample::StartEventSource()
 {
-    printf("EventSourceExample::StartEventSource.\n");
-    GetWorkLoop()->AddFileDescriptorEventCallback("Dropbox",
-        std::static_pointer_cast<EventSourceExample>(shared_from_this()));
+    printf("BundleEventSourceExample::StartEventSource.\n");
+    GetWorkLoop()->AddFileDescriptorEventCallback("BundleEventFd",
+        std::static_pointer_cast<BundleEventSourceExample>(shared_from_this()));
 }
 
-bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
+bool BundleEventSourceExample::OnFileDescriptorEvent(int fd, int type)
 {
-    printf("EventSourceExample::OnEvent fd:%d, type:%d, inotifyFd_:%d.\n", fd, type, inotifyFd_);
+    printf("BundleEventSourceExample::OnEvent fd:%d, type:%d, inotifyFd_:%d.\n", fd, type, inotifyFd_);
     const int bufSize = 2048;
     char buffer[bufSize] = {0};
     char *offset = nullptr;
     struct inotify_event *event = nullptr;
     if (inotifyFd_ < 0) {
-        printf("EventSourceExample Invalid inotify fd:%d", inotifyFd_);
+        printf("BundleEventSourceExample Invalid inotify fd:%d", inotifyFd_);
         return false;
     }
 
     int len = read(inotifyFd_, buffer, bufSize);
     if (len < 0) {
-        printf("EventSourceExample failed to read event");
+        printf("BundleEventSourceExample failed to read event");
         return false;
     }
 
@@ -113,7 +107,6 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
                 event->name[event->len - 1] = '\0';
             }
             std::string filePath = it.first + "/" + std::string(event->name);
-            printf("handle file event in %s \n", filePath.c_str());
             std::ifstream fileS(filePath);
             if (!fileS) {
                 continue;
@@ -125,6 +118,7 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
                 continue;
             }
             fileS.close();
+            printf("handle file event in %s \n", filePath.c_str());
             CreateAndPublishEvent(filePath);
         }
         int tmpLen = sizeof(struct inotify_event) + event->len;
@@ -134,9 +128,9 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
     return true;
 }
 
-int32_t EventSourceExample::GetPollFd()
+int32_t BundleEventSourceExample::GetPollFd()
 {
-    printf("EventSourceExample::GetPollFd.\n");
+    printf("BundleEventSourceExample::GetPollFd.\n");
     if (inotifyFd_ > 0) {
         return inotifyFd_;
     }
@@ -160,54 +154,34 @@ int32_t EventSourceExample::GetPollFd()
     return inotifyFd_;
 }
 
-int32_t EventSourceExample::GetPollType()
+int32_t BundleEventSourceExample::GetPollType()
 {
-    printf("EventSourceExample::GetPollType.\n");
+    printf("BundleEventSourceExample::GetPollType.\n");
     return EPOLLIN;
 }
 
-void EventSourceExample::CreateAndPublishEvent(const std::string &file)
+void BundleEventSourceExample::CreateAndPublishEvent(const std::string &file)
 {
     // create a pipeline event
-    auto event = std::make_shared<EventSourceExampleEvent>(file, static_cast<PipelineEventProducer *>(this));
+    auto event = std::make_shared<BundleEventSourceExampleEvent>(file, static_cast<PipelineEventProducer *>(this));
 
-    // add general information
-    const int demoBufSize = 128;
-    auto bufPtr = reinterpret_cast<char *>(malloc(demoBufSize));
-    if (bufPtr == nullptr) {
-        return;
-    }
-    event->data_ = bufPtr;
-    event->addon_ = file;
     event->isPipeline_ = true;
     // add special information
     event->messageType_ = Event::MessageType::FAULT_EVENT;
-    if (file == (SYSTEM_FAULT_LOG_PATH + "/aaa")) {
-        event->eventId_ = PIPELINE_EVENT_ID_AAA;
-    } else if (file == (SYSTEM_FAULT_LOG_PATH + "/bbb")) {
-        event->eventId_ = PIPELINE_EVENT_ID_BBB;
-    } else if (file == (SYSTEM_FAULT_LOG_PATH + "/ccc"))  {
-        event->eventId_ = PIPELINE_EVENT_ID_CCC;
-        event->SetValue("Pipeline", "Repack");
-    } else if (file == (SYSTEM_FAULT_LOG_PATH + "/testaa"))  {
-        event->eventId_ = PIPELINE_EVENT_ID_TAA;
-        event->eventName_ = "testaa";
-    }  else if (file == (SYSTEM_FAULT_LOG_PATH + "/testbb"))  {
-        event->eventId_ = 0;
-        event->eventName_ = "testbb";
+    if (file == (SYSTEM_FAULT_LOG_PATH + "/testbb"))  {
+        event->eventName_ = "testbbbb";
     }  else if (file == (SYSTEM_FAULT_LOG_PATH + "/testcc"))  {
-        event->eventId_ = 0;
-        event->eventName_ = "testcc";
+        event->eventName_ = "testcccc";
     } else {
         return;
     }
     PublishPipelineEvent(std::dynamic_pointer_cast<PipelineEvent>(event));
 }
 
-void EventSourceExample::Recycle(PipelineEvent *event)
+void BundleEventSourceExample::Recycle(PipelineEvent *event)
 {
-    printf("EventSourceExample::Recycle.\n");
-    auto eventPtr = static_cast<EventSourceExampleEvent *>(event);
+    printf("BundleEventSourceExample::Recycle.\n");
+    auto eventPtr = static_cast<BundleEventSourceExampleEvent *>(event);
     if (eventPtr == nullptr || eventPtr->data_ == nullptr) {
         return;
     }
@@ -216,7 +190,7 @@ void EventSourceExample::Recycle(PipelineEvent *event)
     printf("Recycle event:%s.\n", eventPtr->addon_.c_str());
 }
 
-void EventSourceExample::PauseDispatch(std::weak_ptr<Plugin> plugin)
+void BundleEventSourceExample::PauseDispatch(std::weak_ptr<Plugin> plugin)
 {
     auto requester = plugin.lock();
     if (requester != nullptr) {

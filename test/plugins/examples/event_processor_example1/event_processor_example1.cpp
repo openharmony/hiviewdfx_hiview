@@ -20,6 +20,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventProcessorExample1);
+EventProcessorExample1::EventProcessorExample1()
+{
+    printf("EventProcessorExample1::EventProcessorExample1()\n");
+    EventSourceExample::count.insert("EventProcessorExample1");
+}
+
+EventProcessorExample1::~EventProcessorExample1()
+{
+    printf("EventProcessorExample1::~EventProcessorExample1()\n");
+    EventSourceExample::count.erase("EventProcessorExample1");
+}
+
 bool EventProcessorExample1::CanProcessEvent(std::shared_ptr<Event> event)
 {
     printf("EventProcessorExample1 CanProcessEvent.\n");
@@ -32,6 +44,16 @@ bool EventProcessorExample1::CanProcessEvent(std::shared_ptr<Event> event)
         printf("EventProcessorExample1 CanProcessEvent true.\n");
         return true;
     }
+    if (event->messageType_ == Event::MessageType::FAULT_EVENT &&
+        event->eventName_ == "testbb") {
+        printf("EventProcessorExample1 CanProcessEvent true.\n");
+        return true;
+    }
+    if (event->messageType_ == Event::MessageType::FAULT_EVENT &&
+        event->eventName_ == "testcc") {
+        printf("EventProcessorExample1 CanProcessEvent true.\n");
+        return true;
+    }
     printf("EventProcessorExample1 CanProcessEvent false.\n");
     return false;
 }
@@ -39,6 +61,7 @@ bool EventProcessorExample1::CanProcessEvent(std::shared_ptr<Event> event)
 bool EventProcessorExample1::OnEvent(std::shared_ptr<Event>& event)
 {
     printf("EventProcessorExample1 OnEvent, tid:%d\n", gettid());
+    GetHiviewContext()->SetHiviewProperty("EPE1_OnEvent", "received : " + event->eventName_, true);
     processedEventCount_++;
     HandleEvent(event);
     return true;
@@ -63,7 +86,6 @@ void EventProcessorExample1::HandleEvent(std::shared_ptr<Event>& event)
 
 void EventProcessorExample1::OnLoad()
 {
-    SetName("EventProcessorExample1");
     SetVersion("EventProcessorExample1.0");
     printf("EventProcessorExample1 OnLoad \n");
 }

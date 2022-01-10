@@ -15,17 +15,35 @@
 
 #include "event_processor_example4.h"
 
+#include "event.h"
 #include "event_source_example.h"
 #include "plugin_factory.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER(EventProcessorExample4);
+REGISTER_PROXY_WITH_LOADED(EventProcessorExample4);
+EventProcessorExample4::EventProcessorExample4()
+{
+    printf("EventProcessorExample4::EventProcessorExample4()\n");
+    EventSourceExample::count.insert("EventProcessorExample4");
+}
+
+EventProcessorExample4::~EventProcessorExample4()
+{
+    printf("EventProcessorExample4::~EventProcessorExample4()\n");
+    EventSourceExample::count.erase("EventProcessorExample4");
+}
+
 bool EventProcessorExample4::CanProcessEvent(std::shared_ptr<Event> event)
 {
     if (event->messageType_ == Event::MessageType::FAULT_EVENT &&
         event->eventId_ == EventSourceExample::PIPELINE_EVENT_ID_BBB) {
-        printf("EventProcessorExample2 CanProcessEvent true.\n");
+        printf("EventProcessorExample4 CanProcessEvent true.\n");
+        return true;
+    }
+    if (event->messageType_ == Event::MessageType::FAULT_EVENT &&
+        event->eventName_ == "testbb") {
+        printf("EventProcessorExample4 CanProcessEvent true.\n");
         return true;
     }
     return false;
@@ -60,20 +78,31 @@ bool EventProcessorExample4::OnEvent(std::shared_ptr<Event>& event)
             GetHiviewContext()->PostUnorderedEvent(shared_from_this(), Event::Repack<Event, Event>(event, false));
         }
     }
+    GetHiviewContext()->SetHiviewProperty("EPE4_OnEvent", "received : " + event->eventName_, true);
 
     event->SetValue("EventProcessorExample4", "Done");
     return true;
 }
 void EventProcessorExample4::OnLoad()
 {
-    SetName("EventProcessorExample4");
     SetVersion("EventProcessorExample4.0");
     printf("EventProcessorExample4 OnLoad \n");
+    auto ptr = std::static_pointer_cast<EventProcessorExample4>(shared_from_this());
+    GetHiviewContext()->RegisterDynamicListenerInfo(ptr);
+    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testaa");
+    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testbb");
+    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::FAULT_EVENT, EventSourceExample::PIPELINE_EVENT_ID_AAA);
 }
 
 void EventProcessorExample4::OnUnload()
 {
     printf("EventProcessorExample4 OnUnload \n.");
+}
+
+void EventProcessorExample4::OnEventListeningCallback(const Event &msg)
+{
+    printf("EventProcessorExample4 OnEventListeningCallback.\n");
+    GetHiviewContext()->SetHiviewProperty("EPE4_Listening", "received : " + msg.eventName_, true);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

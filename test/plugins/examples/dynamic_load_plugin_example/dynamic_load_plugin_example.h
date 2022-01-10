@@ -19,6 +19,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class DynamicLoadPluginExample : public EventListener, public Plugin {
 public:
+    DynamicLoadPluginExample() {};
     virtual ~DynamicLoadPluginExample() {};
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnLoad() override;

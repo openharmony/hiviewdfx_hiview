@@ -15,11 +15,24 @@
 
 #include "event_processor_example5.h"
 
+#include "event_source_example.h"
 #include "plugin_factory.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER_PROXY(EventProcessorExample5);
+EventProcessorExample5::EventProcessorExample5()
+{
+    printf("EventProcessorExample5::EventProcessorExample5()\n");
+    EventSourceExample::count.insert("EventProcessorExample5");
+}
+
+EventProcessorExample5::~EventProcessorExample5()
+{
+    printf("EventProcessorExample5::~EventProcessorExample5()\n");
+    EventSourceExample::count.erase("EventProcessorExample5");
+}
+
 bool EventProcessorExample5::CanProcessEvent(std::shared_ptr<Event> event)
 {
     printf("EventProcessorExample5 CanProcessEvent true.\n");

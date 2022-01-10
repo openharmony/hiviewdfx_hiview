@@ -36,6 +36,7 @@ public:
     void RegisterListener(std::weak_ptr<Plugin> listener);
 
 protected:
+    bool channelPluginFind(std::string name, int32_t type);
     std::set<int32_t> types_;
     std::map<int32_t, std::list<std::weak_ptr<EventListener>>> channelMapper_;
     std::map<int32_t, std::list<std::weak_ptr<Plugin>>> channelPlugin_;

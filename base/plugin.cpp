@@ -26,9 +26,6 @@ Plugin::~Plugin()
         UnloadModule(handle_);
         handle_ = DynamicModuleDefault;
     }
-    if (workLoop_ != nullptr) {
-        workLoop_->StopLoop();
-    }
 }
 
 bool Plugin::OnEvent(std::shared_ptr<Event>& event __UNUSED)

@@ -58,4 +58,21 @@
             <option name="shell" value="rm -rf /system/lib/libbundletest.z.so"/>
         </cleaner>
     </target>
+    <target name="HolisticPlatformTest">
+        <preparer>
+            <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/bundleplugintest_plugin_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/plugin_config_5 -> /data/test/test_data/plugin_config" src="res"/>
+            <option name="push" value="hiviewdfx/hiview/libbundleplugintest.z.so -> /system/lib64/" src="out"/>
+            <option name="push" value="hiviewdfx/hiview/libbundleplugintest.z.so -> /system/lib/" src="out"/>
+            <option name="push" value="hiviewdfx/hiview/libdynamicloadpluginexample.z.so -> /system/lib64/" src="out"/>
+            <option name="push" value="hiviewdfx/hiview/libdynamicloadpluginexample.z.so -> /system/lib/" src="out"/>
+        </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /system/lib64/libbundleplugintest.z.so"/>
+            <option name="shell" value="rm -rf /system/lib/libbundleplugintest.z.so"/>
+            <option name="shell" value="rm -rf /system/lib64/libdynamicloadpluginexample.z.so"/>
+            <option name="shell" value="rm -rf /system/lib/libdynamicloadpluginexample.z.so"/>
+        </cleaner>
+    </target>
 </configuration>

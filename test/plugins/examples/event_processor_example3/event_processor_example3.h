@@ -30,6 +30,8 @@ public:
 
 class EventProcessorExample3 : public Plugin {
 public:
+    EventProcessorExample3();
+    ~EventProcessorExample3();
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnLoad() override;

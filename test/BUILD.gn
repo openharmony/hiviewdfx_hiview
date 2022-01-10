@@ -19,6 +19,11 @@ group("moduletest") {
   deps = [ ":HiviewPlatformModuleTest" ]
 }
 
+group("unittest") {
+  testonly = true
+  deps = [ ":HolisticPlatformTest" ]
+}
+
 ohos_moduletest("HiviewPlatformModuleTest") {
   module_out_path = module_output_path
 
@@ -30,4 +35,41 @@ ohos_moduletest("HiviewPlatformModuleTest") {
     "$hiview_base:hiviewbase",
     "//third_party/googletest:gtest_main",
   ]
+}
+
+config("HolisticPlatformTest_config") {
+  include_dirs = [
+    "../",
+    "$hiview_test/plugins/examples_bundle/bundle_event_source_example",
+    "$hiview_test/plugins/examples/event_source_example",
+  ]
+
+  cflags_cc = [
+    "-D__UNITTEST__",
+    "-D__HIVIEW_OHOS__",
+    "-DUSE_POLL",
+  ]
+}
+
+ohos_unittest("HolisticPlatformTest") {
+  module_out_path = module_output_path
+  configs = [ ":HolisticPlatformTest_config" ]
+
+  sources = [ "unittest/common/holistic_platform_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_core:hiview_core",
+    "$hiview_root/test/plugins/examples/dynamic_load_plugin_example:dynamicloadpluginexample",
+    "$hiview_root/test/plugins/examples/event_processor_example1:event_processor_example1",
+    "$hiview_root/test/plugins/examples/event_processor_example2:event_processor_example2",
+    "$hiview_root/test/plugins/examples/event_processor_example3:event_processor_example3",
+    "$hiview_root/test/plugins/examples/event_processor_example4:event_processor_example4",
+    "$hiview_root/test/plugins/examples/event_processor_example5:event_processor_example5",
+    "$hiview_root/test/plugins/examples/event_source_example:event_source_example",
+    "$hiview_test/plugins/examples_bundle:bundleplugintest",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }

@@ -105,6 +105,20 @@ void EventDispatcher::RegisterListener(std::weak_ptr<EventListener> listener)
     }
 }
 
+bool EventDispatcher::channelPluginFind(std::string name, int32_t type)
+{
+    for (auto& i : channelPlugin_[type]) {
+        auto ptr = i.lock();
+        if (ptr == nullptr) {
+            continue;
+        }
+        if (ptr->GetName() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> plugin)
 {
     auto sp = plugin.lock();
@@ -116,6 +130,9 @@ void EventDispatcher::RegisterListener(std::weak_ptr<Plugin> plugin)
         std::set<EventListener::EventIdRange> listenerInfo;
         if (sp->GetEventListenerInfo(type, listenerInfo) && (!listenerInfo.empty())) {
             std::lock_guard<std::mutex> lock(lock_);
+            if (channelPluginFind(sp->GetName(), type)) {
+                continue;
+            }
             channelPlugin_[type].push_back(plugin);
         }
     }

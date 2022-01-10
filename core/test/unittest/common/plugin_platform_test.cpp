@@ -59,9 +59,8 @@ HWTEST_F(PluginPlatformTest, PluginPlatformInit001, TestSize.Level3)
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
-    listener->SetName("testListener");
-    listener->SetHiviewContext(&platform);
-    listener->AddEventListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901004006));
+    platform.RegisterUnorderedEventListener(listener);
+    listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901004006));
     sleep(1);
     std::ofstream fileA("/data/test/faultlog/aaa");
     fileA << "create aaa event" << std::endl;
@@ -121,9 +120,8 @@ HWTEST_F(PluginPlatformTest, PluginPlatformRepackPipelienEventTest001, TestSize.
     }
 
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
-    listener->SetName("testListener");
-    listener->SetHiviewContext(&platform);
-    listener->AddEventListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
+    platform.RegisterUnorderedEventListener(listener);
+    listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
     sleep(1);
     std::ofstream fileA("/data/test/faultlog/aaa");
     fileA << "create aaa event" << std::endl;
@@ -157,9 +155,8 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
-    listener->SetName("testListener");
-    listener->SetHiviewContext(&platform);
-    listener->AddEventListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
+    platform.RegisterUnorderedEventListener(listener);
+    listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, EventListener::EventIdRange(901000000, 901000002));
     sleep(1);
     ASSERT_EQ(true, platform.IsReady());
     auto& pluginList = platform.GetPluginMap();
@@ -235,13 +232,12 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginSyncEventCallTest001, TestSize.
         printf("Fail to init environment. \n");
     }
     auto listener = std::make_shared<PlatformTestResultListener>("testListener");
-    listener->SetName("testListener");
-    listener->SetHiviewContext(&platform);
+    platform.RegisterUnorderedEventListener(listener);
     std::set<EventListener::EventIdRange> set;
     set.emplace(EventListener::EventIdRange(901000000));
     set.emplace(EventListener::EventIdRange(901000001));
     set.emplace(EventListener::EventIdRange(901000002));
-    listener->AddEventListenerInfo(Event::MessageType::FAULT_EVENT, set);
+    listener->AddListenerInfo(Event::MessageType::FAULT_EVENT, set);
     sleep(1);
     ASSERT_EQ(true, platform.IsReady());
     auto& pluginList = platform.GetPluginMap();

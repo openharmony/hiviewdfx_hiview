@@ -20,7 +20,19 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER(EventProcessorExample3);
+REGISTER_PROXY(EventProcessorExample3);
+EventProcessorExample3::EventProcessorExample3()
+{
+    printf("EventProcessorExample3::EventProcessorExample3()\n");
+    EventSourceExample::count.insert("EventProcessorExample3");
+}
+
+EventProcessorExample3::~EventProcessorExample3()
+{
+    printf("EventProcessorExample3::~EventProcessorExample3()\n");
+    EventSourceExample::count.erase("EventProcessorExample3");
+}
+
 bool EventProcessorExample3::CanProcessEvent(std::shared_ptr<Event> event)
 {
     printf("EventProcessorExample3 CanProcessEvent: %d.\n", event->eventId_);
@@ -42,13 +54,13 @@ bool EventProcessorExample3::OnEvent(std::shared_ptr<Event>& event)
         printf("EventProcessorExample3 process aaa event.\n");
     }
 
+    GetHiviewContext()->SetHiviewProperty("EPE3_OnEvent", "received : " + event->eventName_, true);
     event->SetValue("EventProcessorExample3", "Done");
     return true;
 }
 
 void EventProcessorExample3::OnLoad()
 {
-    SetName("EventProcessorExample3");
     SetVersion("EventProcessorExample3.0");
     printf("EventProcessorExample3 OnLoad\n");
 }
