@@ -13,9 +13,9 @@
 -->
 <freeze version="1" >
   <rules resolver="SysResolver">
-    <rule id="1" window="120" domain="KEY_PRESS" stringid="LONG_PRESS">   <!-- LONG_PRESS -->
+    <rule id="1" window="120" domain="KERNEL_VENDOR" stringid="LONG_PRESS">   <!-- LONG_PRESS -->
       <links type="watchpoint">
-        <event domain="HUNGTASK" stringid="HUNGTASK">	<!-- HUNGTASK -->
+        <event domain="KERNEL_VENDOR" stringid="HUNGTASK">	<!-- HUNGTASK -->
            <result code="1" scope="sys"/>
         </event>
       </links>

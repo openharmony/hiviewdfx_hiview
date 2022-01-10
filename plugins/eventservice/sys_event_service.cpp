@@ -95,14 +95,8 @@ bool SysEventService::OnEvent(std::shared_ptr<Event>& event)
         return false;
     }
 
-    if (!sysEventParser_->HandleEventJson(sysEvent)) {
-        HIVIEW_LOGE("HandleEventJson fail");
-        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
-    }
-    else {
-        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
-    }
-    HIVIEW_LOGI("SysEvent Json String is %{}s.", sysEvent->jsonExtraInfo_.c_str());
+    sysEventParser_->AddEventJson(sysEvent);
+    sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
 
     SysEventServiceAdapter::OnSysEvent(sysEvent);
     sysEventDbMgr_->SaveToStore(sysEvent);
