@@ -124,6 +124,7 @@ group("hiview_test_package") {
     "plugins:moduletest",
     "plugins:unittest",
     "test:moduletest",
+    "test:unittest",
   ]
 
   deps += plugin_ut_deps

@@ -119,17 +119,16 @@ void EventLoop::WakeUp()
 void EventLoop::StartLoop(bool createNewThread)
 {
     std::lock_guard<std::mutex> lock(queueMutex_);
-    if (!IsRunning()) {
-        if (!InitEventQueueNotifier()) {
-            return;
-        }
+    if (IsRunning()) {
+        return;
+    }
+    if (!InitEventQueueNotifier()) {
+        return;
+    }
 
-        isRunning_ = true;
-        if (createNewThread) {
-            thread_ = std::make_unique<std::thread>(&EventLoop::Run, this);
-            return;
-        }
-    } else {
+    isRunning_ = true;
+    if (createNewThread) {
+        thread_ = std::make_unique<std::thread>(&EventLoop::Run, this);
         return;
     }
     // handle loop in current thread cases

@@ -22,6 +22,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventProcessorExample2);
+EventProcessorExample2::EventProcessorExample2()
+{
+    printf("EventProcessorExample2::EventProcessorExample2()\n");
+    EventSourceExample::count.insert("EventProcessorExample2");
+}
+
+EventProcessorExample2::~EventProcessorExample2()
+{
+    printf("EventProcessorExample2::~EventProcessorExample2()\n");
+    EventSourceExample::count.erase("EventProcessorExample2");
+}
+
 bool EventProcessorExample2::CanProcessEvent(std::shared_ptr<Event> event)
 {
     return false;
@@ -53,19 +65,36 @@ bool EventProcessorExample2::OnEvent(std::shared_ptr<Event>& event)
         return true;
     }
 
+    GetHiviewContext()->SetHiviewProperty("EPE2_OnEvent", "received : " + event->eventName_, true);
     event->SetValue("EventProcessorExample2", "Done");
     return true;
 }
 void EventProcessorExample2::OnLoad()
 {
-    SetName("EventProcessorExample2");
     SetVersion("EventProcessorExample2.0");
     printf("EventProcessorExample2 OnLoad \n");
+    auto ptr = std::static_pointer_cast<EventProcessorExample2>(shared_from_this());
+    printf("register event listener %p \n", ptr.get());
+    GetHiviewContext()->RegisterUnorderedEventListener(ptr);
+    const int EVENT_ID_1 = 901000111;
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT, EVENT_ID_1);
 }
 
 void EventProcessorExample2::OnUnload()
 {
     printf("EventProcessorExample2 OnUnload \n");
+}
+
+void EventProcessorExample2::OnUnorderedEvent(const Event &msg)
+{
+    printf("EventProcessorExample2 OnUnorderedEvent.\n");
+    GetHiviewContext()->SetHiviewProperty("EPE2_Listening", "received : " + msg.eventName_, true);
+}
+
+std::string EventProcessorExample2::GetListenerName()
+{
+    printf("EventProcessorExample2 GetListenerName \n");
+    return "EventProcessorExample2";
 }
 } // namespace HiviewDFX
 } // namespace OHOS

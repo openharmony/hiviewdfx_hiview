@@ -20,10 +20,13 @@ namespace OHOS {
 namespace HiviewDFX {
 class EventProcessorExample4 : public Plugin {
 public:
+    EventProcessorExample4();
+    ~EventProcessorExample4();
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnLoad() override;
     void OnUnload() override;
+    void OnEventListeningCallback(const Event &msg) override;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

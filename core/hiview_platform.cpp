@@ -133,7 +133,7 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
     std::string cfgPath = GetPluginConfigPath();
     PluginConfig config(cfgPath);
     if (!config.StartParse()) {
-        HIVIEW_LOGE("Fail to parse plugin config. exit!");
+        HIVIEW_LOGE("Fail to parse plugin config. exit!, cfgPath %{public}s", cfgPath.c_str());
         return false;
     }
     StartPlatformDispatchQueue();
@@ -236,13 +236,14 @@ void HiviewPlatform::LoadPluginBundle(const std::string& bundleName, const std::
 {
     PluginConfig config(filePath);
     if (!config.StartParse()) {
-        HIVIEW_LOGE("Fail to parse plugin config (%s)", bundleName.c_str());
+        HIVIEW_LOGE("Fail to parse plugin config %{public}s, filePath is %{public}s",
+            bundleName.c_str(), filePath.c_str());
         return;
     }
 
     std::string bundlePath = SearchPluginBundle(bundleName);
     if (bundlePath == "") {
-        HIVIEW_LOGE("bundleName: %s doesn't exist", bundleName.c_str());
+        HIVIEW_LOGE("bundleName: %{public}s doesn't exist", bundleName.c_str());
         return;
     }
     auto handle = LoadModule(bundlePath);
@@ -453,8 +454,8 @@ std::shared_ptr<EventLoop> HiviewPlatform::GetAvaliableWorkLoop(const std::strin
 
     auto privateLoop = std::make_shared<EventLoop>(name);
     if (privateLoop != nullptr) {
-        privateLoop->StartLoop();
         privateWorkLoopMap_.insert(std::make_pair(name, privateLoop));
+        privateLoop->StartLoop();
     }
     return privateLoop;
 }
@@ -576,7 +577,7 @@ void HiviewPlatform::RegisterDynamicListenerInfo(std::weak_ptr<Plugin> plugin)
         auto tmp = std::make_shared<ListenerInfo>();
         tmp->instanceInfo = std::make_shared<InstanceInfo>();
         tmp->instanceInfo->isPlugin = true;
-        tmp->instanceInfo->plugin = plugin;
+        tmp->instanceInfo->plugin = GetPluginByName(ptr->GetName());
         listeners_[name] = tmp;
     }
 
@@ -584,7 +585,7 @@ void HiviewPlatform::RegisterDynamicListenerInfo(std::weak_ptr<Plugin> plugin)
     std::map<std::string, std::shared_ptr<Plugin>>::iterator it = pluginMap_.find(ENGINE_EVENT_DISPATCHER);
     if ((it != pluginMap_.end()) && (it->second != nullptr)) {
         auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
-        dispatcher->RegisterListener(plugin);
+        dispatcher->RegisterListener(GetPluginByName(ptr->GetName()));
     }
 }
 
@@ -853,7 +854,10 @@ void HiviewPlatform::AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, cons
         HIVIEW_LOGW("Fail to find pipeline with name :%s", pipelineName.c_str());
         return;
     }
-    it->second->AppendProcessor(plugin);
+    auto ptr = GetPluginByName(plugin->GetName());
+    if (ptr != nullptr) {
+        it->second->AppendProcessor(ptr);
+    }
 }
 
 void HiviewPlatform::RequestLoadBundle(const std::string& bundleName)
@@ -956,7 +960,7 @@ void HiviewPlatform::AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin
         auto tmp = std::make_shared<ListenerInfo>();
         tmp->instanceInfo = std::make_shared<InstanceInfo>();
         tmp->instanceInfo->isPlugin = true;
-        tmp->instanceInfo->plugin = plugin;
+        tmp->instanceInfo->plugin = GetPluginByName(ptr->GetName());
         listeners_[name] = tmp;
         data = listeners_[name];
     } else {

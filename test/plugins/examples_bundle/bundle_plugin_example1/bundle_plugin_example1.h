@@ -12,23 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_PLUGIN_EXAMPLES_EVENT_PROCESSOR_EXAMPLE1
-#define HIVIEW_PLUGIN_EXAMPLES_EVENT_PROCESSOR_EXAMPLE1
+#ifndef HIVIEW_PLUGIN_EXAMPLES_BUNDLE_PLUGIN_EXAMPLE1
+#define HIVIEW_PLUGIN_EXAMPLES_BUNDLE_PLUGIN_EXAMPLE1
 #include "plugin.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class EventProcessorExample1 : public Plugin {
+class BundlePluginExample1 : public Plugin {
 public:
-    EventProcessorExample1();
-    ~EventProcessorExample1();
+    BundlePluginExample1();
+    ~BundlePluginExample1();
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnLoad() override;
     void OnUnload() override;
     int processedEventCount_ = 0;
-private:
-    void HandleEvent(std::shared_ptr<Event>& event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

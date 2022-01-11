@@ -21,6 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 REGISTER(DynamicLoadPluginExample);
 using namespace std;
+
 bool DynamicLoadPluginExample::OnEvent(std::shared_ptr<Event>& event)
 {
     printf("DynamicLoadPluginExample OnEvent xxxx%p\n", event.get());
@@ -30,13 +31,15 @@ bool DynamicLoadPluginExample::OnEvent(std::shared_ptr<Event>& event)
 
 void DynamicLoadPluginExample::OnLoad()
 {
-    SetName("DynamicLoadPluginExample");
     SetVersion("DynamicLoadPluginExample1.0");
     printf("DynamicLoadPluginExample OnLoad \n");
     AddListenerInfo(Event::PLUGIN_MAINTENANCE);
     auto ptr = std::static_pointer_cast<DynamicLoadPluginExample>(shared_from_this());
     printf("register event listener %p \n", ptr.get());
     GetHiviewContext()->RegisterUnorderedEventListener(ptr);
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testbb");
+    const int EVENT_ID_1 = 901000111;
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT, EVENT_ID_1);
 }
 
 void DynamicLoadPluginExample::OnUnload()
@@ -52,6 +55,8 @@ void DynamicLoadPluginExample::OnUnorderedEvent(const Event &msg)
         GetHiviewContext()->RequestUnloadPlugin(shared_from_this());
         printf("DynamicLoadPluginExample Request unload self.\n");
     }
+    
+    GetHiviewContext()->SetHiviewProperty("DPE_Listening", "received : " + msg.eventName_, true);
 }
 
 string DynamicLoadPluginExample::GetListenerName()

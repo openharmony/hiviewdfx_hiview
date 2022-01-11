@@ -12,23 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_PLUGIN_EXAMPLES_EVENT_SOURCE_EXAMPLE
-#define HIVIEW_PLUGIN_EXAMPLES_EVENT_SOURCE_EXAMPLE
+#ifndef HIVIEW_PLUGIN_EXAMPLES_BUNDLE_EVENT_SOURCE_EXAMPLE1
+#define HIVIEW_PLUGIN_EXAMPLES_BUNDLE_EVENT_SOURCE_EXAMPLE1
 #include "event_source.h"
 namespace OHOS {
 namespace HiviewDFX {
-class EventSourceExampleEvent : public PipelineEvent {
+class BundleEventSourceExampleEvent : public PipelineEvent {
 public:
-    EventSourceExampleEvent(const std::string& sender, PipelineEventProducer* handler)
-        : PipelineEvent(sender, handler), data_(nullptr), addon_(""){};
+    BundleEventSourceExampleEvent(const std::string& sender, PipelineEventProducer* handler):
+        PipelineEvent(sender, handler),
+        data_(nullptr),
+        addon_("") {};
 
-    EventSourceExampleEvent(const EventSourceExampleEvent& obj) : PipelineEvent(obj)
+    BundleEventSourceExampleEvent(const BundleEventSourceExampleEvent& obj) : PipelineEvent(obj)
     {
         data_ = nullptr;
         addon_ = obj.addon_;
     };
 
-    EventSourceExampleEvent& operator=(const EventSourceExampleEvent& obj)
+    BundleEventSourceExampleEvent& operator=(const BundleEventSourceExampleEvent& obj)
     {
         if (&obj == this) {
             return *this;
@@ -40,7 +42,7 @@ public:
         return *this;
     };
 
-    ~EventSourceExampleEvent()
+    ~BundleEventSourceExampleEvent()
     {
         if (data_ != nullptr) {
             free(data_);
@@ -53,10 +55,10 @@ public:
     std::string addon_;
 };
 
-class EventSourceExample : public FileDescriptorEventCallback, public EventSource {
+class BundleEventSourceExample : public FileDescriptorEventCallback, public EventSource {
 public:
-    EventSourceExample();
-    ~EventSourceExample();
+    BundleEventSourceExample();
+    ~BundleEventSourceExample();
 
     static std::set<std::string> count;
 
@@ -78,7 +80,7 @@ public:
 private:
     void CreateWatchFile(const std::string& path);
     void CreateAndPublishEvent(const std::string& file);
-    const static inline std::string SYSTEM_FAULT_LOG_PATH = "/data/test/faultlog";
+    const static inline std::string SYSTEM_FAULT_LOG_PATH = "/data/test/faultlog2";
     int inotifyFd_;
     std::map<std::string, int> fileMap_;
 };
