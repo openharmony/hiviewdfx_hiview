@@ -24,6 +24,7 @@
 #include "faultlog_util.h"
 #include "hiview_global.h"
 #include "logger.h"
+#include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
 
@@ -76,7 +77,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     info.faultLogType = std::atoi(sysEvent->GetEventValue("faultLogType").c_str());
     info.module = sysEvent->GetEventValue("module");
     info.reason = sysEvent->GetEventValue("reason");
-    info.summary = sysEvent->GetEventValue("summary");
+    info.summary = StringUtil::ReplaceStr(sysEvent->GetEventValue("summary"), "\\n", "\n");
     info.logPath = sysEvent->GetEventValue("logPath");
     return true;
 }
