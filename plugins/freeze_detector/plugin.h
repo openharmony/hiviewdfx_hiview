@@ -55,7 +55,7 @@ public:
     void PauseDispatch(std::weak_ptr<Plugin> plugin) override {};
 
 private:
-    std::string RemoveRedundantNewline(const std::string& line);
+    std::string RemoveRedundantNewline(const std::string& content);
     WatchPoint MakeWatchPoint(const Event& event);
     void ProcessEvent(WatchPoint watchPoint);
     void AddFreezeListener();

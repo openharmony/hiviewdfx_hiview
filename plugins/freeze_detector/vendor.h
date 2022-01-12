@@ -72,7 +72,7 @@ private:
     static const inline std::string FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
     static const inline std::string SMART_PARSER_PATH = "/system/etc/hiview/";
 
-    bool GetMatchString(const std::string& src, std::string& dst, const std::string& key) const;
+    bool GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const;
     bool IsSystemEvent(const std::string& domain, const std::string& stringId) const;
     bool IsSystemResult(const FreezeResult& result) const;
     bool IsApplicationResult(const FreezeResult& result) const;

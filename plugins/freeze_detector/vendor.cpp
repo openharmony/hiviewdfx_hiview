@@ -203,8 +203,7 @@ std::string Vendor::MergeEventLog(
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-    }
-    else {
+    } else {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
