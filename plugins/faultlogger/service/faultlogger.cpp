@@ -314,7 +314,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.faultLogType = FaultLogType::JS_CRASH;
         info.module = sysEvent->GetEventValue("PACKAGE_NAME");
         info.reason = sysEvent->GetEventValue("REASON");
-        info.summary = sysEvent->GetEventValue("SUMMARY");
+        auto summary = sysEvent->GetEventValue("SUMMARY");
+        info.summary = StringUtil::ReplaceStr(summary, "\\n", "\n");
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
     }
