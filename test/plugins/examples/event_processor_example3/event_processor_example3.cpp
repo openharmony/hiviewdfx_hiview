@@ -54,7 +54,9 @@ bool EventProcessorExample3::OnEvent(std::shared_ptr<Event>& event)
         printf("EventProcessorExample3 process aaa event.\n");
     }
 
-    GetHiviewContext()->SetHiviewProperty("EPE3_OnEvent", "received : " + event->eventName_, true);
+    if (GetHiviewContext() != nullptr) {
+        GetHiviewContext()->SetHiviewProperty("EPE3_OnEvent", "received : " + event->eventName_, true);
+    }
     event->SetValue("EventProcessorExample3", "Done");
     return true;
 }

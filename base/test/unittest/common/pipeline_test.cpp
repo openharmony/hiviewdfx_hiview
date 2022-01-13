@@ -44,9 +44,13 @@ void PipelineTest::DoTest(const std::string& name, bool stopBeforeEnd, bool with
      */
     printf("PipelineTest. DoTest:%s.\n", name.c_str());
     auto plugin1 = PluginFactory::GetPlugin("EventProcessorExample1");
+    plugin1->SetName("EventProcessorExample1");
     auto plugin2 = PluginFactory::GetPlugin("EventProcessorExample2");
+    plugin2->SetName("EventProcessorExample2");
     auto plugin3 = PluginFactory::GetPlugin("EventProcessorExample3");
+    plugin3->SetName("EventProcessorExample3");
     auto plugin4 = PluginFactory::GetPlugin("EventProcessorExample4");
+    plugin4->SetName("EventProcessorExample4");
     if (withThread) {
         BindWorkLoop(plugin1);
         BindWorkLoop(plugin2);

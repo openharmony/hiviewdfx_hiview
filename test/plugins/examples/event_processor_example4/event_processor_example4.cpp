@@ -78,8 +78,9 @@ bool EventProcessorExample4::OnEvent(std::shared_ptr<Event>& event)
             GetHiviewContext()->PostUnorderedEvent(shared_from_this(), Event::Repack<Event, Event>(event, false));
         }
     }
-    GetHiviewContext()->SetHiviewProperty("EPE4_OnEvent", "received : " + event->eventName_, true);
-
+    if (GetHiviewContext() != nullptr) {
+        GetHiviewContext()->SetHiviewProperty("EPE4_OnEvent", "received : " + event->eventName_, true);
+    }
     event->SetValue("EventProcessorExample4", "Done");
     return true;
 }

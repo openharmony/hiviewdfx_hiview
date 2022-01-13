@@ -16,6 +16,7 @@
 #define HIVIEW_BASE_PLUGIN_FACTORY_H
 
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 
 #include "plugin.h"
@@ -69,9 +70,21 @@ const PluginRegister Register##ClassName::g_staticPluginRegister(#ClassName,    
     std::make_shared<PluginRegistInfo>(Register##ClassName::GetObject,          \
     needCreateProxy, needStartupLoading));
 
+#define PROXY_ASSERT(ClassName)                                                 \
+    class EventSource;                                                          \
+    static_assert(!(std::is_base_of<EventSource, ClassName>::value),            \
+        "EventSource cannot use Proxy");                                        \
+    class EventListener;                                                        \
+    static_assert(!(std::is_base_of<EventListener, ClassName>::value),          \
+        "EventListener cannot use Proxy");
+
 #define REGISTER(ClassName) REGISTER__(ClassName, false, true);
-#define REGISTER_PROXY(ClassName) REGISTER__(ClassName, true, false);
-#define REGISTER_PROXY_WITH_LOADED(ClassName) REGISTER__(ClassName, true, true);
+#define REGISTER_PROXY(ClassName)                                               \
+    PROXY_ASSERT(ClassName)                                                     \
+    REGISTER__(ClassName, true, false)
+#define REGISTER_PROXY_WITH_LOADED(ClassName)                                   \
+    PROXY_ASSERT(ClassName)                                                     \
+    REGISTER__(ClassName, true, true)
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_BASE_PLUGIN_FACTORY_H
