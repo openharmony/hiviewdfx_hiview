@@ -64,8 +64,9 @@ bool EventProcessorExample2::OnEvent(std::shared_ptr<Event>& event)
         repackEvent->OnContinue();
         return true;
     }
-
-    GetHiviewContext()->SetHiviewProperty("EPE2_OnEvent", "received : " + event->eventName_, true);
+    if (GetHiviewContext() != nullptr) {
+        GetHiviewContext()->SetHiviewProperty("EPE2_OnEvent", "received : " + event->eventName_, true);
+    }
     event->SetValue("EventProcessorExample2", "Done");
     return true;
 }

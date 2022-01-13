@@ -61,7 +61,9 @@ bool EventProcessorExample1::CanProcessEvent(std::shared_ptr<Event> event)
 bool EventProcessorExample1::OnEvent(std::shared_ptr<Event>& event)
 {
     printf("EventProcessorExample1 OnEvent, tid:%d\n", gettid());
-    GetHiviewContext()->SetHiviewProperty("EPE1_OnEvent", "received : " + event->eventName_, true);
+    if (GetHiviewContext() != nullptr) {
+        GetHiviewContext()->SetHiviewProperty("EPE1_OnEvent", "received : " + event->eventName_, true);
+    }
     processedEventCount_++;
     HandleEvent(event);
     return true;

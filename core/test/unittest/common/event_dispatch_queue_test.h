@@ -41,11 +41,12 @@ public:
     static constexpr int EVENT_ID_5 = 5;
 };
 
-class ExtendEventListener : public OHOS::HiviewDFX::Plugin {
+class ExtendEventListener : public OHOS::HiviewDFX::EventListener {
 public:
     explicit ExtendEventListener(const std::string& name) : unorderEventCount_(0), name_(name){};
     ~ExtendEventListener(){};
-    void OnEventListeningCallback(const OHOS::HiviewDFX::Event& msg) override;
+    void OnUnorderedEvent(const OHOS::HiviewDFX::Event &msg) override;
+    std::string GetListenerName() override;
     std::map<std::string, std::string> processedUnorderedEvents_;
     uint32_t unorderEventCount_;
 
