@@ -347,7 +347,7 @@ static napi_module _stateRegistryModule = {
     .nm_flags = 0,
     .nm_filename = NULL,
     .nm_register_func = InitNapiRegistry,
-    .nm_modname = "faultlogger",
+    .nm_modname = "faultLogger",
     .nm_priv = ((void *)0),
     .reserved = {(void *)0},
 };

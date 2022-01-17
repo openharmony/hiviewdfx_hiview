@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import faultlogger from '@ohos.faultlogger'
+import faultlogger from '@ohos.faultLogger'
 
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 
@@ -156,7 +156,7 @@ describe("FaultlogJsTest", function () {
             console.info("--------FaultlogJsTest_003 4----------");
             function queryFaultLogCallback(error, ret) {
                 if (error) {
-                    console.info('FaultlogJsTest_003  once error');
+                    console.info('FaultlogJsTest_003  once error is ' + error);
                 } else {
                     console.info("FaultlogJsTest_003 ret == " + ret.length);
                     expect(ret.length).assertEqual(loopTimes);
