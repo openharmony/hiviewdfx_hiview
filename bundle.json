@@ -29,6 +29,7 @@
                 "ipc",
                 "safwk",
                 "samgr_standard",
+                "startup_l2",
                 "utils_base"
             ],
             "third_party": [
@@ -37,8 +38,7 @@
                 "iowow",
                 "jsoncpp",
                 "libxml2",
-                "sqlite",
-                "startup_l2"
+                "sqlite"
             ]
         },
         "build": {
