@@ -70,6 +70,8 @@ Hiview源代码目录结构如下：
 
 Hiview服务随设备启动自动启动，按配置文件加载插件。
 
+详细使用见[HiView插件开发指导](hiview_zh.md)
+
 ## 相关仓<a name="section16647142611396"></a>
 
 [DFX子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/DFX%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
