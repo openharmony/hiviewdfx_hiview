@@ -307,7 +307,7 @@ bool SysEventServiceOhos::CheckDomainEvent(const SysEventQueryRuleGroupOhos& rul
 void SysEventServiceOhos::QuerySysEventMiddle(int64_t beginTime, int64_t endTime, int32_t maxEvents,
     const SysEventQueryRuleGroupOhos& rules, EventStore::ResultSet& result)
 {
-    D_::EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
     EventStore::Cond timCond;
     timCond.And(EventStore::EventCol::TS, EventStore::Op::GE, beginTime);
     timCond.And(EventStore::EventCol::TS, EventStore::Op::LT, endTime);
