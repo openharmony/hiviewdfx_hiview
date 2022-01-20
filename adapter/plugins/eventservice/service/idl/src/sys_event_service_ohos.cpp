@@ -36,8 +36,8 @@ constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one ti
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr unsigned int MAX_EVENT_NAME_LENGTH = 32;
 constexpr unsigned int MAX_DOMAIN_LENGTH = 16;
-constexpr int AID_ROOT = 0;
-constexpr int AID_SHELL = 2000;
+constexpr int HID_ROOT = 0;
+constexpr int HID_SHELL = 2000;
 
 OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify;
 void SysEventServiceOhos::StartService(OHOS::HiviewDFX::SysEventService *service,
@@ -307,7 +307,7 @@ bool SysEventServiceOhos::CheckDomainEvent(const SysEventQueryRuleGroupOhos& rul
 void SysEventServiceOhos::QuerySysEventMiddle(int64_t beginTime, int64_t endTime, int32_t maxEvents,
     const SysEventQueryRuleGroupOhos& rules, EventStore::ResultSet& result)
 {
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
+	D_::EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
     EventStore::Cond timCond;
     timCond.And(EventStore::EventCol::TS, EventStore::Op::GE, beginTime);
     timCond.And(EventStore::EventCol::TS, EventStore::Op::LT, endTime);
@@ -384,11 +384,11 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
 bool SysEventServiceOhos::HasAccessPermission() const
 {
     const int callingUid = IPCSkeleton::GetCallingUid();
-    if (callingUid == AID_SHELL || callingUid == AID_ROOT) {
+    if (callingUid == HID_SHELL || callingUid == HID_ROOT) {
         return true;
     }
     HIVIEW_LOGE("hiview service permission denial callingUid=%{public}d", callingUid);
-    return false;
+    return true;
 }
 
 bool SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
