@@ -16,8 +16,8 @@
 #ifndef OHOS_HIVIEWDFX_SYS_EVENT_CALLBACK_PROXY_H
 #define OHOS_HIVIEWDFX_SYS_EVENT_CALLBACK_PROXY_H
 
-#include "isys_event_callback.h"
 #include "iremote_proxy.h"
+#include "isys_event_callback.h"
 
 namespace OHOS {
 namespace HiviewDFX {

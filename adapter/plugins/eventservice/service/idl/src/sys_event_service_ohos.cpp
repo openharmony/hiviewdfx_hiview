@@ -18,20 +18,18 @@
 #include <codecvt>
 #include <regex>
 
+#include "hilog/log.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "logger.h"
 #include "system_ability_definition.h"
 
 using namespace std;
 using namespace OHOS::HiviewDFX::EventStore;
-using MatchRule = OHOS::HiviewDFX::SysEventServiceOhos::RuleType;
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-SysEventService");
-
+constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
 constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one time
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr unsigned int MAX_EVENT_NAME_LENGTH = 32;
@@ -40,50 +38,64 @@ constexpr int HID_ROOT = 0;
 constexpr int HID_SHELL = 2000;
 
 OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify;
-void SysEventServiceOhos::StartService(OHOS::HiviewDFX::SysEventService *service,
+void SysEventServiceOhos::StartService(SysEventServiceBase *service,
     const OHOS::HiviewDFX::NotifySysEvent notify)
 {
     gISysEventNotify = notify;
     GetSysEventService(service);
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        HIVIEW_LOGE("failed to find SystemAbilityManager.");
+        HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
         return;
     }
     bool rel = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
     if (!rel) {
-        HIVIEW_LOGE("failed to add sys event service ability.");
+        HiLog::Error(LABEL, "failed to add sys event service ability.");
     }
 }
 
-static bool IsMatchRule(int type, const string& rule, const string& match)
+static bool MatchContent(int type, const string& rule, const string& match)
 {
     if (match.empty()) {
         return false;
     }
     switch (type) {
-        case MatchRule::FULL_WORD_TYPE:
+        case RuleType::WHOLE_WORD:
             return rule.empty() || match.compare(rule) == 0;
-        case MatchRule::PREFIX_WORD_TYPE:
+        case RuleType::PREFIX:
             return rule.empty() || match.find(rule) == 0;
-        case MatchRule::REGEX_WORD_TYPE: {
+        case RuleType::REGULAR: {
                 smatch result;
                 const regex pattern(rule);
                 return rule.empty() || regex_search(match, result, pattern);
             }
         default:
-            HIVIEW_LOGE("invalid rule type %{public}d.", type);
+            HiLog::Error(LABEL, "invalid rule type %{public}d.", type);
             return false;
     }
 }
 
-static bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName)
+static bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& domain,
+    const string& eventName, const string& tag)
+{
+    if (rule.tag.empty()) {
+        return MatchContent(rule.ruleType, rule.domain, domain)
+            && MatchContent(rule.ruleType, rule.eventName, eventName);
+    }
+    return MatchContent(rule.ruleType, rule.tag, tag);
+}
+
+static bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
+    const string& tag)
 {
     for (auto& rule : rules) {
-        if (IsMatchRule(rule.ruleType, rule.domain, domain) && IsMatchRule(rule.ruleType, rule.eventName, eventName)) {
-            HIVIEW_LOGD("rule type is %{public}d, domain is %{public}s, eventName is %{public}s for matched.",
+        if (IsMatchedRule(rule, domain, eventName, tag)) {
+            string logFormat("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, ");
+            logFormat.append("tag is %{public}s for matched");
+            HiLog::Debug(LABEL, logFormat.c_str(),
                 rule.ruleType, rule.domain.empty() ? "empty" : rule.domain.c_str(),
-                rule.eventName.empty() ? "empty" : rule.eventName.c_str());
+                rule.eventName.empty() ? "empty" : rule.eventName.c_str(),
+                rule.tag.empty() ? "empty" : rule.tag.c_str());
             return true;
         }
     }
@@ -97,17 +109,33 @@ static u16string ConvertToString16(const string& source)
     return result;
 }
 
+static string GetTagByDomainName(DomainNameTagMap& tagCache, GetTagByDomainNameFunc& getTagFunc,
+    string eventDomain, string eventName)
+{
+    string tag;
+    auto domainName = make_pair(eventDomain, eventName);
+    if (tagCache.find(domainName) != tagCache.end()) {
+        tag = tagCache[domainName];
+    } else {
+        tag = getTagFunc(eventDomain, eventName);
+        tagCache.insert(make_pair(domainName, tag));
+    }
+    return tag;
+}
+
 void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& event)
 {
     lock_guard<mutex> lock(mutex_);
     for (auto listener = registeredListeners.begin(); listener != registeredListeners.end(); ++listener) {
         SysEventCallbackPtrOhos callback = iface_cast<ISysEventCallback>(listener->first);
         if (callback == nullptr) {
-            HIVIEW_LOGE("interface is null, no need to match rules.");
+            HiLog::Error(LABEL, "interface is null, no need to match rules.");
             continue;
         }
-        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_);
-        HIVIEW_LOGD("pid %{public}d rules match %{public}s.", listener->second.first, isMatched ? "success" : "fail");
+        auto tag = GetTagByDomainName(tagCache, getTagFunc, event->domain_, event->eventName_);
+        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_, tag);
+        HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
+            isMatched ? "success" : "fail");
         if (isMatched) {
             int eventType = event->what_;
             callback->Handle(ConvertToString16(event->domain_), ConvertToString16(event->eventName_),
@@ -119,18 +147,18 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
     if (remote == nullptr) {
-        HIVIEW_LOGE("remote is null");
+        HiLog::Error(LABEL, "remote is null");
         return;
     }
     auto remoteObject = remote.promote();
     if (remoteObject == nullptr) {
-        HIVIEW_LOGD("object in remote is null.");
+        HiLog::Error(LABEL, "object in remote is null.");
         return;
     }
     lock_guard<mutex> lock(mutex_);
     CallbackObjectOhos callbackObject = debugModeCallback->AsObject();
     if (callbackObject == remoteObject && isDebugMode) {
-        HIVIEW_LOGD("quit debugmode.");
+        HiLog::Error(LABEL, "quit debugmode.");
         auto event = std::make_shared<Event>("SysEventSource");
         event->messageType_ = Event::ENGINE_SYSEVENT_DEBUG_MODE;
         event->SetValue("DEBUGMODE", "false");
@@ -140,15 +168,19 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
     auto listener = registeredListeners.find(remoteObject);
     if (listener != registeredListeners.end()) {
         listener->first->RemoveDeathRecipient(deathRecipient_);
-        HIVIEW_LOGD("pid %{public}d has died and remove listener.", listener->second.first);
+        HiLog::Error(LABEL, "pid %{public}d has died and remove listener.", listener->second.first);
         registeredListeners.erase(listener);
     }
 }
 
-OHOS::HiviewDFX::SysEventService* SysEventServiceOhos::GetSysEventService(
-    OHOS::HiviewDFX::SysEventService* service)
+void SysEventServiceOhos::BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc)
 {
-    static OHOS::HiviewDFX::SysEventService* ref = nullptr;
+    this->getTagFunc = getTagFunc;
+}
+
+SysEventServiceBase* SysEventServiceOhos::GetSysEventService(SysEventServiceBase* service)
+{
+    static SysEventServiceBase* ref = nullptr;
     if (service != nullptr) {
         ref = service;
     }
@@ -158,21 +190,21 @@ OHOS::HiviewDFX::SysEventService* SysEventServiceOhos::GetSysEventService(
 int SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback)
 {
     if (!HasAccessPermission()) {
-        HIVIEW_LOGE("HasAccessPermission check failed");
+        HiLog::Error(LABEL, "HasAccessPermission check failed");
         return -5; // -5 means permisson denied
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
-        HIVIEW_LOGE("subscribe fail, sys event service is null.");
+        HiLog::Error(LABEL, "subscribe fail, sys event service is null.");
         return -1; // -1 means service null
     }
     if (callback == nullptr) {
-        HIVIEW_LOGE("subscribe fail, callback is null.");
+        HiLog::Error(LABEL, "subscribe fail, callback is null.");
         return -2; // -2 means callback null
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
-        HIVIEW_LOGE("subscribe fail, object in callback is null.");
+        HiLog::Error(LABEL, "subscribe fail, object in callback is null.");
         return -3; // -3 means object in callback null
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
@@ -181,15 +213,15 @@ int SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, con
     pair<int32_t, SysEventRuleGroupOhos> rulesPair(pid, rules);
     if (registeredListeners.find(callbackObject) != registeredListeners.end()) {
         registeredListeners[callbackObject] = rulesPair;
-        HIVIEW_LOGD("uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
+        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
         return 0; // 0 means add duplicate listener
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
-        HIVIEW_LOGE("subscribe fail, can not add death recipient.");
+        HiLog::Error(LABEL, "subscribe fail, can not add death recipient.");
         return -4; // -4 means object in callback can not add death recipient
     }
     registeredListeners.insert(make_pair(callbackObject, rulesPair));
-    HIVIEW_LOGD("uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
+    HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
         uid, pid, registeredListeners.size());
     return 1; // 1 means add listener success
 }
@@ -197,40 +229,40 @@ int SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, con
 void SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HIVIEW_LOGE("HasAccessPermission check failed");
+        HiLog::Error(LABEL, "HasAccessPermission check failed");
         return;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
-        HIVIEW_LOGE("sys event service is null.");
+        HiLog::Error(LABEL, "sys event service is null.");
         return;
     }
     if (callback == nullptr) {
-        HIVIEW_LOGE("callback is null.");
+        HiLog::Error(LABEL, "callback is null.");
         return;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
-        HIVIEW_LOGE("object in callback is null.");
+        HiLog::Error(LABEL, "object in callback is null.");
         return;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
     lock_guard<mutex> lock(mutex_);
     if (registeredListeners.empty()) {
-        HIVIEW_LOGD("has no any listeners.");
+        HiLog::Debug(LABEL, "has no any listeners.");
         return;
     }
     auto registeredListener = registeredListeners.find(callbackObject);
     if (registeredListener != registeredListeners.end()) {
         if (!callbackObject->RemoveDeathRecipient(deathRecipient_)) {
-            HIVIEW_LOGE("uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
+            HiLog::Error(LABEL, "uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
             return;
         }
         registeredListeners.erase(registeredListener);
-        HIVIEW_LOGD("uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
+        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
     } else {
-        HIVIEW_LOGD("uid %{public}d pid %{public}d has not found listener.", uid, pid);
+        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
     }
 }
 
@@ -288,7 +320,7 @@ bool SysEventServiceOhos::CheckDomainEvent(const SysEventQueryRuleGroupOhos& rul
 {
     for (auto iter = rules.cbegin(); iter < rules.cend(); iter++) {
         if (!IsValidName(iter->domain, MAX_DOMAIN_LENGTH)) {
-            HIVIEW_LOGD("CheckDomainEvent domain failed %{public}s", iter->domain.c_str());
+            HiLog::Debug(LABEL, "CheckDomainEvent domain failed %{public}s", iter->domain.c_str());
             return false;
         }
 
@@ -296,7 +328,7 @@ bool SysEventServiceOhos::CheckDomainEvent(const SysEventQueryRuleGroupOhos& rul
             return !IsValidName(name, MAX_EVENT_NAME_LENGTH);
         });
         if (it != iter->eventList.cend()) {
-            HIVIEW_LOGD("CheckDomainEvent name failed %{public}s", it->c_str());
+            HiLog::Debug(LABEL, "CheckDomainEvent name failed %{public}s", it->c_str());
             return false;
         }
     }
@@ -337,7 +369,7 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
     const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HIVIEW_LOGE("HasAccessPermission check failed");
+        HiLog::Error(LABEL, "HasAccessPermission check failed");
         return false;
     }
     int64_t lastQueryUpperLimit = endTime;
@@ -350,7 +382,7 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
         queryTotal = std::numeric_limits<int32_t>::max();
     }
     if (!CheckDomainEvent(rules)) {
-        HIVIEW_LOGE("CheckDomainEvent check failed");
+        HiLog::Error(LABEL, "CheckDomainEvent check failed");
         return false;
     }
     int32_t remainEvents = queryTotal;
@@ -387,19 +419,19 @@ bool SysEventServiceOhos::HasAccessPermission() const
     if (callingUid == HID_SHELL || callingUid == HID_ROOT) {
         return true;
     }
-    HIVIEW_LOGE("hiview service permission denial callingUid=%{public}d", callingUid);
+    HiLog::Error(LABEL, "hiview service permission denial callingUid=%{public}d", callingUid);
     return true;
 }
 
 bool SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
 {
     if (!HasAccessPermission()) {
-        HIVIEW_LOGE("permission denied");
+        HiLog::Error(LABEL, "permission denied");
         return false;
     }
 
     if (mode == isDebugMode) {
-        HIVIEW_LOGE("same config, no need set");
+        HiLog::Error(LABEL, "same config, no need set");
         return false;
     }
 
@@ -408,7 +440,7 @@ bool SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, 
     event->SetValue("DEBUGMODE", mode ? "true" : "false");
     gISysEventNotify(event);
 
-    HIVIEW_LOGE("set debug mode %{public}s", mode ? "true" : "false");
+    HiLog::Debug(LABEL, "set debug mode %{public}s", mode ? "true" : "false");
     debugModeCallback = callback;
     isDebugMode = mode;
     return true;

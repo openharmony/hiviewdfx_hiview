@@ -16,8 +16,10 @@
 #ifndef OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_OHOS_H
 #define OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_OHOS_H
 
+#include <functional>
 #include <vector>
 
+#include "event.h"
 #include "iquery_sys_event_callback.h"
 #include "isys_event_callback.h"
 #include "singleton.h"
@@ -25,7 +27,6 @@
 #include "sys_event_query.h"
 #include "sys_event_query_rule.h"
 #include "sys_event_rule.h"
-#include "sys_event_service.h"
 #include "sys_event_service_stub.h"
 #include "system_ability.h"
 
@@ -34,9 +35,15 @@ using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
 using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
 using QuerySysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
+using DomainNameTagMap = std::map<std::pair<std::string, std::string>, std::string>;
 
 namespace OHOS {
 namespace HiviewDFX {
+using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
+using GetTagByDomainNameFunc = std::function<std::string(std::string, std::string)>;
+class SysEventServiceBase {
+};
+
 class CallbackDeathRecipient : public IRemoteObject::DeathRecipient {
 public:
     CallbackDeathRecipient() = default;
@@ -53,10 +60,10 @@ public:
     SysEventServiceOhos() : deathRecipient_(new CallbackDeathRecipient()), isDebugMode(false) {};
     virtual ~SysEventServiceOhos() = default;
 
-    static void StartService(OHOS::HiviewDFX::SysEventService* service,
+    static void StartService(SysEventServiceBase* service,
         const OHOS::HiviewDFX::NotifySysEvent notify);
-    static OHOS::HiviewDFX::SysEventService* GetSysEventService(
-        OHOS::HiviewDFX::SysEventService* service = nullptr);
+    static SysEventServiceBase* GetSysEventService(
+        OHOS::HiviewDFX::SysEventServiceBase* service = nullptr);
     void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
     int AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
     void RemoveListener(const SysEventCallbackPtrOhos& callback) override;
@@ -64,13 +71,7 @@ public:
         const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback) override;
     bool SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
-
-    enum RuleType {
-        INVALID_WORD_TYPE = 0,
-        FULL_WORD_TYPE,
-        PREFIX_WORD_TYPE,
-        REGEX_WORD_TYPE
-    };
+    void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
 
 private:
     std::mutex mutex_;
@@ -86,6 +87,8 @@ private:
 
     bool isDebugMode;
     SysEventCallbackPtrOhos debugModeCallback;
+    DomainNameTagMap tagCache;
+    GetTagByDomainNameFunc getTagFunc;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify;
 };
 } // namespace HiviewDFX

@@ -50,23 +50,6 @@ EventJsonParser::EventJsonParser(const std::string &path) : jsonRootValid(false)
 
 EventJsonParser::~EventJsonParser() {}
 
-bool EventJsonParser::AddEventJson(std::shared_ptr<SysEvent> &event) const
-{
-    // convert JsonValue to the correct order by event->jsonExtraInfo_
-    std::string jsonStr = event->jsonExtraInfo_;
-    cJSON *cJsonArr = cJSON_Parse(jsonStr.c_str());
-    if (cJsonArr == NULL) {
-        return false;
-    }
-
-    // FreezeDetector needs to add
-    cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
-    jsonStr = cJSON_PrintUnformatted(cJsonArr);
-    cJSON_Delete(cJsonArr);
-    event->jsonExtraInfo_ = jsonStr;
-    return true;
-}
-
 bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
 {
     Json::Value eventJson;
@@ -203,6 +186,25 @@ void EventJsonParser::GetOrderlyJsonInfo(const Json::Value &eventJson, std::stri
     jsonStr = cJSON_PrintUnformatted(cJsonArr);
     cJSON_Delete(cJsonArr);
     return;
+}
+
+std::string EventJsonParser::GetDefinedTagByDomainEventName(const std::string& domain,
+    const std::string& eventName) const
+{
+    if (!jsonRootValid) {
+        return "";
+    }
+    auto eventJsonHasNoDomain = !root_.isObject() || !root_.isMember(domain) || !root_[domain].isObject()
+        || !root_[domain].isMember(eventName) || !root_[domain][eventName].isObject()
+        || !root_[domain][eventName].isMember("__BASE") || root_[domain][eventName]["__BASE"].isNull();
+    if (eventJsonHasNoDomain) {
+        return "";
+    }
+    auto sysEventBaseInfo = root_[domain][eventName]["__BASE"];
+    if (!sysEventBaseInfo.isMember("tag")) {
+        return "";
+    }
+    return sysEventBaseInfo["tag"].asString();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

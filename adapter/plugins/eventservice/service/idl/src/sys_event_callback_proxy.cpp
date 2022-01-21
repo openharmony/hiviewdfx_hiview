@@ -16,43 +16,43 @@
 #include "sys_event_callback_proxy.h"
 
 #include "errors.h"
-#include "logger.h"
+#include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-SysEventCallbackProxy");
+static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D08, "HiView-SysEventCallbackProxy" };
 void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16string& eventName, uint32_t eventType,
     const std::u16string& eventDetail)
 {
     auto remote = Remote();
     if (remote == nullptr) {
-        HIVIEW_LOGE("SysEventService Remote is NULL.");
+        HiLog::Error(LABEL, "SysEventService Remote is NULL.");
         return;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventCallbackProxy::GetDescriptor())) {
-        HIVIEW_LOGE("write descriptor failed.");
+        HiLog::Error(LABEL, "write descriptor failed.");
         return;
     }
 
     bool ret = data.WriteString16(domain);
     if (!ret) {
-        HIVIEW_LOGE("parcel write domain failed.");
+        HiLog::Error(LABEL, "parcel write domain failed.");
         return;
     }
     ret = data.WriteString16(eventName);
     if (!ret) {
-        HIVIEW_LOGE("parcel write eventName failed.");
+        HiLog::Error(LABEL, "parcel write eventName failed.");
         return;
     }
     ret = data.WriteUint32(eventType);
     if (!ret) {
-        HIVIEW_LOGE("parcel write event type failed.");
+        HiLog::Error(LABEL, "parcel write event type failed.");
         return;
     }
     ret = data.WriteString16(eventDetail);
     if (!ret) {
-        HIVIEW_LOGE("parcel write event detail failed.");
+        HiLog::Error(LABEL, "parcel write event detail failed.");
         return;
     }
 
@@ -60,7 +60,7 @@ void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16s
     MessageOption option;
     int32_t res = remote->SendRequest(HANDLE, data, reply, option);
     if (res != ERR_OK) {
-        HIVIEW_LOGE("send request failed, error is %{public}d.", res);
+        HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
     }
 }
 } // namespace HiviewDFX

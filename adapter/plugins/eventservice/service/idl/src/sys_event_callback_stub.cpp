@@ -16,18 +16,18 @@
 #include "sys_event_callback_stub.h"
 
 #include "errors.h"
-#include "logger.h"
+#include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-SysEventCallbackStub");
+static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D08, "HiView-SysEventCallbackStub" };
 int32_t SysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     std::u16string descripter = SysEventCallbackStub::GetDescriptor();
     std::u16string remoteDescripter = data.ReadInterfaceToken();
     if (descripter != remoteDescripter) {
-        HIVIEW_LOGE("read descriptor failed.");
+        HiLog::Error(LABEL, "read descriptor failed.");
         return ERR_INVALID_VALUE;
     }
     switch (code) {
@@ -35,25 +35,25 @@ int32_t SysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data
             std::u16string doamin;
             bool ret = data.ReadString16(doamin);
             if (!ret) {
-                HIVIEW_LOGE("parcel read doamin failed.");
+                HiLog::Error(LABEL, "parcel read doamin failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             std::u16string eventName;
             ret = data.ReadString16(eventName);
             if (!ret) {
-                HIVIEW_LOGE("parcel read name failed.");
+                HiLog::Error(LABEL, "parcel read name failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             uint32_t eventType = 0;
             ret = data.ReadUint32(eventType);
             if (!ret) {
-                HIVIEW_LOGE("parcel read type failed.");
+                HiLog::Error(LABEL, "parcel read type failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             std::u16string eventDetail;
             ret = data.ReadString16(eventDetail);
             if (!ret) {
-                HIVIEW_LOGE("parcel read detail failed.");
+                HiLog::Error(LABEL, "parcel read detail failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             Handle(doamin, eventName, eventType, eventDetail);
