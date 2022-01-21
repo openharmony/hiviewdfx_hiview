@@ -70,6 +70,20 @@ DumpRequest InitDumpRequest()
     return request;
 }
 
+bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
+{
+    std::vector<std::string> nameVec;
+    StringUtil::SplitStr(name, sep, nameVec, canEmpty, false);
+    std::regex re("^[a-zA-Z][a-zA-Z0-9_]*$");
+    for (auto const& splitName : nameVec) {
+        if (!std::regex_match(splitName, re)) {
+            HIVIEW_LOGI("Invalid splitName:%{public}s", splitName.c_str());
+            return false;
+        }
+    }
+    return true;
+}
+
 bool IsModuleNameValid(const std::string& name)
 {
     if (name.empty() || name.size() > MAX_NAME_LENGTH) {
@@ -77,16 +91,13 @@ bool IsModuleNameValid(const std::string& name)
         return false;
     }
 
-    std::vector<std::string> nameVec;
-    StringUtil::SplitStr(name, ".", nameVec, true, false);
-    std::regex re("^[a-zA-Z][a-zA-Z0-9_]*$");
-    for (auto const & splitName : nameVec) {
-        if (!std::regex_match(splitName, re)) {
-            HIVIEW_LOGI("invalid module name:%{public}s", splitName.c_str());
-            return false;
-        }
+    if (name.find("/") != std::string::npos) {
+        std::string path = name.substr(1); // may skip first .
+        HIVIEW_LOGI("module name:%{public}s", path.c_str());
+        return IsNameValid(path, "/", false);
     }
-    return true;
+
+    return IsNameValid(name, ".", true);
 }
 
 bool IsLogNameValid(const std::string& name)

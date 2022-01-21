@@ -92,10 +92,15 @@ std::string GetFaultNameByType(int32_t faultType)
 
 std::string GetFaultLogName(const FaultLogInfo& info)
 {
+    std::string name = info.module;
+    if (name.find("/") != std::string::npos) {
+        name = info.module.substr(info.module.find_last_of("/") + 1);
+    }
+
     std::string ret = "";
     ret.append(GetFaultNameByType(info.faultLogType));
     ret.append("-");
-    ret.append(info.module);
+    ret.append(name);
     ret.append("-");
     ret.append(std::to_string(info.id));
     ret.append("-");
