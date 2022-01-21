@@ -17,24 +17,20 @@
 #define OHOS_HIVIEWDFX_SYS_EVENT_RULE_H
 
 #include "parcel.h"
+#include "rule_type.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-enum RuleType {
-    INVALID = 0,
-    WHOLE_WORD,
-    PREFIX,
-    REGULAR,
-};
 class SysEventRule : public Parcelable {
 public:
     SysEventRule() {};
     SysEventRule(const std::string& domain, const std::string& eventName,
-        const std::string& tag, uint32_t ruleType = WHOLE_WORD) : domain(domain),
-        eventName(eventName), tag(tag), ruleType(ruleType) {}
+        const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
+        : domain(domain), eventName(eventName), tag(tag), ruleType(ruleType) {}
     SysEventRule(const std::string& domain, const std::string& eventName,
-        uint32_t ruleType = WHOLE_WORD) : SysEventRule(domain, eventName, "", ruleType) {}
-    SysEventRule(const std::string& tag, uint32_t ruleType = WHOLE_WORD)
+        uint32_t ruleType = RuleType::WHOLE_WORD)
+        : SysEventRule(domain, eventName, "", ruleType) {}
+    SysEventRule(const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
         : SysEventRule("", "", tag, ruleType) {}
     ~SysEventRule() = default;
 

@@ -19,22 +19,24 @@
 #include <vector>
 
 #include "parcel.h"
+#include "rule_type.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventQueryRule : public Parcelable {
 public:
     SysEventQueryRule() {};
-    SysEventQueryRule(const uint32_t rule, const std::string& domainIn, const std::vector<std::string>& events)
-        : ruleType(rule), domain(domainIn), eventList(events) {};
+    SysEventQueryRule(const std::string& domain, const std::vector<std::string>& events,
+        uint32_t ruleType = RuleType::WHOLE_WORD)
+        : domain(domain), eventList(events), ruleType(ruleType) {};
     ~SysEventQueryRule() {};
 
     bool Marshalling(Parcel& parcel) const override;
     static SysEventQueryRule* Unmarshalling(Parcel& parcel);
 
-    uint32_t ruleType {0};
     std::string domain;
     std::vector<std::string> eventList;
+    uint32_t ruleType;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
