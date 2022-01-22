@@ -19,8 +19,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 enum RuleType {
-    INVALID = 0,
-    WHOLE_WORD,
+    WHOLE_WORD = 1,
     PREFIX,
     REGULAR,
 };
