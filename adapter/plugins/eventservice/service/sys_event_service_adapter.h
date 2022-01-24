@@ -17,14 +17,15 @@
 #define HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
 
 #include "sys_event.h"
-#include "sys_event_service.h"
+#include "sys_event_service_ohos.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventServiceAdapter {
 public:
-    static void StartService(SysEventService* service, OHOS::HiviewDFX::NotifySysEvent notify);
-    static void OnSysEvent(std::shared_ptr<SysEvent> &event);
+    static void StartService(SysEventServiceBase* service, OHOS::HiviewDFX::NotifySysEvent notify);
+    static void OnSysEvent(std::shared_ptr<SysEvent>& event);
+    static void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

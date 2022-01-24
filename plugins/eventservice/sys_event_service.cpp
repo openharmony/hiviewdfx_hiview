@@ -24,7 +24,6 @@
 #include "plugin_factory.h"
 #include "sys_event.h"
 #include "sys_event_db_mgr.h"
-#include "sys_event_service_adapter.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -40,19 +39,22 @@ SysEventService::~SysEventService() {}
 
 void SysEventService::OnLoad()
 {
+    HIVIEW_LOGI("sys event service load");
     auto notifyFunc = [&] (std::shared_ptr<Event> event) -> void {
         SysEventService& servicePlugin = *this;
         servicePlugin.SendEvent(event);
     };
     SysEventServiceAdapter::StartService(this, notifyFunc);
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
-    hasLoaded_ = true;
-
     std::string dbFile =
         HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
     dbFile = (dbFile[dbFile.size() - 1] != '/') ? (dbFile + "/hisysevent.def") : (dbFile + "hisysevent.def");
     HIVIEW_LOGE("dbFile is %{public}s", dbFile.c_str());
     sysEventParser_ = std::make_unique<EventJsonParser>(dbFile);
+    auto getTagFunc = std::bind(&EventJsonParser::GetDefinedTagByDomainEventName, *(sysEventParser_.get()),
+        std::placeholders::_1, std::placeholders::_2);
+    SysEventServiceAdapter::BindGetTagFunc(getTagFunc);
+    hasLoaded_ = true;
 }
 
 void SysEventService::SendEvent(std::shared_ptr<Event>& event)
@@ -95,9 +97,13 @@ bool SysEventService::OnEvent(std::shared_ptr<Event>& event)
         return false;
     }
 
-    sysEventParser_->AddEventJson(sysEvent);
-    sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
-
+    if (!sysEventParser_->HandleEventJson(sysEvent)) {
+        HIVIEW_LOGI("HandleEventJson fail");
+        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
+        return false;
+    } else {
+        sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_);
+    }
     SysEventServiceAdapter::OnSysEvent(sysEvent);
     sysEventDbMgr_->SaveToStore(sysEvent);
     return true;

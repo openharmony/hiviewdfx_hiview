@@ -16,18 +16,18 @@
 #include "query_sys_event_callback_stub.h"
 
 #include "errors.h"
-#include "logger.h"
+#include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-QuerySysEventCallbackStub");
+static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D08, "HiView-QuerySysEventCallbackStub" };
 int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     std::u16string descripter = QuerySysEventCallbackStub::GetDescriptor();
     std::u16string remoteDescripter = data.ReadInterfaceToken();
     if (descripter != remoteDescripter) {
-        HIVIEW_LOGE("read descriptor failed.");
+        HiLog::Error(LABEL, "read descriptor failed.");
         return ERR_INVALID_VALUE;
     }
     switch (code) {
@@ -35,13 +35,13 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
             std::vector<std::u16string> sysEvent;
             int ret = data.ReadString16Vector(&sysEvent);
             if (!ret) {
-                HIVIEW_LOGE("parcel read sys event failed.");
+                HiLog::Error(LABEL, "parcel read sys event failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             std::vector<int64_t> seq;
             ret = data.ReadInt64Vector(&seq);
             if (!ret) {
-                HIVIEW_LOGE("parcel read seq failed.");
+                HiLog::Error(LABEL, "parcel read seq failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             OnQuery(sysEvent, seq);
@@ -51,13 +51,13 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
             int32_t reason = 0;
             int ret = data.ReadInt32(reason);
             if (!ret) {
-                HIVIEW_LOGE("parcel read reason failed.");
+                HiLog::Error(LABEL, "parcel read reason failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             int32_t total = 0;
             ret = data.ReadInt32(total);
             if (!ret) {
-                HIVIEW_LOGE("parcel read total failed.");
+                HiLog::Error(LABEL, "parcel read total failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             OnComplete(reason, total);

@@ -16,12 +16,11 @@
 #include "sys_event_service_adapter.h"
 
 #include "logger.h"
-#include "sys_event_service_ohos.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-SysEventServiceAdapter");
-void SysEventServiceAdapter::StartService(SysEventService* service, OHOS::HiviewDFX::NotifySysEvent notify)
+void SysEventServiceAdapter::StartService(SysEventServiceBase* service, OHOS::HiviewDFX::NotifySysEvent notify)
 {
     if (service == nullptr) {
         HIVIEW_LOGE("failed to start SysEventService.");
@@ -37,6 +36,11 @@ void SysEventServiceAdapter::OnSysEvent(std::shared_ptr<SysEvent> &event)
         return;
     }
     OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().OnSysEvent(event);
+}
+
+void SysEventServiceAdapter::BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc)
+{
+    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTagFunc(getTagFunc);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

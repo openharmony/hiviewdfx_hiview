@@ -29,12 +29,12 @@ public:
     EventJsonParser(const std::string &path);
     ~EventJsonParser();
 
-    bool AddEventJson(std::shared_ptr<SysEvent> &event) const;
     bool HandleEventJson(std::shared_ptr<SysEvent> &event) const;
     bool CheckBaseInfo(const Json::Value &baseJson, Json::Value &eventJson) const;
     bool CheckExtendInfo(const std::string &name, const Json::Value &sysEvent, const Json::Value &eventJson) const;
     bool JudgeDataType(const std::string &dataType, const Json::Value &eventJson) const;
     void GetOrderlyJsonInfo(const Json::Value &eventJson, std::string &jsonStr) const;
+    std::string GetDefinedTagByDomainEventName(const std::string &domain, const std::string &eventName) const;
 private:
     Json::Value root_;
     bool jsonRootValid;

@@ -17,22 +17,30 @@
 #define OHOS_HIVIEWDFX_SYS_EVENT_RULE_H
 
 #include "parcel.h"
+#include "rule_type.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventRule : public Parcelable {
 public:
     SysEventRule() {};
-    SysEventRule(const uint32_t type, const std::string& domainIn, const std::string& event)
-        : ruleType(type), domain(domainIn), eventName(event) {}
-    ~SysEventRule() {};
+    SysEventRule(const std::string& domain, const std::string& eventName,
+        const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
+        : domain(domain), eventName(eventName), tag(tag), ruleType(ruleType) {}
+    SysEventRule(const std::string& domain, const std::string& eventName,
+        uint32_t ruleType = RuleType::WHOLE_WORD)
+        : SysEventRule(domain, eventName, "", ruleType) {}
+    SysEventRule(const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
+        : SysEventRule("", "", tag, ruleType) {}
+    ~SysEventRule() = default;
 
     bool Marshalling(Parcel& parcel) const override;
     static SysEventRule* Unmarshalling(Parcel& parcel);
 
-    uint32_t ruleType {0};
     std::string domain;
     std::string eventName;
+    std::string tag;
+    uint32_t ruleType;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
