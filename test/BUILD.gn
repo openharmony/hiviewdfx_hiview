@@ -16,15 +16,17 @@ import("//build/test.gni")
 module_output_path = "hiviewdfx/hiview"
 group("moduletest") {
   testonly = true
-  deps = [ ":HiviewPlatformModuleTest" ]
 }
 
 group("unittest") {
   testonly = true
-  deps = [ ":HolisticPlatformTest" ]
+  deps = [
+    ":HiviewPlatformModuleTest",
+    ":HolisticPlatformTest",
+  ]
 }
 
-ohos_moduletest("HiviewPlatformModuleTest") {
+ohos_unittest("HiviewPlatformModuleTest") {
   module_out_path = module_output_path
 
   include_dirs = [ "moduletest/common" ]
