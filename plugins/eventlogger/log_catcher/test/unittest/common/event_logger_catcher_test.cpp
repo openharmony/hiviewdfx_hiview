@@ -185,7 +185,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest001, TestSize.Level3)
     /**
      * @tc.steps: step1. create event handler and events
      */
-    constexpr int minQuantity = 150000;
+    constexpr int minQuantity = 8000;
     auto ret = StartCreate("EventloggerCatcherTest001", "TEST01_SYS_STACKTRACE",
         "S", -1, "", 0, minQuantity);
     if (ret < 0) {
@@ -203,7 +203,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest001, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("Cmd line: system_server") != tmp.npos) {
+        if (tmp.find("system/bin") != tmp.npos) {
             ret = 0;
             break;
         }
@@ -247,7 +247,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
         }
     }
 
-    constexpr int minQuantity = 800;
+    constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest002", "TEST02_CPU", "c",
         pid, "EventloggerCatcherTest002_Child", 0, minQuantity);
     if (ret < 0) {
@@ -311,7 +311,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
         }
     }
 
-    constexpr int minQuantity = 800;
+    constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest003", "TEST03_MEM", "m",
         pid, "EventloggerCatcherTest003_Child", 0, minQuantity);
     if (ret < 0) {
@@ -372,7 +372,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest004, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("pid	context		request") != tmp.npos) {
+        if (tmp.find("binder transactions") != tmp.npos) {
             ret = 0;
             break;
         }
@@ -399,7 +399,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest005, TestSize.Level3)
      */
     int pid = -1;
     const int memSize = 1024*3;
-    constexpr int minQuantity = 500;
+    constexpr int minQuantity = 5000;
     pid = fork();
     if (pid < 0) {
         printf("Fork error, err:%d", errno);
@@ -438,7 +438,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest005, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("Cmd line: ./EventloggerCatcherTest") != tmp.npos) {
+        if (tmp.find("data/test") != tmp.npos) {
             ret = 0;
             break;
         }

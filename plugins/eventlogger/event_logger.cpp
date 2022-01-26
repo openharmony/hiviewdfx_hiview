@@ -56,11 +56,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     sysEvent->eventName_ = configOut.name;
-    if (NeedNoAction(sysEvent)) {
-        sysEvent->SetValue("eventLog_action", "");
-    } else {
-        sysEvent->SetValue("eventLog_action", configOut.action);
-    }
+    sysEvent->SetValue("eventLog_action", configOut.action);
     sysEvent->SetValue("eventLog_interval", configOut.interval);
     StartLogCollect(sysEvent);
 
@@ -235,20 +231,6 @@ bool EventLogger::CanProcessEvent(std::shared_ptr<Event> event)
         return false;
     }
     return true;
-}
-
-bool EventLogger::NeedNoAction(std::shared_ptr<SysEvent> event)
-{
-    if (event == nullptr) {
-        return true;
-    }
-    if (event->eventName_ == "UI_BLOCK_3S" && !OHOS::HiviewDFX::Parameter::IsBetaVersion()) {
-        return true;
-    }
-    if (event->eventName_ == "UI_BLOCK_6S" && event->GetEventValue("PLATFORM") != "Z") {
-        return true;
-    }
-    return false;
 }
 } // namesapce HiviewDFX
 } // namespace OHOS

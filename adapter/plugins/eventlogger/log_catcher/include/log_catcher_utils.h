@@ -21,7 +21,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
 int DumpStacktrace(int fd, int pid);
-bool IsJavaProcess(pid_t pid);
 bool ReadCPUInfo(int fd, int pid);
 bool ReadMemoryInfo(int fd, int pid);
 }

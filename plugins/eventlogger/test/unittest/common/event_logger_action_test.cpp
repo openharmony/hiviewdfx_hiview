@@ -193,7 +193,7 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest001, TestSize.Level3)
         }
     }
 
-    constexpr int minQuantity = 120000;
+    constexpr int minQuantity = 10000;
     auto ret = StartCreate("EventloggerActionTest001", "TEST01_ACTION",
         "c,m,s,S,b", pid, "EventloggerActionTest001_Child", 0);
     if (ret < 0) {
@@ -211,7 +211,7 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest001, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("Cmd line: system_server") != tmp.npos) {
+        if (tmp.find("system/bin") != tmp.npos) {
             ret = 0;
             break;
         }
@@ -258,7 +258,7 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest002, TestSize.Level3)
         }
     }
 
-    constexpr int minQuantity = 120000;
+    constexpr int minQuantity = 10000;
     auto ret = StartCreate("EventloggerActionTest002", "TEST02_ACTION",
         "m,c,b,S,s", pid, "EventloggerActionTest002_Child", 0);
     if (ret < 0) {
@@ -276,7 +276,7 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest002, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("Cmd line: system_server") != tmp.npos) {
+        if (tmp.find("system/bin") != tmp.npos) {
             ret = 0;
             break;
         }
