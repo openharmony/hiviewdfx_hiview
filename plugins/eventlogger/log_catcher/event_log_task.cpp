@@ -31,8 +31,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const std::string SYSTEM_STACK[] = {
-    "system_server",
-    "surfaceflinger",
     "foundation",
 };
 }

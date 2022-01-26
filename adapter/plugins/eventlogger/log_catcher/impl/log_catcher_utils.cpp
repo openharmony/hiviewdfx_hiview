@@ -17,6 +17,8 @@
 #include <sstream>
 #include <string>
 
+#include "dfx_dump_catcher.h"
+
 #include "common_utils.h"
 #include "file_util.h"
 #include "logger.h"
@@ -29,39 +31,16 @@ int DumpStacktrace(int fd, int pid)
     if (fd < 0) {
         return -1;
     }
-    (void)pid;
+    DfxDumpCatcher dumplog;
+    std::string msg = "";
+    bool ret = dumplog.DumpCatch(pid, 0, msg);
+    if (ret) {
+        FileUtil::SaveStringToFd(fd, msg);
+    } else {
+        msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n";
+        FileUtil::SaveStringToFd(fd, msg);
+    }
     return 0;
-}
-
-bool IsJavaProcess(pid_t pid)
-{
-    // read proc/pid/stat and check number after process statu
-    // 901234567890123456789012345678
-    // 2193 (package) S 624
-    std::string readPath = "/proc/" + std::to_string(pid) + "/stat";
-    std::string stat;
-    FileUtil::LoadStringFromFile(readPath, stat);
-
-    // skip process status
-    std::string pidStr = StringUtil::FindMatchSubString(stat, ")", 4, " ");  // 4: offset
-    pid_t ppid = 0;
-    std::stringstream ss;
-    ss << pidStr;
-    ss >> ppid;
-    // the pidStr can be empty
-    if ((ss.fail()) || (ppid <= 0)) {
-        return false;
-    }
-
-    // 624 (main) S 1
-    std::string parentStatPath = "/proc/" + std::to_string(ppid) + "/stat";
-    std::string parentStat;
-    FileUtil::LoadStringFromFile(parentStatPath, parentStat);
-    std::string processName = StringUtil::FindMatchSubString(parentStat, "(", 1, ")"); // 1: offset
-    if (processName.find("main") == std::string::npos) {
-        return false;
-    }
-    return true;
 }
 
 bool ReadCPUInfo(int fd, int pid)

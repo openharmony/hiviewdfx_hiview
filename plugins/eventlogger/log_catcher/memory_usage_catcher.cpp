@@ -55,6 +55,10 @@ int MemoryUsageCatcher::Catch(int fd)
     }
     auto originSize = GetFdSize(fd);
 
+    std::string content;
+    FileUtil::LoadStringFromFile("/proc/meminfo", content);
+    FileUtil::SaveStringToFd(fd, content);
+
     CommonUtils::WriteCommandResultToFile(fd, "hidumper -c system");
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;

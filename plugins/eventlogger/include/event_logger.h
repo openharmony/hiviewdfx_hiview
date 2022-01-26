@@ -59,7 +59,6 @@ private:
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
     bool PostEvent(std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
-    bool NeedNoAction(std::shared_ptr<SysEvent> event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

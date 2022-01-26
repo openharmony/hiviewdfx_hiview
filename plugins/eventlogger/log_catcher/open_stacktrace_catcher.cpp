@@ -92,7 +92,7 @@ inline void OpenStacktraceCatcher::WaitChildPid(pid_t pid)
 int32_t OpenStacktraceCatcher::ForkAndDumpStackTrace(int32_t fd)
 {
     int pid = -1;
-    int leftTimeMicroSecond = 20000000; // 20000000us
+    int leftTimeMicroSecond = 30000000; // 30000000us
     if ((pid = fork()) < 0) {
         HIVIEW_LOGE("Fork error, err:%{public}d", errno);
         return 0;
@@ -121,6 +121,8 @@ int32_t OpenStacktraceCatcher::ForkAndDumpStackTrace(int32_t fd)
 
         if (needStop_ || leftTimeMicroSecond <= 0) {
             HIVIEW_LOGW("Dump stacktrace timeout, killing pid %{public}d.", pid);
+            std::string str = "Dump stacktrace timeout, Catch for " + std::to_string(pid_);
+            FileUtil::SaveStringToFd(fd, str);
             kill(pid, SIGKILL);
             WaitChildPid(pid);
             return -1;
