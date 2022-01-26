@@ -21,6 +21,9 @@
         ],
         "rom": "",
         "ram": "",
+        "hisysevent_config": [
+            "//base/hiviewdfx/hiview/plugins/freeze_detector/hisysevent.yaml"
+        ],
         "deps": {
             "components": [
                 "hilog_native",

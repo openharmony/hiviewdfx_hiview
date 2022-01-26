@@ -29,8 +29,12 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
 
 const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_ = {
-    {"APPEXECFWK", "UI_BLOCK_3S"},
-    {"APPEXECFWK", "UI_BLOCK_6S"},
+    {"ACE", "UI_BLOCK_3S"},
+    {"ACE", "UI_BLOCK_6S"},
+    {"APPEXECFWK", "THREAD_BLOCK_3S"},
+    {"APPEXECFWK", "THREAD_BLOCK_6S"},
+    {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
+    {"EVENTLOGGER", "STACK"},
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
@@ -204,7 +208,7 @@ std::string Vendor::MergeEventLog(
         logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     } else {
-        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
@@ -256,7 +260,7 @@ std::string Vendor::MergeEventLog(
     info.time = watchPoint.GetTimestamp() / FreezeResolver::MILLISECOND;
     info.id = uid;
     info.pid = pid;
-    info.faultLogType = FaultLogType::APP_FREEZE;
+    info.faultLogType = IsApplicationResult(result) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = packageName;
     info.reason = stringId;
     info.summary = summary;
@@ -264,7 +268,7 @@ std::string Vendor::MergeEventLog(
     AddFaultLog(info);
 
     std::vector<std::string> paths = {retPath};
-    HiSysEvent::Write("RELIABILITY", IsApplicationResult(result) ? "APP_FREEZE" : "SYSTEM_FREEZE", HiSysEvent::FAULT,
+    HiSysEvent::Write("RELIABILITY", IsApplicationResult(result) ? "APP_FREEZE" : "SYS_FREEZE", HiSysEvent::FAULT,
         "SUB_EVENT_TYPE", stringId,
         "EVENT_TIME", timestamp,
         "MODULE", packageName,

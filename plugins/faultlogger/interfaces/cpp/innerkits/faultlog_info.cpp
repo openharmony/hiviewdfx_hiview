@@ -121,6 +121,8 @@ std::string FaultLogInfo::GetStringFaultType() const
             return "JsCrash";
         case APP_FREEZE:
             return "AppFreeze";
+        case SYS_FREEZE:
+            return "SysFreeze";
         default:
             return "UnknownFaultType";
     }

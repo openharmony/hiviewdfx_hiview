@@ -22,9 +22,23 @@
     </rule>
   </rules>
   <rules resolver="AppResolver">
-    <rule id="5" window="30" domain="APPEXECFWK" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+    <rule id="1" window="30" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
       <links type="watchpoint">
-        <event domain="APPEXECFWK" stringid="UI_BLOCK_3S">	<!-- UI_BLOCK_3S -->
+        <event domain="ACE" stringid="UI_BLOCK_3S">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="2" window="30" domain="APPEXECFWK" stringid="THREAD_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event domain="APPEXECFWK" stringid="THREAD_BLOCK_3S">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="3" window="30" domain="EVENTLOGGER" stringid="STACK">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- UI_BLOCK_3S -->
           <result code="0" scope="app"/>
         </event>
       </links>
