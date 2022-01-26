@@ -116,7 +116,7 @@ void PipelineEvent::FillPipelineInfo(std::shared_ptr<Plugin> caller, const std::
         while (!seq.empty()) {
             auto& plugin = seq.front();
             if (auto pluginPtr = plugin.lock()) {
-                if (pluginPtr == caller) {
+                if (pluginPtr->GetName() == caller->GetName()) {
                     break;
                 }
             }

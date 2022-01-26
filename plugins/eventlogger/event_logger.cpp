@@ -16,14 +16,20 @@
 
 #include "securec.h"
 
+#include <sys/epoll.h>
+#include <sys/inotify.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "common_utils.h"
+#include "event_source.h"
 #include "file_util.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
+#include "sys_event.h"
 #include "sys_event_dao.h"
 
 #include "event_log_action.h"
@@ -193,7 +199,7 @@ bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
                 HIVIEW_LOGI("set info_ with nolog into db.");
                 event->SetEventValue(EventStore::EventCol::INFO, "nolog", false);
             } else {
-                auto logPath = R"~(logPath:)~" + LOGGER_FAULT_LOG_PATH + "/" + logFile;
+                auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
                 event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
             }
 
@@ -215,6 +221,9 @@ void EventLogger::OnLoad()
     logStore_->SetMaxSize(MAX_FOLDER_SIZE);
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
     logStore_->Init();
+    std::shared_ptr<EventLoop> tmp = GetWorkLoop();
+    tmp->AddFileDescriptorEventCallback("EventLoggerFd",
+        std::static_pointer_cast<EventLogger>(shared_from_this()));
 }
 
 void EventLogger::OnUnload()
@@ -231,6 +240,108 @@ bool EventLogger::CanProcessEvent(std::shared_ptr<Event> event)
         return false;
     }
     return true;
+}
+
+void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)
+{
+    HIVIEW_LOGD("called");
+    std::shared_ptr<Plugin> sysEventSourcePlugin = GetHiviewContext()->GetPluginByName("SysEventSource");
+    std::shared_ptr<EventSource> sysEventSource = std::static_pointer_cast<EventSource>(sysEventSourcePlugin);
+    if (dirPath == MONITOR_STACK_LOG_PATH) {
+        uint8_t count = 0;
+        for (auto& i : MONITOR_STACK_FLIE_NAME) {
+            if (fileName.find(i) != fileName.npos) {
+                ++count;
+                break;
+            }
+        }
+        
+        if (count == 0) {
+            return;
+        }
+        std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
+            static_cast<PipelineEventProducer *>(sysEventSource.get()), "");
+        event->domain_ = "EVENTLOGGER";
+        event->SetEventValue("domain_", "HIVIEWDFX");
+        event->eventName_ = "STACK";
+        event->SetEventValue("name_", "STACK");
+
+        std::string tmpStr = R"~(filePath:)~" + dirPath + "/" + fileName;
+        event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
+        sysEventSource->PublishPipelineEvent(event);
+    }
+}
+
+bool EventLogger::OnFileDescriptorEvent(int fd, int type)
+{
+    HIVIEW_LOGD("fd:%{public}d, type:%{public}d, inotifyFd_:%{public}d.\n", fd, type, inotifyFd_);
+    const int bufSize = 2048;
+    char buffer[bufSize] = {0};
+    char *offset = nullptr;
+    struct inotify_event *event = nullptr;
+    if (inotifyFd_ < 0) {
+        HIVIEW_LOGE("Invalid inotify fd:%{public}d", inotifyFd_);
+        return false;
+    }
+    int len = read(inotifyFd_, buffer, bufSize);
+    if (len < 0) {
+        HIVIEW_LOGE("failed to read event");
+        return false;
+    }
+
+    offset = buffer;
+    event = (struct inotify_event *)buffer;
+    while ((reinterpret_cast<char *>(event) - buffer) < len) {
+        const auto& it = fileMap_.find(event->wd);
+        if (it == fileMap_.end()) {
+            continue;
+        }
+
+        if (event->name[event->len - 1] != '\0') {
+            event->name[event->len - 1] = '\0';
+        }
+        std::string fileName = std::string(event->name);
+        CreateAndPublishEvent(it->second, fileName);
+
+        int tmpLen = sizeof(struct inotify_event) + event->len;
+        event = (struct inotify_event *)(offset + tmpLen);
+        offset += tmpLen;
+    }
+    return true;
+}
+
+int32_t EventLogger::GetPollFd()
+{
+    HIVIEW_LOGD("call");
+    if (inotifyFd_ > 0) {
+        return inotifyFd_;
+    }
+
+    inotifyFd_ = inotify_init();
+    if (inotifyFd_ == -1) {
+        HIVIEW_LOGE("failed to init inotify: %s.\n", strerror(errno));
+        return -1;
+    }
+
+    for (const std::string& i : MONITOR_LOG_PATH) {
+        int wd = inotify_add_watch(inotifyFd_, i.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
+        if (wd < 0) {
+            HIVIEW_LOGE("failed to add watch entry : %s(%s).\n", strerror(errno), i.c_str());
+            continue;
+        }
+        fileMap_[wd] = i;
+    }
+
+    if (fileMap_.empty()) {
+        close(inotifyFd_);
+        inotifyFd_ = -1;
+    }
+    return inotifyFd_;
+}
+
+int32_t EventLogger::GetPollType()
+{
+    return EPOLLIN;
 }
 } // namesapce HiviewDFX
 } // namespace OHOS

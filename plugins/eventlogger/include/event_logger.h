@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "event.h"
 #include "event_loop.h"
@@ -34,17 +35,29 @@ struct BinderInfo {
     unsigned long wait;
 };
 
-class EventLogger : public Plugin {
+class EventLogger : public Plugin, public FileDescriptorEventCallback  {
 public:
-    EventLogger() : logStore_(std::make_unique<LogStoreEx>(LOGGER_FAULT_LOG_PATH, true)),
-        startTime_(time(nullptr)) {};
+    EventLogger() : logStore_(std::make_unique<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
+        startTime_(time(nullptr)),
+        inotifyFd_(0) {};
     ~EventLogger() {};
     bool OnEvent(std::shared_ptr<Event> &event) override;
     void OnLoad() override;
     void OnUnload() override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
+    bool OnFileDescriptorEvent(int fd, int type) override;
+    int32_t GetPollFd() override;
+    int32_t GetPollType() override;
 private:
-    static const inline std::string LOGGER_FAULT_LOG_PATH = "/data/log/eventlog";
+    static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
+    static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
+    static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
+        "sysfreeze",
+        "appfreeze",
+    };
+    static const inline std::string MONITOR_LOG_PATH[] = {
+        MONITOR_STACK_LOG_PATH,
+    };
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
@@ -52,6 +65,8 @@ private:
     std::unique_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;
     std::map<std::string, std::time_t> eventTagTime_;
+    int inotifyFd_;
+    std::unordered_map<int, std::string> fileMap_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
@@ -59,6 +74,7 @@ private:
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
     bool PostEvent(std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
+    void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
