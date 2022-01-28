@@ -15,6 +15,7 @@
 #include "compose_rule.h"
 
 #include <algorithm>
+#include <fstream>
 #include <memory>
 
 #include "file_util.h"
@@ -28,28 +29,26 @@ DEFINE_LOG_TAG("ComposeRule");
 
 void ComposeRule::ParseComposeRule(const string& config, const string& type, vector<string> featureIds)
 {
-    HIVIEW_LOGI("ComposeRule ParseFile start. %{public}s %{public}s", config.c_str(), type.c_str());
-    string content;
-    if (!FileUtil::LoadStringFromFile(config, content)) {
-        HIVIEW_LOGE("load file %{public}s fail.", config.c_str());
-        return;
-    }
+    std::ifstream fin(config, std::ifstream::binary);
+#ifdef JSONCPP_VERSION_STRING
+    Json::CharReaderBuilder builder;
+    Json::CharReaderBuilder::strictMode(&builder.settings_);
+    JSONCPP_STRING errs;
+#else
+    Json::Reader reader(Json::Features::strictMode());
+#endif
 
     Json::Value root;
 #ifdef JSONCPP_VERSION_STRING
-    JSONCPP_STRING errs;
-    Json::CharReaderBuilder readerBuilder;
-    std::unique_ptr<Json::CharReader> const jsonReader(readerBuilder.newCharReader());
-    bool res = jsonReader->parse(config.c_str(), config.c_str() + config.length(), &root, &errs);
-    if (!res || !errs.empty() || !root.isMember(type)) {
+    bool ret = parseFromStream(builder, fin, &root, &errs);
+    if (!ret || !errs.empty() || !root.isMember(type)) {
         HIVIEW_LOGE("Json parse fail, err is %{public}s or %{public}s don't exist in %{public}s.",
             errs.c_str(), type.c_str(), config.c_str());
         return;
     }
 #else
-    Json::Reader reader;
-    if (!reader.parse(content, root) || !root.isMember(type)) {
-        HIVIEW_LOGE("%{public}s Json parse fail.", config.c_str());
+    if (!reader.parse(fin, root) || !root.isMember(type)) {
+        HIVIEW_LOGE("Json parse fail in %{public}s.", config.c_str());
         return;
     }
 #endif
