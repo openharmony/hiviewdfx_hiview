@@ -84,6 +84,8 @@ std::string GetFaultNameByType(int32_t faultType)
             return "cppcrash";
         case FaultLogType::APP_FREEZE:
             return "appfreeze";
+        case FaultLogType::SYS_FREEZE:
+            return "sysfreeze";
         default:
             break;
     }
@@ -118,6 +120,8 @@ int32_t GetLogTypeByName(const std::string& type)
         return FaultLogType::CPP_CRASH;
     } else if (type == "appfreeze") {
         return FaultLogType::APP_FREEZE;
+    } else if (type == "sysfreeze") {
+        return FaultLogType::SYS_FREEZE;
     } else if (type == "all" || type == "ALL") {
         return FaultLogType::ALL;
     } else {

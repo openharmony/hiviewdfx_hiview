@@ -45,6 +45,7 @@ enum FaultLogType {
     CPP_CRASH,
     JS_CRASH,
     APP_FREEZE,
+    SYS_FREEZE,
 };
 
 // internal interface

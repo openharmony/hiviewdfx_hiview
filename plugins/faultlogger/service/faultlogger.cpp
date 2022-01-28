@@ -380,7 +380,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
         return nullptr;
     }
 
-    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::APP_FREEZE)) {
+    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::SYS_FREEZE)) {
         HIVIEW_LOGW("Unsupported fault type");
         return nullptr;
     }
@@ -403,7 +403,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
 
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
 {
-    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::APP_FREEZE)) {
+    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::SYS_FREEZE)) {
         HIVIEW_LOGW("Unsupported fault type");
         return;
     }

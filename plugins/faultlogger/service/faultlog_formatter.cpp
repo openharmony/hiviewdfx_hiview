@@ -81,6 +81,13 @@ auto APP_FREEZE_LOG_SEQUENCE = {
     MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE
 };
 
+auto SYS_FREEZE_LOG_SEQUENCE = {
+    DEVICE_INFO, BUILD_INFO, MODULE_NAME, MODULE_VERSION, MODULE_PID,
+    MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON, SUMMARY,
+    TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
+    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE
+};
+
 std::list<const char **> GetLogParseList(int32_t logType)
 {
     switch (logType) {
@@ -92,6 +99,8 @@ std::list<const char **> GetLogParseList(int32_t logType)
             return JAVASCRIPT_CRASH_LOG_SEQUENCE;
         case FaultLogType::APP_FREEZE:
             return APP_FREEZE_LOG_SEQUENCE;
+        case FaultLogType::SYS_FREEZE:
+            return SYS_FREEZE_LOG_SEQUENCE;
         default:
             return std::list<const char **>();
     }
@@ -104,6 +113,7 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
         case FaultLogType::JAVA_CRASH:
         case FaultLogType::JS_CRASH:
         case FaultLogType::APP_FREEZE:
+        case FaultLogType::SYS_FREEZE:
             summary = sections[STACKTRACE[LOG_MAP_KEY]];
             break;
         case FaultLogType::CPP_CRASH:
