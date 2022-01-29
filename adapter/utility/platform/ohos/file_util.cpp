@@ -250,7 +250,7 @@ bool IsDirectory(const std::string &path)
     return false;
 }
 
-bool GetLastLine(std::istream &fin, std::string &line)
+bool GetLastLine(std::istream &fin, std::string &line, int maxLen)
 {
     if (fin.tellg() <= 0) {
         return false;
@@ -258,22 +258,22 @@ bool GetLastLine(std::istream &fin, std::string &line)
         fin.seekg(-1, fin.cur);
     }
     uint32_t count = 0;
-    while (fin.good() && fin.peek() == fin.widen('\n') && fin.tellg() > 0 && count < MAX_LINE_LEN) {
+    while (fin.good() && fin.peek() == fin.widen('\n') && fin.tellg() > 0 && count < maxLen) {
         fin.seekg(-1, fin.cur);
         count++;
     }
-    if (!fin.good() || count >= MAX_LINE_LEN) {
+    if (!fin.good() || count >= maxLen) {
         return false;
     }
     if (fin.tellg() == 0) {
         return true;
     }
     count = 0;
-    while (fin.good() && fin.peek() != fin.widen('\n') && fin.tellg() > 0 && count < MAX_LINE_LEN) {
+    while (fin.good() && fin.peek() != fin.widen('\n') && fin.tellg() > 0 && count < maxLen) {
         fin.seekg(-1, fin.cur);
         count++;
     }
-    if (!fin.good() || count >= MAX_LINE_LEN) {
+    if (!fin.good() || count >= maxLen) {
         return false;
     }
     if (fin.tellg() != 0) {
