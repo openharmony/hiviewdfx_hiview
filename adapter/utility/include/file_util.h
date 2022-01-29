@@ -54,7 +54,6 @@ constexpr mode_t FILE_PERM_755 = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
 constexpr mode_t FILE_PERM_775 = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 constexpr mode_t FILE_PERM_770 = S_IRWXU | S_IRWXG;
 constexpr mode_t FILE_PERM_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
-static constexpr uint32_t MAX_LINE_LEN = 1024;
 // file_ex.h
 bool LoadStringFromFile(const std::string& filePath, std::string& content);
 bool LoadStringFromFd(int fd, std::string& content);
@@ -89,7 +88,7 @@ void FormatPath2UnixStyle(std::string &path);
 void CreateDirWithDefaultPerm(const std::string& path, uid_t aidRoot, uid_t aid_system);
 int CopyFile(const std::string &src, const std::string &des);
 bool IsDirectory(const std::string &path);
-bool GetLastLine(std::istream &fin, std::string &line);
+bool GetLastLine(std::istream &fin, std::string &line, int maxLen = 10240); // 10240 : max line len
 std::string GetParentDir(const std::string &path);
 bool IsLegalPath(const std::string& path);
 bool RenameFile(const std::string& src, const std::string& dest);
