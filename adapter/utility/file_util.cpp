@@ -304,7 +304,7 @@ bool GetLastLine(std::istream &fin, std::string &line, int maxLen)
         fin.seekg(-1, fin.cur);
         count++;
     }
-    if (!fin.good() || count >= MAX_LINE_LEN) {
+    if (!fin.good() || count >= maxLen) {
         return false;
     }
     if (fin.tellg() == 0) {
@@ -315,7 +315,7 @@ bool GetLastLine(std::istream &fin, std::string &line, int maxLen)
         fin.seekg(-1, fin.cur);
         count++;
     }
-    if (!fin.good() || count >= MAX_LINE_LEN) {
+    if (!fin.good() || count >= maxLen) {
         return false;
     }
     if (fin.tellg() != 0) {
