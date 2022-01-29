@@ -22,7 +22,7 @@
         "rom": "",
         "ram": "",
         "hisysevent_config": [
-            "//base/hiviewdfx/hiview/plugins/freeze_detector/hisysevent.yaml"
+            "//base/hiviewdfx/hiview/hisysevent.yaml"
         ],
         "deps": {
             "components": [

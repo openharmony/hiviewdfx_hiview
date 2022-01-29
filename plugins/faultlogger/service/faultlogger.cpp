@@ -91,9 +91,10 @@ bool IsModuleNameValid(const std::string& name)
         return false;
     }
 
-    if (name.find("/") != std::string::npos) {
+    if (name.find("/") != std::string::npos || name.find(".") == std::string::npos) {
         std::string path = name.substr(1); // may skip first .
-        HIVIEW_LOGI("module name:%{public}s", path.c_str());
+        path.erase(path.find_last_not_of(" \n\r\t") + 1);
+        HIVIEW_LOGI("module name:%{public}s", name.c_str());
         return IsNameValid(path, "/", false);
     }
 
@@ -411,10 +412,6 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     std::string appName = GetApplicationNameById(info.id);
     if (!appName.empty()) {
         info.module = appName;
-    } else {
-        if (info.id != ROOT_UID) {
-            info.module = CommonUtils::GetProcNameByPid(info.pid);
-        }
     }
 
     HIVIEW_LOGD("nameProc %{public}s", info.module.c_str());

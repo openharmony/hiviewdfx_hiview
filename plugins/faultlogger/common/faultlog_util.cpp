@@ -73,19 +73,19 @@ std::string GetFormatedTime(uint64_t time)
     return std::string(buf, strlen(buf));
 }
 
-std::string GetFaultNameByType(int32_t faultType)
+std::string GetFaultNameByType(int32_t faultType, bool asFileName)
 {
     switch (faultType) {
         case FaultLogType::JS_CRASH:
-            return "jscrash";
+            return asFileName ? "jscrash" : "JS_ERROR";
         case FaultLogType::JAVA_CRASH:
-            return "javacrash";
+            return asFileName ? "javacrash" : "JAVA_CRASH";
         case FaultLogType::CPP_CRASH:
-            return "cppcrash";
+            return asFileName ? "cppcrash" : "CPP_CRASH";
         case FaultLogType::APP_FREEZE:
-            return "appfreeze";
+            return asFileName ? "appfreeze" : "APP_FREEZE";
         case FaultLogType::SYS_FREEZE:
-            return "sysfreeze";
+            return asFileName ? "sysfreeze" : "SYS_FREEZE";
         default:
             break;
     }
@@ -100,7 +100,7 @@ std::string GetFaultLogName(const FaultLogInfo& info)
     }
 
     std::string ret = "";
-    ret.append(GetFaultNameByType(info.faultLogType));
+    ret.append(GetFaultNameByType(info.faultLogType, true));
     ret.append("-");
     ret.append(name);
     ret.append("-");

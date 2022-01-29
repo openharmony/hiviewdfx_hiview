@@ -59,12 +59,16 @@ void AddFaultLog(const FaultLogInfoInner &info)
         return;
     }
 
+    std::string module = info.module;
+    module.erase(std::remove_if(module.begin(), module.end(),
+		[](unsigned char c) { return !std::isprint(c); }), module.end());
+
     FaultLogInfoOhos infoOhos;
     infoOhos.time = info.time;
     infoOhos.uid = info.id;
     infoOhos.pid = info.pid;
     infoOhos.faultLogType = info.faultLogType;
-    infoOhos.module = info.module;
+    infoOhos.module = module;
     infoOhos.reason = info.reason;
     infoOhos.summary = info.summary;
     infoOhos.logPath = info.logPath;
