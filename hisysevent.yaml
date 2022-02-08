@@ -25,8 +25,8 @@ APP_FREEZE:
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   DOMAIN: {type: STRING, desc: event domain}
   STRING_ID: {type: STRING, desc: event stringid}
-  PID: {type: INT32, desc: end time}
-  UID: {type: INT32, desc: end time}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
@@ -43,8 +43,8 @@ SYS_FREEZE:
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   DOMAIN: {type: STRING, desc: event domain}
   STRING_ID: {type: STRING, desc: event stringid}
-  PID: {type: INT32, desc: end time}
-  UID: {type: INT32, desc: end time}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
