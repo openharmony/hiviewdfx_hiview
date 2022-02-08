@@ -34,25 +34,23 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("FaultLogDatabase");
 namespace {
 static const std::vector<std::string> QUERY_ITEMS =
-    { "time_", "name_", "uid_", "pid_", "module", "reason", "summary", "logPath" };
+    { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
 std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
 {
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     auto sysEvent = std::make_shared<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
-    auto name = GetFaultNameByType(info.faultLogType);
-    std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-    sysEvent->SetEventValue("name_", name);
+    sysEvent->SetEventValue("name_", GetFaultNameByType(info.faultLogType, false));
     sysEvent->SetEventValue("type_", 1);
     sysEvent->SetEventValue("time_", info.time);
     sysEvent->SetEventValue("pid_", info.pid);
     sysEvent->SetEventValue("uid_", info.id);
-    sysEvent->SetEventValue("faultLogType", std::to_string(info.faultLogType));
-    sysEvent->SetEventValue("module", info.module);
-    sysEvent->SetEventValue("reason", info.reason);
-    sysEvent->SetEventValue("summary", info.summary);
-    sysEvent->SetEventValue("logPath", info.logPath);
-    if (info.sectionMap.find("APPVERSION") != info.sectionMap.end()) {
-        sysEvent->SetEventValue("APPVERSION", info.sectionMap.at("APPVERSION"));
+    sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
+    sysEvent->SetEventValue("MODULE", info.module);
+    sysEvent->SetEventValue("REASON", info.reason);
+    sysEvent->SetEventValue("SUMMARY", info.summary);
+    sysEvent->SetEventValue("LOG_PATH", info.logPath);
+    if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
+        sysEvent->SetEventValue("VERSION", info.sectionMap.at("VERSION"));
     }
 
     if (sysEvent->PaserJson() < 0) {
@@ -74,11 +72,11 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     info.time = sysEvent->happenTime_;
     info.pid = sysEvent->GetPid();
     info.id = sysEvent->GetUid();
-    info.faultLogType = std::atoi(sysEvent->GetEventValue("faultLogType").c_str());
-    info.module = sysEvent->GetEventValue("module");
-    info.reason = sysEvent->GetEventValue("reason");
-    info.summary = StringUtil::ReplaceStr(sysEvent->GetEventValue("summary"), "\\n", "\n");
-    info.logPath = sysEvent->GetEventValue("logPath");
+    info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
+    info.module = sysEvent->GetEventValue("MODULE");
+    info.reason = sysEvent->GetEventValue("REASON");
+    info.summary = StringUtil::ReplaceStr(sysEvent->GetEventValue("SUMMARY"), "\\n", "\n");
+    info.logPath = sysEvent->GetEventValue("LOG_PATH");
     return true;
 }
 }
@@ -105,11 +103,11 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery();
     query.Select(QUERY_ITEMS).Where("uid_", EventStore::Op::EQ, id).Order("time_", false);
     if (id != 0) {
-        query.And("module", EventStore::Op::EQ, module);
+        query.And("MODULE", EventStore::Op::EQ, module);
     }
 
     if (faultType != 0) {
-        query.And("faultLogType", EventStore::Op::EQ, faultType);
+        query.And("FAULT_TYPE", EventStore::Op::EQ, faultType);
     }
 
     EventStore::ResultSet resultSet = query.Execute(maxNum);

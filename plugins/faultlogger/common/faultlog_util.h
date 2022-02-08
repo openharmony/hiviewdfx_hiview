@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 std::string GetFormatedTime(uint64_t time);
-std::string GetFaultNameByType(int32_t faultType);
+std::string GetFaultNameByType(int32_t faultType, bool asfileName);
 std::string GetFaultLogName(const FaultLogInfo& info);
 int32_t GetLogTypeByName(const std::string& type);
 FaultLogInfo ExtractInfoFromFileName(const std::string& fileName);
