@@ -167,6 +167,53 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
     return std::string(buf, strlen(buf));
 }
 
+bool Vendor::CheckPid(const WatchPoint &watchPoint, std::list<WatchPoint>& list) const
+{
+    long pid = 0;
+    std::string filePath = "";
+    std::string fileName = "";
+    std::vector<std::string> values;
+    std::string domain = watchPoint.GetDomain();
+    std::string stringId = watchPoint.GetStringId();
+    if (domain != "EVENTLOGGER" || stringId != "STACK") {
+        return true; // only check pid for STACK rule
+    }
+
+    filePath = watchPoint.GetLogPath();
+    if (filePath.find("/") == std::string::npos) {
+        HIVIEW_LOGE("failed to get stack file name %{public}s.", filePath.c_str());
+        goto error;
+    }
+    fileName = StringUtil::GetRightSubstr(filePath, "/");
+    if (fileName.find("stack") == std::string::npos || fileName.find("-") == std::string::npos) {
+        HIVIEW_LOGE("invalid stack file name %{public}s.", fileName.c_str());
+        goto error;
+    }
+    StringUtil::SplitStr(fileName, "-", values, false, false);
+    if (values.size() != 3) { // type-pid-timestamp
+        HIVIEW_LOGE("failed to split stack file name %{public}s.", fileName.c_str());
+        goto error;
+    }
+    StringUtil::ConvertStringTo<long>(values[1], pid);
+
+    for (auto node : list) {
+        if (node.GetDomain() == "MULTIMODALINPUT" && node.GetStringId() == "APPLICATION_BLOCK_INPUT" && node.GetPid() == pid) {
+            return true;
+        }
+    }
+
+error:
+    // erase input event to match later
+    for (auto node = list.begin(); node != list.end();) {
+        if (node->GetDomain() == "MULTIMODALINPUT" && node->GetStringId() == "APPLICATION_BLOCK_INPUT") {
+            node = list.erase(node);
+        } else {
+            node++;
+        }
+    }
+    return false;
+}
+
 void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const
 {
     oss << header << std::endl;
@@ -182,7 +229,7 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
 }
 
 std::string Vendor::MergeEventLog(
-    const WatchPoint &watchPoint, const std::list<WatchPoint>& list,
+    const WatchPoint &watchPoint, std::list<WatchPoint>& list,
     const FreezeResult& result, std::string& digest) const
 {
     std::string domain = watchPoint.GetDomain();
@@ -198,6 +245,11 @@ std::string Vendor::MergeEventLog(
     }
     if (packageName == "" && processName == "") {
         packageName = stringId;
+    }
+
+    if (CheckPid(watchPoint, list) == false) {
+        HIVIEW_LOGE("failed to match pid in file name %{public}s.", watchPoint.GetLogPath().c_str());
+        return "";
     }
 
     std::string retPath;
