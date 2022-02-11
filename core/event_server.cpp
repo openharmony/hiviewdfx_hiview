@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -29,6 +30,7 @@ extern "C" {
 #include "init_socket.h"
 }
 
+#include "device_node.h"
 #include "logger.h"
 #include "socket_util.h"
 
@@ -39,7 +41,13 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventServer");
 namespace {
 constexpr int BUFFER_SIZE = 384 * 1024;
-static void InitRecvBuffer(int socketId)
+#ifndef KERNEL_DEVICE_BUFFER
+constexpr int EVENT_READ_BUFFER = 2048;
+#else
+constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
+#endif
+
+void InitRecvBuffer(int socketId)
 {
     int oldN = 0;
     socklen_t oldOutSize = sizeof(int);
@@ -60,7 +68,8 @@ static void InitRecvBuffer(int socketId)
     HIVIEW_LOGI("reset recv buffer size old=%{public}d, new=%{public}d", oldN, newN);
 }
 }
-void EventServer::InitSocket(int &socketId)
+
+void SocketDevice::InitSocket(int &socketId)
 {
     struct sockaddr_un serverAddr;
     serverAddr.sun_family = AF_UNIX;
@@ -85,9 +94,8 @@ void EventServer::InitSocket(int &socketId)
     }
 }
 
-void EventServer::Start()
+int SocketDevice::Open()
 {
-    HIVIEW_LOGD("start event server");
     socketId_ = GetControlSocket("hisysevent");
     if (socketId_ < 0) {
         HIVIEW_LOGI("create hisysevent socket");
@@ -99,11 +107,33 @@ void EventServer::Start()
 
     if (socketId_ < 0) {
         HIVIEW_LOGE("hisysevent create socket fail");
-        return;
+        return -1;
     }
+    return socketId_;
+}
 
-    isStart_ = true;
-    while (isStart_) {
+int SocketDevice::Close()
+{
+    if (socketId_ > 0) {
+        close(socketId_);
+        socketId_ = -1;
+    }
+    return 0;
+}
+
+uint32_t SocketDevice::GetEvents()
+{
+    return EPOLLIN | EPOLLET;
+}
+
+std::string SocketDevice::GetName()
+{
+    return "SysEventSocket";
+}
+
+int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
+{
+    while (true) {
         struct sockaddr_un clientAddr;
         socklen_t clientLen = sizeof(clientAddr);
         char* recvbuf = new char[BUFFER_SIZE];
@@ -111,25 +141,158 @@ void EventServer::Start()
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
         if (n <= 0) {
             delete[] recvbuf;
-            continue;
+            break;
         }
         recvbuf[BUFFER_SIZE - 1] = 0;
         HIVIEW_LOGD("receive data from client %s", recvbuf);
-        for (auto receiver = receivers_.begin(); receiver != receivers_.end(); receiver++) {
+        for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
             (*receiver)->HandlerEvent(std::string(recvbuf));
         }
         delete[] recvbuf;
+    }
+    return 0;
+}
+
+int BBoxDevice::Close()
+{
+    if (fd_ > 0) {
+        close(fd_);
+        fd_ = -1;
+    }
+    return 0;
+}
+
+int BBoxDevice::Open()
+{
+    fd_ = open("/dev/bbox", O_RDONLY, 0);
+    if (fd_ < 0) {
+        HIVIEW_LOGE("open bbox fail error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        return -1;
+    }
+    return fd_;
+}
+
+uint32_t BBoxDevice::GetEvents()
+{
+    return EPOLLIN;
+}
+
+std::string BBoxDevice::GetName()
+{
+    return "BBox";
+}
+
+int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
+{
+    char buffer[EVENT_READ_BUFFER];
+    (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+    int ret = read(fd_, buffer, EVENT_READ_BUFFER);
+    if (ret <= 0) {
+        return -1;
+    }
+    buffer[EVENT_READ_BUFFER - 1] = '\0';
+    HIVIEW_LOGD("receive from kernal %{public}s", buffer);
+    for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
+        (*receiver)->HandlerEvent(std::string(buffer));
+    }
+    return 0;
+}
+
+void EventServer::AddDev(std::shared_ptr<DeviceNode> dev)
+{
+    int fd = dev->Open();
+    if (fd < 0) {
+        HIVIEW_LOGI("open device %{public}s failed", dev->GetName().c_str());
+        return;
+    }
+    devs_[fd] = dev;
+}
+
+int EventServer::OpenDevs()
+{
+    AddDev(std::make_shared<SocketDevice>());
+    AddDev(std::make_shared<BBoxDevice>());
+    if (devs_.empty()) {
+        HIVIEW_LOGE("can not open any device");
+        return -1;
+    }
+    HIVIEW_LOGI("has open %{public}u devices", devs_.size());
+    return 0;
+}
+
+int EventServer::AddToMonitor(int pollFd, struct epoll_event pollEvents[])
+{
+    int index = 0;
+    auto it = devs_.begin();
+    while (it != devs_.end()) {
+        HIVIEW_LOGI("add to poll device %{public}s, fd=%{public}d", it->second->GetName().c_str(), it->first);
+        pollEvents[index].data.fd = it->first;
+        pollEvents[index].events = it->second->GetEvents();
+        int ret = epoll_ctl(pollFd, EPOLL_CTL_ADD, it->first, &pollEvents[index]);
+        if (ret < 0) {
+            HIVIEW_LOGE("add to poll fail device %{public}s error=%{public}d, msg=%{public}s",
+                it->second->GetName().c_str(), errno, strerror(errno));
+            it->second->Close();
+            it = devs_.erase(it);
+        } else {
+            it++;
+        }
+        index++;
+    }
+
+    if (devs_.empty()) {
+        HIVIEW_LOGE("can not monitor any device");
+        return -1;
+    }
+    HIVIEW_LOGI("monitor devices %{public}u", devs_.size());
+    return 0;
+}
+
+void EventServer::Start()
+{
+    HIVIEW_LOGD("start event server");
+    if (OpenDevs() < 0) {
+        return;
+    }
+
+    int pollFd = epoll_create1(EPOLL_CLOEXEC);
+    if (pollFd < 0) {
+        HIVIEW_LOGE("create poll fail error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        return;
+    }
+
+    struct epoll_event pollEvents[devs_.size()];
+    if (AddToMonitor(pollFd, pollEvents) < 0) {
+        return;
+    }
+
+    HIVIEW_LOGI("go into event loop");
+    isStart_ = true;
+    while (isStart_) {
+        struct epoll_event chkPollEvents[devs_.size()];
+        int eventCount = epoll_wait(pollFd, chkPollEvents, devs_.size(), 10000); // 10000: 10 seconds
+        if (eventCount <= 0) {
+            HIVIEW_LOGD("read event timeout");
+            continue;
+        }
+        for (int ii = 0; ii < eventCount; ii++) {
+            auto it = devs_.find(chkPollEvents[ii].data.fd);
+            it->second->ReceiveMsg(receivers_);
+        }
+    }
+    CloseDevs();
+}
+
+void EventServer::CloseDevs()
+{
+    for (auto devItem : devs_) {
+        devItem.second->Close();
     }
 }
 
 void EventServer::Stop()
 {
     isStart_ = false;
-    if (socketId_ <= 0) {
-        return;
-    }
-    close(socketId_);
-    socketId_ = -1;
 }
 
 void EventServer::AddReceiver(std::shared_ptr<EventReceiver> receiver)

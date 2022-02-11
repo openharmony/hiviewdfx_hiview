@@ -13,35 +13,62 @@
  * limitations under the License.
  */
 
-#ifndef SYS_EVENT_SERVER_H
-#define SYS_EVENT_SERVER_H
+#ifndef COER_EVENT_SERVER_H
+#define COER_EVENT_SERVER_H
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "device_node.h"
+
+struct epoll_event;
 namespace OHOS {
 namespace HiviewDFX {
-class EventReceiver {
+class SocketDevice : public DeviceNode {
 public:
-    EventReceiver() {};
-    virtual ~EventReceiver() {};
-    virtual void HandlerEvent(const std::string& rawMsg) = 0;
+    SocketDevice() {};
+    ~SocketDevice() {};
+    int Close() override;
+    int Open() override;
+    uint32_t GetEvents() override;
+    std::string GetName() override;
+    int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
+private:
+    void InitSocket(int &socketId);
+    int socketId_;
+};
+
+class BBoxDevice : public DeviceNode {
+public:
+    BBoxDevice() {};
+    ~BBoxDevice() {};
+    int Close() override;
+    int Open() override;
+    uint32_t GetEvents() override;
+    std::string GetName() override;
+    int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
+private:
+    int fd_;
 };
 
 class EventServer {
 public:
-    EventServer(): isStart_(false), socketId_(-1) {};
+    EventServer(): isStart_(false) {};
     ~EventServer() {}
     void Start();
     void Stop();
     void AddReceiver(std::shared_ptr<EventReceiver> receiver);
 private:
-    void InitSocket(int &socketId);
+    void AddDev(std::shared_ptr<DeviceNode> dev);
+    int OpenDevs();
+    void CloseDevs();
+    int AddToMonitor(int pollFd, struct epoll_event pollEvents[]);
+    std::map<int, std::shared_ptr<DeviceNode>> devs_;
     std::vector<std::shared_ptr<EventReceiver>> receivers_;
     bool isStart_;
-    int socketId_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // SYS_EVENT_SERVER_H
+#endif // COER_EVENT_SERVER_H
