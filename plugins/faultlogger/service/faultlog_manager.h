@@ -44,6 +44,7 @@ public:
     void SaveFaultInfoToRawDb(FaultLogInfo& info) const;
     std::list<FaultLogInfo> GetFaultInfoList(
         const std::string& module, int32_t id, int32_t faultType, int32_t maxNum) const;
+    bool IsProcessedFault(int32_t pid, int32_t uid, int32_t faultType);
 
 private:
     void ReduceLogFileListSize(std::list<std::string>& infoVec, int32_t maxNum) const;

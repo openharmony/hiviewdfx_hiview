@@ -161,5 +161,14 @@ bool FaultLogManager::GetFaultLogContent(const std::string &name, std::string &c
     auto path = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + name;
     return FileUtil::LoadStringFromFile(path, content);
 }
+
+bool FaultLogManager::IsProcessedFault(int32_t pid, int32_t uid, int32_t faultType)
+{
+    if (faultLogDb_ == nullptr) {
+        return false;
+    }
+
+    return faultLogDb_->IsFaultExist(pid, uid, faultType);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

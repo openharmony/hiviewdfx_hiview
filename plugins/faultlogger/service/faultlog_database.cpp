@@ -122,5 +122,16 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     }
     return queryResult;
 }
+
+bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::list<FaultLogInfo> queryResult;
+    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery();
+    query.Select(QUERY_ITEMS).Where("pid_", EventStore::Op::EQ, pid).Order("time_", false);
+    query.And("uid_", EventStore::Op::EQ, uid);
+    query.And("FAULT_TYPE", EventStore::Op::EQ, faultType);
+    return query.Execute(1).HasNext();
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

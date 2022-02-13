@@ -146,6 +146,21 @@ FaultLogInfo ExtractInfoFromFileName(const std::string& fileName)
     return info;
 }
 
+FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName)
+{
+    // FileName LogType-pid-time
+    FaultLogInfo info;
+    std::vector<std::string> splitStr;
+    const int32_t expectedVecSize = 3;
+    StringUtil::SplitStr(fileName, "-", splitStr);
+    if (splitStr.size() == expectedVecSize) {
+        info.faultLogType = GetLogTypeByName(splitStr[0]);                 // 0 : index of log type
+        StringUtil::ConvertStringTo<int32_t>(splitStr[1], info.pid);       // 1 : index of pid
+        StringUtil::ConvertStringTo<int64_t>(splitStr[2], info.time);      // 2 : index of timestamp
+    }
+    return info;
+}
+
 std::string RegulateModuleNameIfNeed(const std::string& name)
 {
     std::vector<std::string> splitStr;

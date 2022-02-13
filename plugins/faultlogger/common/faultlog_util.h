@@ -26,6 +26,7 @@ std::string GetFaultNameByType(int32_t faultType, bool asfileName);
 std::string GetFaultLogName(const FaultLogInfo& info);
 int32_t GetLogTypeByName(const std::string& type);
 FaultLogInfo ExtractInfoFromFileName(const std::string& fileName);
+FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName);
 int32_t GetRawEventIdByType(int32_t logType);
 std::string RegulateModuleNameIfNeed(const std::string& name);
 std::vector<std::string> GetApplicationNamesById(int32_t uid);
