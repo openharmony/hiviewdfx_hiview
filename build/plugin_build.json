@@ -38,9 +38,6 @@
                     "SysEventSource": {
                         "loadtime": 0
                     },
-                    "Faultlogger": {
-                        "loadtime": 0
-                    },
                     "EventLogger": {
                         "loadtime": 0
                     },
@@ -51,6 +48,9 @@
                         "loadtime": 0
                     },
                     "SysEventService": {
+                        "loadtime": 0
+                    },
+                    "Faultlogger": {
                         "loadtime": 0
                     }
                 },

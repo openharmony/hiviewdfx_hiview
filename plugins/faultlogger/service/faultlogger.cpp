@@ -58,7 +58,7 @@ constexpr int DUMP_PARSE_FILE_NAME = 1;
 constexpr int DUMP_PARSE_TIME = 2;
 constexpr int DUMP_START_PARSE_MODULE_NAME = 3;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
-
+constexpr char TEMP_LOG_PATH[] = "/data/log/faultlog/temp";
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -351,6 +351,12 @@ void Faultlogger::OnLoad()
 #ifndef UNITTEST
     FaultloggerAdapter::StartService(this);
 #endif
+
+    auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
+    if (eventloop != nullptr) {
+        auto task = std::bind(&Faultlogger::StartBootScan, this);
+        eventloop->AddEvent(nullptr, nullptr, task);
+    }
     hasInit_ = true;
 }
 
@@ -440,6 +446,20 @@ void Faultlogger::OnUnorderedEvent(const Event &msg)
 std::string Faultlogger::GetListenerName()
 {
     return "FaultLogger";
+}
+
+void Faultlogger::StartBootScan()
+{
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(TEMP_LOG_PATH, files);
+    for (const auto& file : files) {
+        auto info = ParseFaultLogInfoFromFile(file, true);
+        if (mgr_->IsProcessedFault(info.pid, info.id, info.faultLogType)) {
+            HIVIEW_LOGI("Skip processed fault.(%{public}d:%{public}d) ",info.pid, info.id);
+            continue;
+        }
+        AddFaultLogIfNeed(info, nullptr);
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

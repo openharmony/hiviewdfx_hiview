@@ -49,7 +49,7 @@ static const char *ROOT_CAUSE[] = {"BINDERMAX", "Blocked chain:\n"};
 static const char *MSG_QUEUE_INFO[] = {"MSG_QUEUE_INFO", "Message queue info:\n"};
 static const char *BINDER_TRANSACTION_INFO[] = {"BINDER_TRANSACTION_INFO", "Binder transaction info:\n"};
 static const char *PROCESS_STACKTRACE[] = {"PROCESS_STACKTRACE", "Process stacktrace:\n"};
-static const char *OTHER_THREAD_INFO[] = {"OTHER_THREAD_INFO", "Other thread stacktrace:\n"};
+static const char *OTHER_THREAD_INFO[] = {"OTHER_THREAD_INFO", "Other thread info:\n"};
 static const char *KEY_THREAD_INFO[] = {"KEY_THREAD_INFO", "Fault thread Info:\n"};
 static const char *KEY_THREAD_REGISTERS[] = {"KEY_THREAD_REGISTERS", "Registers:\n"};
 static const char *MEMORY_USAGE[] = {"MEM_USAGE", "Memory Usage:\n"};
@@ -131,11 +131,13 @@ bool ParseFaultLogLine(const std::list<const char **>& parseList, const std::str
     std::string& multlineName, FaultLogInfo& info)
 {
     for (auto &item : parseList) {
-        if (line.find(item[LOG_MAP_VALUE]) != std::string::npos) {
-            if ((line.at(line.size() - 1) == ':') &&
-                (item[LOG_MAP_KEY] != multlineName) && (!multline.empty())) {
+        std::string sectionHead = std::string(item[LOG_MAP_VALUE], strlen(item[LOG_MAP_VALUE]) - 1);
+        if (line.find(sectionHead) != std::string::npos) {
+            if (line.at(line.size() - 1) == ':') {
+                if ((item[LOG_MAP_KEY] != multlineName) && (!multline.empty())) {
                     info.sectionMap[multlineName] = multline;
-                    multlineName = item[LOG_MAP_KEY];
+                }
+                multlineName = item[LOG_MAP_KEY];
             } else {
                 info.sectionMap[item[LOG_MAP_KEY]] = line.substr(line.find_first_of(":") + 1);
             }
@@ -207,10 +209,29 @@ void WriteFaultLogToFile(int32_t fd, int32_t logType, std::map<std::string, std:
     }
 }
 
-FaultLogInfo ParseFaultLogInfoFromFile(const std::string &path)
+static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
+{
+    if (!info.module.empty()) {
+        return;
+    }
+
+    StringUtil::ConvertStringTo<int32_t>(info.sectionMap[MODULE_UID[LOG_MAP_KEY]], info.id); 
+    info.module = info.sectionMap[PROCESS_NAME[LOG_MAP_KEY]];
+    info.reason = info.sectionMap[REASON[LOG_MAP_KEY]];
+    info.summary = info.sectionMap[KEY_THREAD_INFO[LOG_MAP_KEY]];
+    info.sectionMap.clear();
+}
+
+FaultLogInfo ParseFaultLogInfoFromFile(const std::string &path, bool isTempFile)
 {
     auto fileName = FileUtil::ExtractFileName(path);
-    FaultLogInfo info = ExtractInfoFromFileName(fileName);
+    FaultLogInfo info;
+    if (!isTempFile) {
+        info = ExtractInfoFromFileName(fileName);
+    } else {
+        info = ExtractInfoFromTempFile(fileName);
+    }
+
     auto parseList = GetLogParseList(info.faultLogType);
     std::ifstream logFile(path);
     std::string line;
@@ -233,6 +254,7 @@ FaultLogInfo ParseFaultLogInfoFromFile(const std::string &path)
     if (!multline.empty() && !multlineName.empty()) {
         info.sectionMap[multlineName] = multline;
     }
+    UpdateFaultLogInfoFromTempFile(info);
     return info;
 }
 

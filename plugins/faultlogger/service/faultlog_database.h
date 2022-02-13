@@ -34,7 +34,7 @@ public:
     void SaveFaultLogInfo(FaultLogInfo& info);
     std::list<FaultLogInfo> GetFaultInfoList(
         const std::string& module, int32_t id, int32_t faultType, int32_t maxNum);
-
+    bool IsFaultExist(int32_t pid, int32_t uid, int32_t faultType);
 private:
     std::mutex mutex_;
 };
