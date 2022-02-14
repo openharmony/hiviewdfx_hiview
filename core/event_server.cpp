@@ -19,8 +19,11 @@
 #include <string>
 #include <vector>
 
+#include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
