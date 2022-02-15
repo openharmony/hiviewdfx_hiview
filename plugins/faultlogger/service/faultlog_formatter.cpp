@@ -215,7 +215,7 @@ static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
         return;
     }
 
-    StringUtil::ConvertStringTo<int32_t>(info.sectionMap[MODULE_UID[LOG_MAP_KEY]], info.id); 
+    StringUtil::ConvertStringTo<int32_t>(info.sectionMap[MODULE_UID[LOG_MAP_KEY]], info.id);
     info.module = info.sectionMap[PROCESS_NAME[LOG_MAP_KEY]];
     info.reason = info.sectionMap[REASON[LOG_MAP_KEY]];
     info.summary = info.sectionMap[KEY_THREAD_INFO[LOG_MAP_KEY]];
