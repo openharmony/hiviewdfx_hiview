@@ -133,7 +133,7 @@ KeyValuePair GetKeyValueByString(int &start, const std::string &inputString)
 {
     std::string key;
     std::string value;
-    int length = inputString.size();
+    auto length = inputString.size();
     while (start < length) {
         if (inputString[start] == INDICATE_VALUE_CHAR) {
             start++;

@@ -29,7 +29,7 @@ public:
     EventDispatcher(){};
     ~EventDispatcher() = default;
 
-    void AddInterestType(int32_t type);
+    void AddInterestType(uint32_t type);
     void ClearInvalidListeners();
     void DispatchEvent(Event event);
     void RegisterListener(std::weak_ptr<EventListener> listener);
@@ -37,9 +37,9 @@ public:
 
 protected:
     bool channelPluginFind(std::string name, int32_t type);
-    std::set<int32_t> types_;
-    std::map<int32_t, std::list<std::weak_ptr<EventListener>>> channelMapper_;
-    std::map<int32_t, std::list<std::weak_ptr<Plugin>>> channelPlugin_;
+    std::set<uint32_t> types_;
+    std::map<uint32_t, std::list<std::weak_ptr<EventListener>>> channelMapper_;
+    std::map<uint32_t, std::list<std::weak_ptr<Plugin>>> channelPlugin_;
 
 private:
     std::mutex lock_;

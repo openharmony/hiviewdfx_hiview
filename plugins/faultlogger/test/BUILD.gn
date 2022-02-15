@@ -42,7 +42,6 @@ ohos_unittest("FaultloggerUnittest") {
   ]
 
   deps = [
-    "$hiview_adapter/sql:hiview_sqlhelper",
     "$hiview_adapter/system_service:system_service",
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",

@@ -79,7 +79,7 @@ void EventSourceExample::OnUnload()
 void EventSourceExample::StartEventSource()
 {
     printf("EventSourceExample::StartEventSource.\n");
-    GetWorkLoop()->AddFileDescriptorEventCallback("Dropbox",
+    GetWorkLoop()->AddFileDescriptorEventCallback("EventSourceExample",
         std::static_pointer_cast<EventSourceExample>(shared_from_this()));
 }
 
@@ -127,7 +127,7 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
             fileS.close();
             CreateAndPublishEvent(filePath);
         }
-        int tmpLen = sizeof(struct inotify_event) + event->len;
+        auto tmpLen = sizeof(struct inotify_event) + event->len;
         event = (struct inotify_event *)(offset + tmpLen);
         offset += tmpLen;
     }

@@ -386,7 +386,7 @@ public:
     bool SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate);
 
     /* 向平台的特定流水线中添加特定插件 */
-    void AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, const std::string& pipelineName);
+    void AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName);
 
     /* 通过插件名称获取插件或者插件的代理 */
     std::shared_ptr<Plugin> GetPluginByName(const std::string& name);

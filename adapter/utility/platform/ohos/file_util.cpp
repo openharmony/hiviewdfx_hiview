@@ -100,7 +100,7 @@ bool ForceCreateDirectory(const std::string& path)
     return OHOS::ForceCreateDirectory(path);
 }
 
-bool ForceCreateDirectory(const string& path, int mode)
+bool ForceCreateDirectory(const string& path, mode_t mode)
 {
     string::size_type index = 0;
     do {

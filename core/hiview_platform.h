@@ -61,7 +61,7 @@ public:
     int32_t PostEventToRemote(std::shared_ptr<Plugin> caller, const std::string& deviceId,
         const std::string& targetPlugin, std::shared_ptr<Event> event) override;
     bool IsReady() override;
-    void AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, const std::string& pipelineName) override;
+    void AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName) override;
     void RequestLoadBundle(const std::string& bundleName __UNUSED) override;
     std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy) override;
     std::shared_ptr<Plugin> GetPluginByName(const std::string& name) override;

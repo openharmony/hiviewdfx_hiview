@@ -32,7 +32,7 @@ bool PluginConfig::StartParse()
         HIVIEW_LOGW("fail to open config file.");
         return false;
     }
-    uint32_t fieldCount = 0;
+    int fieldCount = 0;
     std::string field = "";
     std::string buf = "";
     const int fieldNameField = 1;
