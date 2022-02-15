@@ -348,16 +348,17 @@ void Faultlogger::OnLoad()
 {
     mgr_ = std::make_unique<FaultLogManager>(GetHiviewContext()->GetSharedWorkLoop());
     mgr_->Init();
+    hasInit_ = true;
 #ifndef UNITTEST
     FaultloggerAdapter::StartService(this);
 #endif
 
+    // some crash happend before hiview start, ensure every crash event is added into eventdb
     auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
     if (eventloop != nullptr) {
         auto task = std::bind(&Faultlogger::StartBootScan, this);
-        eventloop->AddEvent(nullptr, nullptr, task);
+        eventloop->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
     }
-    hasInit_ = true;
 }
 
 void Faultlogger::AddFaultLog(FaultLogInfo info)
@@ -455,7 +456,7 @@ void Faultlogger::StartBootScan()
     for (const auto& file : files) {
         auto info = ParseFaultLogInfoFromFile(file, true);
         if (mgr_->IsProcessedFault(info.pid, info.id, info.faultLogType)) {
-            HIVIEW_LOGI("Skip processed fault.(%{public}d:%{public}d) ",info.pid, info.id);
+            HIVIEW_LOGI("Skip processed fault.(%{public}d:%{public}d) ", info.pid, info.id);
             continue;
         }
         AddFaultLogIfNeed(info, nullptr);
