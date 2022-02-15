@@ -257,7 +257,7 @@ public:
         return true;
     }
 
-    virtual void AppendPluginToPipeline(std::shared_ptr<Plugin> plugin __UNUSED,
+    virtual void AppendPluginToPipeline(const std::string& pluginName __UNUSED,
                                         const std::string& pipelineName __UNUSED) {};
     virtual void RequestLoadBundle(const std::string& bundleName __UNUSED) {};
     virtual std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy __UNUSED)

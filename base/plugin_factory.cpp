@@ -56,6 +56,8 @@ void PluginFactory::RegisterPlugin(const std::string& name, std::shared_ptr<Plug
     auto pluginMap = GetGlobalPluginRegistryMap();
     if (pluginMap->find(name) == pluginMap->end()) {
         pluginMap->insert(std::pair<std::string, std::shared_ptr<PluginRegistInfo>>(name, func));
+    } else {
+        HIVIEW_LOGW("plugin %{public}s already exists! register plugin failed", name.c_str());
     }
 #ifdef _WIN32
     // When PluginFactory is loading, the logger is not loaded.

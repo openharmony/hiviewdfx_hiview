@@ -100,6 +100,9 @@ static void FaultLogExecuteCallback(napi_env env, void *data)
 static void FaultLogCompleteCallback(napi_env env, napi_status status, void *data)
 {
     FaultLogInfoContext* faultLogInfoContext = static_cast<FaultLogInfoContext *>(data);
+    if (faultLogInfoContext == nullptr) {
+        return;
+    }
     napi_value callbackValue = nullptr;
     if (faultLogInfoContext->resolved) {
         napi_create_array(env, &callbackValue);

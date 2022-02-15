@@ -19,7 +19,7 @@
 #include "logger.h"
 namespace OHOS {
 namespace HiviewDFX {
-void EventDispatcher::AddInterestType(int32_t type)
+void EventDispatcher::AddInterestType(uint32_t type)
 {
     types_.insert(type);
 }

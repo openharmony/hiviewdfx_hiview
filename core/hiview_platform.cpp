@@ -331,6 +331,10 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
     if (pluginInfo.name.empty()) {
         return;
     }
+    if (pluginMap_.find(pluginInfo.name) != pluginMap_.end()) {
+        HIVIEW_LOGW("plugin %{public}s already exists! create plugin failed", pluginInfo.name.c_str());
+        return;
+    }
     // the dynamic plugin will register it's constructor to factory automatically after opening the binary
     // if we get null in factory, it means something must go wrong.
     DynamicModule handle = DynamicModuleDefault;
@@ -371,15 +375,19 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
 
 void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineInfo)
 {
+    if (pipelines_.find(pipelineInfo.name) != pipelines_.end()) {
+        HIVIEW_LOGW("pipeline %{public}s already exists! create pipeline failed", pipelineInfo.name.c_str());
+        return;
+    }
+
     std::list<std::weak_ptr<Plugin>> pluginList;
     for (auto& pluginName : pipelineInfo.pluginNameList) {
-        auto& plugin = pluginMap_[pluginName];
-        if (plugin == nullptr) {
+        if (pluginMap_.find(pluginName) == pluginMap_.end()) {
             HIVIEW_LOGI("could not find plugin(%{public}s), skip adding to pipeline(%{public}s).",
                 pluginName.c_str(), pipelineInfo.name.c_str());
             continue;
         }
-        pluginList.push_back(plugin);
+        pluginList.push_back(pluginMap_[pluginName]);
     }
     std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(pipelineInfo.name, pluginList);
     pipelines_[pipelineInfo.name] = std::move(pipeline);
@@ -387,10 +395,10 @@ void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineIn
 
 void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const PluginConfig::PluginInfo& pluginInfo)
 {
-    auto& plugin = pluginMap_[pluginInfo.name];
-    if (plugin == nullptr) {
+    if (pluginMap_.find(pluginInfo.name) == pluginMap_.end()) {
         return;
     }
+    auto& plugin = pluginMap_[pluginInfo.name];
 
     if (pluginInfo.workHandlerType == "thread") {
         auto workLoop = GetAvaliableWorkLoop(pluginInfo.workHandlerName);
@@ -476,10 +484,10 @@ void HiviewPlatform::ScheduleCreateAndInitPlugin(const PluginConfig::PluginInfo&
 {
     // only support thread type
     CreatePlugin(pluginInfo);
-    auto& plugin = pluginMap_[pluginInfo.name];
-    if (plugin == nullptr) {
+    if (pluginMap_.find(pluginInfo.name) == pluginMap_.end()) {
         return;
     }
+    auto& plugin = pluginMap_[pluginInfo.name];
 
     if (pluginInfo.workHandlerType == "thread") {
         auto workLoop = GetAvaliableWorkLoop(pluginInfo.workHandlerName);
@@ -512,9 +520,9 @@ std::list<std::weak_ptr<Plugin>> HiviewPlatform::GetPipelineSequenceByName(const
         return std::list<std::weak_ptr<Plugin>>();
     }
 
-    auto& pipeline = pipelines_[name];
-    if (pipeline != nullptr) {
-        return pipeline->GetProcessSequence();
+    auto it = pipelines_.find(name);
+    if (it != pipelines_.end()) {
+        return it->second->GetProcessSequence();
     }
     return std::list<std::weak_ptr<Plugin>>(0);
 }
@@ -847,17 +855,18 @@ int32_t HiviewPlatform::PostEventToRemote(std::shared_ptr<Plugin> caller, const 
     return -1;
 }
 
-void HiviewPlatform::AppendPluginToPipeline(std::shared_ptr<Plugin> plugin, const std::string& pipelineName)
+void HiviewPlatform::AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName)
 {
     auto it = pipelines_.find(pipelineName);
     if (it == pipelines_.end()) {
-        HIVIEW_LOGW("Fail to find pipeline with name :%s", pipelineName.c_str());
+        HIVIEW_LOGW("Fail to find pipeline with name :%{public}s", pipelineName.c_str());
         return;
     }
-    auto ptr = GetPluginByName(plugin->GetName());
+    auto ptr = GetPluginByName(pluginName);
     if (ptr != nullptr) {
         it->second->AppendProcessor(ptr);
     }
+    HIVIEW_LOGI("plugin %{public}s add to pipeline %{public}s succeed.", pluginName.c_str(), pipelineName.c_str());
 }
 
 void HiviewPlatform::RequestLoadBundle(const std::string& bundleName)

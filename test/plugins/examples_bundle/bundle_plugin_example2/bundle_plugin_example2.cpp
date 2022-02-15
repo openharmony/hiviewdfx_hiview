@@ -49,7 +49,7 @@ void BundlePluginExample2::OnLoad()
 {
     SetVersion("BundlePluginExample2.0");
     printf("BundlePluginExample2 OnLoad \n");
-    GetHiviewContext()->AppendPluginToPipeline(shared_from_this(), "NormalPipeline");
+    GetHiviewContext()->AppendPluginToPipeline(GetName(), "NormalPipeline");
 }
 
 void BundlePluginExample2::OnUnload()

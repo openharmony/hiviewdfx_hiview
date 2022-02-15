@@ -238,7 +238,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformLoadingPlugins003, TestSize.Level
     auto pluginSize = pluginMap.size();
     ASSERT_EQ(pluginSize, 11ul);
     sleep(12); // 等待动态插件被卸载
-    int count = count1_->size() + count2_->size();
+    auto count = count1_->size() + count2_->size();
     ASSERT_EQ(count, 4ul);
     auto itb = count1_->find("EventProcessorExample4");
     if (itb != count1_->end()) {
@@ -330,7 +330,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformRun001, TestSize.Level3)
     printf("HolisticPlatformRun001.\n");
 
     sleep(12); // 等待动态插件被卸载
-    int count = count1_->size() + count2_->size();
+    auto count = count1_->size() + count2_->size();
     ASSERT_EQ(count, 4ul);
     std::string be3 = platform_.GetHiviewProperty("BE3_Listening", "");
     if ((be3.find("testbb") != be3.npos) || (be3.find("testRun001") != be3.npos)) {
