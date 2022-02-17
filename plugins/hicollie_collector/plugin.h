@@ -35,7 +35,10 @@ public:
     std::string GetListenerName() override;
 
 private:
-    static const inline std::string STRINGID_WATCHDOG = "WATCHDOG";
+    static const inline std::string STRINGID_SERVICE_TIMEOUT = "SERVICE_TIMEOUT"; // timer
+    static const inline std::string STRINGID_SERVICE_BLOCK = "SERVICE_BLOCK"; // watchdog
+    static const inline std::string EVENT_PID = "PID";
+    static const inline std::string EVENT_TGID = "TGID";
     static const inline std::string EVENT_MSG = "MSG";
 
     void ProcessHiCollieEvent(SysEvent &sysEvent);
