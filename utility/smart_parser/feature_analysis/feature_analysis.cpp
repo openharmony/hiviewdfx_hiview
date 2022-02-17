@@ -121,7 +121,7 @@ void FeatureAnalysis::RawInfoPosition(stringstream& buffer)
 void FeatureAnalysis::GetCursorInfo(stringstream& buff, const string& line)
 {
     line_ = line;
-    lineCursor_ = static_cast<int>(buff.tellg()) - line.length() - 1;
+    lineCursor_ = static_cast<int>(buff.tellg()) - static_cast<int>(line.length()) - 1;
 }
 
 bool FeatureAnalysis::CheckStartSegment(bool& segmentStart) const
