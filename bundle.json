@@ -22,7 +22,8 @@
         "rom": "",
         "ram": "",
         "hisysevent_config": [
-            "//base/hiviewdfx/hiview/hisysevent.yaml"
+            "//base/hiviewdfx/hiview/hisysevent.yaml",
+            "//base/hiviewdfx/hiview/kernel_vendor.yaml"
         ],
         "deps": {
             "components": [
