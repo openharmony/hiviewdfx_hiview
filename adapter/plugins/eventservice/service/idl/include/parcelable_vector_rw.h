@@ -65,11 +65,11 @@ bool WriteVectorToParcel(Parcel& parcel, const std::vector<T>& rules)
         if (!parcel.WriteInt32(VALUE_OBJECT)) {
             return false;
         }
-        int size = rules.size();
+        size_t size = rules.size();
         if (!parcel.WriteInt32(size)) {
             return false;
         }
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             if (!parcel.WriteParcelable(&rules[i])) {
                 return false;
             }

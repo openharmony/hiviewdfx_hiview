@@ -40,7 +40,7 @@ public:
     std::string domain;
     std::string eventName;
     std::string tag;
-    uint32_t ruleType;
+    uint32_t ruleType = RuleType::WHOLE_WORD;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

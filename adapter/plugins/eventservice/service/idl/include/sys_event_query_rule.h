@@ -36,7 +36,7 @@ public:
 
     std::string domain;
     std::vector<std::string> eventList;
-    uint32_t ruleType;
+    uint32_t ruleType = RuleType::WHOLE_WORD;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

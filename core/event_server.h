@@ -37,7 +37,7 @@ public:
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
 private:
     void InitSocket(int &socketId);
-    int socketId_;
+    int socketId_ = -1;
 };
 
 class BBoxDevice : public DeviceNode {
@@ -50,7 +50,7 @@ public:
     std::string GetName() override;
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
 private:
-    int fd_;
+    int fd_ = -1;
 };
 
 class EventServer {
