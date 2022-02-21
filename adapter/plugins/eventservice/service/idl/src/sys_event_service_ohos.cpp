@@ -278,7 +278,7 @@ int64_t SysEventServiceOhos::TransSysEvent(EventStore::ResultSet& result,
     while (result.HasNext()) {
         iter = result.Next();
         u16string curJson = ConvertToString16(iter->jsonExtraInfo_);
-        auto jsonSize = (curJson.size() + 1) * sizeof(u16string);
+        int32_t jsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(u16string));
         if (jsonSize > MAX_TRANS_BUF) { // too large events, drop
             drops++;
             continue;
