@@ -16,6 +16,7 @@
     <target name="SysEventDaoTest">
         <preparer>
             <option name="push" value="event_store/plugin_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="event_store/hiview_platform_config -> /data/test/test_data/" src="res"/>
         </preparer>
     </target>
 </configuration>
