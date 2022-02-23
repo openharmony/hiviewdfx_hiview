@@ -86,7 +86,6 @@ void HiCollieCollector::ProcessHiCollieEvent(SysEvent &sysEvent)
 {
     std::string path = "";
     std::string info = sysEvent.GetEventValue(EventStore::EventCol::INFO);
-    HIVIEW_LOGE("YTG info=%{public}s.\n", info.c_str());
     std::regex reg("logPath:([^,]+)");
     std::smatch result;
     if (std::regex_search(info, result, reg)) {
@@ -94,7 +93,7 @@ void HiCollieCollector::ProcessHiCollieEvent(SysEvent &sysEvent)
     }
 
     std::vector<std::string> paths = {path};
-    HiSysEvent::Write("RELIABILITY", sysEvent.eventName_, HiSysEvent::FAULT,
+    HiSysEvent::Write("RELIABILITY", sysEvent.eventName_ + "_REPORT", HiSysEvent::FAULT,
         "HIVIEW_LOG_FILE_PATHS", paths,
         "PID", sysEvent.GetEventValue(EVENT_PID),
         "TGID", sysEvent.GetEventValue(EVENT_TGID),

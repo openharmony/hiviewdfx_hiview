@@ -49,14 +49,14 @@ SYS_FREEZE:
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
 
-SERVICE_BLOCK:
+SERVICE_BLOCK_REPORT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   PID: {type: INT32, desc: pid}
   TGID: {type: INT32, desc: tgid}
   MSG: {type: STRING, desc: watchdog event message}
 
-SERVICE_TIMEOUT:
+SERVICE_TIMEOUT_REPORT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   PID: {type: INT32, desc: pid}
