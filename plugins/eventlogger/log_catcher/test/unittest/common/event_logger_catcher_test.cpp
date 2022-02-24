@@ -399,7 +399,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest005, TestSize.Level3)
      */
     int pid = -1;
     const int memSize = 1024*3;
-    constexpr int minQuantity = 5000;
+    constexpr int minQuantity = 500;
     pid = fork();
     if (pid < 0) {
         printf("Fork error, err:%d", errno);
