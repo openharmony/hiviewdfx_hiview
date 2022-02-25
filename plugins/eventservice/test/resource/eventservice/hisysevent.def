@@ -1,0 +1,91 @@
+{
+    "HIVIEWDFX": {
+        "APP_ACTIVATION_DATA": {
+            "__BASE": {
+                "type": "FAULT",
+                "level": "MINOR",
+                "tag": "dfx",
+                "desc": "App activation data"
+            },
+            "PNAMEID": {
+                "type": "STRING",
+                "desc": "package name"
+            },
+            "PVERSIONID": {
+                "type": "STRING",
+                "desc": "application version"
+            },
+            "PKG": {
+                "type": "STRING",
+                "desc": "Activate app name"
+            },
+            "TIMESTAMP": {
+                "type": "UINT16",
+                "desc": "time stamp"
+            }
+        },
+        "RUNNING_TIME_OF_SYSTEM": {
+            "__BASE": {
+                "type": "FAULT",
+                "level": "MINOR",
+                "desc": "Running Time of System"
+            },
+            "TEST_TYPE": {
+                "type": "STRING",
+                "desc": "Test Type"
+            },
+            "APR_TIME": {
+                "type": "UINT32",
+                "desc": "Running time"
+            },
+            "START_TIME": {
+                "type": "UINT32",
+                "desc": "start time"
+            },
+            "END_TIME": {
+                "type": "UINT32",
+                "desc": "end time"
+            }
+        },
+        "APP_USAGE": {
+            "__BASE": {
+                "type": "FAULT",
+                "level": "MINOR",
+                "tag": "dfx",
+                "desc": "App usage statistics"
+            },
+            "APP_NAME": {
+                "type": "STRING",
+                "desc": "package name"
+            },
+            "APP_VER": {
+                "type": "STRING",
+                "desc": "package version"
+            },
+            "APP_TYPE": {
+                "type": "STRING",
+                "desc": "type of app_js or native"
+            },
+            "DATE": {
+                "type": "UINT32",
+                "desc": "Statistics date"
+            },
+            "TOTAL_DURATION": {
+                "type": "UINT32",
+                "desc": "Application duration"
+            },
+            "FG_DURATION": {
+                "type": "UINT32",
+                "desc": "frontground duration"
+            },
+            "BG_DURATION": {
+                "type": "UINT32",
+                "desc": "Background duration"
+            },
+            "COUNT": {
+                "type": "UINT32",
+                "desc": "Application startup times"
+            }
+        }
+    }
+}
