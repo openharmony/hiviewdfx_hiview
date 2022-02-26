@@ -52,4 +52,7 @@ ohos_unittest("EventServiceActionTest") {
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
   ]
+
+  resource_config_file =
+      "//base/hiviewdfx/hiview/plugins/eventservice/test/resource/ohos_test.xml"
 }

@@ -17,18 +17,19 @@
 
 #include "event.h"
 #include "hiview_platform.h"
-#include "logger.h"
 #include "sys_event.h"
 #include "sys_event_service.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("EventServiceActionTest");
 void EventServiceActionTest::SetUpTestCase()
 {
     OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment("")) {
-        HIVIEW_LOGE("Fail to init environment.");
+    std::string defaultDir = "/data/test/test_data/hiview_platform_config";
+    if (!platform.InitEnvironment(defaultDir)) {
+        std::cout << "fail to init environment" << std::endl;
+    } else {
+        std::cout << "init environment successful" << std::endl;
     }
 }
 
