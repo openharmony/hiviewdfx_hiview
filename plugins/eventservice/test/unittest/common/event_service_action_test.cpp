@@ -46,8 +46,8 @@ void EventServiceActionTest::TearDown() {}
 HWTEST_F(EventServiceActionTest, EventServiceActionTest001, testing::ext::TestSize.Level3)
 {
     printf("start EventServiceActionTest\n");
-    constexpr char JSON_STR[] = "{\"domain_\":\"HIVIEWDFX\",\"name_\":\"APP_ACTIVATION_DATA\",\"type_\":1,\
-        \"PNAMEID\":\"jng\",\"STACKSS\":\"{1,3,4,6}\"}";
+    constexpr char JSON_STR[] = "{\"domain_\":\"DEMO\",\"name_\":\"EVENT_NAME_A\",\"type_\":4,\
+        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
     auto eventService = std::make_unique<SysEventService>();
     auto sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, JSON_STR);
     auto event = std::dynamic_pointer_cast<Event>(sysEvent);

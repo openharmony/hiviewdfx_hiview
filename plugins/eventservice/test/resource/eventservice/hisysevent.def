@@ -1,90 +1,38 @@
 {
-    "HIVIEWDFX": {
-        "APP_ACTIVATION_DATA": {
+    "DEMO": {
+        "EVENT_NAME_A": {
             "__BASE": {
-                "type": "FAULT",
+                "type": "BEHAVIOR",
                 "level": "MINOR",
-                "tag": "dfx",
-                "desc": "App activation data"
+                "tag": "demo",
+                "desc": "event name a definition"
             },
-            "PNAMEID": {
+            "PARAM_A": {
                 "type": "STRING",
-                "desc": "package name"
+                "desc": "param a in event name a"
             },
-            "PVERSIONID": {
+            "PARAM_B": {
                 "type": "STRING",
-                "desc": "application version"
-            },
-            "PKG": {
-                "type": "STRING",
-                "desc": "Activate app name"
-            },
-            "TIMESTAMP": {
-                "type": "UINT16",
-                "desc": "time stamp"
+                "desc": "param b in event name a"
             }
         },
-        "RUNNING_TIME_OF_SYSTEM": {
+        "EVENT_NAME_B": {
             "__BASE": {
                 "type": "FAULT",
-                "level": "MINOR",
-                "desc": "Running Time of System"
+                "level": "CRITICAL",
+                "desc": "event name b definition"
             },
-            "TEST_TYPE": {
-                "type": "STRING",
-                "desc": "Test Type"
-            },
-            "APR_TIME": {
+            "PARAM_A": {
                 "type": "UINT32",
-                "desc": "Running time"
+                "desc": "param a in event name b"
             },
-            "START_TIME": {
+            "PARAM_B": {
                 "type": "UINT32",
-                "desc": "start time"
+                "desc": "param b in event name b"
             },
-            "END_TIME": {
+            "PARAM_C": {
                 "type": "UINT32",
-                "desc": "end time"
-            }
-        },
-        "APP_USAGE": {
-            "__BASE": {
-                "type": "FAULT",
-                "level": "MINOR",
-                "tag": "dfx",
-                "desc": "App usage statistics"
-            },
-            "APP_NAME": {
-                "type": "STRING",
-                "desc": "package name"
-            },
-            "APP_VER": {
-                "type": "STRING",
-                "desc": "package version"
-            },
-            "APP_TYPE": {
-                "type": "STRING",
-                "desc": "type of app_js or native"
-            },
-            "DATE": {
-                "type": "UINT32",
-                "desc": "Statistics date"
-            },
-            "TOTAL_DURATION": {
-                "type": "UINT32",
-                "desc": "Application duration"
-            },
-            "FG_DURATION": {
-                "type": "UINT32",
-                "desc": "frontground duration"
-            },
-            "BG_DURATION": {
-                "type": "UINT32",
-                "desc": "Background duration"
-            },
-            "COUNT": {
-                "type": "UINT32",
-                "desc": "Application startup times"
+                "desc": "param c in event name b"
             }
         }
     }
