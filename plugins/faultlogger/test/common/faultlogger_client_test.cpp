@@ -48,6 +48,7 @@ FaultLogInfoInner CreateFaultLogInfo(const time_t& time, int32_t id, int32_t typ
     info.pid = getpid();
     info.faultLogType = type;
     info.module = module;
+    info.summary = "faultlogger_client_test";
     info.sectionMaps["APPVERSION"] = "1.0";
     info.sectionMaps["FAULT_MESSAGE"] = "Nullpointer";
     info.sectionMaps["TRACEID"] = "0x1646145645646";

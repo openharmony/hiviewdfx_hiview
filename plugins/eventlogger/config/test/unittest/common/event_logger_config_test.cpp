@@ -55,7 +55,7 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest001, TestSize.Level3)
     EXPECT_EQ(ret, true);
     EXPECT_EQ(configOut.action == "s,b,pb:1", true);
     printf("configOut.action is %s\n", configOut.action.c_str());
-    EXPECT_EQ(configOut.interval, 0);
+    EXPECT_EQ(configOut.interval, 10);
     EXPECT_EQ(config->GetVersion() == "1.0", true);
     /**
      * @tc.expected: step1. the event has been processed
@@ -63,9 +63,9 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest001, TestSize.Level3)
     ret = config->FindConfigLine(0, "UI_BLOCK", configOut);
     EXPECT_EQ(ret, false);
 
-    ret = config->FindConfigLine(0, "RESUME", configOut);
+    ret = config->FindConfigLine(0, "SERVICE_BLOCK", configOut);
     EXPECT_EQ(ret, true);
-    EXPECT_EQ(configOut.action == "s", true);
+    EXPECT_EQ(configOut.action == "b,s", true);
     EXPECT_EQ(configOut.interval, 0);
 }
 

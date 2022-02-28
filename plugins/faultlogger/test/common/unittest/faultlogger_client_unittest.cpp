@@ -61,8 +61,8 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
     auto now = time(nullptr);
     const int32_t loopCount = 10;
     std::atomic<int> counter{0};
-    std::vector<std::thread> threads;
     auto task = [](int32_t now, std::atomic<int>& counter) {
+        printf("AddFaultLog %d\n", now);
         auto info = CreateFaultLogInfo(now, getuid(), FaultLogType::CPP_CRASH, "faultlogtest1");
         AddFaultLog(info);
         sleep(5); // maybe 5 seconds is enough for process all AddLog request
@@ -70,14 +70,10 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
             counter++;
         }
     };
-
+    printf("start AddFaultLog\n");
     for (int32_t i = 0; i < loopCount; i++) {
         now = now + 1;
-        threads.push_back(std::thread(task, now, std::ref(counter)));
-    }
-
-    for (auto& thread : threads) {
-        thread.join();
+        task(now, std::ref(counter));
     }
 
     ASSERT_GT(counter, 0);
