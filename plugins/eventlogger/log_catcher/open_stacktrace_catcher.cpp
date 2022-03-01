@@ -71,8 +71,11 @@ int OpenStacktraceCatcher::Catch(int fd)
     } else {
         FileUtil::SaveStringToFd(fd, str + "\n");
     }
+#ifdef DUMP_STACK_IN_PROCESS
+    LogCatcherUtils::DumpStacktrace(fd, pid_);
+#else
     ForkAndDumpStackTrace(fd);
-
+#endif
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }

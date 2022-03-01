@@ -19,6 +19,8 @@ config("log_catcher_config") {
     "include",
     "$hiview_adapter/plugins/eventlogger/log_catcher/include",
   ]
+
+  cflags_cc = [ "-DDUMP_STACK_IN_PROCESS" ]
 }
 
 ohos_source_set("log_catcher") {
