@@ -139,26 +139,40 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 
 bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
 {
+    auto interval = event->GetIntValue("eventLog_interval");
+    if (interval == 0) {
+        return true;
+    }
+
     long pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
-    auto interval = event->GetIntValue("eventLog_interval");
+
+    std::time_t now = std::time(0);  
+    for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
+        if (it->first.find(eventName) != it->first.npos) {
+            if ((now - it->second) >= interval) {
+                it = eventTagTime_.erase(it);
+                continue;
+            }
+        }
+        ++it;
+    }
 
     std::string tagTimeName = eventName + eventPid;
     auto it = eventTagTime_.find(tagTimeName);
-    std::time_t now = std::time(0);
     if (it != eventTagTime_.end()) {
         if ((now - it->second) < interval) {
             HIVIEW_LOGE("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-                interval:%{public}lld There's not enough interval",
+                interval:%{public}ld There's not enough interval",
                 event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
             return false;
         }
     }
     eventTagTime_[tagTimeName] = now;
     HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-        interval:%{public}lld normal interval",
+        interval:%{public}ld normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
     return true;
 }

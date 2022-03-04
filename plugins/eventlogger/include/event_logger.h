@@ -64,7 +64,7 @@ private:
 
     std::unique_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;
-    std::map<std::string, std::time_t> eventTagTime_;
+    std::unordered_map<std::string, std::time_t> eventTagTime_;
     int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
 
