@@ -32,3 +32,7 @@ SCREEN_ON:
 HUNGTASK:
   __BASE: {type: FAULT, level: CRITICAL, desc: process D_state and panic}
   MSG: {type: STRING, desc: HUNGTASK event message}
+
+PANIC:
+  __BASE: {type: FAULT, level: CRITICAL, desc: Panic}
+  MSG: {type: STRING, desc: PANIC event message}
