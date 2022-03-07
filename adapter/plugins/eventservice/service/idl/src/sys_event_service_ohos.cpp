@@ -156,14 +156,16 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
         return;
     }
     lock_guard<mutex> lock(mutex_);
-    CallbackObjectOhos callbackObject = debugModeCallback->AsObject();
-    if (callbackObject == remoteObject && isDebugMode) {
-        HiLog::Error(LABEL, "quit debugmode.");
-        auto event = std::make_shared<Event>("SysEventSource");
-        event->messageType_ = Event::ENGINE_SYSEVENT_DEBUG_MODE;
-        event->SetValue("DEBUGMODE", "false");
-        gISysEventNotify(event);
-        isDebugMode = false;
+    if (debugModeCallback != nullptr) {
+        CallbackObjectOhos callbackObject = debugModeCallback->AsObject();
+        if (callbackObject == remoteObject && isDebugMode) {
+            HiLog::Error(LABEL, "quit debugmode.");
+            auto event = std::make_shared<Event>("SysEventSource");
+            event->messageType_ = Event::ENGINE_SYSEVENT_DEBUG_MODE;
+            event->SetValue("DEBUGMODE", "false");
+            gISysEventNotify(event);
+            isDebugMode = false;
+        }
     }
     auto listener = registeredListeners.find(remoteObject);
     if (listener != registeredListeners.end()) {

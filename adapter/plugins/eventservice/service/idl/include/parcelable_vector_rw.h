@@ -18,7 +18,6 @@
 
 #include <typeinfo>
 
-#include "logger.h"
 #include "parcel.h"
 
 namespace OHOS {
