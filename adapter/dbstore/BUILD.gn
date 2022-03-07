@@ -24,6 +24,7 @@ config("db_store_config") {
 }
 
 ohos_source_set("db_store_source") {
+  part_name = "hiview"
   public_configs = [ ":db_store_config" ]
 
   sources = [

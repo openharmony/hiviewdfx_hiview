@@ -22,6 +22,7 @@ config("faultlogger_service_impl_config") {
 }
 
 ohos_source_set("faultlogger_service_ohos_common") {
+  part_name = "hiview"
   sources = [
     "src/faultlog_info_ohos.cpp",
     "src/faultlog_query_result_proxy.cpp",
@@ -48,6 +49,7 @@ ohos_source_set("faultlogger_service_ohos_common") {
 }
 
 ohos_source_set("faultlogger_service_impl") {
+  part_name = "hiview"
   include_dirs = [ "$hiview_plugin/faultlogger/service" ]
 
   sources = [
