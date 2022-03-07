@@ -49,6 +49,14 @@ SYS_FREEZE:
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
 
+STACK:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  PACKAGE_NAME: {type: STRING, desc: package name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  MSG: {type: STRING, desc: application event message}
+
 SERVICE_BLOCK_REPORT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}

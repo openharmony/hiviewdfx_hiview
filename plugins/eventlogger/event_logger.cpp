@@ -275,8 +275,8 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
         }
         std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
             static_cast<PipelineEventProducer *>(sysEventSource.get()), "");
-        event->domain_ = "EVENTLOGGER";
-        event->SetEventValue("domain_", "HIVIEWDFX");
+        event->domain_ = "RELIABILITY";
+        event->SetEventValue("domain_", "RELIABILITY");
         event->eventName_ = "STACK";
         event->SetEventValue("name_", "STACK");
 
