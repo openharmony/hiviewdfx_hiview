@@ -33,8 +33,9 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
     {"ACE", "UI_BLOCK_6S"},
     {"APPEXECFWK", "THREAD_BLOCK_3S"},
     {"APPEXECFWK", "THREAD_BLOCK_6S"},
+    {"WINDOWMANAGER", "NO_FOCUS_WINDOW"},
     {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
-    {"EVENTLOGGER", "STACK"},
+    {"RELIABILITY", "STACK"},
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
