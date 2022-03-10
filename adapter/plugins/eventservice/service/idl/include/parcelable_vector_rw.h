@@ -26,6 +26,7 @@ namespace HiviewDFX {
 constexpr int VALUE_NULL = -1;
 // object exist in parcel
 constexpr int VALUE_OBJECT = 1;
+constexpr int RULE_COUNT_LIMIT = 512 * 1024;
 
 template<typename T>
 bool ReadVectorFromParcel(Parcel& parcel, std::vector<T>& rules)
@@ -35,8 +36,8 @@ bool ReadVectorFromParcel(Parcel& parcel, std::vector<T>& rules)
         return false;
     }
     if (empty == VALUE_OBJECT) {
-        int size;
-        if (!parcel.ReadInt32(size)) {
+        int size = 0;
+        if (!parcel.ReadInt32(size) || (size > RULE_COUNT_LIMIT)) {
             return false;
         }
         rules.clear();
