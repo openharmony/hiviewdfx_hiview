@@ -20,6 +20,7 @@ config("faultlogger_service_adapter_config") {
 }
 
 ohos_source_set("faultlogger_service_ability") {
+  part_name = "hiview"
   include_dirs = [
     "//utils/native/base/include",
     "$hiview_plugin/faultlogger/common",
@@ -44,6 +45,7 @@ ohos_source_set("faultlogger_service_ability") {
 }
 
 ohos_source_set("faultlogger_service") {
+  part_name = "hiview"
   include_dirs = [
     ".",
     "$hiview_plugin/faultlogger/common",

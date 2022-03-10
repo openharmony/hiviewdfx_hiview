@@ -24,6 +24,7 @@ config("log_catcher_config") {
 }
 
 ohos_source_set("log_catcher") {
+  part_name = "hiview"
   public_configs = [ ":log_catcher_config" ]
 
   sources = [

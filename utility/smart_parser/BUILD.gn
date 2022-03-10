@@ -32,6 +32,7 @@ config("smart_parser_config") {
 }
 
 ohos_source_set("smart_parser") {
+  part_name = "hiview"
   sources = [
     "./feature_analysis/feature_analysis.cpp",
     "./feature_analysis/log_util.cpp",

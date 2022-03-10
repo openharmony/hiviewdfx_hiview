@@ -23,6 +23,7 @@ config("sys_event_service_ohos_public_config") {
 }
 
 ohos_source_set("sys_event_service_ohos_common") {
+  part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
@@ -61,6 +62,7 @@ ohos_source_set("sys_event_service_ohos_common") {
 }
 
 ohos_source_set("sys_event_service_ohos") {
+  part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
