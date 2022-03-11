@@ -53,7 +53,7 @@ constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
 void InitRecvBuffer(int socketId)
 {
     int oldN = 0;
-    socklen_t oldOutSize = sizeof(int);
+    socklen_t oldOutSize = static_cast<socklen_t>(sizeof(int));
     if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&oldN), &oldOutSize) < 0) {
         HIVIEW_LOGE("get socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
     }
@@ -64,7 +64,7 @@ void InitRecvBuffer(int socketId)
     }
 
     int newN = 0;
-    socklen_t newOutSize = sizeof(int);
+    socklen_t newOutSize = static_cast<socklen_t>(sizeof(int));
     if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&newN), &newOutSize) < 0) {
         HIVIEW_LOGE("get new socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
     }
@@ -138,7 +138,7 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
 {
     while (true) {
         struct sockaddr_un clientAddr;
-        socklen_t clientLen = sizeof(clientAddr);
+        socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
         char* recvbuf = new char[BUFFER_SIZE];
         int n = recvfrom(socketId_, recvbuf, sizeof(char) * BUFFER_SIZE, 0,
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
