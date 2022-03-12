@@ -137,7 +137,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
         HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
             isMatched ? "success" : "fail");
         if (isMatched) {
-            int eventType = event->what_;
+            int eventType = static_cast<int>(event->what_);
             callback->Handle(ConvertToString16(event->domain_), ConvertToString16(event->eventName_),
                 eventType, ConvertToString16(event->jsonExtraInfo_));
         }
