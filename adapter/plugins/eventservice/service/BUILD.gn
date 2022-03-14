@@ -23,7 +23,7 @@ config("sys_event_service_adapter_config") {
 ohos_source_set("sys_event_service_adapter") {
   part_name = "hiview"
   include_dirs = [
-    "//utils/native/base/include",
+    "//third_party/bounds_checking_function/include",
     "$hiview_plugin/eventservice/include",
     "//third_party/cJSON",
     "//third_party/jsoncpp/include",

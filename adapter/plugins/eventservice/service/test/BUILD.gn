@@ -25,7 +25,7 @@ config("unittest_config") {
   include_dirs = [
     "//third_party/cJSON",
     "//third_party/jsoncpp/include",
-    "//utils/native/base/include",
+    "//third_party/bounds_checking_function/include",
     "unittest/common",
     "$hiview_plugin/eventservice/include",
     "$hiview_base/include",

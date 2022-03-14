@@ -19,7 +19,7 @@ config("freezedetectors_test_config") {
   include_dirs = [
     "//base/hiviewdfx/hiview/plugins/reliability/detectors/freezedetector",
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
-    "//utils/native/base/include",
+    "//third_party/bounds_checking_function/include",
     "$closed_source_base/include",
   ]
 

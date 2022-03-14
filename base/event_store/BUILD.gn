@@ -17,6 +17,7 @@ config("event_store_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
+    "//third_party/bounds_checking_function/include",
     "//utils/native/base/include",
     "include",
     "$hiview_adapter/dbstore/include",
