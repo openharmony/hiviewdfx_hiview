@@ -20,6 +20,7 @@ config("faultlogger_innerkits_config") {
 }
 
 ohos_source_set("faultlogger_client_impl") {
+  part_name = "hiview"
   include_dirs = [ "." ]
 
   public_configs = [ ":faultlogger_innerkits_config" ]

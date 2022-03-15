@@ -35,6 +35,7 @@ public:
     std::string GetListenerName() override;
 
 private:
+    static const inline std::string FAULT_LOG_PATH = "/data/log/faultlog/";
     static const inline std::string STRINGID_SERVICE_TIMEOUT = "SERVICE_TIMEOUT"; // timer
     static const inline std::string STRINGID_SERVICE_BLOCK = "SERVICE_BLOCK"; // watchdog
     static const inline std::string EVENT_PID = "PID";

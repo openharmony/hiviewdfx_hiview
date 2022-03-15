@@ -139,26 +139,40 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 
 bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
 {
+    auto interval = event->GetIntValue("eventLog_interval");
+    if (interval == 0) {
+        return true;
+    }
+
     long pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
-    auto interval = event->GetIntValue("eventLog_interval");
+
+    std::time_t now = std::time(0);  
+    for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
+        if (it->first.find(eventName) != it->first.npos) {
+            if ((now - it->second) >= interval) {
+                it = eventTagTime_.erase(it);
+                continue;
+            }
+        }
+        ++it;
+    }
 
     std::string tagTimeName = eventName + eventPid;
     auto it = eventTagTime_.find(tagTimeName);
-    std::time_t now = std::time(0);
     if (it != eventTagTime_.end()) {
         if ((now - it->second) < interval) {
             HIVIEW_LOGE("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-                interval:%{public}lld There's not enough interval",
+                interval:%{public}ld There's not enough interval",
                 event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
             return false;
         }
     }
     eventTagTime_[tagTimeName] = now;
     HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-        interval:%{public}lld normal interval",
+        interval:%{public}ld normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
     return true;
 }
@@ -259,14 +273,20 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
         if (count == 0) {
             return;
         }
+
+        SysEventCreator eventCreator("RELIABILITY", "STACK", SysEventCreator::FAULT);
         std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
-            static_cast<PipelineEventProducer *>(sysEventSource.get()), "");
-        event->domain_ = "EVENTLOGGER";
-        event->SetEventValue("domain_", "HIVIEWDFX");
+            static_cast<PipelineEventProducer *>(sysEventSource.get()), eventCreator);
+        event->domain_ = "RELIABILITY";
+        event->SetEventValue("domain_", "RELIABILITY");
         event->eventName_ = "STACK";
         event->SetEventValue("name_", "STACK");
 
-        std::string tmpStr = R"~(filePath:)~" + dirPath + "/" + fileName;
+        std::string logPath = dirPath + "/" + fileName;
+        if (!FileUtil::FileExists(logPath)) {
+            HIVIEW_LOGE("file %{public}s not exist", logPath.c_str());
+        }
+        std::string tmpStr = R"~(logPath:)~" + logPath;
         event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
         sysEventSource->PublishPipelineEvent(event);
     }

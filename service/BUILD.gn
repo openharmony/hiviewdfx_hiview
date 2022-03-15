@@ -27,6 +27,7 @@ ohos_prebuilt_etc("hiview.rc") {
 }
 
 ohos_source_set("hiview_service") {
+  part_name = "hiview"
   public_configs = [ ":hiview_service_config" ]
 
   sources = [ "hiview_service.cpp" ]

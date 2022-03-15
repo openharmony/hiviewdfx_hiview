@@ -26,6 +26,7 @@ config("hicollie_collector_config") {
 }
 
 ohos_source_set("hicollie_collector") {
+  part_name = "hiview"
   sources = [ "plugin.cpp" ]
 
   configs = [ ":hicollie_collector_config" ]

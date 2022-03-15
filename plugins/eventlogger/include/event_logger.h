@@ -52,8 +52,7 @@ private:
     static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
     static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
     static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
-        "sysfreeze",
-        "appfreeze",
+        "stacktrace",
     };
     static const inline std::string MONITOR_LOG_PATH[] = {
         MONITOR_STACK_LOG_PATH,
@@ -64,7 +63,7 @@ private:
 
     std::unique_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;
-    std::map<std::string, std::time_t> eventTagTime_;
+    std::unordered_map<std::string, std::time_t> eventTagTime_;
     int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
 
