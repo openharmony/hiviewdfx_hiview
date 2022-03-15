@@ -18,6 +18,7 @@ config("hiview_base_config") {
 
   include_dirs = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "//third_party/bounds_checking_function/include",
     "//utils/native/base/include",
     "include",
     "utility/include",

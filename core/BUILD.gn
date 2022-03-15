@@ -58,9 +58,9 @@ ohos_source_set("sysevent_source") {
   external_deps = [ "init:libbegetutil" ]
 
   if (build_public_version) {
-    deps += [ "//utils/native/base:utilsecurec_shared" ]
+    deps += [ "//third_party/bounds_checking_function:libsec_shared" ]
   } else {
-    deps += [ "//utils/native/base:utilsecurec" ]
+    deps += [ "//third_party/bounds_checking_function:libsec_static" ]
   }
 }
 
