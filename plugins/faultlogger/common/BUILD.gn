@@ -18,6 +18,7 @@ config("faultlogger_common_config") {
 }
 
 ohos_source_set("faultlogger_common") {
+  part_name = "hiview"
   public_configs = [ ":faultlogger_common_config" ]
   sources = [
     "faultlog_query_result_inner.cpp",

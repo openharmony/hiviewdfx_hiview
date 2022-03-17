@@ -33,8 +33,9 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
     {"ACE", "UI_BLOCK_6S"},
     {"APPEXECFWK", "THREAD_BLOCK_3S"},
     {"APPEXECFWK", "THREAD_BLOCK_6S"},
+    {"WINDOWMANAGER", "NO_FOCUS_WINDOW"},
     {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
-    {"EVENTLOGGER", "STACK"},
+    {"RELIABILITY", "STACK"},
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
@@ -175,7 +176,7 @@ bool Vendor::CheckPid(const WatchPoint &watchPoint, std::list<WatchPoint>& list)
     std::vector<std::string> values;
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
-    if (domain != "EVENTLOGGER" || stringId != "STACK") {
+    if (domain != "RELIABILITY" || stringId != "STACK") {
         return true; // only check pid for STACK rule
     }
 

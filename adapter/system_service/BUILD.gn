@@ -23,6 +23,7 @@ config("system_service_config") {
 }
 
 ohos_source_set("system_service") {
+  part_name = "hiview"
   public_configs = [ ":system_service_config" ]
 
   sources = [
