@@ -176,7 +176,7 @@ bool Vendor::CheckPid(const WatchPoint &watchPoint, std::list<WatchPoint>& list)
     std::vector<std::string> values;
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
-    if (domain != "EVENTLOGGER" || stringId != "STACK") {
+    if (domain != "RELIABILITY" || stringId != "STACK") {
         return true; // only check pid for STACK rule
     }
 
