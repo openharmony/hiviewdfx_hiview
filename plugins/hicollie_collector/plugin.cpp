@@ -17,6 +17,7 @@
 
 #include <regex>
 
+#include "file_util.h"
 #include "hisysevent.h"
 #include "logger.h"
 #include "plugin_factory.h"
@@ -90,6 +91,11 @@ void HiCollieCollector::ProcessHiCollieEvent(SysEvent &sysEvent)
     std::smatch result;
     if (std::regex_search(info, result, reg)) {
         path = result[1].str();
+        std::string desPath = FAULT_LOG_PATH + FileUtil::ExtractFileName(path);
+        int fileResult = FileUtil::CopyFile(path, desPath);
+        if (fileResult != 0) {
+            HIVIEW_LOGE("failed to copy file from %{public}s to %{public}s.\n", path.c_str(), desPath.c_str());
+        }
     }
 
     std::vector<std::string> paths = {path};

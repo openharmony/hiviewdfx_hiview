@@ -273,14 +273,20 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
         if (count == 0) {
             return;
         }
+
+        SysEventCreator eventCreator("RELIABILITY", "STACK", SysEventCreator::FAULT);
         std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
-            static_cast<PipelineEventProducer *>(sysEventSource.get()), "");
+            static_cast<PipelineEventProducer *>(sysEventSource.get()), eventCreator);
         event->domain_ = "RELIABILITY";
         event->SetEventValue("domain_", "RELIABILITY");
         event->eventName_ = "STACK";
         event->SetEventValue("name_", "STACK");
 
-        std::string tmpStr = R"~(filePath:)~" + dirPath + "/" + fileName;
+        std::string logPath = dirPath + "/" + fileName;
+        if (!FileUtil::FileExists(logPath)) {
+            HIVIEW_LOGE("file %{public}s not exist", logPath.c_str());
+        }
+        std::string tmpStr = R"~(logPath:)~" + logPath;
         event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
         sysEventSource->PublishPipelineEvent(event);
     }
