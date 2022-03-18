@@ -82,7 +82,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     auto timeStr = std::to_string(event->happenTime_);
     const int TimestampBitness = 10;
     const unsigned int Decimal = 10;
-    unsigned long logTime = event->happenTime_;
+    uint64_t logTime = event->happenTime_;
     if (timeStr.size() > TimestampBitness) {
         for (int i = 0; i < int (timeStr.size() - TimestampBitness); ++i) {
             logTime /= Decimal;
@@ -177,7 +177,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     return true;
 }
 
-std::string EventLogger::GetFormatTime(unsigned long timestamp) const
+std::string EventLogger::GetFormatTime(uint64_t timestamp) const
 {
     struct tm tm;
     time_t ts;
@@ -321,6 +321,8 @@ bool EventLogger::OnFileDescriptorEvent(int fd, int type)
             event->name[event->len - 1] = '\0';
         }
         std::string fileName = std::string(event->name);
+        HIVIEW_LOGD("fileName %{public}s event->mask 0x%{pubilc}x",fileName.c_str(), event->mask);
+        
         CreateAndPublishEvent(it->second, fileName);
 
         int tmpLen = sizeof(struct inotify_event) + event->len;
