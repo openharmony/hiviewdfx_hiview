@@ -28,8 +28,8 @@ public:
     virtual ~SysEventServiceProxy() = default;
     DISALLOW_COPY_AND_MOVE(SysEventServiceProxy);
 
-    int AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback);
-    void RemoveListener(const sptr<ISysEventCallback>& callback);
+    bool AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback);
+    bool RemoveListener(const sptr<ISysEventCallback>& callback);
     bool QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
         const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback);
     bool SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode);
