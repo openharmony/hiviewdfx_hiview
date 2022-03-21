@@ -78,9 +78,9 @@ static vector<SysEventRule> GetTestRules(int type, const string &domain, const s
 HWTEST_F(SysEventServiceOhosTest, CommonTest001, testing::ext::TestSize.Level3)
 {
     vector<SysEventRule> rules = GetTestRules(1, "", "");
-    int id = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
-    printf("add listener status id is %d.\n", id);
-    ASSERT_TRUE(id == -1);
+    auto ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
+    printf("add listener result is %d.\n", ret);
+    ASSERT_TRUE(!ret);
 
     SysEventServiceOhos::GetInstance().RemoveListener(callbackDefault);
 }
@@ -94,15 +94,14 @@ HWTEST_F(SysEventServiceOhosTest, CommonTest001, testing::ext::TestSize.Level3)
 HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Level3)
 {
     vector<SysEventRule> rules = GetTestRules(1, "", "");
-    int id = 0;
     SysEventService service;
     SysEventServiceOhos::GetSysEventService(&service);
-    id = SysEventServiceOhos::GetInstance().AddListener(rules, nullptr);
-    ASSERT_TRUE(id == -2);
-    id = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
-    ASSERT_TRUE(id == -3);
-    id = SysEventServiceOhos::GetInstance().AddListener(rules, callbackTest);
-    ASSERT_TRUE(id == -4);
+    auto ret = SysEventServiceOhos::GetInstance().AddListener(rules, nullptr);
+    ASSERT_TRUE(!ret);
+    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
+    ASSERT_TRUE(!ret);
+    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackTest);
+    ASSERT_TRUE(!ret);
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         printf("SystemAbilityManager is nullptr.\n");
@@ -112,10 +111,10 @@ HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Lev
         if (stub != nullptr) {
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
-            int id = proxy->AddListener(rules, callbackTest);
-            printf("add listener status id is %d.\n", id);
-            ASSERT_TRUE(id == 1);
-            if (id >= 0) {
+            auto ret = proxy->AddListener(rules, callbackTest);
+            printf("add listener result is %d.\n", ret);
+            ASSERT_TRUE(ret);
+            if (ret) {
                 string cmdStr = R"(hisyseventdemo -d SystemTool -n SystemUI -t 2 -j {\"Test\":\"Test\"})";
                 system(cmdStr.c_str());
                 sleep(5);
@@ -123,9 +122,9 @@ HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Lev
                 printf("add listener fail.\n");
                 ASSERT_TRUE(false);
             }
-            id = proxy->AddListener(rules, callbackTest);
-            printf("add listener status id is %d.\n", id);
-            ASSERT_TRUE(id == 0);
+            ret = proxy->AddListener(rules, callbackTest);
+            printf("add listener result is %d.\n", ret);
+            ASSERT_TRUE(ret);
         } else {
             printf("check sys event service failed.\n");
             ASSERT_TRUE(false);
@@ -154,10 +153,12 @@ HWTEST_F(SysEventServiceOhosTest, RemoveListenerTest001, testing::ext::TestSize.
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
             sptr<ISysEventCallback> callback = new SysEventCallbackOhosTest();
-            proxy->RemoveListener(callback);
-            proxy->RemoveListener(callbackTest);
-            proxy->RemoveListener(callbackTest);
-            ASSERT_TRUE(true);
+            auto ret = proxy->RemoveListener(callback);
+            ASSERT_TRUE(!ret);
+            ret = proxy->RemoveListener(callbackTest);
+            ASSERT_TRUE(!ret);
+            ret = proxy->RemoveListener(callbackTest);
+            ASSERT_TRUE(!ret);
         } else {
             printf("check sys event service failed.\n");
             ASSERT_TRUE(false);
@@ -191,9 +192,9 @@ HWTEST_F(SysEventServiceOhosTest, OnSysEventTest001, testing::ext::TestSize.Leve
             rules.push_back(rule1);
             rules.push_back(rule2);
             rules.push_back(rule3);
-            int id = proxy->AddListener(rules, callbackTest);
+            auto ret = proxy->AddListener(rules, callbackTest);
             sleep(5);
-            if (id >= 0) {
+            if (ret) {
                 string cmdStr = R"(hisyseventdemo -d SystemTool -n SystemUI -t 2 -j {\"Test\":\"Test\"})";
                 system(cmdStr.c_str());
                 sleep(5);
