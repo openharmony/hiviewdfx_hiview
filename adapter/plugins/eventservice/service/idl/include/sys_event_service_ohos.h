@@ -65,8 +65,8 @@ public:
     static SysEventServiceBase* GetSysEventService(
         OHOS::HiviewDFX::SysEventServiceBase* service = nullptr);
     void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
-    int AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
-    void RemoveListener(const SysEventCallbackPtrOhos& callback) override;
+    bool AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
+    bool RemoveListener(const SysEventCallbackPtrOhos& callback) override;
     bool QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
         const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback) override;
     bool SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;

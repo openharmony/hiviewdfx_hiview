@@ -18,6 +18,7 @@
 #include <codecvt>
 #include <regex>
 
+#include "accesstoken_kit.h"
 #include "hilog/log.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
@@ -29,6 +30,7 @@ using namespace OHOS::HiviewDFX::EventStore;
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
 constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one time
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
@@ -36,6 +38,8 @@ constexpr unsigned int MAX_EVENT_NAME_LENGTH = 32;
 constexpr unsigned int MAX_DOMAIN_LENGTH = 16;
 constexpr int HID_ROOT = 0;
 constexpr int HID_SHELL = 2000;
+const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
+}
 
 OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify;
 void SysEventServiceOhos::StartService(SysEventServiceBase *service,
@@ -189,25 +193,25 @@ SysEventServiceBase* SysEventServiceOhos::GetSysEventService(SysEventServiceBase
     return ref;
 }
 
-int SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback)
+bool SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback)
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "HasAccessPermission check failed");
-        return -5; // -5 means permisson denied
+        return false;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, sys event service is null.");
-        return -1; // -1 means service null
+        return false;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, callback is null.");
-        return -2; // -2 means callback null
+        return false;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, object in callback is null.");
-        return -3; // -3 means object in callback null
+        return false;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
@@ -216,55 +220,57 @@ int SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, con
     if (registeredListeners.find(callbackObject) != registeredListeners.end()) {
         registeredListeners[callbackObject] = rulesPair;
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
-        return 0; // 0 means add duplicate listener
+        return true;
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
         HiLog::Error(LABEL, "subscribe fail, can not add death recipient.");
-        return -4; // -4 means object in callback can not add death recipient
+        return false;
     }
     registeredListeners.insert(make_pair(callbackObject, rulesPair));
     HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
         uid, pid, registeredListeners.size());
-    return 1; // 1 means add listener success
+    return true;
 }
 
-void SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
+bool SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "HasAccessPermission check failed");
-        return;
+        return false;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "sys event service is null.");
-        return;
+        return false;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "callback is null.");
-        return;
+        return false;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "object in callback is null.");
-        return;
+        return false;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
     lock_guard<mutex> lock(mutex_);
     if (registeredListeners.empty()) {
         HiLog::Debug(LABEL, "has no any listeners.");
-        return;
+        return false;
     }
     auto registeredListener = registeredListeners.find(callbackObject);
     if (registeredListener != registeredListeners.end()) {
         if (!callbackObject->RemoveDeathRecipient(deathRecipient_)) {
             HiLog::Error(LABEL, "uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
-            return;
+            return false;
         }
         registeredListeners.erase(registeredListener);
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
+        return true;
     } else {
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
+        return false;
     }
 }
 
@@ -417,8 +423,16 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
 
 bool SysEventServiceOhos::HasAccessPermission() const
 {
+    using namespace Security::AccessToken;
     const int callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid == HID_SHELL || callingUid == HID_ROOT) {
+        return true;
+    }
+    uint32_t tokenId = IPCSkeleton::GetFirstTokenID();
+    if (tokenId == 0) {
+        tokenId = IPCSkeleton::GetCallingTokenID();
+    }
+    if (AccessTokenKit::VerifyAccessToken(tokenId, READ_DFX_SYSEVENT_PERMISSION) == RET_SUCCESS) {
         return true;
     }
     HiLog::Error(LABEL, "hiview service permission denial callingUid=%{public}d", callingUid);
