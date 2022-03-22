@@ -82,7 +82,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     auto timeStr = std::to_string(event->happenTime_);
     const int TimestampBitness = 10;
     const unsigned int Decimal = 10;
-    unsigned long logTime = event->happenTime_;
+    uint64_t logTime = event->happenTime_;
     if (timeStr.size() > TimestampBitness) {
         for (int i = 0; i < int (timeStr.size() - TimestampBitness); ++i) {
             logTime /= Decimal;
@@ -177,7 +177,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     return true;
 }
 
-std::string EventLogger::GetFormatTime(unsigned long timestamp) const
+std::string EventLogger::GetFormatTime(uint64_t timestamp) const
 {
     struct tm tm;
     time_t ts;
