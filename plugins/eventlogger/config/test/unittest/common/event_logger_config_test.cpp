@@ -38,38 +38,6 @@ void EventLoggerConfigTest::TearDown()
 }
 
 /**
- * @tc.name: EventLoggerConfigTest001
- * @tc.desc: parse a correct config file and check result
- * @tc.type: FUNC
- * @tc.require: AR000FT621
- */
-HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest001, TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. create event handler and events
-     */
-    auto config = std::make_unique<EventLoggerConfig>();
-    EventLoggerConfig::EventLoggerConfigData configOut;
-    bool ret = config->FindConfigLine(0, "UI_BLOCK_3S", configOut);
-    printf("FindConfigLine(0, \"UI_BLOCK_3S\", configOut) is %d\n", ret);
-    EXPECT_EQ(ret, true);
-    EXPECT_EQ(configOut.action == "s,b,pb:1", true);
-    printf("configOut.action is %s\n", configOut.action.c_str());
-    EXPECT_EQ(configOut.interval, 10);
-    EXPECT_EQ(config->GetVersion() == "1.0", true);
-    /**
-     * @tc.expected: step1. the event has been processed
-     */
-    ret = config->FindConfigLine(0, "UI_BLOCK", configOut);
-    EXPECT_EQ(ret, false);
-
-    ret = config->FindConfigLine(0, "SERVICE_BLOCK", configOut);
-    EXPECT_EQ(ret, true);
-    EXPECT_EQ(configOut.action == "b,s", true);
-    EXPECT_EQ(configOut.interval, 0);
-}
-
-/**
  * @tc.name: EventLoggerConfigTest002
  * @tc.desc: parse a incorrect config file and check result
  * @tc.type: FUNC
@@ -102,7 +70,4 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest002, TestSize.Level3)
     EXPECT_EQ(configOut.action == "b,s=1456,n=pdc,pb:0", true);
     EXPECT_EQ(configOut.interval, 31);
     EXPECT_EQ(config->GetVersion() == "0.1", true);
-    /**
-     * @tc.expected: step1. the event has been processed
-     */
 }
