@@ -52,7 +52,7 @@ public:
     void Dump(int fd, const std::vector<std::string> &cmds) override;
 
     // implementations of FaultloggerPlugin interfaces
-    void AddFaultLog(FaultLogInfo info) override;
+    void AddFaultLog(FaultLogInfo& info) override;
     std::unique_ptr<FaultLogInfo> GetFaultLogInfo(const std::string& logPath) override;
     std::unique_ptr<FaultLogQueryResultInner> QuerySelfFaultLog(int32_t uid,
         int32_t pid, int32_t faultType, int32_t maxNum) override;
