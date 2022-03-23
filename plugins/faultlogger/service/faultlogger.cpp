@@ -35,6 +35,7 @@
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "sys_event.h"
+#include "sys_event_dao.h"
 #include "time_util.h"
 
 #include "faultlog_formatter.h"
@@ -330,6 +331,33 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.summary = StringUtil::ReplaceStr(summary, "\\n", "\n");
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
+
+        EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery();
+        EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
+            .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
+            .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
+            .And(EventStore::EventCol::NAME, EventStore::Op::EQ, sysEvent->eventName_)
+            .Execute();
+        if (set.GetErrCode() != 0) {
+            HIVIEW_LOGE("failed to get db, error:%{public}d.", set.GetErrCode());
+            return false;
+        }
+        if (set.HasNext()) {
+            auto record = set.Next();
+            if (record->GetSeq() == sysEvent->GetSeq()) {
+                HIVIEW_LOGI("Seq match success, info.logPath %{public}s", info.logPath.c_str());
+                sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
+                sysEvent->SetEventValue("MODULE", info.module);
+                sysEvent->SetEventValue("LOG_PATH", info.logPath);
+                auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
+                if (retCode == 0) {
+                    return true;
+                }
+            }
+        }
+        
+        HIVIEW_LOGE("eventLog LogPath update to DB failed!");
+        return false;
     }
     return true;
 }
@@ -361,7 +389,7 @@ void Faultlogger::OnLoad()
     }
 }
 
-void Faultlogger::AddFaultLog(FaultLogInfo info)
+void Faultlogger::AddFaultLog(FaultLogInfo& info)
 {
     if (!hasInit_) {
         return;
@@ -429,7 +457,9 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
 
     AddPublicInfo(info);
     mgr_->SaveFaultLogToFile(info);
-    mgr_->SaveFaultInfoToRawDb(info);
+    if (info.faultLogType != FaultLogType::JS_CRASH) {   
+        mgr_->SaveFaultInfoToRawDb(info);
+    }
     HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"
                 "ModuleName:%{public}s\n"
                 "Reason:%{public}s\n"
