@@ -30,6 +30,9 @@ APP_FREEZE:
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FAULT_TYPE: {type: STRING, desc: fault type}
+  LOG_PATH: {type: STRING, desc: fault log path}
 
 SYS_FREEZE:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}

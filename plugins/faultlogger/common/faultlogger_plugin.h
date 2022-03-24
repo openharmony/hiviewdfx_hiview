@@ -33,7 +33,7 @@ public:
 
     // faultlogger interfaces
     // Add log for specific fault type
-    virtual void AddFaultLog(FaultLogInfo info){};
+    virtual void AddFaultLog(FaultLogInfo& info){};
 
     // Get FaultlogInfo from file
     virtual std::unique_ptr<FaultLogInfo> GetFaultLogInfo(const std::string& logPath)
