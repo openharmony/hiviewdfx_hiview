@@ -80,14 +80,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     auto timeStr = std::to_string(event->happenTime_);
-    const int TimestampBitness = 10;
-    const unsigned int Decimal = 10;
-    uint64_t logTime = event->happenTime_;
-    if (timeStr.size() > TimestampBitness) {
-        for (int i = 0; i < int (timeStr.size() - TimestampBitness); ++i) {
-            logTime /= Decimal;
-        }
-    }
+    uint64_t logTime = std::time(nullptr);
     std::string logFile = idStr + "-" + GetFormatTime(logTime) + ".log";
 
     int fd = logStore_->CreateLogFile(logFile);

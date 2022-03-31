@@ -21,8 +21,10 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-PluginProxy");
 bool PluginProxy::OnEvent(std::shared_ptr<Event>& event)
 {
-    LoadPluginIfNeed();
-    if (plugin_ != nullptr) {
+    HIVIEW_LOGD("called!");
+    std::lock_guard<std::mutex> lock(lock_);
+    if (LoadPluginIfNeed()) {
+        HIVIEW_LOGD("Plugin name: %{public}s plugin_->OnEvent", plugin_->GetName().c_str());
         return plugin_->OnEvent(event);
     }
     return false;
@@ -30,8 +32,10 @@ bool PluginProxy::OnEvent(std::shared_ptr<Event>& event)
 
 bool PluginProxy::CanProcessEvent(std::shared_ptr<Event> event)
 {
-    LoadPluginIfNeed();
-    if (plugin_ != nullptr) {
+    HIVIEW_LOGD("called!");
+    std::lock_guard<std::mutex> lock(lock_);
+    if (LoadPluginIfNeed()) {
+        HIVIEW_LOGD("Plugin name: %{public}s plugin_->CanProcessEvent", plugin_->GetName().c_str());
         return plugin_->CanProcessEvent(event);
     }
     return false;
@@ -39,8 +43,10 @@ bool PluginProxy::CanProcessEvent(std::shared_ptr<Event> event)
 
 bool PluginProxy::CanProcessMoreEvents()
 {
-    LoadPluginIfNeed();
-    if (plugin_ != nullptr) {
+    HIVIEW_LOGD("called!");
+    std::lock_guard<std::mutex> lock(lock_);
+    if (LoadPluginIfNeed()) {
+        HIVIEW_LOGD("Plugin name: %{public}s plugin_->CanProcessMoreEvents", plugin_->GetName().c_str());
         return plugin_->CanProcessMoreEvents();
     }
     return false;
@@ -48,7 +54,11 @@ bool PluginProxy::CanProcessMoreEvents()
 
 std::string PluginProxy::GetHandlerInfo()
 {
+    HIVIEW_LOGD("called!");
+    std::lock_guard<std::mutex> lock(lock_);
     if (plugin_ != nullptr) {
+        HIVIEW_LOGD("Plugin name: %{public}s plugin_->GetHandlerInfo", plugin_->GetName().c_str());
+        plugin_->UpdateActiveTime();
         return plugin_->GetHandlerInfo();
     }
     return Plugin::GetHandlerInfo();
@@ -56,6 +66,7 @@ std::string PluginProxy::GetHandlerInfo()
 
 void PluginProxy::Dump(int fd, const std::vector<std::string>& cmds)
 {
+    std::lock_guard<std::mutex> lock(lock_);
     if (plugin_ != nullptr) {
         return plugin_->Dump(fd, cmds);
     }
@@ -63,20 +74,21 @@ void PluginProxy::Dump(int fd, const std::vector<std::string>& cmds)
 
 void PluginProxy::OnEventListeningCallback(const Event &msg)
 {
-    LoadPluginIfNeed();
-    if (plugin_ == nullptr) {
-        return;
+    HIVIEW_LOGD("called!");
+    std::lock_guard<std::mutex> lock(lock_);
+    if (LoadPluginIfNeed()) {
+        HIVIEW_LOGD("Plugin name: %{public}s plugin_->OnEventListeningCallback", plugin_->GetName().c_str());
+        plugin_->OnEventListeningCallback(msg);
     }
-    plugin_->OnEventListeningCallback(msg);
 }
 
-void PluginProxy::LoadPluginIfNeed()
+bool PluginProxy::LoadPluginIfNeed()
 {
     if (plugin_ != nullptr) {
-        return;
+        plugin_->UpdateActiveTime();
+        return true;
     }
 
-    std::lock_guard<std::mutex> lock(lock_);
     if (plugin_ == nullptr && GetHiviewContext() != nullptr) {
         plugin_ = GetHiviewContext()->InstancePluginByProxy(shared_from_this());
     }
@@ -84,9 +96,11 @@ void PluginProxy::LoadPluginIfNeed()
     if (plugin_ == nullptr) {
         // log failure
         HIVIEW_LOGE("Failed to instaniate plugin with name :%{public}s", name_.c_str());
-    } else {
-        plugin_->UpdateActiveTime();
+        return false;
     }
+
+    plugin_->UpdateActiveTime();
+    return true;
 }
 
 void PluginProxy::DestroyInstanceIfNeed(time_t maxIdleTime)

@@ -35,7 +35,7 @@ public:
     std::string GetHandlerInfo() override;
     void Dump(int fd __UNUSED, const std::vector<std::string>& cmds) override;
     void OnEventListeningCallback(const Event &msg) override;
-    void LoadPluginIfNeed();
+    bool LoadPluginIfNeed();
     void DestroyInstanceIfNeed(time_t maxIdleTime);
     bool HoldInstance()
     {
