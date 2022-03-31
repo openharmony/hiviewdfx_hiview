@@ -54,7 +54,9 @@ bool PipelineEvent::OnContinue()
     processors_.pop_front();
     if (auto pluginPtr = plugin.lock()) {
         if (!pluginPtr->CanProcessMoreEvents()) {
-            handler_->PauseDispatch(plugin);
+            if (handler_ != nullptr) {
+                handler_->PauseDispatch(plugin);
+            }
         }
 
         if (Audit::IsEnabled()) {
