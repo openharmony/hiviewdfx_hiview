@@ -953,12 +953,22 @@ bool HiviewPlatform::SetHiviewProperty(const std::string& key, const std::string
 void HiviewPlatform::CheckUnloadablePlugins()
 {
     for (auto const &pluginKv : pluginMap_) {
-        if (pluginKv.second->GetType() == Plugin::PluginType::PROXY) {
-            auto ptr = std::static_pointer_cast<PluginProxy>(pluginKv.second);
-            if (ptr != nullptr) {
-                ptr->DestroyInstanceIfNeed(maxIdleTime_);
-            }
+        if (pluginKv.second->GetType() != Plugin::PluginType::PROXY) {
+            continue;
         }
+        auto ptr = std::static_pointer_cast<PluginProxy>(pluginKv.second);
+        if (ptr == nullptr) {
+            continue;
+        }
+        std::shared_ptr<EventLoop> eventloop = ptr->GetWorkLoop();
+        if (eventloop != nullptr) {
+            auto task = std::bind(&PluginProxy::DestroyInstanceIfNeed, ptr.get(), maxIdleTime_);
+            if (eventloop->AddEvent(nullptr, nullptr, task) != 0) {
+                continue;
+            }
+            HIVIEW_LOGW("AddEvent failed");
+        }
+        ptr->DestroyInstanceIfNeed(maxIdleTime_);
     }
 }
 
