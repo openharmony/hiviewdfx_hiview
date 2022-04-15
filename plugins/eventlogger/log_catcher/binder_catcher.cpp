@@ -42,6 +42,9 @@ int BinderCatcher::Catch(int fd)
 {
     logSize_ = EventLogCatcher::AppendFile(fd, "/sys/kernel/debug/binder/transactions")
         + EventLogCatcher::AppendFile(fd, "/sys/kernel/debug/binder/transaction_log");
+    if (logSize_ <= 0) {
+        FileUtil::SaveStringToFd(fd, "binder content is empty!");
+    }
     return logSize_;
 };
 } // namespace HiviewDFX

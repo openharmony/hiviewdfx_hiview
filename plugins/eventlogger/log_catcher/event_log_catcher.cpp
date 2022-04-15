@@ -73,7 +73,10 @@ int EventLogCatcher::AppendFile(int fd, const std::string &fileName) const
 
     char path[PATH_MAX] = {0};
     if (realpath(fileName.c_str(), path) == nullptr) {
-        HIVIEW_LOGW("canonicalize failed.");
+        std::string errStr = "canonicalize failed, file name is " + fileName +
+            ", errno is " + std::to_string(errno) + "\r\n";
+        HIVIEW_LOGW("%{public}s", errStr.c_str());
+        FileUtil::SaveStringToFd(fd, errStr);
         return 0;
     }
 
@@ -84,7 +87,7 @@ int EventLogCatcher::AppendFile(int fd, const std::string &fileName) const
 
     int srcFd = open(path, O_RDONLY);
     if (srcFd < 0) {
-        HIVIEW_LOGW("open %{public}s failed.", fileName.c_str());
+        HIVIEW_LOGW("open %{public}s failed. errno is %{public}d", fileName.c_str(), errno);
         return 0;
     }
 

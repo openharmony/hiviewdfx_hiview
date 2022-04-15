@@ -35,10 +35,14 @@ int DumpStacktrace(int fd, int pid)
     std::string msg = "";
     bool ret = dumplog.DumpCatch(pid, 0, msg);
     if (ret) {
+        if (msg == "") {
+            msg = "dumpCatch return empty stack!!!!";
+        }
         FileUtil::SaveStringToFd(fd, msg);
     } else {
         msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n";
         FileUtil::SaveStringToFd(fd, msg);
+        return -1;
     }
     return 0;
 }

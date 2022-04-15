@@ -55,7 +55,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     auto logConfig = std::make_unique<EventLoggerConfig>();
     bool existence = logConfig->FindConfigLine(sysEvent->eventId_, sysEvent->eventName_, configOut);
     if (!existence) {
-        HIVIEW_LOGE("event: id:0x%{public}x, eventName:%{public}s does not exist in the EventLoggerConfig",
+        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s does not exist in the EventLoggerConfig",
             sysEvent->eventId_,  sysEvent->eventName_.c_str());
         PostEvent(sysEvent);
         return false;
@@ -252,37 +252,42 @@ bool EventLogger::CanProcessEvent(std::shared_ptr<Event> event)
 void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)
 {
     HIVIEW_LOGD("called");
+    if (dirPath != MONITOR_STACK_LOG_PATH) {
+        return;
+    }
+
+    uint8_t count = 0;
+    for (auto& i : MONITOR_STACK_FLIE_NAME) {
+        if (fileName.find(i) != fileName.npos) {
+            ++count;
+            break;
+        }
+    }
+
+    if (count == 0) {
+        return;
+    }
+
+    std::string logPath = dirPath + "/" + fileName;
+    if (!FileUtil::FileExists(logPath)) {
+        HIVIEW_LOGW("file %{public}s not exist. exit!", logPath.c_str());
+        return;
+    }
+
     std::shared_ptr<Plugin> sysEventSourcePlugin = GetHiviewContext()->GetPluginByName("SysEventSource");
     std::shared_ptr<EventSource> sysEventSource = std::static_pointer_cast<EventSource>(sysEventSourcePlugin);
-    if (dirPath == MONITOR_STACK_LOG_PATH) {
-        uint8_t count = 0;
-        for (auto& i : MONITOR_STACK_FLIE_NAME) {
-            if (fileName.find(i) != fileName.npos) {
-                ++count;
-                break;
-            }
-        }
-        
-        if (count == 0) {
-            return;
-        }
 
-        SysEventCreator eventCreator("RELIABILITY", "STACK", SysEventCreator::FAULT);
-        std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
-            static_cast<PipelineEventProducer *>(sysEventSource.get()), eventCreator);
-        event->domain_ = "RELIABILITY";
-        event->SetEventValue("domain_", "RELIABILITY");
-        event->eventName_ = "STACK";
-        event->SetEventValue("name_", "STACK");
+    SysEventCreator eventCreator("RELIABILITY", "STACK", SysEventCreator::FAULT);
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
+        static_cast<PipelineEventProducer *>(sysEventSource.get()), eventCreator);
+    event->domain_ = "RELIABILITY";
+    event->SetEventValue("domain_", "RELIABILITY");
+    event->eventName_ = "STACK";
+    event->SetEventValue("name_", "STACK");
 
-        std::string logPath = dirPath + "/" + fileName;
-        if (!FileUtil::FileExists(logPath)) {
-            HIVIEW_LOGE("file %{public}s not exist", logPath.c_str());
-        }
-        std::string tmpStr = R"~(logPath:)~" + logPath;
-        event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
-        sysEventSource->PublishPipelineEvent(event);
-    }
+    std::string tmpStr = R"~(logPath:)~" + logPath;
+    event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
+    sysEventSource->PublishPipelineEvent(event);
 }
 
 bool EventLogger::OnFileDescriptorEvent(int fd, int type)
@@ -314,7 +319,7 @@ bool EventLogger::OnFileDescriptorEvent(int fd, int type)
             event->name[event->len - 1] = '\0';
         }
         std::string fileName = std::string(event->name);
-        HIVIEW_LOGD("fileName %{public}s event->mask 0x%{pubilc}x",fileName.c_str(), event->mask);
+        HIVIEW_LOGD("fileName %{public}s event->mask 0x%{public}x", fileName.c_str(), event->mask);
         
         CreateAndPublishEvent(it->second, fileName);
 
