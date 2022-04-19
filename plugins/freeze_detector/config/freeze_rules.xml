@@ -25,7 +25,7 @@
     <rule id="1" window="30" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
       <links type="watchpoint">
         <event domain="ACE" stringid="UI_BLOCK_3S">	<!-- UI_BLOCK_3S -->
-          <result code="0" scope="app"/>
+          <result code="0" scope="app" samePackage="true"/>
         </event>
       </links>
     </rule>

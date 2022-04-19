@@ -186,6 +186,7 @@ void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
 {
     unsigned long code = GetAttributeUnsignedLongValue(tag, ATTRIBUTE_CODE);
     std::string scope = GetAttributeStringValue(tag, ATTRIBUTE_SCOPE);
+    std::string samePackage = GetAttributeStringValue(tag, ATTRIBUTE_SAME_PACKAGE);
 
     for (xmlNode* node = tag->children; node; node = node->next) {
         if (strcmp((char*)(node->name), TAG_RELEVANCE.c_str()) == 0) {
@@ -207,6 +208,7 @@ void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
 
     result.SetId(code);
     result.SetScope(scope);
+    result.SetSamePackage(samePackage);
 }
 
 unsigned long FreezeRuleCluster::GetAttributeUnsignedLongValue(xmlNode* node, const std::string& name)
@@ -252,6 +254,7 @@ bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, WatchPoint& matc
 {
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
+    std::string package = watchPoint.GetPackageName();
     if (rules_.find(domain + stringId) == rules_.end()) {
         HIVIEW_LOGE("failed to find rule, domain:%{public}s stringid:%{public}s.",
             domain.c_str(), stringId.c_str());
@@ -260,6 +263,14 @@ bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, WatchPoint& matc
 
     for (auto const &item : list) {
         if (rules_[domain + stringId].GetResult(item.GetDomain(), item.GetStringId(), result)) {
+            if (result.GetSamePackage() == "true" && package != item.GetPackageName()) {
+                HIVIEW_LOGE("failed to match the same pacakge, domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
+                    " and domain:%{public}s stringid:%{public}s pacakgeName:%{public}s.",
+                    domain.c_str(), stringId.c_str(), package.c_str(),
+                    item.GetDomain().c_str(), item.GetStringId().c_str(), item.GetPackageName().c_str());
+                continue;
+            }
+
             matchedWatchPoint = item; // take watchpoint back
             return true;
         }

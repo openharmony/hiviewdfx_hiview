@@ -45,11 +45,11 @@ private:
 
 class FreezeResult {
 public:
-    FreezeResult() : code_(0), scope_(""), domain_(""), stringId_(""), relevances_({}) {};
+    FreezeResult() : code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), relevances_({}) {};
     FreezeResult(const std::string& domain, const std::string& stringId)
-        : code_(0), scope_(""), domain_(domain), stringId_(stringId), relevances_({}) {};
+        : code_(0), scope_(""), samePackage_(""),domain_(domain), stringId_(stringId), relevances_({}) {};
     FreezeResult(unsigned long code, const std::string& scope)
-        : code_(code), scope_(scope), domain_(""), stringId_(""), relevances_({}) {};
+        : code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), relevances_({}) {};
     ~FreezeResult()
     {
         relevances_.clear();
@@ -58,12 +58,15 @@ public:
     void SetId(unsigned long code) { code_ = code; };
     std::string GetScope() const { return scope_; };
     void SetScope(const std::string& scope) { scope_ = scope; };
+    std::string GetSamePackage() const { return samePackage_; };
+    void SetSamePackage(const std::string& samePackage) { samePackage_ = samePackage; };
     void AddRelevance(const std::string& domain, const std::string& stringId, const FreezeRelevance& relevance);
     std::vector<std::string> GetRelevanceStringIds() const;
 
 private:
     unsigned long code_;
     std::string scope_;
+    std::string samePackage_;
     std::string domain_;
     std::string stringId_;
     std::map<std::string, FreezeRelevance> relevances_;
@@ -131,6 +134,7 @@ private:
     static const inline std::string ATTRIBUTE_WATCHPOINT = "watchpoint";
     static const inline std::string ATTRIBUTE_CODE = "code";
     static const inline std::string ATTRIBUTE_SCOPE = "scope";
+    static const inline std::string ATTRIBUTE_SAME_PACKAGE = "samePackage";
     static const inline std::string ATTRIBUTE_APPLICATION = "application";
     static const inline std::string ATTRIBUTE_SYSTEM = "system";
     static const int MAX_FILE_SIZE = 512 * 1024;
