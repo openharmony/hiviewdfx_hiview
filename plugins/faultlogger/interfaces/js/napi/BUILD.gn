@@ -28,7 +28,7 @@ ohos_shared_library("faultlogger_napi") {
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl",
-    "//foundation/ace/napi:ace_napi",
+    "//foundation/arkui/napi:ace_napi",
   ]
   relative_install_dir = "module"
   part_name = "hiview"
