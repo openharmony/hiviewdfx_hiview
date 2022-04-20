@@ -82,5 +82,7 @@ CPP_CRASH:
   SUMMARY: {type: STRING, desc: fault summary}
   FAULT_TYPE: {type: STRING, desc: fault type}
   LOG_PATH: {type: STRING, desc: fault log path}
-  FEATURE: {type: STRING, desc: unique id for grouping same fault}
-  CAUSE: {type: STRING, desc: unique id for grouping same root cause}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FG: {type: INT32, desc: whether current app is in foreground}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  LIFETIME: {type: INT64, desc: elapse time since process start}
