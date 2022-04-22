@@ -29,9 +29,6 @@ FaultLogInfo ExtractInfoFromFileName(const std::string& fileName);
 FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName);
 int32_t GetRawEventIdByType(int32_t logType);
 std::string RegulateModuleNameIfNeed(const std::string& name);
-std::vector<std::string> GetApplicationNamesById(int32_t uid);
-std::string GetApplicationNameById(int32_t uid);
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H

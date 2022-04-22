@@ -65,6 +65,9 @@ ohos_source_set("faultlogger_service") {
   ]
 
   external_deps = [
+    "ability_base:want",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "hilog_native:libhilog",
     "ipc:ipc_core",
   ]

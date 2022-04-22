@@ -310,7 +310,7 @@ std::string Vendor::MergeEventLog(
     summary = EVENT_SUMMARY + FreezeDetectorPlugin::COLON + NEW_LINE + summary;
 
     FaultLogInfoInner info;
-    info.time = watchPoint.GetTimestamp() / FreezeResolver::MILLISECOND;
+    info.time = watchPoint.GetTimestamp();
     info.id = uid;
     info.pid = pid;
     info.faultLogType = IsApplicationResult(result) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;

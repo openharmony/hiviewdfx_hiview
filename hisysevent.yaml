@@ -86,3 +86,4 @@ CPP_CRASH:
   FG: {type: INT32, desc: whether current app is in foreground}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
   LIFETIME: {type: INT64, desc: elapse time since process start}
+

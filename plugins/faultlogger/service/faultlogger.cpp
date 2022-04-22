@@ -44,16 +44,18 @@
 #include "faultlog_util.h"
 #include "faultlogger_adapter.h"
 
+#include "bundle_mgr_client.h"
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(Faultlogger);
 DEFINE_LOG_TAG("Faultlogger");
 using namespace FaultLogger;
+using namespace OHOS::AppExecFwk;
 namespace {
 constexpr char FILE_SEPERATOR[] = "******";
 constexpr uint32_t DUMP_MAX_NUM = 100;
 constexpr int32_t MAX_QUERY_NUM = 100;
-constexpr int ROOT_UID = 0;
+constexpr int MIN_APP_UID = 10000;
 constexpr int DUMP_PARSE_CMD = 0;
 constexpr int DUMP_PARSE_FILE_NAME = 1;
 constexpr int DUMP_PARSE_TIME = 2;
@@ -192,21 +194,44 @@ std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, s
     }
     return value->second;
 }
+
+std::string GetApplicationNameById(int32_t uid)
+{
+    std::string bundleName;
+    AppExecFwk::BundleMgrClient client;
+    if (!client.GetBundleNameForUid(uid, bundleName)) {
+        HIVIEW_LOGW("Failed to query bundleName from bms, uid:%{public}d.", uid);
+    } else {
+        HIVIEW_LOGD("bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
+    }
+    return bundleName;
+}
+
+std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
+{
+    AppExecFwk::BundleInfo info;
+    AppExecFwk::BundleMgrClient client;
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info, Constants::ALL_USERID)) {
+        HIVIEW_LOGW("Failed to query BundleInfo from bms, uid:%{public}d.", uid);
+        return "";
+    } else {
+        HIVIEW_LOGD("The version of %{public}s is %{public}s", bundleName.c_str(), info.versionName.c_str());
+    }
+    return info.versionName;
+}
 } // namespace
 
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
 {
-    info.sectionMap["DEVICE_INFO"] = Parameter::GetString("ro.product.name", "Unknown");
-    info.sectionMap["BUILD_INFO"] = Parameter::GetString("ro.build.display.id", "Unknown");
+    info.sectionMap["DEVICE_INFO"] = Parameter::GetString("const.product.name", "Unknown");
+    info.sectionMap["BUILD_INFO"] = Parameter::GetString("const.product.software.version", "Unknown");
     info.sectionMap["UID"] = std::to_string(info.id);
     info.sectionMap["PID"] = std::to_string(info.pid);
-    info.sectionMap["PACKAGE"] = info.module;
-    if (info.id != 0) {
-        if (info.sectionMap["APPVERSION"].empty()) {
-            info.sectionMap["APPVERSION"] = GetApplicationVersion(info.id, info.module);
-        }
-    } else {
-        info.module = RegulateModuleNameIfNeed(info.module);
+    info.module = RegulateModuleNameIfNeed(info.module);
+    info.sectionMap["MODULE"] = info.module;
+    std::string version = GetApplicationVersion(info.id, info.module);
+    if (!version.empty()) {
+        info.sectionMap["VERSION"] = version;
     }
 
     if (info.reason.empty()) {
@@ -306,11 +331,7 @@ void Faultlogger::Dump(int fd, const DumpRequest &request) const
 
 bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 {
-    if (!hasInit_) {
-        return false;
-    }
-
-    if (event == nullptr) {
+    if (!hasInit_ || event == nullptr) {
         return false;
     }
 
@@ -321,7 +342,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 
         FaultLogInfo info;
         auto sysEvent = std::static_pointer_cast<SysEvent>(event);
-        info.time = sysEvent->happenTime_ / 1000; // 1000 : millsecond to second
+        info.time = sysEvent->happenTime_;
         info.id = sysEvent->GetUid();
         info.pid = sysEvent->GetPid();
         info.faultLogType = FaultLogType::JS_CRASH;
@@ -349,6 +370,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
                 sysEvent->SetEventValue("MODULE", info.module);
                 sysEvent->SetEventValue("LOG_PATH", info.logPath);
+                sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
+                sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
                 auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
                 if (retCode == 0) {
                     return true;
@@ -426,13 +449,12 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
     }
 
     std::string name = "";
-    if (id != ROOT_UID) {
-        auto appNames = GetApplicationNamesById(id);
-        if (!appNames.empty()) {
-            name = appNames.front();
-        } else {
-            name = CommonUtils::GetProcNameByPid(pid);
-        }
+    if (id >= MIN_APP_UID) {
+        name = GetApplicationNameById(id);
+    }
+
+    if (name.empty()) {
+        name = CommonUtils::GetProcNameByPid(pid);
     }
     return std::make_unique<FaultLogQueryResultInner>(mgr_->GetFaultInfoList(name, id, faultType, maxNum));
 }
