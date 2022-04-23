@@ -18,47 +18,21 @@
 #include <string>
 #include <vector>
 
-#include "bundle_info.h"
-#include "bundle_mgr_interface.h"
-#include "if_system_ability_manager.h"
-#include "iservice_registry.h"
-#include "system_ability_definition.h"
-
 #include "constants.h"
 #include "faultlog_info.h"
-#include "logger.h"
 #include "string_util.h"
 #include "time_util.h"
 
-using namespace OHOS::AAFwk;
-
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("Faultlogger-util");
 namespace {
 constexpr int DEFAULT_BUFFER_SIZE = 64;
-
-sptr<AppExecFwk::IBundleMgr> GetBundleMgrProxy()
-{
-    sptr<ISystemAbilityManager> systemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (!systemAbilityManager) {
-        return nullptr;
-    }
-
-    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
-    if (!remoteObject) {
-        return nullptr;
-    }
-
-    return iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
-}
 } // namespace
 
 std::string GetFormatedTime(uint64_t time)
 {
     if (time > LONG_MAX) {
-        return "00000000000000";
+        time = time / 1000; // 1000 : convert millsecond to seconds
     }
 
     time_t out = static_cast<time_t>(time);
@@ -170,42 +144,6 @@ std::string RegulateModuleNameIfNeed(const std::string& name)
         return splitStr[size - 1];
     }
     return name;
-}
-
-std::vector<std::string> GetApplicationNamesById(int32_t uid)
-{
-    std::vector<std::string> bundleNames;
-    sptr<AppExecFwk::IBundleMgr> mgr = GetBundleMgrProxy();
-    if (mgr != nullptr) {
-        HIVIEW_LOGD("mgr != nullptr");
-        mgr->GetBundlesForUid(uid, bundleNames);
-    } else {
-        HIVIEW_LOGD("mgr == nullptr");
-    }
-    HIVIEW_LOGD("bundleNames is %{public}d", bundleNames.size());
-    return bundleNames;
-}
-
-std::string GetApplicationNameById(int32_t uid)
-{
-    HIVIEW_LOGD("called");
-    std::vector<std::string> bundleNames = GetApplicationNamesById(uid);
-    if (bundleNames.empty()) {
-        return "";
-    }
-
-    return bundleNames.front();
-}
-
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
-{
-    sptr<AppExecFwk::IBundleMgr> mgr = GetBundleMgrProxy();
-    AppExecFwk::BundleInfo info;
-    if ((mgr != nullptr) &&
-        (mgr->GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info) != ERR_OK)) {
-        return "";
-    }
-    return info.versionName;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
