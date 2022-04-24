@@ -14,10 +14,6 @@
  */
 #ifndef HIVIEW_FAULT_LOGGER_CONSTANTS_H
 #define HIVIEW_FAULT_LOGGER_CONSTANTS_H
-#include <cstdint>
-#include <list>
-#include <map>
-#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
