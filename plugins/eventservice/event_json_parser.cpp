@@ -24,9 +24,26 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-static const char* BASE_EVENT_PAR[] = {"domain_", "name_", "type_", "time_", "level_",
+namespace {
+const char* BASE_EVENT_PAR[] = {"domain_", "name_", "type_", "time_", "level_",
     "uid_", "tag_", "tz_", "pid_", "tid_", "traceid_", "spanid_", "pspanid_", "trace_flag_"};
-static const char* EVENT_JSON_TYPE[] = {"FAULT", "STATISTIC", "SECURITY", "BEHAVIOR"};
+const char* EVENT_JSON_TYPE[] = {"FAULT", "STATISTIC", "SECURITY", "BEHAVIOR"};
+constexpr uint64_t PRIME = 0x100000001B3ull;
+constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
+
+uint64_t GenerateHash(const Json::Value& info)
+{
+    uint64_t ret {BASIS};
+    const char *p = reinterpret_cast<char*>(const_cast<Json::Value*>(&info));
+    unsigned long i = 0;
+    while (i < sizeof(Json::Value)) {
+        ret ^= *(p + i);
+        ret *= PRIME;
+        i++;
+    }
+    return ret;
+}
+}
 
 DEFINE_LOG_TAG("Event-JsonParser");
 
@@ -180,6 +197,9 @@ void EventJsonParser::GetOrderlyJsonInfo(const Json::Value &eventJson, std::stri
     if (eventJson.isMember("tag_")) {
         cJSON_AddStringToObject(cJsonArr, "tag_", eventJson["tag_"].asString().c_str());
     }
+
+    // hash code need to add
+    cJSON_AddStringToObject(cJsonArr, "id_", std::to_string(GenerateHash(eventJson)).c_str());
 
     // FreezeDetector needs to add
     cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
