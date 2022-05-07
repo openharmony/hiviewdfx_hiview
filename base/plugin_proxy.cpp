@@ -111,6 +111,12 @@ void PluginProxy::DestroyInstanceIfNeed(time_t maxIdleTime)
         return;
     }
     if (now - plugin_->GetLastActiveTime() >= maxIdleTime) {
+        auto count = plugin_.use_count();
+        if (count > 1) {
+            HIVIEW_LOGW("Plugin %{public}s has more refs(%l{public}d), may caused by unfinished task. unload failed.",
+                plugin_->GetName().c_str(), count);
+            return;
+        }
         HIVIEW_LOGI("plugin(%{public}s) reach max idle time, unload.", name_.c_str());
         plugin_->OnUnload();
         plugin_ = nullptr;

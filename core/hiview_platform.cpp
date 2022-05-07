@@ -700,9 +700,8 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
     auto count = target.use_count();
     // two counts for 1.current ref 2.map holder ref
     if (count > 2) {
-        HIVIEW_LOGW("Plugin %s has more refs(%ld), may caused by unfinished task. unload delay.", name.c_str(),
-                    count);
-        RequestUnloadPlugin(target);
+        HIVIEW_LOGW("Plugin %{public}s has more refs(%l{public}d), may caused by unfinished task. unload failed.",
+            name.c_str(), count);
         return;
     }
 
@@ -876,9 +875,11 @@ void HiviewPlatform::AppendPluginToPipeline(const std::string& pluginName, const
         return;
     }
     auto ptr = GetPluginByName(pluginName);
-    if (ptr != nullptr) {
-        it->second->AppendProcessor(ptr);
+    if (ptr == nullptr) {
+        HIVIEW_LOGW("Fail to find plugin with name :%{public}s", pluginName.c_str());
+        return;
     }
+    it->second->AppendProcessor(ptr);
     HIVIEW_LOGI("plugin %{public}s add to pipeline %{public}s succeed.", pluginName.c_str(), pipelineName.c_str());
 }
 
