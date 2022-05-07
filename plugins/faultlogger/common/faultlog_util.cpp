@@ -14,6 +14,7 @@
  */
 
 #include <cstdint>
+#include <ctime>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -29,13 +30,14 @@ namespace {
 constexpr int DEFAULT_BUFFER_SIZE = 64;
 } // namespace
 
-std::string GetFormatedTime(uint64_t time)
+std::string GetFormatedTime(uint64_t target)
 {
-    if (time > LONG_MAX) {
-        time = time / 1000; // 1000 : convert millsecond to seconds
+    time_t now = time(nullptr);
+    if (target > static_cast<uint64_t>(now)) {
+        target = target / 1000; // 1000 : convert millsecond to seconds
     }
 
-    time_t out = static_cast<time_t>(time);
+    time_t out = static_cast<time_t>(target);
     struct tm tmStruct {0};
     struct tm* timeInfo = localtime_r(&out, &tmStruct);
     if (timeInfo == nullptr) {
