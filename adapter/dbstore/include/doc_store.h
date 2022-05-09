@@ -26,6 +26,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+const char* COLLECTION = "collection";
+}
 class DocDB;
 class DocStore {
 public:
@@ -33,18 +36,19 @@ public:
 
     DOCSTORE_API ~DocStore() {}
 
-    DOCSTORE_API int Put(const Entry &entry);
+    DOCSTORE_API int Put(const Entry &entry, const char* coll = COLLECTION);
 
     DOCSTORE_API int PutBatch(const std::vector<Entry> &entries);
 
-    DOCSTORE_API int Merge(const Entry &entry);
+    DOCSTORE_API int Merge(const Entry &entry, const char* coll = COLLECTION);
 
-    DOCSTORE_API int Delete(const DataQuery &query);
+    DOCSTORE_API int Delete(const DataQuery &query, const char* coll = COLLECTION);
 
-    DOCSTORE_API int GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries) const;
+    DOCSTORE_API int GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries,
+        const char* coll = COLLECTION) const;
 
     DOCSTORE_API int GetEntryDuringQuery(const DataQuery &query,
-        std::function<int (int, const Entry&)> callback) const;
+        std::function<int (int, const Entry&)> callback, const char* coll = COLLECTION) const;
 private:
     friend class StoreManager;
     std::shared_ptr<DocDB> dbPtr;

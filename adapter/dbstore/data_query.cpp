@@ -33,7 +33,7 @@ DataQuery& DataQuery::Reset()
     return *this;
 }
 
-DOCSTORE_API DataQuery& DataQuery::Select(std::vector<std::string> fields)
+DOCSTORE_API DataQuery& DataQuery::Select(const std::vector<std::string>& fields)
 {
     selects_.insert(selects_.end(), fields.begin(), fields.end());
     return *this;

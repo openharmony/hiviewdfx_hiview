@@ -24,6 +24,7 @@
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
+#include "sys_event_logger.h"
 #include "vendor.h"
 
 namespace OHOS {
@@ -43,6 +44,7 @@ bool FreezeResolver::Init()
     // freeze_rules.xml
     if (FreezeRuleCluster::GetInstance().Init() == false) {
         HIVIEW_LOGE("failed to init rule.");
+        SysEventLogger::ReportPluginFault("FreezeDetector", "failed to init rule");
         return false;
     }
 

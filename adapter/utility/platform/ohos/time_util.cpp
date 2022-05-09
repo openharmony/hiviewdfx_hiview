@@ -106,6 +106,21 @@ int64_t Get0ClockStampMs()
     }
     return zero;
 }
+
+TimeCalculator::TimeCalculator(std::shared_ptr<uint64_t>& timePtr)
+{
+    this->time_ = timePtr;
+    this->startTime_ = GenerateTimestamp();
+    this->endTime_ = 0;
+}
+
+TimeCalculator::~TimeCalculator()
+{
+    this->endTime_ = GenerateTimestamp();
+    if (this->time_ != nullptr && this->endTime_ > this->startTime_) {
+        *(this->time_) += this->endTime_ - this->startTime_;
+    }
+}
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

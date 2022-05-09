@@ -178,8 +178,9 @@ public:
         std::weak_ptr<Plugin> plugin;
         std::weak_ptr<EventListener> listener;
         bool isPlugin;
+        std::string name;
     };
-    
+
     virtual ~HiviewContext(){};
     // post event to broadcast queue, the event will be delivered to all plugin that concern this event
     virtual void PostUnorderedEvent(std::shared_ptr<Plugin> plugin __UNUSED, std::shared_ptr<Event> event __UNUSED) {};

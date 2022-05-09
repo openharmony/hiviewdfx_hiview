@@ -32,7 +32,7 @@ public:
 
     DOCSTORE_API DataQuery& Reset();
 
-    DOCSTORE_API DataQuery& Select(std::vector<std::string> fields);
+    DOCSTORE_API DataQuery& Select(const std::vector<std::string>& fields);
 
     template<typename T>
     DOCSTORE_API DataQuery& EqualTo(const std::string &field, const T &value)
