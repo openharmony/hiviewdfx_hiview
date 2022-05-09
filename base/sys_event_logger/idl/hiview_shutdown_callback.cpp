@@ -31,7 +31,7 @@ void HiViewShutdownCallback::ShutdownCallback()
 {
     HiLog::Debug(LABEL, "hiview shutdown callback start");
     EventCacher::GetInstance().SavePluginStatsEventsToDb();
-    EventCacher::GetInstance().UpdateSysUsageEventBeforeReport(std::make_unique<SysUsageEventFactory>()->Create());
+    EventCacher::GetInstance().UpdateSysUsageEvent(std::make_unique<SysUsageEventFactory>()->Create());
     EventCacher::GetInstance().SaveSysUsageEventToDb();
     HiLog::Debug(LABEL, "hiview shutdown callback end");
 }

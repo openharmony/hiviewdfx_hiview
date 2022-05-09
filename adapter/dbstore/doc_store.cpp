@@ -79,7 +79,7 @@ int DocStore::Put(const Entry &entry, const char* coll)
 
     rc = ejdb_put_new(dbPtr->db_, coll, jbl, const_cast<int64_t*>(&entry.id));
     RCGO(rc, FINISH);
-    HiLog::Debug(LABEL, "put data to doc store success");
+    HiLog::Debug(LABEL, "put data to doc store success, coll=%{public}s", coll);
 FINISH:
     if (jbl != 0) {
         jbl_destroy(&jbl);

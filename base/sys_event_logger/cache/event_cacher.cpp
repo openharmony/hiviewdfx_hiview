@@ -33,7 +33,7 @@ EventCacher::EventCacher() : dbHelper_(nullptr), sysUsageEvent_(nullptr)
 
 EventCacher::~EventCacher()
 {
-    ClearPluginStatsEvents();
+    pluginStatsEvents_.clear();
     sysUsageEvent_ = nullptr;
 }
 
@@ -70,10 +70,7 @@ void EventCacher::UpdatePluginStatsEvent(const std::string &name, const std::str
 void EventCacher::ClearPluginStatsEvents()
 {
     pluginStatsEvents_.clear();
-    std::vector<std::shared_ptr<LoggerEvent>> events;
-    if (dbHelper_->QueryPluginStatsEvent(events) >= 0) {
-        dbHelper_->DeletePluginStatsEvent();
-    }
+    DeletePluginStatsEventsFromDb();
 }
 
 std::shared_ptr<LoggerEvent> EventCacher::GetSysUsageEvent()
@@ -86,7 +83,7 @@ void EventCacher::AddUint64ToEvent(std::shared_ptr<LoggerEvent>& event, const st
     event->Update(name, event->GetValue(name).GetUint64() + value);
 }
 
-void EventCacher::UpdateSysUsageEventBeforeReport(const std::shared_ptr<LoggerEvent>& event)
+void EventCacher::UpdateSysUsageEvent(const std::shared_ptr<LoggerEvent>& event)
 {
     sysUsageEvent_->Update(KEY_OF_END, event->GetValue(KEY_OF_END).GetUint64());
     AddUint64ToEvent(sysUsageEvent_, KEY_OF_POWER, event->GetValue(KEY_OF_POWER).GetUint64());
@@ -94,12 +91,25 @@ void EventCacher::UpdateSysUsageEventBeforeReport(const std::shared_ptr<LoggerEv
     AddUint64ToEvent(sysUsageEvent_, KEY_OF_SCREEN, event->GetValue(KEY_OF_SCREEN).GetUint64());
 }
 
-void EventCacher::UpdateSysUsageEventAfterReport(const std::shared_ptr<LoggerEvent>& event)
+void EventCacher::ClearSysUsageEvent()
 {
-    sysUsageEvent_->Update(KEY_OF_START, event->GetValue(KEY_OF_END).GetUint64());
+    sysUsageEvent_->Update(KEY_OF_START, sysUsageEvent_->GetValue(KEY_OF_END).GetUint64());
     sysUsageEvent_->Update(KEY_OF_POWER, DEFAULT_TIME);
     sysUsageEvent_->Update(KEY_OF_RUNNING, DEFAULT_TIME);
     sysUsageEvent_->Update(KEY_OF_SCREEN, DEFAULT_TIME);
+    SaveSysUsageEventToDb();
+}
+
+void EventCacher::DeletePluginStatsEventsFromDb()
+{
+    std::vector<std::shared_ptr<LoggerEvent>> events;
+    if (dbHelper_->QueryPluginStatsEvent(events) >= 0) {
+        dbHelper_->DeletePluginStatsEvent();
+    }
+}
+
+void EventCacher::DeleteSysUsageEventFromDb()
+{
     std::vector<std::shared_ptr<LoggerEvent>> events;
     if (dbHelper_->QuerySysUsageEvent(events) >= 0) {
         dbHelper_->DeleteSysUsageEvent();
@@ -109,14 +119,13 @@ void EventCacher::UpdateSysUsageEventAfterReport(const std::shared_ptr<LoggerEve
 void EventCacher::InitSysUsageEvent()
 {
     std::vector<std::shared_ptr<LoggerEvent>> events;
-    if (dbHelper_->QuerySysUsageEvent(events) < 0) {
+    if (dbHelper_->QuerySysUsageEvent(events) <= 0) {
         HiLog::Warn(LABEL, "failed to query sys usage event from db");
         sysUsageEvent_ = std::make_unique<SysUsageEventFactory>()->Create();
         sysUsageEvent_->Update(KEY_OF_POWER, DEFAULT_TIME);
         sysUsageEvent_->Update(KEY_OF_RUNNING, DEFAULT_TIME);
         sysUsageEvent_->Update(KEY_OF_SCREEN, DEFAULT_TIME);
-    }
-    if (!events.empty()) {
+    } else {
         sysUsageEvent_ = events[0];
     }
 }
@@ -124,8 +133,9 @@ void EventCacher::InitSysUsageEvent()
 void EventCacher::InitPluginStatsEvents()
 {
     std::vector<std::shared_ptr<LoggerEvent>> events;
-    if (dbHelper_->QueryPluginStatsEvent(events) < 0) {
+    if (dbHelper_->QueryPluginStatsEvent(events) <= 0) {
         HiLog::Warn(LABEL, "failed to query plugin stats events from db");
+        return;
     }
     for (auto event : events) {
         std::string pluginName = event->GetValue(KEY_OF_PLUGIN_NAME).GetString();

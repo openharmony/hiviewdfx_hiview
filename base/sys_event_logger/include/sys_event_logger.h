@@ -22,12 +22,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-using SysEventLoggerTask = void (*)();
-
 class SysEventLogger {
 public:
     static void Init(const std::string &workPath);
-    void Timeout();
     static void ReportPluginLoad(const std::string &name, uint32_t result);
     static void ReportPluginUnload(const std::string &name, uint32_t result);
     static void ReportPluginFault(const std::string &name, const std::string &reason);
@@ -35,10 +32,6 @@ public:
     static void ReportAppUsage();
     static void ReportSysUsage();
     static void UpdatePluginStats(const std::string &name, const std::string &procName, uint32_t procTime);
-
-private:
-    void Start();
-    void AddScheduledTask(uint32_t interval, SysEventLoggerTask task);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

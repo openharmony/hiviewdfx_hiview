@@ -18,6 +18,25 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+const std::vector<std::string> PLUGIN_STATS_FIELDS = {
+    PluginStatsEventSpace::KEY_OF_PLUGIN_NAME,
+    PluginStatsEventSpace::KEY_OF_AVG_TIME,
+    PluginStatsEventSpace::KEY_OF_TOP_K_TIME,
+    PluginStatsEventSpace::KEY_OF_TOP_K_EVENT,
+    PluginStatsEventSpace::KEY_OF_TOTAL,
+    PluginStatsEventSpace::KEY_OF_PROC_NAME,
+    PluginStatsEventSpace::KEY_OF_PROC_TIME,
+    PluginStatsEventSpace::KEY_OF_TOTAL_TIME
+};
+const std::vector<std::string> SYS_USAGE_FIELDS = {
+    SysUsageEventSpace::KEY_OF_START,
+    SysUsageEventSpace::KEY_OF_END,
+    SysUsageEventSpace::KEY_OF_POWER,
+    SysUsageEventSpace::KEY_OF_SCREEN,
+    SysUsageEventSpace::KEY_OF_RUNNING
+};
+}
 bool JsonParser::ParseJsonString(Json::Value& eventJson, const std::string& jsonStr)
 {
     Json::CharReaderBuilder jsonRBuilder;

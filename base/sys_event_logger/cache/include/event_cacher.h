@@ -39,10 +39,12 @@ public:
     void ClearPluginStatsEvents();
 
     std::shared_ptr<LoggerEvent> GetSysUsageEvent();
-    void UpdateSysUsageEventBeforeReport(const std::shared_ptr<LoggerEvent>& event);
-    void UpdateSysUsageEventAfterReport(const std::shared_ptr<LoggerEvent>& event);
+    void UpdateSysUsageEvent(const std::shared_ptr<LoggerEvent>& event);
+    void ClearSysUsageEvent();
 
+    void DeletePluginStatsEventsFromDb();
     void SavePluginStatsEventsToDb();
+    void DeleteSysUsageEventFromDb();
     void SaveSysUsageEventToDb();
 
 private:

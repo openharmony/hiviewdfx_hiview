@@ -100,7 +100,7 @@ int EventDbHelper::InsertPluginStatsEvent(const std::shared_ptr<LoggerEvent>& ev
     std::vector<std::shared_ptr<LoggerEvent>> queryEvents;
     std::string pluginName = event->GetValue(PluginStatsEventSpace::KEY_OF_PLUGIN_NAME).GetString();
     int queryRes = QueryPluginStatsEvent(queryEvents, pluginName);
-    if (queryRes >= 0 && queryEvents.size() == DEFAULT_RECORD_NUM) { // liangyujian db 或者 coll 不存在時是返回-1吗？
+    if (queryRes >= 0 && queryEvents.size() == DEFAULT_RECORD_NUM) {
         return UpdateDb(queryRes, event->ToJsonString(), PLUGIN_STATS_COLL);
     } else {
         return InsertDb(event->ToJsonString(), PLUGIN_STATS_COLL);
@@ -114,7 +114,7 @@ int EventDbHelper::InsertSysUsageEvent(const std::shared_ptr<LoggerEvent>& event
     }
     std::vector<std::shared_ptr<LoggerEvent>> queryEvents;
     int queryRes = QuerySysUsageEvent(queryEvents);
-    if (queryRes >= 0 && queryEvents.size() == DEFAULT_RECORD_NUM) { // liangyujian db 或者 coll 不存在時是返回-1吗？
+    if (queryRes >= 0 && queryEvents.size() == DEFAULT_RECORD_NUM) {
         return UpdateDb(queryRes, event->ToJsonString(), SYS_USAGE_COLL);
     } else {
         return InsertDb(event->ToJsonString(), SYS_USAGE_COLL);
@@ -135,10 +135,8 @@ int EventDbHelper::InsertDb(const std::string& jsonStr, const std::string& coll)
     return entry.id;
 }
 
-void EventDbHelper::BuildQuery(DataQuery& query, const std::vector<std::string>& fields,
-    const std::map<std::string, std::string>& condMap)
+void EventDbHelper::BuildQuery(DataQuery& query, const std::map<std::string, std::string>& condMap)
 {
-    query.Select(fields);
     for (auto& cond : condMap) {
         query.EqualTo(cond.first, cond.second);
     }
@@ -152,7 +150,7 @@ int EventDbHelper::QueryPluginStatsEvent(std::vector<std::shared_ptr<LoggerEvent
         condMap = { {PluginStatsEventSpace::KEY_OF_PLUGIN_NAME, pluginName} };
     }
     DataQuery query;
-    BuildQuery(query, PLUGIN_STATS_FIELDS, condMap);
+    BuildQuery(query, condMap);
     std::vector<Entry> entries;
     int res = QueryDb(query, entries, PLUGIN_STATS_COLL);
     if (res < 0) {
@@ -168,16 +166,14 @@ int EventDbHelper::QueryPluginStatsEvent(std::vector<std::shared_ptr<LoggerEvent
         }
         events.push_back(event);
     }
-    HiLog::Info(LABEL, "query result=%{public}d, events size=%{public}zu", res, entries.size());
+    HiLog::Info(LABEL, "query plugin_stats result=%{public}d, events size=%{public}zu", res, entries.size());
     return events.size() == DEFAULT_RECORD_NUM ? res : static_cast<int>(events.size());
 }
 
 int EventDbHelper::QuerySysUsageEvent(std::vector<std::shared_ptr<LoggerEvent>>& events)
 {
-    DataQuery query;
-    BuildQuery(query, SYS_USAGE_FIELDS);
     std::vector<Entry> entries;
-    int res = QueryDb(query, entries, SYS_USAGE_COLL);
+    int res = QueryDb(DataQuery(), entries, SYS_USAGE_COLL);
     if (res < 0) {
         return res;
     }
@@ -191,7 +187,7 @@ int EventDbHelper::QuerySysUsageEvent(std::vector<std::shared_ptr<LoggerEvent>>&
         }
         events.push_back(event);
     }
-    HiLog::Info(LABEL, "query result=%{public}d, events size=%{public}zu", res, entries.size());
+    HiLog::Info(LABEL, "query sys_usage result=%{public}d, events size=%{public}zu", res, entries.size());
     return  events.size() == DEFAULT_RECORD_NUM ? res : static_cast<int>(events.size());
 }
 
@@ -211,16 +207,12 @@ int EventDbHelper::UpdateDb(int id, const std::string& value, const std::string&
 
 int EventDbHelper::DeletePluginStatsEvent()
 {
-    DataQuery query;
-    BuildQuery(query, PLUGIN_STATS_FIELDS);
-    return DeleteDb(query, PLUGIN_STATS_COLL);
+    return DeleteDb(DataQuery(), PLUGIN_STATS_COLL);
 }
 
 int EventDbHelper::DeleteSysUsageEvent()
 {
-    DataQuery query;
-    BuildQuery(query, SYS_USAGE_FIELDS);
-    return DeleteDb(query, SYS_USAGE_COLL);
+    return DeleteDb(DataQuery(), SYS_USAGE_COLL);
 }
 
 int EventDbHelper::DeleteDb(const DataQuery& query, const std::string& coll)

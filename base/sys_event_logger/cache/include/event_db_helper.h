@@ -43,8 +43,7 @@ private:
     std::shared_ptr<DocStore> GetDocStore();
     int CloseDocStore();
     int InsertDb(const std::string& jsonStr, const std::string& coll);
-    void BuildQuery(DataQuery& query, const std::vector<std::string>& fields,
-        const std::map<std::string, std::string>& condMap = {});
+    void BuildQuery(DataQuery& query, const std::map<std::string, std::string>& condMap = {});
     int QueryDb(const DataQuery& query, std::vector<Entry>& entries, const std::string& coll);
     int UpdateDb(int id, const std::string& value, const std::string& coll);
     int DeleteDb(const DataQuery& query, const std::string& coll);

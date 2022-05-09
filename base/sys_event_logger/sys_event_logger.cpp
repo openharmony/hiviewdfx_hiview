@@ -50,7 +50,6 @@ void SysEventLogger::Init(const std::string &workPath)
     timerInfo->SetInterval(0);
     timerInfo->SetWantAgent(nullptr);
     auto timerId = MiscServices::TimeServiceClient::GetInstance()->CreateTimer(timerInfo);
-    HiLog::Info(LABEL, "liangyujian timeId=%{public}llu", timerId);
     bool res = MiscServices::TimeServiceClient::GetInstance()->StartTimer(timerId, 10);
     HiLog::Info(LABEL, "liangyujian res=%{public}d", res);
 }
@@ -110,11 +109,11 @@ void SysEventLogger::ReportAppUsage()
 void SysEventLogger::ReportSysUsage()
 {
     std::shared_ptr<LoggerEvent> curUsageEvent = std::make_unique<SysUsageEventFactory>()->Create();
-    EventCacher::GetInstance().UpdateSysUsageEventBeforeReport(curUsageEvent);
+    EventCacher::GetInstance().UpdateSysUsageEvent(curUsageEvent);
     auto reportEvent = EventCacher::GetInstance().GetSysUsageEvent();
     reportEvent->Report();
     HiLog::Info(LABEL, "report sys usage event=%{public}s", reportEvent->ToJsonString().c_str());
-    EventCacher::GetInstance().UpdateSysUsageEventAfterReport(curUsageEvent);
+    EventCacher::GetInstance().ClearSysUsageEvent();
 }
 
 void SysEventLogger::UpdatePluginStats(const std::string &name, const std::string &procName, uint32_t procTime)
@@ -123,14 +122,5 @@ void SysEventLogger::UpdatePluginStats(const std::string &name, const std::strin
         name.c_str(), procName.c_str(), procTime);
     EventCacher::GetInstance().UpdatePluginStatsEvent(name, procName, procTime);
 }
-
-void SysEventLogger::Timeout()
-{}
-
-void SysEventLogger::Start()
-{}
-
-void SysEventLogger::AddScheduledTask(uint32_t interval, SysEventLoggerTask task)
-{}
 } // namespace HiviewDFX
 } // namespace OHOS
