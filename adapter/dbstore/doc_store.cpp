@@ -68,6 +68,7 @@ private:
 
 int DocStore::Put(const Entry &entry, const char* coll)
 {
+    std::lock_guard<std::mutex> lock(dbStoreMutex);
     if (dbPtr == nullptr) {
         return -1;
     }
@@ -105,6 +106,7 @@ int DocStore::PutBatch(const std::vector<Entry> &entries)
 
 int DocStore::Merge(const Entry &entry, const char* coll)
 {
+    std::lock_guard<std::mutex> lock(dbStoreMutex);
     if (entry.id <= 0) {
         HiLog::Error(LABEL, "id less than 0");
         return -1;
@@ -125,6 +127,7 @@ int DocStore::Merge(const Entry &entry, const char* coll)
 
 int DocStore::Delete(const DataQuery &query, const char* coll)
 {
+    std::lock_guard<std::mutex> lock(dbStoreMutex);
     if (dbPtr == nullptr) {
         return -1;
     }

@@ -52,8 +52,8 @@ void SysEventServiceOhos::StartService(SysEventServiceBase *service,
         HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
         return;
     }
-    bool rel = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
-    if (!rel) {
+    int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
+    if (ret != 0) {
         HiLog::Error(LABEL, "failed to add sys event service ability.");
     }
 }

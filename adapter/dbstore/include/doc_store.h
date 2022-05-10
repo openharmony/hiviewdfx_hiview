@@ -18,6 +18,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "data_query.h"
@@ -52,6 +53,7 @@ public:
 private:
     friend class StoreManager;
     std::shared_ptr<DocDB> dbPtr;
+    std::mutex dbStoreMutex;
 }; // DocStore
 } // HiviewDFX
 } // OHOS
