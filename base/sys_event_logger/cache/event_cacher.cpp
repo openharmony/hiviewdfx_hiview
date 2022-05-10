@@ -18,6 +18,7 @@
 #include "plugin_stats_event_factory.h"
 #include "sys_event_common.h"
 #include "sys_usage_event_factory.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -80,7 +81,9 @@ std::shared_ptr<LoggerEvent> EventCacher::GetSysUsageEvent()
 
 void EventCacher::AddUint64ToEvent(std::shared_ptr<LoggerEvent>& event, const std::string &name, uint64_t value)
 {
-    event->Update(name, event->GetValue(name).GetUint64() + value);
+    uint64_t newValue = event->GetValue(name).GetUint64() + value;
+    newValue = newValue > TimeUtil::MILLISECS_PER_DAY ? TimeUtil::MILLISECS_PER_DAY : newValue;
+    event->Update(name, newValue);
 }
 
 void EventCacher::UpdateSysUsageEvent()

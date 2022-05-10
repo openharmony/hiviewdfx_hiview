@@ -32,6 +32,7 @@ constexpr int64_t MICROSEC_TO_NANOSEC = 1000;
 constexpr int SECONDS_PER_MINUTE = 60; // 60 seconds
 constexpr int SECONDS_PER_HOUR = 3600; // 60 * 60
 constexpr int SECONDS_PER_DAY = 86400; // 60 * 60 * 24
+constexpr uint64_t MILLISECS_PER_DAY = 60 * 60 * 24 * 1000;
 constexpr int MAX_TIME_BUFF = 64; // 64 : for example 2021-05-27-01-01-01
 
 class TimeCalculator {

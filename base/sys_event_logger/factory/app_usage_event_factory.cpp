@@ -31,7 +31,6 @@ const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "AppUsageEventFactory" };
 constexpr int32_t DEFAULT_USER_ID = 100;
 constexpr int32_t INTERVAL_TYPE = 1;
 constexpr int64_t MILLISEC_TO_SEC = 1000;
-constexpr int64_t MILLISEC_PER_DAY = 86400000; // 60 * 60 * 24 * 1000
 const std::string DATE_FORMAT = "%Y-%m-%d";
 }
 using namespace AppUsageEventSpace;
@@ -86,9 +85,9 @@ void AppUsageEventFactory::GetAllCreatedOsAccountIds(std::vector<int32_t>& ids)
 void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& appUsageInfos, int32_t userId)
 {
     HiLog::Info(LABEL, "get app usage info by userId=%{public}d", userId);
-    auto today0ClockTime = TimeUtil::Get0ClockStampMs();
-    auto startTime = today0ClockTime > MILLISEC_PER_DAY ? (today0ClockTime - MILLISEC_PER_DAY) : 0;
-    auto endTime = today0ClockTime > MILLISEC_TO_SEC ? (today0ClockTime - MILLISEC_TO_SEC) : 0;
+    auto today0Time = TimeUtil::Get0ClockStampMs();
+    auto startTime = today0Time > TimeUtil::MILLISECS_PER_DAY ? (today0Time - TimeUtil::MILLISECS_PER_DAY) : 0;
+    auto endTime = today0Time > MILLISEC_TO_SEC ? (today0Time - MILLISEC_TO_SEC) : 0;
     int32_t errCode = ERR_OK;
     auto pkgStats = BundleActiveClient::GetInstance().QueryPackageStats(INTERVAL_TYPE, startTime, endTime,
         errCode, userId);

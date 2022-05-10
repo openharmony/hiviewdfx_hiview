@@ -24,7 +24,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "HiViewTimerInfo" };
-constexpr uint64_t MILLISECS_PER_DAY = 60 * 60 * 24 * 1000;
 }
 HiViewTimerInfo::HiViewTimerInfo() : lastReportTime_(0), nextReportTime_(0)
 {
@@ -69,17 +68,17 @@ void HiViewTimerInfo::Init()
         HiLog::Info(LABEL, "lastReportTime=%{public}" PRIu64 ", start to report event", lastReportTime_);
         Report();
     }
-    nextReportTime_ = TimeUtil::Get0ClockStampMs() + MILLISECS_PER_DAY;
+    nextReportTime_ = TimeUtil::Get0ClockStampMs() + TimeUtil::MILLISECS_PER_DAY;
 }
 
 void HiViewTimerInfo::UpdateNextReportTime()
 {
-    nextReportTime_ += MILLISECS_PER_DAY;
+    nextReportTime_ += TimeUtil::MILLISECS_PER_DAY;
 }
 
 bool HiViewTimerInfo::CheckLastReportTime()
 {
-    return TimeUtil::GetMilliseconds() >= (lastReportTime_ + MILLISECS_PER_DAY);
+    return TimeUtil::GetMilliseconds() >= (lastReportTime_ + TimeUtil::MILLISECS_PER_DAY);
 }
 
 bool HiViewTimerInfo::CheckIfNeedReport()
