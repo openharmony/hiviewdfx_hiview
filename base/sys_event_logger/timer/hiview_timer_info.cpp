@@ -115,8 +115,6 @@ void HiViewTimerInfo::SaveCacheTimely()
     sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_POWER, powerTime);
     sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_RUNNING, runningTime);
     sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_SCREEN, screenTime);
-
 }
-
 } // namespace HiviewDFX
 } // namespace OHOS
