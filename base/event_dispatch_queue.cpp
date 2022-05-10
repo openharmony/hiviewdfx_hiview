@@ -20,7 +20,9 @@
 #include "file_util.h"
 #include "logger.h"
 #include "plugin.h"
+#include "sys_event_logger.h"
 #include "thread_util.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -76,17 +78,22 @@ void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
         if (listener == nullptr) {
             continue;
         }
-        if (listener->isPlugin) {
-            auto ptr = listener->plugin.lock();
-            if (ptr != nullptr) {
-                ptr->OnEventListeningCallback(event);
-            }
-        } else {
-            auto ptr = listener->listener.lock();
-            if (ptr != nullptr) {
-                ptr->OnUnorderedEvent(event);
+        auto timePtr = std::make_shared<uint64_t>(0);
+        {
+            TimeUtil::TimeCalculator tc(timePtr);
+            if (listener->isPlugin) {
+                auto ptr = listener->plugin.lock();
+                if (ptr != nullptr) {
+                    ptr->OnEventListeningCallback(event);
+                }
+            } else {
+                auto ptr = listener->listener.lock();
+                if (ptr != nullptr) {
+                    ptr->OnUnorderedEvent(event);
+                }
             }
         }
+        SysEventLogger::UpdatePluginStats(listener->name, event.eventName_, *timePtr);
     }
 }
 

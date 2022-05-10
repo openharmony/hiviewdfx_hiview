@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <memory>
 #include <string>
 
 namespace OHOS {
@@ -31,7 +32,20 @@ constexpr int64_t MICROSEC_TO_NANOSEC = 1000;
 constexpr int SECONDS_PER_MINUTE = 60; // 60 seconds
 constexpr int SECONDS_PER_HOUR = 3600; // 60 * 60
 constexpr int SECONDS_PER_DAY = 86400; // 60 * 60 * 24
+constexpr uint64_t MILLISECS_PER_DAY = 60 * 60 * 24 * 1000;
 constexpr int MAX_TIME_BUFF = 64; // 64 : for example 2021-05-27-01-01-01
+
+class TimeCalculator {
+public:
+    TimeCalculator(std::shared_ptr<uint64_t>& timePtr);
+    ~TimeCalculator();
+
+private:
+    std::shared_ptr<uint64_t> time_;
+    uint64_t startTime_;
+    uint64_t endTime_;
+};
+
 uint64_t GetNanoTime();
 uint64_t GetTimeOfDay();
 uint64_t GenerateTimestamp();
@@ -42,6 +56,7 @@ int GetMillSecOfSec();
 std::string TimestampFormatToDate(time_t timeStamp, const std::string& format);
 std::string GetTimeZone();
 int64_t Get0ClockStampMs();
+uint64_t GetSteadyClockTimeMs();
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -17,7 +17,9 @@
 #include "audit.h"
 #include "defines.h"
 #include "file_util.h"
+#include "sys_event_logger.h"
 #include "thread_util.h"
+#include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 Plugin::~Plugin()
@@ -52,7 +54,13 @@ bool Plugin::OnEventProxy(std::shared_ptr<Event> event)
     std::shared_ptr<Event> dupEvent = event;
     auto processorSize = dupEvent->GetPendingProcessorSize();
     dupEvent->ResetPendingStatus();
-    bool ret = OnEvent(dupEvent);
+    bool ret = false;
+    auto timePtr = std::make_shared<uint64_t>(0);
+    {
+        TimeUtil::TimeCalculator tc(timePtr);
+        ret = OnEvent(dupEvent);
+    }
+    SysEventLogger::UpdatePluginStats(this->name_, event->eventName_, *timePtr);
 
     if (!dupEvent->IsPipelineEvent()) {
         if (Audit::IsEnabled()) {

@@ -33,7 +33,7 @@ DataQuery& DataQuery::Reset()
     return *this;
 }
 
-DOCSTORE_API DataQuery& DataQuery::Select(std::vector<std::string> fields)
+DOCSTORE_API DataQuery& DataQuery::Select(const std::vector<std::string>& fields)
 {
     selects_.insert(selects_.end(), fields.begin(), fields.end());
     return *this;
@@ -110,6 +110,9 @@ std::string DataQuery::ToString() const
         }
         sql << "}";
     }
+    if (sql.str().empty()) {
+        sql << "/*";
+    }
     sql << " |";
     if (!orderFields_.empty()) {
         sql << " ";
@@ -128,10 +131,11 @@ std::string DataQuery::ToString() const
 
 std::string DataQuery::ToDelString(int limit) const
 {
+    std::string sql = sql_.str().empty() ? "/*" : sql_.str();
     if (limit <= 0) {
-        return sql_.str() + " | del | count";
+        return sql + " | del | count";
     } else {
-        return sql_.str() + " | del | limit " + std::to_string(limit) + " count";
+        return sql + " | del | limit " + std::to_string(limit) + " count";
     }
 }
 } // HiviewDFX

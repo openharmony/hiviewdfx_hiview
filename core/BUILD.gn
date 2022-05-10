@@ -37,8 +37,11 @@ ohos_source_set("hiview_core") {
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
+    "$hiview_base/sys_event_logger:sys_event_logger",
     "platform_config:hiviewplatform_config",
   ]
+
+  external_deps = [ "hisysevent_native:libhisysevent" ]
 }
 
 ohos_source_set("sysevent_source") {

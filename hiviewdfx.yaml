@@ -1,0 +1,51 @@
+#  Copyright (c) 2022 Huawei Device Co., Ltd.
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+domain: HIVIEWDFX
+
+PLUGIN_LOAD:
+  __BASE: {type: BEHAVIOR, level: CRITICAL, tag: hiviewPlugin, desc: load hiview plugin}
+  NAME: {type: STRING, desc: plugin name}
+  RESULT: {type: UINT32, desc: result of plugin loading}
+
+PLUGIN_UNLOAD:
+  __BASE: {type: BEHAVIOR, level: CRITICAL, tag: hiviewPlugin, desc: unload hiview plugin}
+  NAME: {type: STRING, desc: plugin name}
+  RESULT: {type: UINT32, desc: result of plugin unloading}
+
+PLUGIN_STATS:
+  __BASE: {type: STATISTIC, level: CRITICAL, tag: hiviewPlugin, desc: statistics of events handled by plugins}
+  NAME: {type: STRING, desc: plugin name}
+  AVG_TIME: {type: UINT32, desc: average time spent}
+  TOP_K_TIME: {type: UINT32, arrsize: 3, desc: K times that took the most time}
+  TOP_K_EVENT: {type: STRING, arrsize: 3, desc: K events that took the most time}
+  TOTAL: {type: UINT32, desc: total events}
+
+PLUGIN_FAULT:
+  __BASE: {type: FAULT, level: CRITICAL, tag: hiviewPlugin, desc: plugin fault}
+  NAME: {type: STRING, desc: plugin name}
+  REASON: {type: STRING, desc: reason of plugin fault}
+
+APP_USAGE:
+  __BASE: {type: STATISTIC, level: CRITICAL, tag: usageStats, desc: application usage statistics}
+  PACKAGE: {type: STRING, desc: package name}
+  USAGE: {type: UINT32, desc: usage duration}
+  DATE: {type: STRING, desc: usage date}
+
+SYS_USAGE:
+  __BASE: {type: STATISTIC, level: CRITICAL, tag: usageStats, desc: system usage statistics}
+  START: {type: UINT64, desc: start time}
+  END: {type: UINT64, desc: end time}
+  POWER: {type: UINT64, desc: power_on duration}
+  SCREEN: {type: UINT64, desc: screen_on duration}
+  RUNNING: {type: UINT64, desc: running duration}

@@ -26,7 +26,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DOCDB"};
-const char* COLLECTION = "collection";
 class CallBackInfo {
 public:
     CallBackInfo(IWXSTR *xstr, std::function<int (int, const Entry&)> callback)
@@ -67,7 +66,7 @@ private:
     std::function<int (int, const Entry&)> callback_;
 };
 
-int DocStore::Put(const Entry &entry)
+int DocStore::Put(const Entry &entry, const char* coll)
 {
     if (dbPtr == nullptr) {
         return -1;
@@ -78,9 +77,9 @@ int DocStore::Put(const Entry &entry)
     rc = jbl_from_json(&jbl, entry.value.c_str());
     RCGO(rc, FINISH);
 
-    rc = ejdb_put_new(dbPtr->db_, COLLECTION, jbl, const_cast<int64_t*>(&entry.id));
+    rc = ejdb_put_new(dbPtr->db_, coll, jbl, const_cast<int64_t*>(&entry.id));
     RCGO(rc, FINISH);
-    HiLog::Debug(LABEL, "put data to doc store success");
+    HiLog::Debug(LABEL, "put data to doc store success, coll=%{public}s", coll);
 FINISH:
     if (jbl != 0) {
         jbl_destroy(&jbl);
@@ -104,7 +103,7 @@ int DocStore::PutBatch(const std::vector<Entry> &entries)
     return 0;
 }
 
-int DocStore::Merge(const Entry &entry)
+int DocStore::Merge(const Entry &entry, const char* coll)
 {
     if (entry.id <= 0) {
         HiLog::Error(LABEL, "id less than 0");
@@ -116,7 +115,7 @@ int DocStore::Merge(const Entry &entry)
         return -1;
     }
 
-    iwrc rc = ejdb_patch(dbPtr->db_, COLLECTION, entry.value.c_str(), entry.id);
+    iwrc rc = ejdb_patch(dbPtr->db_, coll, entry.value.c_str(), entry.id);
     if (rc != 0) {
         HiLog::Error(LABEL, "merge data to doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
         return MapErrorCode(rc);
@@ -124,7 +123,7 @@ int DocStore::Merge(const Entry &entry)
     return 0;
 }
 
-int DocStore::Delete(const DataQuery &query)
+int DocStore::Delete(const DataQuery &query, const char* coll)
 {
     if (dbPtr == nullptr) {
         return -1;
@@ -132,7 +131,7 @@ int DocStore::Delete(const DataQuery &query)
     std::string delSql = query.ToDelString(query.limit_);
     HiLog::Debug(LABEL, "delete=%{public}s", delSql.c_str());
     JQL q = 0;
-    iwrc rc = jql_create(&q, COLLECTION, delSql.c_str());
+    iwrc rc = jql_create(&q, coll, delSql.c_str());
     RCGO(rc, FINISH);
 
     EJDB_EXEC ux;
@@ -159,7 +158,7 @@ FINISH:
     return 0;
 }
 
-int DocStore::GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries) const
+int DocStore::GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries, const char* coll) const
 {
     if (dbPtr == nullptr) {
         return -1;
@@ -170,7 +169,7 @@ int DocStore::GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &en
     EJDB_DOC doc = nullptr;
     EJDB_LIST listp;
     HiLog::Debug(LABEL, "query=%{public}s, limit=%{public}d", query.ToString().c_str(), query.limit_);
-    iwrc rc = ejdb_list2(dbPtr->db_, COLLECTION, query.ToString().c_str(), query.limit_, &listp);
+    iwrc rc = ejdb_list2(dbPtr->db_, coll, query.ToString().c_str(), query.limit_, &listp);
     RCGO(rc, FINISH);
     doc = listp->first;
     while (doc != nullptr) {
@@ -229,7 +228,8 @@ static iwrc DocumentsVisitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step)
     return rc;
 }
 
-int DocStore::GetEntryDuringQuery(const DataQuery &query, std::function<int (int, const Entry&)> callback) const
+int DocStore::GetEntryDuringQuery(const DataQuery &query, std::function<int (int, const Entry&)> callback,
+    const char* coll) const
 {
     if (dbPtr == nullptr) {
         return -1;
@@ -238,7 +238,7 @@ int DocStore::GetEntryDuringQuery(const DataQuery &query, std::function<int (int
     IWXSTR *xstr = iwxstr_new();
     CallBackInfo *callBackInfoPtr = new CallBackInfo(xstr, callback);
     JQL q = 0;
-    iwrc rc = jql_create(&q, COLLECTION, query.ToString().c_str());
+    iwrc rc = jql_create(&q, coll, query.ToString().c_str());
     RCGO(rc, FINISH);
 
     EJDB_EXEC ux;

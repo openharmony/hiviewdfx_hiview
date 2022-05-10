@@ -160,11 +160,15 @@ bool EventJsonParser::JudgeDataType(const std::string &dataType, const Json::Val
     if (dataType.compare("BOOL") == 0) {
         return eventJson.isBool();
     } else if ((dataType.compare("INT8") == 0) || (dataType.compare("INT16") == 0) ||
-        (dataType.compare("INT32") == 0) || (dataType.compare("INT64") == 0)) {
+        (dataType.compare("INT32") == 0)) {
         return eventJson.isInt();
+    } else if (dataType.compare("INT64") == 0) {
+        return eventJson.isInt64();
     } else if ((dataType.compare("UINT8") == 0) || (dataType.compare("UINT16") == 0) ||
-        (dataType.compare("UINT32") == 0) || (dataType.compare("UINT64") == 0)) {
+        (dataType.compare("UINT32") == 0)) {
         return eventJson.isUInt();
+    } else if (dataType.compare("UINT64") == 0) {
+        return eventJson.isUInt64();
     } else if ((dataType.compare("FLOAT") == 0) || (dataType.compare("DOUBLE") == 0)) {
         return eventJson.isDouble();
     } else if (dataType.compare("STRING") == 0) {
