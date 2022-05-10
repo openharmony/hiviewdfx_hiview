@@ -35,6 +35,15 @@ config("hiview_base_config") {
   }
 }
 
+ohos_source_set("logger") {
+  public_configs = [ ":hiview_base_config" ]
+  sources = [
+    "default_logger.cpp",
+    "hi_logger.cpp",
+    "logger.cpp",
+  ]
+}
+
 ohos_source_set("hiview_base") {
   part_name = "hiview"
   public_configs = [ ":hiview_base_config" ]
