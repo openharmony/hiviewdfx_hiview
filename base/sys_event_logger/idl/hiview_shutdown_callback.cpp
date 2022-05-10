@@ -14,12 +14,9 @@
  */
 #include "hiview_shutdown_callback.h"
 
-#include <memory>
-
 #include "event_cacher.h"
 #include "hilog/log.h"
 #include "sys_event_common.h"
-#include "sys_usage_event_factory.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,7 +28,7 @@ void HiViewShutdownCallback::ShutdownCallback()
 {
     HiLog::Debug(LABEL, "hiview shutdown callback start");
     EventCacher::GetInstance().SavePluginStatsEventsToDb();
-    EventCacher::GetInstance().UpdateSysUsageEvent(std::make_unique<SysUsageEventFactory>()->Create());
+    EventCacher::GetInstance().UpdateSysUsageEvent();
     EventCacher::GetInstance().SaveSysUsageEventToDb();
     HiLog::Debug(LABEL, "hiview shutdown callback end");
 }

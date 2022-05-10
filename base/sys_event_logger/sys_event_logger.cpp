@@ -23,18 +23,21 @@
 #include "plugin_load_event_factory.h"
 #include "plugin_unload_event_factory.h"
 #include "power_mgr_client.h"
-#include "sys_usage_event_factory.h"
 #include "time_service_client.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "HiView-SysEventLogger" };
+constexpr int TIMER_TYPE = 1;
+constexpr uint64_t TIMER_INTERVAL = 1000 * 60 * 5; // 5min
+constexpr uint64_t TIMER_TRIGGER = 10;
 }
 
 void SysEventLogger::Init(const std::string &workPath)
 {
-    HiLog::Info(LABEL, "sys_event_logger onLoad");
+    HiLog::Info(LABEL, "Init start");
 
     // init cache
     EventCacher::GetInstance().InitCache(workPath);
@@ -45,13 +48,21 @@ void SysEventLogger::Init(const std::string &workPath)
 
     // register timer
     auto timerInfo = std::make_shared<HiViewTimerInfo>();
-    timerInfo->SetType(1);
+    timerInfo->SetType(TIMER_TYPE);
     timerInfo->SetRepeat(true);
-    timerInfo->SetInterval(0);
+    timerInfo->SetInterval(TIMER_INTERVAL);
     timerInfo->SetWantAgent(nullptr);
     auto timerId = MiscServices::TimeServiceClient::GetInstance()->CreateTimer(timerInfo);
-    bool res = MiscServices::TimeServiceClient::GetInstance()->StartTimer(timerId, 10);
-    HiLog::Info(LABEL, "liangyujian res=%{public}d", res);
+    if (timerId == 0) {
+        HiLog::Error(LABEL, "failed to create timer");
+        return;
+    }
+    if (!MiscServices::TimeServiceClient::GetInstance()->StartTimer(timerId,
+        TimeUtil::GetSteadyClockTimeMs() + TIMER_TRIGGER)) {
+        HiLog::Error(LABEL, "failed to start timer");
+        return;
+    }
+    HiLog::Info(LABEL, "Init succeeded");
 }
 
 void SysEventLogger::ReportPluginLoad(const std::string &name, uint32_t result)
@@ -108,8 +119,7 @@ void SysEventLogger::ReportAppUsage()
 
 void SysEventLogger::ReportSysUsage()
 {
-    std::shared_ptr<LoggerEvent> curUsageEvent = std::make_unique<SysUsageEventFactory>()->Create();
-    EventCacher::GetInstance().UpdateSysUsageEvent(curUsageEvent);
+    EventCacher::GetInstance().UpdateSysUsageEvent();
     auto reportEvent = EventCacher::GetInstance().GetSysUsageEvent();
     reportEvent->Report();
     HiLog::Info(LABEL, "report sys usage event=%{public}s", reportEvent->ToJsonString().c_str());

@@ -83,8 +83,9 @@ void EventCacher::AddUint64ToEvent(std::shared_ptr<LoggerEvent>& event, const st
     event->Update(name, event->GetValue(name).GetUint64() + value);
 }
 
-void EventCacher::UpdateSysUsageEvent(const std::shared_ptr<LoggerEvent>& event)
+void EventCacher::UpdateSysUsageEvent()
 {
+    auto event = std::make_unique<SysUsageEventFactory>()->Create();
     sysUsageEvent_->Update(KEY_OF_END, event->GetValue(KEY_OF_END).GetUint64());
     AddUint64ToEvent(sysUsageEvent_, KEY_OF_POWER, event->GetValue(KEY_OF_POWER).GetUint64());
     AddUint64ToEvent(sysUsageEvent_, KEY_OF_RUNNING, event->GetValue(KEY_OF_RUNNING).GetUint64());

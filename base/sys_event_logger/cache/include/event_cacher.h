@@ -39,7 +39,7 @@ public:
     void ClearPluginStatsEvents();
 
     std::shared_ptr<LoggerEvent> GetSysUsageEvent();
-    void UpdateSysUsageEvent(const std::shared_ptr<LoggerEvent>& event);
+    void UpdateSysUsageEvent();
     void ClearSysUsageEvent();
 
     void DeletePluginStatsEventsFromDb();

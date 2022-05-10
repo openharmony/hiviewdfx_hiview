@@ -55,6 +55,7 @@ int GetMillSecOfSec();
 std::string TimestampFormatToDate(time_t timeStamp, const std::string& format);
 std::string GetTimeZone();
 int64_t Get0ClockStampMs();
+uint64_t GetSteadyClockTimeMs();
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

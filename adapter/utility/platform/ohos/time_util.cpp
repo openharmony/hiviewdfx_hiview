@@ -107,6 +107,13 @@ int64_t Get0ClockStampMs()
     return zero;
 }
 
+uint64_t GetSteadyClockTimeMs()
+{
+    auto now = std::chrono::steady_clock::now();
+    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return millisecs.count();
+}
+
 TimeCalculator::TimeCalculator(std::shared_ptr<uint64_t>& timePtr)
 {
     this->time_ = timePtr;

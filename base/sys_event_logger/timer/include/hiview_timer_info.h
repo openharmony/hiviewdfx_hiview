@@ -26,13 +26,25 @@ namespace OHOS {
 namespace HiviewDFX {
 class HiViewTimerInfo : public MiscServices::ITimerInfo {
 public:
-    HiViewTimerInfo() {}
+    HiViewTimerInfo();
     virtual ~HiViewTimerInfo() {}
     virtual void OnTrigger() override;
     virtual void SetType(const int &type) override;
     virtual void SetRepeat(bool repeat) override;
     virtual void SetInterval(const uint64_t &interval) override;
     virtual void SetWantAgent(std::shared_ptr<OHOS::AbilityRuntime::WantAgent::WantAgent> wantAgent) override;
+
+private:
+    void Init();
+    void Report();
+    void SaveCacheTimely();
+    void UpdateNextReportTime();
+    bool CheckLastReportTime();
+    bool CheckIfNeedReport();
+
+private:
+    uint64_t lastReportTime_;
+    uint64_t nextReportTime_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

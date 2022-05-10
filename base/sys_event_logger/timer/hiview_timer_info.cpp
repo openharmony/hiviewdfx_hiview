@@ -14,17 +14,21 @@
  */
 #include "hiview_timer_info.h"
 
+#include "event_cacher.h"
 #include "hilog/log.h"
 #include "sys_event_common.h"
+#include "sys_event_logger.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "HiViewTimerInfo" };
+constexpr uint64_t MILLISECS_PER_DAY = 60 * 60 * 24 * 1000;
 }
-void HiViewTimerInfo::OnTrigger()
+HiViewTimerInfo::HiViewTimerInfo() : lastReportTime_(0), nextReportTime_(0)
 {
-    HiLog::Info(LABEL, "hiview OnTrigger start");
+    Init();
 }
 
 void HiViewTimerInfo::SetType(const int& type)
@@ -44,5 +48,75 @@ void HiViewTimerInfo::SetWantAgent(std::shared_ptr<OHOS::AbilityRuntime::WantAge
 {
     this->wantAgent = wantAgent;
 }
+
+void HiViewTimerInfo::OnTrigger()
+{
+    HiLog::Debug(LABEL, "hiview timer OnTrigger start");
+    if (CheckIfNeedReport()) {
+        HiLog::Info(LABEL, "nextReportTime=%{public}" PRIu64 ", start to report event", nextReportTime_);
+        Report();
+        UpdateNextReportTime();
+    } else {
+        SaveCacheTimely();
+    }
+}
+
+void HiViewTimerInfo::Init()
+{
+    auto sysUsageEvent = EventCacher::GetInstance().GetSysUsageEvent();
+    lastReportTime_ = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_START).GetUint64();
+    if (CheckLastReportTime()) {
+        HiLog::Info(LABEL, "lastReportTime=%{public}" PRIu64 ", start to report event", lastReportTime_);
+        Report();
+    }
+    nextReportTime_ = TimeUtil::Get0ClockStampMs() + MILLISECS_PER_DAY;
+}
+
+void HiViewTimerInfo::UpdateNextReportTime()
+{
+    nextReportTime_ += MILLISECS_PER_DAY;
+}
+
+bool HiViewTimerInfo::CheckLastReportTime()
+{
+    return TimeUtil::GetMilliseconds() >= (lastReportTime_ + MILLISECS_PER_DAY);
+}
+
+bool HiViewTimerInfo::CheckIfNeedReport()
+{
+    return TimeUtil::GetMilliseconds() >= nextReportTime_;
+}
+
+void HiViewTimerInfo::Report()
+{
+    SysEventLogger::ReportPluginStats();
+    SysEventLogger::ReportAppUsage();
+    SysEventLogger::ReportSysUsage();
+}
+
+void HiViewTimerInfo::SaveCacheTimely()
+{
+    HiLog::Debug(LABEL, "save the cache to db timely");
+    EventCacher::GetInstance().SavePluginStatsEventsToDb();
+
+    // get the last usage use time from cache
+    auto sysUsageEvent = EventCacher::GetInstance().GetSysUsageEvent();
+    auto endTime = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_END).GetUint64();
+    auto powerTime = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_POWER).GetUint64();
+    auto runningTime = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_RUNNING).GetUint64();
+    auto screenTime = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_SCREEN).GetUint64();
+
+    // update cur usage time to db
+    EventCacher::GetInstance().UpdateSysUsageEvent();
+    EventCacher::GetInstance().SaveSysUsageEventToDb();
+
+    // restore last usage time
+    sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_END, endTime);
+    sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_POWER, powerTime);
+    sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_RUNNING, runningTime);
+    sysUsageEvent->Update(SysUsageEventSpace::KEY_OF_SCREEN, screenTime);
+
+}
+
 } // namespace HiviewDFX
 } // namespace OHOS
