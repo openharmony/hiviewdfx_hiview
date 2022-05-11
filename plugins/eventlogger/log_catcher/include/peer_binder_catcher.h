@@ -14,6 +14,7 @@
  */
 #ifndef EVENT_LOGGER_PEER_BINDER_LOG_CATCHER
 #define EVENT_LOGGER_PEER_BINDER_LOG_CATCHER
+#include <fstream>
 #include <string>
 #include <memory>
 #include <vector>
@@ -29,48 +30,30 @@ public:
     ~PeerBinderCatcher() override{};
     bool Initialize(const std::string& strParam1, int pid, int layer) override;
     int Catch(int fd) override;
-    void Init(std::shared_ptr<SysEvent> event, std::string filePath);
-    void SetBinderProcPath(std::string filePath)
-    {
-        binderProcPath_ = filePath;
-    };
+    void Init(std::shared_ptr<SysEvent> event, const std::string& filePath);
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
-    static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/sys/kernel/debug/binder/proc/";
-    static const inline std::string LOGGER_BINDER_TRACING_PROC_PATH = "/sys/kernel/tracing/binder/proc/";
+    static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/sys/kernel/debug/binder/transaction_proc";
 private:
     struct BinderInfo {
         int client;
         int server;
-        unsigned long wait;
     };
-
     enum {
-        LOGGER_BINDER_STACK_HEAD_TAIL = -2,
-        LOGGER_BINDER_STACK_ALL = -1,
-        LOGGER_BINDER_STACK_NONE = 0,
-        LOGGER_BINDER_STACK_ONE
+        LOGGER_BINDER_STACK_ONE = 0,
+        LOGGER_BINDER_STACK_ALL = 1,
     };
-
-    static constexpr int TRACE_THRESHOLD = 6;
-    static constexpr int PEER_TRACE_NUM = 3;
-    static constexpr int BINDER_TIMEOUT = 1;
 
     int pid_ = 0;
-    int layer_;
+    int layer_ = 0;
+    std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
-    std::string binderProcPath_ = "";
 
-    void SaveBinderTransactionInfo(int fd) const;
-    std::set<int> GetBinderPeerChainPids(int pid, int layer, int fd) const;
-    std::set<int> GetBinderPeerPids(int pid, long layer) const;
-    std::set<int> GetPeerBinderByLayer (int pid, int layer,
-        std::map<int, std::list<BinderInfo>> info, int fd) const;
-    std::map<int, std::list<BinderInfo>> BinderInfoParser(int pid) const;
-    std::string GetBinderProcPath() const;
-    void ParseBinderCallChain(int pid, std::map<int, std::list<BinderInfo>> info,
-    std::vector<int> path, std::map<int, bool> &visit, std::vector<std::vector<int>> &paths) const;
-    int GetMatchBinderPeerInfo(int &pid, int &tid, int &waitTime, std::string &matchLine) const;
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin) const;
+    void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
+    std::set<int>& pids, int pid) const;
+    std::set<int> GetBinderPeerPids(int fd) const;
+    void CatcherStacktrace(int fd, int pid) const;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
