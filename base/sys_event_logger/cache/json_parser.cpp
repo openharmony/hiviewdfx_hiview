@@ -77,7 +77,7 @@ void JsonParser::ParseUInt32Vec(const Json::Value& root, std::vector<uint32_t>& 
         return;
     }
     for (size_t i = 0; i < root.size(); ++i) {
-        vec.push_back(ParseUInt32(root[i]));
+        vec.push_back(ParseUInt32(root[static_cast<int>(i)]));
     }
 }
 
@@ -87,7 +87,7 @@ void JsonParser::ParseStringVec(const Json::Value& root, std::vector<std::string
         return;
     }
     for (size_t i = 0; i < root.size(); ++i) {
-        vec.push_back(ParseString(root[i]));
+        vec.push_back(ParseString(root[static_cast<int>(i)]));
     }
 }
 
