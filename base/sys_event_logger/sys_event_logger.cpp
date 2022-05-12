@@ -43,7 +43,7 @@ void SysEventLogger::Init(const std::string &workPath)
     EventCacher::GetInstance().InitCache(workPath);
 
     // register shutdown callback
-    PowerMgr::PowerMgrClient::GetInstance().RegisterShutdownCallback(new HiViewShutdownCallback(),
+    PowerMgr::PowerMgrClient::GetInstance().RegisterShutdownCallback(std::make_shared<HiViewShutdownCallback>().get(),
         PowerMgr::IShutdownCallback::ShutdownPriority::POWER_SHUTDOWN_PRIORITY_HIGH);
 
     // register timer

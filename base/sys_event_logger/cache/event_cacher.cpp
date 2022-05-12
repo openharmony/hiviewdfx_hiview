@@ -35,6 +35,7 @@ EventCacher::EventCacher() : dbHelper_(nullptr), sysUsageEvent_(nullptr)
 EventCacher::~EventCacher()
 {
     pluginStatsEvents_.clear();
+    dbHelper_ = nullptr;
     sysUsageEvent_ = nullptr;
 }
 

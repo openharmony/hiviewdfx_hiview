@@ -85,9 +85,10 @@ void AppUsageEventFactory::GetAllCreatedOsAccountIds(std::vector<int32_t>& ids)
 void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& appUsageInfos, int32_t userId)
 {
     HiLog::Info(LABEL, "get app usage info by userId=%{public}d", userId);
-    auto today0Time = TimeUtil::Get0ClockStampMs();
-    auto startTime = today0Time > TimeUtil::MILLISECS_PER_DAY ? (today0Time - TimeUtil::MILLISECS_PER_DAY) : 0;
-    auto endTime = today0Time > MILLISEC_TO_SEC ? (today0Time - MILLISEC_TO_SEC) : 0;
+    int64_t today0Time = TimeUtil::Get0ClockStampMs();
+    int64_t gapTime = static_cast<int64_t>(TimeUtil::MILLISECS_PER_DAY);
+    int64_t startTime = today0Time > gapTime ? (today0Time - gapTime) : 0;
+    int64_t endTime = today0Time > MILLISEC_TO_SEC ? (today0Time - MILLISEC_TO_SEC) : 0;
     int32_t errCode = ERR_OK;
     auto pkgStats = BundleActiveClient::GetInstance().QueryPackageStats(INTERVAL_TYPE, startTime, endTime,
         errCode, userId);
