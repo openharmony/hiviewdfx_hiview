@@ -109,7 +109,8 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
     FaultLogger::WriteFaultLogToFile(fd, info.faultLogType, info.sectionMap);
     FaultLogger::WriteLogToFile(fd, info.logPath);
     close(fd);
-    store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, 0, info.module), MAX_FAULT_LOG_PER_HAP);
+    store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, info.faultLogType, info.module),
+        MAX_FAULT_LOG_PER_HAP);
     info.logPath = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + fileName;
     HIVIEW_LOGI("create log %{public}s", fileName.c_str());
     return fileName;
