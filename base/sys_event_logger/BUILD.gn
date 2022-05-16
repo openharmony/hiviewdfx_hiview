@@ -57,6 +57,7 @@ ohos_source_set("sys_event_logger") {
   public_configs = [ ":sys_event_logger_config" ]
 
   external_deps = [
+    "ability_base:want",
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics_native:batterystats_client",
@@ -75,7 +76,6 @@ ohos_source_set("sys_event_logger") {
   deps = [
     "$hiview_adapter/dbstore:db_store_source",
     "$hiview_adapter/utility:hiview_adapter_utility",
-    "//foundation/aafwk/standard/interfaces/innerkits/want:want",
     "//third_party/jsoncpp:jsoncpp",
   ]
 }
