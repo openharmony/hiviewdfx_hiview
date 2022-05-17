@@ -41,6 +41,10 @@ EventCacher::~EventCacher()
 
 void EventCacher::InitCache(const std::string& workPath)
 {
+    if (dbHelper_ != nullptr) {
+        HiLog::Warn(LABEL, "cache has been initialized");
+        return;
+    }
     dbHelper_ = std::make_unique<EventDbHelper>();
     dbHelper_->Init(workPath);
     InitSysUsageEvent();
