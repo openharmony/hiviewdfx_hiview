@@ -20,6 +20,9 @@
             <option name="push" value="base/plugin_config_2 -> /data/test/test_data/" src="res"/>
             <option name="push" value="base/plugin_config_incomplete -> /data/test/test_data/" src="res"/>
         </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
+        </cleaner>
     </target>
     <target name="PluginPlatformWithLocalPluginBaseTest">
         <preparer>
@@ -31,6 +34,7 @@
             <option name="push" value="hiviewdfx/hiview/libdynamicloadpluginexample.z.so -> /system/lib/" src="out"/>
         </preparer>
         <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
             <option name="shell" value="rm -rf /system/lib64/libdynamicloadpluginexample.z.so"/>
             <option name="shell" value="rm -rf /system/lib/libdynamicloadpluginexample.z.so"/>
         </cleaner>
@@ -39,11 +43,17 @@
         <preparer>
             <option name="push" value="base/event_logger_config -> /data/test/test_data/" src="res"/>
         </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
+        </cleaner>
     </target>
     <target name="HiviewPlatformConfigTest">
         <preparer>
             <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
         </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
+        </cleaner>
     </target>
     <target name="PluginBundleTest">
         <preparer>
@@ -54,6 +64,7 @@
             <option name="push" value="hiviewdfx/hiview/libbundletest.z.so -> /system/lib/" src="out"/>
         </preparer>
         <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
             <option name="shell" value="rm -rf /system/lib64/libbundletest.z.so"/>
             <option name="shell" value="rm -rf /system/lib/libbundletest.z.so"/>
         </cleaner>
@@ -69,10 +80,20 @@
             <option name="push" value="hiviewdfx/hiview/libdynamicloadpluginexample.z.so -> /system/lib/" src="out"/>
         </preparer>
         <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
             <option name="shell" value="rm -rf /system/lib64/libbundleplugintest.z.so"/>
             <option name="shell" value="rm -rf /system/lib/libbundleplugintest.z.so"/>
             <option name="shell" value="rm -rf /system/lib64/libdynamicloadpluginexample.z.so"/>
             <option name="shell" value="rm -rf /system/lib/libdynamicloadpluginexample.z.so"/>
+        </cleaner>
+    </target>
+    <target name="EventDispatchQueueTest">
+        <preparer>
+            <option name="push" value="base/plugin_config0 -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/hiview_platform_config0 -> /data/test/test_data/" src="res"/>
+        </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
         </cleaner>
     </target>
 </configuration>

@@ -110,6 +110,8 @@ ohos_unittest("EventDispatchQueueTest") {
     "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
+
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
 
 ohos_unittest("HiviewPlatformConfigTest") {

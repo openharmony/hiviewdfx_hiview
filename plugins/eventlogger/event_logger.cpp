@@ -55,7 +55,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     auto logConfig = std::make_unique<EventLoggerConfig>();
     bool existence = logConfig->FindConfigLine(sysEvent->eventId_, sysEvent->eventName_, configOut);
     if (!existence) {
-        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s does not exist in the EventLoggerConfig",
+        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : EventLogger don't care",
             sysEvent->eventId_,  sysEvent->eventName_.c_str());
         PostEvent(sysEvent);
         return false;
