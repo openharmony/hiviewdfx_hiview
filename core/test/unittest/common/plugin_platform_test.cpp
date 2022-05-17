@@ -284,7 +284,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformServiceStartTest001, TestSize.Level3)
     printf("PluginPlatformTest2.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
     printf("PluginPlatformServiceStartTest001. called\n");
-    if (!platform.InitEnvironment()) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
     sleep(1);

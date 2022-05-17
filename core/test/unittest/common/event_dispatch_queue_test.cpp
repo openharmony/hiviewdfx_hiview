@@ -66,7 +66,7 @@ HWTEST_F(EventDispatchQueueTest, EventDispatchQueueCreateTest001, TestSize.Level
 {
     printf("EventDispatchQueueTest.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    if (!platform.InitEnvironment()) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config0")) {
         printf("Fail to init environment. \n");
     }
     auto unorderQueue = std::make_shared<EventDispatchQueue>("test1", Event::ManageType::UNORDERED, &platform);
@@ -88,7 +88,7 @@ HWTEST_F(EventDispatchQueueTest, UnorderEventDispatchTest001, TestSize.Level3)
 {
     printf("EventDispatchQueueTest.\n");
     OHOS::HiviewDFX::HiviewPlatform platform;
-    if (!platform.InitEnvironment()) {
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config0")) {
         printf("Fail to init environment. \n");
     }
     auto unorder = std::make_shared<EventDispatchQueue>("disp-unorder", Event::ManageType::UNORDERED, &platform);
