@@ -59,7 +59,7 @@ int CpuUtilizationCatcher::Catch(int fd)
     FileUtil::LoadStringFromFile("/proc/cpuinfo", content);
     FileUtil::SaveStringToFd(fd, content);
 
-    CommonUtils::WriteCommandResultToFile(fd, "hidumper -c system");
+    CommonUtils::WriteCommandResultToFile(fd, "hidumper -c");
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }
