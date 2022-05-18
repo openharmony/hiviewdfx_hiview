@@ -35,11 +35,16 @@ EventCacher::EventCacher() : dbHelper_(nullptr), sysUsageEvent_(nullptr)
 EventCacher::~EventCacher()
 {
     pluginStatsEvents_.clear();
+    dbHelper_ = nullptr;
     sysUsageEvent_ = nullptr;
 }
 
 void EventCacher::InitCache(const std::string& workPath)
 {
+    if (dbHelper_ != nullptr) {
+        HiLog::Warn(LABEL, "cache has been initialized");
+        return;
+    }
     dbHelper_ = std::make_unique<EventDbHelper>();
     dbHelper_->Init(workPath);
     InitSysUsageEvent();
