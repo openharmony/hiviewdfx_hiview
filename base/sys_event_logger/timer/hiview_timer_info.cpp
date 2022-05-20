@@ -68,7 +68,7 @@ void HiViewTimerInfo::Init()
         HiLog::Info(LABEL, "lastReportTime=%{public}" PRIu64 ", start to report event", lastReportTime_);
         Report();
     }
-    nextReportTime_ = TimeUtil::Get0ClockStampMs() + TimeUtil::MILLISECS_PER_DAY;
+    nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
 }
 
 void HiViewTimerInfo::UpdateNextReportTime()
