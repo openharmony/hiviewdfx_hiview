@@ -51,15 +51,12 @@ ohos_source_set("hiview_base") {
   sources = [
     "audit.cpp",
     "audit_log_parser.cpp",
-    "default_logger.cpp",
     "event.cpp",
     "event_dispatch_queue.cpp",
     "event_dispatcher.cpp",
     "event_loop.cpp",
     "event_source.cpp",
-    "hi_logger.cpp",
     "hiview_global.cpp",
-    "logger.cpp",
     "pipeline.cpp",
     "plugin.cpp",
     "plugin_factory.cpp",
@@ -68,6 +65,7 @@ ohos_source_set("hiview_base") {
   ]
 
   deps = [
+    ":logger",
     "$hiview_adapter/dbstore:db_store_source",
     "event_store:event_store_source",
     "sys_event_logger:sys_event_logger",
