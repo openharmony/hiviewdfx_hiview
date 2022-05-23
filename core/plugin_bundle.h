@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,10 +27,41 @@ public:
     PluginBundle (const std::string& name, const PluginConfig& config, DynamicModule module)
         : name_(name), config_(config), module_(module) {};
     ~PluginBundle ();
+    PluginBundle (const PluginBundle& bundle) = delete;
+    PluginBundle& operator=(const PluginBundle& bundle) = delete;
+
+    PluginBundle (PluginBundle&& bundle)
+    {
+        name_ = bundle.GetName();
+        config_ = bundle.GetBundleConfig();
+        module_ = bundle.GetHandle();
+    };
+
+    PluginBundle& operator=(PluginBundle&& bundle)
+    {
+        this->name_ = bundle.GetName();
+        this->config_ = bundle.GetBundleConfig();
+        this->module_ = bundle.GetHandle();
+        return *this;
+    };
+
     PluginConfig GetBundleConfig() const
     {
         return config_;
-    }
+    };
+
+    std::string GetName() const
+    {
+        return name_;
+    };
+
+    DynamicModule GetHandle()
+    {
+        DynamicModule temp = module_;
+        module_ = nullptr;
+        return temp;
+    };
+
     void ReleaseDynamicModule();
 private:
     std::string name_;

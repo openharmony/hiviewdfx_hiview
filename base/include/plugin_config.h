@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,8 +41,9 @@ public:
         int32_t threadCount;
     };
 
+    PluginConfig() {};
+    ~PluginConfig() {};
     explicit PluginConfig(const std::string& file);
-    ~PluginConfig(){};
     bool StartParse();
     const std::list<PluginConfig::PluginInfo>& GetPluginInfoList() const;
     const std::list<PluginConfig::PipelineInfo>& GetPipelineInfoList() const;
