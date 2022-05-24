@@ -27,10 +27,21 @@ public:
     PluginBundle (const std::string& name, const PluginConfig& config, DynamicModule module)
         : name_(name), config_(config), module_(module) {};
     ~PluginBundle ();
+    PluginBundle(const PluginBundle&) = delete;
+    PluginBundle& operator= (const PluginBundle&) = delete;
+    PluginBundle(PluginBundle&& bundle) = delete;
+    PluginBundle& operator=(PluginBundle&& bundle)  = delete;
+
     PluginConfig GetBundleConfig() const
     {
         return config_;
     }
+
+    std::string GetName() const
+    {
+        return name_;
+    }
+
     void ReleaseDynamicModule();
 private:
     std::string name_;

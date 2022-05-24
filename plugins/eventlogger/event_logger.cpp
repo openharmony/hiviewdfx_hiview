@@ -309,19 +309,22 @@ bool EventLogger::OnFileDescriptorEvent(int fd, int type)
 
     offset = buffer;
     event = (struct inotify_event *)buffer;
-    while ((reinterpret_cast<char *>(event) - buffer) < len) {
-        const auto& it = fileMap_.find(event->wd);
-        if (it == fileMap_.end()) {
-            continue;
+    while ((reinterpret_cast<char *>(event) - buffer) < (len - sizeof(struct inotify_event))) {
+        if ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event) + event->len) > len) {
+            break;
         }
 
-        if (event->name[event->len - 1] != '\0') {
-            event->name[event->len - 1] = '\0';
+        if (event->len != 0) {
+            const auto& it = fileMap_.find(event->wd);
+            if (it == fileMap_.end()) {
+                continue;
+            }
+
+            std::string fileName = std::string(event->name);
+            HIVIEW_LOGI("fileName: %{public}s event->mask: 0x%{public}x, event->len: %{public}d",
+                fileName.c_str(), event->mask, event->len);
+            CreateAndPublishEvent(it->second, fileName);
         }
-        std::string fileName = std::string(event->name);
-        HIVIEW_LOGD("fileName %{public}s event->mask 0x%{public}x", fileName.c_str(), event->mask);
-        
-        CreateAndPublishEvent(it->second, fileName);
 
         int tmpLen = sizeof(struct inotify_event) + event->len;
         event = (struct inotify_event *)(offset + tmpLen);
