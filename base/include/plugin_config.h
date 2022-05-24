@@ -41,6 +41,7 @@ public:
         int32_t threadCount;
     };
 
+    PluginConfig() {};
     explicit PluginConfig(const std::string& file);
     ~PluginConfig(){};
     bool StartParse();

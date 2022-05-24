@@ -90,7 +90,7 @@ public:
         return privateWorkLoopMap_;
     }
 
-    const std::map<std::string, PluginBundle>& GetPluginBundleInfoMap()
+    const std::map<std::string, std::shared_ptr<PluginBundle>>& GetPluginBundleInfoMap()
     {
         return pluginBundleInfos_;
     }
@@ -141,7 +141,7 @@ private:
     std::map<std::string, std::shared_ptr<Pipeline>> pipelines_;
     std::map<std::string, std::shared_ptr<EventLoop>> privateWorkLoopMap_;
     std::map<std::string, std::string> hiviewProperty_;
-    std::map<std::string, PluginBundle> pluginBundleInfos_;
+    std::map<std::string, std::shared_ptr<PluginBundle>> pluginBundleInfos_;
 
     // Listener data structure:<pluginName, <domain_eventName, Plugin>>
     std::unordered_map<std::string, std::shared_ptr<ListenerInfo>> listeners_;
