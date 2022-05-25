@@ -220,8 +220,7 @@ HWTEST_F(SysEventServiceOhosTest, StartService001, testing::ext::TestSize.Level3
     SysEventService service;
     auto notifyFunc = [] (std::shared_ptr<Event> event) -> void {};
     SysEventServiceOhos::StartService(&service, notifyFunc);
-    system("stop hiview");
-    system("start hiview");
+    system("kill -9 `pidof hiview`");
 }
 
 /**
