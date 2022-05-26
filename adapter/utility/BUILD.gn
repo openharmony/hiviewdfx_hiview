@@ -43,5 +43,8 @@ ohos_source_set("hiview_adapter_utility") {
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [
+    "hilog_native:libhilog",
+    "selinux:librestorecon",
+  ]
 }
