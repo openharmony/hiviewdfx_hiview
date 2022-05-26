@@ -16,77 +16,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>
 
 #include "faultlogger_client.h"
 #include "hiviewdfx_faultlogger_fuzzer.h"
 
 namespace OHOS {
-std::vector<std::string> g_cmdRet;
-std::string g_faultloggerCmd = "dumpsys hiviewdfx_faultlogger ";
-
-int ExecCmdWithRet(std::string cmd, std::vector<std::string> &resvec)
-{
-    resvec.clear();
-    FILE *pp = popen(cmd.c_str(), "r");
-    if (pp == nullptr) {
-        return -1;
-    }
-    char tmp[1024];
-    while (fgets(tmp, sizeof(tmp), pp) != nullptr) {
-        if (tmp[strlen(tmp) - 1] == '\n') {
-            tmp[strlen(tmp) - 1] = '\0';
-        }
-        resvec.push_back(tmp);
-    }
-    pclose(pp);
-    return resvec.size();
-}
-
-void FuzzFaultlogger(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
-void FuzzFaultloggerOptD(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + "-d" + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
-void FuzzFaultloggerOptF(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + "-f" + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
-void FuzzFaultloggerOptL(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + "-l" + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
-void FuzzFaultloggerOptM(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + "-m" + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
-void FuzzFaultloggerOptT(const uint8_t* data, size_t size)
-{
-    std::string rawString(reinterpret_cast<const char*>(data), size);
-    rawString = g_faultloggerCmd + "-t" + rawString;
-    ExecCmdWithRet(rawString.c_str(), g_cmdRet);
-}
-
 void FuzzInterfaceAddFaultLog(const uint8_t* data, size_t size)
 {
     FaultLogInfoInner inner;
@@ -112,16 +46,6 @@ void FuzzInterfaceQuerySelfFaultLog(const uint8_t* data, size_t size)
             result->Next();
         }
     }
-}
-
-void FuzzFaultloggerDumpCmds(const uint8_t* data, size_t size)
-{
-    FuzzFaultlogger(data, size);
-    FuzzFaultloggerOptD(data, size);
-    FuzzFaultloggerOptF(data, size);
-    FuzzFaultloggerOptL(data, size);
-    FuzzFaultloggerOptM(data, size);
-    FuzzFaultloggerOptT(data, size);
 }
 
 void FuzzFaultloggerClientInterface(const uint8_t* data, size_t size)
