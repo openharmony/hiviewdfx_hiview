@@ -134,8 +134,6 @@ void FuzzFaultloggerClientInterface(const uint8_t* data, size_t size)
 // Fuzzer entry point.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
-    // Run your code on data.
-    // OHOS::FuzzFaultloggerDumpCmds(data, size);
     OHOS::FuzzFaultloggerClientInterface(data, size);
     return 0;
 }
