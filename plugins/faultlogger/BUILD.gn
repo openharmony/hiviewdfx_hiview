@@ -41,3 +41,10 @@ group("moduletest") {
   testonly = true
   deps = [ "interfaces/cpp/innerkits/test:FaultloggerNativeInterfaceTest" ]
 }
+
+group("fuzztest") {
+  testonly = true
+  deps = [
+    "test/common/hiviewdfxfaultlogger_fuzzer:HiviewdfxFaultloggerFuzzTest",
+  ]
+}
