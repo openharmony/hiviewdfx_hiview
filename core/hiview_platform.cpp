@@ -52,7 +52,7 @@ static const char PLUGIN_CONFIG_NAME[] = "plugin_config";
 static const char HIVIEW_PID_FILE_NAME[] = "hiview.pid";
 static const char DEFAULT_CONFIG_DIR[] = "/system/etc/hiview/";
 static const char CLOUD_UPDATE_CONFIG_DIR[] = "/data/system/hiview/";
-static const char DEFAULT_WORK_DIR[] = "/data/log/LogService/";
+static const char DEFAULT_WORK_DIR[] = "/data/log/hiview/";
 static const char DEFAULT_COMMERCIAL_WORK_DIR[] = "/log/LogService/";
 static const char DEFAULT_PERSIST_DIR[] = "/log/hiview/";
 static const char LIB_SEARCH_DIR[] = "/system/lib/";
@@ -757,36 +757,24 @@ std::string HiviewPlatform::GetHiViewDirectory(HiviewContext::DirectoryType type
     return "";
 }
 
+void HiviewPlatform::ValidateAndCreateDirectory(std::string& defaultPath, const std::string& realPath)
+{
+    if (defaultPath != realPath) {
+        defaultPath = realPath;
+    }
+    if (FileUtil::IsDirectory(defaultPath)) {
+        return;
+    }
+    FileUtil::CreateDirWithDefaultPerm(defaultPath, AID_SYSTEM, AID_SYSTEM);
+}
+
 void HiviewPlatform::ValidateAndCreateDirectories(const std::string& localPath, const std::string& cloudUpdatePath,
                                                   const std::string& workPath, const std::string& persistPath)
 {
-    if (defaultConfigDir_ != localPath) {
-        defaultConfigDir_ = localPath;
-        if (!FileUtil::IsDirectory(localPath)) {
-            FileUtil::CreateDirWithDefaultPerm(defaultConfigDir_, AID_SYSTEM, AID_SYSTEM);
-        }
-    }
-
-    if (cloudUpdateConfigDir_ != cloudUpdatePath) {
-        cloudUpdateConfigDir_ = cloudUpdatePath;
-        if (!FileUtil::IsDirectory(cloudUpdatePath)) {
-            FileUtil::CreateDirWithDefaultPerm(cloudUpdateConfigDir_, AID_SYSTEM, AID_SYSTEM);
-        }
-    }
-
-    if (defaultWorkDir_ != workPath) {
-        defaultWorkDir_ = workPath;
-        if (!FileUtil::IsDirectory(workPath)) {
-            FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_SYSTEM, AID_SYSTEM);
-        }
-    }
-
-    if (defaultPersistDir_ != persistPath) {
-        defaultPersistDir_ = persistPath;
-        if (!FileUtil::IsDirectory(persistPath)) {
-            FileUtil::CreateDirWithDefaultPerm(defaultPersistDir_, AID_SYSTEM, AID_SYSTEM);
-        }
-    }
+    ValidateAndCreateDirectory(defaultConfigDir_, localPath);
+    ValidateAndCreateDirectory(cloudUpdateConfigDir_, cloudUpdatePath);
+    ValidateAndCreateDirectory(defaultWorkDir_, workPath);
+    ValidateAndCreateDirectory(defaultPersistDir_, persistPath);
 }
 
 #ifndef _WIN32

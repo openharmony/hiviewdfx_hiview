@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -114,6 +114,7 @@ private:
     void CleanupUnusedResources();
     void UnloadPlugin(const std::string& name);
     void StartEventSource(std::shared_ptr<EventSource> source);
+    void ValidateAndCreateDirectory(std::string& defaultPath, const std::string& realPath);
     void ValidateAndCreateDirectories(const std::string& localPath, const std::string& cloudUpdatePath,
                                   const std::string& workPath, const std::string& persistPath);
     void LoadBusinessPlugin(const PluginConfig& config);
