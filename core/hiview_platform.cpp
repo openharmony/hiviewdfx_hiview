@@ -766,9 +766,6 @@ void HiviewPlatform::ValidateAndCreateDirectory(std::string& defaultPath, const 
         return;
     }
     FileUtil::CreateDirWithDefaultPerm(defaultPath, AID_SYSTEM, AID_SYSTEM);
-    if (!FileUtil::AttachSelinuxLabel(defaultPath)) {
-        HIVIEW_LOGE("failed to attach selinux label to path=%{public}s", defaultPath.c_str());
-    }
 }
 
 void HiviewPlatform::ValidateAndCreateDirectories(const std::string& localPath, const std::string& cloudUpdatePath,

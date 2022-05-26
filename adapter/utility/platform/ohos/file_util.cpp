@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,7 +31,6 @@
 
 #include "directory_ex.h"
 #include "file_ex.h"
-#include "policycoreutils.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace FileUtil {
@@ -311,12 +310,6 @@ bool RenameFile(const std::string& src, const std::string& dest)
     }
     return false;
 }
-
-bool AttachSelinuxLabel(const std::string& path)
-{
-    return RestoreconRecurse(path.c_str()) == 0;
-}
-
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS
