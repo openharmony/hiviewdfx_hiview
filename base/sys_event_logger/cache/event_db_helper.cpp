@@ -42,7 +42,6 @@ EventDbHelper::~EventDbHelper()
     if (CloseDocStore() < 0) {
         HiLog::Error(LABEL, "fail to close db");
     }
-    this->storeMgr_ = nullptr;
 }
 
 void EventDbHelper::Init(const std::string& workPath)

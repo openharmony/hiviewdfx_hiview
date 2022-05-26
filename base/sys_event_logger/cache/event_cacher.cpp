@@ -15,9 +15,13 @@
 #include "event_cacher.h"
 
 #include "hilog/log.h"
+#include "hiview_shutdown_callback.h"
+#include "hiview_timer_info.h"
 #include "plugin_stats_event_factory.h"
+#include "power_mgr_client.h"
 #include "sys_event_common.h"
 #include "sys_usage_event_factory.h"
+#include "time_service_client.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -25,30 +29,71 @@ namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "SysEventLogger-EventCacher" };
 constexpr uint64_t DEFAULT_TIME = 0;
+constexpr int TIMER_TYPE = 1;
+constexpr uint64_t TIMER_INTERVAL = 1000 * 60 * 5; // 5min
+constexpr uint64_t TIMER_TRIGGER = 10;
 }
 using namespace PluginStatsEventSpace;
 using namespace SysUsageEventSpace;
 
-EventCacher::EventCacher() : dbHelper_(nullptr), sysUsageEvent_(nullptr)
+EventCacher::EventCacher() : timerId_(0), callback_(nullptr), dbHelper_(nullptr), sysUsageEvent_(nullptr)
 {}
 
 EventCacher::~EventCacher()
 {
-    pluginStatsEvents_.clear();
-    dbHelper_ = nullptr;
-    sysUsageEvent_ = nullptr;
+    if (timerId_ != 0) {
+        if (!MiscServices::TimeServiceClient::GetInstance()->DestroyTimer(timerId_)) {
+            HiLog::Error(LABEL, "failed to destroy timer");
+        }
+    }
+
+    if (callback_ != nullptr) {
+        PowerMgr::PowerMgrClient::GetInstance().UnRegisterShutdownCallback(callback_);
+    }
 }
 
 void EventCacher::InitCache(const std::string& workPath)
 {
-    if (dbHelper_ != nullptr) {
-        HiLog::Warn(LABEL, "cache has been initialized");
+    if (dbHelper_ == nullptr) {
+        dbHelper_ = std::make_unique<EventDbHelper>();
+        dbHelper_->Init(workPath);
+        InitSysUsageEvent();
+        InitPluginStatsEvents();
+    }
+
+    if (timerId_ == 0) {
+        InitTimer();
+    }
+
+    if (callback_ == nullptr) {
+        InitCallback();
+    }
+}
+
+void EventCacher::InitTimer()
+{
+    auto timerInfo = std::make_shared<HiViewTimerInfo>();
+    timerInfo->SetType(TIMER_TYPE);
+    timerInfo->SetRepeat(true);
+    timerInfo->SetInterval(TIMER_INTERVAL);
+    timerInfo->SetWantAgent(nullptr);
+    timerId_ = MiscServices::TimeServiceClient::GetInstance()->CreateTimer(timerInfo);
+    if (timerId_ == 0) {
+        HiLog::Error(LABEL, "failed to create timer");
         return;
     }
-    dbHelper_ = std::make_unique<EventDbHelper>();
-    dbHelper_->Init(workPath);
-    InitSysUsageEvent();
-    InitPluginStatsEvents();
+    if (!MiscServices::TimeServiceClient::GetInstance()->StartTimer(timerId_,
+        TimeUtil::GetSteadyClockTimeMs() + TIMER_TRIGGER)) {
+        HiLog::Error(LABEL, "failed to start timer");
+        return;
+    }
+}
+
+void EventCacher::InitCallback()
+{
+    callback_ = new (std::nothrow) HiViewShutdownCallback();
+    PowerMgr::PowerMgrClient::GetInstance().RegisterShutdownCallback(callback_,
+        PowerMgr::IShutdownCallback::ShutdownPriority::POWER_SHUTDOWN_PRIORITY_HIGH);
 }
 
 void EventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events)
