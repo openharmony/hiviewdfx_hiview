@@ -13,24 +13,22 @@
 import("//build/config/features.gni")
 import("//build/test.gni")
 ohos_fuzztest("HiviewdfxFaultloggerFuzzTest") {
-    module_out_path = "hiviewdfx/faultlogger/"
-    fuzz_config_file = "//base/hiviewdfx/hiview/plugins/faultlogger/test/common/hiviewdfxfaultlogger_fuzzer"
-    include_dirs = [
-        "//third_party/zlib/",
-        "//utils/native/base/",
-        "./",
-    ]
+  module_out_path = "hiviewdfx/faultlogger/"
+  fuzz_config_file = "//base/hiviewdfx/hiview/plugins/faultlogger/test/common/hiviewdfxfaultlogger_fuzzer"
+  include_dirs = [
+    "//third_party/zlib/",
+    "//utils/native/base/",
+    "./",
+  ]
 
-    cflags = [
-        "-g",
-        "-O0",
-        "-Wno-unused-variable",
-        "-fno-omit-frame-pointer",
-    ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
 
-    sources = [ "hiviewdfx_faultlogger_fuzzer.cpp" ]
+  sources = [ "hiviewdfx_faultlogger_fuzzer.cpp" ]
 
-    external_deps = [
-      "hiview:libfaultlogger",
-    ]
+  external_deps = [ "hiview:libfaultlogger" ]
 }
