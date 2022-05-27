@@ -27,40 +27,20 @@ public:
     PluginBundle (const std::string& name, const PluginConfig& config, DynamicModule module)
         : name_(name), config_(config), module_(module) {};
     ~PluginBundle ();
-    PluginBundle (const PluginBundle& bundle) = delete;
-    PluginBundle& operator=(const PluginBundle& bundle) = delete;
-
-    PluginBundle (PluginBundle&& bundle)
-    {
-        name_ = bundle.GetName();
-        config_ = bundle.GetBundleConfig();
-        module_ = bundle.GetHandle();
-    };
-
-    PluginBundle& operator=(PluginBundle&& bundle)
-    {
-        this->name_ = bundle.GetName();
-        this->config_ = bundle.GetBundleConfig();
-        this->module_ = bundle.GetHandle();
-        return *this;
-    };
+    PluginBundle(const PluginBundle&) = delete;
+    PluginBundle& operator= (const PluginBundle&) = delete;
+    PluginBundle(PluginBundle&& bundle) = delete;
+    PluginBundle& operator=(PluginBundle&& bundle)  = delete;
 
     PluginConfig GetBundleConfig() const
     {
         return config_;
-    };
+    }
 
     std::string GetName() const
     {
         return name_;
-    };
-
-    DynamicModule GetHandle()
-    {
-        DynamicModule temp = module_;
-        module_ = nullptr;
-        return temp;
-    };
+    }
 
     void ReleaseDynamicModule();
 private:

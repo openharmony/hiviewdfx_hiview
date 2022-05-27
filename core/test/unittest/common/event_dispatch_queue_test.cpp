@@ -65,7 +65,7 @@ std::string ExtendEventListener::GetListenerName()
 HWTEST_F(EventDispatchQueueTest, EventDispatchQueueCreateTest001, TestSize.Level3)
 {
     printf("EventDispatchQueueTest.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config0")) {
         printf("Fail to init environment. \n");
     }
@@ -87,7 +87,7 @@ HWTEST_F(EventDispatchQueueTest, EventDispatchQueueCreateTest001, TestSize.Level
 HWTEST_F(EventDispatchQueueTest, UnorderEventDispatchTest001, TestSize.Level3)
 {
     printf("EventDispatchQueueTest.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config0")) {
         printf("Fail to init environment. \n");
     }

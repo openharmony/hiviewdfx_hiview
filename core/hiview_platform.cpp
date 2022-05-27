@@ -270,8 +270,8 @@ void HiviewPlatform::LoadPluginBundle(const std::string& bundleName, const std::
     }
 
     LoadBusinessPlugin(config);
-    PluginBundle bundle(bundleName, config, handle);
-    pluginBundleInfos_.insert(std::pair<std::string, PluginBundle>(bundleName, std::move(bundle)));
+    std::shared_ptr<PluginBundle> bundle = std::make_shared<PluginBundle>(bundleName, config, handle);
+    pluginBundleInfos_.insert(std::pair<std::string, std::shared_ptr<PluginBundle>>(bundleName, bundle));
 }
 
 void HiviewPlatform::LoadPluginBundles()

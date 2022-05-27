@@ -49,7 +49,7 @@ HWTEST_F(PluginBundleTest, PluginBundleLoadTest001, TestSize.Level3)
      * @tc.steps: step1. init plugin platform and set proxy idle time
      */
     printf("PluginBundleTest.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     platform.SetMaxProxyIdleTime(10); // 10 seconds
     platform.SetCheckProxyIdlePeriod(5); // 5 seconds
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {

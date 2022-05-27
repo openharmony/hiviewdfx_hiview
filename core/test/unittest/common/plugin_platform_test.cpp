@@ -48,7 +48,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformInit001, TestSize.Level3)
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     const int argc = 2;
     char arg0[] = "/system/bin/hiview";
     char arg1[] = "-a";
@@ -114,7 +114,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformRepackPipelienEventTest001, TestSize.
      * @tc.steps: step1. plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
@@ -150,7 +150,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginUnloadTest001, TestSize.Level3)
      * @tc.steps: step1. plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
+    OHOS::HiviewDFX::HiviewPlatform platform;
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
@@ -227,7 +227,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformPluginSyncEventCallTest001, TestSize.
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
@@ -282,7 +282,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformServiceStartTest001, TestSize.Level3)
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();;
     printf("PluginPlatformServiceStartTest001. called\n");
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
@@ -305,7 +305,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformDynamicPluginUnloadTest001, TestSize.
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform platform;
+    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();;
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
