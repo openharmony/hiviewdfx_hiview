@@ -124,9 +124,9 @@ group("hiview_test_package") {
     "$hiview_adapter:unittest",
     "base/test:unittest",
     "core/test:unittest",
+    "plugins:fuzztest",
     "plugins:moduletest",
     "plugins:unittest",
-    "plugins:fuzztest",
     "test:moduletest",
     "test:unittest",
   ]
