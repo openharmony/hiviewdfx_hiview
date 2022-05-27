@@ -25,3 +25,9 @@ group("moduletest") {
   deps = []
   deps += [ "faultlogger:moduletest" ]
 }
+
+group("fuzztest") {
+  testonly = true
+  deps = []
+  deps += [ "faultlogger:fuzztest" ]
+}
