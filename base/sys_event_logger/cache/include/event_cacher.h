@@ -21,8 +21,9 @@
 #include <string>
 #include <vector>
 
-#include "logger_event.h"
 #include "event_db_helper.h"
+#include "ishutdown_callback.h"
+#include "logger_event.h"
 #include "singleton.h"
 
 namespace OHOS {
@@ -50,12 +51,16 @@ public:
 private:
     void InitSysUsageEvent();
     void InitPluginStatsEvents();
+    void InitTimer();
+    void InitCallback();
     void AddUint64ToEvent(std::shared_ptr<LoggerEvent>& event, const std::string &name, uint64_t value);
 
 private:
+    uint64_t timerId_;
+    sptr<PowerMgr::IShutdownCallback> callback_;
     std::unique_ptr<EventDbHelper> dbHelper_;
-    std::map<std::string, std::shared_ptr<LoggerEvent>> pluginStatsEvents_;
     std::shared_ptr<LoggerEvent> sysUsageEvent_;
+    std::map<std::string, std::shared_ptr<LoggerEvent>> pluginStatsEvents_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
