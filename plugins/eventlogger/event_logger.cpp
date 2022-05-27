@@ -302,15 +302,17 @@ bool EventLogger::OnFileDescriptorEvent(int fd, int type)
         return false;
     }
     int len = read(inotifyFd_, buffer, bufSize);
-    if (len < 0) {
+    if (len <= 0) {
         HIVIEW_LOGE("failed to read event");
         return false;
     }
 
     offset = buffer;
     event = (struct inotify_event *)buffer;
-    while ((reinterpret_cast<char *>(event) - buffer) < (len - sizeof(struct inotify_event))) {
-        if ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event) + event->len) > len) {
+    while ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event)) <
+            static_cast<uintptr_t>(len)) {
+        if ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event) + event->len) >
+            static_cast<uintptr_t>(len)) {
             break;
         }
 
