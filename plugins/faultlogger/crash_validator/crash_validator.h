@@ -16,6 +16,10 @@
 #define CRASH_VALIDATOR_H
 #include "plugin.h"
 
+#include <memory>
+#include <mutex>
+#include <vector>
+
 namespace OHOS {
 namespace HiviewDFX {
 class CrashEvent {
@@ -55,6 +59,7 @@ private:
     std::vector<CrashEvent> pendingEvents_;
     std::vector<CrashEvent> noLogEvents_;
     std::vector<CrashEvent> logContentMissingEvents_;
+    std::mutex lock_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

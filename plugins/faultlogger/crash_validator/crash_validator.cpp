@@ -40,8 +40,10 @@ constexpr char KEY_STATUS[] = "STATUS";
 constexpr char KEY_LOG_PATH[] = "LOG_PATH";
 constexpr char KEY_MODULE[] = "MODULE";
 constexpr char INIT_LOG_PATTERN[] = "SigHandler, SIGCHLD received, ";
+constexpr char KEY_NO_LOG_EVENT_NAME[] = "CPP_CRASH_NO_LOG";
+constexpr char KEY_HAPPEN_TIME[] = "HAPPEN_TIME";
 constexpr int32_t LOG_SIZE = 1024;
-constexpr uint64_t MAX_LOG_GENERATE_TIME = 60; // 60 seconds
+constexpr uint64_t MAX_LOG_GENERATE_TIME = 30; // 30 seconds
 }
 CrashValidator::CrashValidator() : stopReadKmsg_(false), totalEventCount_(0),
     normalEventCount_(0), kmsgReaderThread_(nullptr)
@@ -64,12 +66,11 @@ void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
 {
     std::vector<CrashEvent>::const_iterator it = events.begin(); 
     while (it != events.end()) {
-        dprintf(fd, "Module:%s Time:%llu Pid:%d Uid:%d IsExitEvent:%d\n",
+        dprintf(fd, "Module:%s Time:%llu Pid:%d Uid:%d\n",
             it->name.c_str(),
             static_cast<unsigned long long>(it->time),
             it->pid,
-            it->uid,
-            static_cast<int>(it->isCppCrash));
+            it->uid);
         it++;
     }
 }
@@ -84,6 +85,7 @@ void CrashValidator::Dump(int fd, const std::vector<std::string>& cmds)
             (normalEventCount_ * 100) / totalEventCount_); // 100 : percent ratio
     }
 
+    std::lock_guard<std::mutex> lock(lock_);
     if (!noLogEvents_.empty()) {
         dprintf(fd, "No CppCrash Log Events(%zu):\n", noLogEvents_.size());
         PrintEvents(fd, noLogEvents_);
@@ -106,6 +108,7 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
         return false;
     }
 
+    std::lock_guard<std::mutex> lock(lock_);
     if (event->eventName_ == EVENT_CPP_CRASH) {
         HandleCppCrashEvent(event);
     } else if (event->eventName_ == KEY_PROCESS_EXIT) {
@@ -191,11 +194,23 @@ void CrashValidator::CheckOutOfDateEvents()
             eventTime = eventTime / 1000; // 1000 : convert to second
         }
 
-        if (now > eventTime && now - eventTime > MAX_LOG_GENERATE_TIME) {
-            noLogEvents_.push_back(*it);
-            it = pendingEvents_.erase(it);
+        if (now > eventTime && now - eventTime < MAX_LOG_GENERATE_TIME) {
+            it++;
+            continue;
         }
-        ++it;
+
+        if (!it->isCppCrash) {
+            HiSysEvent::Write("RELIABILITY", KEY_NO_LOG_EVENT_NAME, HiSysEvent::EventType::FAULT,
+                KEY_NAME, it->name,
+                KEY_PID, it->pid,
+                KEY_UID, it->uid,
+                KEY_HAPPEN_TIME, it->time);
+            noLogEvents_.push_back(*it);
+        } else {
+            totalEventCount_++;
+            normalEventCount_++;
+        }
+        it = pendingEvents_.erase(it);
     }
 }
 
