@@ -87,3 +87,10 @@ CPP_CRASH:
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
   LIFETIME: {type: INT64, desc: elapse time since process start}
 
+CPP_CRASH_NO_LOG:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: encounter cpp crash but no log generated}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+
