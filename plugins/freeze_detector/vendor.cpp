@@ -41,6 +41,8 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
     {"KERNEL_VENDOR", "HUNGTASK"},
     {"KERNEL_VENDOR", "LONG_PRESS"},
+    {"KERNEL_VENDOR", "SCREEN_ON"},
+    {"KERNEL_VENDOR", "SCREEN_OFF"},
 };
 
 bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
