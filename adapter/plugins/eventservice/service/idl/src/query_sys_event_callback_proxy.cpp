@@ -65,18 +65,11 @@ void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total)
         HiLog::Error(LABEL, "write descriptor failed.");
         return;
     }
-
-    bool ret = data.WriteInt32(reason);
+    bool ret = data.WriteInt32(reason) && data.WriteInt32(total);
     if (!ret) {
-        HiLog::Error(LABEL, "write reason failed.");
+        HiLog::Error(LABEL, "write params failed.");
         return;
     }
-    ret = data.WriteInt32(total);
-    if (!ret) {
-        HiLog::Error(LABEL, "write total failed.");
-        return;
-    }
-
     MessageParcel reply;
     MessageOption option = {MessageOption::TF_ASYNC};
     int32_t res = remote->SendRequest(ON_COMPLETE, data, reply, option);

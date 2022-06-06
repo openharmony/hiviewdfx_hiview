@@ -30,10 +30,11 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
         HiLog::Error(LABEL, "read descriptor failed.");
         return ERR_INVALID_VALUE;
     }
+    bool ret = false;
     switch (code) {
         case ON_QUERY: {
             std::vector<std::u16string> sysEvent;
-            int ret = data.ReadString16Vector(&sysEvent);
+            ret = data.ReadString16Vector(&sysEvent);
             if (!ret) {
                 HiLog::Error(LABEL, "parcel read sys event failed.");
                 return ERR_FLATTEN_OBJECT;
@@ -49,7 +50,7 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
         }
         case ON_COMPLETE: {
             int32_t reason = 0;
-            int ret = data.ReadInt32(reason);
+            ret = data.ReadInt32(reason);
             if (!ret) {
                 HiLog::Error(LABEL, "parcel read reason failed.");
                 return ERR_FLATTEN_OBJECT;

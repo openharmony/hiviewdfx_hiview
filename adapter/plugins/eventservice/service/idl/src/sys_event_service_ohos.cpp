@@ -23,6 +23,7 @@
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "ret_code.h"
 #include "system_ability_definition.h"
 
 using namespace std;
@@ -193,25 +194,26 @@ SysEventServiceBase* SysEventServiceOhos::GetSysEventService(SysEventServiceBase
     return ref;
 }
 
-bool SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback)
+int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
+    const sptr<ISysEventCallback>& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "HasAccessPermission check failed");
-        return false;
+        HiLog::Error(LABEL, "access permission check failed");
+        return ERROR_NO_PERMISSION;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, sys event service is null.");
-        return false;
+        return ERROR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, callback is null.");
-        return false;
+        return ERROR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, object in callback is null.");
-        return false;
+        return ERROR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
@@ -220,57 +222,57 @@ bool SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules, co
     if (registeredListeners.find(callbackObject) != registeredListeners.end()) {
         registeredListeners[callbackObject] = rulesPair;
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
-        return true;
+        return IPC_CALL_SUCCEED;
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
         HiLog::Error(LABEL, "subscribe fail, can not add death recipient.");
-        return false;
+        return ERROR_ADD_DEATH_RECIPIENT;
     }
     registeredListeners.insert(make_pair(callbackObject, rulesPair));
     HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
         uid, pid, registeredListeners.size());
-    return true;
+    return IPC_CALL_SUCCEED;
 }
 
-bool SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
+int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "HasAccessPermission check failed");
-        return false;
+        HiLog::Error(LABEL, "access permission check failed");
+        return ERROR_NO_PERMISSION;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "sys event service is null.");
-        return false;
+        return ERROR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "callback is null.");
-        return false;
+        return ERROR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "object in callback is null.");
-        return false;
+        return ERROR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
     lock_guard<mutex> lock(mutex_);
     if (registeredListeners.empty()) {
         HiLog::Debug(LABEL, "has no any listeners.");
-        return false;
+        return ERROR_LISTENERS_EMPTY;
     }
     auto registeredListener = registeredListeners.find(callbackObject);
     if (registeredListener != registeredListeners.end()) {
         if (!callbackObject->RemoveDeathRecipient(deathRecipient_)) {
             HiLog::Error(LABEL, "uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
-            return false;
+            return ERROR_ADD_DEATH_RECIPIENT;
         }
         registeredListeners.erase(registeredListener);
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
-        return true;
+        return IPC_CALL_SUCCEED;
     } else {
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
-        return false;
+        return ERROR_LISTENER_NOT_EXIST;
     }
 }
 
@@ -373,12 +375,12 @@ void SysEventServiceOhos::QuerySysEventMiddle(int64_t beginTime, int64_t endTime
     result = sysEventQuery.Execute(maxEvents);
 }
 
-bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
     const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "HasAccessPermission check failed");
-        return false;
+        HiLog::Error(LABEL, "access permission check failed");
+        return ERROR_NO_PERMISSION;
     }
     int64_t lastQueryUpperLimit = endTime;
     if (endTime < 0) {
@@ -391,7 +393,7 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
     }
     if (!CheckDomainEvent(rules)) {
         HiLog::Error(LABEL, "CheckDomainEvent check failed");
-        return false;
+        return ERROR_DOMIAN_INVALID;
     }
     int32_t remainEvents = queryTotal;
     int32_t transRecord = 0;
@@ -418,7 +420,7 @@ bool SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int3
             break;
         }
     }
-    return true;
+    return IPC_CALL_SUCCEED;
 }
 
 bool SysEventServiceOhos::HasAccessPermission() const
@@ -439,16 +441,16 @@ bool SysEventServiceOhos::HasAccessPermission() const
     return true;
 }
 
-bool SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
+int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "permission denied");
-        return false;
+        return ERROR_NO_PERMISSION;
     }
 
     if (mode == isDebugMode) {
         HiLog::Error(LABEL, "same config, no need set");
-        return false;
+        return ERROR_DEBUG_MODE_SET_REPEAT;
     }
 
     auto event = std::make_shared<Event>("SysEventSource");
@@ -459,7 +461,7 @@ bool SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, 
     HiLog::Debug(LABEL, "set debug mode %{public}s", mode ? "true" : "false");
     debugModeCallback = callback;
     isDebugMode = mode;
-    return true;
+    return IPC_CALL_SUCCEED;
 }
 
 void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)

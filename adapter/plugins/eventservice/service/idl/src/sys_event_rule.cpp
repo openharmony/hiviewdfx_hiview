@@ -37,16 +37,16 @@ bool SysEventRule::Marshalling(Parcel& parcel) const
 SysEventRule* SysEventRule::Unmarshalling(Parcel& parcel)
 {
     SysEventRule* ret = new SysEventRule();
-    if (!parcel.ReadString(ret->domain)) {
+    if (ret != nullptr && !parcel.ReadString(ret->domain)) {
         goto error;
     }
-    if (!parcel.ReadString(ret->eventName)) {
+    if (ret != nullptr && !parcel.ReadString(ret->eventName)) {
         goto error;
     }
-    if (!parcel.ReadString(ret->tag)) {
+    if (ret != nullptr && !parcel.ReadString(ret->tag)) {
         goto error;
     }
-    if (!parcel.ReadUint32(ret->ruleType)) {
+    if (ret != nullptr && !parcel.ReadUint32(ret->ruleType)) {
         goto error;
     }
     return ret;
