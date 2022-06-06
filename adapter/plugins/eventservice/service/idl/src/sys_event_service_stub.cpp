@@ -32,6 +32,9 @@ int32_t SysEventServiceStub::HandleAddSysEventListener(MessageParcel& data,
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
+    if (remoteObject == nullptr) {
+        return ERR_FLATTEN_OBJECT;
+    }
     sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(remoteObject);
     ret = reply.WriteInt32(AddListener(rules, callback));
     if (!ret) {
@@ -45,12 +48,19 @@ int32_t SysEventServiceStub::HandleRemoveSysEventListener(MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
+    if (remoteObject == nullptr) {
+        return ERR_FLATTEN_OBJECT;
+    }
     sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(remoteObject);
     if (callback == nullptr) {
         HiLog::Error(LABEL, "parcel read callback failed.");
         return ERR_FLATTEN_OBJECT;
     }
-    RemoveListener(callback);
+    bool ret = reply.WriteInt32(RemoveListener(callback));
+    if (!ret) {
+        HiLog::Error(LABEL, "parcel write return-value of RemoveListener failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
     return ERR_OK;
 }
 
@@ -82,8 +92,11 @@ int32_t SysEventServiceStub::HandleQueryEvent(MessageParcel& data,
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
+    if (remoteObject == nullptr) {
+        return ERR_FLATTEN_OBJECT;
+    }
     sptr<IQuerySysEventCallback> callback = iface_cast<IQuerySysEventCallback>(remoteObject);
-    ret = reply.WriteBool(QuerySysEvent(beginTime, endTime, maxEvents, queryRules, callback));
+    ret = reply.WriteInt32(QuerySysEvent(beginTime, endTime, maxEvents, queryRules, callback));
     if (!ret) {
         HiLog::Error(LABEL, "parcel write return-value of QuerySysEvent failed.");
         return ERR_FLATTEN_OBJECT;
@@ -95,6 +108,9 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
+    if (remoteObject == nullptr) {
+        return ERR_FLATTEN_OBJECT;
+    }
     sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(remoteObject);
     bool mode = false;
     bool ret = data.ReadBool(mode);
@@ -102,7 +118,7 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
         HiLog::Error(LABEL, "parcel read mode failed.");
         return ERR_FLATTEN_OBJECT;
     }
-    ret = reply.WriteBool(SetDebugMode(callback, mode));
+    ret = reply.WriteInt32(SetDebugMode(callback, mode));
     if (!ret) {
         HiLog::Error(LABEL, "parcel write return-value of SetDebugMode failed.");
         return ERR_FLATTEN_OBJECT;

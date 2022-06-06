@@ -34,28 +34,12 @@ void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16s
         HiLog::Error(LABEL, "write descriptor failed.");
         return;
     }
-
-    bool ret = data.WriteString16(domain);
+    bool ret = data.WriteString16(domain) && data.WriteString16(eventName) &&
+        data.WriteUint32(eventType) && data.WriteString16(eventDetail);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write domain failed.");
+        HiLog::Error(LABEL, "parcel write params failed.");
         return;
     }
-    ret = data.WriteString16(eventName);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel write eventName failed.");
-        return;
-    }
-    ret = data.WriteUint32(eventType);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel write event type failed.");
-        return;
-    }
-    ret = data.WriteString16(eventDetail);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel write event detail failed.");
-        return;
-    }
-
     MessageParcel reply;
     MessageOption option = {MessageOption::TF_ASYNC};
     int32_t res = remote->SendRequest(HANDLE, data, reply, option);

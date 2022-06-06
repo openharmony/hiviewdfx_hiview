@@ -28,12 +28,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class ISysEventService : public IRemoteBroker {
 public:
-    virtual bool AddListener(const std::vector<SysEventRule>& rules,
+    virtual int32_t AddListener(const std::vector<SysEventRule>& rules,
         const sptr<ISysEventCallback>& callback) = 0;
-    virtual bool RemoveListener(const sptr<ISysEventCallback>& callback) = 0;
-    virtual bool QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+    virtual int32_t RemoveListener(const sptr<ISysEventCallback>& callback) = 0;
+    virtual int32_t QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
         const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback) = 0;
-    virtual bool SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) = 0;
+    virtual int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) = 0;
 
     enum {
         ADD_SYS_EVENT_LISTENER = 0,
