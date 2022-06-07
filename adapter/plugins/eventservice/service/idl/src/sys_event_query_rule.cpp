@@ -34,13 +34,16 @@ bool SysEventQueryRule::Marshalling(Parcel& parcel) const
 SysEventQueryRule* SysEventQueryRule::Unmarshalling(Parcel& parcel)
 {
     SysEventQueryRule* ret = new SysEventQueryRule();
-    if (ret != nullptr && !parcel.ReadUint32(ret->ruleType)) {
+    if (ret == nullptr) {
+        return ret;
+    }
+    if (!parcel.ReadUint32(ret->ruleType)) {
         goto error;
     }
-    if (ret != nullptr && !parcel.ReadString(ret->domain)) {
+    if (!parcel.ReadString(ret->domain)) {
         goto error;
     }
-    if (ret != nullptr && !parcel.ReadStringVector(&(ret->eventList))) {
+    if (!parcel.ReadStringVector(&(ret->eventList))) {
         goto error;
     }
     return ret;
