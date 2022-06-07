@@ -70,8 +70,7 @@ bool WriteVectorToParcel(Parcel& parcel, const std::vector<T>& rules)
             return false;
         }
         for (size_t i = 0; i < size; i++) {
-            if ((&rules[i]) != nullptr &&
-                !parcel.WriteParcelable(&rules[i])) {
+            if (!parcel.WriteParcelable(&rules[i])) {
                 return false;
             }
         }
