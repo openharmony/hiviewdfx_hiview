@@ -20,6 +20,20 @@
         </event>
       </links>
     </rule>
+    <rule id="2" window="0" domain="KERNEL_VENDOR" stringid="SCREEN_ON">   <!-- SCREEN_ON -->
+      <links type="watchpoint">
+        <event domain="KERNEL_VENDOR" stringid="SCREEN_ON">	<!-- SCREEN_ON -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="3" window="0" domain="KERNEL_VENDOR" stringid="SCREEN_OFF">   <!-- SCREEN_OFF -->
+      <links type="watchpoint">
+        <event domain="KERNEL_VENDOR" stringid="SCREEN_OFF">	<!-- SCREEN_OFF -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
   </rules>
   <rules resolver="AppResolver">
     <rule id="1" window="30" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
