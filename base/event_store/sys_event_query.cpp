@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -802,6 +802,16 @@ void SysEventQuery::BuildDataQuery(DataQuery &dataQuery, int limit)
     dataQuery.Limit(limit);
 }
 
+std::string SysEventQuery::GetDbFile()
+{
+    return dbFile_;
+}
+
+void SysEventQuery::GetDataQuery(DataQuery &dataQuery)
+{
+    Cond::Traval(dataQuery, cond_);
+}
+
 ResultSet SysEventQuery::Execute(int limit)
 {
     DataQuery dataQuery;
@@ -821,7 +831,7 @@ ResultSet SysEventQuery::Execute(int limit)
     }
     for (auto it = entries.begin(); it != entries.end(); it++) {
         SysEvent sysEvent("", nullptr, it->value);
-        sysEvent.PaserJson();
+        sysEvent.ParseJson();
         sysEvent.SetSeq(it->id);
         resultSet.eventRecords_.emplace_back(sysEvent);
     }
@@ -829,12 +839,7 @@ ResultSet SysEventQuery::Execute(int limit)
     return resultSet;
 }
 
-void SysEventQuery::GetDataQeury(DataQuery &dataQuery)
-{
-    Cond::Traval(dataQuery, cond_);
-}
-
-int SysEventQuery::ExecuteWithCallback(SysEeventCallBack callback, int limit)
+int SysEventQuery::ExecuteWithCallback(SysEventCallBack callback, int limit)
 {
     DataQuery dataQuery;
     BuildDataQuery(dataQuery, limit);
@@ -843,7 +848,7 @@ int SysEventQuery::ExecuteWithCallback(SysEeventCallBack callback, int limit)
     std::shared_ptr<DocStore> docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile_);
     std::function<int (int, const Entry&)> c = [&](int cnt, const Entry &entry) -> int {
         SysEvent sysEvent("", nullptr, entry.value);
-        sysEvent.PaserJson();
+        sysEvent.ParseJson();
         sysEvent.SetSeq(entry.id);
         return callback(sysEvent);
     };

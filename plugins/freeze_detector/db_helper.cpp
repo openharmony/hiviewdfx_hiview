@@ -35,7 +35,7 @@ void DBHelper::SelectEventFromDB(
         return;
     }
 
-    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     eventQuery.Select({EventStore::EventCol::TS})
         .Where(EventStore::EventCol::TS, EventStore::Op::GE, static_cast<int64_t>(start))
         .And(EventStore::EventCol::TS, EventStore::Op::LE, static_cast<int64_t>(end));
@@ -94,7 +94,7 @@ void DBHelper::SelectEventFromDB(
 
 void DBHelper::UpdateEventIntoDB(const WatchPoint& watchPoint, int id)
 {
-    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::ResultSet set = eventQuery.Select({EventStore::EventCol::TS})
         .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(watchPoint.GetTimestamp()))
         .Execute();

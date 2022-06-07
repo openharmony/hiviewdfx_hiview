@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,18 +23,25 @@
 #include "logger.h"
 #include "sys_event_dao.h"
 #include "sys_event_db_backup.h"
-#include "sys_event_db_clean.h"
+#include "sys_event_db_cleaner.h"
 #include "sys_event.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-SysEventDbMgr");
+using EventStore::StoreType;
 using EventStore::SysEventDao;
-void SysEventDbMgr::SaveToStore(std::shared_ptr<SysEvent> sysevent) const
+DEFINE_LOG_TAG("HiView-SysEventDbMgr");
+namespace {
+constexpr StoreType STORE_TYPES[] = {
+    StoreType::BEHAVIOR, StoreType::FAULT, StoreType::STATISTIC, StoreType::SECURITY
+};
+}
+
+void SysEventDbMgr::SaveToStore(std::shared_ptr<SysEvent> event) const
 {
-    SysEventDao::Insert(sysevent);
-    HIVIEW_LOGD("save sys event %{public}" PRId64 ", %{public}s", sysevent->GetSeq(), sysevent->eventName_.c_str());
+    SysEventDao::Insert(event);
+    HIVIEW_LOGD("save sys event %{public}" PRId64 ", %{public}s", event->GetSeq(), event->eventName_.c_str());
 }
 
 void SysEventDbMgr::StartCheckStoreTask(std::shared_ptr<EventLoop> looper)
@@ -45,19 +52,30 @@ void SysEventDbMgr::StartCheckStoreTask(std::shared_ptr<EventLoop> looper)
     }
     HIVIEW_LOGI("init check store task");
     auto statusTask = std::bind(&SysEventDbMgr::CheckStore, this);
-    int delay = TimeUtil::SECONDS_PER_MINUTE * 10; // ten minute
+    int delay = TimeUtil::SECONDS_PER_HOUR; // 1 hour
     looper->AddTimerEvent(nullptr, nullptr, statusTask, delay, true);
 }
 
 void SysEventDbMgr::CheckStore()
 {
-    SysEventDbClean sysEventDbClean;
-    SysEventDbBackup sysEventDbBackup(backupTime_);
-    if (!sysEventDbClean.CleanDbStore()) {
-        sysEventDbBackup.Recover();
-        return;
+    if (SysEventDbCleaner::IfNeedClean()) {
+        SysEventDbCleaner cleaner;
+        if (!cleaner.Clean()) {
+            HIVIEW_LOGE("failed to clean store");
+            TryToRecover();
+            return;
+        }
     }
-    sysEventDbBackup.CheckDbStoreBroken();
+}
+
+void SysEventDbMgr::TryToRecover()
+{
+    for (auto type : STORE_TYPES) {
+        SysEventDbBackup dbBackup(type);
+        if (dbBackup.IsBroken() && !dbBackup.Recover()) {
+            HIVIEW_LOGE("failed to recover db, type=%{public}d", type);
+        }
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

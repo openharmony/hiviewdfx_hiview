@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,23 +18,27 @@
 
 #include <string>
 
+#include "sys_event_dao.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventDbBackup {
 public:
-    SysEventDbBackup(int64_t &backupTime);
-    ~SysEventDbBackup();
-    void CheckDbStoreBroken();
-    bool Recover();
-private:
+    SysEventDbBackup(EventStore::StoreType type);
+    ~SysEventDbBackup() = default;
     bool IsBroken();
+    bool Recover();
     bool BackupOnline();
+
+private:
     bool RecoverFromBackup();
     bool RecoverByRebuild();
-    bool NeedBackup();
+    void RemoveDbFile();
+
 private:
+    EventStore::StoreType type_;
+    std::string dbFile_;
     std::string dbBakFile_;
-    int64_t &backupTime_;
 }; // SysEventDbBackup
 } // namespace HiviewDFX
 } // namespace OHOS

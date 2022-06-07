@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -157,7 +157,7 @@ private:
     bool has_;
 };  // ResultSet
 
-using SysEeventCallBack = std::function<int (SysEvent &sysEvent)>;
+using SysEventCallBack = std::function<int (SysEvent &sysEvent)>;
 
 class DllExport SysEventQuery {
 public:
@@ -198,14 +198,15 @@ public:
     SysEventQuery &Or(const std::vector<Cond> &conds);
     SysEventQuery &Order(const std::string &col, bool isAsc = true);
     ResultSet Execute(int limit = 100);
-    int ExecuteWithCallback(SysEeventCallBack callback, int limit = 100);
+    int ExecuteWithCallback(SysEventCallBack callback, int limit = 100);
     ~SysEventQuery();
 private:
     friend class SysEventDao;
     SysEventQuery(const std::string &dbFile);
 
 private:
-    void GetDataQeury(DataQuery &dataQuery);
+    std::string GetDbFile();
+    void GetDataQuery(DataQuery &dataQuery);
     void BuildDataQuery(DataQuery &dataQuery, int limit);
 
 private:

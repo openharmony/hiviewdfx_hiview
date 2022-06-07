@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,7 @@ namespace OHOS {
 namespace HiviewDFX {
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
 using GetTagByDomainNameFunc = std::function<std::string(std::string, std::string)>;
+using GetTypeByDomainNameFunc = std::function<int(std::string, std::string)>;
 class SysEventServiceBase {
 };
 
@@ -57,7 +58,7 @@ class SysEventServiceOhos : public SystemAbility,
     DECLARE_SYSTEM_ABILITY(SysEventServiceOhos);
 public:
     DISALLOW_COPY_AND_MOVE(SysEventServiceOhos);
-    SysEventServiceOhos() : deathRecipient_(new CallbackDeathRecipient()), isDebugMode(false) {};
+    SysEventServiceOhos() : deathRecipient_(new CallbackDeathRecipient()), isDebugMode_(false) {};
     virtual ~SysEventServiceOhos() = default;
 
     static void StartService(SysEventServiceBase* service,
@@ -72,24 +73,28 @@ public:
     int32_t SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
+    void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
+
+private:
+    bool HasAccessPermission() const;
+    bool CheckQueryRules(const SysEventQueryRuleGroupOhos& rules, std::set<int>& queryTypes);
+    std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
+    int GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
+    void QuerySysEventMiddle(int queryType, int64_t beginTime, int64_t endTime, int32_t maxEvents,
+        const SysEventQueryRuleGroupOhos& rules, OHOS::HiviewDFX::EventStore::ResultSet& result);
+    int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
+        const QuerySysEventCallbackPtrOhos& callback, int64_t& lastRecordTime, int32_t& drops);
 
 private:
     std::mutex mutex_;
     sptr<CallbackDeathRecipient> deathRecipient_;
-    std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>> registeredListeners;
-    void QuerySysEventMiddle(int64_t beginTime, int64_t endTime, int32_t maxEvents,
-        const SysEventQueryRuleGroupOhos& rules, OHOS::HiviewDFX::EventStore::ResultSet& result);
-    int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
-        const QuerySysEventCallbackPtrOhos& callback, int64_t& lastRecordTime, int32_t& drops);
-    bool IsValidName(const std::string &value, const unsigned int maxSize) const;
-    bool CheckDomainEvent(const SysEventQueryRuleGroupOhos& rules) const;
-    bool HasAccessPermission() const;
-
-    bool isDebugMode;
-    SysEventCallbackPtrOhos debugModeCallback;
-    DomainNameTagMap tagCache;
-    GetTagByDomainNameFunc getTagFunc;
-    static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify;
+    std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>> registeredListeners_;
+    bool isDebugMode_;
+    SysEventCallbackPtrOhos debugModeCallback_;
+    DomainNameTagMap tagCache_;
+    GetTagByDomainNameFunc getTagFunc_;
+    GetTypeByDomainNameFunc getTypeFunc_;
+    static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

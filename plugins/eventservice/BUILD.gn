@@ -34,7 +34,7 @@ ohos_source_set("sys_event_service") {
     "event_json_parser.cpp",
     "service/sys_event_stat.cpp",
     "store/sys_event_db_backup.cpp",
-    "store/sys_event_db_clean.cpp",
+    "store/sys_event_db_cleaner.cpp",
     "store/sys_event_db_mgr.cpp",
     "sys_event_service.cpp",
   ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,7 +65,7 @@ int StoreManager::OnlineBackupDocStore(const Option& option, const std::string &
     auto it = stores_.find(option.db);
     if (it == stores_.end()) {
         HiLog::Error(LABEL, "can not find db to backup");
-        return 1;
+        return -1;
     }
 
     std::shared_ptr<DocStore> docStore = it->second;
@@ -87,7 +87,7 @@ int StoreManager::InnerCloseDocStore(const Option& option)
     auto it = stores_.find(option.db);
     if (it == stores_.end()) {
         HiLog::Error(LABEL, "can not find db to close");
-        return 1;
+        return -1;
     }
 
     std::shared_ptr<DocStore> docStore = it->second;

@@ -353,7 +353,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
 
-        EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery();
+        EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
         EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
             .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
             .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
@@ -378,7 +378,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 }
             }
         }
-        
+
         HIVIEW_LOGE("eventLog LogPath update to DB failed!");
         return false;
     }
@@ -479,7 +479,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
 
     AddPublicInfo(info);
     mgr_->SaveFaultLogToFile(info);
-    if (info.faultLogType != FaultLogType::JS_CRASH) {   
+    if (info.faultLogType != FaultLogType::JS_CRASH) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
     HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"

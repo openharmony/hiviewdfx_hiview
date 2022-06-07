@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,17 +26,28 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+enum class StoreType {
+    FAULT = 1,
+    STATISTIC = 2,
+    SECURITY = 3,
+    BEHAVIOR = 4,
+};
+
 class SysEventDao {
 public:
-    static SysEventQuery BuildQuery();
+    static SysEventQuery BuildQuery(StoreType type);
+    static SysEventQuery BuildQuery(uint16_t eventType);
+    static SysEventQuery BuildQuery(const std::string& dbFile);
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
     static int Delete(SysEventQuery &sysEventQuery);
     static int Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange = true);
-    static int BackupDB(const std::string &dbBakFile);
-    static int CloseDB();
-    static int DeleteDB();
+    static int BackupDB(StoreType type);
+    static int CloseDB(StoreType type);
+    static int DeleteDB(StoreType type);
     static std::string GetDataDir();
-    static std::string GetDataFile();
+    static std::string GetDataFile(StoreType type);
+    static void GetDataFiles(std::vector<std::string>& dbFiles);
+    static std::string GetBakFile(StoreType type);
 }; // SysEventDao
 } // EventStore
 } // namespace HiviewDFX

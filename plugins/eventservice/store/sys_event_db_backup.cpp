@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,8 +19,6 @@
 
 #include "file_util.h"
 #include "logger.h"
-#include "sys_event_dao.h"
-#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,67 +29,19 @@ using EventStore::EventCol;
 using EventStore::Op;
 using EventStore::ResultSet;
 
-static void RemoveSysEventFile()
+SysEventDbBackup::SysEventDbBackup(EventStore::StoreType type)
+    : type_(type)
 {
-    if (FileUtil::FileExists(SysEventDao::GetDataFile())) {
-        if (!FileUtil::RemoveFile(SysEventDao::GetDataFile())) {
-            HIVIEW_LOGW("remove sys event wal db failed");
-        }
-    }
-
-    std::string walDbFile = SysEventDao::GetDataFile() + "-wal";
-    if (FileUtil::FileExists(walDbFile)) {
-        if (!FileUtil::RemoveFile(walDbFile)) {
-            HIVIEW_LOGW("remove sys event wal db failed");
-        }
-    }
-}
-
-SysEventDbBackup::SysEventDbBackup(int64_t &backupTime) : backupTime_(backupTime)
-{
-    dbBakFile_ = SysEventDao::GetDataDir() + "back_hisysevent.db";
-}
-
-SysEventDbBackup::~SysEventDbBackup()
-{
-}
-
-void SysEventDbBackup::CheckDbStoreBroken()
-{
-    if (!IsBroken()) {
-        BackupOnline();
-        return;
-    }
-
-    Recover();
+    dbFile_ = SysEventDao::GetDataFile(type);
+    dbBakFile_ = SysEventDao::GetBakFile(type);
 }
 
 bool SysEventDbBackup::IsBroken()
 {
-    SysEventQuery sysEventQuery = SysEventDao::BuildQuery();
+    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(dbFile_);
     ResultSet result = sysEventQuery.Where(EventCol::TS, Op::GT, 0).And(EventCol::TS, Op::LT, 1000).Execute(1); // 1s
     if (result.GetErrCode() != 0) {
-        HIVIEW_LOGE("sys event db is broken");
-        return true;
-    }
-    return false;
-}
-
-bool SysEventDbBackup::NeedBackup()
-{
-    int64_t now = TimeUtil::GetMilliseconds();
-    if (backupTime_ == 0) {
-        backupTime_ = now;
-        return false;
-    }
-
-    int64_t oneDayInMis = TimeUtil::SECONDS_PER_DAY * TimeUtil::SEC_TO_MILLISEC;
-    HIVIEW_LOGI("sys event backup db pass time %" PRId64 "", (now - backupTime_));
-    if ((now - backupTime_) > oneDayInMis) {
-        backupTime_ = now;
-        return true;
-    } else if (now < backupTime_) {
-        backupTime_ = now;
+        HIVIEW_LOGE("sys event db=%{public}s is broken", dbFile_.c_str());
         return true;
     }
     return false;
@@ -99,48 +49,33 @@ bool SysEventDbBackup::NeedBackup()
 
 bool SysEventDbBackup::BackupOnline()
 {
-    if (!NeedBackup()) {
-        return true;
-    }
-
-    if (SysEventDao::BackupDB(dbBakFile_) < 0) {
+    if (SysEventDao::BackupDB(type_) < 0) {
         HIVIEW_LOGE("sys event backup db failed");
         return false;
     }
-
-    HIVIEW_LOGW("sys event backup db success");
+    HIVIEW_LOGI("sys event backup db success");
     return true;
 }
 
 bool SysEventDbBackup::Recover()
 {
-    HIVIEW_LOGW("sys event recover db");
-    if (!RecoverFromBackup()) {
-        return RecoverByRebuild();
-    }
-    if (IsBroken()) {
-        return RecoverByRebuild();
-    }
-    return true;
+    HIVIEW_LOGW("start to recover db file=%{public}s", dbFile_.c_str());
+    return RecoverFromBackup() ? true : RecoverByRebuild();
 }
 
 bool SysEventDbBackup::RecoverFromBackup()
 {
     if (!FileUtil::FileExists(dbBakFile_)) {
-        HIVIEW_LOGE("sys event backup db does not exists");
+        HIVIEW_LOGE("the backup file does not exists");
         return false;
     }
-
-    if (SysEventDao::DeleteDB() < 0) {
-        HIVIEW_LOGE("can not delete sys event db");
+    if (SysEventDao::DeleteDB(type_) < 0) {
+        HIVIEW_LOGE("can not delete db data");
         return false;
     }
-
-    HIVIEW_LOGW("recover sys event db with backup db file");
-    RemoveSysEventFile();
-
-    if (!FileUtil::RenameFile(dbBakFile_, SysEventDao::GetDataFile())) {
-        HIVIEW_LOGW("recover sys event db from backup db failed");
+    RemoveDbFile();
+    if (!FileUtil::RenameFile(dbBakFile_, dbFile_)) {
+        HIVIEW_LOGE("failed to rename the backup file");
         return false;
     }
     return true;
@@ -149,12 +84,23 @@ bool SysEventDbBackup::RecoverFromBackup()
 bool SysEventDbBackup::RecoverByRebuild()
 {
     HIVIEW_LOGW("recover sys event db by rebuild");
-    if (SysEventDao::CloseDB() < 0) {
+    if (SysEventDao::CloseDB(type_) < 0) {
         return false;
     }
-    RemoveSysEventFile();
-    IsBroken();
+    RemoveDbFile();
     return true;
+}
+
+void SysEventDbBackup::RemoveDbFile()
+{
+    if (FileUtil::FileExists(dbFile_) && !FileUtil::RemoveFile(dbFile_)) {
+        HIVIEW_LOGW("failed to remove sys event wal db");
+    }
+
+    std::string walDbFile = dbFile_ + "-wal";
+    if (FileUtil::FileExists(walDbFile) && !FileUtil::RemoveFile(walDbFile)) {
+        HIVIEW_LOGW("failed to remove sys event wal db");
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

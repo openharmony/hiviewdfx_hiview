@@ -54,7 +54,7 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
         sysEvent->SetEventValue("VERSION", info.sectionMap.at("VERSION"));
     }
 
-    if (sysEvent->PaserJson() < 0) {
+    if (sysEvent->ParseJson() < 0) {
         HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
         return nullptr;
     }
@@ -65,7 +65,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
 {
     auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
     HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", jsonStr.c_str());
-    if (sysEvent->PaserJson() < 0) {
+    if (sysEvent->ParseJson() < 0) {
         HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
         return false;
     }
@@ -102,7 +102,7 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
-    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     query.Select(QUERY_ITEMS).Where("uid_", EventStore::Op::EQ, id).Order("time_", false);
     if (id != 0) {
         query.And("MODULE", EventStore::Op::EQ, module);
@@ -129,7 +129,7 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
-    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     query.Select(QUERY_ITEMS).Where("pid_", EventStore::Op::EQ, pid).Order("time_", false);
     query.And("uid_", EventStore::Op::EQ, uid);
     query.And("FAULT_TYPE", EventStore::Op::EQ, faultType);
