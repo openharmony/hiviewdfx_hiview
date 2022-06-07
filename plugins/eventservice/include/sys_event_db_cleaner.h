@@ -13,21 +13,31 @@
  * limitations under the License.
  */
 
-#ifndef HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
-#define HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
+#ifndef HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_CLEANER_H
+#define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_CLEANER_H
 
-#include "sys_event.h"
-#include "sys_event_service_ohos.h"
+#include <string>
+
+#include "sys_event_dao.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class SysEventServiceAdapter {
+class SysEventDbCleaner {
 public:
-    static void StartService(SysEventServiceBase* service, OHOS::HiviewDFX::NotifySysEvent notify);
-    static void OnSysEvent(std::shared_ptr<SysEvent>& event);
-    static void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
-    static void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
-};
+    SysEventDbCleaner() : cleanTimes_(0) {}
+    ~SysEventDbCleaner() = default;
+    bool Clean();
+    static bool IfNeedClean();
+
+private:
+    int CleanDbByHour(const std::string dbFile, int hour) const;
+    int CleanDbByTime(const std::string dbFile, int64_t time) const;
+    bool CleanDbs() const;
+    bool CleanDb(EventStore::StoreType type, int saveHours) const;
+
+private:
+    int cleanTimes_;
+}; // SysEventDbCleaner
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
+#endif // HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_CLEANER_H

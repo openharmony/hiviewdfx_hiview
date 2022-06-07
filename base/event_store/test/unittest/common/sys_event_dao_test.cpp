@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -73,7 +73,7 @@ HWTEST_F(SysEventDaoTest, TestSysEventDaoInsert_001, testing::ext::TestSize.Leve
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 }
@@ -103,7 +103,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
-    ASSERT_TRUE(sysEvent1->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent1->ParseJson() == 0);
     int retCode1 = EventStore::SysEventDao::Insert(sysEvent1);
     ASSERT_TRUE(retCode1 == 0);
 
@@ -118,11 +118,11 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr2);
-    ASSERT_TRUE(sysEvent2->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent2->ParseJson() == 0);
     int retCode2 = EventStore::SysEventDao::Insert(sysEvent2);
     ASSERT_TRUE(retCode2 == 0);
 
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::ResultSet resultSet = sysEventQuery.Select({EventStore::EventCol::TS}).
         Where(EventStore::EventCol::TS, EventStore::Op::EQ, 162027129100).Execute();
     int count = 0;
@@ -149,14 +149,14 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":1,"tz_":8,"time_":1620271291200,
+    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":2,"tz_":8,"time_":1620271291200,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
-    EventStore::SysEventQuery sysEventQuery1 = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery1 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
     EventStore::ResultSet resultSet = sysEventQuery1.Select({EventStore::EventCol::TS}).
         Where(EventStore::EventCol::TS, EventStore::Op::EQ, 1620271291200).Execute();
     int count = 0;
@@ -168,12 +168,12 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
     }
     ASSERT_TRUE(count == 1);
 
-    EventStore::SysEventQuery delEventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery delEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
     delEventQuery.Where(EventStore::EventCol::TS, EventStore::Op::GT, 0);
     EventStore::SysEventDao::Delete(delEventQuery);
 
     count = 0;
-    EventStore::SysEventQuery sysEventQuery2 = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery2 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
     sysEventQuery2.Where(EventStore::EventCol::TS, EventStore::Op::GT, 0).Execute();
     while (resultSet.HasNext()) {
         count++;
@@ -196,7 +196,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_004, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::Cond timeCond(EventStore::EventCol::TS, EventStore::Op::GE, 100);
     timeCond.And(EventStore::EventCol::TS, EventStore::Op::LT, 999);
 
@@ -237,7 +237,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_005, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
         .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1")
         .And(EventStore::EventCol::TS, EventStore::Op::EQ, 100)
@@ -267,11 +267,11 @@ HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_006","type_":1,"tz_":8,"time_":162027129100,
+    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_006","type_":3,"tz_":8,"time_":162027129100,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -280,7 +280,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
     retCode = EventStore::SysEventDao::Update(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
-    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery(EventStore::StoreType::SECURITY);
     EventStore::ResultSet resultSet = sysEventQuery
         .Select({EventStore::EventCol::TS})
         .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "SysEventDaoTest_006")
@@ -313,35 +313,35 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
      */
     int retCode = 0;
     std::string jsonStr;
-    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":1,"tz_":8,"time_":162027129100,
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129100,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
-    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":1,"tz_":8,"time_":162027129200,
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129200,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
-    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":1,"tz_":8,"time_":162027129300,
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129300,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->PaserJson() == 0);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
     int count = 0;
-    EventStore::SysEeventCallBack c = [&](SysEvent &sysEvent) -> int {
+    EventStore::SysEventCallBack c = [&](SysEvent &sysEvent) -> int {
         count++;
         std::cout << "callback->" << sysEvent.happenTime_ << std::endl;
         if (sysEvent.happenTime_ >= 162027129200) {
@@ -350,7 +350,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         }
         return 0;
     };
-    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery(EventStore::StoreType::BEHAVIOR);
     sysEventQuery
         .Select({EventStore::EventCol::TS})
         .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "DuringQuery")

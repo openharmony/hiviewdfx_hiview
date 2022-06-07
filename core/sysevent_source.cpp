@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,7 +31,7 @@ std::shared_ptr<PipelineEvent> SysEventParser::Parser(const std::string& rawMsg)
 {
     HIVIEW_LOGD("parser raw message size=%{public}d, %{public}s", rawMsg.length(), rawMsg.c_str());
     auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawMsg);
-    if (baseEvent->PaserJson() != 0) {
+    if (baseEvent->ParseJson() != 0) {
         HIVIEW_LOGI("parser sys event error");
         return nullptr;
     }

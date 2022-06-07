@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,14 +46,17 @@ void SysEventService::OnLoad()
     };
     SysEventServiceAdapter::StartService(this, notifyFunc);
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
-    std::string dbFile =
+    std::string yamlFile =
         HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
-    dbFile = (dbFile[dbFile.size() - 1] != '/') ? (dbFile + "/hisysevent.def") : (dbFile + "hisysevent.def");
-    HIVIEW_LOGE("dbFile is %{public}s", dbFile.c_str());
-    sysEventParser_ = std::make_unique<EventJsonParser>(dbFile);
-    auto getTagFunc = std::bind(&EventJsonParser::GetDefinedTagByDomainEventName, *(sysEventParser_.get()),
+    yamlFile = (yamlFile.back() != '/') ? (yamlFile + "/hisysevent.def") : (yamlFile + "hisysevent.def");
+    HIVIEW_LOGE("yamlFile path is %{public}s", yamlFile.c_str());
+    sysEventParser_ = std::make_unique<EventJsonParser>(yamlFile);
+    auto getTagFunc = std::bind(&EventJsonParser::GetTagByDomainAndName, *(sysEventParser_.get()),
         std::placeholders::_1, std::placeholders::_2);
     SysEventServiceAdapter::BindGetTagFunc(getTagFunc);
+    auto getTypeFunc = std::bind(&EventJsonParser::GetTypeByDomainAndName, *(sysEventParser_.get()),
+        std::placeholders::_1, std::placeholders::_2);
+    SysEventServiceAdapter::BindGetTypeFunc(getTypeFunc);
     hasLoaded_ = true;
 }
 
@@ -128,7 +131,7 @@ void SysEventService::Dump(int fd, const std::vector<std::string>& cmds)
         } else if (arg1 == "detail") {
             sysEventStat_->StatDetail(fd);
         } else if (arg1 == "invalid") {
-            sysEventStat_->StatInvaliDetail(fd);
+            sysEventStat_->StatInvalidDetail(fd);
         } else if (arg1 == "clear") {
             sysEventStat_->Clear(fd);
         } else {

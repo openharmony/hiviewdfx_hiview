@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <map>
 
 #include "cJSON.h"
 #include "logger.h"
@@ -27,7 +28,9 @@ namespace HiviewDFX {
 namespace {
 const char* BASE_EVENT_PAR[] = {"domain_", "name_", "type_", "time_", "level_",
     "uid_", "tag_", "tz_", "pid_", "tid_", "traceid_", "spanid_", "pspanid_", "trace_flag_"};
-const char* EVENT_JSON_TYPE[] = {"FAULT", "STATISTIC", "SECURITY", "BEHAVIOR"};
+const std::map<std::string, int> EVENT_TYPE_MAP = {
+    {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
+};
 constexpr uint64_t PRIME = 0x100000001B3ull;
 constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
 
@@ -47,7 +50,7 @@ uint64_t GenerateHash(const Json::Value& info)
 
 DEFINE_LOG_TAG("Event-JsonParser");
 
-EventJsonParser::EventJsonParser(const std::string &path) : jsonRootValid(false)
+EventJsonParser::EventJsonParser(const std::string &path) : isRootValid_(false)
 {
     std::ifstream fin(path, std::ifstream::binary);
 #ifdef JSONCPP_VERSION_STRING
@@ -61,7 +64,7 @@ EventJsonParser::EventJsonParser(const std::string &path) : jsonRootValid(false)
 #endif
         HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
     } else {
-        jsonRootValid = true;
+        isRootValid_ = true;
     }
 }
 
@@ -81,22 +84,23 @@ bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
     Json::Reader reader(Json::Features::strictMode());
     if (!reader.parse(jsonStr, eventJson)) {
 #endif
-        HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s",
-            jsonStr.c_str());
+        HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", jsonStr.c_str());
         return false;
     }
 
-    auto eventJsonNotComplete = !eventJson.isMember("domain_") || !eventJson["domain_"].isString() ||
-        !eventJson.isMember("name_") || !eventJson["name_"].isString() ||
-        !eventJson.isMember("type_") || !eventJson["type_"].isInt();
+    if (!HasDomainAndName(eventJson)) {
+        HIVIEW_LOGE("the domain and name of the event do not exist");
+        return false;
+    }
     std::string domain = eventJson["domain_"].asString();
     std::string name = eventJson["name_"].asString();
-    auto eventJsonHasNoDomain = !jsonRootValid || !root_.isObject() || !root_.isMember(domain) ||
-        !root_[domain].isObject() || !root_[domain].isMember(name) || !root_[domain][name].isObject() ||
-        !root_[domain][name].isMember("__BASE") || root_[domain][name]["__BASE"].isNull();
+    if (!CheckDomainAndName(domain, name)) {
+        HIVIEW_LOGE("failed to verify the domain and name of the event");
+        return false;
+    }
     auto sysEventJson = root_[domain][name];
-    auto baseInfoNotValid = !CheckBaseInfo(sysEventJson["__BASE"], eventJson);
-    if (eventJsonNotComplete || eventJsonHasNoDomain || baseInfoNotValid) {
+    if (!CheckBaseInfo(sysEventJson["__BASE"], eventJson)) {
+        HIVIEW_LOGE("failed to verify the base info of the event");
         return false;
     }
 
@@ -106,7 +110,7 @@ bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
         if (std::find_if(std::cbegin(BASE_EVENT_PAR), std::cend(BASE_EVENT_PAR), [ps](const char* ele) {
             return (ps.compare(ele) == 0); }) == std::cend(BASE_EVENT_PAR)) {
             if (!CheckExtendInfo(ps, sysEventJson, eventJson)) {
-                HIVIEW_LOGI("CheckExtendInfo fail, need to remove %{public}s ", ps.c_str());
+                HIVIEW_LOGI("failed to verify the extend info, need to remove %{public}s ", ps.c_str());
                 eventJson.removeMember(ps);
             }
         }
@@ -116,21 +120,55 @@ bool EventJsonParser::HandleEventJson(std::shared_ptr<SysEvent> &event) const
     return true;
 }
 
+bool EventJsonParser::IsIntValue(const Json::Value &jsonObj, const std::string &name) const
+{
+    return jsonObj.isMember(name.c_str()) && jsonObj[name.c_str()].isInt();
+}
+
+bool EventJsonParser::IsStringValue(const Json::Value &jsonObj, const std::string &name) const
+{
+    return jsonObj.isMember(name.c_str()) && jsonObj[name.c_str()].isString();
+}
+
+bool EventJsonParser::IsObjectValue(const Json::Value &jsonObj, const std::string &name) const
+{
+    return jsonObj.isMember(name.c_str()) && jsonObj[name.c_str()].isObject();
+}
+
+bool EventJsonParser::IsNullValue(const Json::Value &jsonObj, const std::string &name) const
+{
+    return jsonObj.isMember(name.c_str()) && jsonObj[name.c_str()].isNull();
+}
+
+bool EventJsonParser::HasDomainAndName(const Json::Value &eventJson) const
+{
+    return IsStringValue(eventJson, "domain_") &&  IsStringValue(eventJson, "name_");
+}
+
+bool EventJsonParser::CheckDomainAndName(const std::string &domain, const std::string &name) const
+{
+    return isRootValid_ && root_.isObject() && IsObjectValue(root_, domain)
+        && IsObjectValue(root_[domain], name) && !IsNullValue(root_[domain][name], "__BASE");
+}
+
+bool EventJsonParser::CheckEventType(const Json::Value &sysBaseJson, const Json::Value &eventJson) const
+{
+    if (!IsIntValue(eventJson, "type_")) {
+        return false;
+    }
+    std::string typeStr = sysBaseJson["type"].asString();
+    if (EVENT_TYPE_MAP.find(typeStr) == EVENT_TYPE_MAP.end()) {
+        return false;
+    }
+    return EVENT_TYPE_MAP.at(typeStr) == eventJson["type_"].asInt();
+}
+
 bool EventJsonParser::CheckBaseInfo(const Json::Value &sysBaseJson, Json::Value &eventJson) const
 {
-    int eventJsonTypeValue = eventJson["type_"].asInt();
-    if ((eventJsonTypeValue < 1) || (eventJsonTypeValue > 4)) {
-        HIVIEW_LOGE("EventJson type is illegal parameter");
+    if (!CheckEventType(sysBaseJson, eventJson)) {
         return false;
     }
-    if (sysBaseJson["type"].asString().compare(EVENT_JSON_TYPE[eventJsonTypeValue - 1]) != 0) {
-        HIVIEW_LOGE("Check type error type %{public}s %{public}d",
-            sysBaseJson["type"].asString().c_str(), eventJson["type_"].asInt());
-        return false;
-    }
-
     if (!sysBaseJson.isMember("level")) {
-        HIVIEW_LOGE("sysBaseJson is not complete");
         return false;
     }
     eventJson["level_"] = sysBaseJson["level"].asString();
@@ -212,23 +250,26 @@ void EventJsonParser::GetOrderlyJsonInfo(const Json::Value &eventJson, std::stri
     return;
 }
 
-std::string EventJsonParser::GetDefinedTagByDomainEventName(const std::string& domain,
-    const std::string& eventName) const
+std::string EventJsonParser::GetTagByDomainAndName(const std::string &domain, const std::string &eventName) const
 {
-    if (!jsonRootValid) {
+    if (!CheckDomainAndName(domain, eventName)) {
         return "";
     }
-    auto eventJsonHasNoDomain = !root_.isObject() || !root_.isMember(domain) || !root_[domain].isObject()
-        || !root_[domain].isMember(eventName) || !root_[domain][eventName].isObject()
-        || !root_[domain][eventName].isMember("__BASE") || root_[domain][eventName]["__BASE"].isNull();
-    if (eventJsonHasNoDomain) {
-        return "";
+    auto baseInfo = root_[domain][eventName]["__BASE"];
+    return IsStringValue(baseInfo, "tag") ? baseInfo["tag"].asString() : "";
+}
+
+int EventJsonParser::GetTypeByDomainAndName(const std::string &domain, const std::string &eventName) const
+{
+    if (!CheckDomainAndName(domain, eventName)) {
+        return 0;
     }
-    auto sysEventBaseInfo = root_[domain][eventName]["__BASE"];
-    if (!sysEventBaseInfo.isMember("tag")) {
-        return "";
+    auto baseInfo = root_[domain][eventName]["__BASE"];
+    if (!IsStringValue(baseInfo, "type")) {
+        return 0;
     }
-    return sysEventBaseInfo["tag"].asString();
+    std::string typeStr = baseInfo["type"].asString();
+    return EVENT_TYPE_MAP.find(typeStr) == EVENT_TYPE_MAP.end() ? 0 : EVENT_TYPE_MAP.at(typeStr);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

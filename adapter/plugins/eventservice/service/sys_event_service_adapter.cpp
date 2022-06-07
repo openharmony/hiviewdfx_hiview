@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,11 @@ void SysEventServiceAdapter::OnSysEvent(std::shared_ptr<SysEvent> &event)
 void SysEventServiceAdapter::BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc)
 {
     OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTagFunc(getTagFunc);
+}
+
+void SysEventServiceAdapter::BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc)
+{
+    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTypeFunc(getTypeFunc);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

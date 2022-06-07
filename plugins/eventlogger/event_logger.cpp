@@ -142,7 +142,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
 
-    std::time_t now = std::time(0);  
+    std::time_t now = std::time(0);
     for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
         if (it->first.find(eventName) != it->first.npos) {
             if ((now - it->second) >= interval) {
@@ -188,7 +188,7 @@ std::string EventLogger::GetFormatTime(uint64_t timestamp) const
 bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
 {
     HIVIEW_LOGI("call");
-    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery();
+    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
     EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
         .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
         .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, event->domain_)

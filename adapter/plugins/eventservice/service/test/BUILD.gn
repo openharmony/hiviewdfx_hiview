@@ -42,7 +42,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "$hiview_plugin/eventservice/event_json_parser.cpp",
     "$hiview_plugin/eventservice/service/sys_event_stat.cpp",
     "$hiview_plugin/eventservice/store/sys_event_db_backup.cpp",
-    "$hiview_plugin/eventservice/store/sys_event_db_clean.cpp",
+    "$hiview_plugin/eventservice/store/sys_event_db_cleaner.cpp",
     "$hiview_plugin/eventservice/store/sys_event_db_mgr.cpp",
     "$hiview_plugin/eventservice/sys_event_service.cpp",
     "unittest/common/sys_event_callback_ohos_test.cpp",
