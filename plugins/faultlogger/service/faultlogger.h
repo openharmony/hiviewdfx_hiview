@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "event.h"
@@ -67,8 +68,10 @@ private:
     void AddPublicInfo(FaultLogInfo& info);
     void Dump(int fd, const DumpRequest& request) const;
     void StartBootScan();
+    bool JudgmentRateLimiting(std::shared_ptr<Event> event);
     std::unique_ptr<FaultLogManager> mgr_;
     volatile bool hasInit_;
+    std::unordered_map<std::string, std::time_t> eventTagTime_;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

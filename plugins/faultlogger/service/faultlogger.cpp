@@ -329,6 +329,38 @@ void Faultlogger::Dump(int fd, const DumpRequest &request) const
     dprintf(fd, "%s\n", FILE_SEPERATOR);
 }
 
+bool Faultlogger::JudgmentRateLimiting(std::shared_ptr<Event> event)
+{
+    int interval = 60; // 60s time interval
+    auto sysEvent = std::static_pointer_cast<SysEvent>(event);
+    long pid = sysEvent->GetPid();
+    std::string eventPid = std::to_string(pid);
+
+    std::time_t now = std::time(0);  
+    for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
+        if ((now - it->second) >= interval) {
+            it = eventTagTime_.erase(it);
+            continue;
+        }
+        ++it;
+    }
+
+    auto it = eventTagTime_.find(eventPid);
+    if (it != eventTagTime_.end()) {
+        if ((now - it->second) < interval) {
+            HIVIEW_LOGW("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
+                interval:%{public}ld There's not enough interval",
+                sysEvent->eventId_, sysEvent->eventName_.c_str(), eventPid.c_str(), interval);
+            return false;
+        }
+    }
+    eventTagTime_[eventPid] = now;
+    HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
+        interval:%{public}ld normal interval",
+        sysEvent->eventId_, sysEvent->eventName_.c_str(), eventPid.c_str(), interval);
+    return true;
+}
+
 bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 {
     if (!hasInit_ || event == nullptr) {
@@ -337,6 +369,10 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 
     if (event->eventName_ == "JS_ERROR") {
         if (event->jsonExtraInfo_.empty()) {
+            return false;
+        }
+
+        if (!JudgmentRateLimiting(event)) {
             return false;
         }
 
