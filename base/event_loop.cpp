@@ -457,6 +457,13 @@ bool EventLoop::FetchNextEvent(uint64_t now, uint64_t& leftTimeNanosecond, LoopE
         return false;
     }
 
+    int32_t pendingSize = pendingEvents_.size();
+    const int warningPendingSize = 1000;
+    if ((pendingSize > warningPendingSize) && (pendingSize % warningPendingSize == 0)) {
+        HIVIEW_LOGW("%{public}s has %{public}d pending events.", name.c_str(), pendingSize);
+    }
+    pendingEvents_.ShrinkIfNeedLocked();
+
     const LoopEvent &event = pendingEvents_.top();
     if (event.targetTime > now) {
         leftTimeNanosecond = event.targetTime - now;

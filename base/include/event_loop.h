@@ -104,6 +104,13 @@ public:
             return false;
         };
     };
+
+    void ShrinkIfNeedLocked()
+    {
+        if ((c.capacity() / c.size()) > 10) {   // 10 times, begin to shrink
+            c.shrink_to_fit();
+        }
+    }
 };
 
 class FileDescriptorEventCallback {
