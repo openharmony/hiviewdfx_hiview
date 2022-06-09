@@ -457,10 +457,10 @@ bool EventLoop::FetchNextEvent(uint64_t now, uint64_t& leftTimeNanosecond, LoopE
         return false;
     }
 
-    int32_t pendingSize = pendingEvents_.size();
-    const int warningPendingSize = 1000;
+    size_t pendingSize = pendingEvents_.size();
+    const size_t warningPendingSize = 1000;
     if ((pendingSize > warningPendingSize) && (pendingSize % warningPendingSize == 0)) {
-        HIVIEW_LOGW("%{public}s has %{public}d pending events.", name_.c_str(), pendingSize);
+        HIVIEW_LOGW("%{public}s has %{public}zu pending events.", name_.c_str(), pendingSize);
     }
     pendingEvents_.ShrinkIfNeedLocked();
 
