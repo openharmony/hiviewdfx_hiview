@@ -25,6 +25,7 @@
 #include "singleton.h"
 #include "sys_event.h"
 
+#include "command_catcher.h"
 #include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -49,7 +50,7 @@ public:
     EventLogTask::Status GetTaskStatus() const;
     long GetLogSize() const;
 private:
-    using capture = std::function<bool(const std::string &cmd)>;
+    using capture = std::function<void()>;
 
     int targetFd_;
     std::shared_ptr<SysEvent> event_;
@@ -57,19 +58,22 @@ private:
     uint32_t maxLogSize_;
     uint32_t taskLogSize_;
     volatile Status status_;
-    std::vector<capture> captureList_;
-    bool cmFlage_ = false;
+    std::map<std::string, capture> captureList_;
+    std::shared_ptr<CommandCatcher> cmdCatcher_;
 
     bool ShouldStopLogTask(int fd, uint32_t curTaskIndex, int curLogSize, std::shared_ptr<EventLogCatcher> catcher);
     void AddStopReason(int fd, std::shared_ptr<EventLogCatcher> catcher, const std::string& reason);
     void AddSeparator(int fd, std::shared_ptr<EventLogCatcher> catcher) const;
 
-    bool AppStackCapture(const std::string &cmd);
-    bool SystemStackCapture(const std::string &cmd);
-    bool BinderLogCapture(const std::string &cmd);
+    std::shared_ptr<CommandCatcher> GetCmdCatcher();
+
+    void AppStackCapture();
+    void SystemStackCapture();
+    void BinderLogCapture();
     bool PeerBinderCapture(const std::string &cmd);
-    bool CpuUtilizationCapture(const std::string &cmd);
-    bool MemoryUsageCapture(const std::string &cmd);
+    void CpuUtilizationCapture();
+    void MemoryUsageCapture();
+    void WMSUsageCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

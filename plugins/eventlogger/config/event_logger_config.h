@@ -16,6 +16,7 @@
 #define HIVIEW_PLUGIN_EVENT_LOGGER_CONFIG_H
 #include <fstream>
 #include <string>
+#include <unordered_map>
 namespace OHOS {
 namespace HiviewDFX {
 class EventLoggerConfig {
@@ -32,6 +33,7 @@ public:
     };
 
     bool FindConfigLine(int eventId, std::string eventName, EventLoggerConfigData &configOut);
+    std::unordered_map<std::string, EventLoggerConfigData> GetConfig();
 
     std::string GetVersion() const
     {
@@ -45,6 +47,7 @@ private:
     bool OpenConfig();
     void CloseConfig();
     bool FindConfigVersion();
+    bool ParseConfigData(std::function<bool(EventLoggerConfigData&)> func);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

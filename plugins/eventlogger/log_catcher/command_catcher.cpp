@@ -12,23 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "cpu_utilization_catcher.h"
-
-#include "securec.h"
+#include "command_catcher.h"
 
 #include "common_utils.h"
 #include "log_catcher_utils.h"
 namespace OHOS {
 namespace HiviewDFX {
-CpuUtilizationCatcher::CpuUtilizationCatcher() : EventLogCatcher()
+CommandCatcher::CommandCatcher() : EventLogCatcher()
 {
-    name_ = "CpuUtilizationCatcher";
+    name_ = "CommandCatcher";
+    commandEntity_ = {
+        "hidumper -s WindowManagerService -a \'-a\'\n",
+    };
 }
 
-bool CpuUtilizationCatcher::Initialize(const std::string& packageNam, int pid, int intParam2)
+void CommandCatcher::SetCmd(uint16_t cmd)
+{
+    if (cmd < commandEntity_.size()) {
+        cmdString_ += commandEntity_[cmd];
+    }
+}
+
+bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intParam)
 {
     if (pid <= 0 && packageNam.length() == 0) {
-        description_ = "CpuUtilizationCatcher -- pid==-1 packageName is null\n";
+        description_ = "CommandCatcher -- pid==-1 packageName is null\n";
         return false;
     }
     pid_ = pid;
@@ -38,28 +46,25 @@ bool CpuUtilizationCatcher::Initialize(const std::string& packageNam, int pid, i
         pid_ = CommonUtils::GetPidByName(packageName_);
     }
 
-    char buf[BUF_SIZE_512] = {0};
-    int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1,
-        "CpuUtilizationCatcher -- pid==%d packageName is %s\n", pid_, packageName_.c_str());
-    if (ret > 0) {
-        description_ = buf;
+    if (pid_ < 0) {
+        description_ = "CommandCatcher -- packageName is " + packageName_ + " pid is invalid\n";
+        return false;
     }
 
-    return EventLogCatcher::Initialize(packageNam, pid, intParam2);
+    description_ = "CommandCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
+    commandEntity_.push_back("hidumper --cpuusage " + std::to_string(pid_) + "\n");
+    commandEntity_.push_back("hidumper --mem " + std::to_string(pid_) + "\n");
+    return EventLogCatcher::Initialize(packageNam, pid, intParam);
 }
 
-int CpuUtilizationCatcher::Catch(int fd)
+int CommandCatcher::Catch(int fd)
 {
     if (pid_ <= 0) {
         return -1;
     }
     auto originSize = GetFdSize(fd);
 
-    std::string content;
-    FileUtil::LoadStringFromFile("/proc/cpuinfo", content);
-    FileUtil::SaveStringToFd(fd, content);
-
-    CommonUtils::WriteCommandResultToFile(fd, "hidumper -c");
+    CommonUtils::WriteCommandResultToFile(fd, cmdString_);
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }

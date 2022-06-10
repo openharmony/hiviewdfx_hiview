@@ -29,10 +29,9 @@ ohos_source_set("log_catcher") {
 
   sources = [
     "binder_catcher.cpp",
-    "cpu_utilization_catcher.cpp",
+    "command_catcher.cpp",
     "event_log_catcher.cpp",
     "event_log_task.cpp",
-    "memory_usage_catcher.cpp",
     "open_stacktrace_catcher.cpp",
     "peer_binder_catcher.cpp",
   ]

@@ -83,25 +83,25 @@ bool EventLoggerConfig::FindConfigVersion()
     return true;
 }
 
-bool EventLoggerConfig::FindConfigLine(int eventId, std::string eventName, EventLoggerConfigData &configOut)
+bool EventLoggerConfig::ParseConfigData(std::function<bool(EventLoggerConfigData&)> func)
 {
     HIVIEW_LOGI("called\n");
     if (!FindConfigVersion()) {
         return false;
     }
 
-    bool ret = false;
     std::string buf = "";
     std::smatch result;
     auto eventRegex = std::regex(
         "event id=\"([0-9xX]*)\"\\s*name=\"([A-Z0-9_]+)\"\\s*action=\"(.*)\"\\s*interval=\"([0-9]*)\".*");
-    EventLoggerConfigData tmpConfigDate;
+
     while (getline(in_, buf)) {
         if (!regex_search(buf, result, eventRegex)) {
             HIVIEW_LOGW("match event failed, getline duf is %{public}s.\n", buf.c_str());
             continue;
         }
 
+        EventLoggerConfigData tmpConfigDate;
         std::string idString = result[ID_FIELD];
         if (idString.empty()) {
             tmpConfigDate.id = -1;
@@ -116,26 +116,46 @@ bool EventLoggerConfig::FindConfigLine(int eventId, std::string eventName, Event
         } else {
             tmpConfigDate.interval = std::stoi(intervalString);
         }
-
-        if (eventName == tmpConfigDate.name) {
-            ret = true;
-            break;
-        }
-        if (eventId == tmpConfigDate.id) {
-            ret = true;
+        if (!func(tmpConfigDate)) {
             break;
         }
     }
     CloseConfig();
+    return true;
+}
 
-    if (ret) {
-        configOut.id = tmpConfigDate.id;
-        configOut.name = tmpConfigDate.name;
-        configOut.interval = tmpConfigDate.interval;
-        configOut.action = tmpConfigDate.action;
-        HIVIEW_LOGI("tmpConfigDate-> id: 0x%{public}x, name: %{public}s, action: %{public}s, interval: %{public}d\n",
-            configOut.id, configOut.name.c_str(), configOut.action.c_str(), configOut.interval);
-    }
+bool EventLoggerConfig::FindConfigLine(int eventId, std::string eventName, EventLoggerConfigData &configOut)
+{
+    HIVIEW_LOGI("called\n");
+    bool ret = false;
+    ParseConfigData([&](EventLoggerConfigData& configDate)->bool {
+        if (eventName == configDate.name) {
+            ret = true;
+        }
+        if (eventId == configDate.id) {
+            ret = true;
+        }
+        if (ret) {
+            configOut.id = configDate.id;
+            configOut.name = configDate.name;
+            configOut.interval = configDate.interval;
+            configOut.action = configDate.action;
+            HIVIEW_LOGI("configDate-> id: 0x%{public}x, name: %{public}s, action: %{public}s, interval: %{public}d\n",
+                configOut.id, configOut.name.c_str(), configOut.action.c_str(), configOut.interval);
+        return false;
+        }
+        return true;
+    });
+    return ret;
+}
+
+std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> EventLoggerConfig::GetConfig()
+{
+    std::unordered_map<std::string, EventLoggerConfigData> ret;
+    ParseConfigData([&](EventLoggerConfigData& data)->bool {
+        ret.insert({ data.name, data });
+        return true;
+    });
     return ret;
 }
 } // namespace HiviewDFX

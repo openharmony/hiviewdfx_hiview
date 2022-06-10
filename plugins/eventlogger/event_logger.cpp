@@ -31,6 +31,7 @@
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
+#include "time_util.h"
 
 #include "event_log_action.h"
 #include "event_logger_config.h"
@@ -38,6 +39,35 @@ namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventLogger);
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger");
+
+bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
+{
+    if (event == nullptr) {
+        return false;
+    }
+    if (event->eventId_ > EVENT_MAX_ID) {
+        return false;
+    }
+
+    auto sysEvent = Event::DownCastTo<SysEvent>(event);
+    HIVIEW_LOGI("event coming! id:0x%{public}x, eventName:%{public}s",
+        sysEvent->eventId_, sysEvent->eventName_.c_str());
+    HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        sysEvent->jsonExtraInfo_.c_str());
+
+    if (eventLoggerConfig_.find(sysEvent->eventName_) == eventLoggerConfig_.end()) {
+        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : EventLogger don't care and "
+            "don't block other processes",
+            sysEvent->eventId_,  sysEvent->eventName_.c_str());
+        PostEvent(sysEvent);
+        return false;
+    }
+    EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
+    sysEvent->eventName_ = configOut.name;
+    sysEvent->SetValue("eventLog_action", configOut.action);
+    sysEvent->SetValue("eventLog_interval", configOut.interval);
+    return true;
+}
 
 bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 {
@@ -47,25 +77,9 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
-    HIVIEW_LOGI("event coming! id:0x%{public}x, eventName:%{public}s",
-        sysEvent->eventId_, sysEvent->eventName_.c_str());
-    HIVIEW_LOGI("event jsonExtraInfo is %{public}s", sysEvent->jsonExtraInfo_.c_str());
-
-    EventLoggerConfig::EventLoggerConfigData configOut;
-    auto logConfig = std::make_unique<EventLoggerConfig>();
-    bool existence = logConfig->FindConfigLine(sysEvent->eventId_, sysEvent->eventName_, configOut);
-    if (!existence) {
-        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : EventLogger don't care",
-            sysEvent->eventId_,  sysEvent->eventName_.c_str());
-        PostEvent(sysEvent);
-        return false;
-    }
-
-    sysEvent->eventName_ = configOut.name;
-    sysEvent->SetValue("eventLog_action", configOut.action);
-    sysEvent->SetValue("eventLog_interval", configOut.interval);
+    HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        sysEvent->jsonExtraInfo_.c_str());
     StartLogCollect(sysEvent);
-
     PostEvent(sysEvent);
     return true;
 }
@@ -88,10 +102,16 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
         return;
     }
+
+    auto start = TimeUtil::GetMilliseconds();
+    FileUtil::SaveStringToFd(fd, "start time: " + std::to_string(start) + "\n");
     WriteCommonHead(fd, event);
     auto eventLogAction = std::make_unique<EventLogAction>(fd, event);
     eventLogAction->Init();
     eventLogAction->CaptureAction();
+    auto end = TimeUtil::GetMilliseconds();
+    std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
+    FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
     UpdateDB(event, logFile);
 }
@@ -231,22 +251,14 @@ void EventLogger::OnLoad()
     std::shared_ptr<EventLoop> tmp = GetWorkLoop();
     tmp->AddFileDescriptorEventCallback("EventLoggerFd",
         std::static_pointer_cast<EventLogger>(shared_from_this()));
+
+    EventLoggerConfig logConfig;
+    eventLoggerConfig_ = logConfig.GetConfig();
 }
 
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-}
-
-bool EventLogger::CanProcessEvent(std::shared_ptr<Event> event)
-{
-    if (event == nullptr) {
-        return false;
-    }
-    if (event->eventId_ > EVENT_MAX_ID) {
-        return false;
-    }
-    return true;
 }
 
 void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)

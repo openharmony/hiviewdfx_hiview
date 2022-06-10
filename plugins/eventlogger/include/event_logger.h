@@ -27,6 +27,8 @@
 #include "logger.h"
 #include "plugin.h"
 #include "sys_event.h"
+
+#include "event_logger_config.h"
 namespace OHOS {
 namespace HiviewDFX {
 struct BinderInfo {
@@ -44,7 +46,7 @@ public:
     bool OnEvent(std::shared_ptr<Event> &event) override;
     void OnLoad() override;
     void OnUnload() override;
-    bool CanProcessEvent(std::shared_ptr<Event> event) override;
+    bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;
     bool OnFileDescriptorEvent(int fd, int type) override;
     int32_t GetPollFd() override;
     int32_t GetPollType() override;
@@ -66,6 +68,7 @@ private:
     std::unordered_map<std::string, std::time_t> eventTagTime_;
     int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
+    std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);

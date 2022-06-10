@@ -64,6 +64,13 @@ bool PipelineEvent::OnContinue()
                                    pluginPtr->GetHandlerInfo());
         }
 
+        if (!pluginPtr->IsInterestedPipelineEvent(shared_from_this())) {
+            if ((!HasFinish() && !HasPending())) {
+                return OnContinue();
+            }
+            return true;
+        }
+
         if (auto workLoop = pluginPtr->GetWorkLoop()) {
             workLoop->AddEvent(pluginPtr, shared_from_this());
         } else {

@@ -228,6 +228,11 @@ public:
         return true;
     };
 
+    virtual bool IsInterestedPipelineEvent(std::shared_ptr<Event> event __UNUSED)
+    {
+        return true;
+    };
+
     virtual bool CanProcessMoreEvents()
     {
         return true;

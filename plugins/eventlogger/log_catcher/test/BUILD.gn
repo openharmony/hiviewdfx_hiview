@@ -38,6 +38,7 @@ ohos_unittest("EventloggerCatcherTest") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_eventlogger:eventlogger",
+    "$hiview_eventlogger/config:eventlogger_config",
     "//third_party/googletest:gtest_main",
   ]
 }

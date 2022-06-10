@@ -12,23 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef EVENT_LOGGER_MEMORY_USAGE_CATCHER
-#define EVENT_LOGGER_MEMORY_USAGE_CATCHER
+#ifndef EVENT_LOGGER_COMMAND_CATCHER
+#define EVENT_LOGGER_COMMAND_CATCHER
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
-class MemoryUsageCatcher : public EventLogCatcher {
+class CommandCatcher : public EventLogCatcher {
 public:
-    explicit MemoryUsageCatcher();
-    ~MemoryUsageCatcher() override{};
+    explicit CommandCatcher();
+    ~CommandCatcher() override {};
     bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
     int Catch(int fd) override;
+    void SetCmd(uint16_t cmd);
 private:
     int pid_ = -1;
     std::string packageName_ = "";
+    std::string cmdString_ = "";
+    std::vector<std::string> commandEntity_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -229,7 +229,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
      * @tc.steps: step1. create event handler and events
      */
     int pid = -1;
-    constexpr int upperLimit = 20000000; // 20000000us
+    const int memSize = 1024*3;
     if ((pid = fork()) < 0) {
         printf("Fork error, err:%d", errno);
         FAIL();
@@ -237,19 +237,23 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
 
     // Creating a process with high usage
     if (pid == 0) {
-        prctl(PR_SET_NAME, "EventloggerCatcherTest002_Child");
+        prctl(PR_SET_NAME, "EventlogTest02");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
+        int volatile temp[memSize] = {0};
         while (true) {
-            int volatile i = 0;
-            while (i < upperLimit) {
+            int i = 0;
+            while (i < memSize) {
+                temp[i] = i & 0x234567;
                 i++;
             }
         }
     }
 
+    sleep(5);
     constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest002", "TEST02_CPU", "c",
-        pid, "EventloggerCatcherTest002_Child", 0, minQuantity);
+        pid, "EventlogTest02", 0, minQuantity);
+    
     if (ret < 0) {
         printf("EventloggerCatcherTest002 StartCreate is error ret == %d\n", ret);
         FAIL();
@@ -265,7 +269,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("CpuUtilizationCatcher") != tmp.npos) {
+        if (tmp.find("[cpuusage]") != tmp.npos) {
             ret = 0;
             break;
         }
@@ -299,21 +303,22 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
 
     // Creating a process with high memory
     if (pid == 0) {
-        prctl(PR_SET_NAME, "EventloggerCatcherTest003_Child");
+        prctl(PR_SET_NAME, "EventlogTest03");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
         int volatile temp[memSize] = {0};
         while (true) {
             int i = 0;
             while (i < memSize) {
-                i++;
                 temp[i] = i & 0x234567;
+                i++;
             }
         }
     }
 
+    sleep(5);
     constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest003", "TEST03_MEM", "m",
-        pid, "EventloggerCatcherTest003_Child", 0, minQuantity);
+        pid, "EventlogTest03", 0, minQuantity);
     if (ret < 0) {
         printf("EventloggerCatcherTest003 is error ret == %d\n", ret);
         FAIL();
@@ -329,7 +334,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("MemTotal") != tmp.npos) {
+        if (tmp.find("[memory]") != tmp.npos) {
             ret = 0;
             break;
         }
