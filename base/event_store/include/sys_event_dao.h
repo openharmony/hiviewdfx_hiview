@@ -39,7 +39,7 @@ public:
     static SysEventQuery BuildQuery(uint16_t eventType);
     static SysEventQuery BuildQuery(const std::string& dbFile);
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
-    static int Delete(SysEventQuery &sysEventQuery);
+    static int Delete(SysEventQuery &sysEventQuery, int limit = 100);
     static int Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange = true);
     static int BackupDB(StoreType type);
     static int CloseDB(StoreType type);
