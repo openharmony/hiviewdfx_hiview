@@ -51,12 +51,12 @@ int SysEventDbCleaner::CleanDbByTime(const std::string dbFile, int64_t time) con
 {
     SysEventQuery sysEventQuery = SysEventDao::BuildQuery(dbFile);
     sysEventQuery.Where(EventStore::EventCol::TS, EventStore::Op::LT, time);
-    return SysEventDao::Delete(sysEventQuery);
+    return SysEventDao::Delete(sysEventQuery, 10000); // 10000 means delete limit
 }
 
 int SysEventDbCleaner::CleanDbByHour(const std::string dbFile, int hour) const
 {
-    int64_t delTime = TimeUtil::Get0ClockStampMs() + hour * TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
+    int64_t delTime = TimeUtil::GetMilliseconds() - hour * TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
     return CleanDbByTime(dbFile, delTime);
 }
 
@@ -74,7 +74,7 @@ bool SysEventDbCleaner::CleanDbs() const
 {
     bool res = true;
     for (auto config : DB_CLEAN_CONFIGS) {
-        if (CleanDb(config.first, config.second)) {
+        if (!CleanDb(config.first, config.second)) {
             HIVIEW_LOGE("failed to clean db, type=%{public}d", config.first);
             res = false;
         }

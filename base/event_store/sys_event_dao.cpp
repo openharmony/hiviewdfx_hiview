@@ -88,7 +88,7 @@ int SysEventDao::Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange)
     return 0;
 }
 
-int SysEventDao::Delete(SysEventQuery &sysEventQuery)
+int SysEventDao::Delete(SysEventQuery &sysEventQuery, int limit)
 {
     std::vector<std::string> dbFiles;
     if (sysEventQuery.GetDbFile().empty()) {
@@ -99,6 +99,7 @@ int SysEventDao::Delete(SysEventQuery &sysEventQuery)
 
     DataQuery dataQuery;
     sysEventQuery.GetDataQuery(dataQuery);
+    dataQuery.Limit(limit);
     for (auto dbFile : dbFiles) {
         HIVIEW_LOGD("delete event from db file %{public}s", dbFile.c_str());
         auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
