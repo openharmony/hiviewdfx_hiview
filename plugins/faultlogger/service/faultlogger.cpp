@@ -30,12 +30,13 @@
 #include "constants.h"
 #include "event.h"
 #include "file_util.h"
+#include "hiview_global.h"
 #include "logger.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
-#include "sys_event.h"
 #include "sys_event_dao.h"
+#include "sys_event.h"
 #include "time_util.h"
 
 #include "faultlog_formatter.h"
@@ -367,6 +368,11 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         return false;
     }
 
+    if (event->eventName_ == "PROCESS_EXIT") {
+        HiviewGlobal::GetInstance()->PostAsyncEventToTarget("CrashValidator", event);
+        return true;
+    }
+
     if (event->eventName_ == "JS_ERROR") {
         if (event->jsonExtraInfo_.empty()) {
             return false;
@@ -445,6 +451,7 @@ void Faultlogger::OnLoad()
     if (eventloop != nullptr) {
         auto task = std::bind(&Faultlogger::StartBootScan, this);
         eventloop->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
+        workLoop_ = eventloop;
     }
 }
 
@@ -501,6 +508,8 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         HIVIEW_LOGW("Unsupported fault type");
         return;
     }
+    HIVIEW_LOGI("Start saving Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s.",
+        info.pid, info.module.c_str(), info.reason.c_str());
 
     std::string appName = GetApplicationNameById(info.id);
     if (!appName.empty()) {

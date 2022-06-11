@@ -669,6 +669,7 @@ void HiviewPlatform::PostAsyncEventToTarget(std::shared_ptr<Plugin> caller, cons
     } else {
         workLoop->AddEvent(callee, event);
     }
+    HIVIEW_LOGI("Post async event to %{public}s successfully", calleeName.c_str());
 }
 
 std::shared_ptr<EventLoop> HiviewPlatform::GetSharedWorkLoop()

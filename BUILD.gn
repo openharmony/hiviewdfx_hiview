@@ -110,8 +110,8 @@ group("hiview_package") {
   deps = [
     ":hiview",
     ":plugin_config",
+    "plugins/faultlogger/crash_validator:crashvalidator",
 
-    #"plugins/faultlogger/crash_validator:crashvalidator",
     #"plugins/faultlogger/crash_validator:crash_validator_config",
   ]
   deps += plugin_dynamic_deps
