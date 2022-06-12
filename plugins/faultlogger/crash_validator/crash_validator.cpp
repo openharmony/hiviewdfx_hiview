@@ -135,7 +135,6 @@ bool CrashValidator::RemoveSimilarEvent(const CrashEvent& event)
 
 void CrashValidator::HandleCppCrashEvent(std::shared_ptr<Event>& event)
 {
-    CheckOutOfDateEvents();
     auto sysEvent = std::static_pointer_cast<SysEvent>(event);
     CrashEvent crashEvent;
     crashEvent.isCppCrash = true;
@@ -147,11 +146,11 @@ void CrashValidator::HandleCppCrashEvent(std::shared_ptr<Event>& event)
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
     }
+    CheckOutOfDateEvents();
 }
 
 void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
 {
-    CheckOutOfDateEvents();
     auto sysEvent = std::static_pointer_cast<SysEvent>(event);
     CrashEvent crashEvent;
     crashEvent.isCppCrash = false;
@@ -189,6 +188,7 @@ void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
     }
+    CheckOutOfDateEvents();
 }
 
 void CrashValidator::CheckOutOfDateEvents()
