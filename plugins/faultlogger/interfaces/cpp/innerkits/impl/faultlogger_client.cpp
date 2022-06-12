@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "hilog/log_cpp.h"
+#include "hisysevent.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -33,6 +34,20 @@ namespace OHOS {
 namespace HiviewDFX {
 static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = {LOG_CORE, 0xD002D10, "FaultloggerClient"};
 constexpr int32_t DFX_HIVIEW_FAULTLOGGER_ID = 1202;
+
+std::string GetPrintableStr(const std::string& str)
+{
+    size_t index = 0;
+    for (char c : str) {
+        if (std::isprint(c)) {
+            index++;
+        } else {
+            break;
+        }
+    }
+    return str.substr(0, index);
+}
+
 sptr<FaultLoggerServiceProxy> GetFaultloggerService()
 {
     sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -59,21 +74,12 @@ void AddFaultLog(const FaultLogInfoInner &info)
         return;
     }
 
-    size_t index = 0;
-    for (char c : info.module) {
-        if (std::isprint(c)) {
-            index++;
-        } else {
-            break;
-        }
-    }
-
     FaultLogInfoOhos infoOhos;
     infoOhos.time = info.time;
     infoOhos.uid = info.id;
     infoOhos.pid = info.pid;
     infoOhos.faultLogType = info.faultLogType;
-    infoOhos.module = info.module.substr(0, index);
+    infoOhos.module = GetPrintableStr(info.module);
     infoOhos.reason = info.reason;
     infoOhos.summary = info.summary;
     infoOhos.logPath = info.logPath;
@@ -118,10 +124,29 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
     sptr<FaultLogQueryResultProxy> proxy = new FaultLogQueryResultProxy(result);
     return std::make_unique<FaultLogQueryResult>(new FaultLogQueryResultImpl(proxy));
 }
+
+void ReportCppCrashEvent(const FaultLogInfoInner &info)
+{
+    HiSysEvent::Write("RELIABILITY",
+        "CPP_CRASH",
+        HiSysEvent::EventType::FAULT,
+        "MODULE", GetPrintableStr(info.module),
+        "REASON", info.reason,
+        "PID", info.pid,
+        "UID", info.id,
+        "FAULT_TYPE", std::to_string(info.faultLogType),
+        "HAPPEN_TIME", info.time,
+        "SUMMARY", info.summary);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
 
 __attribute__((visibility ("default"))) void AddFaultLog(FaultLogInfoInner* info)
 {
     OHOS::HiviewDFX::AddFaultLog(*info);
+}
+
+__attribute__((visibility ("default"))) void ReportCppCrashEvent(FaultLogInfoInner* info)
+{
+    OHOS::HiviewDFX::ReportCppCrashEvent(*info);
 }

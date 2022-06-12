@@ -33,6 +33,7 @@ struct FaultLogInfoInner {
     std::map<std::string, std::string> sectionMaps;
 };
 void AddFaultLog(FaultLogInfoInner* info);
+void ReportCppCrashEvent(FaultLogInfoInner* info);
 #ifdef __cplusplus
 }
 #endif

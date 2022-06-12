@@ -87,6 +87,7 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
     std::lock_guard<std::mutex> lock(mutex_);
     auto sysEvent = GetSysEventFromFaultLogInfo(info);
     if (sysEvent == nullptr) {
+        HIVIEW_LOGI("Failed to save FaultLogInfo for %{public}s(%{public}d)", info.module.c_str(), info.pid);
         return;
     }
 #ifndef UNITTEST

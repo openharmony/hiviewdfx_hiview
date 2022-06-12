@@ -43,7 +43,7 @@ constexpr char INIT_LOG_PATTERN[] = "SigHandler, SIGCHLD received, ";
 constexpr char KEY_NO_LOG_EVENT_NAME[] = "CPP_CRASH_NO_LOG";
 constexpr char KEY_HAPPEN_TIME[] = "HAPPEN_TIME";
 constexpr int32_t LOG_SIZE = 1024;
-constexpr uint64_t MAX_LOG_GENERATE_TIME = 30; // 30 seconds
+constexpr uint64_t MAX_LOG_GENERATE_TIME = 600; // 600 seconds
 }
 CrashValidator::CrashValidator() : stopReadKmsg_(false), totalEventCount_(0),
     normalEventCount_(0), kmsgReaderThread_(nullptr)
@@ -66,11 +66,12 @@ void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
 {
     std::vector<CrashEvent>::const_iterator it = events.begin(); 
     while (it != events.end()) {
-        dprintf(fd, "Module:%s Time:%llu Pid:%d Uid:%d\n",
+        dprintf(fd, "Module:%s Time:%llu Pid:%d Uid:%d HasLog:%d\n",
             it->name.c_str(),
             static_cast<unsigned long long>(it->time),
             it->pid,
-            it->uid);
+            it->uid,
+            it->isCppCrash);
         it++;
     }
 }
@@ -178,6 +179,12 @@ void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
         return;
     }
 
+    HIVIEW_LOGI("Process Exit Name:%{public}s Time:%{public}llu Pid:%{public}d Uid:%{public}d status:%{public}d\n",
+        crashEvent.name.c_str(),
+        static_cast<unsigned long long>(crashEvent.time),
+        crashEvent.pid,
+        crashEvent.uid,
+        status);
     totalEventCount_++;
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
@@ -238,7 +245,7 @@ void CrashValidator::ReadServiceCrashStatus()
         int  ret = sscanf_s(formatedLog.c_str(), "Service:%s pid:%d uid:%d status:%d",
             name, sizeof(name), &pid, &uid, &status);
         if (ret <= 0) {
-            HIVIEW_LOGI("Failed to parse kmsg:%s.", formatedLog.c_str());
+            HIVIEW_LOGI("Failed to parse kmsg:%{public}s.", formatedLog.c_str());
             continue;
         }
 
@@ -256,8 +263,6 @@ bool CrashValidator::ValidateLogContent(const CrashEvent& event)
 
 void CrashValidator::OnLoad()
 {
-    HIVIEW_LOGI("CrashValidator OnLoad.");
-    GetHiviewContext()->AppendPluginToPipeline("CrashValidator", "SysEventPipeline");
     kmsgReaderThread_ = std::make_unique<std::thread>(&CrashValidator::ReadServiceCrashStatus, this);
     kmsgReaderThread_->detach();
 }
