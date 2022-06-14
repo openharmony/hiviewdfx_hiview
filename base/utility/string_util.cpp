@@ -364,6 +364,56 @@ std::string EscapeJsonStringValue(const std::string &value)
     }
     return escapeValue;
 }
+
+std::string UnescapeJsonStringValue(const std::string &value)
+{
+    bool isEscaped = true;
+    std::string unescapeValue;
+    for (auto it = value.begin(); it != value.end(); it++) {
+        if (isEscaped) {
+            switch (*it) {
+                case '"':
+                    unescapeValue.push_back('\"');
+                    break;
+                case '/':
+                    unescapeValue.push_back('/');
+                    break;
+                case 'b':
+                    unescapeValue.push_back('\b');
+                    break;
+                case 'f':
+                    unescapeValue.push_back('\f');
+                    break;
+                case 'n':
+                    unescapeValue.push_back('\n');
+                    break;
+                case 'r':
+                    unescapeValue.push_back('\r');
+                    break;
+                case 't':
+                    unescapeValue.push_back('\t');
+                    break;
+                case '\\':
+                    unescapeValue.push_back('\\');
+                    break;
+                default:
+                    unescapeValue.push_back(*it);
+                    break;
+            }
+            isEscaped = false;
+        } else {
+            switch (*it) {
+                case '\\':
+                    isEscaped = true;
+                    break;
+                default:
+                    unescapeValue.push_back(*it);
+                    break;
+            }
+        }
+    }
+    return unescapeValue;
+}
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS
