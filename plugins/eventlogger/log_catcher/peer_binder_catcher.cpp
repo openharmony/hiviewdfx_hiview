@@ -94,7 +94,8 @@ int PeerBinderCatcher::Catch(int fd)
     return logSize_;
 }
 
-std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::BinderInfoParser(std::ifstream& fin) const
+std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::BinderInfoParser(
+    std::ifstream& fin, int fd) const
 {
     std::map<int, std::list<BinderInfo>> manager;
     const int DECIMAL = 10;
@@ -103,7 +104,9 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
     std::string pattern = ".*\\s(\\d+):.*to\\s*(\\d+):.*";
     std::regex reg(pattern);
     std::string line;
+    FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
     while (getline(fin, line)) {
+        FileUtil::SaveStringToFd(fd, line + "\n");
         std::smatch match;
         if (!std::regex_match(line, match, reg)) {
             continue;
@@ -115,6 +118,7 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
         info.client = std::strtol(std::string(match[CLIENT_PID_NUM]).c_str(), nullptr, DECIMAL);
         manager[info.client].push_back(info);
     }
+    FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");
     HIVIEW_LOGI("manager size: %{public}zu", manager.size());
     return manager;
 }
@@ -132,7 +136,7 @@ std::set<int> PeerBinderCatcher::GetBinderPeerPids(int fd) const
         return pids;
     }
 
-    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> manager = BinderInfoParser(fin);
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> manager = BinderInfoParser(fin, fd);
     fin.close();
 
     if (manager.size() == 0 || manager.find(pid_) == manager.end()) {

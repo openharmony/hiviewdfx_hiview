@@ -23,10 +23,9 @@
 #include "string_util.h"
 
 #include "binder_catcher.h"
-#include "cpu_utilization_catcher.h"
-#include "memory_usage_catcher.h"
 #include "open_stacktrace_catcher.h"
 #include "peer_binder_catcher.h"
+#include "command_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -42,12 +41,13 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
       taskLogSize_(0),
       status_(Status::TASK_RUNNABLE)
 {
-    captureList_.push_back(std::bind(&EventLogTask::AppStackCapture, this, std::placeholders::_1));
-    captureList_.push_back(std::bind(&EventLogTask::SystemStackCapture, this, std::placeholders::_1));
-    captureList_.push_back(std::bind(&EventLogTask::BinderLogCapture, this, std::placeholders::_1));
-    captureList_.push_back(std::bind(&EventLogTask::PeerBinderCapture, this, std::placeholders::_1));
-    captureList_.push_back(std::bind(&EventLogTask::CpuUtilizationCapture, this, std::placeholders::_1));
-    captureList_.push_back(std::bind(&EventLogTask::MemoryUsageCapture, this, std::placeholders::_1));
+    cmdCatcher_ = nullptr;
+    captureList_.insert(std::pair<std::string, capture>("s", std::bind(&EventLogTask::AppStackCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("S", std::bind(&EventLogTask::SystemStackCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("b", std::bind(&EventLogTask::BinderLogCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("c", std::bind(&EventLogTask::CpuUtilizationCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("w", std::bind(&EventLogTask::WMSUsageCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -56,19 +56,11 @@ void EventLogTask::AddLog(const std::string &cmd)
         status_ = Status::TASK_RUNNABLE;
     }
 
-    if (cmd == "c" || cmd == "m") {
-        if (!cmFlage_) {
-            cmFlage_ = true;
-        } else {
-            return;
-        }
+    if (captureList_.find(cmd) != captureList_.end()) {
+        captureList_[cmd]();
+        return;
     }
-
-    for (auto tmp : captureList_) {
-        if (tmp(cmd)) {
-            return;
-        }
-    }
+    PeerBinderCapture(cmd);
 }
 
 EventLogTask::Status EventLogTask::StartCompose()
@@ -83,10 +75,10 @@ EventLogTask::Status EventLogTask::StartCompose()
         return Status::TASK_SUCCESS;
     }
 
+    auto dupedFd = dup(targetFd_);
     uint32_t catcherIndex = 0;
     for (auto& catcher : tasks_) {
         catcherIndex++;
-        auto dupedFd = dup(targetFd_);
         if (dupedFd < 0) {
             status_ = Status::TASK_FAIL;
             AddStopReason(targetFd_, catcher, "Fail to dup file descriptor, exit!");
@@ -96,11 +88,10 @@ EventLogTask::Status EventLogTask::StartCompose()
         AddSeparator(dupedFd, catcher);
         int curLogSize = catcher->Catch(dupedFd);
         if (ShouldStopLogTask(dupedFd, catcherIndex, curLogSize, catcher)) {
-            close(dupedFd);
             break;
         }
-        close(dupedFd);
     }
+    close(dupedFd);
 
     if (status_ == Status::TASK_RUNNING) {
         status_ = Status::TASK_SUCCESS;
@@ -182,41 +173,44 @@ long EventLogTask::GetLogSize() const
     return taskLogSize_;
 }
 
-bool EventLogTask::AppStackCapture(const std::string &cmd)
+std::shared_ptr<CommandCatcher> EventLogTask::GetCmdCatcher()
 {
-    if (cmd == "s") {
+    if (cmdCatcher_ != nullptr) {
+        return cmdCatcher_;
+    }
+
+    auto capture = std::make_shared<CommandCatcher>();
+    int pid = event_->GetEventIntValue("PID");
+    pid = pid ? pid : event_->GetPid();
+    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
+    tasks_.push_back(capture);
+    cmdCatcher_ = capture;
+    return cmdCatcher_;
+}
+
+void EventLogTask::AppStackCapture()
+{
+    auto capture = std::make_shared<OpenStacktraceCatcher>();
+    int pid = event_->GetEventIntValue("PID");
+    pid = pid ? pid : event_->GetPid();
+    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::SystemStackCapture()
+{
+    for (auto packageName : SYSTEM_STACK) {
         auto capture = std::make_shared<OpenStacktraceCatcher>();
-        int pid = event_->GetEventIntValue("PID");
-        pid = pid ? pid : event_->GetPid();
-        capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
+        capture->Initialize(packageName, 0, 0);
         tasks_.push_back(capture);
-        return true;
     }
-    return false;
 }
 
-bool EventLogTask::SystemStackCapture(const std::string &cmd)
+void EventLogTask::BinderLogCapture()
 {
-    if (cmd == "S") {
-        for (auto packageName : SYSTEM_STACK) {
-            auto capture = std::make_shared<OpenStacktraceCatcher>();
-            capture->Initialize(packageName, 0, 0);
-            tasks_.push_back(capture);
-        }
-        return true;
-    }
-    return false;
-}
-
-bool EventLogTask::BinderLogCapture(const std::string &cmd)
-{
-    if (cmd == "b") {
-        auto capture = std::make_shared<BinderCatcher>();
-        capture->Initialize("", 0, 0);
-        tasks_.push_back(capture);
-        return true;
-    }
-    return false;
+    auto capture = std::make_shared<BinderCatcher>();
+    capture->Initialize("", 0, 0);
+    tasks_.push_back(capture);
 }
 
 bool EventLogTask::PeerBinderCapture(const std::string &cmd)
@@ -246,30 +240,22 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
     return true;
 }
 
-bool EventLogTask::CpuUtilizationCapture(const std::string &cmd)
+void EventLogTask::WMSUsageCapture()
 {
-    if (cmd == "c") {
-        auto capture = std::make_shared<CpuUtilizationCatcher>();
-        int pid = event_->GetEventIntValue("PID");
-        pid = pid ? pid : event_->GetPid();
-        capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
-        tasks_.push_back(capture);
-        return true;
-    }
-    return false;
+    auto cmdCatcher = GetCmdCatcher();
+    cmdCatcher->SetCmd(0); // 0: dump WMS capture cmd
 }
 
-bool EventLogTask::MemoryUsageCapture(const std::string &cmd)
+void EventLogTask::CpuUtilizationCapture()
 {
-    if (cmd == "m") {
-        auto capture = std::make_shared<MemoryUsageCatcher>();
-        int pid = event_->GetEventIntValue("PID");
-        pid = pid ? pid : event_->GetPid();
-        capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
-        tasks_.push_back(capture);
-        return true;
-    }
-    return false;
+    auto cmdCatcher = GetCmdCatcher();
+    cmdCatcher->SetCmd(1); // 1: cpu capture cmd
+}
+
+void EventLogTask::MemoryUsageCapture()
+{
+    auto cmdCatcher = GetCmdCatcher();
+    cmdCatcher->SetCmd(2); // 2: memory capture cmd
 }
 } // namespace HiviewDFX
 } // namespace OHOS

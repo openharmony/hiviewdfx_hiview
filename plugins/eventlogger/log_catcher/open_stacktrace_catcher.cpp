@@ -67,7 +67,7 @@ int OpenStacktraceCatcher::Catch(int fd)
     auto str = CommonUtils::GetProcNameByPid(pid_);
     if (str.empty()) {
         HIVIEW_LOGE("pid is invalid %{public}d", pid_);
-        FileUtil::SaveStringToFd(fd, "pid is invalid");
+        FileUtil::SaveStringToFd(fd, "pid is invalid\n");
     } else {
         FileUtil::SaveStringToFd(fd, str + "\n");
     }

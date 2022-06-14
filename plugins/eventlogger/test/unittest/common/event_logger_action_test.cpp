@@ -183,7 +183,7 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest001, TestSize.Level3)
     }
 
     if (pid == 0) {
-        prctl(PR_SET_NAME, "EventloggerActionTest001_Child");
+        prctl(PR_SET_NAME, "EventlogTest01");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
         while (true) {
             int i = 0;
@@ -193,9 +193,10 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest001, TestSize.Level3)
         }
     }
 
+    sleep(5);
     constexpr int minQuantity = 10000;
     auto ret = StartCreate("EventloggerActionTest001", "TEST01_ACTION",
-        "c,m,s,S,b", pid, "EventloggerActionTest001_Child", 0);
+        "c,m,s,S,b", pid, "EventlogTest01", 0);
     if (ret < 0) {
         printf("EventloggerActionTest001 is error ret == %d\n", ret);
         FAIL();
@@ -244,23 +245,24 @@ HWTEST_F(EventloggerActionTest, EventloggerActionTest002, TestSize.Level3)
     }
 
     if (pid == 0) {
-        prctl(PR_SET_NAME, "EventloggerActionTest002_Child");
+        prctl(PR_SET_NAME, "EventlogTest02");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
         int volatile temp[memSize] = {0};
         auto temp2 = std::vector<int>(memSize);
         while (true) {
             int i = 0;
             while (i < memSize) {
-                i++;
                 temp2[i] = rand();
                 temp[i] = temp2[i] + 1;
+                i++;
             }
         }
     }
 
+    sleep(5);;
     constexpr int minQuantity = 10000;
     auto ret = StartCreate("EventloggerActionTest002", "TEST02_ACTION",
-        "m,c,b,S,s", pid, "EventloggerActionTest002_Child", 0);
+        "m,c,b,S,s", pid, "EventlogTest02", 0);
     if (ret < 0) {
         printf("EventloggerActionTest002 is error ret == %d\n", ret);
         FAIL();

@@ -44,7 +44,16 @@ public:
     // do not store the event in the callback
     // create a new one through copy constructor is preferred
     virtual bool OnEvent(std::shared_ptr<Event>& event) override;
+
+    /* If the plugin is at the top of a pipeline, this function will be used to determine
+     * whether the current event can be processed by the pipeline.
+     */
     virtual bool CanProcessEvent(std::shared_ptr<Event> event) override;
+
+    /* If the plugin is in a pipeline, this function will be used to determine 
+     * whether the current pipeline event can be processed by the plugin.
+     */
+    virtual bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;
     virtual bool CanProcessMoreEvents() override;
     bool OnEventProxy(std::shared_ptr<Event> event) override;
     virtual std::string GetHandlerInfo() override;

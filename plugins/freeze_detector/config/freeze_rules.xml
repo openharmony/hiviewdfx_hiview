@@ -36,14 +36,14 @@
     </rule>
   </rules>
   <rules resolver="AppResolver">
-    <rule id="1" window="30" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+    <rule id="1" window="6" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
       <links type="watchpoint">
         <event domain="ACE" stringid="UI_BLOCK_3S">	<!-- UI_BLOCK_3S -->
           <result code="0" scope="app" samePackage="true"/>
         </event>
       </links>
     </rule>
-    <rule id="2" window="30" domain="APPEXECFWK" stringid="THREAD_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+    <rule id="2" window="6" domain="APPEXECFWK" stringid="THREAD_BLOCK_6S">	<!-- UI_BLOCK_6S -->
       <links type="watchpoint">
         <event domain="APPEXECFWK" stringid="THREAD_BLOCK_3S">	<!-- UI_BLOCK_3S -->
           <result code="0" scope="app"/>
@@ -60,6 +60,27 @@
     <rule id="4" window="30" domain="RELIABILITY" stringid="STACK">	<!-- UI_BLOCK_6S -->
       <links type="watchpoint">
         <event domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="5" window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="6" window="0" domain="GRAPHIC" stringid="NO_DRAW">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event domain="GRAPHIC" stringid="NO_DRAW">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="7" window="0" domain="POWERMGR" stringid="SCREEN_ON_TIMEOUT">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event domain="POWERMGR" stringid="SCREEN_ON_TIMEOUT">	<!-- UI_BLOCK_3S -->
           <result code="0" scope="app"/>
         </event>
       </links>

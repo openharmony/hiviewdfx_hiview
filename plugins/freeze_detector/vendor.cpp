@@ -36,6 +36,9 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
     {"WINDOWMANAGER", "NO_FOCUS_WINDOW"},
     {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
     {"RELIABILITY", "STACK"},
+    {"AAFWK", "LIFECYCLE_TIMEOUT"},
+    {"GRAPHIC", "NO_DRAW"},
+    {"POWERMGR", "SCREEN_ON_TIMEOUT"},
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {

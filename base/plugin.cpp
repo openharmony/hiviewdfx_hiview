@@ -40,6 +40,11 @@ bool Plugin::CanProcessEvent(std::shared_ptr<Event> event __UNUSED)
     return true;
 }
 
+bool Plugin::IsInterestedPipelineEvent(std::shared_ptr<Event> event __UNUSED)
+{
+    return true;
+}
+
 bool Plugin::CanProcessMoreEvents()
 {
     return true;
