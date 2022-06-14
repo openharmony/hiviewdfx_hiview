@@ -76,7 +76,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
-    info.summary = StringUtil::ReplaceStr(sysEvent->GetEventValue("SUMMARY"), "\\n", "\n");
+    info.summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
     info.logPath = sysEvent->GetEventValue("LOG_PATH");
     return true;
 }
