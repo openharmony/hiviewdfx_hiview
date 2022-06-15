@@ -92,14 +92,14 @@ void CrashValidator::Dump(int fd, const std::vector<std::string>& cmds)
         PrintEvents(fd, noLogEvents_);
     }
 
-    if (!logContentMissingEvents_.empty()) {
-        dprintf(fd, "Uncompleted Events(%zu):\n", logContentMissingEvents_.size());
-        PrintEvents(fd, logContentMissingEvents_);
+    if (!pendingEvents_.empty()) {
+        dprintf(fd, "Pending CppCrash Log Events(%zu):\n", pendingEvents_.size());
+        PrintEvents(fd, pendingEvents_);
     }
 
-    if (!pendingEvents_.empty()) {
-        dprintf(fd, "Unmatched CppCrash Log Events(%zu):\n", pendingEvents_.size());
-        PrintEvents(fd, pendingEvents_);
+    if (!matchedEvents_.empty()) {
+        dprintf(fd, "Matched Events(%zu):\n", matchedEvents_.size());
+        PrintEvents(fd, matchedEvents_);
     }
 }
 
@@ -146,7 +146,6 @@ void CrashValidator::HandleCppCrashEvent(std::shared_ptr<Event>& event)
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
     }
-    CheckOutOfDateEvents();
 }
 
 void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
@@ -188,7 +187,6 @@ void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
     }
-    CheckOutOfDateEvents();
 }
 
 void CrashValidator::CheckOutOfDateEvents()
@@ -274,7 +272,7 @@ void CrashValidator::OnUnload()
     normalEventCount_ = 0;
     pendingEvents_.clear();
     noLogEvents_.clear();
-    logContentMissingEvents_.clear();
+    matchedEvents_.clear();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
