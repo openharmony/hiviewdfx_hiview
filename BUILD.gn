@@ -15,10 +15,14 @@ import("//base/hiviewdfx/hiview/build/hiview_var.gni")
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-if (!build_public_version) {
-  oem_script = rebase_path("//base/hiviewdfx/hiview/build/run_oem_hook.py")
-  print(exec_script(oem_script, [], "string", []))
-}
+oem_script = rebase_path("//base/hiviewdfx/hiview/build/run_oem_hook.py")
+out_oem_build_file = "${target_gen_dir}/oem_build.gni"
+oem_args = [
+  "--out_build_file",
+  rebase_path(out_oem_build_file),
+]
+print(exec_script(oem_script, oem_args, "string", []))
+import(out_oem_build_file)
 
 gen_plugin_script =
     rebase_path("//base/hiviewdfx/hiview/build/gen_plugin_build.py")
@@ -115,6 +119,7 @@ group("hiview_package") {
     #"plugins/faultlogger/crash_validator:crash_validator_config",
   ]
   deps += plugin_dynamic_deps
+  deps += oem_dynamic_deps
 }
 
 group("hiview_test_package") {
@@ -133,4 +138,5 @@ group("hiview_test_package") {
 
   deps += plugin_ut_deps
   deps += plugin_mst_deps
+  deps += oem_test_deps
 }
