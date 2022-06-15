@@ -66,7 +66,7 @@ void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
 {
     std::vector<CrashEvent>::const_iterator it = events.begin(); 
     while (it != events.end()) {
-        dprintf(fd, "Module:%s Time:%llu Pid:%llu Uid:%llu HasLog:%d\n",
+        dprintf(fd, "Module:%s Time:%" PRIu64" Pid:%" PRIu64" Uid:%" PRIu64" HasLog:%d\n",
             it->name.c_str(),
             static_cast<unsigned long long>(it->time),
             it->pid,
