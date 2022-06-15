@@ -18,7 +18,9 @@
 #include <vector>
 
 #include "app_usage_event.h"
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
+#endif
 #include "hilog/log.h"
 #include "os_account_manager.h"
 #include "sys_event_common.h"
@@ -29,13 +31,17 @@ namespace HiviewDFX {
 namespace {
 const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "AppUsageEventFactory" };
 constexpr int32_t DEFAULT_USER_ID = 100;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
 constexpr int32_t INTERVAL_TYPE = 1;
 constexpr int64_t MILLISEC_TO_SEC = 1000;
+#endif
 const std::string DATE_FORMAT = "%Y-%m-%d";
 }
 using namespace AppUsageEventSpace;
 using namespace OHOS::AccountSA;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
 using namespace OHOS::DeviceUsageStats;
+#endif
 
 std::unique_ptr<LoggerEvent> AppUsageEventFactory::Create()
 {
@@ -84,6 +90,7 @@ void AppUsageEventFactory::GetAllCreatedOsAccountIds(std::vector<int32_t>& ids)
 
 void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& appUsageInfos, int32_t userId)
 {
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
     HiLog::Info(LABEL, "get app usage info by userId=%{public}d", userId);
     int64_t today0Time = TimeUtil::Get0ClockStampMs();
     int64_t gapTime = static_cast<int64_t>(TimeUtil::MILLISECS_PER_DAY);
@@ -112,6 +119,7 @@ void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& a
             appUsageInfos.push_back(AppUsageInfo(stat.bundleName_, usage, dateStr));
         }
     }
+#endif
 }
 } // namespace HiviewDFX
 } // namespace OHOS

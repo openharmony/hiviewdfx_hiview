@@ -61,7 +61,6 @@ ohos_source_set("sys_event_logger") {
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics_native:batterystats_client",
-    "device_usage_statistics:usagestatsinner",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
     "ipc:ipc_core",
@@ -72,6 +71,12 @@ ohos_source_set("sys_event_logger") {
     "time_native:time_client",
     "utils_base:utils",
   ]
+
+  defines = []
+  if (device_usage_statistics_enable) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
 
   deps = [
     "$hiview_adapter/dbstore:db_store_source",
