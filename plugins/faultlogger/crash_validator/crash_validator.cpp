@@ -68,9 +68,9 @@ void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
     while (it != events.end()) {
         dprintf(fd, "Module:%s Time:%" PRIu64" Pid:%" PRIu64" Uid:%" PRIu64" HasLog:%d\n",
             it->name.c_str(),
-            static_cast<unsigned long long>(it->time),
-            it->pid,
-            it->uid,
+            static_cast<uint64_t>(it->time),
+            static_cast<uint64_t>(it->pid),
+            static_cast<uint64_t>(it->uid),
             it->isCppCrash);
         it++;
     }
