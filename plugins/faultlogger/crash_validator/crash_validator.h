@@ -58,7 +58,7 @@ private:
     std::unique_ptr<std::thread> kmsgReaderThread_;
     std::vector<CrashEvent> pendingEvents_;
     std::vector<CrashEvent> noLogEvents_;
-    std::vector<CrashEvent> logContentMissingEvents_;
+    std::vector<CrashEvent> matchedEvents_;
     std::mutex lock_;
 };
 } // namespace HiviewDFX

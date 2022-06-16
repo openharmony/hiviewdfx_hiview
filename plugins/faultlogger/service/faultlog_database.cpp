@@ -47,7 +47,7 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
     sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
     sysEvent->SetEventValue("MODULE", info.module);
     sysEvent->SetEventValue("REASON", info.reason);
-    sysEvent->SetEventValue("SUMMARY", info.summary);
+    sysEvent->SetEventValue("SUMMARY", StringUtil::EscapeJsonStringValue(info.summary));
     sysEvent->SetEventValue("LOG_PATH", info.logPath);
     sysEvent->SetEventValue("HAPPEN_TIME", info.time);
     if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
