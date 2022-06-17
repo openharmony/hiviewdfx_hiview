@@ -79,6 +79,11 @@ void HiviewServiceAbility::StartServiceAbility(int sleepS)
         break;
     }
 
+    if (serviceManager == nullptr) {
+        HIVIEW_LOGE("serviceManager == nullptr");
+        return;
+    }
+
     auto abilityObjext = serviceManager->AsObject();
     if (abilityObjext == nullptr) {
         HIVIEW_LOGE("AsObject() == nullptr");
