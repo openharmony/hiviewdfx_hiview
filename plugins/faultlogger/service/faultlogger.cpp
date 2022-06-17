@@ -391,7 +391,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.module = sysEvent->GetEventValue("PACKAGE_NAME");
         info.reason = sysEvent->GetEventValue("REASON");
         auto summary = sysEvent->GetEventValue("SUMMARY");
-        info.summary = StringUtil::EscapeJsonStringValue(summary);
+        info.summary = StringUtil::UnescapeJsonStringValue(summary);
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
 

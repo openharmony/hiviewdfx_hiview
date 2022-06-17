@@ -163,7 +163,7 @@ int16_t SysEvent::GetTz() const
 std::string SysEvent::GetEventValue(const std::string& key)
 {
     std::string value;
-    std::string regexStr = "\"" + key + "\":\"([.\\s\\S\\r\\n]*?)\"";
+    std::string regexStr = "\"" + key + R"~(":"((\\"|[^"])*)")~";
     GetValueFromJson(jsonExtraInfo_, regexStr, value);
     if (!value.empty() && !key.empty()) {
         SetValue(key, value);
