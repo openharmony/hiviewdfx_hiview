@@ -47,7 +47,7 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
     sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
     sysEvent->SetEventValue("MODULE", info.module);
     sysEvent->SetEventValue("REASON", info.reason);
-    sysEvent->SetEventValue("SUMMARY", info.summary);
+    sysEvent->SetEventValue("SUMMARY", StringUtil::EscapeJsonStringValue(info.summary));
     sysEvent->SetEventValue("LOG_PATH", info.logPath);
     sysEvent->SetEventValue("HAPPEN_TIME", info.time);
     if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
@@ -76,7 +76,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
-    info.summary = StringUtil::EscapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
+    info.summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
     info.logPath = sysEvent->GetEventValue("LOG_PATH");
     return true;
 }
