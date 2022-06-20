@@ -66,7 +66,7 @@ void AddStringVecValue(Json::Value &root, const std::string &name, const ParamVa
     }
 }
 
-const ParamValueAdder adders[] = {
+const ParamValueAdder ADDER_FUNCS[] = {
     &AddUint8Value,
     &AddUint16Value,
     &AddUint32Value,
@@ -91,8 +91,8 @@ std::string LoggerEvent::ToJsonString()
 
     for (auto &param : paramMap_) {
         size_t typeIndex = param.second.GetType();
-        if (typeIndex < (sizeof(adders) / sizeof(adders[0]))) {
-            adders[typeIndex](root, param.first, param.second);
+        if (typeIndex < (sizeof(ADDER_FUNCS) / sizeof(ADDER_FUNCS[0]))) {
+            ADDER_FUNCS[typeIndex](root, param.first, param.second);
         }
     }
 
