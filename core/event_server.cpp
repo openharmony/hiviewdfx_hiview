@@ -29,11 +29,8 @@
 
 #include <securec.h>
 
-extern "C" {
-#include "init_socket.h"
-}
-
 #include "device_node.h"
+#include "init_socket.h"
 #include "logger.h"
 #include "socket_util.h"
 
