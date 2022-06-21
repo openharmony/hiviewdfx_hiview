@@ -27,3 +27,11 @@ hiview_test = "//base/hiviewdfx/hiview/test"
 # hiview plugin path definitions
 hiview_faultlogger = "//base/hiviewdfx/hiview/plugins/faultlogger"
 hiview_eventlogger = "//base/hiviewdfx/hiview/plugins/eventlogger"
+
+declare_args() {
+  device_usage_statistics_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.device_usage_statistics)) {
+    device_usage_statistics_enable = false
+  }
+}
