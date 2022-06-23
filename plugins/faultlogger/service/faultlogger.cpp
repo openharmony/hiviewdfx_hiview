@@ -362,6 +362,20 @@ bool Faultlogger::JudgmentRateLimiting(std::shared_ptr<Event> event)
     return true;
 }
 
+bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
+{
+    if (!hasInit_ || event == nullptr) {
+        return false;
+    }
+
+    if (event->eventName_ != "PROCESS_EXIT" &&
+        event->eventName_ != "JS_ERROR") {
+        return false;
+    }
+
+    return true;
+}
+
 bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 {
     if (!hasInit_ || event == nullptr) {

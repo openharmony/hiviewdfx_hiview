@@ -45,6 +45,7 @@ public:
     // implementations of Plugin interfaces
     // for intercepting JavaCrash and AppFreeze from collectors pipeline
     bool OnEvent(std::shared_ptr<Event> &event) override;
+    bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
     bool ReadyToLoad() override;
     void OnLoad() override;
