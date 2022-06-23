@@ -20,51 +20,32 @@
 #include <string>
 #include <sys/time.h>
 
-#include "hilog/log.h"
 #include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+static const std::vector<ParseItem> PARSE_ORDER = {
+    {"domain_",     ":\"",  "\"",   nullptr, STATE_PARSING_DOMAIN,          true},
+    {"name_",       ":\"",  "\"",   nullptr, STATE_PARSING_NAME,            true},
+    {"type_",       ":",    ",",    nullptr, STATE_PARSING_TYPE,            true},
+    {"time_",       ":",    ",",    nullptr, STATE_PARSING_TIME,            true},
+    {"tz_",         ":\"",  "\"",   nullptr, STATE_PARSING_TZONE,           true},
+    {"pid_",        ":",    ",",    nullptr, STATE_PARSING_PID,             true},
+    {"tid_",        ":",    ",",    nullptr, STATE_PARSING_TID,             true},
+    {"uid_",        ":",    ",",    "}",     STATE_PARSING_UID,             true},
+    {"traceid_",    ":\"",  "\"",   nullptr, STATE_PARSING_TRACE_ID,        false},
+    {"spanid_",     ":\"",  "\"",   nullptr, STATE_PARSING_SPAN_ID,         false},
+    {"pspanid_",    ":\"",  "\"",   nullptr, STATE_PARSING_PARENT_SPAN_ID,  false},
+    {"trace_flag_", ":\"",  "\"",   nullptr, STATE_PARSING_TRACE_FLAG,      false},
+};
+
 static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, std::string& value)
 {
     std::smatch result;
     const std::regex pattern(expr);
     if (std::regex_search(jsonStr, result, pattern)) {
         value = result.str(1);
-        return 0;
-    }
-    return -1;
-}
-
-static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, int16_t& value)
-{
-    std::smatch result;
-    const std::regex pattern(expr);
-    if (std::regex_search(jsonStr, result, pattern)) {
-        value = std::atoi(result.str(1).c_str());
-        return 0;
-    }
-    return -1;
-}
-
-static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, uint16_t& value)
-{
-    std::smatch result;
-    const std::regex pattern(expr);
-    if (std::regex_search(jsonStr, result, pattern)) {
-        value = std::atoi(result.str(1).c_str());
-        return 0;
-    }
-    return -1;
-}
-
-static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, int32_t& value)
-{
-    std::smatch result;
-    const std::regex pattern(expr);
-    if (std::regex_search(jsonStr, result, pattern)) {
-        value = std::atoi(result.str(1).c_str());
         return 0;
     }
     return -1;
@@ -103,31 +84,78 @@ int SysEvent::ParseJson()
     if (jsonExtraInfo_.empty()) {
         return -1;
     }
-    GetValueFromJson(jsonExtraInfo_, R"~("domain_":"([_\w]+)")~", domain_);
-    GetValueFromJson(jsonExtraInfo_, R"~("name_":"([\w_]+)")~", eventName_);
-    GetValueFromJson(jsonExtraInfo_, R"~("type_":([\d]+))~", what_);
-    GetValueFromJson(jsonExtraInfo_, R"~("time_":([\d]+))~", happenTime_);
-    GetValueFromJson(jsonExtraInfo_, R"~("tz_":([\d]+))~", tz_);
-    GetValueFromJson(jsonExtraInfo_, R"~("pid_":([\d]+))~", pid_);
-    GetValueFromJson(jsonExtraInfo_, R"~("tid_":([\d]+))~", tid_);
-    GetValueFromJson(jsonExtraInfo_, R"~("uid_":([\d]+))~", uid_);
-    GetValueFromJson(jsonExtraInfo_, R"~("traceid_":"([\w]+)")~", traceId_);
-    GetValueFromJson(jsonExtraInfo_, R"~("spanid_":"([\w]+)")~", spanId_);
-    GetValueFromJson(jsonExtraInfo_, R"~("pspanid_":"([\w]+)")~", parentSpanId_);
-    GetValueFromJson(jsonExtraInfo_, R"~("trace_flag_":"([\w]+)")~", traceFlag_);
-    if (domain_.empty()) {
-        return -1;
+    size_t curPos = 0;
+    for (auto ele = PARSE_ORDER.cbegin(); ele != PARSE_ORDER.cend(); ele++) {
+        size_t keyPos = jsonExtraInfo_.find(ele->keyString, curPos);
+        if (keyPos != std::string::npos) {
+            size_t startPos = jsonExtraInfo_.find(ele->valueStart, keyPos);
+            if (startPos == std::string::npos) {
+                continue;
+            }
+            startPos += strlen(ele->valueStart);
+            size_t endPos = jsonExtraInfo_.find(ele->valueEnd1, startPos);
+            if (endPos == std::string::npos && ele->valueEnd2 != nullptr) {
+                endPos = jsonExtraInfo_.find(ele->valueEnd2, startPos);
+            }
+            if (endPos != std::string::npos) {
+                std::string content = jsonExtraInfo_.substr(startPos, endPos - startPos);
+                InitialMember(ele->status, content);
+                curPos = endPos;
+            }
+        } else {
+            if (!ele->isParseContinue) {
+                break;
+            }
+        }
     }
-    if (eventName_.empty()) {
-        return -1;
-    }
-    if (what_ == 0) {
-        return -1;
-    }
-    if (happenTime_ == 0) {
+    if (domain_.empty() || eventName_.empty() || what_ == 0 || happenTime_ == 0) {
         return -1;
     }
     return 0;
+}
+
+void SysEvent::InitialMember(ParseStatus status, const std::string &content)
+{
+    switch (status) {
+        case STATE_PARSING_DOMAIN:
+            domain_ = content;
+            break;
+        case STATE_PARSING_NAME:
+            eventName_ = content;
+            break;
+        case STATE_PARSING_TYPE:
+            what_ = static_cast<uint16_t>(std::atoi(content.c_str()));
+            break;
+        case STATE_PARSING_TIME:
+            happenTime_ = static_cast<uint64_t>(std::atoll(content.c_str()));
+            break;
+        case STATE_PARSING_TZONE:
+            tz_ = std::atoi(content.c_str());
+            break;
+        case STATE_PARSING_PID:
+            pid_ = std::atoi(content.c_str());
+            break;
+        case STATE_PARSING_TID:
+            tid_ = std::atoi(content.c_str());
+            break;
+        case STATE_PARSING_UID:
+            uid_ = std::atoi(content.c_str());
+            break;
+        case STATE_PARSING_TRACE_ID:
+            traceId_ = content;
+            break;
+        case STATE_PARSING_SPAN_ID:
+            spanId_ = content;
+            break;
+        case STATE_PARSING_PARENT_SPAN_ID:
+            parentSpanId_ = content;
+            break;
+        case STATE_PARSING_TRACE_FLAG:
+            traceFlag_ = content;
+            break;
+        default:
+            break;
+    }
 }
 
 void SysEvent::SetSeq(int64_t seq)

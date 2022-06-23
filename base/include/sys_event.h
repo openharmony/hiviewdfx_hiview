@@ -48,7 +48,7 @@ struct ParseItem {
     const char* valueEnd1;
     const char* valueEnd2;
     ParseStatus status;
-    bool parseContine;
+    bool isParseContinue;
 };
 
 class SysEvent : public PipelineEvent {
