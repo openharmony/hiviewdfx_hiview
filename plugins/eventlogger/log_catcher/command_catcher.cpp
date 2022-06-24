@@ -21,16 +21,11 @@ namespace HiviewDFX {
 CommandCatcher::CommandCatcher() : EventLogCatcher()
 {
     name_ = "CommandCatcher";
-    commandEntity_ = {
-        "hidumper -s WindowManagerService -a \'-a\'\n",
-    };
 }
 
-void CommandCatcher::SetCmd(uint16_t cmd)
+void CommandCatcher::AddCmd(const std::string& cmd)
 {
-    if (cmd < commandEntity_.size()) {
-        cmdString_ += commandEntity_[cmd];
-    }
+    cmdString_ += cmd;
 }
 
 bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intParam)
@@ -52,8 +47,6 @@ bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intP
     }
 
     description_ = "CommandCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
-    commandEntity_.push_back("hidumper --cpuusage " + std::to_string(pid_) + "\n");
-    commandEntity_.push_back("hidumper --mem " + std::to_string(pid_) + "\n");
     return EventLogCatcher::Initialize(packageNam, pid, intParam);
 }
 

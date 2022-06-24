@@ -40,7 +40,7 @@ bool BinderCatcher::Initialize(const std::string& strParam1, int intParam1, int 
 
 int BinderCatcher::Catch(int fd)
 {
-    logSize_ = EventLogCatcher::AppendFile(fd, "/sys/kernel/debug/binder/transaction_proc");
+    logSize_ = EventLogCatcher::AppendFile(fd, "/proc/transaction_proc");
     if (logSize_ <= 0) {
         FileUtil::SaveStringToFd(fd, "binder content is empty!");
     }

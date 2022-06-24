@@ -28,12 +28,15 @@ public:
     ~CommandCatcher() override {};
     bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
     int Catch(int fd) override;
-    void SetCmd(uint16_t cmd);
+    void AddCmd(const std::string& cmd);
+    int GetPid() const
+    {
+        return pid_;
+    }
 private:
     int pid_ = -1;
     std::string packageName_ = "";
     std::string cmdString_ = "";
-    std::vector<std::string> commandEntity_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

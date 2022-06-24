@@ -71,9 +71,10 @@ private:
     void SystemStackCapture();
     void BinderLogCapture();
     bool PeerBinderCapture(const std::string &cmd);
-    void CpuUtilizationCapture();
+    void CpuUsageCapture();
     void MemoryUsageCapture();
     void WMSUsageCapture();
+    void PMSUsageCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

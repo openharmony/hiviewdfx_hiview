@@ -21,7 +21,7 @@ group("unittest") {
     ":HiviewPlatformConfigTest",
     ":PlatformConfigTest",
     ":PluginBundleTest",
-    ":PluginPlatformWithLocalPluginBaseTest",
+    ":PluginPlatformTest",
   ]
 }
 
@@ -53,7 +53,7 @@ ohos_unittest("PlatformConfigTest") {
   external_deps = [ "hilog_native:libhilog" ]
 }
 
-ohos_unittest("PluginPlatformWithLocalPluginBaseTest") {
+ohos_unittest("PluginPlatformTest") {
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 

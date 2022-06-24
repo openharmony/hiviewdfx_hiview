@@ -45,9 +45,10 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("s", std::bind(&EventLogTask::AppStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("S", std::bind(&EventLogTask::SystemStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("b", std::bind(&EventLogTask::BinderLogCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("c", std::bind(&EventLogTask::CpuUtilizationCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("w", std::bind(&EventLogTask::WMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -243,19 +244,25 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 void EventLogTask::WMSUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    cmdCatcher->SetCmd(0); // 0: dump WMS capture cmd
+    cmdCatcher->AddCmd("hidumper -s WindowManagerService -a \'-a\'\n");
 }
 
-void EventLogTask::CpuUtilizationCapture()
+void EventLogTask::CpuUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    cmdCatcher->SetCmd(1); // 1: cpu capture cmd
+    cmdCatcher->AddCmd("hidumper --cpuusage " + std::to_string(cmdCatcher->GetPid()) + "\n");
 }
 
 void EventLogTask::MemoryUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    cmdCatcher->SetCmd(2); // 2: memory capture cmd
+    cmdCatcher->AddCmd("hidumper --mem " + std::to_string(cmdCatcher->GetPid()) + "\n");
+}
+
+void EventLogTask::PMSUsageCapture()
+{
+    auto cmdCatcher = GetCmdCatcher();
+    cmdCatcher->AddCmd("hidumper -s 3301 -a -s\nhidumper -s 3308\n");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
