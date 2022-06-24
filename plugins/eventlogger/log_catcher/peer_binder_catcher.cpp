@@ -99,16 +99,25 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
 {
     std::map<int, std::list<BinderInfo>> manager;
     const int DECIMAL = 10;
+    const int WAIT_TIME_NUM = 3;
     const int SERVCER_PID_NUM = 2;
     const int CLIENT_PID_NUM = 1;
-    std::string pattern = ".*\\s(\\d+):.*to\\s*(\\d+):.*";
+    const int BINDER_TIMEOUT = 1;
+    std::string pattern = "(\\d+):.*to\\s*(\\d+):.*code.*wait:(\\d+)\\.";
     std::regex reg(pattern);
     std::string line;
+    bool findBinderHeader = false;
     FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
     while (getline(fin, line)) {
         FileUtil::SaveStringToFd(fd, line + "\n");
+        if (findBinderHeader) {
+            continue;
+        }
         std::smatch match;
-        if (!std::regex_match(line, match, reg)) {
+        if (!std::regex_search(line, match, reg)) {
+            if (line.find("context") != line.npos) {
+                findBinderHeader = true;
+            }
             continue;
         }
         BinderInfo info;
@@ -116,7 +125,12 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
         info.server = std::strtol(std::string(match[SERVCER_PID_NUM]).c_str(), nullptr, DECIMAL);
         // 1: binder local id, 10:dec
         info.client = std::strtol(std::string(match[CLIENT_PID_NUM]).c_str(), nullptr, DECIMAL);
-        manager[info.client].push_back(info);
+        // 3: binder wait time, 10:dec s
+        info.wait = std::strtol(std::string(match[WAIT_TIME_NUM]).c_str(), nullptr, DECIMAL);
+        HIVIEW_LOGI("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
+        if (info.wait >= BINDER_TIMEOUT) {
+            manager[info.client].push_back(info);
+        }
     }
     FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");
     HIVIEW_LOGI("manager size: %{public}zu", manager.size());

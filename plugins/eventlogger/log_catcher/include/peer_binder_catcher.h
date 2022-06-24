@@ -33,11 +33,12 @@ public:
     void Init(std::shared_ptr<SysEvent> event, const std::string& filePath);
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
-    static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/sys/kernel/debug/binder/transaction_proc";
+    static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/proc/transaction_proc";
 private:
     struct BinderInfo {
         int client;
         int server;
+        int wait;
     };
     enum {
         LOGGER_BINDER_STACK_ONE = 0,
