@@ -24,7 +24,7 @@
             <option name="shell" value="rm -rf /data/test/"/>
         </cleaner>
     </target>
-    <target name="PluginPlatformWithLocalPluginBaseTest">
+    <target name="PluginPlatformTest">
         <preparer>
             <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
             <option name="push" value="base/hiview_platform_config1 -> /data/test/test_data/" src="res"/>
