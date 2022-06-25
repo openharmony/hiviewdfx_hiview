@@ -133,23 +133,22 @@ std::string SocketDevice::GetName()
 
 int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
 {
+    char* recvbuf = new char[BUFFER_SIZE + 1]();
     while (true) {
         struct sockaddr_un clientAddr;
         socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
-        char* recvbuf = new char[BUFFER_SIZE];
         int n = recvfrom(socketId_, recvbuf, sizeof(char) * BUFFER_SIZE, 0,
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
         if (n <= 0) {
-            delete[] recvbuf;
             break;
         }
-        recvbuf[BUFFER_SIZE - 1] = 0;
+        recvbuf[n] = 0;
         HIVIEW_LOGD("receive data from client %s", recvbuf);
         for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
             (*receiver)->HandlerEvent(std::string(recvbuf));
         }
-        delete[] recvbuf;
     }
+    delete[] recvbuf;
     return 0;
 }
 
