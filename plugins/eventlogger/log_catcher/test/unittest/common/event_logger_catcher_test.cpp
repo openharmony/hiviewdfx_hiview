@@ -251,7 +251,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
 
     sleep(5);
     constexpr int minQuantity = 500;
-    auto ret = StartCreate("EventloggerCatcherTest002", "TEST02_CPU", "c",
+    auto ret = StartCreate("EventloggerCatcherTest002", "TEST02_CPU", "cmd:c",
         pid, "EventlogTest02", 0, minQuantity);
     
     if (ret < 0) {
@@ -317,7 +317,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
 
     sleep(5);
     constexpr int minQuantity = 500;
-    auto ret = StartCreate("EventloggerCatcherTest003", "TEST03_MEM", "m",
+    auto ret = StartCreate("EventloggerCatcherTest003", "TEST03_MEM", "cmd:m",
         pid, "EventlogTest03", 0, minQuantity);
     if (ret < 0) {
         printf("EventloggerCatcherTest003 is error ret == %d\n", ret);

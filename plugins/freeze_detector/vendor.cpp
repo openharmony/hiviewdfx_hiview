@@ -277,19 +277,18 @@ std::string Vendor::MergeEventLog(
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::ostringstream body;
     for (auto node : list) {
+        DumpEventInfo(body, HEADER, node);
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
         if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
-            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
         std::ifstream ifs(filePath, std::ios::in);
         if (!ifs.is_open()) {
             HIVIEW_LOGE("cannot open log file for reading:%{public}s.", filePath.c_str());
-            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
@@ -324,24 +323,6 @@ std::string Vendor::MergeEventLog(
     info.summary = summary;
     info.logPath = logPath;
     AddFaultLog(info);
-
-    std::vector<std::string> paths = {retPath};
-    HiSysEvent::Write("RELIABILITY", IsApplicationResult(result) ? "APP_FREEZE" : "SYS_FREEZE", HiSysEvent::FAULT,
-        "SUB_EVENT_TYPE", stringId,
-        "EVENT_TIME", timestamp,
-        "MODULE", packageName,
-        "PNAME", packageName,
-        "REASON", stringId,
-        "DIAG_INFO", digest,
-        "STACK", summary,
-        "HIVIEW_LOG_FILE_PATHS", paths,
-        "DOMAIN", domain,
-        "STRING_ID", stringId,
-        "PID", pid,
-        "UID", uid,
-        "PACKAGE_NAME", packageName,
-        "PROCESS_NAME", processName,
-        "MSG", msg);
 
     return retPath;
 }
