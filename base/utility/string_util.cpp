@@ -269,14 +269,14 @@ string GetMidSubstr(const string& input, const string& begin, const string& end)
 string VectorToString(const vector<string>& src, bool reverse, const string& tag)
 {
     string str;
-    for (auto elment : src) {
-        if (elment.empty()) {
+    for (auto element : src) {
+        if (element.empty()) {
             continue;
         }
         if (reverse) {
-            str = elment + tag + str;
+            str = element + tag + str;
         } else {
-            str = str + elment + tag;
+            str = str + element + tag;
         }
     }
     return str;

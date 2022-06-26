@@ -52,8 +52,8 @@ int32_t FaultloggerServiceOhos::Dump(int32_t fd, const std::vector<std::u16strin
 
     std::vector<std::string> cmdList;
     std::transform(args.begin(), args.end(), std::back_inserter(cmdList), [](const std::u16string &arg) {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convertor;
-        return convertor.to_bytes(arg);
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
+        return converter.to_bytes(arg);
     });
 
     auto service = GetOrSetFaultlogger();

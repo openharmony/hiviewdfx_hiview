@@ -27,11 +27,11 @@ public:
     FaultLogQueryResult(FaultLogQueryResultImpl* impl) : impl_(impl) {};
     ~FaultLogQueryResult();
 
-    // Get the next avaliable fault log info
-    // if no log is avaliable, nullptr will be returned
+    // Get the next available fault log info
+    // if no log is available, nullptr will be returned
     std::unique_ptr<FaultLogInfo> Next();
 
-    // check whether we have next avaliable fault log info
+    // check whether we have next available fault log info
     bool HasNext();
 private:
     FaultLogQueryResultImpl* impl_;

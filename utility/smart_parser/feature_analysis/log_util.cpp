@@ -118,7 +118,7 @@ IpcItem LogUtil::ParseIpcStr(string IpcStr) const
  * [async] 1477:1973(system_server:Ipc:1477_7) -> 2148:0(awei.HwOPServer:unknown) code 1 wait:37.375423970 s
  * ......
  * return fail show Ipc transaction doesn't conform to the format below; parse fail.
- * return true show parse correctly. ingore [async] Ipc transactions
+ * return true show parse correctly. ignore [async] Ipc transactions
  */
 void LogUtil::GetIpcInfo(const string& line)
 {

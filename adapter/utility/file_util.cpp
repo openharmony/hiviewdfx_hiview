@@ -223,7 +223,7 @@ bool ForceRemoveDirectory(const std::string& path, bool isNeedDeleteGivenDirSelf
     return true;
 }
 
-/* is file remove successed return true, is file not exist return false */
+/* return true if file removed successfully, return false if file not exist. */
 bool RemoveFile(const std::string& fileName)
 {
     error_code ec;
