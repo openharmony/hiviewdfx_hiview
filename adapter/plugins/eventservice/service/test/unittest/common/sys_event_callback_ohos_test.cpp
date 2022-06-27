@@ -21,8 +21,8 @@ namespace OHOS {
 namespace HiviewDFX {
 static std::string U16String2String(std::u16string source)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convertor;
-    return convertor.to_bytes(source);
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
+    return converter.to_bytes(source);
 }
 
 void SysEventCallbackOhosTest::Handle(const std::u16string& domain, const std::u16string& eventName, uint32_t eventType,

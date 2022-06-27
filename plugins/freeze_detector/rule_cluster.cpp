@@ -264,7 +264,7 @@ bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, WatchPoint& matc
     for (auto const &item : list) {
         if (rules_[domain + stringId].GetResult(item.GetDomain(), item.GetStringId(), result)) {
             if (result.GetSamePackage() == "true" && package != item.GetPackageName()) {
-                HIVIEW_LOGE("failed to match the same pacakge, domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
+                HIVIEW_LOGE("failed to match the same package, domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
                     " and domain:%{public}s stringid:%{public}s pacakgeName:%{public}s.",
                     domain.c_str(), stringId.c_str(), package.c_str(),
                     item.GetDomain().c_str(), item.GetStringId().c_str(), item.GetPackageName().c_str());

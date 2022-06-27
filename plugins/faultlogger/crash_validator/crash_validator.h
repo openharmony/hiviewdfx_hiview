@@ -33,7 +33,7 @@ public:
 };
 // every CPP_CRASH should have corresponding PROCESS_EXIT event and
 // every PROCESS_EXIT event that triggered by crash signal should have corresponding CPP_CRASH events
-// check the existance of these event to judge whether we have loss some crash log
+// check the existence of these event to judge whether we have loss some crash log
 class CrashValidator : public Plugin {
 public:
     CrashValidator();

@@ -32,10 +32,10 @@ int32_t SysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data
     }
     switch (code) {
         case HANDLE: {
-            std::u16string doamin;
-            bool ret = data.ReadString16(doamin);
+            std::u16string domain;
+            bool ret = data.ReadString16(domain);
             if (!ret) {
-                HiLog::Error(LABEL, "parcel read doamin failed.");
+                HiLog::Error(LABEL, "parcel read domain failed.");
                 return ERR_FLATTEN_OBJECT;
             }
             std::u16string eventName;
@@ -56,7 +56,7 @@ int32_t SysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data
                 HiLog::Error(LABEL, "parcel read detail failed.");
                 return ERR_FLATTEN_OBJECT;
             }
-            Handle(doamin, eventName, eventType, eventDetail);
+            Handle(domain, eventName, eventType, eventDetail);
             return ERR_OK;
         }
         default:

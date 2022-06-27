@@ -33,7 +33,7 @@ public:
     // start catch the log
     // return the bytes that caught
     virtual int Catch(int fd);
-    // retun a string that describe the log catcher
+    // return a string that describe the log catcher
     // should not be longer than 256 bytes
     virtual std::string GetDescription() const;
     int GetFdSize(int32_t fd);

@@ -190,7 +190,7 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
         return -1;
     }
     buffer[EVENT_READ_BUFFER - 1] = '\0';
-    HIVIEW_LOGD("receive from kernal %{public}s", buffer);
+    HIVIEW_LOGD("receive from kernel %{public}s", buffer);
     for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
         (*receiver)->HandlerEvent(std::string(buffer));
     }

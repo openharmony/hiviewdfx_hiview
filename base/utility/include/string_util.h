@@ -111,8 +111,8 @@ KeyValuePair GetKeyValueByString(int &start, const std::string &inputString);
 template<typename T>
 std::string ConvertToUTF8(const std::basic_string<T, std::char_traits<T>, std::allocator<T>> &source)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<T>, T> convertor;
-    std::string result = convertor.to_bytes(source);
+    std::wstring_convert<std::codecvt_utf8_utf16<T>, T> converter;
+    std::string result = converter.to_bytes(source);
     return result;
 }
 
