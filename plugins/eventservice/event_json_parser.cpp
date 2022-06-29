@@ -245,7 +245,12 @@ void EventJsonParser::GetOrderlyJsonInfo(const Json::Value &eventJson, std::stri
 
     // FreezeDetector needs to add
     cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
-    jsonStr = cJSON_PrintUnformatted(cJsonArr);
+
+    char* jsonPtr =  cJSON_PrintUnformatted(cJsonArr);
+    if (jsonPtr != nullptr) {
+        jsonStr = std::string(jsonPtr);
+        cJSON_free(jsonPtr);
+    }
     cJSON_Delete(cJsonArr);
     return;
 }
