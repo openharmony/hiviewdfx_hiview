@@ -33,6 +33,11 @@ APP_FREEZE:
   SUMMARY: {type: STRING, desc: fault summary}
   FAULT_TYPE: {type: STRING, desc: fault type}
   LOG_PATH: {type: STRING, desc: fault log path}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  PANME: {type: STRING, desc: process name}
+  F1NAME: {type: STRING, desc: first stack info}
+  F2NAME: {type: STRING, desc: second stack info}
+  F3NAME: {type: STRING, desc: last stack info}
 
 SYS_FREEZE:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}
@@ -51,6 +56,11 @@ SYS_FREEZE:
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  PANME: {type: STRING, desc: process name}
+  F1NAME: {type: STRING, desc: first stack info}
+  F2NAME: {type: STRING, desc: second stack info}
+  F3NAME: {type: STRING, desc: last stack info}
 
 STACK:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}
@@ -88,6 +98,10 @@ CPP_CRASH:
   FG: {type: INT32, desc: whether current app is in foreground}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
   LIFETIME: {type: INT64, desc: elapse time since process start}
+  PANME: {type: STRING, desc: process name}
+  F1NAME: {type: STRING, desc: first stack info}
+  F2NAME: {type: STRING, desc: second stack info}
+  F3NAME: {type: STRING, desc: last stack info}
 
 CPP_CRASH_NO_LOG:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: encounter cpp crash but no log generated}

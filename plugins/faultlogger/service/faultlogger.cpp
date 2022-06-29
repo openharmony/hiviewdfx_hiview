@@ -409,6 +409,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
 
+        auto eventInfos = AnalysisFaultlog(info);
         EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
         EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
             .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
@@ -428,6 +429,11 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 sysEvent->SetEventValue("LOG_PATH", info.logPath);
                 sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
                 sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
+                sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+                sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
+                sysEvent->SetEventValue("F1NAME", eventInfos["F1NAME"].empty() ? "unknow" : eventInfos["F1NAME"]);
+                sysEvent->SetEventValue("F2NAME", eventInfos["F2NAME"].empty() ? "unknow" : eventInfos["F2NAME"]);
+                sysEvent->SetEventValue("F3NAME", eventInfos["F3NAME"].empty() ? "unknow" : eventInfos["F3NAME"]);
                 auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
                 if (retCode == 0) {
                     return true;
