@@ -277,18 +277,19 @@ std::string Vendor::MergeEventLog(
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::ostringstream body;
     for (auto node : list) {
-        DumpEventInfo(body, HEADER, node);
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
         if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
+            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
         std::ifstream ifs(filePath, std::ios::in);
         if (!ifs.is_open()) {
             HIVIEW_LOGE("cannot open log file for reading:%{public}s.", filePath.c_str());
+            DumpEventInfo(body, HEADER, node);
             continue;
         }
 
