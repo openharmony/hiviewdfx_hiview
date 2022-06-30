@@ -27,16 +27,13 @@ config("hiview_reliability_common_utils_config") {
 }
 
 ohos_source_set("hiview_reliability_common_utils") {
-  configs = [
-    ":hiview_reliability_common_utils_config",
-  ]
+  configs = [ ":hiview_reliability_common_utils_config" ]
 
   sources = [
     "calc_fingerprint.cpp",
     "log_parse.cpp",
     "tbox.cpp",
   ]
-
 
   external_deps = [ "hilog_native:libhilog" ]
 

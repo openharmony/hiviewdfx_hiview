@@ -34,8 +34,8 @@ ohos_source_set("faultlogger_common") {
   deps = [
     "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
-    "$hiview_root/utility/smart_parser:smart_parser",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "$hiview_root/utility/smart_parser:smart_parser",
   ]
 
   external_deps = [
