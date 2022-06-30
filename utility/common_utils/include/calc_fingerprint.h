@@ -21,7 +21,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-
 class CalcFingerprint {
 public:
     CalcFingerprint() {};

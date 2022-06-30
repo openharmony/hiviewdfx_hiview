@@ -22,14 +22,11 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-
 static const std::string UNKNOWN_STR = "unknown";
 static const std::string PARAMETER_TRUSTSTACK = "TRUSTSTACK";
 static constexpr auto SMART_PARSER_PATH = "/system/etc/hiview/";
-
 static const int EVENTID_DEFAULT = 901;
 static const int HAPPEN_TIME_DEFAULT = 0;
-
 // buffer size
 static const int BUF_LEN_128 = 128;
 static const int BUF_LEN_1024 = 1024;
@@ -46,7 +43,6 @@ enum FingerPrintMode {
     FP_BUFFER,
     FP_ATTR
 };
-
 } // namespace HiviewDFX
 } // namespace OHOS
 

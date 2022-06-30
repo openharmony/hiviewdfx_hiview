@@ -27,7 +27,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-
 class TBox {
 public:
     TBox();

@@ -14,12 +14,6 @@
  */
 #include "log_parse.h"
 
-#include <cstring>
-#include <fstream>
-#include <regex>
-#include <sstream>
-#include <vector>
-
 #include "string_util.h"
 #include "tbox.h"
 
@@ -219,7 +213,7 @@ vector<string> LogParse::GetValidStack(size_t num, stack<string>& inStack) const
     vector<string> validStack;
     stack<string> outStatck;
     string stackName;
-    size_t len = src.size(); 
+    size_t len = src.size();
     for (size_t i = 0; i < len; i++) {
         stackName = TBox::GetStackName(src.top());  // extract function name from the stack
         if (!IsIgnoreLibrary(stackName)) {
@@ -316,6 +310,5 @@ bool LogParse::HasExceptionList(const string& line) const
     }
     return false;
 }
-
 }
 }

@@ -132,7 +132,7 @@ string TBox::GetStackName(string line)
 }
 
 void TBox::FilterTrace(std::map<std::string, std::string>& eventInfo)
-{  
+{
     auto iterTrustStack = eventInfo.find(PARAMETER_TRUSTSTACK);
     if (eventInfo.empty() || iterTrustStack == eventInfo.end() || iterTrustStack->second.empty()) {
         return;
@@ -145,6 +145,5 @@ void TBox::FilterTrace(std::map<std::string, std::string>& eventInfo)
     std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3); // 3 : F1/F2/F3NAME
     logparse.SetFname(stackTop, eventInfo);
 }
-
 }
 }

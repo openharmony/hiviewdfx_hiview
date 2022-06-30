@@ -75,6 +75,7 @@ int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
         SHA256_Update(&ctx, (unsigned char *)buffer, n);
     }
     fclose(fp);
+    fp = nullptr;
     SHA256_Final(value, &ctx);
     return ConvertToString(value, hash, len);
 }

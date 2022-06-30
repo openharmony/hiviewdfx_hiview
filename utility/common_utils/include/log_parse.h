@@ -20,12 +20,10 @@
 #include <set>
 #include <stack>
 #include <string>
-#include <utility>
 
 #include "common_defines.h"
 namespace OHOS {
 namespace HiviewDFX {
-
 class LogParse {
 public:
     LogParse() {};
