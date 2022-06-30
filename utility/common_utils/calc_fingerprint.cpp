@@ -75,7 +75,7 @@ int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
     while ((n = fread(buffer, 1, sizeof(buffer), fp))) {
         SHA256_Update(&ctx, (unsigned char *)buffer, n);
     }
-    if(fclose(fp)) {
+    if (fclose(fp)) {
         HIVIEW_LOGE("fclose is failed");
     }
     fp = nullptr;
