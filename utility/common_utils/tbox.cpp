@@ -23,21 +23,21 @@
 using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("TBox");
+DEFINE_LOG_TAG("Tbox");
 
-const string TBox::ARRAY_STR = "ARRAY :";
-const string TBox::CAUSEDBY_HEADER = "Caused by:";
-const string TBox::SUPPRESSED_HEADER = "Suppressed:";
+const string Tbox::ARRAY_STR = "ARRAY :";
+const string Tbox::CAUSEDBY_HEADER = "Caused by:";
+const string Tbox::SUPPRESSED_HEADER = "Suppressed:";
 
-TBox::TBox()
+Tbox::Tbox()
 {
 }
 
-TBox::~TBox()
+Tbox::~Tbox()
 {
 }
 
-string TBox::CalcFingerPrint(const string& val, size_t mask, int mode)
+string Tbox::CalcFingerPrint(const string& val, size_t mask, int mode)
 {
     char hash[BUF_LEN_128] = {'0'};
     int err = -1;
@@ -59,7 +59,7 @@ string TBox::CalcFingerPrint(const string& val, size_t mask, int mode)
     return string(hash);
 }
 
-bool TBox::GetPartial(const string& src, const string& res, string& des)
+bool Tbox::GetPartial(const string& src, const string& res, string& des)
 {
     des = "";
     regex reNew(res);
@@ -76,7 +76,7 @@ bool TBox::GetPartial(const string& src, const string& res, string& des)
     return false;
 }
 
-bool TBox::IsCallStack(string& line)
+bool Tbox::IsCallStack(string& line)
 {
     if (regex_search(line, regex("^\\s+at (.*)\\(.*")) ||
         regex_search(line, regex("^\\s*at .*")) ||
@@ -90,7 +90,7 @@ bool TBox::IsCallStack(string& line)
     return false;
 }
 
-bool TBox::HasCausedBy(const string& line)
+bool Tbox::HasCausedBy(const string& line)
 {
     if ((line.find(CAUSEDBY_HEADER) != string::npos) ||
         (line.find(SUPPRESSED_HEADER) != string::npos)) {
@@ -104,7 +104,7 @@ bool TBox::HasCausedBy(const string& line)
  * format2:  #06 pc 0040642d  /system/lib/libart.so (art_quick_invoke_stub+224)
  * format3:  - sleeping on <0x0c688a8f> (a java.lang.Object)
  */
-string TBox::GetStackName(string line)
+string Tbox::GetStackName(string line)
 {
     string stackname = UNKNOWN_STR;
     if (IsCallStack(line)) {
@@ -131,7 +131,7 @@ string TBox::GetStackName(string line)
     return stackname;
 }
 
-void TBox::FilterTrace(std::map<std::string, std::string>& eventInfo)
+void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
 {
     auto iterTrustStack = eventInfo.find(PARAMETER_TRUSTSTACK);
     if (eventInfo.empty() || iterTrustStack == eventInfo.end() || iterTrustStack->second.empty()) {
@@ -141,7 +141,7 @@ void TBox::FilterTrace(std::map<std::string, std::string>& eventInfo)
     LogParse logparse;
     std::string block = logparse.GetFilterTrace(iterTrustStack->second, trace);
     eventInfo[PARAMETER_TRUSTSTACK] = block;
-    eventInfo["FINGERPRINT"] = TBox::CalcFingerPrint(block, 0, FP_BUFFER);
+    eventInfo["FINGERPRINT"] = Tbox::CalcFingerPrint(block, 0, FP_BUFFER);
     std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3); // 3 : F1/F2/F3NAME
     logparse.SetFname(stackTop, eventInfo);
 }

@@ -108,7 +108,7 @@ bool LogParse::GetValidStack(int num, stack<string>& inStack, stack<string>& out
     }
 
     // Automatically checks if it is a stack
-    bool iStack = TBox::IsCallStack(inStack.top());
+    bool iStack = Tbox::IsCallStack(inStack.top());
     if (iStack) {
         validStack = GetValidStack(count, inStack);
     }
@@ -137,7 +137,7 @@ list<vector<string>> LogParse::StackToMultipart(stack<string>& inStack, size_t n
     for (int i = 0; i < len; i++) {
         string topStr = inStack.top();
         StringUtil::EraseString(topStr, "\t");
-        if (TBox::HasCausedBy(topStr)) {
+        if (Tbox::HasCausedBy(topStr)) {
             topStr = MatchExceptionLibrary(topStr);
             if (!partStack.empty()) {
                 validPart = GetValidStack(num, partStack);
@@ -204,7 +204,7 @@ string LogParse::GetValidBlock(stack<string> inStack, vector<string>& lastPart) 
             break;
         }
     }
-    return TBox::ARRAY_STR + StringUtil::VectorToString(validStack, false);
+    return Tbox::ARRAY_STR + StringUtil::VectorToString(validStack, false);
 }
 
 vector<string> LogParse::GetValidStack(size_t num, stack<string>& inStack) const
@@ -215,7 +215,7 @@ vector<string> LogParse::GetValidStack(size_t num, stack<string>& inStack) const
     string stackName;
     size_t len = src.size();
     for (size_t i = 0; i < len; i++) {
-        stackName = TBox::GetStackName(src.top());  // extract function name from the stack
+        stackName = Tbox::GetStackName(src.top());  // extract function name from the stack
         if (!IsIgnoreLibrary(stackName)) {
             validStack.push_back(stackName);
         }
@@ -225,7 +225,7 @@ vector<string> LogParse::GetValidStack(size_t num, stack<string>& inStack) const
         MatchIgnoreLibrary(inStack, outStatck, num);
         len = outStatck.size();
         for (size_t i = 0; i < len; i++) {
-            stackName = TBox::GetStackName(outStatck.top());
+            stackName = Tbox::GetStackName(outStatck.top());
             validStack.push_back(stackName);
             outStatck.pop();
         }

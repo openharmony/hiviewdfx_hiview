@@ -27,10 +27,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class TBox {
+class Tbox {
 public:
-    TBox();
-    ~TBox();
+    Tbox();
+    ~Tbox();
     static std::string CalcFingerPrint(const std::string& val, size_t mask, int mode);
     static bool GetPartial(const std::string& src, const std::string& res, std::string& des);
     static bool IsCallStack(std::string& line);

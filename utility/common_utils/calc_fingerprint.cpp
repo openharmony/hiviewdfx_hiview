@@ -22,6 +22,7 @@
 using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("CalcFingerprint");
 int CalcFingerprint::ConvertToString(const unsigned char hash[SHA256_DIGEST_LENGTH], char *outstr, size_t len)
 {
     uint32_t i;
@@ -74,7 +75,9 @@ int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
     while ((n = fread(buffer, 1, sizeof(buffer), fp))) {
         SHA256_Update(&ctx, (unsigned char *)buffer, n);
     }
-    fclose(fp);
+    if(fclose(fp)) {
+        HIVIEW_LOGE("fclose is failed");
+    }
     fp = nullptr;
     SHA256_Final(value, &ctx);
     return ConvertToString(value, hash, len);

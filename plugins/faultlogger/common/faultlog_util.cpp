@@ -154,8 +154,8 @@ std::map<std::string, std::string> AnalysisFaultlog(const FaultLogInfo& info)
 {
     auto eventType = GetFaultNameByType(info.faultLogType, false);
     auto eventInfos = SmartParser::Analysis(info.logPath, SMART_PARSER_PATH, eventType);
-    TBox::FilterTrace(eventInfos);
-    std::string fingerPrint = TBox::CalcFingerPrint(info.module + info.reason + eventInfos["F1NAME"] +
+    Tbox::FilterTrace(eventInfos);
+    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["F1NAME"] +
                                                     eventInfos["F2NAME"] + eventInfos["F3NAME"], 0, FP_BUFFER);
 
     eventInfos["fingerPrint"] = fingerPrint;
