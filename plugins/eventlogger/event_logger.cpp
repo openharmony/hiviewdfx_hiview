@@ -77,10 +77,14 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
-    HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
-        sysEvent->jsonExtraInfo_.c_str());
-    StartLogCollect(sysEvent);
-    PostEvent(sysEvent);
+    auto task = [this, sysEvent]() {
+        HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+            sysEvent->jsonExtraInfo_.c_str());
+        this->StartLogCollect(sysEvent);
+        this->PostEvent(sysEvent);
+    };
+    eventPool_->AddTask(task);
+
     return true;
 }
 
@@ -93,8 +97,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     }
 
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
-    auto timeStr = std::to_string(event->happenTime_);
-    uint64_t logTime = std::time(nullptr);
+    uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
     std::string logFile = idStr + "-" + GetFormatTime(logTime) + ".log";
 
     int fd = logStore_->CreateLogFile(logFile);
@@ -125,28 +128,28 @@ bool EventLogger::PostEvent(std::shared_ptr<SysEvent> event)
 
 bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 {
+    std::ostringstream headerStream;
+
+    headerStream << "DOMAIN = " << event->domain_ << std::endl;
+    headerStream << "EVENTNAME = " << event->eventName_ << std::endl;
+    headerStream << "TIMESTAMP = " << event->happenTime_ << std::endl;
     long pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
+    headerStream << "PID = " << pid << std::endl;
     long uid = event->GetEventIntValue("UID");
     uid = uid ? uid : event->GetUid();
-    FileUtil::SaveStringToFd(fd, event->eventName_ + "\n");
-    std::string str = "PID = " + std::to_string(pid);
-    FileUtil::SaveStringToFd(fd, str + "\n");
-    str = "UID = " + std::to_string(uid);
-    FileUtil::SaveStringToFd(fd, str + "\n");
-    event->GetEventValue("PACKAGE_NAME");
-    event->GetEventValue("PROCESS_NAME");
-    event->GetEventValue("PLATFORM");
+    headerStream << "UID = " << uid << std::endl;
+    long tid = event->GetTid();
+    headerStream << "TID = " << tid << std::endl;
+    headerStream << "PACKAGE_NAME = " << event->GetEventValue("PACKAGE_NAME") << std::endl;
+    headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
+    headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
+    headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
     event->SetEventValue("MSG", StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n"));
-    event->GetEventValue("MSG");
+    std::string msg = event->GetEventValue("MSG");
+    headerStream << "MSG = " << msg << std::endl;
 
-    std::map<std::string, std::string> eventPairs = event->GetKeyValuePairs();
-    HIVIEW_LOGD("KeyValuePairs num is %{public}d", eventPairs.size());
-    for (auto tmp : eventPairs) {
-        HIVIEW_LOGD("KeyValuePairs %{public}s , %{public}s", tmp.first.c_str(), tmp.second.c_str());
-        std::string str = tmp.first + " = " + tmp.second + "\n";
-        FileUtil::SaveStringToFd(fd, str);
-    }
+    FileUtil::SaveStringToFd(fd, headerStream.str());
     return true;
 }
 
@@ -254,11 +257,15 @@ void EventLogger::OnLoad()
 
     EventLoggerConfig logConfig;
     eventLoggerConfig_ = logConfig.GetConfig();
+
+    eventPool_ = std::make_unique<EventThreadPool>(maxEventPoolCount, "EventLog");
+    eventPool_->Start();
 }
 
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
+    eventPool_->Stop();
 }
 
 void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)

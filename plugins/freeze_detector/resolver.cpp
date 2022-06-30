@@ -105,8 +105,7 @@ std::shared_ptr<PipelineEvent> FreezeResolver::ProcessEvent(WatchPoint &watchPoi
             }
         }
         // self rule with zero time window
-    }
-    else {
+    } else {
         list.clear();
         list.push_back(matchedWatchPoint);
         list.push_back(watchPoint);

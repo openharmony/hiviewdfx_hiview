@@ -22,6 +22,7 @@ config("hiview_base_config") {
     "//utils/native/base/include",
     "include",
     "utility/include",
+    "event_pool",
     "event_store/include",
     "$hiview_root/include",
     "$hiview_adapter/utility/include",
@@ -67,6 +68,7 @@ ohos_source_set("hiview_base") {
   deps = [
     ":logger",
     "$hiview_adapter/dbstore:db_store_source",
+    "event_pool:eventpool",
     "event_store:event_store_source",
     "sys_event_logger:sys_event_logger",
     "utility:hiview_utility",

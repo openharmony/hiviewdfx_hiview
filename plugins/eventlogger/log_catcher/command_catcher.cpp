@@ -46,6 +46,8 @@ bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intP
         return false;
     }
 
+    packageName_ = CommonUtils::GetProcNameByPid(pid_);
+
     description_ = "CommandCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
     return EventLogCatcher::Initialize(packageNam, pid, intParam);
 }

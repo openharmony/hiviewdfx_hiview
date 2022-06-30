@@ -29,6 +29,7 @@
 #include "sys_event.h"
 
 #include "event_logger_config.h"
+#include "event_thread_pool.h"
 namespace OHOS {
 namespace HiviewDFX {
 struct BinderInfo {
@@ -69,6 +70,8 @@ private:
     int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
+    int const maxEventPoolCount = 5;
+    std::unique_ptr<EventThreadPool> eventPool_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
