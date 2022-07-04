@@ -234,7 +234,8 @@ static napi_value AddFaultLog(napi_env env, napi_callback_info info)
     napi_get_value_string_utf8(env, parameters[THREE_PARAMETER - 1], module, BUF_SIZE_64, &resultString);
     char summary[BUF_SIZE_64];
     napi_get_value_string_utf8(env, parameters[FOUR_PARAMETER - 1], summary, BUF_SIZE_64, &resultString);
-    AddFaultLog(now, logType, module, summary);
+    constexpr int64_t SEC_TO_MILLISEC = 1000;
+    AddFaultLog(now * SEC_TO_MILLISEC, logType, module, summary);
     return result;
 }
 

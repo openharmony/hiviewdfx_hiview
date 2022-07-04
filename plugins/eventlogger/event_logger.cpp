@@ -98,7 +98,14 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
-    std::string logFile = idStr + "-" + GetFormatTime(logTime) + ".log";
+    long pid = event->GetEventIntValue("PID");
+    pid = pid ? pid : event->GetPid();
+    std::string logFile = idStr + "-" + std::to_string(pid) + "-" + GetFormatTime(logTime) + ".log";
+    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
+        UpdateDB(event, logFile);
+        return;
+    }
 
     int fd = logStore_->CreateLogFile(logFile);
     if (fd < 0) {
