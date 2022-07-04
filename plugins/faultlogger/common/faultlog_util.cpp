@@ -150,16 +150,19 @@ std::string RegulateModuleNameIfNeed(const std::string& name)
     return name;
 }
 
-std::map<std::string, std::string> AnalysisFaultlog(const FaultLogInfo& info)
+bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos)
 {
     auto eventType = GetFaultNameByType(info.faultLogType, false);
-    auto eventInfos = SmartParser::Analysis(info.logPath, SMART_PARSER_PATH, eventType);
-    Tbox::FilterTrace(eventInfos);
-    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["F1NAME"] +
-                                                    eventInfos["F2NAME"] + eventInfos["F3NAME"], 0, FP_BUFFER);
+    eventInfos = SmartParser::Analysis(info.logPath, SMART_PARSER_PATH, eventType);
+    if (eventInfos.empty()) {
+        return false;
+    }
 
+    Tbox::FilterTrace(eventInfos);
+    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["FIRST_FRAME"] +
+                                                    eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
-    return eventInfos;
+    return true;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

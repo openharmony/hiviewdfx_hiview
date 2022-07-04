@@ -39,7 +39,6 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
 {
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     auto sysEvent = std::make_shared<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
-    auto eventInfos = AnalysisFaultlog(info);
     sysEvent->SetEventValue("name_", GetFaultNameByType(info.faultLogType, false));
     sysEvent->SetEventValue("type_", 1);
     sysEvent->SetEventValue("time_", info.time);
@@ -51,12 +50,16 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
     sysEvent->SetEventValue("SUMMARY", StringUtil::EscapeJsonStringValue(info.summary));
     sysEvent->SetEventValue("LOG_PATH", info.logPath);
     sysEvent->SetEventValue("HAPPEN_TIME", info.time);
-    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
-    sysEvent->SetEventValue("F1NAME", eventInfos["F1NAME"].empty() ? "unknow" : eventInfos["F1NAME"]);
-    sysEvent->SetEventValue("F2NAME", eventInfos["F2NAME"].empty() ? "unknow" : eventInfos["F2NAME"]);
-    sysEvent->SetEventValue("F3NAME", eventInfos["F3NAME"].empty() ? "unknow" : eventInfos["F3NAME"]);
 
+    std::map<std::string, std::string> eventInfos;
+    if (AnalysisFaultlog(info, eventInfos)) {
+        sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
+        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" : eventInfos["FIRST_FRAME"]);
+        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" : eventInfos["SECOND_FRAME"]);
+        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" : eventInfos["LAST_FRAME"]);
+    }
+    
     if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
         sysEvent->SetEventValue("VERSION", info.sectionMap.at("VERSION"));
     }

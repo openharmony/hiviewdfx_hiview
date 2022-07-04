@@ -29,7 +29,7 @@ FaultLogInfo ExtractInfoFromFileName(const std::string& fileName);
 FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName);
 int32_t GetRawEventIdByType(int32_t logType);
 std::string RegulateModuleNameIfNeed(const std::string& name);
-std::map<std::string, std::string> AnalysisFaultlog(const FaultLogInfo& info);
+bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos);
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H

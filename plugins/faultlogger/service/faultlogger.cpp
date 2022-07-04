@@ -407,9 +407,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         auto summary = sysEvent->GetEventValue("SUMMARY");
         info.summary = StringUtil::UnescapeJsonStringValue(summary);
         info.sectionMap = sysEvent->GetKeyValuePairs();
-        AddFaultLog(info);
 
-        auto eventInfos = AnalysisFaultlog(info);
+        AddFaultLog(info);
         EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
         EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
             .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
@@ -429,11 +428,15 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 sysEvent->SetEventValue("LOG_PATH", info.logPath);
                 sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
                 sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
-                sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-                sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
-                sysEvent->SetEventValue("F1NAME", eventInfos["F1NAME"].empty() ? "unknow" : eventInfos["F1NAME"]);
-                sysEvent->SetEventValue("F2NAME", eventInfos["F2NAME"].empty() ? "unknow" : eventInfos["F2NAME"]);
-                sysEvent->SetEventValue("F3NAME", eventInfos["F3NAME"].empty() ? "unknow" : eventInfos["F3NAME"]);
+
+                std::map<std::string, std::string> eventInfos;
+                if (AnalysisFaultlog(info, eventInfos)) {
+                    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+                    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
+                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" : eventInfos["FIRST_FRAME"]);
+                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" : eventInfos["SECOND_FRAME"]);
+                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" : eventInfos["LAST_FRAME"]);
+                }
                 auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
                 if (retCode == 0) {
                     return true;

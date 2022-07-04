@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ Tbox::~Tbox()
 
 string Tbox::CalcFingerPrint(const string& val, size_t mask, int mode)
 {
-    char hash[BUF_LEN_128] = {'0'};
+    char hash[HAS_LEN] = {'0'};
     int err = -1;
     switch (mode) {
         case FP_FILE:

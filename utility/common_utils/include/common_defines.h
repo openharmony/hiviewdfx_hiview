@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,15 +23,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 static const std::string UNKNOWN_STR = "unknown";
-static const std::string PARAMETER_TRUSTSTACK = "TRUSTSTACK";
+static const std::string PARAMETER_TRUSTSTACK = "ENDSTACK";
 static constexpr auto SMART_PARSER_PATH = "/system/etc/hiview/";
-static const int EVENTID_DEFAULT = 901;
-static const int HAPPEN_TIME_DEFAULT = 0;
 // buffer size
-static const int BUF_LEN_128 = 128;
-static const int BUF_LEN_1024 = 1024;
-static const int BUF_LEN_2048 = 2048;
-static const int MAX_BUFFER_SIZE = 8 * BUF_LEN_1024 * BUF_LEN_1024; // 8:8M
+static const int HAS_LEN = 128;
+static const int MAX_BUFFER_SIZE = 8 * 1024 * 1024; // 8:8M
 
 enum ErrorCode {
     FAILURE = -1,

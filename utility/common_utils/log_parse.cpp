@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,14 +42,10 @@ const std::map<std::string, std::set<std::string>> LogParse::ignoreList_ = {
         "dump_stack",
         "java.lang.Object",
         "java.lang.Thread",
-        "java.lang.reflect.Method.invoke",
-        "com.android.internal.os.ZygoteInit.main",
-        "com.android.internal.os.RuntimeInit"}
+        "java.lang.reflect.Method.invoke"}
     },
     {"Level3", {
-        "android.os.BinderProxy",
-        "panic",
-        "android.os.SystemClock.sleep"}
+        "panic"}
     }
 };
 
@@ -292,7 +288,7 @@ std::string LogParse::GetFilterTrace(const std::string& info, std::vector<std::s
 
 void LogParse::SetFname(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const
 {
-    std::vector<std::string> name = {"F1NAME", "F2NAME", "F3NAME"};
+    std::vector<std::string> name = {"FIRST_FRAME", "SECOND_FRAME", "LAST_FRAME"};
     size_t len = stack.size();
     for (size_t i = 0; i < len; i++) {
         if (eventInfo.find(name[i]) == eventInfo.end()) {
