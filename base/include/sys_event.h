@@ -16,6 +16,7 @@
 #ifndef HIVIEW_BASE_SYS_EVENT_H
 #define HIVIEW_BASE_SYS_EVENT_H
 
+#include <atomic>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -68,6 +69,10 @@ public:
     uint64_t GetEventIntValue(const std::string& key);
     void SetEventValue(const std::string& key, int64_t value);
     void SetEventValue(const std::string& key, const std::string& value, bool append = false);
+
+public:
+    static std::atomic<uint32_t> totalCount_;
+    static std::atomic<uint32_t> totalSize_;
 
 private:
     int64_t seq_;
@@ -134,7 +139,9 @@ public:
         if constexpr(is_one_of<T, char, signed char, unsigned char>::value) {
             return static_cast<short>(item);
         } else if constexpr(is_one_of<T, char *, char const *, std::string>::value) {
-            return std::quoted(EscapeStringValue(item));
+            std::string result;
+            result.append("\"").append(EscapeStringValue(item)).append("\"");
+            return result;
         } else {
             return std::forward<T>(item);
         }

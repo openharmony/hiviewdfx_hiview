@@ -44,16 +44,26 @@ ohos_source_set("hiview_core") {
   external_deps = [ "hisysevent_native:libhisysevent" ]
 }
 
+ohos_prebuilt_etc("monitor_config") {
+  source = "config/monitor.cfg"
+  relative_install_dir = "hiview"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
 ohos_source_set("sysevent_source") {
   part_name = "hiview"
   public_configs = [ ":hiview_core_config" ]
 
   sources = [
     "event_server.cpp",
+    "monitor_config.cpp",
+    "platform_monitor.cpp",
     "sysevent_source.cpp",
   ]
 
   deps = [
+    ":monitor_config",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
   ]

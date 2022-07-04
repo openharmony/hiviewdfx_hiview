@@ -66,6 +66,7 @@ bool Plugin::OnEventProxy(std::shared_ptr<Event> event)
         ret = OnEvent(dupEvent);
     }
     SysEventLogger::UpdatePluginStats(this->name_, event->eventName_, *timePtr);
+    event->realtime_ +=  *timePtr;
 
     if (!dupEvent->IsPipelineEvent()) {
         if (Audit::IsEnabled()) {

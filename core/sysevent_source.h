@@ -24,9 +24,12 @@
 #include "event_source.h"
 #include "pipeline.h"
 #include "plugin.h"
+#include "platform_monitor.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+class SysEventSource;
+
 class SysEventParser {
 public:
     explicit SysEventParser(PipelineEventProducer* producer): pipeProducer(producer) {};
@@ -38,11 +41,11 @@ private:
 
 class SysEventReceiver : public EventReceiver {
 public:
-    explicit SysEventReceiver(EventSource& source): eventSource(source) {};
+    explicit SysEventReceiver(SysEventSource& source): eventSource(source) {};
     ~SysEventReceiver() override {};
     void HandlerEvent(const std::string& rawMsg) override;
 private:
-    EventSource& eventSource;
+    SysEventSource& eventSource;
 };
 
 class SysEventSource : public EventSource {
@@ -54,9 +57,11 @@ public:
     void StartEventSource() override;
     void Recycle(PipelineEvent *event) override;
     void PauseDispatch(std::weak_ptr<Plugin> plugin) override;
+    bool PublishPipelineEvent(std::shared_ptr<PipelineEvent> event);
 
 private:
     EventServer eventServer;
+    PlatformMonitor platformMonitor_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

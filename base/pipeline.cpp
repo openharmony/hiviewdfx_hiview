@@ -17,6 +17,7 @@
 #include "file_util.h"
 #include "logger.h"
 #include "thread_util.h"
+#include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-Pipeline");
@@ -84,6 +85,7 @@ bool PipelineEvent::OnContinue()
 
 bool PipelineEvent::OnFinish()
 {
+    processTime_ = TimeUtil::GenerateTimestamp() - createTime_;
     if (handler_ != nullptr) {
         handler_->Recycle(this);
     }
