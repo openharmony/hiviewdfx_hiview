@@ -407,8 +407,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         auto summary = sysEvent->GetEventValue("SUMMARY");
         info.summary = StringUtil::UnescapeJsonStringValue(summary);
         info.sectionMap = sysEvent->GetKeyValuePairs();
-
         AddFaultLog(info);
+
         EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
         EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
             .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
@@ -433,9 +433,12 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 if (AnalysisFaultlog(info, eventInfos)) {
                     sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
                     sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
-                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" : eventInfos["FIRST_FRAME"]);
-                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" : eventInfos["SECOND_FRAME"]);
-                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" : eventInfos["LAST_FRAME"]);
+                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" :
+                                            eventInfos["FIRST_FRAME"]);
+                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" :
+                                            eventInfos["SECOND_FRAME"]);
+                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" :
+                                            eventInfos["LAST_FRAME"]);
                 }
                 auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
                 if (retCode == 0) {
