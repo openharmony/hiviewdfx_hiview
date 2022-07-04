@@ -160,7 +160,7 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
 
     Tbox::FilterTrace(eventInfos);
     std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["FIRST_FRAME"] +
-                                                    eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
+                                eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
     return true;
 }
