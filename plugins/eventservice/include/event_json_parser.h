@@ -17,37 +17,49 @@
 #define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_EVENT_JSON_PARSER_H
 
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "json/json.h"
 #include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+struct BaseInfo {
+    int type;
+    std::string level;
+    std::string tag;
+};
+using NAME_INFO_MAP = std::unordered_map<std::string, BaseInfo>;
+using DOMAIN_INFO_MAP = std::unordered_map<std::string, NAME_INFO_MAP>;
+using JSON_VALUE_LOOP_HANDLER = std::function<void(const std::string&, const Json::Value&)>;
+
 class EventJsonParser {
 public:
-    EventJsonParser(const std::string &path);
-    ~EventJsonParser();
-    bool HandleEventJson(std::shared_ptr<SysEvent> &event) const;
-    std::string GetTagByDomainAndName(const std::string &domain, const std::string &eventName) const;
-    int GetTypeByDomainAndName(const std::string &domain, const std::string &eventName) const;
+    EventJsonParser(const std::string& path);
+    ~EventJsonParser() {};
+
+public:
+    std::string GetTagByDomainAndName(const std::string& domain, const std::string& name) const;
+    int GetTypeByDomainAndName(const std::string& domain, const std::string& name) const;
+    bool HandleEventJson(const std::shared_ptr<SysEvent>& event) const;
 
 private:
-    bool CheckEventType(const Json::Value &sysBaseJson, const Json::Value &eventJson) const;
-    bool CheckBaseInfo(const Json::Value &baseJson, Json::Value &eventJson) const;
-    bool CheckExtendInfo(const std::string &name, const Json::Value &sysEvent, const Json::Value &eventJson) const;
-    bool JudgeDataType(const std::string &dataType, const Json::Value &eventJson) const;
-    void GetOrderlyJsonInfo(const Json::Value &eventJson, std::string &jsonStr) const;
-    bool HasDomainAndName(const Json::Value &eventJson) const;
-    bool CheckDomainAndName(const std::string &domain, const std::string &name) const;
-    bool IsNullValue(const Json::Value &jsonObj, const std::string &name) const;
-    bool IsObjectValue(const Json::Value &jsonObj, const std::string &name) const;
-    bool IsStringValue(const Json::Value &jsonObj, const std::string &name) const;
-    bool IsIntValue(const Json::Value &jsonObj, const std::string &name) const;
+    void AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr) const;
+    bool CheckBaseInfoValidity(const BaseInfo& baseInfo, Json::Value& eventJson) const;
+    bool CheckEventValidity(const Json::Value& eventJson) const;
+    bool CheckTypeValidity(const BaseInfo& baseInfo, const Json::Value& eventJson) const;
+    BaseInfo GetDefinedBaseInfoByDomainName(const std::string& domain, const std::string& name) const;
+    bool HasIntMember(const Json::Value& jsonObj, const std::string& name) const;
+    bool HasStringMember(const Json::Value& jsonObj, const std::string& name) const;
+    void InitEventInfoMapRef(const Json::Value& jsonObj, JSON_VALUE_LOOP_HANDLER handler) const;
+    BaseInfo ParseBaseConfig(const Json::Value& eventNameJson) const;
+    void ParseHiSysEventDef(const Json::Value& hiSysEventDef);
+    NAME_INFO_MAP ParseNameConfig(const Json::Value& domainJson) const;
 
 private:
-    Json::Value root_;
-    bool isRootValid_;
+    DOMAIN_INFO_MAP hiSysEventDef;
 }; // SysEventDbMgr
 } // namespace HiviewDFX
 } // namespace OHOS
