@@ -141,7 +141,7 @@ void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
     std::string block = logparse.GetFilterTrace(iterEndStack->second, trace);
     eventInfo[PARAMETER_ENDSTACK] = block;
     eventInfo["FINGERPRINT"] = Tbox::CalcFingerPrint(block, 0, FP_BUFFER);
-    std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3);
+    std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3);  // 3 : first/second/last frame
     logparse.SetFrame(stackTop, eventInfo);
 }
 }
