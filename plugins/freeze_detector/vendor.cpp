@@ -325,24 +325,6 @@ std::string Vendor::MergeEventLog(
     info.logPath = logPath;
     AddFaultLog(info);
 
-    std::vector<std::string> paths = {retPath};
-    HiSysEvent::Write("RELIABILITY", IsApplicationResult(result) ? "APP_FREEZE" : "SYS_FREEZE", HiSysEvent::FAULT,
-        "SUB_EVENT_TYPE", stringId,
-        "EVENT_TIME", timestamp,
-        "MODULE", packageName,
-        "PNAME", packageName,
-        "REASON", stringId,
-        "DIAG_INFO", digest,
-        "STACK", summary,
-        "HIVIEW_LOG_FILE_PATHS", paths,
-        "DOMAIN", domain,
-        "STRING_ID", stringId,
-        "PID", pid,
-        "UID", uid,
-        "PACKAGE_NAME", packageName,
-        "PROCESS_NAME", processName,
-        "MSG", msg);
-
     return retPath;
 }
 

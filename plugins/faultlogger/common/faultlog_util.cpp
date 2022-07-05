@@ -34,7 +34,7 @@ std::string GetFormatedTime(uint64_t target)
 {
     time_t now = time(nullptr);
     if (target > static_cast<uint64_t>(now)) {
-        target = target / 1000; // 1000 : convert millsecond to seconds
+        target = target / 1000; // 1000 : convert millisecond to seconds
     }
 
     time_t out = static_cast<time_t>(target);

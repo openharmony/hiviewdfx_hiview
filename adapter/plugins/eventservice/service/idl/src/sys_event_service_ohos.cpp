@@ -108,8 +108,8 @@ static bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain,
 
 static u16string ConvertToString16(const string& source)
 {
-    wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> convertor;
-    u16string result = convertor.from_bytes(source);
+    wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> converter;
+    u16string result = converter.from_bytes(source);
     return result;
 }
 

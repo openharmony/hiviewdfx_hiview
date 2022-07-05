@@ -460,7 +460,7 @@ void Faultlogger::OnLoad()
     FaultloggerAdapter::StartService(this);
 #endif
 
-    // some crash happend before hiview start, ensure every crash event is added into eventdb
+    // some crash happened before hiview start, ensure every crash event is added into eventdb
     auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
     if (eventloop != nullptr) {
         auto task = std::bind(&Faultlogger::StartBootScan, this);

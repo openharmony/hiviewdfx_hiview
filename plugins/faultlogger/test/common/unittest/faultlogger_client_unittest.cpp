@@ -55,7 +55,7 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
     /**
      * @tc.steps: step1. add faultlog with simplified parameters
      * @tc.steps: step2. check the return value of the interface
-     * @tc.steps: step3. check the existance of target log file
+     * @tc.steps: step3. check the existence of target log file
      * @tc.expected: the calling is success and the file has been created
      */
     auto now = time(nullptr);
@@ -82,7 +82,7 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
 
 /**
  * @tc.name: QuerySelfFaultLogTest001
- * @tc.desc: check the existance of the previous added faultlog
+ * @tc.desc: check the existence of the previous added faultlog
  * @tc.type: FUNC
  * @tc.require: AR000F83AK
  */

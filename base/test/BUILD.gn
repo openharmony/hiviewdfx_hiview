@@ -21,6 +21,7 @@ group("unittest") {
     ":PluginFactoryTest",
     ":PluginPipelineTest",
     ":SysEventTest",
+    "$hiview_base/event_pool/test:EventPoolTest",
     "$hiview_base/event_store/test:unittest",
   ]
 }

@@ -58,7 +58,7 @@ void ExtractRule::ParseExtractRule(const string& eventType, const string& config
 void ExtractRule::ParseSegStatusCfg(const Json::Value& json)
 {
     if (!json.isMember(L1_SEG_STATUS)) {
-        HIVIEW_LOGE("faild to get json number %{public}s.", L1_SEG_STATUS.c_str());
+        HIVIEW_LOGE("failed to get json number %{public}s.", L1_SEG_STATUS.c_str());
         return;
     }
 
@@ -133,7 +133,7 @@ bool ExtractRule::IsMatchId(const string& eventType, const string& featureId) co
 std::vector<std::string> ExtractRule::GetJsonArray(const Json::Value& json, const string& param)
 {
     if (json.isNull() || !json.isMember(param) || !json[param].isArray()) {
-        HIVIEW_LOGE("faild to get json array number %{public}s.\n", param.c_str());
+        HIVIEW_LOGE("failed to get json array number %{public}s.\n", param.c_str());
         return {};
     }
 
@@ -189,7 +189,7 @@ bool ExtractRule::IsMatchPath(const string& sourceFile, const string& name, cons
 vector<string> ExtractRule::SplitFeatureId(const Json::Value& object) const
 {
     if (!object.isMember(L2_FEATUREID)) {
-        HIVIEW_LOGE("faild to get json number %{public}s.", L1_SEG_STATUS.c_str());
+        HIVIEW_LOGE("failed to get json number %{public}s.", L1_SEG_STATUS.c_str());
         return {};
     }
 

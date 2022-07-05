@@ -35,7 +35,6 @@ const int MAX_FILE_SIZE = 1024 * 1024 * CUSTOM_MAX_FILE_SIZE_MB;
 const int MAX_FILE_SIZE = 1024 * 1024 * 100; // 100M
 #endif // CUSTOM_MAX_FILE_SIZE
 
-constexpr int MAX_CLEAN_TIMES = 5;
 constexpr std::pair<EventStore::StoreType, int> DB_CLEAN_CONFIGS[] = {
     { StoreType::BEHAVIOR, 2 * 24 }, { StoreType::FAULT, 30 * 24 },
     { StoreType::STATISTIC, 30 * 24 }, { StoreType::SECURITY, 90 * 24 },
@@ -84,20 +83,7 @@ bool SysEventDbCleaner::CleanDbs() const
 
 bool SysEventDbCleaner::Clean()
 {
-    HIVIEW_LOGD("start to clean db data");
-    do {
-        if (!CleanDbs()) {
-            HIVIEW_LOGE("failed to clean db files, cleanTimes=%{public}d", cleanTimes_);
-            return false;
-        }
-        ++cleanTimes_;
-    } while (IfNeedClean() && cleanTimes_ <= MAX_CLEAN_TIMES);
-
-    if (cleanTimes_ <= MAX_CLEAN_TIMES) {
-        return true;
-    }
-
-    HIVIEW_LOGD("start to delete db files");
+    HIVIEW_LOGI("start to delete db files");
     for (auto config : DB_CLEAN_CONFIGS) {
         if (SysEventDao::DeleteDB(config.first) != 0) {
             HIVIEW_LOGE("failed to delete db file, type=%{public}d", config.first);

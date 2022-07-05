@@ -147,7 +147,8 @@ void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
-    threadLoop_->AddEvent(nullptr, nullptr, task);
+    uint64_t constexpr delayTime = 10;
+    threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)

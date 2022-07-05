@@ -47,6 +47,8 @@ bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, i
         pid_ = CommonUtils::GetPidByName(packageName_);
     }
 
+    packageName_ = CommonUtils::GetProcNameByPid(pid_);
+
     char buf[BUF_SIZE_512] = {0};
     int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1,
         "OpenStacktraceCatcher -- pid==%d packageName is %s\n", pid_, packageName_.c_str());
