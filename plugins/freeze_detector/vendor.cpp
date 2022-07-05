@@ -271,6 +271,11 @@ std::string Vendor::MergeEventLog(
         logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
 
+    if (FileUtil::FileExists(retPath)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", retPath.c_str());
+        return retPath;
+    }
+
     std::ostringstream header;
     DumpEventInfo(header, TRIGGER_HEADER, watchPoint);
 
