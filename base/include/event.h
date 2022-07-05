@@ -37,6 +37,8 @@ public:
           happenTime_(0),
           targetDispatchTime_(0),
           createTime_(0),
+          realtime_(0),
+          processTime_(0),
           sender_(sender),
           domain_(""),
           eventName_(""),
@@ -61,6 +63,8 @@ public:
           happenTime_(0),
           targetDispatchTime_(0),
           createTime_(0),
+          realtime_(0),
+          processTime_(0),
           sender_(sender),
           domain_(""),
           eventName_(name),
@@ -139,6 +143,8 @@ public:
     uint64_t happenTime_;
     uint64_t targetDispatchTime_;
     uint64_t createTime_;
+    uint64_t realtime_;
+    uint64_t processTime_;
     std::string sender_;
     std::string domain_;
     std::string eventName_;

@@ -15,11 +15,13 @@
 
 #include "sysevent_source.h"
 
+#include <functional>
 #include <memory>
 
 #include "defines.h"
 #include "logger.h"
 #include "plugin_factory.h"
+#include "time_util.h"
 #include "sys_event.h"
 
 namespace OHOS {
@@ -44,12 +46,15 @@ void SysEventReceiver::HandlerEvent(const std::string& rawMsg)
 {
     SysEventParser sysEventParser(static_cast<PipelineEventProducer *>(&eventSource));
     std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawMsg);
+    event->realtime_ += TimeUtil::GenerateTimestamp() - event->createTime_;
     eventSource.PublishPipelineEvent(event);
 }
 
 void SysEventSource::OnLoad()
 {
     HIVIEW_LOGI("SysEventSource load ");
+    std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
+    platformMonitor_.StartMonitor(looper);
 }
 
 void SysEventSource::OnUnload()
@@ -69,6 +74,7 @@ void SysEventSource::StartEventSource()
 void SysEventSource::Recycle(PipelineEvent *event __UNUSED)
 {
     HIVIEW_LOGI("recycle resource");
+    platformMonitor_.CollectCostTime(event);
 }
 
 void SysEventSource::PauseDispatch(std::weak_ptr<Plugin> plugin)
@@ -77,6 +83,13 @@ void SysEventSource::PauseDispatch(std::weak_ptr<Plugin> plugin)
     if (requester != nullptr) {
         HIVIEW_LOGI("process pause dispatch event from plugin:%s.\n", requester->GetName().c_str());
     }
+}
+
+bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
+{
+    platformMonitor_.CollectEvent(event);
+    platformMonitor_.Breaking();
+    return EventSource::PublishPipelineEvent(event);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
