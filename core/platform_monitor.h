@@ -19,12 +19,14 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 #include "event_loop.h"
 #include "pipeline.h"
 #include "sys_event.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -77,16 +79,18 @@ private:
 
 private:
     static constexpr uint8_t PCT = 100;
-    uint32_t collectPeriod_ = 10; // second
-    uint32_t reportPeriod_ = 30; // second
-    uint32_t totalSizeBenchMark_ =  1024; // byte
-    uint32_t realTimeBenchMark_ = 100000; // microsecond
-    uint32_t processTimeBenchMark_ = 200000; // microsecond
-    // 50000 microsecond to 600000000000 microsecond
-    static constexpr uint64_t intervals_[] = {50000, 100000, 200000, 500000, 1000000, 1000000000, 60000000000,
-                                              300000000000, 600000000000};
+    uint32_t collectPeriod_ = 5 * TimeUtil::SECONDS_PER_MINUTE; // 5 minute
+    uint32_t reportPeriod_ = TimeUtil::SECONDS_PER_HOUR; // one hour
+    uint32_t totalSizeBenchMark_ =  200 * 1024 * 1024; // 200M
+    uint32_t realTimeBenchMark_ = 100 * 1000; // 100 millisecond
+    uint32_t processTimeBenchMark_ = 200 * 1000; // millisecond
+    // 50, 100, 200, 500 millisecond, 1, 10, 100, 500, 1000 second,
+    static constexpr uint64_t intervals_[] = {50 * 1000, 100 * 1000, 200 * 1000, 500 * 1000, 1000 * 1000,
+                                              10 * 1000 * 1000, 100 * 1000 * 1000, 500 * 1000 * 1000,
+                                              1000 * 1000 * 1000};
 
     // intervals
+    std::mutex statMutex_;
     std::map<int8_t, uint32_t> realStat_;
     std::map<int8_t, uint32_t> processStat_;
     std::map<int8_t, uint32_t> waitTimeStat_;
@@ -124,6 +128,7 @@ private:
     double avgWaitTime_ = 0;
 
     // topK event
+    std::mutex topMutex_;
     std::map<std::string, uint32_t> topEvents_;
     std::map<std::string, uint32_t> topDomains_;
 

@@ -73,7 +73,6 @@ void SysEventSource::StartEventSource()
 
 void SysEventSource::Recycle(PipelineEvent *event __UNUSED)
 {
-    HIVIEW_LOGI("recycle resource");
     platformMonitor_.CollectCostTime(event);
 }
 
