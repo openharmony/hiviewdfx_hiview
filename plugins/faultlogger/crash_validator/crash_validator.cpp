@@ -16,7 +16,6 @@
 
 
 #include <csignal>
-#include <fstream>
 #include <iostream>
 
 #include <hisysevent.h>
@@ -44,6 +43,7 @@ constexpr char KEY_NO_LOG_EVENT_NAME[] = "CPP_CRASH_NO_LOG";
 constexpr char KEY_HAPPEN_TIME[] = "HAPPEN_TIME";
 constexpr int32_t LOG_SIZE = 1024;
 constexpr uint64_t MAX_LOG_GENERATE_TIME = 600; // 600 seconds
+constexpr int32_t KMSG_SIZE = 8193; // CONSOLE_EXT_LOG_MAX + 1
 }
 CrashValidator::CrashValidator() : stopReadKmsg_(false), totalEventCount_(0),
     normalEventCount_(0), kmsgReaderThread_(nullptr)
@@ -221,26 +221,41 @@ void CrashValidator::CheckOutOfDateEvents()
 
 void CrashValidator::ReadServiceCrashStatus()
 {
-    std::ifstream kmsgStream;
-    std::string line;
-    kmsgStream.open("/dev/kmsg");
-    while (kmsgStream.good()) {
-        std::getline(kmsgStream, line);
+    ssize_t len;
+    char kmsg[KMSG_SIZE];
+    int fd = open("/dev/kmsg", O_RDONLY | O_NONBLOCK);
+    if (fd == -1) {
+        HIVIEW_LOGE("Failed to open /dev/kmsg.");
+        return;
+    }
+    lseek(fd, 0, 3); // 3 : SEEK_DATA
+    while (true) {
+        if (-1 == (len = read(fd, kmsg, sizeof(kmsg))) && errno == EPIPE) {
+            continue;
+        }
+        if (len == -1 && errno == EINVAL) {
+            HIVIEW_LOGE("Failed to read kmsg");
+            close(fd);
+            return;
+        };
+        if (len < 1) {
+            continue;
+        }
+        kmsg[len] = 0;
+        if (stopReadKmsg_) {
+            break;
+        }
+        std::string line = kmsg;
         auto pos = line.find(INIT_LOG_PATTERN);
         if (pos == std::string::npos) {
             continue;
         }
-
-        if (stopReadKmsg_) {
-            break;
-        }
-
         std::string formatedLog = line.substr(pos + strlen(INIT_LOG_PATTERN));
         char name[LOG_SIZE] {0};
         int pid;
         int uid;
         int status;
-        int  ret = sscanf_s(formatedLog.c_str(), "Service:%s pid:%d uid:%d status:%d",
+        int ret = sscanf_s(formatedLog.c_str(), "Service:%s pid:%d uid:%d status:%d",
             name, sizeof(name), &pid, &uid, &status);
         if (ret <= 0) {
             HIVIEW_LOGI("Failed to parse kmsg:%{public}s.", formatedLog.c_str());
@@ -250,7 +265,7 @@ void CrashValidator::ReadServiceCrashStatus()
         HiSysEvent::Write(HiSysEvent::Domain::STARTUP, KEY_PROCESS_EXIT, HiSysEvent::EventType::BEHAVIOR,
             KEY_NAME, name, KEY_PID, pid, KEY_UID, uid, KEY_STATUS, status);
     }
-    kmsgStream.close();
+    close(fd);
 }
 
 bool CrashValidator::ValidateLogContent(const CrashEvent& event)
