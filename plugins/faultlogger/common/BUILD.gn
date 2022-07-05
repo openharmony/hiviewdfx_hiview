@@ -19,6 +19,12 @@ config("faultlogger_common_config") {
 
 ohos_source_set("faultlogger_common") {
   part_name = "hiview"
+
+  include_dirs = [
+    "//base/hiviewdfx/hiview/utility/smart_parser",
+    "//base/hiviewdfx/hiview/utility/common_utils/include",
+  ]
+
   public_configs = [ ":faultlogger_common_config" ]
   sources = [
     "faultlog_query_result_inner.cpp",
@@ -28,6 +34,8 @@ ohos_source_set("faultlogger_common") {
   deps = [
     "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "$hiview_root/utility/smart_parser:smart_parser",
   ]
 
   external_deps = [

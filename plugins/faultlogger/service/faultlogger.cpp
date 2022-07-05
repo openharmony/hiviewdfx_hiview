@@ -428,6 +428,18 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 sysEvent->SetEventValue("LOG_PATH", info.logPath);
                 sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
                 sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
+
+                std::map<std::string, std::string> eventInfos;
+                if (AnalysisFaultlog(info, eventInfos)) {
+                    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+                    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
+                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" :
+                                            eventInfos["FIRST_FRAME"]);
+                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" :
+                                            eventInfos["SECOND_FRAME"]);
+                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" :
+                                            eventInfos["LAST_FRAME"]);
+                }
                 auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
                 if (retCode == 0) {
                     return true;
