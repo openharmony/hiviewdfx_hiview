@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "logger.h"
@@ -34,6 +35,7 @@ constexpr uint8_t SLEEP_TEN_SECONDS = 10;
 };
 void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, uint32_t> &stat)
 {
+    std::lock_guard<std::mutex> lock(statMutex_);
     auto it = std::lower_bound(intervals_, intervals_ + sizeof(intervals_)/sizeof(intervals_[0]), costTime);
     int index = it - intervals_;
     stat[index] += 1;
@@ -41,6 +43,7 @@ void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, 
 
 void PlatformMonitor::CollectEvent(std::shared_ptr<PipelineEvent> event)
 {
+    std::lock_guard<std::mutex> lock(topMutex_);
     topDomains_[event->domain_]++;
     topEvents_[event->eventName_]++;
 }
@@ -136,6 +139,7 @@ void PlatformMonitor::CollectPerfProfiler()
 
 void PlatformMonitor::GetDomainsStat(PerfMeasure &perfMeasure)
 {
+    std::lock_guard<std::mutex> lock(topMutex_);
     for (auto it = topDomains_.begin(); it != topDomains_.end(); it++) {
         perfMeasure.domains.emplace_back(it->first);
         perfMeasure.domainCounts.emplace_back(it->second);
@@ -146,6 +150,7 @@ void PlatformMonitor::GetDomainsStat(PerfMeasure &perfMeasure)
 
 void PlatformMonitor::GetCostTimeInterval(PerfMeasure &perfMeasure)
 {
+    std::lock_guard<std::mutex> lock(statMutex_);
     for (int index = 0; index <= static_cast<int>(sizeof(intervals_)/sizeof(intervals_[0])); index++) {
         uint32_t realCount = realStat_[index];
         perfMeasure.realCounts.emplace_back(realCount);
@@ -167,7 +172,6 @@ void PlatformMonitor::CalcOverBenckMarkPct(PerfMeasure &perfMeasure)
     finishedCount_ = 0;
     overRealTotalCount_ = 0;
     overProcessTotalCount_ = 0;
-
 
     if (perfMeasure.finishedCount > 0) {
         perfMeasure.realPercent = (PCT * perfMeasure.overRealTotalCount) / perfMeasure.finishedCount;
@@ -269,6 +273,7 @@ void PlatformMonitor::ReportCycleProfile()
 
 void PlatformMonitor::GetTopDomains(std::vector<std::string> &domains, std::vector<uint32_t> &counts)
 {
+    std::lock_guard<std::mutex> lock(topMutex_);
     uint8_t topN = 3; // top n
     if (topDomains_.size() <= topN) {
         for (auto it = topDomains_.begin(); it != topDomains_.end(); it++) {
@@ -296,6 +301,7 @@ void PlatformMonitor::GetTopDomains(std::vector<std::string> &domains, std::vect
 
 void PlatformMonitor::GetTopEvents(std::vector<std::string> &events, std::vector<uint32_t> &counts)
 {
+    std::lock_guard<std::mutex> lock(topMutex_);
     uint8_t topN = 3; // top n
     if (topEvents_.size() <= topN) {
         for (auto it = topEvents_.begin(); it != topEvents_.end(); it++) {
