@@ -16,14 +16,14 @@
 #define TBOX_H
 
 #include <map>
-#include <stack>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <vector>
 
 #include "common_defines.h"
-#include "file_util.h"
 #include "common_utils.h"
+#include "file_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {

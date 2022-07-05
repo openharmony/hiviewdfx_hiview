@@ -15,10 +15,10 @@
 #include "tbox.h"
 
 #include <regex>
-#include "file_util.h"
-#include "string_util.h"
 #include "calc_fingerprint.h"
+#include "file_util.h"
 #include "log_parse.h"
+#include "string_util.h"
 
 using namespace std;
 namespace OHOS {
@@ -100,9 +100,8 @@ bool Tbox::HasCausedBy(const string& line)
 }
 
 /*
- * format1:  t com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1143)
- * format2:  #06 pc 0040642d  /system/lib/libart.so (art_quick_invoke_stub+224)
- * format3:  - sleeping on <0x0c688a8f> (a java.lang.Object)
+ * format1:  com.ohos.launcher:extension
+ * format2:  #06 pc 00000000000bb328  /system/lib/libart.so (__epoll_pwait+8)
  */
 string Tbox::GetStackName(string line)
 {
@@ -112,8 +111,8 @@ string Tbox::GetStackName(string line)
         string str;
         if (GetPartial(line, "^\\s+at (.*)\\).*", str) ||
             GetPartial(line, "^\\s*at (.*)", str) || // for jsCrash
-            GetPartial(line, "\\s+#\\d+ pc [0-9a-f]+  (.*\\+\\d+)\\)", str) ||
-            GetPartial(line, "\\s+#\\d+ pc [0-9a-f]+  (.*)", str) ||
+            GetPartial(line, "#\\d+ pc [0-9a-f]+ (.*\\+\\d+)\\)", str) ||
+            GetPartial(line, "#\\d+ pc [0-9a-f]+ (.*)", str) ||
             GetPartial(line, "([0-9a-zA-Z_]+\\+0x[0-9a-f]+/0x[0-9a-f]+)", str)) {
             stackname = str;
         } else if (GetPartial(line, "^\\s+- (.*)\\(.*", str)) {
@@ -122,7 +121,7 @@ string Tbox::GetStackName(string line)
                 str.replace(ret, string::npos, ")\0");
                 stackname = str;
             } else {
-                stackname = UNKNOWN_STR; // filter - sleeping on, - locked ＜0x84b2828＞ and so on
+                stackname = UNKNOWN_STR;
             }
         }
         regex re("(.+?)-(.+)==(.+)");
@@ -133,17 +132,17 @@ string Tbox::GetStackName(string line)
 
 void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
 {
-    auto iterTrustStack = eventInfo.find(PARAMETER_TRUSTSTACK);
-    if (eventInfo.empty() || iterTrustStack == eventInfo.end() || iterTrustStack->second.empty()) {
+    auto iterEndStack = eventInfo.find(PARAMETER_ENDSTACK);
+    if (eventInfo.empty() || iterEndStack == eventInfo.end() || iterEndStack->second.empty()) {
         return;
     }
     std::vector<std::string> trace;
     LogParse logparse;
-    std::string block = logparse.GetFilterTrace(iterTrustStack->second, trace);
-    eventInfo[PARAMETER_TRUSTSTACK] = block;
+    std::string block = logparse.GetFilterTrace(iterEndStack->second, trace);
+    eventInfo[PARAMETER_ENDSTACK] = block;
     eventInfo["FINGERPRINT"] = Tbox::CalcFingerPrint(block, 0, FP_BUFFER);
-    std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3); // 3 : F1/F2/F3NAME
-    logparse.SetFname(stackTop, eventInfo);
+    std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3);
+    logparse.SetFrame(stackTop, eventInfo);
 }
 }
 }

@@ -159,7 +159,7 @@ string LogParse::GetValidBlock(stack<string> inStack, vector<string>& lastPart) 
 {
     vector<string> validStack;
 
-    list<vector<string>> multiPart = StackToMultipart(inStack, 3); // 3 : F1-F3NAME
+    list<vector<string>> multiPart = StackToMultipart(inStack, 3); // 3 : first/second/last frame
     size_t size = multiPart.size();
     if (size == 0) {
         return "";
@@ -167,27 +167,26 @@ string LogParse::GetValidBlock(stack<string> inStack, vector<string>& lastPart) 
     if (size == 1) {
         // only one part
         validStack = multiPart.front();
-        if (validStack.size() > TRUST_LEN_MAX) {
+        if (validStack.size() > STACK_LEN_MAX) {
             // keep the begin 28 lines and the end 2 lines
-            validStack.erase(validStack.begin() + (TRUST_LEN_MAX - 2), validStack.end() - 2); // 2 : end 2 lines
+            validStack.erase(validStack.begin() + (STACK_LEN_MAX - 2), validStack.end() - 2); // 2 : end 2 lines
         }
     } else if (size >= 2) { // at least 2 parts
         for (auto part : multiPart) {
-            if (validStack.size() >= TRUST_LEN_MAX) {
+            if (validStack.size() >= STACK_LEN_MAX) {
                 break;
             }
             validStack.insert(validStack.begin(), part.begin(), part.end());
         }
-        if (multiPart.front().size() > TRUST_LEN_MAX) {
+        if (multiPart.front().size() > STACK_LEN_MAX) {
             // keep the begin 28 lines and the end 2 lines
-            validStack.erase(validStack.begin() + (TRUST_LEN_MAX - 2), validStack.end() - 2); // 2 : end 2 lines
-        } else if (validStack.size() > TRUST_LEN_MAX) {
+            validStack.erase(validStack.begin() + (STACK_LEN_MAX - 2), validStack.end() - 2); // 2 : end 2 lines
+        } else if (validStack.size() > STACK_LEN_MAX) {
             // keep the begin 2 lines and the end 28 lines
-            validStack.erase(validStack.begin() + 2, validStack.end() - (TRUST_LEN_MAX - 2)); // 2 : begin 2 lines
+            validStack.erase(validStack.begin() + 2, validStack.end() - (STACK_LEN_MAX - 2)); // 2 : begin 2 lines
         }
     }
 
-    // get f1f2f3 from the lastPart
     for (auto part : multiPart) {
         // multiPart has at least 2 parts
         if (size > 1 && !part.empty() && HasExceptionList(part.front())) {
@@ -272,7 +271,7 @@ void LogParse::MatchIgnoreLibrary(stack<string> inStack, stack<string>& outStack
  * INPUT :
  *  info : trace spliting by "\n"
  * OUTPUT :
- *  trace : last part trace to get FNAME
+ *  trace : last part trace to get Frame
  *  return string : valid trace spliting by "\n"
  */
 std::string LogParse::GetFilterTrace(const std::string& info, std::vector<std::string>& trace) const
@@ -286,7 +285,7 @@ std::string LogParse::GetFilterTrace(const std::string& info, std::vector<std::s
     return GetValidBlock(traceStack, trace);
 }
 
-void LogParse::SetFname(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const
+void LogParse::SetFrame(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const
 {
     std::vector<std::string> name = {"FIRST_FRAME", "SECOND_FRAME", "LAST_FRAME"};
     size_t len = stack.size();

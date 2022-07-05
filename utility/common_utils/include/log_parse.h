@@ -31,25 +31,25 @@ public:
     LogParse(const LogParse&) = delete;
     LogParse& operator=(const LogParse&) = delete;
     bool IsIgnoreLibrary(const std::string& val) const;
-    std::stack<std::string> GetStackTop(const std::vector<std::string>& validStack, const size_t num) const;
-    void SetFname(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const;
-    std::string GetFilterTrace(const std::string& info, std::vector<std::string>& trace) const;
-    void GetCrashFaultLine(const std::string& file, std::string& line) const;
     static std::string MatchExceptionLibrary(const std::string& val);
+    void GetCrashFaultLine(const std::string& file, std::string& line) const;
+    void SetFrame(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const;
+    std::string GetFilterTrace(const std::string& info, std::vector<std::string>& trace) const;
+    std::stack<std::string> GetStackTop(const std::vector<std::string>& validStack, const size_t num) const;
 
 public:
     static const std::string UNMATCHED_EXCEPTION;
 
 private:
-    std::list<std::vector<std::string>> StackToMultipart(std::stack<std::string>& inStack, size_t num) const;
+    bool HasExceptionList(const std::string& line) const;
     std::vector<std::string> GetValidStack(size_t num, std::stack<std::string>& inStack) const;
+    std::list<std::vector<std::string>> StackToMultipart(std::stack<std::string>& inStack, size_t num) const;
     bool GetValidStack(int num, std::stack<std::string>& inStack, std::stack<std::string>& outStack) const;
     void MatchIgnoreLibrary(std::stack<std::string> inStack, std::stack<std::string>& outStack, size_t num) const;
     std::string GetValidBlock(std::stack<std::string> inStack, std::vector<std::string>& lastPart) const;
-    bool HasExceptionList(const std::string& line) const;
 
 private:
-    static const int TRUST_LEN_MAX = 30;
+    static const int STACK_LEN_MAX = 30;
     static const std::map<std::string, std::set<std::string>> ignoreList_;
     static const std::set<std::string> exceptionList_;
 };
