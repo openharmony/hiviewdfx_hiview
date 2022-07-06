@@ -18,6 +18,7 @@
 #include <csignal>
 #include <iostream>
 
+#include <fcntl.h>
 #include <hisysevent.h>
 #include <securec.h>
 
