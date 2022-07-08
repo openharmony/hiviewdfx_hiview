@@ -38,6 +38,7 @@ constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one ti
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int HID_ROOT = 0;
 constexpr int HID_SHELL = 2000;
+const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY  = 3, BEHAVIOR  = 4
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
 }
 
@@ -321,51 +322,72 @@ int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result,
     return totalRecords;
 }
 
-bool SysEventServiceOhos::CheckQueryRules(const SysEventQueryRuleGroupOhos& rules, std::set<int>& queryTypes)
+void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs)
 {
     if (rules.empty()) {
-        queryTypes = { 1, 2, 3, 4 }; // 1-fault, 2-statistic, 3-security, 4-behavior
-        return true;
+        for (auto eventType : EVENT_TYPES) {
+            queryArgs.insert(std::make_pair(eventType, DomainsWithNames()));
+        }
+        return;
     }
     for (auto iter = rules.cbegin(); iter < rules.cend(); ++iter) {
         for (auto it = iter->eventList.cbegin(); it < iter->eventList.cend(); ++it) {
-            int queryType = GetTypeByDomainAndName(iter->domain, *it);
-            if (queryType <= 0) {
-                HiLog::Error(LABEL, "failed to get type from domain=%{public}s and name=%{public}s",
-                    iter->domain.c_str(), (*it).c_str());
-                return false;
+            std::string eventName = *it;
+            int eventType = GetTypeByDomainAndName(iter->domain, eventName);
+            if (find(EVENT_TYPES.cbegin(), EVENT_TYPES.cend(), eventType) == EVENT_TYPES.end()) {
+                HiLog::Warn(LABEL, "failed to get type from domain=%{public}s and name=%{public}s",
+                    iter->domain.c_str(), eventName.c_str());
+                continue;
             }
-            queryTypes.insert(queryType);
+            auto typeDomainsIter = queryArgs.find(eventType);
+            if (typeDomainsIter == queryArgs.end()) {
+                EventNames names = {eventName};
+                DomainsWithNames domainsWithNames = {{iter->domain, names}};
+                queryArgs.insert(std::make_pair(eventType, domainsWithNames));
+                continue;
+            }
+            auto domainNamesIter = typeDomainsIter->second.find(iter->domain);
+            if (domainNamesIter == typeDomainsIter->second.end()) {
+                EventNames names = {eventName};
+                typeDomainsIter->second.insert(std::make_pair(iter->domain, names));
+                continue;
+            }
+            auto& names = domainNamesIter->second;
+            if (find(names.cbegin(), names.cend(), eventName) == names.cend()) {
+                names.emplace_back(eventName);
+            }
         }
     }
-    return true;
 }
 
-void SysEventServiceOhos::QuerySysEventMiddle(int queryType, int64_t beginTime, int64_t endTime, int32_t maxEvents,
-    const SysEventQueryRuleGroupOhos& rules, ResultSet& result)
+void SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime,
+    int64_t endTime, int32_t maxEvents, ResultSet& result)
 {
-    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryType));
+    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
     Cond timeCond;
     timeCond.And(EventCol::TS, Op::GE, beginTime);
     timeCond.And(EventCol::TS, Op::LT, endTime);
 
+    auto domainsWithNames = queryArgIter->second;
     Cond domainNameConds;
-    for_each(rules.cbegin(), rules.cend(), [&sysEventQuery, &domainNameConds](const SysEventQueryRule& rule) {
-        Cond domainConds("domain_", Op::EQ, rule.domain);
-        Cond nameConds;
-        for_each(rule.eventList.cbegin(), rule.eventList.cend(), [&sysEventQuery, &nameConds](const std::string& name) {
-            nameConds.Or("name_", Op::EQ, name);
+    for_each(domainsWithNames.cbegin(), domainsWithNames.cend(),
+        [&sysEventQuery, &domainNameConds] (const DomainsWithNames::value_type& domainNames) {
+            Cond domainConds("domain_", Op::EQ, domainNames.first);
+            Cond nameConds;
+            auto names = domainNames.second;
+            for_each(names.cbegin(), names.cend(), [&sysEventQuery, &nameConds](const std::string& name) {
+                nameConds.Or("name_", Op::EQ, name);
+            });
+            if (!names.empty()) {
+                domainConds.And(nameConds);
+            }
+            domainNameConds.Or(domainConds);
         });
-        if (rule.eventList.size()) {
-            domainConds.And(nameConds);
-        }
-        domainNameConds.Or(domainConds);
-    });
 
-    if (rules.size()) {
-        sysEventQuery = sysEventQuery.Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
-    } else {
+    if (domainsWithNames.empty()) {
         sysEventQuery = sysEventQuery.Where(timeCond).Order(EventCol::TS, true);
+    } else {
+        sysEventQuery = sysEventQuery.Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
     }
     result = sysEventQuery.Execute(maxEvents);
 }
@@ -374,12 +396,13 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "access permission check failed");
+        HiLog::Error(LABEL, "access permission check failed.");
         return ERROR_NO_PERMISSION;
     }
-    std::set<int> queryTypes;
-    if (!CheckQueryRules(rules, queryTypes) || queryTypes.empty()) {
-        HiLog::Error(LABEL, "CheckQueryRules check failed");
+    QueryArgs queryArgs;
+    ParseQueryArgs(rules, queryArgs);
+    if (queryArgs.empty()) {
+        HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
         return ERROR_DOMIAN_INVALID;
     }
 
@@ -389,11 +412,11 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     int64_t lastQueryUpperLimit = realEndTime;
     int32_t remainEvents = maxEvents < 0 ? std::numeric_limits<int32_t>::max() : maxEvents;
     int32_t transTotalEvents = 0;
-    auto queryTypeIt = queryTypes.begin();
+    auto queryTypeIt = queryArgs.cbegin();
     while (remainEvents > 0) {
         ResultSet result;
         int32_t queryCnt = remainEvents < MAX_QUERY_EVENTS ? remainEvents : MAX_QUERY_EVENTS;
-        QuerySysEventMiddle(*queryTypeIt, lastQueryLowerLimit, lastQueryUpperLimit, queryCnt, rules, result);
+        QuerySysEventMiddle(queryTypeIt, lastQueryLowerLimit, lastQueryUpperLimit, queryCnt, result);
         int32_t dropCnt = 0;
         int32_t transRecord = TransSysEvent(result, callback, lastQueryLowerLimit, dropCnt);
         lastQueryLowerLimit++;
@@ -402,7 +425,7 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
 
         // query completed for current database
         if ((transRecord + dropCnt) < queryCnt || lastQueryLowerLimit >= lastQueryUpperLimit) {
-            if ((++queryTypeIt) != queryTypes.end()) {
+            if ((++queryTypeIt) != queryArgs.cend()) {
                 lastQueryLowerLimit = realBeginTime;
                 lastQueryUpperLimit = realEndTime;
             } else {
