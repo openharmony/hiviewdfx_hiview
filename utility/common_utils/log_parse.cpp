@@ -129,8 +129,7 @@ list<vector<string>> LogParse::StackToMultipart(stack<string>& inStack, size_t n
     stack<string> partStack;
     vector<string> validPart;
     list<vector<string>> multiPart;
-    int len = inStack.size();
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < inStack.size(); i++) {
         string topStr = inStack.top();
         StringUtil::EraseString(topStr, "\t");
         if (Tbox::HasCausedBy(topStr)) {
@@ -244,10 +243,9 @@ void LogParse::MatchIgnoreLibrary(stack<string> inStack, stack<string>& outStack
         outStack = inStack;
         return;
     }
-    int count = 0;
-    int size = ignoreList_.size();
+    size_t count = 0;
     for (auto it = ignoreList_.rbegin(); it != ignoreList_.rend(); ++it) {
-        if (count == size - 1) {
+        if (count == ignoreList_.size() - 1) {
             outStack = inStack;
             return;
         }
