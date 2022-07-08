@@ -18,6 +18,7 @@
 
 #include <functional>
 #include <vector>
+#include <unordered_map>
 
 #include "event.h"
 #include "iquery_sys_event_callback.h"
@@ -36,6 +37,9 @@ using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
 using QuerySysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
 using DomainNameTagMap = std::map<std::pair<std::string, std::string>, std::string>;
+using EventNames = std::vector<std::string>;
+using DomainsWithNames = std::unordered_map<std::string, EventNames>;
+using QueryArgs = std::unordered_map<int, DomainsWithNames>;
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -77,11 +81,11 @@ public:
 
 private:
     bool HasAccessPermission() const;
-    bool CheckQueryRules(const SysEventQueryRuleGroupOhos& rules, std::set<int>& queryTypes);
+    void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     int GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    void QuerySysEventMiddle(int queryType, int64_t beginTime, int64_t endTime, int32_t maxEvents,
-        const SysEventQueryRuleGroupOhos& rules, OHOS::HiviewDFX::EventStore::ResultSet& result);
+    void QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime, int64_t endTime,
+        int32_t maxEvents, OHOS::HiviewDFX::EventStore::ResultSet& result);
     int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
         const QuerySysEventCallbackPtrOhos& callback, int64_t& lastRecordTime, int32_t& drops);
 
