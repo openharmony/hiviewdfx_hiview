@@ -14,6 +14,7 @@
  */
 #ifndef HIVIEW_EVENT_LOGGER_EVENT_THREAD_POOL_H
 #define HIVIEW_EVENT_LOGGER_EVENT_THREAD_POOL_H
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -23,18 +24,61 @@
 #include <thread>
 #include <vector>
 
+#include "event_priority_queue.h"
 #include "nocopyable.h"
+#include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 using runTask = std::function<void()>;
+
+class TaskEvent {
+public:
+    TaskEvent(uint8_t priority, uint64_t targetTime, runTask task):
+        priority_(priority),
+        targetTime_(targetTime),
+        task_(task)
+    {
+        seq = TimeUtil::GetNanoTime();
+    }
+
+    ~TaskEvent() {}
+    uint8_t priority_;
+    uint64_t targetTime_;
+    runTask task_;
+    uint64_t seq;
+
+    bool operator<(const TaskEvent &obj) const
+    {
+        if (this->targetTime_ > obj.targetTime_) {
+            return true;
+        } else if (this->targetTime_ == obj.targetTime_) {
+            if (this->priority_ > obj.priority_) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+
 class EventThreadPool {
 public:
     DISALLOW_COPY_AND_MOVE(EventThreadPool);
     EventThreadPool(int maxCout, const std::string& name);
     ~EventThreadPool();
+
+    enum Priority {
+        HIGHEST_PRIORITY = 1,
+        HIGH_PRIORITY = 10,
+        LOW_PRIORITY = 20,
+        LOWEST_PRIORITY = 30,
+        IDLE_PRIORITY = 50,
+    };
+
     void Start();
     void Stop();
-    void AddTask(runTask task);
+    void AddEvent(runTask task, uint64_t delay = 0, uint8_t priority = Priority::IDLE_PRIORITY);
+    bool RemoveEvent(uint64_t seq);
 
 private:
     int maxCout_;
@@ -43,7 +87,7 @@ private:
     std::vector<std::thread> pool_;
     std::mutex mutex_;
     std::condition_variable cvSync_;
-    std::list<runTask> runTask_;
+    EventPriorityQueue<TaskEvent> runTask_;
 
     void TaskCallback();
 };

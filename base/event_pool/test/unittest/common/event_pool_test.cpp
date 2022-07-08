@@ -65,7 +65,7 @@ HWTEST_F(EventPoolTest, EventPoolTest001, TestSize.Level3)
     };
 
     for (int i = 0; i < maxCount; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i));
+        eventThreadPool->AddEvent(std::bind(task, i));
     }
 
     int count = 0;
@@ -77,10 +77,10 @@ HWTEST_F(EventPoolTest, EventPoolTest001, TestSize.Level3)
     auto time = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
     printf("threadPool full time is %s\n", std::to_string(time).c_str());
     for (int i = 0; i < maxCount; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i + 10)); // 10 is name
+        eventThreadPool->AddEvent(std::bind(task, i + 10)); // 10 is name
     }
     time = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-    printf("AddTask second time is %s\n", std::to_string(time).c_str());
+    printf("AddEvent second time is %s\n", std::to_string(time).c_str());
 
     count = 0;
     while (endCount < maxCount) {
@@ -125,7 +125,7 @@ HWTEST_F(EventPoolTest, EventPoolTest002, TestSize.Level3)
     };
 
     for (int i = 0; i < maxCount; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i));
+        eventThreadPool->AddEvent(std::bind(task, i));
     }
 
     int count = 0;
@@ -146,10 +146,10 @@ HWTEST_F(EventPoolTest, EventPoolTest002, TestSize.Level3)
 
     sleep(1);
     for (int i = 0; i < maxCount; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i + 10)); // 10 is name
+        eventThreadPool->AddEvent(std::bind(task, i + 10)); // 10 is name
     }
     time = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-    printf("AddTask second time is %s\n", std::to_string(time).c_str());
+    printf("AddEvent second time is %s\n", std::to_string(time).c_str());
 
     count = 0;
     while (endCount < (maxCount * 2)) {
@@ -185,7 +185,7 @@ HWTEST_F(EventPoolTest, EventPoolTest003, TestSize.Level3)
     };
 
     for (int i = 0; i < maxCount; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i));
+        eventThreadPool->AddEvent(std::bind(task, i));
     }
 
     int count = 0;
@@ -198,10 +198,10 @@ HWTEST_F(EventPoolTest, EventPoolTest003, TestSize.Level3)
     printf("threadPool full time is %s\n", std::to_string(time).c_str());
     int count2 = maxCount - 2;
     for (int i = 0; i < count2; ++i) {
-        eventThreadPool->AddTask(std::bind(task, i + 10)); // 10 is name
+        eventThreadPool->AddEvent(std::bind(task, i + 10)); // 10 is name
     }
     time = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-    printf("AddTask second time is %s\n", std::to_string(time).c_str());
+    printf("AddEvent second time is %s\n", std::to_string(time).c_str());
 
     count = 0;
     while (endCount < maxCount) {
@@ -252,16 +252,16 @@ HWTEST_F(EventPoolTest, EventPoolTest004, TestSize.Level3)
     uint16_t sumCount = 0;
 
     for (int i = 0; i < 10; ++i) {
-        uint8_t count = randU(randEngine) + 1; // [1, 10] count AddTask
+        uint8_t count = randU(randEngine) + 1; // [1, 10] count AddEvent
         sumCount += count;
-        printf("AddTask: %d count is %u\n", i, count);
+        printf("AddEvent: %d count is %u\n", i, count);
         for (int j = 0; j < count; ++j) {
-            eventThreadPool->AddTask(std::bind(task, i * 10 + j));
+            eventThreadPool->AddEvent(std::bind(task, i * 10 + j));
         }
         sleep(randU(randEngine)); // [0, 9] seconds
     }
     auto time0 = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-    printf("AddTask finsh time is %s\n", std::to_string(time0).c_str());
+    printf("AddEvent finsh time is %s\n", std::to_string(time0).c_str());
 
     int count = 0;
     while (startCount < sumCount) {

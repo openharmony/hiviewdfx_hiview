@@ -46,18 +46,18 @@ void EventThreadPool::Stop()
         return;
     }
     runing_ = false;
-    cvSync_.notify_all();
     for (int i = 0; i < maxCout_; ++i) {
         pool_[i].join();
     }
 }
 
-void EventThreadPool::AddTask(runTask task)
+void EventThreadPool::AddEvent(runTask task, uint64_t delay, uint8_t priority)
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    runTask_.push_back(task);
-    cvSync_.notify_one();
-    if (runTask_.size() > 100) { // 100: 积压超过100条预警
+    uint64_t targetTime = TimeUtil::GetNanoTime() + delay * TimeUtil::SEC_TO_NANOSEC;
+    runTask_.push(TaskEvent(priority, targetTime, task));
+    runTask_.ShrinkIfNeedLocked();
+    if (runTask_.size() > 1000) { // 1000: 积压超过1000条预警
         HIVIEW_LOGW("%{public}s AddTask. runTask size is %{public}d", name_.c_str(), runTask_.size());
     }
 }
@@ -83,8 +83,15 @@ void EventThreadPool::TaskCallback()
             }
 
             if (runTask_.size() > 0) {
-                task = runTask_.front();
-                runTask_.pop_front();
+                auto tmp = runTask_.top();
+                uint64_t now = TimeUtil::GetNanoTime();
+                if (tmp.targetTime_ > now) {
+                    cvSync_.wait_until(lock, std::chrono::time_point<>())
+                }
+                std::chrono::duration<uint64_t, std::ratio<1, tmp.targetTime_>> dt;
+                cvSync_.wait_for(lock, dt);
+                task = tmp.task_;
+                runTask_.pop();
             }
             if (task == nullptr) {
                 HIVIEW_LOGW("task == nullptr. %{public}s runTask size is %{public}d", name.c_str(), runTask_.size());
