@@ -98,7 +98,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
-    long pid = event->GetEventIntValue("PID");
+    int32_t pid = static_cast<int32_t>(event->GetEventIntValue("PID"));
     pid = pid ? pid : event->GetPid();
     std::string logFile = idStr + "-" + std::to_string(pid) + "-" + GetFormatTime(logTime) + ".log";
     if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
