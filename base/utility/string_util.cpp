@@ -129,7 +129,7 @@ string DexToHexString(int value, bool upper)
     return hexString;
 }
 
-KeyValuePair GetKeyValueByString(int &start, const std::string &inputString)
+KeyValuePair GetKeyValueByString(size_t &start, const std::string &inputString)
 {
     std::string key;
     std::string value;
