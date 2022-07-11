@@ -250,7 +250,7 @@ bool IsDirectory(const std::string &path)
     return false;
 }
 
-bool GetLastLine(std::istream &fin, std::string &line, int maxLen)
+bool GetLastLine(std::istream &fin, std::string &line, uint32_t maxLen)
 {
     if (fin.tellg() <= 0) {
         return false;

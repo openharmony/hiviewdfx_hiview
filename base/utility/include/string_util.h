@@ -105,7 +105,7 @@ std::string DexToHexString(int value, bool upper = true);
  * Get key-value pair separated by colon
  */
 using KeyValuePair = std::pair<std::string, std::pair<std::string, char>>;
-KeyValuePair GetKeyValueByString(int &start, const std::string &inputString);
+KeyValuePair GetKeyValueByString(size_t &start, const std::string &inputString);
 
 
 template<typename T>
