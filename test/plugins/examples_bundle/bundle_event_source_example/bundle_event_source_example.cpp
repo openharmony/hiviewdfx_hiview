@@ -30,14 +30,17 @@ namespace OHOS {
 namespace HiviewDFX {
 REGISTER(BundleEventSourceExample);
 std::set<std::string> BundleEventSourceExample::count = std::set<std::string>();
+std::mutex BundleEventSourceExample::mutex_;
 BundleEventSourceExample::BundleEventSourceExample() : inotifyFd_(0)
 {
+    std::unique_lock<std::mutex> lock(BundleEventSourceExample::mutex_);
     printf("BundleEventSourceExample::BundleEventSourceExample()\n");
     count.insert("BundleEventSourceExample");
 }
 
 BundleEventSourceExample::~BundleEventSourceExample()
 {
+    std::unique_lock<std::mutex> lock(BundleEventSourceExample::mutex_);
     printf("BundleEventSourceExample::~BundleEventSourceExample()\n");
     count.erase("BundleEventSourceExample");
 }

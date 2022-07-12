@@ -48,7 +48,6 @@ constexpr uint64_t SECOND_TO_NANOSECOND = 1000000000;
 constexpr uint64_t NANOSECOND_TO_MILLSECOND = 1000000;
 constexpr uint64_t MICROSECOND_TO_MILLSECOND = 1000;
 constexpr uint64_t MICROSECOND_TO_NANOSECOND = 1000;
-using Task = std::function<void()>;
 enum LoopEventType {
     LOOP_EVENT_TASK,
     LOOP_PACKAGED_TASK,

@@ -29,14 +29,10 @@
 #include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
-using runTask = std::function<void()>;
-
 class TaskEvent {
 public:
-    TaskEvent(uint8_t priority, uint64_t targetTime, runTask task):
-        priority_(priority),
-        targetTime_(targetTime),
-        task_(task)
+    TaskEvent(uint8_t priority, uint64_t targetTime, Task task, const std::string &name)
+        : priority_(priority), targetTime_(targetTime), task_(task), name_(name)
     {
         seq = TimeUtil::GetNanoTime();
     }
@@ -44,7 +40,8 @@ public:
     ~TaskEvent() {}
     uint8_t priority_;
     uint64_t targetTime_;
-    runTask task_;
+    Task task_;
+    std::string name_;
     uint64_t seq;
 
     bool operator<(const TaskEvent &obj) const
@@ -77,8 +74,8 @@ public:
 
     void Start();
     void Stop();
-    void AddEvent(runTask task, uint64_t delay = 0, uint8_t priority = Priority::IDLE_PRIORITY);
-    bool RemoveEvent(uint64_t seq);
+    void AddTask(Task task, const std::string &name,
+        uint64_t delay = 0, uint8_t priority = Priority::IDLE_PRIORITY);
 
 private:
     int maxCout_;
@@ -87,8 +84,9 @@ private:
     std::vector<std::thread> pool_;
     std::mutex mutex_;
     std::condition_variable cvSync_;
-    EventPriorityQueue<TaskEvent> runTask_;
+    EventPriorityQueue<TaskEvent> taskQueue_;
 
+    TaskEvent ObtainTask(uint64_t &targetTime);
     void TaskCallback();
 };
 }  // namespace HiviewDFX

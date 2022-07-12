@@ -30,6 +30,7 @@ namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventSourceExample);
 std::set<std::string> EventSourceExample::count = std::set<std::string>();
+std::mutex EventSourceExample::mutex_;
 EventSourceExample::EventSourceExample() : inotifyFd_(0)
 {
     printf("EventSourceExample::EventSourceExample()\n");

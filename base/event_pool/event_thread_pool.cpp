@@ -14,6 +14,8 @@
  */
 #include "event_thread_pool.h"
 
+#include <string>
+
 #include "logger.h"
 #include "thread_util.h"
 namespace OHOS {
@@ -46,59 +48,75 @@ void EventThreadPool::Stop()
         return;
     }
     runing_ = false;
+    cvSync_.notify_all();
     for (int i = 0; i < maxCout_; ++i) {
         pool_[i].join();
     }
 }
 
-void EventThreadPool::AddEvent(runTask task, uint64_t delay, uint8_t priority)
+void EventThreadPool::AddTask(Task task, const std::string &name, uint64_t delay, uint8_t priority)
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    uint64_t targetTime = TimeUtil::GetNanoTime() + delay * TimeUtil::SEC_TO_NANOSEC;
-    runTask_.push(TaskEvent(priority, targetTime, task));
-    runTask_.ShrinkIfNeedLocked();
-    if (runTask_.size() > 1000) { // 1000: 积压超过1000条预警
-        HIVIEW_LOGW("%{public}s AddTask. runTask size is %{public}d", name_.c_str(), runTask_.size());
+    uint64_t targetTime = TimeUtil::GetMilliseconds() + delay;
+    HIVIEW_LOGD("AddEvent: targetTime is %{public}s\n", std::to_string(targetTime).c_str());
+    taskQueue_.push(TaskEvent(priority, targetTime, task, name));
+    taskQueue_.ShrinkIfNeedLocked();
+    cvSync_.notify_all();
+    if (taskQueue_.size() > 1000) { // 1000: 积压超过1000条预警
+        HIVIEW_LOGW("%{public}s AddTask. runTask size is %{public}d", name_.c_str(), taskQueue_.size());
     }
+}
+
+TaskEvent EventThreadPool::ObtainTask(uint64_t &targetTime)
+{
+    if (taskQueue_.empty()) {
+        targetTime = UINT64_MAX;
+        return TaskEvent(Priority::IDLE_PRIORITY, targetTime, nullptr, "nullptr");
+    }
+    auto tmp = taskQueue_.top();
+    targetTime = tmp.targetTime_;
+    return tmp;
 }
 
 void EventThreadPool::TaskCallback()
 {
-    std::string name = name_ + "@" + std::to_string(Thread::GetTid());
-    const int maxLength = 16;
-    if (name.length() >= maxLength) {
-        HIVIEW_LOGW("%{public}s is too long for thread, please change to a shorter one.", name.c_str());
-        name = name.substr(0, maxLength - 1);
+    std::string tid = std::to_string(Thread::GetTid());
+    const int maxLength = 10;
+    if (name_.length() > maxLength) {
+        HIVIEW_LOGW("%{public}s is too long for thread, please change to a shorter one.", name_.c_str());
+        name_ = name_.substr(0, maxLength - 1);
     }
+    std::string name = name_ + "@" + tid;
     Thread::SetThreadDescription(name);
     while (runing_) {
-        runTask task = nullptr;
+        Task task = nullptr;
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            if (runTask_.empty()) {
-                cvSync_.wait(lock);
-            }
+            uint64_t targetTime = UINT64_MAX;
+            TaskEvent taskEvent = ObtainTask(targetTime);
+            uint64_t now = TimeUtil::GetMilliseconds();
+            HIVIEW_LOGD("name is %{public}s, targetTime is %{public}s, now is %{public}s\n",
+                taskEvent.name_.c_str(), std::to_string(targetTime).c_str(), std::to_string(now).c_str());
             if (!runing_) {
                 break;
             }
-
-            if (runTask_.size() > 0) {
-                auto tmp = runTask_.top();
-                uint64_t now = TimeUtil::GetNanoTime();
-                if (tmp.targetTime_ > now) {
-                    cvSync_.wait_until(lock, std::chrono::time_point<>())
-                }
-                std::chrono::duration<uint64_t, std::ratio<1, tmp.targetTime_>> dt;
-                cvSync_.wait_for(lock, dt);
-                task = tmp.task_;
-                runTask_.pop();
-            }
-            if (task == nullptr) {
-                HIVIEW_LOGW("task == nullptr. %{public}s runTask size is %{public}d", name.c_str(), runTask_.size());
+            if (targetTime == UINT64_MAX) {
+                cvSync_.wait(lock);
+                continue;
+            } else if (targetTime > now) {
+                cvSync_.wait_for(lock, std::chrono::milliseconds(targetTime - now));
                 continue;
             }
+            task = taskEvent.task_;
+            taskQueue_.pop();
+            if (task == nullptr) {
+                HIVIEW_LOGW("task == nullptr. %{public}s runTask size is %{public}d", name.c_str(), taskQueue_.size());
+                continue;
+            }
+            Thread::SetThreadDescription(taskEvent.name_);
         }
         task();
+        Thread::SetThreadDescription(name);
     }
     HIVIEW_LOGI("%{public}s exit.", name.c_str());
 }

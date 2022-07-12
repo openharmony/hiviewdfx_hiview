@@ -17,6 +17,7 @@
 #include <queue>
 namespace OHOS {
 namespace HiviewDFX {
+using Task = std::function<void()>;
 template<typename T>
 class EventPriorityQueue : public std::priority_queue<T, std::vector<T>> {
 public:
@@ -25,7 +26,6 @@ public:
         auto it = std::find_if(this->c.begin(), this->c.end(), [seq](T event) {
             return event.seq == seq;
         });
-
         if (it != this->c.end()) {
             this->c.erase(it);
             std::make_heap(this->c.begin(), this->c.end(), this->comp);
