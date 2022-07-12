@@ -46,7 +46,9 @@ void SysEventReceiver::HandlerEvent(const std::string& rawMsg)
 {
     SysEventParser sysEventParser(static_cast<PipelineEventProducer *>(&eventSource));
     std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawMsg);
-    event->realtime_ += TimeUtil::GenerateTimestamp() - event->createTime_;
+    if (event != nullptr) {
+        event->realtime_ += TimeUtil::GenerateTimestamp() - event->createTime_;
+    }
     eventSource.PublishPipelineEvent(event);
 }
 
