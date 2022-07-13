@@ -60,7 +60,7 @@ ohos_source_set("sys_event_logger") {
     "ability_base:want",
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
-    "battery_statistics_native:batterystats_client",
+    "battery_statistics:batterystats_client",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
     "ipc:ipc_core",
