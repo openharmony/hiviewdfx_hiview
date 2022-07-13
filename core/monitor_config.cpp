@@ -52,7 +52,7 @@ bool MonitorConfig::Parse()
         }
 
         std::string configItem = StringUtil::TrimStr(result[configItemField]);
-        uint32_t configValue = atol(std::string(result[configValueField]).c_str());
+        uint32_t configValue = static_cast<uint32_t>(atol(std::string(result[configValueField]).c_str()));
         configs_[configItem] = configValue;
         HIVIEW_LOGD("config=%{public}s value=%{public}u", configItem.c_str(), configValue);
     }
