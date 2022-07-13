@@ -24,12 +24,14 @@ namespace HiviewDFX {
 REGISTER_PROXY_WITH_LOADED(BundlePluginExample3);
 BundlePluginExample3::BundlePluginExample3()
 {
+    std::unique_lock<std::mutex> lock(BundleEventSourceExample::mutex_);
     printf("BundlePluginExample3::BundlePluginExample3()\n");
     BundleEventSourceExample::count.insert("BundlePluginExample3");
 }
 
 BundlePluginExample3::~BundlePluginExample3()
 {
+    std::unique_lock<std::mutex> lock(BundleEventSourceExample::mutex_);
     printf("BundlePluginExample3::~BundlePluginExample3()\n");
     BundleEventSourceExample::count.erase("BundlePluginExample3");
 }

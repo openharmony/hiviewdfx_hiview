@@ -14,6 +14,7 @@
  */
 #ifndef HIVIEW_PLUGIN_EXAMPLES_EVENT_SOURCE_EXAMPLE
 #define HIVIEW_PLUGIN_EXAMPLES_EVENT_SOURCE_EXAMPLE
+#include <mutex>
 #include "event_source.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -59,6 +60,7 @@ public:
     ~EventSourceExample();
 
     static std::set<std::string> count;
+    static std::mutex mutex_;
 
     void OnLoad() override;
     void OnUnload() override;

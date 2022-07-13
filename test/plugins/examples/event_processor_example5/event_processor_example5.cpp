@@ -23,12 +23,14 @@ namespace HiviewDFX {
 REGISTER_PROXY(EventProcessorExample5);
 EventProcessorExample5::EventProcessorExample5()
 {
+    std::unique_lock<std::mutex> lock(EventSourceExample::mutex_);
     printf("EventProcessorExample5::EventProcessorExample5()\n");
     EventSourceExample::count.insert("EventProcessorExample5");
 }
 
 EventProcessorExample5::~EventProcessorExample5()
 {
+    std::unique_lock<std::mutex> lock(EventSourceExample::mutex_);
     printf("EventProcessorExample5::~EventProcessorExample5()\n");
     EventSourceExample::count.erase("EventProcessorExample5");
 }

@@ -123,7 +123,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformLoadingPlugins001, TestSize.Level
         FAIL();
     }
     // 等时间动态插件卸载
-    sleep(12);
+    sleep(16);
 
     for (auto& i : *count1_) {
         printf("2eventSourceExample name:%s, \n", i.c_str());
@@ -237,7 +237,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformLoadingPlugins003, TestSize.Level
 
     auto pluginSize = pluginMap.size();
     ASSERT_EQ(pluginSize, 11ul);
-    sleep(12); // 等待动态插件被卸载
+    sleep(16); // 等待动态插件被卸载
     auto count = count1_->size() + count2_->size();
     ASSERT_EQ(count, 4ul);
     auto itb = count1_->find("EventProcessorExample4");
@@ -329,7 +329,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformRun001, TestSize.Level3)
 {
     printf("HolisticPlatformRun001.\n");
 
-    sleep(12); // 等待动态插件被卸载
+    sleep(16); // 等待动态插件被卸载
     auto count = count1_->size() + count2_->size();
     ASSERT_EQ(count, 4ul);
     std::string be3 = platform_.GetHiviewProperty("BE3_Listening", "");
@@ -449,7 +449,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformRun002, TestSize.Level3)
 {
     printf("HolisticPlatformRun002.\n");
 
-    sleep(12); // 等待动态插件被卸载
+    sleep(16); // 等待动态插件被卸载
     Run002Check01();
 
     // 发生事件1，启动流水线

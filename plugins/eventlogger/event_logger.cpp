@@ -83,7 +83,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         this->StartLogCollect(sysEvent);
         this->PostEvent(sysEvent);
     };
-    eventPool_->AddTask(task);
+    eventPool_->AddTask(task, "eventlogger");
 
     return true;
 }

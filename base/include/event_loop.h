@@ -19,13 +19,13 @@
 #include <future>
 #include <map>
 #include <memory>
-#include <queue>
 #include <utility>
 
 #include <sys/types.h>
 
 #include "defines.h"
 #include "event.h"
+#include "event_priority_queue.h"
 
 #if defined(__HIVIEW_OHOS__)
 #include "unique_fd.h"
@@ -48,7 +48,6 @@ constexpr uint64_t SECOND_TO_NANOSECOND = 1000000000;
 constexpr uint64_t NANOSECOND_TO_MILLSECOND = 1000000;
 constexpr uint64_t MICROSECOND_TO_MILLSECOND = 1000;
 constexpr uint64_t MICROSECOND_TO_NANOSECOND = 1000;
-using Task = std::function<void()>;
 enum LoopEventType {
     LOOP_EVENT_TASK,
     LOOP_PACKAGED_TASK,
@@ -85,31 +84,6 @@ struct LoopEvent {
     {
         // as we use std::priority_queue, the event with smaller target time will be in the top of the queue
         return (this->targetTime > obj.targetTime);
-    }
-};
-
-class EventLoopPriorityQueue : public std::priority_queue<LoopEvent, std::vector<LoopEvent>> {
-public:
-    bool remove(uint64_t seq)
-    {
-        auto it = std::find_if(this->c.begin(), this->c.end(), [seq](LoopEvent event) {
-            return event.seq == seq;
-        });
-
-        if (it != this->c.end()) {
-            this->c.erase(it);
-            std::make_heap(this->c.begin(), this->c.end(), this->comp);
-            return true;
-        } else {
-            return false;
-        };
-    };
-
-    void ShrinkIfNeedLocked()
-    {
-        if ((c.capacity() / c.size()) > 10) {   // 10 times, begin to shrink
-            c.shrink_to_fit();
-        }
     }
 };
 
@@ -177,7 +151,7 @@ private:
     volatile bool needQuit_ = false;
     volatile bool isRunning_ = false;
     std::string name_;
-    EventLoopPriorityQueue pendingEvents_;
+    EventPriorityQueue<LoopEvent> pendingEvents_;
     std::unique_ptr<std::thread> thread_;
     std::mutex queueMutex_;
 #if defined(__HIVIEW_OHOS__)
