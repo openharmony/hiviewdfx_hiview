@@ -110,3 +110,29 @@ CPP_CRASH_NO_LOG:
   UID: {type: INT32, desc: uid}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
 
+ADDR_SANITIZER:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: AddressSanitizer}
+  MODULE: {type: STRING, desc: module name}
+  VERSION: {type: STRING, desc: module version}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FAULT_TYPE: {type: STRING, desc: fault type}
+  LOG_NAME: {type: STRING, desc: fault log name}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+
+LEAK_SANITIZER:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: LeakSanitizer}
+  MODULE: {type: STRING, desc: module name}
+  VERSION: {type: STRING, desc: module version}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FAULT_TYPE: {type: STRING, desc: fault type}
+  LOG_NAME: {type: STRING, desc: fault log name}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+
