@@ -43,6 +43,9 @@ void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, 
 
 void PlatformMonitor::CollectEvent(std::shared_ptr<PipelineEvent> event)
 {
+    if (event == nullptr) {
+        return;
+    }
     std::lock_guard<std::mutex> lock(topMutex_);
     topDomains_[event->domain_]++;
     topEvents_[event->eventName_]++;
@@ -51,6 +54,9 @@ void PlatformMonitor::CollectEvent(std::shared_ptr<PipelineEvent> event)
 void PlatformMonitor::CollectCostTime(PipelineEvent *event)
 {
     // collect data after event destory
+    if (event == nullptr) {
+        return;
+    }
     onceTotalCnt_++;
     onceTotalRealTime_ += event->realtime_;
     onceTotalProcTime_ += event->processTime_;
