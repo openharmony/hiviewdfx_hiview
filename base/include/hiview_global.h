@@ -15,7 +15,9 @@
 #ifndef HIVIEW_UTILITY_PLATFORM_GLOBAL_H
 #define HIVIEW_UTILITY_PLATFORM_GLOBAL_H
 
+#include <list>
 #include <memory>
+#include <set>
 
 #include "plugin.h"
 
@@ -39,6 +41,7 @@ public:
     const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo);
     bool GetListenerInfo(uint32_t type, const std::string& name, std::set<EventListener::EventIdRange> &listenerInfo);
     bool GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames);
+    std::list<std::weak_ptr<Plugin>> GetPipelineSequenceByName(const std::string& name);
 private:
     HiviewContext& context_;
 };

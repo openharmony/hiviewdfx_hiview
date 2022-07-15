@@ -103,10 +103,9 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
         return;
     }
 #ifndef UNITTEST
-    // send event to event service
-    // thus we can both save event to rawdb and notify listeners
-    HiviewGlobal::GetInstance()->PostAsyncEventToTarget("SysEventService", sysEvent);
-    HiviewGlobal::GetInstance()->PostAsyncEventToTarget("CrashValidator", sysEvent);
+    auto seq = HiviewGlobal::GetInstance()->GetPipelineSequenceByName("SysEventPipeline");
+    sysEvent->SetPipelineInfo("SysEventPipeline", seq);
+    sysEvent->OnContinue();
 #endif
 }
 
