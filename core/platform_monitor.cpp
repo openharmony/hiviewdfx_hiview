@@ -43,6 +43,9 @@ void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, 
 
 void PlatformMonitor::CollectEvent(std::shared_ptr<PipelineEvent> event)
 {
+    if (event == nullptr) {
+        return;
+    }
     std::lock_guard<std::mutex> lock(topMutex_);
     topDomains_[event->domain_]++;
     topEvents_[event->eventName_]++;
@@ -51,6 +54,9 @@ void PlatformMonitor::CollectEvent(std::shared_ptr<PipelineEvent> event)
 void PlatformMonitor::CollectCostTime(PipelineEvent *event)
 {
     // collect data after event destory
+    if (event == nullptr) {
+        return;
+    }
     onceTotalCnt_++;
     onceTotalRealTime_ += event->realtime_;
     onceTotalProcTime_ += event->processTime_;
@@ -81,15 +87,12 @@ void PlatformMonitor::CollectPerfProfiler()
     if (maxTotalCount_ < SysEvent::totalCount_) {
         maxTotalCount_.store(SysEvent::totalCount_);
     }
-
     if (maxTotalSize_ < SysEvent::totalSize_) {
         maxTotalSize_.store(SysEvent::totalSize_);
     }
-
     // total count, total size
     totalCount_ = SysEvent::totalCount_;
     totalSize_ = SysEvent::totalSize_;
-
     // min speed, max speed
     uint32_t onceTotalRealTime = onceTotalRealTime_;
     uint32_t onceTotalProcTime = onceTotalProcTime_;
@@ -99,7 +102,6 @@ void PlatformMonitor::CollectPerfProfiler()
     onceTotalProcTime_ = 0;
     onceTotalWaitTime_ = 0;
     onceTotalCnt_ = 0;
-
     if (onceTotalRealTime > 0) {
         curRealSpeed_ = (TimeUtil::SEC_TO_MICROSEC * onceTotalCnt) / onceTotalRealTime;
         if (minSpeed_ == 0 || (minSpeed_ > curRealSpeed_)) {
@@ -113,17 +115,15 @@ void PlatformMonitor::CollectPerfProfiler()
         maxSpeed_ = 0;
         curRealSpeed_ = 0;
     }
-
     if (onceTotalProcTime > 0) {
         curProcSpeed_ = (TimeUtil::SEC_TO_MICROSEC * onceTotalCnt) / onceTotalProcTime;
     } else {
         curProcSpeed_ = 0;
     }
-
     if (onceTotalCnt > 0) {
-        avgRealTime_ = onceTotalRealTime / onceTotalCnt;
-        avgProcessTime_ = onceTotalProcTime / onceTotalCnt;
-        avgWaitTime_ = onceTotalWaitTime / onceTotalCnt;
+        avgRealTime_ = static_cast<double>(onceTotalRealTime) / onceTotalCnt;
+        avgProcessTime_ = static_cast<double>(onceTotalProcTime) / onceTotalCnt;
+        avgWaitTime_ = static_cast<double>(onceTotalWaitTime) / onceTotalCnt;
     }
     HIVIEW_LOGD("maxTotalCount_=%{public}u, maxTotalSize_=%{public}u, totalCount_=%{public}u, totalSize_=%{public}u, "
         "onceTotalRealTime=%{public}u, onceTotalProcTime=%{public}u, onceTotalWaitTime=%{public}u, "
@@ -151,7 +151,7 @@ void PlatformMonitor::GetDomainsStat(PerfMeasure &perfMeasure)
 void PlatformMonitor::GetCostTimeInterval(PerfMeasure &perfMeasure)
 {
     std::lock_guard<std::mutex> lock(statMutex_);
-    for (int index = 0; index <= static_cast<int>(sizeof(intervals_)/sizeof(intervals_[0])); index++) {
+    for (int index = 0; index <= static_cast<int>(sizeof(intervals_) / sizeof(intervals_[0])); index++) {
         uint32_t realCount = realStat_[index];
         perfMeasure.realCounts.emplace_back(realCount);
         uint32_t processCount = processStat_[index];
@@ -370,7 +370,7 @@ void PlatformMonitor::ReportBreakProfile()
 void PlatformMonitor::ReportRecoverProfile()
 {
     // report break duration when recovery
-    int64_t duration = recoverTimestamp_ - breakTimestamp_;
+    int64_t duration = static_cast<int64_t>(recoverTimestamp_ - breakTimestamp_);
     SysEventCreator eventCreator("HIVIEWDFX", "RECOVER", SysEventCreator::BEHAVIOR);
     eventCreator.SetKeyValue("DURATION", duration);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
