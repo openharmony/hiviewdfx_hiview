@@ -382,17 +382,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         return false;
     }
 
-    if (event->eventName_ == "PROCESS_EXIT") {
-        HiviewGlobal::GetInstance()->PostAsyncEventToTarget("CrashValidator", event);
-        return true;
-    }
-
     if (event->eventName_ == "JS_ERROR") {
         if (event->jsonExtraInfo_.empty()) {
-            return false;
-        }
-
-        if (!JudgmentRateLimiting(event)) {
             return false;
         }
 
