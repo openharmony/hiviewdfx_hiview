@@ -27,7 +27,6 @@ ohos_source_set("sys_event_service_ohos_common") {
   include_dirs = [
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
-    "//third_party/cJSON",
     "//third_party/jsoncpp/include",
     "$hiview_base/event_store/include",
   ]
@@ -66,7 +65,6 @@ ohos_source_set("sys_event_service_ohos") {
   include_dirs = [
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
-    "//third_party/cJSON",
     "//third_party/jsoncpp/include",
     "$hiview_base/event_store/include",
   ]
