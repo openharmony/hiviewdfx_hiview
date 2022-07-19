@@ -19,12 +19,12 @@
 
 #include "db_helper.h"
 #include "file_util.h"
+#include "hiview_event_report.h"
 #include "logger.h"
 #include "plugin.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
-#include "sys_event_logger.h"
 #include "vendor.h"
 
 namespace OHOS {
@@ -44,7 +44,7 @@ bool FreezeResolver::Init()
     // freeze_rules.xml
     if (FreezeRuleCluster::GetInstance().Init() == false) {
         HIVIEW_LOGE("failed to init rule.");
-        SysEventLogger::ReportPluginFault("FreezeDetector", "failed to init rule");
+        HiviewEventReport::ReportPluginFault("FreezeDetector", "failed to init rule");
         return false;
     }
 

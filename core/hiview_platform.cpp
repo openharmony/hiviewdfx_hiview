@@ -30,6 +30,7 @@
 #include "dynamic_module.h"
 #include "engine_event_dispatcher.h"
 #include "file_util.h"
+#include "hiview_event_report.h"
 #include "hiview_global.h"
 #include "hiview_platform_config.h"
 #include "logger.h"
@@ -37,7 +38,6 @@
 #include "plugin_config.h"
 #include "plugin_factory.h"
 #include "string_util.h"
-#include "sys_event_logger.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -141,8 +141,6 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
 
     // init global context helper, remove in the future
     HiviewGlobal::CreateInstance(static_cast<HiviewContext&>(*this));
-    SysEventLogger::Init(HiviewGlobal::GetInstance()->GetHiViewDirectory(
-        HiviewContext::DirectoryType::WORK_DIRECTORY));
 
     LoadBusinessPlugin(config);
 
@@ -350,7 +348,7 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
         return;
     }
     if (pluginMap_.find(pluginInfo.name) != pluginMap_.end()) {
-        SysEventLogger::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_DUPLICATE_NAME);
+        HiviewEventReport::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_DUPLICATE_NAME);
         HIVIEW_LOGW("plugin %{public}s already exists! create plugin failed", pluginInfo.name.c_str());
         return;
     }
@@ -363,7 +361,7 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
 
     std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
     if (registInfo == nullptr) {
-        SysEventLogger::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_UNREGISTERED);
+        HiviewEventReport::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_UNREGISTERED);
         if (handle != DynamicModuleDefault) {
             UnloadModule(handle);
         }
@@ -391,7 +389,7 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
     }
     // hold the global reference of the plugin
     pluginMap_[pluginInfo.name] = std::move(plugin);
-    SysEventLogger::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_SUCCESS);
+    HiviewEventReport::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_SUCCESS);
 }
 
 void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineInfo)
@@ -685,7 +683,7 @@ bool HiviewPlatform::IsReady()
 void HiviewPlatform::RequestUnloadPlugin(std::shared_ptr<Plugin> caller)
 {
     if (caller == nullptr) {
-        SysEventLogger::ReportPluginUnload("", PluginEventSpace::UNLOAD_INVALID);
+        HiviewEventReport::ReportPluginUnload("", PluginEventSpace::UNLOAD_INVALID);
         return;
     }
 
@@ -700,7 +698,7 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
 {
     auto it = pluginMap_.find(name);
     if (it == pluginMap_.end()) {
-        SysEventLogger::ReportPluginUnload(name, PluginEventSpace::UNLOAD_NOT_FOUND);
+        HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_NOT_FOUND);
         return;
     }
 
@@ -714,13 +712,13 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
     if (count > 2) {
         HIVIEW_LOGW("Plugin %{public}s has more refs(%l{public}d), may caused by unfinished task. unload failed.",
             name.c_str(), count);
-        SysEventLogger::ReportPluginUnload(name, PluginEventSpace::UNLOAD_IN_USE);
+        HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_IN_USE);
         return;
     }
 
     pluginMap_.erase(name);
     target->OnUnload();
-    SysEventLogger::ReportPluginUnload(name, PluginEventSpace::UNLOAD_SUCCESS);
+    HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_SUCCESS);
     auto looper = target->GetWorkLoop();
     if (looper == nullptr) {
         return;

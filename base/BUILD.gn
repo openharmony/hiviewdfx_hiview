@@ -69,8 +69,8 @@ ohos_source_set("hiview_base") {
     ":logger",
     "$hiview_adapter/dbstore:db_store_source",
     "event_pool:eventpool",
+    "event_report:hiview_event_report",
     "event_store:event_store_source",
-    "sys_event_logger:sys_event_logger",
     "utility:hiview_utility",
   ]
 
@@ -82,6 +82,7 @@ ohos_source_set("hiview_base") {
 
 ohos_shared_library("hiviewbase") {
   public_configs = [ ":hiview_base_config" ]
+  public_configs += [ "event_report:hiview_event_report_config" ]
 
   deps = [
     ":hiview_base",
