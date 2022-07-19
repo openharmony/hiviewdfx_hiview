@@ -37,6 +37,7 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
     {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
     {"RELIABILITY", "STACK"},
     {"AAFWK", "LIFECYCLE_TIMEOUT"},
+    {"AAFWK", "APP_LIFECYCLE_TIMEOUT"},
     {"GRAPHIC", "NO_DRAW"},
     {"POWERMGR", "SCREEN_ON_TIMEOUT"},
 };
