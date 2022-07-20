@@ -115,6 +115,7 @@ group("hiview_package") {
     ":hiview",
     ":plugin_config",
     "plugins/faultlogger/crash_validator:crashvalidator",
+    "plugins/usage_event_report/service:usage_report",
 
     #"plugins/faultlogger/crash_validator:crash_validator_config",
   ]
