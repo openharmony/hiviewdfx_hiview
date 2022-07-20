@@ -19,7 +19,7 @@
 #include <fstream>
 #include <map>
 
-#include "cJSON.h"
+#include "flat_json_parser.h"
 #include "logger.h"
 #include "sys_event_query.h"
 
@@ -129,29 +129,22 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event) co
 
 void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr) const
 {
-    // convert JsonValue to the correct order by event->jsonExtraInfo_
-    cJSON *cJsonArr = cJSON_Parse(jsonStr.c_str());
-    if (cJsonArr == NULL) {
-        return;
-    }
+    // this customized parser would maintain the original order of JSON key-value pairs
+    FlatJsonParser parser(jsonStr);
 
     // cJsonArr need to add "level_" and "tag_" by hisysevent.def, "level" is must-option
-    cJSON_AddStringToObject(cJsonArr, LEVEL_, eventJson[LEVEL_].asString().c_str());
+    parser.AppendStringValue(LEVEL_, eventJson[LEVEL_].asString());
     if (eventJson.isMember(TAG_)) {
-        cJSON_AddStringToObject(cJsonArr, TAG_, eventJson[TAG_].asString().c_str());
+        parser.AppendStringValue(TAG_, eventJson[TAG_].asString());
     }
 
     // hash code need to add
-    cJSON_AddStringToObject(cJsonArr, ID_, std::to_string(GenerateHash(eventJson)).c_str());
+    parser.AppendUInt64Value(ID_, GenerateHash(eventJson));
 
     // FreezeDetector needs to add
-    cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
-    char* jsonPtr =  cJSON_PrintUnformatted(cJsonArr);
-    if (jsonPtr != nullptr) {
-        jsonStr = std::string(jsonPtr);
-        cJSON_free(jsonPtr);
-    }
-    cJSON_Delete(cJsonArr);
+    parser.AppendStringValue(EventStore::EventCol::INFO.c_str(), "");
+
+    jsonStr = parser.Print();
 }
 
 bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, Json::Value& eventJson) const

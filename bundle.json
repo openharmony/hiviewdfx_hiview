@@ -39,7 +39,6 @@
                 "utils_base"
             ],
             "third_party": [
-                "cJSON",
                 "ejdb",
                 "iowow",
                 "jsoncpp",
