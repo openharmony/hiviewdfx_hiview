@@ -21,8 +21,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
 int DumpStacktrace(int fd, int pid);
-bool ReadCPUInfo(int fd, int pid);
-bool ReadMemoryInfo(int fd, int pid);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
