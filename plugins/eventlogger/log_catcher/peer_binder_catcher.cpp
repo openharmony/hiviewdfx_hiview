@@ -183,12 +183,6 @@ void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
 {
     std::string content =  "PeerBinderCatcher start catcher stacktrace for pid : " + std::to_string(pid) + "\r\n";
     FileUtil::SaveStringToFd(fd, content);
-    auto str = CommonUtils::GetProcNameByPid(pid);
-    if (str.empty()) {
-        HIVIEW_LOGE("pid is invalid %{public}d", pid);
-        FileUtil::SaveStringToFd(fd, "pid: " + std::to_string(pid) + " is invalid \r\n");
-        return;
-    }
 
     LogCatcherUtils::DumpStacktrace(fd, pid);
 }

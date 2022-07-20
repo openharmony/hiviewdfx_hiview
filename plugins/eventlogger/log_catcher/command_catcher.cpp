@@ -31,22 +31,20 @@ void CommandCatcher::AddCmd(const std::string& cmd)
 bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intParam)
 {
     if (pid <= 0 && packageNam.length() == 0) {
-        description_ = "CommandCatcher -- pid==-1 packageName is null\n";
+        description_ = "CommandCatcher -- pid is null, packageName is null\n";
         return false;
     }
     pid_ = pid;
     packageName_ = packageNam;
 
     if (pid_ <= 0) {
-        pid_ = CommonUtils::GetPidByName(packageName_);
-    }
-
-    if (pid_ < 0) {
-        description_ = "CommandCatcher -- packageName is " + packageName_ + " pid is invalid\n";
+        description_ = "CommandCatcher -- packageName is " + packageName_ + " pid is null\n";
         return false;
     }
 
-    packageName_ = CommonUtils::GetProcNameByPid(pid_);
+    if (packageName_.length() == 0) {
+        packageName_ = "(null)";
+    }
 
     description_ = "CommandCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
     return EventLogCatcher::Initialize(packageNam, pid, intParam);

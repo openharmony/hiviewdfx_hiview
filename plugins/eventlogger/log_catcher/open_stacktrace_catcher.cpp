@@ -34,29 +34,26 @@ OpenStacktraceCatcher::OpenStacktraceCatcher() : EventLogCatcher()
     name_ = "OpenStacktraceCatcher";
 }
 
-bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, int intParam2)
+bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, int intParam)
 {
     if (pid <= 0 && packageNam.length() == 0) {
-        description_ = "OpenStacktraceCatcher -- pid==-1 packageName is null\n";
+        description_ = "OpenStacktraceCatcher -- pid is null, packageName is null\n";
         return false;
     }
     pid_ = pid;
     packageName_ = packageNam;
 
     if (pid_ <= 0) {
-        pid_ = CommonUtils::GetPidByName(packageName_);
+        description_ = "OpenStacktraceCatcher -- packageName is " + packageName_ + " pid is null\n";
+        return false;
     }
 
-    packageName_ = CommonUtils::GetProcNameByPid(pid_);
-
-    char buf[BUF_SIZE_512] = {0};
-    int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1,
-        "OpenStacktraceCatcher -- pid==%d packageName is %s\n", pid_, packageName_.c_str());
-    if (ret > 0) {
-        description_ = buf;
+    if (packageName_.length() == 0) {
+        packageName_ = "(null)";
     }
 
-    return EventLogCatcher::Initialize(packageNam, pid, intParam2);
+    description_ = "OpenStacktraceCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
+    return EventLogCatcher::Initialize(packageNam, pid, intParam);
 };
 
 // may block, run in another thread
@@ -66,13 +63,7 @@ int OpenStacktraceCatcher::Catch(int fd)
         return 0;
     }
     int originSize = GetFdSize(fd);
-    auto str = CommonUtils::GetProcNameByPid(pid_);
-    if (str.empty()) {
-        HIVIEW_LOGE("pid is invalid %{public}d", pid_);
-        FileUtil::SaveStringToFd(fd, "pid is invalid\n");
-    } else {
-        FileUtil::SaveStringToFd(fd, str + "\n");
-    }
+
 #ifdef DUMP_STACK_IN_PROCESS
     LogCatcherUtils::DumpStacktrace(fd, pid_);
 #else

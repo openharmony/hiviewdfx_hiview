@@ -46,22 +46,6 @@ int DumpStacktrace(int fd, int pid)
     }
     return 0;
 }
-
-bool ReadCPUInfo(int fd, int pid)
-{
-    std::string content;
-    bool ret1 = FileUtil::LoadStringFromFile("/proc/cpuinfo", content);
-    FileUtil::SaveStringToFd(fd, content);
-    return ret1;
-}
-
-bool ReadMemoryInfo(int fd, int pid)
-{
-    std::string content;
-    bool ret1 = FileUtil::LoadStringFromFile("/proc/meminfo", content);
-    FileUtil::SaveStringToFd(fd, content);
-    return ret1;
-}
 }
 } // namespace HiviewDFX
 } // namespace OHOS
