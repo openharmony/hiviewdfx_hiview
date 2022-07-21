@@ -50,21 +50,14 @@
         </event>
       </links>
     </rule>
-    <rule id="3" window="0" domain="WINDOWMANAGER" stringid="NO_FOCUS_WINDOW">	<!-- NO_FOCUS_WINDOW -->
-      <links type="watchpoint">
-        <event domain="WINDOWMANAGER" stringid="NO_FOCUS_WINDOW">	<!-- NO_FOCUS_WINDOW -->
-          <result code="0" scope="app"/>
-        </event>
-      </links>
-    </rule>
-    <rule id="4" window="30" domain="RELIABILITY" stringid="STACK">	<!-- STACK -->
+    <rule id="3" window="30" domain="RELIABILITY" stringid="STACK">	<!-- STACK -->
       <links type="watchpoint">
         <event domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
           <result code="0" scope="app"/>
         </event>
       </links>
     </rule>
-    <rule id="5" window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
+    <rule id="4" window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
       <links type="watchpoint">
         <event domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
           <result code="0" scope="app"/>
