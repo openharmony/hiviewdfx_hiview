@@ -75,6 +75,7 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
         now = now + 1;
         task(now, std::ref(counter));
     }
+    sleep(1);
 
     ASSERT_GT(counter, 0);
     printf("Add %d logs.\n", counter.load());
