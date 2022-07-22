@@ -285,8 +285,7 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
     }
 }
 
-int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result,
-    const QuerySysEventCallbackPtrOhos& callback,
+int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEventCallbackPtrOhos& callback,
     int64_t& lastRecordTime, int32_t& drops)
 {
     std::vector<u16string> events;
@@ -405,35 +404,33 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
         HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
         return ERROR_DOMIAN_INVALID;
     }
-
-    int64_t realBeginTime = beginTime < 0 ? 0 : beginTime;
-    int64_t lastQueryLowerLimit = realBeginTime;
-    int64_t realEndTime = endTime < 0 ? std::numeric_limits<int64_t>::max() : endTime;
-    int64_t lastQueryUpperLimit = realEndTime;
-    int32_t remainEvents = maxEvents < 0 ? std::numeric_limits<int32_t>::max() : maxEvents;
-    int32_t transTotalEvents = 0;
-    auto queryTypeIt = queryArgs.cbegin();
-    while (remainEvents > 0) {
-        ResultSet result;
-        int32_t queryCnt = remainEvents < MAX_QUERY_EVENTS ? remainEvents : MAX_QUERY_EVENTS;
-        QuerySysEventMiddle(queryTypeIt, lastQueryLowerLimit, lastQueryUpperLimit, queryCnt, result);
-        int32_t dropCnt = 0;
-        int32_t transRecord = TransSysEvent(result, callback, lastQueryLowerLimit, dropCnt);
-        lastQueryLowerLimit++;
-        transTotalEvents += transRecord;
-        remainEvents -= queryCnt;
-
+    auto realBeginTime = beginTime < 0 ? 0 : beginTime;
+    auto lastQueryBeginTime = realBeginTime;
+    auto realEndTime = endTime < 0 ? std::numeric_limits<int64_t>::max() : endTime;
+    auto lastQueryEndTime = realEndTime;
+    auto remainCnt = maxEvents < 0 ? std::numeric_limits<int32_t>::max() : maxEvents;
+    auto totalEventCnt = 0;
+    auto queryTypeIter = queryArgs.cbegin();
+    while (remainCnt > 0) {
+        ResultSet ret;
+        auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
+        QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime, queryLimit, ret);
+        auto dropCnt = 0;
+        auto queryRetCnt = TransSysEvent(ret, callback, lastQueryBeginTime, dropCnt);
+        lastQueryBeginTime++;
+        totalEventCnt += queryRetCnt;
+        remainCnt -= queryRetCnt;
         // query completed for current database
-        if ((transRecord + dropCnt) < queryCnt || lastQueryLowerLimit >= lastQueryUpperLimit) {
-            if ((++queryTypeIt) != queryArgs.cend()) {
-                lastQueryLowerLimit = realBeginTime;
-                lastQueryUpperLimit = realEndTime;
+        if ((queryRetCnt + dropCnt) < queryLimit || lastQueryBeginTime >= lastQueryEndTime) {
+            if ((++queryTypeIter) != queryArgs.cend()) {
+                lastQueryBeginTime = realBeginTime;
+                lastQueryEndTime = realEndTime;
             } else {
                 break;
             }
         }
     }
-    callback->OnComplete(0, transTotalEvents);
+    callback->OnComplete(0, totalEventCnt);
     return IPC_CALL_SUCCEED;
 }
 
