@@ -91,5 +91,10 @@ bool HiviewGlobal::GetListenerInfo(uint32_t type, const std::string& name, std::
 {
     return context_.GetListenerInfo(type, name, eventNames);
 }
+
+std::list<std::weak_ptr<Plugin>> HiviewGlobal::GetPipelineSequenceByName(const std::string& name)
+{
+    return context_.GetPipelineSequenceByName(name);
+}
 } // namespace HiviewDFX
 } // namespace OHOS
