@@ -41,6 +41,6 @@ ohos_source_set("faultlogger_client_impl") {
     "hisysevent_native:libhisysevent",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 }
