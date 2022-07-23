@@ -155,6 +155,8 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
     auto eventType = GetFaultNameByType(info.faultLogType, false);
     eventInfos = SmartParser::Analysis(info.logPath, SMART_PARSER_PATH, eventType);
     if (eventInfos.empty()) {
+        eventInfos.insert(std::make_pair("fingerPrint", Tbox::CalcFingerPrint(info.module + info.reason +
+                                        info.summary, 0, FP_BUFFER)));
         return false;
     }
 
