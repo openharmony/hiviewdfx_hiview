@@ -44,6 +44,13 @@ ohos_source_set("hiview_core") {
   external_deps = [ "hisysevent_native:libhisysevent" ]
 }
 
+ohos_prebuilt_etc("hiview.para.dac") {
+  source = "config/hiview.para.dac"
+  relative_install_dir = "param"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
 ohos_prebuilt_etc("monitor_config") {
   source = "config/monitor.cfg"
   relative_install_dir = "hiview"
@@ -63,6 +70,7 @@ ohos_source_set("sysevent_source") {
   ]
 
   deps = [
+    ":hiview.para.dac",
     ":monitor_config",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",

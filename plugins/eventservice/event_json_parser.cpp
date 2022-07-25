@@ -16,11 +16,13 @@
 #include "event_json_parser.h"
 
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <map>
 
 #include "flat_json_parser.h"
 #include "logger.h"
+#include "parameter.h"
 #include "sys_event_query.h"
 
 namespace OHOS {
@@ -39,6 +41,8 @@ constexpr char TAG[] = "tag";
 constexpr char TAG_[] = "tag_";
 constexpr char TYPE[] = "type";
 constexpr char TYPE_[] = "type_";
+constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
+constexpr char TEST_TYPE_KEY[] = "test_type_";
 const std::map<std::string, int> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
@@ -54,6 +58,25 @@ uint64_t GenerateHash(const Json::Value& info)
         i++;
     }
     return ret;
+}
+
+std::string GetConfiguredTestType(const std::string& configuredType)
+{
+    std::string defaultType {""};
+    size_t maxLen = 12;
+    if (configuredType.empty() || configuredType.length() > maxLen
+        || any_of(configuredType.cbegin(), configuredType.cend(), [] (char c) {
+            return !isalnum(c);
+        })) {
+        return defaultType;
+    }
+    return configuredType;
+}
+
+static std::string testTypeConfigured;
+void ParameterWatchCallback(const char* key, const char* value, void* context)
+{
+    testTypeConfigured = GetConfiguredTestType(value);
 }
 }
 
@@ -75,6 +98,9 @@ EventJsonParser::EventJsonParser(const std::string& path)
         HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
     }
     ParseHiSysEventDef(hiSysEventDef);
+    if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, nullptr) != 0) {
+        HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
+    }
 }
 
 std::string EventJsonParser::GetTagByDomainAndName(const std::string& domain, const std::string& name) const
@@ -143,6 +169,11 @@ void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::str
 
     // FreezeDetector needs to add
     parser.AppendStringValue(EventStore::EventCol::INFO.c_str(), "");
+
+    // add testtype configured as system property named persist.sys.hiview.testtype
+    if (!testTypeConfigured.empty()) {
+        parser.AppendStringValue(TEST_TYPE_KEY, testTypeConfigured);
+    }
 
     jsonStr = parser.Print();
 }
