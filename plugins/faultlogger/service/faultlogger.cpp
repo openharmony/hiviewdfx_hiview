@@ -44,6 +44,7 @@
 #include "faultlog_query_result_inner.h"
 #include "faultlog_util.h"
 #include "faultlogger_adapter.h"
+#include "log_analyzer.h"
 
 #include "bundle_mgr_client.h"
 namespace OHOS {

@@ -47,6 +47,7 @@ ohos_unittest("FaultloggerUnittest") {
     "$hiview_base:hiviewbase",
     "$hiview_core:hiview_core",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
+    "$hiview_plugin/faultlogger/common:log_analyzer",
     "$hiview_plugin/faultlogger/service:faultlogger_service_ability",
     "//third_party/googletest:gtest_main",
   ]
