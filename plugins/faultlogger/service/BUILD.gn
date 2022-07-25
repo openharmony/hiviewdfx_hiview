@@ -62,6 +62,7 @@ ohos_source_set("faultlogger_service") {
     ":faultlogger_service_ability",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger/common:log_analyzer",
   ]
 
   external_deps = [
