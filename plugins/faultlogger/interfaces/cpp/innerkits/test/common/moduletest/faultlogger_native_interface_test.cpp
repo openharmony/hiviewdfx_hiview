@@ -51,6 +51,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest001, testing::ext::TestS
     auto now = time(nullptr);
     auto info = CreateFaultLogInfo(now, getuid(), FaultLogType::CPP_CRASH, "faultloggertest");
     AddFaultLog(info);
+    sleep(1);
     ASSERT_TRUE(CheckLogFileExist(now, getuid(), "cppcrash", "faultloggertest"));
 }
 
@@ -71,6 +72,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest002, testing::ext::TestS
     auto now = time(nullptr);
     auto module = "faultlogtest1";
     AddFaultLog(now, FaultLogType::CPP_CRASH, module, "faultloggertestsummary2");
+    sleep(1);
     ASSERT_TRUE(CheckLogFileExist(now, getuid(), "cppcrash", module));
 }
 
@@ -94,7 +96,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest003, testing::ext::TestS
     const int maxKeepFiles = 10;
     for (int i = 0; i < loopTimes; i++) {
         AddFaultLog(now + i, FaultLogType::CPP_CRASH, module, "faultloggertestsummary2");
-        usleep(100000); // 0.1 s
+        sleep(1);
     }
 
     sleep(1);
@@ -123,6 +125,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest004, testing::ext::TestS
     auto now = time(nullptr);
     auto module = "faultlogtest4";
     AddFaultLog(now, FaultLogType::JAVA_CRASH, module, "faultloggertestsummary2");
+    sleep(1);
     ASSERT_TRUE(CheckLogFileExist(now, getuid(), "javacrash", module));
 }
 
