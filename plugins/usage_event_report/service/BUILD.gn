@@ -57,7 +57,7 @@ ohos_executable("usage_report") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "time_native:time_client",
+    "time_service:time_client",
     "utils_base:utils",
   ]
 
