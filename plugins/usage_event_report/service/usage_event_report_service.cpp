@@ -121,7 +121,7 @@ void UsageEventReportService::SaveSysUsage()
     UsageEventCacher cacher(workPath_);
     MinusLastSysUsage(nowUsage, cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL));
 
-    // add cacha usage time if any
+    // add cache usage time if any
     auto cacheUsage = cacher.GetSysUsageEvent();
     AddCacheSysUsage(nowUsage, cacheUsage);
 
