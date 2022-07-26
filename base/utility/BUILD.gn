@@ -29,10 +29,10 @@ ohos_source_set("hiview_utility") {
 
   sources = [ "string_util.cpp" ]
 
-  deps = [
-    "$hiview_adapter/utility:hiview_adapter_utility",
-    "//utils/native/base:utils",
-  ]
+  deps = [ "$hiview_adapter/utility:hiview_adapter_utility" ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
 }

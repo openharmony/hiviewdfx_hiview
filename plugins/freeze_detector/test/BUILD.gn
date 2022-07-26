@@ -34,12 +34,14 @@ ohos_source_set("freezedetectors_test_source") {
     ":freezedetectors_test_config",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
 
   deps = [
     "$closed_source_root/plugins/components:log_composer",
     "..:freeze_detector",
-    "//utils/native/base:utils",
   ]
   resource_config_file = "//base/hiviewdfx/hiview/plugins/reliability/test/resource/harmony_test.xml"
 }

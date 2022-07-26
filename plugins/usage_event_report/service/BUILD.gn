@@ -51,6 +51,7 @@ ohos_executable("usage_report") {
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics:batterystats_client",
+    "c_utils:utils",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
     "ipc:ipc_core",
@@ -58,7 +59,6 @@ ohos_executable("usage_report") {
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
     "time_service:time_client",
-    "utils_base:utils",
   ]
 
   defines = []

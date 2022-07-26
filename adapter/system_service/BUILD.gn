@@ -31,11 +31,15 @@ ohos_source_set("system_service") {
     "platform/ohos/parameter_ex.cpp",
   ]
 
-  deps = [ "//utils/native/base:utils" ]
-
   if (is_standard_system) {
-    external_deps = [ "init:libbegetutil" ]
+    external_deps = [
+      "c_utils:utils",
+      "init:libbegetutil",
+    ]
   } else {
-    external_deps = [ "init_lite:libbegetutil" ]
+    external_deps = [
+      "c_utils:utils",
+      "init_lite:libbegetutil",
+    ]
   }
 }

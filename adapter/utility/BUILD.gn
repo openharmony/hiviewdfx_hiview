@@ -36,12 +36,12 @@ ohos_source_set("hiview_adapter_utility") {
     "time_util.cpp",
   ]
 
-  deps = [
-    "$hiview_adapter/system_service:system_service",
-    "//utils/native/base:utils",
-  ]
+  deps = [ "$hiview_adapter/system_service:system_service" ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
 }

@@ -38,10 +38,10 @@ ohos_source_set("faultlogger_service_ohos_common") {
   deps = [
     "$hiview_base:logger",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_single",
     "samgr_standard:samgr_proxy",
@@ -65,10 +65,10 @@ ohos_source_set("faultlogger_service_impl") {
     ":faultlogger_service_ohos_common",
     "$hiview_base:hiviewbase",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",

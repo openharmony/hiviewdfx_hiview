@@ -49,10 +49,10 @@ ohos_source_set("sys_event_service_ohos_common") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
@@ -79,11 +79,11 @@ ohos_source_set("sys_event_service_ohos") {
     ":sys_event_service_ohos_common",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
