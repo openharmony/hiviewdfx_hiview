@@ -313,7 +313,7 @@ HWTEST_F(EventPoolTest, EventPoolTest005, TestSize.Level3)
 
     uint32_t maxCount = randU(randEngine) % 20 + 10; // [10, 30)次
     uint32_t sumCount = 0;
-    for (int i = 0; i < maxCount; ++i) {
+    for (uint32_t i = 0; i < maxCount; ++i) {
         uint64_t delay = randU(randEngine) + 100; // [100, 10100) ms的延迟
         uint8_t count = randU(randEngine) % 5 + 1;
         sumCount += count;
