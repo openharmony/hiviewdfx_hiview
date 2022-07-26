@@ -21,9 +21,7 @@
 
 #include "constants.h"
 #include "faultlog_info.h"
-#include "smart_parser.h"
 #include "string_util.h"
-#include "tbox.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -148,21 +146,6 @@ std::string RegulateModuleNameIfNeed(const std::string& name)
         return splitStr[size - 1];
     }
     return name;
-}
-
-bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos)
-{
-    auto eventType = GetFaultNameByType(info.faultLogType, false);
-    eventInfos = SmartParser::Analysis(info.logPath, SMART_PARSER_PATH, eventType);
-    if (eventInfos.empty()) {
-        return false;
-    }
-
-    Tbox::FilterTrace(eventInfos);
-    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["FIRST_FRAME"] +
-        eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
-    eventInfos["fingerPrint"] = fingerPrint;
-    return true;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
