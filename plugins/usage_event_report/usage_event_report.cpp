@@ -107,7 +107,13 @@ void UsageEventReport::Start()
 void UsageEventReport::TimeOut()
 {
     HIVIEW_LOGI("start checking whether events need to be reported");
-    if (TimeUtil::GetMilliseconds() >= nextReportTime_) {
+    auto nowTime = TimeUtil::GetMilliseconds();
+    // check whether time step occurs. If yes, update the next report time
+    if (nowTime > (nextReportTime_ + TimeUtil::MILLISECS_PER_DAY)
+        || nowTime < (nextReportTime_ - TimeUtil::MILLISECS_PER_DAY)) {
+        HIVIEW_LOGW("start to update the next report time");
+        nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
+    } else if (nowTime >= nextReportTime_) {
         HIVIEW_LOGI("start to report event");
         ReportEvent();
         nextReportTime_ += TimeUtil::MILLISECS_PER_DAY;

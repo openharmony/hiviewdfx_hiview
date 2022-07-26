@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <unistd.h>
+
 #include "logger.h"
 #include "usage_event_report_service.h"
 
@@ -22,7 +24,7 @@ int main(int argc __UNUSED, char* argv[] __UNUSED)
     OHOS::HiviewDFX::UsageEventReportService service;
     if (!service.ProcessArgsRequest(argc, argv)) {
         HIVIEW_LOGE("failed to process args request");
-        return -1; // -1 means default error code
+        _exit(-1); // -1 means default error code
     }
-    return 0;
+    _exit(0);
 }
