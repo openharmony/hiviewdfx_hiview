@@ -18,7 +18,7 @@ config("event_store_config") {
 
   include_dirs = [
     "//third_party/bounds_checking_function/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "include",
     "$hiview_adapter/dbstore/include",
     "$hiview_adapter/utility/include",

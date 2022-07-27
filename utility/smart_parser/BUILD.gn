@@ -49,13 +49,15 @@ ohos_source_set("smart_parser") {
 
   configs = [ ":smart_parser_config" ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "config:config",
     "//third_party/jsoncpp:jsoncpp",
-    "//utils/native/base:utils",
   ]
 }
 ###############################################################################
