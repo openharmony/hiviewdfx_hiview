@@ -17,7 +17,7 @@
 #include "audit.h"
 #include "defines.h"
 #include "file_util.h"
-#include "sys_event_logger.h"
+#include "hiview_event_report.h"
 #include "thread_util.h"
 #include "time_util.h"
 namespace OHOS {
@@ -60,7 +60,7 @@ bool Plugin::OnEventProxy(std::shared_ptr<Event> event)
         TimeUtil::TimeCalculator tc(timePtr);
         ret = OnEvent(dupEvent);
     }
-    SysEventLogger::UpdatePluginStats(this->name_, event->eventName_, *timePtr);
+    HiviewEventReport::UpdatePluginStats(this->name_, event->eventName_, *timePtr);
 
     if (!dupEvent->IsPipelineEvent()) {
         if (Audit::IsEnabled()) {
