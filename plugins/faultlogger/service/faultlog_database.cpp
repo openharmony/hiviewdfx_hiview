@@ -56,10 +56,11 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
     if (AnalysisFaultlog(info, eventInfos)) {
         sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknown" : eventInfos["PNAME"]);
         sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknown" :
-                                eventInfos["FIRST_FRAME"]);
+                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
         sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknown" :
-                                eventInfos["SECOND_FRAME"]);
-        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknown" : eventInfos["LAST_FRAME"]);
+                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
+        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknown" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     }
     sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
     
