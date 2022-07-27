@@ -31,6 +31,7 @@ DEFINE_LOG_TAG("FreezeDetector");
 const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_ = {
     {"ACE", "UI_BLOCK_3S"},
     {"ACE", "UI_BLOCK_6S"},
+    {"ACE", "UI_BLOCK_RECOVERED"},
     {"APPEXECFWK", "THREAD_BLOCK_3S"},
     {"APPEXECFWK", "THREAD_BLOCK_6S"},
     {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
@@ -173,7 +174,7 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
     return std::string(buf, strlen(buf));
 }
 
-bool Vendor::CheckPid(const WatchPoint &watchPoint, std::list<WatchPoint>& list) const
+bool Vendor::CheckPid(const WatchPoint &watchPoint, std::vector<WatchPoint>& list) const
 {
     long pid = 0;
     std::string filePath = "";
@@ -235,8 +236,8 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
 }
 
 std::string Vendor::MergeEventLog(
-    const WatchPoint &watchPoint, std::list<WatchPoint>& list,
-    const FreezeResult& result, std::string& digest) const
+    const WatchPoint &watchPoint, std::vector<WatchPoint>& list,
+    std::vector<FreezeResult>& result, std::string& digest) const
 {
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
@@ -261,7 +262,7 @@ std::string Vendor::MergeEventLog(
     std::string retPath;
     std::string logPath;
     std::string logName;
-    if (IsApplicationResult(result)) {
+    if (IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
@@ -313,7 +314,8 @@ std::string Vendor::MergeEventLog(
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
 
-    std::string type = IsApplicationResult(result) ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
+    std::string type = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
     auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
     digest = eventInfos[SP_ENDSTACK];
     std::string summary = eventInfos[SP_ENDSTACK];
@@ -323,7 +325,8 @@ std::string Vendor::MergeEventLog(
     info.time = watchPoint.GetTimestamp();
     info.id = uid;
     info.pid = pid;
-    info.faultLogType = IsApplicationResult(result) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.faultLogType = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = packageName;
     info.reason = stringId;
     info.summary = summary;

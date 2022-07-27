@@ -15,6 +15,7 @@
 
 #include "rule_cluster.h"
 
+#include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -91,7 +92,7 @@ bool FreezeRuleCluster::ParseRuleFile(const std::string& file)
         if (node->type != XML_ELEMENT_NODE) {
             continue;
         }
-        if (strcmp((char*)(node->name), TAG_FREEZE.c_str()) == 0) {
+        if (TAG_FREEZE == std::string((char*)(node->name))) {
             ParseTagFreeze(node);
             break;
         }
@@ -105,7 +106,7 @@ bool FreezeRuleCluster::ParseRuleFile(const std::string& file)
 void FreezeRuleCluster::ParseTagFreeze(xmlNode* tag)
 {
     for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_RULES.c_str()) == 0) {
+        if (TAG_RULES == std::string((char*)(node->name))) {
             ParseTagRules(node);
         }
     }
@@ -114,7 +115,7 @@ void FreezeRuleCluster::ParseTagFreeze(xmlNode* tag)
 void FreezeRuleCluster::ParseTagRules(xmlNode* tag)
 {
     for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_RULE.c_str()) == 0) {
+        if (TAG_RULE == std::string((char*)(node->name))) {
             ParseTagRule(node);
         }
     }
@@ -122,22 +123,21 @@ void FreezeRuleCluster::ParseTagRules(xmlNode* tag)
 
 void FreezeRuleCluster::ParseTagRule(xmlNode* tag)
 {
-    unsigned long window = GetAttributeUnsignedLongValue(tag, ATTRIBUTE_WINDOW);
-    std::string domain = GetAttributeStringValue(tag, ATTRIBUTE_DOMAIN);
+    std::string domain = GetAttributeValue<std::string>(tag, ATTRIBUTE_DOMAIN);
     if (domain == "") {
         HIVIEW_LOGE("null rule attribute:domain.");
         return;
     }
-    std::string stringId = GetAttributeStringValue(tag, ATTRIBUTE_STRINGID);
+    std::string stringId = GetAttributeValue<std::string>(tag, ATTRIBUTE_STRINGID);
     if (stringId == "") {
         HIVIEW_LOGE("null rule attribute:stringid.");
         return;
     }
 
-    FreezeRule rule = FreezeRule(window, domain, stringId);
+    FreezeRule rule = FreezeRule(domain, stringId);
 
     for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_LINKS.c_str()) == 0) {
+        if (TAG_LINKS == std::string((char*)(node->name))) {
             ParseTagLinks(node, rule);
         }
     }
@@ -153,19 +153,21 @@ void FreezeRuleCluster::ParseTagRule(xmlNode* tag)
 void FreezeRuleCluster::ParseTagLinks(xmlNode* tag, FreezeRule& rule)
 {
     for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_EVENT.c_str()) == 0) {
-            std::string domain = GetAttributeStringValue(node, ATTRIBUTE_DOMAIN);
+        if (TAG_EVENT == std::string((char*)(node->name))) {
+            std::string domain = GetAttributeValue<std::string>(node, ATTRIBUTE_DOMAIN);
             if (domain == "") {
                 HIVIEW_LOGE("null event attribute:domain.");
                 return;
             }
-            std::string stringId = GetAttributeStringValue(node, ATTRIBUTE_STRINGID);
+            std::string stringId = GetAttributeValue<std::string>(node, ATTRIBUTE_STRINGID);
             if (stringId == "") {
                 HIVIEW_LOGE("null event attribute:stringid.");
                 return;
             }
 
-            FreezeResult result = FreezeResult(domain, stringId);
+            long window = GetAttributeValue<long>(node, ATTRIBUTE_WINDOW);
+
+            FreezeResult result = FreezeResult(window, domain, stringId);
             ParseTagEvent(node, result);
             rule.AddResult(domain, stringId, result);
         }
@@ -175,7 +177,7 @@ void FreezeRuleCluster::ParseTagLinks(xmlNode* tag, FreezeRule& rule)
 void FreezeRuleCluster::ParseTagEvent(xmlNode* tag, FreezeResult& result)
 {
     for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_RESULT.c_str()) == 0) {
+        if (TAG_RESULT == std::string((char*)(node->name))) {
             ParseTagResult(node, result);
             break;
         }
@@ -184,100 +186,48 @@ void FreezeRuleCluster::ParseTagEvent(xmlNode* tag, FreezeResult& result)
 
 void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
 {
-    unsigned long code = GetAttributeUnsignedLongValue(tag, ATTRIBUTE_CODE);
-    std::string scope = GetAttributeStringValue(tag, ATTRIBUTE_SCOPE);
-    std::string samePackage = GetAttributeStringValue(tag, ATTRIBUTE_SAME_PACKAGE);
-
-    for (xmlNode* node = tag->children; node; node = node->next) {
-        if (strcmp((char*)(node->name), TAG_RELEVANCE.c_str()) == 0) {
-            std::string domain = GetAttributeStringValue(node, ATTRIBUTE_DOMAIN);
-            if (domain == "") {
-                HIVIEW_LOGE("null event attribute:domain.");
-                continue;
-            }
-            std::string stringId = GetAttributeStringValue(node, ATTRIBUTE_STRINGID);
-            if (stringId == "") {
-                HIVIEW_LOGE("null event attribute:stringid.");
-                continue;
-            }
-
-            FreezeRelevance relevance = FreezeRelevance(domain, stringId);
-            result.AddRelevance(domain, stringId, relevance);
-        }
-    }
+    unsigned long code = GetAttributeValue<unsigned long>(tag, ATTRIBUTE_CODE);
+    std::string scope = GetAttributeValue<std::string>(tag, ATTRIBUTE_SCOPE);
+    std::string samePackage = GetAttributeValue<std::string>(tag, ATTRIBUTE_SAME_PACKAGE);
 
     result.SetId(code);
     result.SetScope(scope);
     result.SetSamePackage(samePackage);
 }
 
-unsigned long FreezeRuleCluster::GetAttributeUnsignedLongValue(xmlNode* node, const std::string& name)
+template<typename T>
+T FreezeRuleCluster::GetAttributeValue(xmlNode* node, const std::string& name)
 {
     xmlChar* prop = xmlGetProp(node, (xmlChar*)(name.c_str()));
+    std::string propa = "";
     if (prop == nullptr) {
-        HIVIEW_LOGE("failed to get long attribute.");
-        return -1;
+        HIVIEW_LOGE("failed to get attribute.");
+    } else {
+        propa = (char*)prop;
     }
-    unsigned long value = strtoul((char*)(prop), nullptr, 0);
+    std::istringstream istr(propa);
+    T value;
+    istr >> value;
     xmlFree(prop);
     return value;
 }
 
-std::string FreezeRuleCluster::GetAttributeStringValue(xmlNode* node, const std::string& name)
-{
-    xmlChar* prop = xmlGetProp(node, (xmlChar*)(name.c_str()));
-    if (prop == nullptr) {
-        HIVIEW_LOGE("failed to get string attribute.");
-        return "";
-    }
-    std::string value = std::string((char*)prop);
-    xmlFree(prop);
-    return value;
-}
-
-bool FreezeRuleCluster::GetTimeWindow(const WatchPoint& watchPoint, unsigned long& window)
+bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, std::vector<FreezeResult>& list)
 {
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
     if (rules_.find(domain + stringId) == rules_.end()) {
-        HIVIEW_LOGE("failed to find rule time window, domain:%{public}s stringid:%{public}s.",
-            domain.c_str(), stringId.c_str());
         return false;
     }
+    auto map = rules_[domain + stringId].GetMap();
+    for (auto& i : map) {
+        list.push_back(i.second);
+    }
 
-    window = rules_[domain + stringId].GetWindow();
+    if (list.empty()) {
+        return false;
+    }
     return true;
-}
-
-bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, WatchPoint& matchedWatchPoint,
-    const std::list<WatchPoint>& list, FreezeResult& result)
-{
-    std::string domain = watchPoint.GetDomain();
-    std::string stringId = watchPoint.GetStringId();
-    std::string package = watchPoint.GetPackageName();
-    if (rules_.find(domain + stringId) == rules_.end()) {
-        HIVIEW_LOGE("failed to find rule, domain:%{public}s stringid:%{public}s.",
-            domain.c_str(), stringId.c_str());
-        return false;
-    }
-
-    for (auto const &item : list) {
-        if (rules_[domain + stringId].GetResult(item.GetDomain(), item.GetStringId(), result)) {
-            if (result.GetSamePackage() == "true" && package != item.GetPackageName()) {
-                HIVIEW_LOGE("failed to match the same package, domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
-                    " and domain:%{public}s stringid:%{public}s pacakgeName:%{public}s.",
-                    domain.c_str(), stringId.c_str(), package.c_str(),
-                    item.GetDomain().c_str(), item.GetStringId().c_str(), item.GetPackageName().c_str());
-                continue;
-            }
-
-            matchedWatchPoint = item; // take watchpoint back
-            return true;
-        }
-    }
-
-    HIVIEW_LOGE("failed to match rule, domain:%{public}s stringid:%{public}s.", domain.c_str(), stringId.c_str());
-    return false;
 }
 
 void FreezeRule::AddResult(const std::string& domain, const std::string& stringId, const FreezeResult& result)
@@ -300,25 +250,6 @@ bool FreezeRule::GetResult(const std::string& domain, const std::string& stringI
 
     result = results_[domain + stringId]; // take result back
     return true;
-}
-
-void FreezeResult::AddRelevance(const std::string& domain, const std::string& stringId, const FreezeRelevance& relevance)
-{
-    if (relevances_.find(domain + stringId) != relevances_.end()) {
-        HIVIEW_LOGE("skip duplicated event tag, stringid:%{public}s.", stringId.c_str());
-        return;
-    }
-
-    relevances_[domain + stringId] = relevance;
-}
-
-std::vector<std::string> FreezeResult::GetRelevanceStringIds() const
-{
-    std::vector<std::string> stringIds;
-    for (auto const &relevance : relevances_) {
-        stringIds.push_back(relevance.second.GetStringId());
-    }
-    return stringIds;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

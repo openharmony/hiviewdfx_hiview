@@ -41,10 +41,10 @@ public:
     std::set<std::string> GetFreezeStringIds() const;
     std::string GetTimeString(unsigned long long timestamp) const;
     void DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const;
-    bool CheckPid(const WatchPoint &watchPoint, std::list<WatchPoint>& list) const;
+    bool CheckPid(const WatchPoint &watchPoint, std::vector<WatchPoint>& list) const;
     std::string MergeEventLog(
-        const WatchPoint &watchPoint, std::list<WatchPoint>& list,
-        const FreezeResult& result, std::string& digest) const;
+        const WatchPoint &watchPoint, std::vector<WatchPoint>& list,
+        std::vector<FreezeResult>& result, std::string& digest) const;
     std::shared_ptr<PipelineEvent> MakeEvent(
         const WatchPoint &watchPoint, const WatchPoint& matchedWatchPoint,
         const std::list<WatchPoint>& list, const FreezeResult& result,
