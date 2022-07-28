@@ -17,6 +17,7 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <sstream>
 #include <unistd.h>
 
 #include <sys/stat.h>
@@ -93,31 +94,16 @@ std::string GetProcNameByPid(pid_t pid)
 pid_t GetPidByName(const std::string& processName)
 {
     pid_t pid = -1;
-    DIR* dir = opendir("/proc");
-    if (dir == nullptr) {
-        return pid;
+    std::string cmd = "pidof " + processName;
+
+    char buffer[BUF_SIZE_256] = {'\0'};
+    FILE* fp = popen(cmd.c_str(), "r");
+    if (fp != nullptr) {
+        while (fgets(buffer, sizeof(buffer) - 1, fp) != nullptr) {}
+        std::istringstream istr(buffer);
+        istr >> pid;
+        pclose(fp);
     }
-
-    struct dirent* ptr = nullptr;
-    while ((ptr = readdir(dir)) != nullptr) {
-        if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
-            continue;
-        }
-
-        if (DT_DIR != ptr->d_type) {
-            continue;
-        }
-
-        std::string cmdlinePath = std::string("/proc/").append(ptr->d_name).append("/cmdline");
-        std::string curTaskName;
-        FileUtil::LoadStringFromFile(cmdlinePath, curTaskName);
-        if (curTaskName.find(processName) != std::string::npos) {
-            if (sscanf_s(ptr->d_name, "%d", &pid) <= 0) {
-                break;
-            }
-        }
-    }
-    closedir(dir);
     return pid;
 }
 
