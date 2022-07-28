@@ -16,6 +16,7 @@
 #include "event_json_parser.h"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <map>
 
@@ -34,17 +35,26 @@ const std::map<std::string, int> EVENT_TYPE_MAP = {
 constexpr uint64_t PRIME = 0x100000001B3ull;
 constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
 
-uint64_t GenerateHash(const Json::Value& info)
+std::string GenerateHash(const std::string& info)
 {
     uint64_t ret {BASIS};
-    const char *p = reinterpret_cast<char*>(const_cast<Json::Value*>(&info));
-    unsigned long i = 0;
-    while (i < sizeof(Json::Value)) {
+    const char* p = info.c_str();
+    size_t infoLen = info.size();
+    size_t infoLenLimit = 256;
+    size_t hashLen = (infoLen < infoLenLimit) ? infoLen : infoLenLimit;
+    size_t i = 0;
+    while (i < hashLen) {
         ret ^= *(p + i);
         ret *= PRIME;
         i++;
     }
-    return ret;
+    size_t hashRetLenLimit = 20; // max number of digits for uint64_t type
+    std::string retStr = std::to_string(ret);
+    size_t retLen = retStr.size();
+    if (retLen < hashRetLenLimit) {
+        retStr.append(hashRetLenLimit - retLen, '0'); // fill suffix digits with '0'
+    }
+    return retStr;
 }
 }
 
@@ -241,7 +251,7 @@ void EventJsonParser::GetOrderlyJsonInfo(const Json::Value &eventJson, std::stri
     }
 
     // hash code need to add
-    cJSON_AddStringToObject(cJsonArr, "id_", std::to_string(GenerateHash(eventJson)).c_str());
+    cJSON_AddStringToObject(cJsonArr, "id_", GenerateHash(jsonStr).c_str());
 
     // FreezeDetector needs to add
     cJSON_AddStringToObject(cJsonArr, EventStore::EventCol::INFO.c_str(), "");
