@@ -153,9 +153,9 @@ void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)
 {
-    auto event = FreezeResolver::GetInstance().ProcessEvent(watchPoint);
-    if (event != nullptr) {
-        PublishPipelineEvent(std::dynamic_pointer_cast<PipelineEvent>(event));
+    auto ret = FreezeResolver::GetInstance().ProcessEvent(watchPoint);
+    if (ret < 0) {
+        HIVIEW_LOGE("FreezeResolver ProcessEvent filled.");
     }
 }
 } // namespace HiviewDFX

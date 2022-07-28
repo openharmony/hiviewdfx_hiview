@@ -28,69 +28,107 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class FreezeRelevance {
-public:
-    FreezeRelevance() : domain_(""), stringId_("") {};
-    FreezeRelevance(const std::string& domain, const std::string& stringId) : domain_(domain), stringId_(stringId) {};
-    ~FreezeRelevance() {};
-    std::string GetDomain() const { return domain_; };
-    void SetDomain(const std::string& domain) { domain_ = domain; };
-    std::string GetStringId() const { return stringId_; };
-    void SetStringId(const std::string& stringId) { stringId_ = stringId; };
-
-private:
-    std::string domain_;
-    std::string stringId_;
-};
-
 class FreezeResult {
 public:
-    FreezeResult() : code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), relevances_({}) {};
-    FreezeResult(const std::string& domain, const std::string& stringId)
-        : code_(0), scope_(""), samePackage_(""),domain_(domain), stringId_(stringId), relevances_({}) {};
+    FreezeResult() : window_(0), code_(0), scope_(""), samePackage_(""), domain_(""), stringId_("") {};
+    FreezeResult(long window, const std::string& domain, const std::string& stringId)
+        : window_(window), code_(0), scope_(""), samePackage_(""), domain_(domain), stringId_(stringId) {};
     FreezeResult(unsigned long code, const std::string& scope)
-        : code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), relevances_({}) {};
-    ~FreezeResult()
+        : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_("") {};
+    ~FreezeResult() {};
+    std::string GetDomain() const
     {
-        relevances_.clear();
-    };
-    unsigned long GetId() const { return code_; };
-    void SetId(unsigned long code) { code_ = code; };
-    std::string GetScope() const { return scope_; };
-    void SetScope(const std::string& scope) { scope_ = scope; };
-    std::string GetSamePackage() const { return samePackage_; };
-    void SetSamePackage(const std::string& samePackage) { samePackage_ = samePackage; };
-    void AddRelevance(const std::string& domain, const std::string& stringId, const FreezeRelevance& relevance);
-    std::vector<std::string> GetRelevanceStringIds() const;
+        return domain_;
+    }
+
+    std::string GetStringId() const
+    {
+        return stringId_;
+    }
+
+    unsigned long GetId() const
+    {
+        return code_;
+    }
+
+    void SetId(unsigned long code)
+    {
+        code_ = code;
+    }
+
+    std::string GetScope() const
+    {
+        return scope_;
+    }
+
+    void SetScope(const std::string& scope)
+    {
+        scope_ = scope;
+    }
+
+    long GetWindow() const
+    {
+        return window_;
+    }
+
+    std::string GetSamePackage() const
+    {
+        return samePackage_;
+    }
+
+    void SetSamePackage(const std::string& samePackage)
+    {
+        samePackage_ = samePackage;
+    }
 
 private:
+    long window_;
     unsigned long code_;
     std::string scope_;
     std::string samePackage_;
     std::string domain_;
     std::string stringId_;
-    std::map<std::string, FreezeRelevance> relevances_;
 };
 
 class FreezeRule {
 public:
-    FreezeRule() : window_(0), domain_(""), stringId_(""), results_({}) {};
-    FreezeRule(unsigned long window, const std::string& domain, const std::string& stringId)
-        : window_(window), domain_(domain), stringId_(stringId), results_({}) {};
+    FreezeRule() : domain_(""), stringId_("") {};
+    FreezeRule(const std::string& domain, const std::string& stringId)
+        : domain_(domain), stringId_(stringId) {};
     ~FreezeRule()
     {
         results_.clear();
-    };
-    std::string GetDomain() const { return domain_; };
-    void SetDomain(const std::string& domain) { domain_ = domain; };
-    std::string GetStringId() const { return stringId_; };
-    void SetStringId(const std::string& stringId) { stringId_ = stringId; };
-    unsigned long GetWindow() const { return window_; };
+    }
+
+    std::string GetDomain() const
+    {
+        return domain_;
+    }
+
+    void SetDomain(const std::string& domain)
+    {
+        domain_ = domain;
+    }
+
+    std::string GetStringId() const
+    {
+        return stringId_;
+    }
+
+    void SetStringId(const std::string& stringId)
+    {
+        stringId_ = stringId;
+    }
+
+    std::map<std::string, FreezeResult> GetMap() const
+    {
+        return results_;
+    }
+
     void AddResult(const std::string& domain, const std::string& stringId, const FreezeResult& result);
     bool GetResult(const std::string& domain, const std::string& stringId, FreezeResult& result);
 
 private:
-    unsigned long window_;
     std::string domain_;
     std::string stringId_;
     std::map<std::string, FreezeResult> results_;
@@ -110,11 +148,9 @@ public:
     void ParseTagEvent(xmlNode* tag, FreezeResult& result);
     void ParseTagResult(xmlNode* tag, FreezeResult& result);
     void ParseTagRelevance(xmlNode* tag, FreezeResult& result);
-    unsigned long GetAttributeUnsignedLongValue(xmlNode* node, const std::string& name);
-    std::string GetAttributeStringValue(xmlNode* node, const std::string& name);
-    bool GetTimeWindow(const WatchPoint& watchPoint, unsigned long& window);
-    bool GetResult(const WatchPoint& watchPoint, WatchPoint& matchedWatchPoint,
-        const std::list<WatchPoint>& list, FreezeResult& result);
+    template<typename T>
+    T GetAttributeValue(xmlNode* node, const std::string& name);
+    bool GetResult(const WatchPoint& watchPoint, std::vector<FreezeResult>& list);
 
 private:
     static const inline std::string DEFAULT_RULE_FILE = "/system/etc/hiview/freeze_rules.xml";

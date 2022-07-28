@@ -36,16 +36,19 @@ public:
 
     bool Init();
     std::string GetTimeZone() const;
-    std::shared_ptr<PipelineEvent> ProcessEvent(WatchPoint &watchPoint) const;
+    int ProcessEvent(WatchPoint &watchPoint) const;
 
 private:
     static const inline std::string HEADER = "*******************************************";
     static const int DEFAULT_TIME_WINDOW = 30;
     static const int MINUTES_IN_HOUR = 60;
 
-    bool ResolveEvent(WatchPoint& watchPoint, WatchPoint& matchedWatchPoint,
-        std::list<WatchPoint>& list, FreezeResult& result) const;
-
+    bool ResolveEvent(WatchPoint& watchPoint,
+    std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
+    void MatchEvent(WatchPoint& watchPoint,
+        std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, FreezeResult& result) const;
+    bool JudgmentResult(WatchPoint& watchPoint,
+        std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
     unsigned long startTime_;
 };
 }  // namespace HiviewDFX

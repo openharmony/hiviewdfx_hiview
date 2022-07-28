@@ -51,70 +51,105 @@ bool FreezeResolver::Init()
     return true;
 }
 
-bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint, WatchPoint& matchedWatchPoint,
-    std::list<WatchPoint>& list, FreezeResult& result) const
+void FreezeResolver::MatchEvent(WatchPoint& watchPoint,
+    std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, FreezeResult& result) const
 {
-    unsigned long window = 0;
-    if (FreezeRuleCluster::GetInstance().GetTimeWindow(watchPoint, window) == false) {
-        return false;
-    }
-
-    if (Vendor::GetInstance().IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
-        if (window > DEFAULT_TIME_WINDOW) {
-            window = DEFAULT_TIME_WINDOW;
+    std::string domain = watchPoint.GetDomain();
+    std::string stringId = watchPoint.GetStringId();
+    std::string package = watchPoint.GetPackageName();
+    for (auto &item : wpList) {
+        if ((result.GetDomain() == item.GetDomain()) && (result.GetStringId() == item.GetStringId())) {
+            if (result.GetSamePackage() == "true" && package != item.GetPackageName()) {
+                HIVIEW_LOGE("failed to match the same package,"
+                    " domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
+                    " and domain:%{public}s stringid:%{public}s pacakgeName:%{public}s.",
+                    domain.c_str(), stringId.c_str(), package.c_str(),
+                    item.GetDomain().c_str(), item.GetStringId().c_str(), item.GetPackageName().c_str());
+                continue;
+            }
+            list.push_back(item); // take watchpoint back
+            break;
         }
     }
+}
 
-    unsigned long long start = watchPoint.GetTimestamp() - (window * MILLISECOND);
-    unsigned long long end = watchPoint.GetTimestamp();
-    if (window == 0) {
-        list.push_back(watchPoint);
-    } else {
-        DBHelper::SelectEventFromDB(false, start, end, list);
+bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint,
+    std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
+{
+    if (!FreezeRuleCluster::GetInstance().GetResult(watchPoint, result)) {
+        return false;
+    }
+    unsigned long long timestamp = watchPoint.GetTimestamp();
+    for (auto& i : result) {
+        int window = i.GetWindow();
+        std::list<WatchPoint> wpList;
+        if (window == 0) {
+            list.push_back(watchPoint);
+        } else if (window > 0) {
+            unsigned long long start = timestamp;
+            unsigned long long end = timestamp + (window * MILLISECOND);
+            DBHelper::SelectEventFromDB(false, start, end, wpList);
+        } else {
+            unsigned long long start = timestamp + (window * MILLISECOND);
+            unsigned long long end = timestamp;
+            DBHelper::SelectEventFromDB(false, start, end, wpList);
+        }
+        MatchEvent(watchPoint, wpList, list, i);
     }
 
     HIVIEW_LOGI("list size %{public}zu", list.size());
-    return FreezeRuleCluster::GetInstance().GetResult(watchPoint, matchedWatchPoint, list, result);
+    return true;
 }
 
-std::shared_ptr<PipelineEvent> FreezeResolver::ProcessEvent(WatchPoint &watchPoint) const
+bool FreezeResolver::JudgmentResult(WatchPoint& watchPoint,
+    std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
+{
+    if (watchPoint.GetDomain() == "ACE" && watchPoint.GetStringId() == "UI_BLOCK_6S") {
+        if (list.size() == result.size()) {
+            HIVIEW_LOGI("ACE UI_BLOCK has UI_BLOCK_3S UI_BLOCK_6S UI_BLOCK_RECOVERED as UI_JANK");
+            return false;
+        } else if (list.size() == (result.size() - 1)) {
+            for (auto& i : list) {
+                if (i.GetStringId() == "UI_BLOCK_RECOVERED") {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    if (list.size() == result.size()) {
+        return true;
+    }
+    return false;
+}
+
+int FreezeResolver::ProcessEvent(WatchPoint &watchPoint) const
 {
     HIVIEW_LOGI("process event [%{public}s, %{public}s]",
         watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
 
-    FreezeResult result;
-    std::list<WatchPoint> list;
-    WatchPoint matchedWatchPoint;
-    if (ResolveEvent(watchPoint, matchedWatchPoint, list, result) == false) {
-        HIVIEW_LOGI("no rule for event [%{public}s, %{public}s]",
+    std::vector<WatchPoint> list;
+    std::vector<FreezeResult> result;
+    if (!ResolveEvent(watchPoint, list, result)) {
+        HIVIEW_LOGW("no rule for event [%{public}s, %{public}s]",
             watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
-        return nullptr;
+        return -1;
     }
 
-    if (watchPoint.GetDomain() == matchedWatchPoint.GetDomain() &&
-        watchPoint.GetStringId() == matchedWatchPoint.GetStringId()) {
-        // self rule with non-zero time window
-        if (list.size() > 1) {
-            std::list<WatchPoint>::iterator it;
-            for (it = list.begin(); it != list.end();) {
-                if (it->GetDomain() == watchPoint.GetDomain() && it->GetStringId() == watchPoint.GetStringId()) {
-                    it++;
-                } else {
-                    it = list.erase(it);
-                }
-            }
-        }
-        // self rule with zero time window
-    } else {
-        list.clear();
-        list.push_back(matchedWatchPoint);
-        list.push_back(watchPoint);
+    if (!JudgmentResult(watchPoint, list, result)) {
+        HIVIEW_LOGW("no match event for event [%{public}s, %{public}s]",
+            watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
+        return -1;
     }
 
     std::string digest;
     std::string logPath = Vendor::GetInstance().MergeEventLog(watchPoint, list, result, digest);
 
-    return Vendor::GetInstance().MakeEvent(watchPoint, matchedWatchPoint, list, result, logPath, digest);
+    for (auto node : list) {
+        DBHelper::UpdateEventIntoDB(node, result[0].GetId());
+    }
+    return 0;
 }
 
 std::string FreezeResolver::GetTimeZone() const
