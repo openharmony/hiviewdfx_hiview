@@ -18,9 +18,9 @@
 #include <memory>
 
 #include "file_util.h"
+#include "hiview_event_report.h"
 #include "logger.h"
 #include "plugin.h"
-#include "sys_event_logger.h"
 #include "thread_util.h"
 #include "time_util.h"
 
@@ -93,7 +93,7 @@ void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
                 }
             }
         }
-        SysEventLogger::UpdatePluginStats(listener->name, event.eventName_, *timePtr);
+        HiviewEventReport::UpdatePluginStats(listener->name, event.eventName_, *timePtr);
     }
 }
 

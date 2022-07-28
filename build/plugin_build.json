@@ -23,6 +23,10 @@
         "HiCollieCollector": {
             "path": "plugins/hicollie_collector",
             "name": "hicollie_collector"
+        },
+        "UsageEventReport": {
+            "path": "plugins/usage_event_report",
+            "name": "usage_event_report"
         }
     },
     "rules": [
@@ -52,6 +56,9 @@
                     },
                     "Faultlogger": {
                         "loadtime": 0
+                    },
+                    "UsageEventReport": {
+                        "loadtime": 0
                     }
                 },
                 "pipelines": {
@@ -71,7 +78,8 @@
                         "SysEventSource": "sysevent_source",
                         "SysEventService": "sysevent_service",
                         "EventLogger": "event_logger",
-                        "FreezeDetectorPlugin": "freeze_detector"
+                        "FreezeDetectorPlugin": "freeze_detector",
+                        "UsageEventReport": "usage_event_report"
                     }
                 }
             }
