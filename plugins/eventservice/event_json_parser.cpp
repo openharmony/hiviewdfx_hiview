@@ -47,15 +47,24 @@ const std::map<std::string, int> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
 
-uint64_t GenerateHash(const Json::Value& info)
+uint64_t GenerateHash(const std::string& info)
 {
     uint64_t ret {BASIS};
-    const char *p = reinterpret_cast<char*>(const_cast<Json::Value*>(&info));
-    unsigned long i = 0;
-    while (i < sizeof(Json::Value)) {
+    const char* p = info.c_str();
+    size_t infoLen = info.size();
+    size_t infoLenLimit = 256;
+    size_t hashLen = (infoLen < infoLenLimit) ? infoLen : infoLenLimit;
+    size_t i = 0;
+    while (i < hashLen) {
         ret ^= *(p + i);
         ret *= PRIME;
         i++;
+    }
+    size_t hashRetLenLimit = 19;
+    size_t retLen = std::to_string(ret).size();
+    if (retLen < hashRetLenLimit) {
+        uint64_t decimal = 10;
+        ret *= static_cast<uint64_t>(pow(decimal, hashRetLenLimit - retLen));
     }
     return ret;
 }
@@ -165,7 +174,7 @@ void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::str
     }
 
     // hash code need to add
-    parser.AppendUInt64Value(ID_, GenerateHash(eventJson));
+    parser.AppendUInt64Value(ID_, GenerateHash(jsonStr));
 
     // FreezeDetector needs to add
     parser.AppendStringValue(EventStore::EventCol::INFO.c_str(), "");
