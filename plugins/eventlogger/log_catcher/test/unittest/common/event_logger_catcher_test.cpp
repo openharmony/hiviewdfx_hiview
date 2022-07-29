@@ -219,7 +219,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest001, TestSize.Level3)
     close(fd);
 }
  
-union semun {
+union semuntest {
     int              val;
     struct semid_ds *buf;
     unsigned short  *array;
@@ -265,7 +265,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
 
     key_t key = ftok("eventlog002", 2);
     int semid = semget(key, 1, IPC_CREAT|0666);
-    union semun initsem;
+    union semuntest initsem;
     initsem.val = 0;
     semctl(semid, 0, SETVAL, initsem); // init
 
@@ -338,7 +338,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
      */
     key_t key = ftok("eventlog003", 2);
     int semid = semget(key, 1, IPC_CREAT|0666);
-    union semun initsem;
+    union semuntest initsem;
     initsem.val = 0;
     semctl(semid, 0, SETVAL, initsem); // init
 
