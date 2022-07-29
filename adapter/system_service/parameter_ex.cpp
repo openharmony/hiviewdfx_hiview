@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "parameter_ex.h"
-#include <cstdint>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace Parameter {

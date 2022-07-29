@@ -14,10 +14,11 @@
  */
 #include "event_thread_pool.h"
 
-#include <string>
+#include <memory>
 
 #include "logger.h"
 #include "thread_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventThreadPool");

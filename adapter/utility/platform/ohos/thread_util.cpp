@@ -14,11 +14,9 @@
  */
 #include "thread_util.h"
 
-#include <pthread.h>
 #include <unistd.h>
 #include <sys/prctl.h>
-#include <sys/stat.h>
-#include <sys/syscall.h>
+#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {

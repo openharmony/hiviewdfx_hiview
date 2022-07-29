@@ -15,20 +15,14 @@
 
 #include "common_utils.h"
 
+#include <cstdint>
+#include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
 #include <sstream>
-#include <unistd.h>
-
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <cerrno>
-#include <ctime>
-#include <fstream>
-#include <iostream>
 #include <string>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <vector>
 
 #include "securec.h"

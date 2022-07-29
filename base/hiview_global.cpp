@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "hiview_global.h"
-#include <mutex>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {

@@ -14,19 +14,17 @@
  */
 #ifndef HIVIEW_EVENT_LOGGER_EVENT_THREAD_POOL_H
 #define HIVIEW_EVENT_LOGGER_EVENT_THREAD_POOL_H
-#include <algorithm>
 #include <atomic>
-#include <condition_variable>
-#include <functional>
-#include <list>
-#include <memory>
+#include <cstdint>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <vector>
 
 #include "event_priority_queue.h"
 #include "nocopyable.h"
 #include "time_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class TaskEvent {
