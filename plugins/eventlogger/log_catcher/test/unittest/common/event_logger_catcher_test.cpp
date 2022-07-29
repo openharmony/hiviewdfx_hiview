@@ -20,7 +20,9 @@
 #include <memory>
 
 #include <fcntl.h>
+#include <sys/ipc.h>
 #include <sys/prctl.h>
+#include <sys/sem.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -216,6 +218,38 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest001, TestSize.Level3)
     }
     close(fd);
 }
+ 
+union semun {
+    int              val;
+    struct semid_ds *buf;
+    unsigned short  *array;
+    struct seminfo  *__buf;
+};
+ 
+void PKey(int id)
+{
+    printf("PKey called\n");
+    struct sembuf set;
+    set.sem_num = 0;
+    set.sem_op = -1;  // operate take lock -1
+    set.sem_flg = SEM_UNDO;
+
+    semop(id, &set, 1);
+    printf("PKey end\n");
+}
+ 
+void VKey(int id)
+{
+    printf("VKey called\n");
+    struct sembuf set;
+    set.sem_num = 0;
+    set.sem_op = 1;  // operate put back lock +1
+    set.sem_flg = SEM_UNDO;
+
+    semop(id, &set, 1);
+    printf("VKey end\n");
+}
+
 
 /**
  * @tc.name: EventloggerCatcherTest002
@@ -228,6 +262,13 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
     /**
      * @tc.steps: step1. create event handler and events
      */
+
+    key_t key = ftok("eventlog002", 2);
+    int semid = semget(key, 1, IPC_CREAT|0666);
+    union semun initsem;
+    initsem.val = 0;
+    semctl(semid, 0, SETVAL, initsem); // init
+
     int pid = -1;
     const int memSize = 1024*3;
     if ((pid = fork()) < 0) {
@@ -239,6 +280,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
     if (pid == 0) {
         prctl(PR_SET_NAME, "EventlogTest02");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
+        VKey(semid);
         int volatile temp[memSize] = {0};
         while (true) {
             int i = 0;
@@ -249,7 +291,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest002, TestSize.Level3)
         }
     }
 
-    sleep(5);
+    PKey(semid);
     constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest002", "TEST02_CPU", "cmd:c",
         pid, "EventlogTest02", 0, minQuantity);
@@ -294,6 +336,12 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
     /**
      * @tc.steps: step1. create event handler and events
      */
+    key_t key = ftok("eventlog003", 2);
+    int semid = semget(key, 1, IPC_CREAT|0666);
+    union semun initsem;
+    initsem.val = 0;
+    semctl(semid, 0, SETVAL, initsem); // init
+
     int pid = -1;
     const int memSize = 1024*3;
     if ((pid = fork()) < 0) {
@@ -305,6 +353,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
     if (pid == 0) {
         prctl(PR_SET_NAME, "EventlogTest03");
         prctl(PR_SET_PDEATHSIG, SIGKILL);
+        VKey(semid);
         int volatile temp[memSize] = {0};
         while (true) {
             int i = 0;
@@ -315,7 +364,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
         }
     }
 
-    sleep(5);
+    PKey(semid);
     constexpr int minQuantity = 500;
     auto ret = StartCreate("EventloggerCatcherTest003", "TEST03_MEM", "cmd:m",
         pid, "EventlogTest03", 0, minQuantity);

@@ -250,7 +250,7 @@ void EventLogTask::WMSUsageCapture()
 void EventLogTask::CpuUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    cmdCatcher->AddCmd("hidumper --cpuusage " + std::to_string(cmdCatcher->GetPid()) + "\n");
+    cmdCatcher->AddCmd("hidumper --cpuusage\n");
 }
 
 void EventLogTask::MemoryUsageCapture()
