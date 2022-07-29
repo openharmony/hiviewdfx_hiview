@@ -16,7 +16,7 @@
 #include "time_util.h"
 
 #include <chrono>
-#include <ctime>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace TimeUtil {

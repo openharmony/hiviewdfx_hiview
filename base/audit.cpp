@@ -14,11 +14,9 @@
  */
 #include "audit.h"
 
+#include <cstdint>
 #include <fcntl.h>
-#include <iostream>
-
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include "file_util.h"
 #include "time_util.h"

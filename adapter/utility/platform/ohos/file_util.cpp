@@ -14,23 +14,21 @@
  */
 
 #include "file_util.h"
-#include <algorithm>
+
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
-#include <iostream>
-#include <iterator>
-#include <pthread.h>
-#include <sys/prctl.h>
+#include <istream>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include <sys/syscall.h>
+#include <vector>
 
 #include "directory_ex.h"
 #include "file_ex.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace FileUtil {
