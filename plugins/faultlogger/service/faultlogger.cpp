@@ -418,16 +418,17 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                 sysEvent->SetEventValue("MODULE", info.module);
                 sysEvent->SetEventValue("LOG_PATH", info.logPath);
                 sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
+                sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
                 sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
 
                 std::map<std::string, std::string> eventInfos;
                 if (AnalysisFaultlog(info, eventInfos)) {
-                    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknown" : eventInfos["PNAME"]);
-                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknown" :
+                    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
                                             StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
-                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknown" :
+                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
                                             StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
-                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknown" :
+                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
                                             StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
                 }
                 sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
