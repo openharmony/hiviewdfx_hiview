@@ -225,7 +225,7 @@ void SysEvent::SetEventValue(const std::string& key, int64_t value)
 {
     std::smatch keyMatch;
     std::string keyReplace = "\"" + key + "\":" + std::to_string(value);
-    std::regex keyReg("\"" + key + "\":([\\d]*?)");
+    std::regex keyReg("\"" + key + "\":([\\d]*)");
     if (std::regex_search(jsonExtraInfo_, keyMatch, keyReg)) {
         jsonExtraInfo_ = std::regex_replace(jsonExtraInfo_, keyReg, keyReplace);
         return;
