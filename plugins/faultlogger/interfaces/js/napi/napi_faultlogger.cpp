@@ -113,7 +113,7 @@ static void FaultLogCompleteCallback(napi_env env, napi_status status, void *dat
             NapiUtil::SetPropertyInt32(env, info, "pid", infoItem.pid);
             NapiUtil::SetPropertyInt32(env, info, "uid", infoItem.uid);
             NapiUtil::SetPropertyInt32(env, info, "type", infoItem.type);
-            NapiUtil::SetPropertyInt64(env, info, "ts", infoItem.ts);
+            NapiUtil::SetPropertyInt64(env, info, "timestamp", infoItem.ts);
             NapiUtil::SetPropertyStringUtf8(env, info, "reason", infoItem.reason);
             NapiUtil::SetPropertyStringUtf8(env, info, "module", infoItem.module);
             NapiUtil::SetPropertyStringUtf8(env, info, "summary", infoItem.summary);
@@ -317,7 +317,7 @@ static void FaultLogInfoClassInit(napi_env env, napi_value exports)
         DECLARE_NAPI_PROPERTY("pid", pid),
         DECLARE_NAPI_PROPERTY("uid", uid),
         DECLARE_NAPI_PROPERTY("type", type),
-        DECLARE_NAPI_PROPERTY("ts", ts),
+        DECLARE_NAPI_PROPERTY("timestamp", ts),
         DECLARE_NAPI_PROPERTY("reason", reason),
         DECLARE_NAPI_PROPERTY("module", module),
         DECLARE_NAPI_PROPERTY("summary", summary),
