@@ -24,9 +24,11 @@
 #include "faultlog_util.h"
 #include "hiview_global.h"
 #include "logger.h"
+#include "log_analyzer.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
+#include "time_util.h"
 
 using namespace std;
 namespace OHOS {
@@ -50,17 +52,19 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
     sysEvent->SetEventValue("SUMMARY", StringUtil::EscapeJsonStringValue(info.summary));
     sysEvent->SetEventValue("LOG_PATH", info.logPath);
     sysEvent->SetEventValue("HAPPEN_TIME", info.time);
+    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
 
     std::map<std::string, std::string> eventInfos;
     if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "unknow" : eventInfos["PNAME"]);
-        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "unknow" :
-                                eventInfos["FIRST_FRAME"]);
-        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "unknow" :
-                                eventInfos["SECOND_FRAME"]);
-        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "unknow" : eventInfos["LAST_FRAME"]);
+        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
+        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
+        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/ " :
+                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     }
+    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
     
     if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
         sysEvent->SetEventValue("VERSION", info.sectionMap.at("VERSION"));

@@ -26,8 +26,6 @@ const std::string LogParse::UNMATCHED_EXCEPTION = "UnMatchedException";
 const std::map<std::string, std::set<std::string>> LogParse::ignoreList_ = {
     {"Level1", {
         "libc.so",
-        "libclang_rt.asan-arm-android.so",
-        "libclang_rt.asan-aarch64-android.so",
         "libc_fdleak_debug.so",
         "unknown",
         "watchdog",
