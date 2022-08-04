@@ -34,8 +34,10 @@ namespace {
 constexpr char EVENT_CPP_CRASH[] = "CPP_CRASH";
 constexpr char KEY_PROCESS_EXIT[] = "PROCESS_EXIT";
 constexpr char KEY_NAME[] = "PROCESS_NAME";
-constexpr char KEY_PID[] = "PID";
-constexpr char KEY_UID[] = "UID";
+constexpr char KEY_PID_UPPER[] = "PID";
+constexpr char KEY_UID_UPPER[] = "UID";
+constexpr char KEY_PID_LOWER[] = "pid_";
+constexpr char KEY_UID_LOWER[] = "uid_";
 constexpr char KEY_STATUS[] = "STATUS";
 constexpr char KEY_LOG_PATH[] = "LOG_PATH";
 constexpr char KEY_MODULE[] = "MODULE";
@@ -58,9 +60,19 @@ CrashValidator::~CrashValidator()
     }
 }
 
+std::string CrashValidator::GetListenerName()
+{
+    return name_;
+}
+
 bool CrashValidator::ReadyToLoad()
 {
     return true;
+}
+
+bool CrashValidator::CanProcessEvent(std::shared_ptr<Event> event)
+{
+    return false;
 }
 
 void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
@@ -106,17 +118,24 @@ void CrashValidator::Dump(int fd, const std::vector<std::string>& cmds)
 
 bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
 {
-    if (event == nullptr || event->jsonExtraInfo_.empty()) {
-        return false;
+    return true;
+}
+
+void CrashValidator::OnUnorderedEvent(const Event &event)
+{
+    if (GetHiviewContext() == nullptr) {
+        HIVIEW_LOGE("failed to get context.");
+        return;
     }
 
     std::lock_guard<std::mutex> lock(lock_);
-    if (event->eventName_ == EVENT_CPP_CRASH) {
-        HandleCppCrashEvent(event);
-    } else if (event->eventName_ == KEY_PROCESS_EXIT) {
-        HandleProcessExitEvent(event);
+    Event& eventRef = const_cast<Event&>(event);
+    SysEvent& sysEvent = static_cast<SysEvent&>(eventRef);
+    if (eventRef.eventName_ == EVENT_CPP_CRASH) {
+        HandleCppCrashEvent(sysEvent);
+    } else if (eventRef.eventName_ == KEY_PROCESS_EXIT) {
+        HandleProcessExitEvent(sysEvent);
     }
-    return true;
 }
 
 bool CrashValidator::RemoveSimilarEvent(const CrashEvent& event)
@@ -134,31 +153,30 @@ bool CrashValidator::RemoveSimilarEvent(const CrashEvent& event)
     return false;
 }
 
-void CrashValidator::HandleCppCrashEvent(std::shared_ptr<Event>& event)
+void CrashValidator::HandleCppCrashEvent(SysEvent& sysEvent)
 {
-    auto sysEvent = std::static_pointer_cast<SysEvent>(event);
     CrashEvent crashEvent;
     crashEvent.isCppCrash = true;
-    crashEvent.time = sysEvent->happenTime_;
-    crashEvent.uid = static_cast<uint64_t>(sysEvent->GetUid());
-    crashEvent.pid = static_cast<uint64_t>(sysEvent->GetPid());
-    crashEvent.path = sysEvent->GetEventValue(KEY_LOG_PATH);
-    crashEvent.name = sysEvent->GetEventValue(KEY_MODULE);
+    crashEvent.time = sysEvent.happenTime_;
+    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID_LOWER);
+    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID_LOWER);
+    crashEvent.path = sysEvent.GetEventValue(KEY_LOG_PATH);
+    crashEvent.name = sysEvent.GetEventValue(KEY_MODULE);
+    HIVIEW_LOGI("CrashValidator Plugin is handling CPPCRASH event [PID : %{public}d]\n", crashEvent.pid);
     if (!RemoveSimilarEvent(crashEvent)) {
         pendingEvents_.push_back(crashEvent);
     }
 }
 
-void CrashValidator::HandleProcessExitEvent(std::shared_ptr<Event>& event)
+void CrashValidator::HandleProcessExitEvent(SysEvent& sysEvent)
 {
-    auto sysEvent = std::static_pointer_cast<SysEvent>(event);
     CrashEvent crashEvent;
     crashEvent.isCppCrash = false;
-    crashEvent.time = sysEvent->happenTime_;
-    crashEvent.pid = sysEvent->GetEventIntValue(KEY_PID);
-    crashEvent.uid = sysEvent->GetEventIntValue(KEY_UID);
-    crashEvent.name = sysEvent->GetEventValue(KEY_NAME);
-    int status = static_cast<int>(sysEvent->GetEventIntValue(KEY_STATUS));
+    crashEvent.time = sysEvent.happenTime_;
+    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID_UPPER);
+    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID_UPPER);
+    crashEvent.name = sysEvent.GetEventValue(KEY_NAME);
+    int status = static_cast<int>(sysEvent.GetEventIntValue(KEY_STATUS));
     if (!WIFSIGNALED(status)) {
         return;
     }
@@ -208,8 +226,8 @@ void CrashValidator::CheckOutOfDateEvents()
         if (!it->isCppCrash) {
             HiSysEvent::Write("RELIABILITY", KEY_NO_LOG_EVENT_NAME, HiSysEvent::EventType::FAULT,
                 KEY_NAME, it->name,
-                KEY_PID, it->pid,
-                KEY_UID, it->uid,
+                KEY_PID_UPPER, it->pid,
+                KEY_UID_UPPER, it->uid,
                 KEY_HAPPEN_TIME, it->time);
             noLogEvents_.push_back(*it);
         } else {
@@ -263,8 +281,10 @@ void CrashValidator::ReadServiceCrashStatus()
             continue;
         }
 
+        HIVIEW_LOGI("report PROCESS_EXIT event[name : %{public}s  pid : %{public}d]", name, pid);
+
         HiSysEvent::Write(HiSysEvent::Domain::STARTUP, KEY_PROCESS_EXIT, HiSysEvent::EventType::BEHAVIOR,
-            KEY_NAME, name, KEY_PID, pid, KEY_UID, uid, KEY_STATUS, status);
+            KEY_NAME, name, KEY_PID_UPPER, pid, KEY_UID_UPPER, uid, KEY_STATUS, status);
     }
     close(fd);
 }
@@ -279,6 +299,10 @@ void CrashValidator::OnLoad()
 {
     kmsgReaderThread_ = std::make_unique<std::thread>(&CrashValidator::ReadServiceCrashStatus, this);
     kmsgReaderThread_->detach();
+    AddListenerInfo(Event::MessageType::SYS_EVENT, EVENT_CPP_CRASH);
+    AddListenerInfo(Event::MessageType::SYS_EVENT, KEY_PROCESS_EXIT);
+    GetHiviewContext()->RegisterUnorderedEventListener(
+        std::static_pointer_cast<CrashValidator>(shared_from_this()));
 }
 
 void CrashValidator::OnUnload()
