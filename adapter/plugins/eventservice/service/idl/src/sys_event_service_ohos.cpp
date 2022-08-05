@@ -25,6 +25,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "ret_code.h"
+#include "running_status_log_util.h"
 #include "system_ability_definition.h"
 
 using namespace std;
@@ -38,28 +39,10 @@ constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one ti
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int HID_ROOT = 0;
 constexpr int HID_SHELL = 2000;
-const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY  = 3, BEHAVIOR  = 4
+const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
-}
 
-OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify_;
-void SysEventServiceOhos::StartService(SysEventServiceBase *service,
-    const OHOS::HiviewDFX::NotifySysEvent notify)
-{
-    gISysEventNotify_ = notify;
-    GetSysEventService(service);
-    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (samgr == nullptr) {
-        HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
-        return;
-    }
-    int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
-    if (ret != 0) {
-        HiLog::Error(LABEL, "failed to add sys event service ability.");
-    }
-}
-
-static bool MatchContent(int type, const string& rule, const string& match)
+bool MatchContent(int type, const string& rule, const string& match)
 {
     if (match.empty()) {
         return false;
@@ -80,7 +63,7 @@ static bool MatchContent(int type, const string& rule, const string& match)
     }
 }
 
-static bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& domain,
+bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& domain,
     const string& eventName, const string& tag)
 {
     if (rule.tag.empty()) {
@@ -90,7 +73,7 @@ static bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const strin
     return MatchContent(rule.ruleType, rule.tag, tag);
 }
 
-static bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
+bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
     const string& tag)
 {
     for (auto& rule : rules) {
@@ -107,11 +90,29 @@ static bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain,
     return false;
 }
 
-static u16string ConvertToString16(const string& source)
+u16string ConvertToString16(const string& source)
 {
     wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> converter;
     u16string result = converter.from_bytes(source);
     return result;
+}
+}
+
+OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify_;
+void SysEventServiceOhos::StartService(SysEventServiceBase *service,
+    const OHOS::HiviewDFX::NotifySysEvent notify)
+{
+    gISysEventNotify_ = notify;
+    GetSysEventService(service);
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
+        return;
+    }
+    int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
+    if (ret != 0) {
+        HiLog::Error(LABEL, "failed to add sys event service ability.");
+    }
 }
 
 string SysEventServiceOhos::GetTagByDomainAndName(const string& eventDomain, const string& eventName)
@@ -209,6 +210,16 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed");
         return ERROR_NO_PERMISSION;
+    }
+    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limit to 20.
+    if (rules.size() > watchRuleCntLimit) {
+        RunningStatusLogUtil::LogTooManyWatchRules(rules);
+        return ERROR_TOO_MANY_WATCH_RULES;
+    }
+    size_t watcherTotalCntLimit = 30; // count of total watches is limit to 30.
+    if (registeredListeners_.size() >= watcherTotalCntLimit) {
+        RunningStatusLogUtil::LogTooManyWatchers();
+        return ERROR_TOO_MANY_WATCHERS;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {

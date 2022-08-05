@@ -29,11 +29,13 @@ ohos_source_set("sys_event_service_ohos_common") {
     "//utils/system/safwk/native/include",
     "//third_party/jsoncpp/include",
     "$hiview_base/event_store/include",
+    "$hiview_base/running_status_logger/include",
   ]
 
   sources = [
     "src/query_sys_event_callback_proxy.cpp",
     "src/query_sys_event_callback_stub.cpp",
+    "src/running_status_log_util.cpp",
     "src/sys_event_callback_proxy.cpp",
     "src/sys_event_callback_stub.cpp",
     "src/sys_event_query_rule.cpp",
@@ -49,6 +51,7 @@ ohos_source_set("sys_event_service_ohos_common") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_base/running_status_logger:running_status_logger_source",
   ]
 
   external_deps = [
@@ -67,6 +70,7 @@ ohos_source_set("sys_event_service_ohos") {
     "//utils/system/safwk/native/include",
     "//third_party/jsoncpp/include",
     "$hiview_base/event_store/include",
+    "$hiview_base/running_status_logger/include",
   ]
 
   sources = [ "src/sys_event_service_ohos.cpp" ]
@@ -79,6 +83,7 @@ ohos_source_set("sys_event_service_ohos") {
     ":sys_event_service_ohos_common",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_base/running_status_logger:running_status_logger_source",
   ]
 
   external_deps = [

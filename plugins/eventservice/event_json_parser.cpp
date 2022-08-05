@@ -64,7 +64,7 @@ std::string GenerateHash(const std::string& info)
     std::string retStr = std::to_string(ret);
     size_t retLen = retStr.size();
     if (retLen < hashRetLenLimit) {
-        retStr.append(hashRetLenLimit - retLen, '0'); // fill right digits with '0'
+        retStr.append(hashRetLenLimit - retLen, '0'); // fill suffix digits with '0'
     }
     return retStr;
 }
