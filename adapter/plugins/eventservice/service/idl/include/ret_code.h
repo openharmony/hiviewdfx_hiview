@@ -36,6 +36,9 @@ static constexpr int32_t ERROR_LISTENERS_EMPTY = -21;
 static constexpr int32_t ERROR_ADD_DEATH_RECIPIENT = -22;
 static constexpr int32_t ERROR_DOMIAN_INVALID = -23;
 static constexpr int32_t ERROR_DEBUG_MODE_SET_REPEAT = -24;
+
+static constexpr int32_t ERROR_TOO_MANY_WATCH_RULES = -25;
+static constexpr int32_t ERROR_TOO_MANY_WATCHERS = -26;
 } // namespace HiviewDFX
 } // namespace OHOS
 
