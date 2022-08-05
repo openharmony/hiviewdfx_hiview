@@ -46,7 +46,7 @@ constexpr char KEY_NO_LOG_EVENT_NAME[] = "CPP_CRASH_NO_LOG";
 constexpr char KEY_HAPPEN_TIME[] = "HAPPEN_TIME";
 constexpr int32_t LOG_SIZE = 1024;
 constexpr uint64_t MAX_LOG_GENERATE_TIME = 600; // 600 seconds
-constexpr int32_t KMSG_SIZE = 8193; // CONSOLE_EXT_LOG_MAX + 1
+constexpr int32_t KMSG_SIZE = 2049;
 }
 CrashValidator::CrashValidator() : stopReadKmsg_(false), totalEventCount_(0),
     normalEventCount_(0), kmsgReaderThread_(nullptr)

@@ -14,7 +14,7 @@
  */
 #ifndef CRASH_VALIDATOR_H
 #define CRASH_VALIDATOR_H
-#include "event_source.h"
+
 #include "plugin.h"
 #include "sys_event.h"
 
@@ -36,7 +36,7 @@ public:
 // every CPP_CRASH should have corresponding PROCESS_EXIT event and
 // every PROCESS_EXIT event that triggered by crash signal should have corresponding CPP_CRASH events
 // check the existence of these event to judge whether we have loss some crash log
-class CrashValidator : public EventListener, public EventSource {
+class CrashValidator : public EventListener, public Plugin {
 public:
     CrashValidator();
     ~CrashValidator();
@@ -47,8 +47,6 @@ public:
     bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnUnorderedEvent(const Event &event) override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
-    void Recycle(PipelineEvent* event) override {};
-    void PauseDispatch(std::weak_ptr<Plugin> plugin) override {};
     std::string GetListenerName() override;
     void Dump(int fd, const std::vector<std::string>& cmds) override;
 
