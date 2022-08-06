@@ -65,6 +65,6 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 }

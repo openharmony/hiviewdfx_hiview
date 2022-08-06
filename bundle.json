@@ -34,7 +34,7 @@
                 "init",
                 "ipc",
                 "safwk",
-                "samgr_standard",
+                "samgr",
                 "startup_l2",
                 "c_utils"
             ],
