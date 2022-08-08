@@ -20,6 +20,7 @@
 #include <set>
 
 #include "accesstoken_kit.h"
+#include "common_utils.h"
 #include "hilog/log.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
@@ -95,6 +96,31 @@ u16string ConvertToString16(const string& source)
     wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> converter;
     u16string result = converter.from_bytes(source);
     return result;
+}
+
+int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules, RegisteredListeners& listeners)
+{
+    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
+    if (rules.size() > watchRuleCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
+        return ERROR_TOO_MANY_WATCH_RULES;
+    }
+    size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
+    if (listeners.size() >= watcherTotalCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
+        return ERROR_TOO_MANY_WATCHERS;
+    }
+    return IPC_CALL_SUCCEED;
+}
+
+int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
+{
+    size_t queryRuleCntLimit = 10; // count of query rule for each querier is limited to 10.
+    if (rules.size() > queryRuleCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyQueryRules(rules);
+        return ERROR_TOO_MANY_QUERY_RULES;
+    }
+    return IPC_CALL_SUCCEED;
 }
 }
 
@@ -211,15 +237,9 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
         HiLog::Error(LABEL, "access permission check failed");
         return ERROR_NO_PERMISSION;
     }
-    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limit to 20.
-    if (rules.size() > watchRuleCntLimit) {
-        RunningStatusLogUtil::LogTooManyWatchRules(rules);
-        return ERROR_TOO_MANY_WATCH_RULES;
-    }
-    size_t watcherTotalCntLimit = 30; // count of total watches is limit to 30.
-    if (registeredListeners_.size() >= watcherTotalCntLimit) {
-        RunningStatusLogUtil::LogTooManyWatchers();
-        return ERROR_TOO_MANY_WATCHERS;
+    auto checkRet = CheckEventListenerAddingValidity(rules, registeredListeners_);
+    if (checkRet != IPC_CALL_SUCCEED) {
+        return checkRet;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
@@ -370,7 +390,7 @@ void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules
     }
 }
 
-void SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime,
+uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime,
     int64_t endTime, int32_t maxEvents, ResultSet& result)
 {
     SysEventQuery sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
@@ -399,7 +419,22 @@ void SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArg
     } else {
         sysEventQuery = sysEventQuery.Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
     }
-    result = sysEventQuery.Execute(maxEvents);
+    std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
+    if (processName.empty()) {
+        processName = "unknown";
+    }
+    QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
+    uint32_t queryRet = IPC_CALL_SUCCEED;
+    result = sysEventQuery.Execute(maxEvents, false, callInfo, [&queryRet] (DbQueryStatus status) {
+        std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
+            { DbQueryStatus::CONCURRENT, ERROR_TOO_MANY_CONCURRENT_QUERIES },
+            { DbQueryStatus::OVER_TIME, ERROR_QUERY_OVER_TIME },
+            { DbQueryStatus::OVER_LIMIT, ERROR_QUERY_OVER_LIMIT },
+            { DbQueryStatus::TOO_FREQENTLY, ERROR_QUERY_TOO_FREQUENTLY },
+        };
+        queryRet = statusToCode[status];
+    });
+    return queryRet;
 }
 
 int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
@@ -408,6 +443,10 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed.");
         return ERROR_NO_PERMISSION;
+    }
+    auto checkRet = CheckEventQueryingValidity(rules);
+    if (checkRet != IPC_CALL_SUCCEED) {
+        return checkRet;
     }
     QueryArgs queryArgs;
     ParseQueryArgs(rules, queryArgs);
@@ -425,7 +464,11 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     while (remainCnt > 0) {
         ResultSet ret;
         auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
-        QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime, queryLimit, ret);
+        uint32_t queryRet = QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime, queryLimit, ret);
+        if (queryRet != IPC_CALL_SUCCEED) {
+            callback->OnComplete(0, totalEventCnt);
+            return queryRet;
+        }
         auto dropCnt = 0;
         auto queryRetCnt = TransSysEvent(ret, callback, lastQueryBeginTime, dropCnt);
         lastQueryBeginTime++;

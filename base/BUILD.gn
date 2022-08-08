@@ -71,6 +71,7 @@ ohos_source_set("hiview_base") {
     "event_pool:eventpool",
     "event_report:hiview_event_report",
     "event_store:event_store_source",
+    "running_status_logger:running_status_logger_source",
     "utility:hiview_utility",
   ]
 

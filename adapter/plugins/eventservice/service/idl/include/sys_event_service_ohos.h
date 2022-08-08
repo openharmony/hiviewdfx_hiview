@@ -40,12 +40,14 @@ using DomainNameTagMap = std::map<std::pair<std::string, std::string>, std::stri
 using EventNames = std::vector<std::string>;
 using DomainsWithNames = std::unordered_map<std::string, EventNames>;
 using QueryArgs = std::unordered_map<int, DomainsWithNames>;
+using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
 
 namespace OHOS {
 namespace HiviewDFX {
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
 using GetTagByDomainNameFunc = std::function<std::string(std::string, std::string)>;
 using GetTypeByDomainNameFunc = std::function<int(std::string, std::string)>;
+
 class SysEventServiceBase {
 };
 
@@ -84,7 +86,7 @@ private:
     void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     int GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    void QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime, int64_t endTime,
+    uint32_t QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime, int64_t endTime,
         int32_t maxEvents, OHOS::HiviewDFX::EventStore::ResultSet& result);
     int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
         const QuerySysEventCallbackPtrOhos& callback, int64_t& lastRecordTime, int32_t& drops);
@@ -92,7 +94,7 @@ private:
 private:
     std::mutex mutex_;
     sptr<CallbackDeathRecipient> deathRecipient_;
-    std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>> registeredListeners_;
+    RegisteredListeners registeredListeners_;
     bool isDebugMode_;
     SysEventCallbackPtrOhos debugModeCallback_;
     DomainNameTagMap tagCache_;

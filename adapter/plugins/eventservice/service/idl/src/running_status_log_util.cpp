@@ -24,10 +24,33 @@ constexpr char LOG_DETAIL_CONCAT[] = " ";
 constexpr char RULE_ITEM_CONCAT[] = ",";
 }
 
+void RunningStatusLogUtil::LogTooManyQueryRules(const std::vector<SysEventQueryRule>& rules)
+{
+    std::string info { "TOOMANYQUERYRULES" };
+    info.append(std::to_string(rules.size())).append(LOG_DETAIL_CONCAT);
+    info.append("RULES=[");
+    for (auto& rule : rules) {
+        info.append("{");
+        info.append(rule.domain).append(RULE_ITEM_CONCAT);
+        if (!rule.eventList.empty()) {
+            info.append("[");
+            for (auto& eventName : rule.eventList) {
+                info.append(eventName).append(RULE_ITEM_CONCAT);
+            }
+            info.erase(info.end() - 1);
+            info.append("]").append(RULE_ITEM_CONCAT);
+        }
+        info.append(std::to_string(rule.ruleType));
+        info.append("}").append(RULE_ITEM_CONCAT);
+    }
+    info.erase(info.end() - 1);
+    info.append("]");
+    RunningStatusLogger::GetInstance().Log(info);
+}
+
 void RunningStatusLogUtil::LogTooManyWatchRules(const std::vector<SysEventRule>& rules)
 {
-    std::string info = RunningStatusLogger::GetInstance().FormatTimeStamp();
-    info.append(LOG_DETAIL_CONCAT).append("TOOMANYWATCHRULES ");
+    std::string info { "TOOMANYWATCHRULES " };
     info.append(std::to_string(rules.size())).append(LOG_DETAIL_CONCAT);
     info.append("RULES=[");
     for (auto& rule : rules) {
@@ -38,17 +61,24 @@ void RunningStatusLogUtil::LogTooManyWatchRules(const std::vector<SysEventRule>&
             info.append(rule.tag).append(RULE_ITEM_CONCAT);
         }
         info.append(std::to_string(rule.ruleType));
-        info.append("},");
+        info.append("}").append(RULE_ITEM_CONCAT);
     }
     info.erase(info.end() - 1);
     info.append("]");
-    RunningStatusLogger::GetInstance().Log(info);
+    LogDetail(info);
 }
 
-void RunningStatusLogUtil::LogTooManyWatchers()
+void RunningStatusLogUtil::LogTooManyWatchers(const int limit)
+{
+    std::string info { "TOOMANYWATCHERS COUNT > " };
+    info.append(std::to_string(limit));
+    LogDetail(info);
+}
+
+void RunningStatusLogUtil::LogDetail(const std::string& detail)
 {
     std::string info = RunningStatusLogger::GetInstance().FormatTimeStamp();
-    info.append(LOG_DETAIL_CONCAT).append("TOOMANYWATCHERS COUNT > 30");
+    info.append(LOG_DETAIL_CONCAT).append(detail);
     RunningStatusLogger::GetInstance().Log(info);
 }
 } // namespace HiviewDFX

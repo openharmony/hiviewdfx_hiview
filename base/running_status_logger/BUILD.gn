@@ -18,6 +18,19 @@ config("running_status_logger_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
+    "include",
+    "$hiview_adapter/dbstore/include",
+    "$hiview_adapter/utility/include",
+    "$hiview_adapter/utility/include/extra",
+    "$hiview_base/log/include",
+    "$hiview_base/include",
+    "$hiview_base/running_status_logger/include",
+    "$hiview_root/include",
+  ]
+}
+
+config("running_status_logger_private_config") {
+  include_dirs = [
     ".",
     "include",
   ]
@@ -28,9 +41,9 @@ ohos_source_set("running_status_logger_source") {
 
   public_configs = [ ":running_status_logger_config" ]
 
-  sources = [ "running_status_logger.cpp" ]
+  configs = [ ":running_status_logger_private_config" ]
 
-  deps = [ "$hiview_base:hiviewbase" ]
+  sources = [ "running_status_logger.cpp" ]
 
   external_deps = [ "hilog_native:libhilog" ]
 }

@@ -16,6 +16,9 @@
 #ifndef OHOS_HIVIEWDFX_RUNNING_STATUS_LOG_UTIL
 #define OHOS_HIVIEWDFX_RUNNING_STATUS_LOG_UTIL
 
+#include <ctime>
+
+#include "sys_event_query_rule.h"
 #include "sys_event_rule.h"
 
 namespace OHOS {
@@ -23,7 +26,11 @@ namespace HiviewDFX {
 class RunningStatusLogUtil {
 public:
     static void LogTooManyWatchRules(const std::vector<SysEventRule>& rules);
-    static void LogTooManyWatchers();
+    static void LogTooManyWatchers(const int limit);
+    static void LogTooManyQueryRules(const std::vector<SysEventQueryRule>& rules);
+
+private:
+    static void LogDetail(const std::string& detail);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
