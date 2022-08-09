@@ -32,11 +32,21 @@ uint8_t FlatJsonParser::charFilter_[FlatJsonParser::CHAR_RANGE] {0};
 
 void FlatJsonParser::AppendStringValue(const std::string& key, const std::string& value)
 {
+    for (auto& i : kvList_) {
+        if (i.first == key) {
+            return;
+        }
+    }
     kvList_.emplace_back(key, "\"" + value + "\"");
 }
 
 void FlatJsonParser::AppendUInt64Value(const std::string& key, const uint64_t value)
 {
+    for (auto& i : kvList_) {
+        if (i.first == key) {
+            return;
+        }
+    }
     std::ostringstream os;
     os << value;
     kvList_.emplace_back(key, os.str());

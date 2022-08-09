@@ -26,6 +26,7 @@
 #include "common_utils.h"
 #include "event_source.h"
 #include "file_util.h"
+#include "hiview_global.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
@@ -277,7 +278,6 @@ void EventLogger::OnUnload()
 
 void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)
 {
-    HIVIEW_LOGD("called");
     if (dirPath != MONITOR_STACK_LOG_PATH) {
         return;
     }
@@ -293,27 +293,40 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
     if (count == 0) {
         return;
     }
-
     std::string logPath = dirPath + "/" + fileName;
     if (!FileUtil::FileExists(logPath)) {
         HIVIEW_LOGW("file %{public}s not exist. exit!", logPath.c_str());
         return;
     }
+    std::vector<std::string> values;
+    StringUtil::SplitStr(fileName, "-", values, false, false);
+    if (values.size() != 3) { // 3: type-pid-timestamp
+        HIVIEW_LOGE("failed to split stack file name %{public}s.", fileName.c_str());
+        return;
+    }
+    int32_t pid = 0;
+    StringUtil::ConvertStringTo<int32_t>(values[1], pid);  // 1: pid
 
-    std::shared_ptr<Plugin> sysEventSourcePlugin = GetHiviewContext()->GetPluginByName("SysEventSource");
-    std::shared_ptr<EventSource> sysEventSource = std::static_pointer_cast<EventSource>(sysEventSourcePlugin);
-
-    SysEventCreator eventCreator("RELIABILITY", "STACK", SysEventCreator::FAULT);
-    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("eventLogger",
-        static_cast<PipelineEventProducer *>(sysEventSource.get()), eventCreator);
-    event->domain_ = "RELIABILITY";
-    event->SetEventValue("domain_", "RELIABILITY");
-    event->eventName_ = "STACK";
-    event->SetEventValue("name_", "STACK");
-
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    auto sysEvent = std::make_shared<SysEvent>("EventLogger", nullptr, jsonStr);
+    sysEvent->SetEventValue("name_", "STACK");
+    sysEvent->SetEventValue("type_", 1);
+    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
+    sysEvent->SetEventValue("pid_", getpid());
+    sysEvent->SetEventValue("tid_", gettid());
+    sysEvent->SetEventValue("uid_", getuid());
+    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
+    sysEvent->SetEventValue("PID", pid);
+    sysEvent->SetEventValue("MSG", "application stack");
     std::string tmpStr = R"~(logPath:)~" + logPath;
-    event->SetEventValue(EventStore::EventCol::INFO, tmpStr);
-    sysEventSource->PublishPipelineEvent(event);
+    sysEvent->SetEventValue(EventStore::EventCol::INFO, tmpStr);
+    if (sysEvent->ParseJson() < 0) {
+        HIVIEW_LOGW("Failed to parse EventLogger from queryResult file name %{public}s.", fileName.c_str());
+        return;
+    }
+    auto seq = HiviewGlobal::GetInstance()->GetPipelineSequenceByName("SysEventPipeline");
+    sysEvent->SetPipelineInfo("SysEventPipeline", seq);
+    sysEvent->OnContinue();
 }
 
 bool EventLogger::OnFileDescriptorEvent(int fd, int type)
