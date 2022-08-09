@@ -424,17 +424,17 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
         processName = "unknown";
     }
     QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
-    uint32_t queryRet = IPC_CALL_SUCCEED;
-    result = sysEventQuery.Execute(maxEvents, false, callInfo, [&queryRet] (DbQueryStatus status) {
+    uint32_t queryRetCode = IPC_CALL_SUCCEED;
+    result = sysEventQuery.Execute(maxEvents, false, callInfo, [&queryRetCode] (DbQueryStatus status) {
         std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
             { DbQueryStatus::CONCURRENT, ERROR_TOO_MANY_CONCURRENT_QUERIES },
             { DbQueryStatus::OVER_TIME, ERROR_QUERY_OVER_TIME },
             { DbQueryStatus::OVER_LIMIT, ERROR_QUERY_OVER_LIMIT },
             { DbQueryStatus::TOO_FREQENTLY, ERROR_QUERY_TOO_FREQUENTLY },
         };
-        queryRet = statusToCode[status];
+        queryRetCode = statusToCode[status];
     });
-    return queryRet;
+    return queryRetCode;
 }
 
 int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
@@ -464,25 +464,22 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     while (remainCnt > 0) {
         ResultSet ret;
         auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
-        uint32_t queryRet = QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime, queryLimit, ret);
-        if (queryRet != IPC_CALL_SUCCEED) {
+        uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime,
+            queryLimit, ret);
+        if (queryRetCode != IPC_CALL_SUCCEED) {
             callback->OnComplete(0, totalEventCnt);
-            return queryRet;
+            return queryRetCode;
         }
         auto dropCnt = 0;
         auto queryRetCnt = TransSysEvent(ret, callback, lastQueryBeginTime, dropCnt);
         lastQueryBeginTime++;
         totalEventCnt += queryRetCnt;
         remainCnt -= queryRetCnt;
-        // query completed for current database
-        if ((queryRetCnt + dropCnt) < queryLimit || lastQueryBeginTime >= lastQueryEndTime) {
-            if ((++queryTypeIter) != queryArgs.cend()) {
-                lastQueryBeginTime = realBeginTime;
-                lastQueryEndTime = realEndTime;
-            } else {
-                break;
-            }
+        if ((++queryTypeIter) == queryArgs.cend()) {
+            break;
         }
+        lastQueryBeginTime = realBeginTime;
+        lastQueryEndTime = realEndTime;
     }
     callback->OnComplete(0, totalEventCnt);
     return IPC_CALL_SUCCEED;

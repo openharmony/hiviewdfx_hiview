@@ -32,11 +32,11 @@ int DocDB::OpenDB(const std::string &dbFile, iwkv_openflags flag)
     opts.kv.file_lock_fail_fast = 0;
 
     opts.kv.wal.enabled = 0;
-    opts.kv.wal.check_crc_on_checkpoint = 0;
+    opts.kv.wal.check_crc_on_checkpoint = true;
     opts.kv.wal.savepoint_timeout_sec = 0;
     opts.kv.wal.checkpoint_timeout_sec = 0;
-    opts.kv.wal.wal_buffer_sz = 131072; // 131072 : 128KB
-    opts.kv.wal.checkpoint_buffer_sz = 0;
+    opts.kv.wal.wal_buffer_sz = 1024 * 1024; // 1M
+    opts.kv.wal.checkpoint_buffer_sz = 10 * 1024 * 1024; // 10M
     opts.kv.wal.wal_lock_interceptor = nullptr;
     opts.kv.wal.wal_lock_interceptor_opaque = nullptr;
 
