@@ -77,6 +77,8 @@ private:
     bool IsSystemEvent(const std::string& domain, const std::string& stringId) const;
     bool IsSystemResult(const FreezeResult& result) const;
     bool IsApplicationResult(const FreezeResult& result) const;
+    std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
+        const std::string& logName, std::string& digest) const;
 
     static const std::vector<std::pair<std::string, std::string>> applicationPairs_;
     static const std::vector<std::pair<std::string, std::string>> systemPairs_;

@@ -39,7 +39,6 @@ const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_
     {"AAFWK", "LIFECYCLE_TIMEOUT"},
     {"AAFWK", "APP_LIFECYCLE_TIMEOUT"},
     {"GRAPHIC", "NO_DRAW"},
-    {"POWERMGR", "SCREEN_ON_TIMEOUT"},
 };
 
 const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
@@ -47,6 +46,7 @@ const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
     {"KERNEL_VENDOR", "LONG_PRESS"},
     {"KERNEL_VENDOR", "SCREEN_ON"},
     {"KERNEL_VENDOR", "SCREEN_OFF"},
+    {"POWER", "SCREEN_ON_TIMEOUT"},
 };
 
 bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
@@ -176,49 +176,53 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
 
 bool Vendor::CheckPid(const WatchPoint &watchPoint, std::vector<WatchPoint>& list) const
 {
-    long pid = 0;
-    std::string filePath = "";
-    std::string fileName = "";
-    std::vector<std::string> values;
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
-    if (domain != "RELIABILITY" || stringId != "STACK") {
+    if (domain != "MULTIMODALINPUT" || stringId != "APPLICATION_BLOCK_INPUT") {
         return true; // only check pid for STACK rule
     }
 
-    filePath = watchPoint.GetLogPath();
-    if (filePath.find("/") == std::string::npos) {
-        HIVIEW_LOGE("failed to get stack file name %{public}s.", filePath.c_str());
-        goto error;
-    }
-    fileName = StringUtil::GetRightSubstr(filePath, "/");
-    if (fileName.find("stack") == std::string::npos || fileName.find("-") == std::string::npos) {
-        HIVIEW_LOGE("invalid stack file name %{public}s.", fileName.c_str());
-        goto error;
-    }
-    StringUtil::SplitStr(fileName, "-", values, false, false);
-    if (values.size() != 3) { // type-pid-timestamp
-        HIVIEW_LOGE("failed to split stack file name %{public}s.", fileName.c_str());
-        goto error;
-    }
-    StringUtil::ConvertStringTo<long>(values[1], pid);
-
-    for (auto node : list) {
-        if (node.GetDomain() == "MULTIMODALINPUT" && node.GetStringId() == "APPLICATION_BLOCK_INPUT" && node.GetPid() == pid) {
+    long pid = watchPoint.GetPid();
+    for (auto node = list.begin(); node != list.end(); ++node) {
+        if (node->GetDomain() == "RELIABILITY" && node->GetStringId() == "STACK" && node->GetPid() == pid) {
             return true;
         }
     }
-
-error:
-    // erase input event to match later
-    for (auto node = list.begin(); node != list.end();) {
-        if (node->GetDomain() == "MULTIMODALINPUT" && node->GetStringId() == "APPLICATION_BLOCK_INPUT") {
-            node = list.erase(node);
-        } else {
-            node++;
-        }
-    }
     return false;
+}
+
+std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
+    const std::string& logName, std::string& digest) const
+{
+    std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
+    std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
+    std::string stringId = watchPoint.GetStringId();
+    if (packageName == "" && processName != "") {
+        packageName = processName;
+    }
+    if (packageName == "" && processName == "") {
+        packageName = stringId;
+    }
+
+    std::string type = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
+    auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
+    digest = eventInfos[SP_ENDSTACK];
+    std::string summary = eventInfos[SP_ENDSTACK];
+    summary = EVENT_SUMMARY + FreezeDetectorPlugin::COLON + NEW_LINE + summary;
+
+    FaultLogInfoInner info;
+    info.time = watchPoint.GetTimestamp();
+    info.id = watchPoint.GetUid();
+    info.pid = watchPoint.GetPid();
+    info.faultLogType = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.module = packageName;
+    info.reason = stringId;
+    info.summary = summary;
+    info.logPath = logPath;
+    AddFaultLog(info);
+    return logPath;
 }
 
 void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const
@@ -239,10 +243,14 @@ std::string Vendor::MergeEventLog(
     const WatchPoint &watchPoint, std::vector<WatchPoint>& list,
     std::vector<FreezeResult>& result, std::string& digest) const
 {
+    if (CheckPid(watchPoint, list) == false) {
+        HIVIEW_LOGE("failed to match pid in file name %{public}s.", watchPoint.GetLogPath().c_str());
+        return "";
+    }
+
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
     std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
-    long pid = watchPoint.GetPid();
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
@@ -252,11 +260,6 @@ std::string Vendor::MergeEventLog(
     }
     if (packageName == "" && processName == "") {
         packageName = stringId;
-    }
-
-    if (CheckPid(watchPoint, list) == false) {
-        HIVIEW_LOGE("failed to match pid in file name %{public}s.", watchPoint.GetLogPath().c_str());
-        return "";
     }
 
     std::string retPath;
@@ -300,8 +303,18 @@ std::string Vendor::MergeEventLog(
         }
 
         body << HEADER << std::endl;
+        if (node.GetDomain() == "RELIABILITY" && node.GetStringId() == "STACK") {
+            body << FreezeDetectorPlugin::EVENT_DOMAIN << "=" << node.GetDomain() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_STRINGID << "=" << node.GetStringId() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_TIMESTAMP << "=" << node.GetTimestamp() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_PID << "=" << watchPoint.GetPid() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_UID << "=" << watchPoint.GetUid() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << "=" << watchPoint.GetPackageName() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_PROCESS_NAME << "=" << watchPoint.GetProcessName() << std::endl;
+            body << FreezeDetectorPlugin::EVENT_MSG << "=" << node.GetMsg() << std::endl;
+            body << std::endl;
+        }
         body << ifs.rdbuf();
-
         ifs.close();
     }
 
@@ -313,27 +326,7 @@ std::string Vendor::MergeEventLog(
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
-
-    std::string type = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
-    auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
-    digest = eventInfos[SP_ENDSTACK];
-    std::string summary = eventInfos[SP_ENDSTACK];
-    summary = EVENT_SUMMARY + FreezeDetectorPlugin::COLON + NEW_LINE + summary;
-
-    FaultLogInfoInner info;
-    info.time = watchPoint.GetTimestamp();
-    info.id = uid;
-    info.pid = pid;
-    info.faultLogType = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
-    info.module = packageName;
-    info.reason = stringId;
-    info.summary = summary;
-    info.logPath = logPath;
-    AddFaultLog(info);
-
-    return retPath;
+    return SendFaultLog(watchPoint, logPath, logName, digest);
 }
 
 std::shared_ptr<PipelineEvent> Vendor::MakeEvent(
