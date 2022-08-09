@@ -39,6 +39,11 @@ static constexpr int32_t ERROR_DEBUG_MODE_SET_REPEAT = -24;
 
 static constexpr int32_t ERROR_TOO_MANY_WATCH_RULES = -25;
 static constexpr int32_t ERROR_TOO_MANY_WATCHERS = -26;
+static constexpr int32_t ERROR_TOO_MANY_QUERY_RULES = -27;
+static constexpr int32_t ERROR_TOO_MANY_CONCURRENT_QUERIES = -28;
+static constexpr int32_t ERROR_QUERY_OVER_TIME = -29;
+static constexpr int32_t ERROR_QUERY_OVER_LIMIT = -30;
+static constexpr int32_t ERROR_QUERY_TOO_FREQUENTLY = -31;
 } // namespace HiviewDFX
 } // namespace OHOS
 

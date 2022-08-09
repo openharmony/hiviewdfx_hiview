@@ -20,18 +20,28 @@
 #define DllExport
 #endif // DllExport
 
+#include <atomic>
+#include <ctime>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <map>
 
+#include "query_status_log_util.h"
 #include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class DataQuery;
 namespace EventStore {
+enum DbQueryStatus { SUCCEED = 0, CONCURRENT, OVER_TIME, OVER_LIMIT, TOO_FREQENTLY };
+using DbQueryCallback = std::function<void(DbQueryStatus)>;
+constexpr pid_t INNER_PROCESS_ID = -1;
+using QueryProcessInfo = std::pair<pid_t, std::string>;
+
 enum Op { NONE = 0, EQ = 1, NE, LT, LE, GT, GE, SW, NSW };
 
 class EventCol {
@@ -157,8 +167,9 @@ private:
     bool has_;
 };  // ResultSet
 
-using SysEventCallBack = std::function<int (SysEvent &sysEvent)>;
-
+using SysEventCallBack = std::function<int(SysEvent &sysEvent)>;
+using LastQueries = std::unordered_map<std::string, std::unordered_map<pid_t, time_t>>;
+using ConcurrentQueries = std::unordered_map<std::string, std::pair<int, int>>;
 class DllExport SysEventQuery {
 public:
     SysEventQuery &Select();
@@ -197,7 +208,9 @@ public:
     SysEventQuery &Or(const std::string &col, Op op, const std::vector<std::string> &strings);
     SysEventQuery &Or(const std::vector<Cond> &conds);
     SysEventQuery &Order(const std::string &col, bool isAsc = true);
-    ResultSet Execute(int limit = 100);
+    ResultSet Execute(int limit = 100, bool innerQuery = true,
+        QueryProcessInfo callerInfo = std::make_pair(INNER_PROCESS_ID, ""),
+        DbQueryCallback queryCallback = nullptr);
     int ExecuteWithCallback(SysEventCallBack callback, int limit = 100);
     ~SysEventQuery();
 private:
@@ -210,10 +223,29 @@ private:
     void BuildDataQuery(DataQuery &dataQuery, int limit);
 
 private:
+    bool CheckConditionCntValidity(DataQuery& query);
+    bool CheckQueryCntLimitValidity(DataQuery& query, bool innerQuery, int limit,
+        DbQueryCallback& callback);
+    bool CheckQueryCostTimeValidity(DataQuery& query, bool innerQuery, time_t before, time_t after,
+        DbQueryCallback& callback);
+    bool CheckConcurrentQueryCntValidity(const std::string& dbFile, bool innerQuery,
+        DbQueryCallback& callback);
+    bool CheckQueryFrequenceValidity(DataQuery& query, bool innerQuery, const std::string& dbFile,
+        QueryProcessInfo& processInfo, DbQueryCallback& callback);
+    void IncreaseConcurrentCnt(const std::string& dbFile, bool innerQuery);
+    void DecreaseConcurrentCnt(const std::string& dbFile, bool innerQuery);
+
+private:
     std::string dbFile_;
     std::vector<std::string> eventCols_;
     std::vector<std::pair<std::string, bool>> orderCols_;
     Cond cond_;
+
+private:
+    static ConcurrentQueries concurrentQueries_;
+    static LastQueries lastQueries_;
+    static std::mutex concurrentQueriesMutex_;
+    static std::mutex lastQueriesMutex_;
 }; // SysEventQuery
 } // EventStore
 } // namespace HiviewDFX

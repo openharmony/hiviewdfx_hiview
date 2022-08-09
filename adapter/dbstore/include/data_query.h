@@ -39,6 +39,7 @@ public:
     {
         sql_ << "(/[" << field << "=";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -47,6 +48,7 @@ public:
     {
         sql_ << "(/[" << field << "!=";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -55,6 +57,7 @@ public:
     {
         sql_ << "(/[" << field << ">";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -63,6 +66,7 @@ public:
     {
         sql_ << "(/[" << field << "<";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -71,6 +75,7 @@ public:
     {
         sql_ << "(/[" << field << ">=";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -79,6 +84,7 @@ public:
     {
         sql_ << "(/[" << field << "<=";
         AppendValue(sql_, value) << "])";
+        conditionCnt++;
         return *this;
     }
 
@@ -95,6 +101,7 @@ public:
             }
         }
         sql_ << "]]";
+        conditionCnt++;
         return *this;
     }
 
@@ -111,6 +118,7 @@ public:
             }
         }
         sql_ << "]]";
+        conditionCnt++;
         return *this;
     }
 
@@ -133,6 +141,8 @@ public:
     DOCSTORE_API DataQuery& EndGroup();
 
     DOCSTORE_API std::string ToString() const;
+
+    DOCSTORE_API int GetConditionCnt() const;
 
 private:
     template<typename T> static std::stringstream& AppendValue(std::stringstream &sql, const T &value)
@@ -168,6 +178,7 @@ private:
     std::vector<std::pair<bool, std::string>> orderFields_;
     int limit_;
     int offset_;
+    int conditionCnt;
 }; // DataQuery
 } // HiviewDFX
 } // OHOS

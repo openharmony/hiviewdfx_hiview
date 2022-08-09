@@ -14,15 +14,18 @@
  */
 #include "sys_event_dao_test.h"
 
+#include <chrono>
 #include <ctime>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include <gmock/gmock.h>
 #include "event.h"
 #include "hiview_platform.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 void SysEventDaoTest::SetUpTestCase()
@@ -358,6 +361,81 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         .ExecuteWithCallback(c, 10);
 
     ASSERT_TRUE(count == 2);
+}
+
+/**
+ * @tc.name: TestEventDaoQuery_008
+ * @tc.desc: test query in different threads (more than 4) at the same time.
+ * @tc.type: FUNC
+ * @tc.require: AR000H02CO
+ * @tc.author: x30012124
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
+{
+    int threadCount = 5;
+    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
+    for (int i = 0; i < threadCount; i++) {
+        std::thread t([&queryStatus] () {
+            EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+            sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+                .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
+            int queryCount = 10;
+            (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+                [&queryStatus] (EventStore::DbQueryStatus status) {
+                    queryStatus = status;
+                });
+        });
+        t.detach();
+    }
+    sleep(8);
+    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::CONCURRENT ||
+        queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+}
+
+/**
+ * @tc.name: TestEventDaoQuery_009
+ * @tc.desc: test query with over limit
+ * @tc.type: FUNC
+ * @tc.require: AR000H02CO
+ * @tc.author: x30012124
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
+{
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
+    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
+    int queryCount = 51;
+    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+        [&queryStatus] (EventStore::DbQueryStatus status) {
+            queryStatus = status;
+        });
+    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::OVER_LIMIT);
+}
+
+/**
+ * @tc.name: TestEventDaoQuery_010
+ * @tc.desc: test query in high frequency, query twice in 1 second
+ * @tc.type: FUNC
+ * @tc.require: AR000H02CO
+ * @tc.author: x30012124
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
+{
+    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
+    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
+    int queryCount = 10;
+    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+        [&queryStatus] (EventStore::DbQueryStatus status) {
+            queryStatus = status;
+        });
+    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+        [&queryStatus] (EventStore::DbQueryStatus status) {
+            queryStatus = status;
+        });
+    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -23,7 +23,6 @@
 #include "file_util.h"
 #include "hilog/log.h"
 #include "hiview_global.h"
-#include "securec.h"
 #include "time_util.h"
 
 namespace OHOS {

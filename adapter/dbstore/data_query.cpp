@@ -20,7 +20,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 int DataQuery::defLimit_ = 100;
-DataQuery::DataQuery() : limit_(defLimit_), offset_(0) {}
+DataQuery::DataQuery() : limit_(defLimit_), offset_(0), conditionCnt(0) {}
 
 DataQuery::~DataQuery() {}
 
@@ -42,12 +42,14 @@ DOCSTORE_API DataQuery& DataQuery::Select(const std::vector<std::string>& fields
 DataQuery& DataQuery::StartWith(const std::string &field, const std::string &value)
 {
     sql_ << "/[" << field << " re \"" << value << "\"]";
+    conditionCnt++;
     return *this;
 }
 
 DataQuery& DataQuery::NotStartWith(const std::string &field, const std::string &value)
 {
     sql_ << "/[" << field << " not re \"" << value << ".*\"]";
+    conditionCnt++;
     return *this;
 }
 
@@ -137,6 +139,11 @@ std::string DataQuery::ToDelString(int limit) const
     } else {
         return sql + " | del | limit " + std::to_string(limit) + " count";
     }
+}
+
+int DataQuery::GetConditionCnt() const
+{
+    return conditionCnt;
 }
 } // HiviewDFX
 } // OHOS

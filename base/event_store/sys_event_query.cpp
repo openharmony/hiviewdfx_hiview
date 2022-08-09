@@ -23,8 +23,19 @@
 #include "data_query.h"
 #include "hiview_global.h"
 #include "store_mgr_proxy.h"
+
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+constexpr int FAILED_RET_CODE = -1;
+constexpr int DEFAULT_CONCURRENT_CNT = 0;
+time_t GetCurTime()
+{
+    time_t current;
+    (void)time(&current);
+    return current;
+}
+}
 namespace EventStore {
 std::string EventCol::DOMAIN = "domain_";
 std::string EventCol::NAME = "name_";
@@ -541,6 +552,10 @@ void ResultSet::Set(int code, bool has)
     }
 }
 
+ConcurrentQueries SysEventQuery::concurrentQueries_;
+LastQueries SysEventQuery::lastQueries_;
+std::mutex SysEventQuery::lastQueriesMutex_;
+std::mutex SysEventQuery::concurrentQueriesMutex_;
 SysEventQuery::SysEventQuery(const std::string &dbFile): dbFile_(dbFile)
 {
 }
@@ -812,15 +827,29 @@ void SysEventQuery::GetDataQuery(DataQuery &dataQuery)
     Cond::Traval(dataQuery, cond_);
 }
 
-ResultSet SysEventQuery::Execute(int limit)
+ResultSet SysEventQuery::Execute(int limit, bool innerQuery, QueryProcessInfo callerInfo,
+    DbQueryCallback queryCallback)
 {
     DataQuery dataQuery;
     BuildDataQuery(dataQuery, limit);
-
     ResultSet resultSet;
+    (void)CheckConditionCntValidity(dataQuery);
+    if (!CheckQueryCntLimitValidity(dataQuery, innerQuery, limit, queryCallback) |
+        !CheckConcurrentQueryCntValidity(dbFile_, innerQuery, queryCallback) |
+        !CheckQueryFrequenceValidity(dataQuery, innerQuery, dbFile_, callerInfo, queryCallback)) {
+        resultSet.Set(FAILED_RET_CODE, false);
+        return resultSet;
+    }
+    IncreaseConcurrentCnt(dbFile_, innerQuery);
     std::vector<Entry> entries;
     std::shared_ptr<DocStore> docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile_);
+    time_t beforeExecute = GetCurTime();
     int retCode = docStore->GetEntriesWithQuery(dataQuery, entries);
+    DecreaseConcurrentCnt(dbFile_, innerQuery);
+    time_t afterExecute = GetCurTime();
+    if (!CheckQueryCostTimeValidity(dataQuery, innerQuery, beforeExecute, afterExecute, queryCallback)) {
+        retCode = FAILED_RET_CODE;
+    }
     if (retCode != 0) {
         resultSet.Set(retCode, false);
         return resultSet;
@@ -836,6 +865,9 @@ ResultSet SysEventQuery::Execute(int limit)
         resultSet.eventRecords_.emplace_back(sysEvent);
     }
     resultSet.Set(0, true);
+    if (queryCallback != nullptr) {
+        queryCallback(DbQueryStatus::SUCCEED);
+    }
     return resultSet;
 }
 
@@ -854,6 +886,115 @@ int SysEventQuery::ExecuteWithCallback(SysEventCallBack callback, int limit)
     };
     docStore->GetEntryDuringQuery(dataQuery, c);
     return 0;
+}
+
+bool SysEventQuery::CheckConditionCntValidity(DataQuery& query)
+{
+    int conditionCntLimit = 8;
+    if (query.GetConditionCnt() > conditionCntLimit) {
+        QueryStatusLogUtil::LogTooManyQueryRules(query.ToString());
+        return false;
+    }
+    return true;
+}
+
+bool SysEventQuery::CheckQueryCntLimitValidity(DataQuery& query, bool innerQuery, int limit,
+    DbQueryCallback& callback)
+{
+    int queryLimit = innerQuery ? 50 : 1000;
+    if (limit > queryLimit) {
+        QueryStatusLogUtil::LogQueryCountOverLimit(limit, query.ToString(), innerQuery);
+        if (callback != nullptr) {
+            callback(DbQueryStatus::OVER_LIMIT);
+        }
+        return innerQuery;
+    }
+    return true;
+}
+
+bool SysEventQuery::CheckQueryCostTimeValidity(DataQuery& query, bool innerQuery, time_t before, time_t after,
+    DbQueryCallback& callback)
+{
+    time_t maxQueryTime = 20;
+    time_t duration = after - before;
+    if (duration < maxQueryTime) {
+        return true;
+    }
+    QueryStatusLogUtil::LogQueryOverTime(duration, query.ToString(), innerQuery);
+    if (callback != nullptr) {
+        callback(DbQueryStatus::OVER_TIME);
+    }
+    return innerQuery;
+}
+
+bool SysEventQuery::CheckConcurrentQueryCntValidity(const std::string& dbFile, bool innerQuery,
+    DbQueryCallback& callback)
+{
+    auto iter = concurrentQueries_.find(dbFile);
+    if (iter != concurrentQueries_.end()) {
+        auto& concurrentQueryCnt = innerQuery ? iter->second.first : iter->second.second;
+        int conCurrentQueryCntLimit = 4;
+        if (concurrentQueryCnt < conCurrentQueryCntLimit) {
+            return true;
+        }
+        QueryStatusLogUtil::LogTooManyConcurrentQueries(conCurrentQueryCntLimit, innerQuery);
+        if (callback != nullptr) {
+            callback(DbQueryStatus::CONCURRENT);
+        }
+        return innerQuery;
+    }
+    concurrentQueries_[dbFile] = {DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT};
+    return true;
+}
+
+bool SysEventQuery::CheckQueryFrequenceValidity(DataQuery& query, bool innerQuery, const std::string& dbFile,
+    QueryProcessInfo& processInfo, DbQueryCallback& callback)
+{
+    std::lock_guard<std::mutex> lock(lastQueriesMutex_);
+    time_t current;
+    (void)time(&current);
+    auto execIter = lastQueries_.find(dbFile);
+    auto queryProcessId = processInfo.first;
+    if (execIter == lastQueries_.end()) {
+        lastQueries_[dbFile].insert(std::make_pair(queryProcessId, current));
+        return true;
+    }
+    auto processIter = execIter->second.find(queryProcessId);
+    if (processIter == execIter->second.end()) {
+        execIter->second[queryProcessId] = current;
+        return true;
+    }
+    time_t queryFrequent = 1;
+    if ((current - processIter->second) > queryFrequent) {
+        execIter->second[queryProcessId] = current;
+        return true;
+    }
+    QueryStatusLogUtil::LogQueryTooFrequently(query.ToString(), processInfo.second, innerQuery);
+    if (callback != nullptr) {
+        callback(DbQueryStatus::TOO_FREQENTLY);
+    }
+    return innerQuery;
+}
+
+void SysEventQuery::IncreaseConcurrentCnt(const std::string& dbFile, bool innerQuery)
+{
+    std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
+    auto iter = concurrentQueries_.find(dbFile);
+    if (iter == concurrentQueries_.end()) {
+        concurrentQueries_[dbFile] = std::make_pair(DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT);
+    }
+    auto& concurrentQueryCnt = innerQuery ? iter->second.first : iter->second.second;
+    concurrentQueryCnt++;
+}
+
+void SysEventQuery::DecreaseConcurrentCnt(const std::string& dbFile, bool innerQuery)
+{
+    std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
+    auto iter = concurrentQueries_.find(dbFile);
+    if (iter != concurrentQueries_.end()) {
+        auto& concurrentQueryCnt = innerQuery ? iter->second.first : iter->second.second;
+        concurrentQueryCnt--;
+    }
 }
 } // EventStore
 } // namespace HiviewDFX
