@@ -26,7 +26,7 @@ constexpr char RULE_ITEM_CONCAT[] = ",";
 
 void RunningStatusLogUtil::LogTooManyQueryRules(const std::vector<SysEventQueryRule>& rules)
 {
-    std::string info { "TOOMANYQUERYRULES" };
+    std::string info { "TOOMANYQUERYRULES " };
     info.append(std::to_string(rules.size())).append(LOG_DETAIL_CONCAT);
     info.append("RULES=[");
     for (auto& rule : rules) {
@@ -45,7 +45,7 @@ void RunningStatusLogUtil::LogTooManyQueryRules(const std::vector<SysEventQueryR
     }
     info.erase(info.end() - 1);
     info.append("]");
-    RunningStatusLogger::GetInstance().Log(info);
+    LogDetail(info);
 }
 
 void RunningStatusLogUtil::LogTooManyWatchRules(const std::vector<SysEventRule>& rules)
