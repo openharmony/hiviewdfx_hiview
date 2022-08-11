@@ -23,6 +23,7 @@ using namespace PluginStatsEventSpace;
 
 void HiviewEventCacher::AddPluginStatsEvent(const std::vector<std::shared_ptr<LoggerEvent>>& events)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto event : events) {
         std::string name = event->GetValue(KEY_OF_PLUGIN_NAME).GetString();
         if (!name.empty()) {
@@ -33,6 +34,7 @@ void HiviewEventCacher::AddPluginStatsEvent(const std::vector<std::shared_ptr<Lo
 
 void HiviewEventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto entry : pluginStatsEvents_) {
         events.push_back(entry.second);
     }
@@ -43,6 +45,7 @@ void HiviewEventCacher::UpdatePluginStatsEvent(const std::string &name, const st
     if (name.empty()) {
         return;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     if (pluginStatsEvents_.find(name) != pluginStatsEvents_.end()) {
         auto event = pluginStatsEvents_.find(name)->second;
         event->Update(KEY_OF_PROC_NAME, procName);
@@ -58,6 +61,7 @@ void HiviewEventCacher::UpdatePluginStatsEvent(const std::string &name, const st
 
 void HiviewEventCacher::ClearPluginStatsEvents()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     pluginStatsEvents_.clear();
 }
 } // namespace HiviewDFX
