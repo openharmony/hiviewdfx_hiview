@@ -18,6 +18,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,7 @@ public:
 
 private:
     std::map<std::string, std::shared_ptr<LoggerEvent>> pluginStatsEvents_;
+    std::mutex mutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
