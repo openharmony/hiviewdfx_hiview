@@ -13,34 +13,37 @@
  * limitations under the License.
  */
 
-#include "plugin.h"
+#include "freeze_detector_plugin.h"
 
 #include "logger.h"
 #include "plugin_factory.h"
-#include "resolver.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
-#include "vendor.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER(FreezeDetectorPlugin);
+REGISTER_PROXY(FreezeDetectorPlugin);
 DEFINE_LOG_TAG("FreezeDetector");
-
-std::string FreezeDetectorPlugin::GetListenerName()
+FreezeDetectorPlugin::FreezeDetectorPlugin()
 {
-    return FREEZE_DETECTOR_PLUGIN_NAME;
+}
+
+FreezeDetectorPlugin::~FreezeDetectorPlugin()
+{
 }
 
 bool FreezeDetectorPlugin::ReadyToLoad()
 {
-    Vendor::GetInstance().Init();
-    return FreezeResolver::GetInstance().Init();
+    freezeCommon_ = std::make_shared<FreezeCommon>();
+    bool ret1 = freezeCommon_->Init();
+    freezeResolver_ = std::make_unique<FreezeResolver>(freezeCommon_);
+    bool ret2 = freezeResolver_->Init();
+    return ret1 && ret2;
 }
 
 void FreezeDetectorPlugin::OnLoad()
 {
-    HIVIEW_LOGI("OnLoad.");
+    HIVIEW_LOGD("OnLoad.");
     SetName(FREEZE_DETECTOR_PLUGIN_NAME);
     SetVersion(FREEZE_DETECTOR_PLUGIN_VERSION);
 
@@ -49,25 +52,26 @@ void FreezeDetectorPlugin::OnLoad()
         HIVIEW_LOGW("thread loop is null.");
         return;
     }
-    threadLoop_->StartLoop();
-
-    AddFreezeListener();
+    threadLoop_->StartLoop(false);
+    freezeCommon_ = std::make_shared<FreezeCommon>();
+    bool ret = freezeCommon_->Init();
+    if (!ret) {
+        HIVIEW_LOGW("freezeCommon_->Init false.");
+        freezeCommon_ = nullptr;
+        return;
+    }
+    freezeResolver_ = std::make_unique<FreezeResolver>(freezeCommon_);
+    ret = freezeResolver_->Init();
+    if (!ret) {
+        HIVIEW_LOGW("freezeResolver_->Init false.");
+        freezeCommon_ = nullptr;
+        freezeResolver_ = nullptr;
+    }
 }
 
 void FreezeDetectorPlugin::OnUnload()
 {
     HIVIEW_LOGD("OnUnload.");
-}
-
-void FreezeDetectorPlugin::AddFreezeListener()
-{
-    std::set<std::string> set = Vendor::GetInstance().GetFreezeStringIds();
-    AddListenerInfo(Event::MessageType::SYS_EVENT, set);
-
-    auto context = GetHiviewContext();
-    if (context != nullptr) {
-        context->RegisterUnorderedEventListener(std::static_pointer_cast<FreezeDetectorPlugin>(shared_from_this()));
-    }
 }
 
 bool FreezeDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
@@ -99,13 +103,13 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
 
     long seq = sysEvent.GetSeq();
     long tid = sysEvent.GetTid();
-    long pid = sysEvent.GetEventIntValue(EVENT_PID);
+    long pid = sysEvent.GetEventIntValue(FreezeCommon::EVENT_PID);
     pid = pid ? pid : sysEvent.GetPid();
-    long uid = sysEvent.GetEventIntValue(EVENT_UID);
+    long uid = sysEvent.GetEventIntValue(FreezeCommon::EVENT_UID);
     uid = uid ? uid : sysEvent.GetUid();
-    std::string packageName = sysEvent.GetEventValue(EVENT_PACKAGE_NAME);
-    std::string processName = sysEvent.GetEventValue(EVENT_PROCESS_NAME);
-    std::string msg = RemoveRedundantNewline(sysEvent.GetEventValue(EVENT_MSG));
+    std::string packageName = sysEvent.GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
+    std::string processName = sysEvent.GetEventValue(FreezeCommon::EVENT_PROCESS_NAME);
+    std::string msg = RemoveRedundantNewline(sysEvent.GetEventValue(FreezeCommon::EVENT_MSG));
     std::string info = sysEvent.GetEventValue(EventStore::EventCol::INFO);
     std::regex reg("logPath:([^,]+)");
     std::smatch result;
@@ -134,16 +138,22 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
     return watchPoint;
 }
 
-void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
+void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
 {
     HIVIEW_LOGD("received event id=%{public}u, domain=%{public}s, stringid=%{public}s, extraInfo=%{public}s.",
         event.eventId_, event.domain_.c_str(), event.eventName_.c_str(), event.jsonExtraInfo_.c_str());
+    if (freezeCommon_ == nullptr) {
+        return;
+    }
 
-    if (Vendor::GetInstance().IsFreezeEvent(event.domain_, event.eventName_) == false) {
+    if (freezeCommon_->IsFreezeEvent(event.domain_, event.eventName_) == false) {
         HIVIEW_LOGE("not freeze event.");
         return;
     }
 
+    HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
+        event.domain_.c_str(), event.eventName_.c_str());
+    HIVIEW_LOGD("threadLoop_->IsRunning() = %{public}d", threadLoop_->IsRunning());
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
@@ -153,7 +163,13 @@ void FreezeDetectorPlugin::OnUnorderedEvent(const Event& event)
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)
 {
-    auto ret = FreezeResolver::GetInstance().ProcessEvent(watchPoint);
+    HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
+        watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
+    if (freezeResolver_ == nullptr) {
+        return;
+    }
+
+    auto ret = freezeResolver_->ProcessEvent(watchPoint);
     if (ret < 0) {
         HIVIEW_LOGE("FreezeResolver ProcessEvent filled.");
     }

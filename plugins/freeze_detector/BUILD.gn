@@ -31,7 +31,8 @@ ohos_source_set("freeze_detector") {
   part_name = "hiview"
   sources = [
     "db_helper.cpp",
-    "plugin.cpp",
+    "freeze_common.cpp",
+    "freeze_detector_plugin.cpp",
     "resolver.cpp",
     "rule_cluster.cpp",
     "vendor.cpp",
@@ -42,7 +43,6 @@ ohos_source_set("freeze_detector") {
 
   external_deps = [
     "hilog_native:libhilog",
-    "hisysevent_native:libhisysevent",
     "hiview:libfaultlogger",
   ]
 
