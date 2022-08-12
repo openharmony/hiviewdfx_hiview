@@ -317,7 +317,7 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
 }
 
 int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEventCallbackPtrOhos& callback,
-    int64_t& lastRecordTime, int32_t& drops)
+    QueryTimeRange& queryTimeRange, int32_t& drops)
 {
     std::vector<u16string> events;
     std::vector<int64_t> seqs;
@@ -342,7 +342,7 @@ int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEven
         seqs.push_back(iter->GetSeq());
         totalRecords++;
         curTotal += jsonSize;
-        lastRecordTime = static_cast<int64_t>(iter->happenTime_);
+        queryTimeRange.second = static_cast<int64_t>(iter->happenTime_);
     }
 
     if (events.size()) {
@@ -390,22 +390,22 @@ void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules
     }
 }
 
-uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, int64_t beginTime,
-    int64_t endTime, int32_t maxEvents, ResultSet& result)
+uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter,
+    const QueryTimeRange& timeRange, int32_t maxEvents, bool isFirstPartialQuery, ResultSet& result)
 {
-    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
+    auto sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
     Cond timeCond;
-    timeCond.And(EventCol::TS, Op::GE, beginTime);
-    timeCond.And(EventCol::TS, Op::LT, endTime);
+    timeCond.And(EventCol::TS, Op::GE, timeRange.first);
+    timeCond.And(EventCol::TS, Op::LT, timeRange.second);
 
     auto domainsWithNames = queryArgIter->second;
     Cond domainNameConds;
     for_each(domainsWithNames.cbegin(), domainsWithNames.cend(),
-        [&sysEventQuery, &domainNameConds] (const DomainsWithNames::value_type& domainNames) {
+        [&domainNameConds] (const DomainsWithNames::value_type& domainNames) {
             Cond domainConds("domain_", Op::EQ, domainNames.first);
             Cond nameConds;
             auto names = domainNames.second;
-            for_each(names.cbegin(), names.cend(), [&sysEventQuery, &nameConds](const std::string& name) {
+            for_each(names.cbegin(), names.cend(), [&nameConds] (const std::string& name) {
                 nameConds.Or("name_", Op::EQ, name);
             });
             if (!names.empty()) {
@@ -415,9 +415,9 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
         });
 
     if (domainsWithNames.empty()) {
-        sysEventQuery = sysEventQuery.Where(timeCond).Order(EventCol::TS, true);
+        (*sysEventQuery).Where(timeCond).Order(EventCol::TS, true);
     } else {
-        sysEventQuery = sysEventQuery.Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
+        (*sysEventQuery).Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
     }
     std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
     if (processName.empty()) {
@@ -425,15 +425,16 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
     }
     QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
     uint32_t queryRetCode = IPC_CALL_SUCCEED;
-    result = sysEventQuery.Execute(maxEvents, false, callInfo, [&queryRetCode] (DbQueryStatus status) {
-        std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
-            { DbQueryStatus::CONCURRENT, ERROR_TOO_MANY_CONCURRENT_QUERIES },
-            { DbQueryStatus::OVER_TIME, ERROR_QUERY_OVER_TIME },
-            { DbQueryStatus::OVER_LIMIT, ERROR_QUERY_OVER_LIMIT },
-            { DbQueryStatus::TOO_FREQENTLY, ERROR_QUERY_TOO_FREQUENTLY },
-        };
-        queryRetCode = statusToCode[status];
-    });
+    result = sysEventQuery->Execute(maxEvents, { false, isFirstPartialQuery }, callInfo,
+        [&queryRetCode] (DbQueryStatus status) {
+            std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
+                { DbQueryStatus::CONCURRENT, ERROR_TOO_MANY_CONCURRENT_QUERIES },
+                { DbQueryStatus::OVER_TIME, ERROR_QUERY_OVER_TIME },
+                { DbQueryStatus::OVER_LIMIT, ERROR_QUERY_OVER_LIMIT },
+                { DbQueryStatus::TOO_FREQENTLY, ERROR_QUERY_TOO_FREQUENTLY },
+            };
+            queryRetCode = statusToCode[status];
+        });
     return queryRetCode;
 }
 
@@ -455,31 +456,35 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
         return ERROR_DOMIAN_INVALID;
     }
     auto realBeginTime = beginTime < 0 ? 0 : beginTime;
-    auto lastQueryBeginTime = realBeginTime;
     auto realEndTime = endTime < 0 ? std::numeric_limits<int64_t>::max() : endTime;
-    auto lastQueryEndTime = realEndTime;
+    QueryTimeRange queryTimeRange = std::make_pair(realBeginTime, realEndTime);
     auto remainCnt = maxEvents < 0 ? std::numeric_limits<int32_t>::max() : maxEvents;
     auto totalEventCnt = 0;
     auto queryTypeIter = queryArgs.cbegin();
+    bool isFirstPartialQuery = true;
     while (remainCnt > 0) {
         ResultSet ret;
         auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
-        uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, lastQueryBeginTime, lastQueryEndTime,
-            queryLimit, ret);
+        uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, queryTimeRange, queryLimit,
+            isFirstPartialQuery, ret);
         if (queryRetCode != IPC_CALL_SUCCEED) {
             callback->OnComplete(0, totalEventCnt);
             return queryRetCode;
         }
         auto dropCnt = 0;
-        auto queryRetCnt = TransSysEvent(ret, callback, lastQueryBeginTime, dropCnt);
-        lastQueryBeginTime++;
+        auto queryRetCnt = TransSysEvent(ret, callback, queryTimeRange, dropCnt);
+        queryTimeRange.first++;
         totalEventCnt += queryRetCnt;
         remainCnt -= queryRetCnt;
-        if ((++queryTypeIter) == queryArgs.cend()) {
-            break;
+        if ((queryRetCnt + dropCnt) < queryLimit || queryTimeRange.first >= queryTimeRange.second) {
+            if ((++queryTypeIter) != queryArgs.cend()) {
+                queryTimeRange.first = realBeginTime;
+                queryTimeRange.second = realEndTime;
+            } else {
+                break;
+            }
         }
-        lastQueryBeginTime = realBeginTime;
-        lastQueryEndTime = realEndTime;
+        isFirstPartialQuery = false;
     }
     callback->OnComplete(0, totalEventCnt);
     return IPC_CALL_SUCCEED;

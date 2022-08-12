@@ -38,8 +38,8 @@ SysEventDbBackup::SysEventDbBackup(EventStore::StoreType type)
 
 bool SysEventDbBackup::IsBroken()
 {
-    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(dbFile_);
-    ResultSet result = sysEventQuery.Where(EventCol::TS, Op::GT, 0).And(EventCol::TS, Op::LT, 1000).Execute(1); // 1s
+    auto sysEventQuery = SysEventDao::BuildQuery(dbFile_);
+    ResultSet result = (*sysEventQuery).Where(EventCol::TS, Op::GT, 0).And(EventCol::TS, Op::LT, 1000).Execute(1); // 1s
     if (result.GetErrCode() != 0) {
         HIVIEW_LOGE("sys event db=%{public}s is broken", dbFile_.c_str());
         return true;

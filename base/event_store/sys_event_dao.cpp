@@ -19,6 +19,7 @@
 #include "hiview_global.h"
 #include "logger.h"
 #include "store_mgr_proxy.h"
+#include "sys_event_query_wrapper.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -26,21 +27,22 @@ namespace EventStore {
 namespace {
 constexpr int ERR_INVALID_DB_FILE = -1;
 constexpr int ERR_FAILED_DB_OPERATION = -2;
+constexpr int ERR_INVALID_QUERY = -3;
 }
 DEFINE_LOG_TAG("HiView-SysEventDao");
-SysEventQuery SysEventDao::BuildQuery(StoreType type)
+std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(StoreType type)
 {
-    return SysEventQuery(GetDataFile(type));
+    return std::make_shared<SysEventQueryWrapper>(GetDataFile(type));
 }
 
-SysEventQuery SysEventDao::BuildQuery(uint16_t eventType)
+std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(uint16_t eventType)
 {
-    return SysEventQuery(GetDataFile(static_cast<StoreType>(eventType)));
+    return std::make_shared<SysEventQueryWrapper>(GetDataFile(static_cast<StoreType>(eventType)));
 }
 
-SysEventQuery SysEventDao::BuildQuery(const std::string& dbFile)
+std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& dbFile)
 {
-    return SysEventQuery(dbFile);
+    return std::make_shared<SysEventQueryWrapper>(dbFile);
 }
 
 int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)
@@ -88,17 +90,20 @@ int SysEventDao::Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange)
     return 0;
 }
 
-int SysEventDao::Delete(SysEventQuery &sysEventQuery, int limit)
+int SysEventDao::Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit)
 {
+    if (sysEventQuery == nullptr) {
+        return ERR_INVALID_QUERY;
+    }
     std::vector<std::string> dbFiles;
-    if (sysEventQuery.GetDbFile().empty()) {
+    if (sysEventQuery->GetDbFile().empty()) {
         GetDataFiles(dbFiles);
     } else {
-        dbFiles.push_back(sysEventQuery.GetDbFile());
+        dbFiles.push_back(sysEventQuery->GetDbFile());
     }
 
     DataQuery dataQuery;
-    sysEventQuery.GetDataQuery(dataQuery);
+    sysEventQuery->GetDataQuery(dataQuery);
     dataQuery.Limit(limit);
     for (auto dbFile : dbFiles) {
         HIVIEW_LOGD("delete event from db file %{public}s", dbFile.c_str());

@@ -118,17 +118,17 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
-    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    query.Select(QUERY_ITEMS).Where("uid_", EventStore::Op::EQ, id).Order("time_", false);
+    auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*query).Select(QUERY_ITEMS).Where("uid_", EventStore::Op::EQ, id).Order("time_", false);
     if (id != 0) {
-        query.And("MODULE", EventStore::Op::EQ, module);
+        query->And("MODULE", EventStore::Op::EQ, module);
     }
 
     if (faultType != 0) {
-        query.And("FAULT_TYPE", EventStore::Op::EQ, faultType);
+        query->And("FAULT_TYPE", EventStore::Op::EQ, faultType);
     }
 
-    EventStore::ResultSet resultSet = query.Execute(maxNum);
+    EventStore::ResultSet resultSet = query->Execute(maxNum);
     while (resultSet.HasNext()) {
         auto it = resultSet.Next();
         FaultLogInfo info;
@@ -145,11 +145,11 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
-    EventStore::SysEventQuery query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    query.Select(QUERY_ITEMS).Where("pid_", EventStore::Op::EQ, pid).Order("time_", false);
-    query.And("uid_", EventStore::Op::EQ, uid);
-    query.And("FAULT_TYPE", EventStore::Op::EQ, faultType);
-    return query.Execute(1).HasNext();
+    auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*query).Select(QUERY_ITEMS).Where("pid_", EventStore::Op::EQ, pid).Order("time_", false);
+    query->And("uid_", EventStore::Op::EQ, uid);
+    query->And("FAULT_TYPE", EventStore::Op::EQ, faultType);
+    return query->Execute(1).HasNext();
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

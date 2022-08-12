@@ -125,8 +125,9 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
     int retCode2 = EventStore::SysEventDao::Insert(sysEvent2);
     ASSERT_TRUE(retCode2 == 0);
 
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    EventStore::ResultSet resultSet = sysEventQuery.Select({EventStore::EventCol::TS}).
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet resultSet = (*sysEventQuery).Select(selections).
         Where(EventStore::EventCol::TS, EventStore::Op::EQ, 162027129100).Execute();
     int count = 0;
     while (resultSet.HasNext()) {
@@ -159,9 +160,10 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
     ASSERT_TRUE(sysEvent->ParseJson() == 0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
-    EventStore::SysEventQuery sysEventQuery1 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
-    EventStore::ResultSet resultSet = sysEventQuery1.Select({EventStore::EventCol::TS}).
-        Where(EventStore::EventCol::TS, EventStore::Op::EQ, 1620271291200).Execute();
+    auto sysEventQuery1 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet resultSet = (*sysEventQuery1).Select(selections)
+        .Where(EventStore::EventCol::TS, EventStore::Op::EQ, 1620271291200).Execute();
     int count = 0;
     while (resultSet.HasNext()) {
         count++;
@@ -171,13 +173,13 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
     }
     ASSERT_TRUE(count == 1);
 
-    EventStore::SysEventQuery delEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
-    delEventQuery.Where(EventStore::EventCol::TS, EventStore::Op::GT, 0);
+    auto delEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
+    (*delEventQuery).Where(EventStore::EventCol::TS, EventStore::Op::GT, 0);
     EventStore::SysEventDao::Delete(delEventQuery);
 
     count = 0;
-    EventStore::SysEventQuery sysEventQuery2 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
-    sysEventQuery2.Where(EventStore::EventCol::TS, EventStore::Op::GT, 0).Execute();
+    auto sysEventQuery2 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
+    (*sysEventQuery2).Where(EventStore::EventCol::TS, EventStore::Op::GT, 0).Execute();
     while (resultSet.HasNext()) {
         count++;
     }
@@ -199,7 +201,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_004, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::Cond timeCond(EventStore::EventCol::TS, EventStore::Op::GE, 100);
     timeCond.And(EventStore::EventCol::TS, EventStore::Op::LT, 999);
 
@@ -217,8 +219,8 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_004, testing::ext::TestSize.Level3)
 
     EventStore::Cond domainCond;
     domainCond.Or(domainCond1).Or(domainCond2).Or(domainCond3);
-    sysEventQuery.Where(timeCond).And(domainCond);
-    EventStore::ResultSet resultSet = sysEventQuery.Execute();
+    (*sysEventQuery).Where(timeCond).And(domainCond);
+    EventStore::ResultSet resultSet = sysEventQuery->Execute();
     int count = 0;
     while (resultSet.HasNext()) {
         count++;
@@ -240,15 +242,15 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_005, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*sysEventQuery).Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
         .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1")
         .And(EventStore::EventCol::TS, EventStore::Op::EQ, 100)
         .And(EventStore::EventCol::TS, EventStore::Op::EQ, 100.1f)
         .Or(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1")
         .Or(EventStore::EventCol::TS, EventStore::Op::EQ, 100)
         .Or(EventStore::EventCol::TS, EventStore::Op::EQ, 100.1f);
-    EventStore::ResultSet resultSet = sysEventQuery.Execute();
+    EventStore::ResultSet resultSet = sysEventQuery->Execute();
     int count = 0;
     while (resultSet.HasNext()) {
         count++;
@@ -283,9 +285,10 @@ HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
     retCode = EventStore::SysEventDao::Update(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
-    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery(EventStore::StoreType::SECURITY);
-    EventStore::ResultSet resultSet = sysEventQuery
-        .Select({EventStore::EventCol::TS})
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::SECURITY);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet resultSet = (*sysEventQuery)
+        .Select(selections)
         .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "SysEventDaoTest_006")
         .Execute();
     int count = 0;
@@ -353,9 +356,9 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         }
         return 0;
     };
-    EventStore::SysEventQuery sysEventQuery= EventStore::SysEventDao::BuildQuery(EventStore::StoreType::BEHAVIOR);
-    sysEventQuery
-        .Select({EventStore::EventCol::TS})
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::BEHAVIOR);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    (*sysEventQuery).Select(selections)
         .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "DuringQuery")
         .Order(EventStore::EventCol::TS)
         .ExecuteWithCallback(c, 10);
@@ -376,14 +379,16 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
     EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
     for (int i = 0; i < threadCount; i++) {
         std::thread t([&queryStatus] () {
-            EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-            sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+            auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+            (*sysEventQuery).Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
                 .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
             int queryCount = 10;
-            (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+            (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
                 [&queryStatus] (EventStore::DbQueryStatus status) {
-                    queryStatus = status;
-                });
+                    if (status != EventStore::DbQueryStatus::SUCCEED) {
+                        queryStatus = status;
+                    }
+                }));
         });
         t.detach();
     }
@@ -401,15 +406,17 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
 {
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*sysEventQuery).Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
         .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
     EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
     int queryCount = 51;
-    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+    (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
         [&queryStatus] (EventStore::DbQueryStatus status) {
-            queryStatus = status;
-        });
+            if (status != EventStore::DbQueryStatus::SUCCEED) {
+                queryStatus = status;
+            }
+        }));
     ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::OVER_LIMIT);
 }
 
@@ -422,19 +429,23 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
 {
-    EventStore::SysEventQuery sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    sysEventQuery.Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*sysEventQuery).Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
         .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
     EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
     int queryCount = 10;
-    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+    (void)sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
         [&queryStatus] (EventStore::DbQueryStatus status) {
-            queryStatus = status;
+            if (status != EventStore::DbQueryStatus::SUCCEED) {
+                queryStatus = status;
+            }
         });
-    (void)sysEventQuery.Execute(queryCount, true, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+    (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
         [&queryStatus] (EventStore::DbQueryStatus status) {
-            queryStatus = status;
-        });
+            if (status != EventStore::DbQueryStatus::SUCCEED) {
+                queryStatus = status;
+            }
+        }));
     ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
 }
 } // namespace HiviewDFX

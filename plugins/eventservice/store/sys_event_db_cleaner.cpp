@@ -48,8 +48,8 @@ bool SysEventDbCleaner::IfNeedClean()
 
 int SysEventDbCleaner::CleanDbByTime(const std::string dbFile, int64_t time) const
 {
-    SysEventQuery sysEventQuery = SysEventDao::BuildQuery(dbFile);
-    sysEventQuery.Where(EventStore::EventCol::TS, EventStore::Op::LT, time);
+    auto sysEventQuery = SysEventDao::BuildQuery(dbFile);
+    (*sysEventQuery).Where(EventStore::EventCol::TS, EventStore::Op::LT, time);
     return SysEventDao::Delete(sysEventQuery, 10000); // 10000 means delete limit
 }
 
