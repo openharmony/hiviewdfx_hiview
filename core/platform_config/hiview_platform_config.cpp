@@ -30,10 +30,9 @@ namespace {
     constexpr int CONFIG_FILE_DIR_NO = 1;
     constexpr int LIB_DIR_NO = 2;
     constexpr int LIB64_DIR_NO = 3;
-    constexpr int UPDATE_CONFIG_DIR_NO = 4;
-    constexpr int WORK_DIR_NO = 5;
-    constexpr int COMMERCIAL_WORK_DIR_NO = 6;
-    constexpr int PRESIST_DIR_NO = 7;
+    constexpr int WORK_DIR_NO = 4;
+    constexpr int COMMERCIAL_WORK_DIR_NO = 5;
+    constexpr int PRESIST_DIR_NO = 6;
 }
 
 HiviewPlatformConfig::HiviewPlatformConfig(const std::string& configPath)
@@ -51,7 +50,6 @@ void HiviewPlatformConfig::InitData()
     RegexList_.push_back(std::regex("PLUGIN_CONFIG_FILE_DIR\\s*=\\s*\"(.*)\".*"));
     RegexList_.push_back(std::regex("DYNAMIC_LIB_SEARCH_DIR\\s*=\\s*\"(.*)\".*"));
     RegexList_.push_back(std::regex("DYNAMIC_LIB64_SEARCH_DIR\\s*=\\s*\"(.*)\".*"));
-    RegexList_.push_back(std::regex("CLOUD_UPDATE_CONFIG_DIR\\s*=\\s*\"(.*)\".*"));
     RegexList_.push_back(std::regex("WORK_DIR\\s*=\\s*\"(.*)\".*"));
     RegexList_.push_back(std::regex("COMMERCIAL_WORK_DIR\\s*=\\s*\"(.*)\".*"));
     RegexList_.push_back(std::regex("PERSIST_DIR\\s*=\\s*\"(.*)\".*"));
@@ -93,7 +91,6 @@ bool HiviewPlatformConfig::ParsesConfig(HiviewPlatformConfig::PlatformConfigInfo
     ret.pluginConfigFileDir = retString[CONFIG_FILE_DIR_NO];
     ret.dynamicLibSearchDir = retString[LIB_DIR_NO];
     ret.dynamicLib64SearchDir = retString[LIB64_DIR_NO];
-    ret.cloudUpdateConfigDir = retString[UPDATE_CONFIG_DIR_NO];
     ret.workDir = retString[WORK_DIR_NO];
     ret.commercialWorkDir = retString[COMMERCIAL_WORK_DIR_NO];
     ret.persistDir = retString[PRESIST_DIR_NO];

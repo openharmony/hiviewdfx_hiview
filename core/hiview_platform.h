@@ -115,8 +115,8 @@ private:
     void UnloadPlugin(const std::string& name);
     void StartEventSource(std::shared_ptr<EventSource> source);
     void ValidateAndCreateDirectory(std::string& defaultPath, const std::string& realPath);
-    void ValidateAndCreateDirectories(const std::string& localPath, const std::string& cloudUpdatePath,
-                                  const std::string& workPath, const std::string& persistPath);
+    void ValidateAndCreateDirectories(const std::string& localPath, const std::string& workPath,
+        const std::string& persistPath);
     void LoadBusinessPlugin(const PluginConfig& config);
     void ExitHiviewIfNeed();
     std::string GetPluginConfigPath();
@@ -130,7 +130,6 @@ private:
 
     bool isReady_;
     std::string defaultConfigDir_;
-    std::string cloudUpdateConfigDir_;
     std::string defaultWorkDir_;
     std::string defaultCommercialWorkDir_;
     std::string defaultPersistDir_;

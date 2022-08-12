@@ -28,7 +28,6 @@ public:
         std::string pluginConfigFileDir;
         std::string dynamicLibSearchDir;
         std::string dynamicLib64SearchDir;
-        std::string cloudUpdateConfigDir;
         std::string workDir;
         std::string commercialWorkDir;
         std::string persistDir;

@@ -247,7 +247,6 @@ public:
 
     enum class DirectoryType {
         CONFIG_DIRECTORY,
-        CLOUD_UPDATE_DIRECTORY,
         WORK_DIRECTORY,
         PERSIST_DIR,
     };
