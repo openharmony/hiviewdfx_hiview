@@ -175,7 +175,6 @@ DEFAULT_PLUGIN_CONFIG_NAME = "plugin_config"
 PLUGIN_CONFIG_FILE_DIR = "/system/etc/hiview/"
 DYNAMIC_LIB_SEARCH_DIR = "/system/lib/"
 DYNAMIC_LIB64_SEARCH_DIR = "/system/lib64/"
-CLOUD_UPDATE_CONFIG_DIR = "/data/system/hiview/"
 WORK_DIR = "/data/log/hiview/"
 COMMERCIAL_WORK_DIR = "/log/LogService/"
 PERSIST_DIR = "/log/hiview/"
@@ -188,7 +187,6 @@ PERSIST_DIR = "/log/hiview/"
 | PLUGIN_CONFIG_FILE_DIR | 表示插件配置文件所在的位置 |
 | DYNAMIC_LIB_SEARCH_DIR | 表示插件包在32位系统中的位置 |
 | DYNAMIC_LIB64_SEARCH_DIR | 表示插件包在64位系统中的位置 |
-| CLOUD_UPDATE_CONFIG_DIR | 云更新目录 |
 | WORK_DIR | 工作日志路径 |
 | PERSIST_DIR | 持久日志路径 |
 

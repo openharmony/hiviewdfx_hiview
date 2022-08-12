@@ -53,7 +53,6 @@ HWTEST_F(HiviewPlatformConfigTest, PlatformConfigParse001, TestSize.Level3)
     ASSERT_EQ(platformConfigInfo.pluginConfigFileDir, "/data/test/test_data/");
     ASSERT_EQ(platformConfigInfo.dynamicLibSearchDir, "/system/lib/");
     ASSERT_EQ(platformConfigInfo.dynamicLib64SearchDir, "/system/lib64/");
-    ASSERT_EQ(platformConfigInfo.cloudUpdateConfigDir, "/data/system/hiview/");
     ASSERT_EQ(platformConfigInfo.workDir, "/data/test/LogService_a/");
     ASSERT_EQ(platformConfigInfo.commercialWorkDir, "/log/LogService/");
     ASSERT_EQ(platformConfigInfo.persistDir, "/log/hiview/");

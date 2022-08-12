@@ -94,8 +94,6 @@ HWTEST_F(PluginPlatformTest, PluginPlatformInit001, TestSize.Level3)
 
     auto baseDir = platform.GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
     EXPECT_EQ("/data/test/test_data/", baseDir);
-    auto cloudDir = platform.GetHiViewDirectory(HiviewContext::DirectoryType::CLOUD_UPDATE_DIRECTORY);
-    EXPECT_EQ("/data/system/hiview/", cloudDir);
     auto workDir = platform.GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
 
     auto persistDir = platform.GetHiViewDirectory(HiviewContext::DirectoryType::PERSIST_DIR);
