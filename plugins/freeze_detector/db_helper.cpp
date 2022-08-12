@@ -18,19 +18,18 @@
 #include <regex>
 
 #include "logger.h"
-#include "plugin.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
-#include "vendor.h"
-#include "watch_point.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
-
 void DBHelper::SelectEventFromDB(
     bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list)
 {
+    if (freezeCommon_ == nullptr) {
+        return;
+    }
     if (start > end) {
         return;
     }
@@ -55,13 +54,13 @@ void DBHelper::SelectEventFromDB(
 
         std::string domain = record->GetEventValue(EventStore::EventCol::DOMAIN);
         std::string stringId = record->GetEventValue(EventStore::EventCol::NAME);
-        if (Vendor::GetInstance().IsFreezeEvent(domain, stringId) == false) {
+        if (freezeCommon_->IsFreezeEvent(domain, stringId) == false) {
             continue;
         }
 
-        long pid = record->GetEventIntValue(FreezeDetectorPlugin::EVENT_PID);
+        long pid = record->GetEventIntValue(FreezeCommon::EVENT_PID);
         pid = pid ? pid : record->GetPid();
-        long uid = record->GetEventIntValue(FreezeDetectorPlugin::EVENT_UID);
+        long uid = record->GetEventIntValue(FreezeCommon::EVENT_UID);
         uid = uid ? uid : record->GetUid();
         long tid = std::strtoul(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
 
@@ -73,9 +72,9 @@ void DBHelper::SelectEventFromDB(
             .InitPid(pid)
             .InitUid(uid)
             .InitTid(tid)
-            .InitPackageName(record->GetEventValue(FreezeDetectorPlugin::EVENT_PACKAGE_NAME))
-            .InitProcessName(record->GetEventValue(FreezeDetectorPlugin::EVENT_PROCESS_NAME))
-            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeDetectorPlugin::EVENT_MSG), "\\n", "\n"))
+            .InitPackageName(record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME))
+            .InitProcessName(record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME))
+            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeCommon::EVENT_MSG), "\\n", "\n"))
             .Build();
 
         std::string info = record->GetEventValue(EventStore::EventCol::INFO);
