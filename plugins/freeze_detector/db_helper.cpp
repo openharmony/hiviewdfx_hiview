@@ -35,16 +35,17 @@ void DBHelper::SelectEventFromDB(
         return;
     }
 
-    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    eventQuery.Select({EventStore::EventCol::TS})
+    auto eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    (*eventQuery).Select(selections)
         .Where(EventStore::EventCol::TS, EventStore::Op::GE, static_cast<int64_t>(start))
         .And(EventStore::EventCol::TS, EventStore::Op::LE, static_cast<int64_t>(end));
     if (all == false) { // with or without resolved events
-        eventQuery.And(EventStore::Cond(EventStore::EventCol::INFO, EventStore::Op::NSW, "isResolved"));
+        (*eventQuery).And(EventStore::Cond(EventStore::EventCol::INFO, EventStore::Op::NSW, "isResolved"));
         //    .Or(EventStore::Cond(EventStore::EventCol::INFO, EventStore::Op::NU)));
     }
 
-    EventStore::ResultSet set = eventQuery.Execute();
+    EventStore::ResultSet set = eventQuery->Execute();
     if (set.GetErrCode() != 0) {
         HIVIEW_LOGE("failed to select event from db, error:%{public}d.", set.GetErrCode());
         return;
@@ -94,8 +95,9 @@ void DBHelper::SelectEventFromDB(
 
 void DBHelper::UpdateEventIntoDB(const WatchPoint& watchPoint, int id)
 {
-    EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    EventStore::ResultSet set = eventQuery.Select({EventStore::EventCol::TS})
+    auto eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet set = (*eventQuery).Select(selections)
         .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(watchPoint.GetTimestamp()))
         .Execute();
     if (set.GetErrCode() != 0) {

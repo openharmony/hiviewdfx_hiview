@@ -401,8 +401,9 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
         info.sectionMap = sysEvent->GetKeyValuePairs();
         AddFaultLog(info);
 
-        EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
-        EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
+        auto eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
+        std::vector<std::string> selections { EventStore::EventCol::TS };
+        EventStore::ResultSet set = (*eventQuery).Select(selections)
             .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
             .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
             .And(EventStore::EventCol::NAME, EventStore::Op::EQ, sysEvent->eventName_)

@@ -40,10 +40,10 @@ ohos_source_set("event_store_source") {
   configs = [ ":event_store_private_config" ]
 
   sources = [
-    "query_status_log_util.cpp",
     "store_mgr_proxy.cpp",
     "sys_event_dao.cpp",
     "sys_event_query.cpp",
+    "sys_event_query_wrapper.cpp",
   ]
 
   deps = [ "$hiview_base/running_status_logger:running_status_logger_source" ]
