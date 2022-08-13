@@ -92,8 +92,8 @@ ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessI
     ResultSet resultSet;
     int queryErrorCode = -1;
     (void)IsConditionCntValid(dataQuery);
-    if (!IsQueryCntLimitValid(dataQuery, tag, limit, queryCallback) |
-        !IsConcurrentQueryCntValid(GetDbFile(), tag, queryCallback) |
+    if (!IsQueryCntLimitValid(dataQuery, tag, limit, queryCallback) ||
+        !IsConcurrentQueryCntValid(GetDbFile(), tag, queryCallback) ||
         !IsQueryFrequenceValid(dataQuery, tag, GetDbFile(), callerInfo, queryCallback)) {
         resultSet.Set(queryErrorCode, false);
         return resultSet;
