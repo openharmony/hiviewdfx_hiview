@@ -107,8 +107,8 @@ void UsageEventReportService::MinusLastSysUsage(std::shared_ptr<LoggerEvent>& no
     for (auto key : SYS_USAGE_KEYS) {
         uint64_t nowUsageTime = nowUsage->GetValue(key).GetUint64();
         uint64_t lastUsageTime = lastUsage->GetValue(key).GetUint64();
-        uint64_t curUsageTime = nowUsageTime > lastUsageTime ? (nowUsageTime - lastUsageTime) : 0;
-        nowUsage->Update(key, curUsageTime);
+        uint64_t curUsageTime = nowUsageTime > lastUsageTime ? (nowUsageTime - lastUsageTime) : nowUsageTime;
+        nowUsage->Update(key, std::min(curUsageTime, TimeUtil::MILLISECS_PER_DAY));
     }
 }
 
