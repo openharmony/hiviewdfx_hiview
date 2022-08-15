@@ -50,9 +50,7 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
-    HIVIEW_LOGI("event coming! id:0x%{public}x, eventName:%{public}s",
-        sysEvent->eventId_, sysEvent->eventName_.c_str());
-    HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+    HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
         sysEvent->jsonExtraInfo_.c_str());
 
     if (eventLoggerConfig_.find(sysEvent->eventName_) == eventLoggerConfig_.end()) {
@@ -78,7 +76,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
     auto task = [this, sysEvent]() {
-        HIVIEW_LOGI("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->jsonExtraInfo_.c_str());
         this->StartLogCollect(sysEvent);
         this->PostEvent(sysEvent);
@@ -90,8 +88,6 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
-    HIVIEW_LOGI("event: id:0x%{public}x, eventName:%{public}s called.",
-        event->eventId_,  event->eventName_.c_str());
     if (!JudgmentRateLimiting(event)) {
         return;
     }
@@ -217,7 +213,6 @@ std::string EventLogger::GetFormatTime(uint64_t timestamp) const
 
 bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
 {
-    HIVIEW_LOGI("call");
     EventStore::SysEventQuery eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
     EventStore::ResultSet set = eventQuery.Select( {EventStore::EventCol::TS} )
         .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
