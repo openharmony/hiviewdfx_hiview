@@ -170,6 +170,16 @@ void FreezeRuleCluster::ParseTagLinks(xmlNode* tag, FreezeRule& rule)
             FreezeResult result = FreezeResult(window, domain, stringId);
             ParseTagEvent(node, result);
             rule.AddResult(domain, stringId, result);
+
+            bool principalPoint = false;
+            if (rule.GetDomain() == domain && rule.GetStringId() == stringId) {
+                principalPoint = true;
+            }
+            if (result.GetScope() == "app") {
+                applicationPairs_[stringId] = std::pair<std::string, bool>(domain, principalPoint);
+            } else {
+                systemPairs_[stringId] = std::pair<std::string, bool>(domain, principalPoint);
+            }
         }
     }
 }
@@ -200,9 +210,7 @@ T FreezeRuleCluster::GetAttributeValue(xmlNode* node, const std::string& name)
 {
     xmlChar* prop = xmlGetProp(node, (xmlChar*)(name.c_str()));
     std::string propa = "";
-    if (prop == nullptr) {
-        HIVIEW_LOGE("failed to get attribute.");
-    } else {
+    if (prop != nullptr) {
         propa = (char*)prop;
     }
     std::istringstream istr(propa);
