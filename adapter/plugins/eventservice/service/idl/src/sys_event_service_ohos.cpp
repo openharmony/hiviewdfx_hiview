@@ -342,7 +342,7 @@ int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEven
         seqs.push_back(iter->GetSeq());
         totalRecords++;
         curTotal += jsonSize;
-        queryTimeRange.second = static_cast<int64_t>(iter->happenTime_);
+        queryTimeRange.first = static_cast<int64_t>(iter->happenTime_);
     }
 
     if (events.size()) {
