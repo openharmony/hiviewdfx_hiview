@@ -14,6 +14,8 @@
  */
 #include "log_catcher_utils.h"
 
+#include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -26,24 +28,66 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
+static std::map<int, std::shared_ptr<std::pair<bool, std::string>>> dumpMap;
+static std::mutex dumpMutex;
+static std::condition_variable getSync;
+
+bool GetDump(int pid, std::string& msg)
+{
+    std::unique_lock lock(dumpMutex);
+    auto it = dumpMap.find(pid);
+    if (it == dumpMap.end()) {
+        dumpMap[pid] = std::make_shared<std::pair<bool, std::string>>(
+            std::pair<bool, std::string>(false, ""));
+        return false;
+    }
+    std::shared_ptr<std::pair<bool, std::string>> tmp = it->second;
+    if (!tmp->first) {
+        getSync.wait_for(lock, std::chrono::seconds(10), // 10: dump stack timeout
+                         [pid]() -> bool {
+                                return (dumpMap.find(pid) == dumpMap.end());
+                            });
+        if (!tmp->first) {
+            return false;
+        }
+    }
+    msg = tmp->second;
+    return true;
+}
+
+void FinshDump(int pid, const std::string& msg)
+{
+    std::lock_guard lock(dumpMutex);
+    auto it = dumpMap.find(pid);
+    if (it == dumpMap.end()) {
+        return;
+    }
+    std::shared_ptr<std::pair<bool, std::string>> tmp = it->second;
+    tmp->first = true;
+    tmp->second = msg;
+    dumpMap.erase(pid);
+    getSync.notify_all();
+}
+
 int DumpStacktrace(int fd, int pid)
 {
     if (fd < 0) {
         return -1;
     }
-    DfxDumpCatcher dumplog;
     std::string msg = "";
-    bool ret = dumplog.DumpCatch(pid, 0, msg);
-    if (ret) {
-        if (msg == "") {
-            msg = "dumpCatch return empty stack!!!!";
+    if (!GetDump(pid, msg)) {
+        DfxDumpCatcher dumplog;
+        if (!dumplog.DumpCatch(pid, 0, msg)) {
+            msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n";
         }
-        FileUtil::SaveStringToFd(fd, msg);
-    } else {
-        msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n";
-        FileUtil::SaveStringToFd(fd, msg);
-        return -1;
+        FinshDump(pid, msg);
     }
+
+    if (msg == "") {
+        msg = "dumpCatch return empty stack!!!!";
+    }
+    FileUtil::SaveStringToFd(fd, msg);
+    
     return 0;
 }
 }
