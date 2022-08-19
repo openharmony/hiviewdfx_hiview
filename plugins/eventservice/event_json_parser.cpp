@@ -91,6 +91,21 @@ void ParameterWatchCallback(const char* key, const char* value, void* context)
 
 DEFINE_LOG_TAG("Event-JsonParser");
 
+bool DuplicateIdFilter::IsDuplicateEvent(const std::string& sysEventId)
+{
+    for (auto iter = sysEventIds.begin(); iter != sysEventIds.end(); iter++) {
+        if (*iter == sysEventId) {
+            return true;
+        }
+    }
+    FILTER_SIZE_TYPE maxSize { 5 }; // size of queue limit to 5
+    if (sysEventIds.size() >= maxSize) {
+        sysEventIds.pop_front();
+    }
+    sysEventIds.emplace_back(sysEventId);
+    return false;
+}
+
 EventJsonParser::EventJsonParser(const std::string& path)
 {
     Json::Value hiSysEventDef;
@@ -122,7 +137,7 @@ int EventJsonParser::GetTypeByDomainAndName(const std::string& domain, const std
     return GetDefinedBaseInfoByDomainName(domain, name).type;
 }
 
-bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event) const
+bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
 {
     Json::Value eventJson;
     std::string jsonStr = event->jsonExtraInfo_;
@@ -156,13 +171,18 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event) co
         HIVIEW_LOGE("failed to verify the base info of the event.");
         return false;
     }
-
-    AppendExtensiveInfo(eventJson, jsonStr);
+    auto curSysEventId = GenerateHash(jsonStr);
+    if (filter.IsDuplicateEvent(curSysEventId)) {
+        HIVIEW_LOGE("duplicate sys event, ignore it directly.");
+        return false; // ignore duplicate sys event
+    }
+    AppendExtensiveInfo(eventJson, jsonStr, curSysEventId);
     event->jsonExtraInfo_ = jsonStr;
     return true;
 }
 
-void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr) const
+void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr,
+    const std::string& sysEventId) const
 {
     // this customized parser would maintain the original order of JSON key-value pairs
     FlatJsonParser parser(jsonStr);
@@ -174,7 +194,7 @@ void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::str
     }
 
     // hash code need to add
-    parser.AppendStringValue(ID_, GenerateHash(jsonStr));
+    parser.AppendStringValue(ID_, sysEventId);
 
     // FreezeDetector needs to add
     parser.AppendStringValue(EventStore::EventCol::INFO.c_str(), "");
