@@ -29,14 +29,20 @@
         "deps": {
             "components": [
                 "ability_base",
+                "ability_runtime",
+                "access_token",
+                "battery_statistics",
+                "bundle_framework",
+                "c_utils",
+                "device_usage_statistics",
                 "hilog_native",
                 "hisysevent_native",
                 "init",
                 "ipc",
+                "os_account",
                 "safwk",
                 "samgr",
-                "startup_l2",
-                "c_utils"
+                "time_service"
             ],
             "third_party": [
                 "ejdb",
