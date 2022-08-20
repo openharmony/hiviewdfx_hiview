@@ -17,16 +17,22 @@
 #define FREEZE_DB_HELPER_H
 
 #include <list>
+#include <memory>
 #include <string>
 
+#include "freeze_common.h"
 #include "watch_point.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class DBHelper {
 public:
-    static void SelectEventFromDB(bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list);
-    static void UpdateEventIntoDB(const WatchPoint& watchPoint, int id);
+    explicit DBHelper(std::shared_ptr<FreezeCommon> fc) : freezeCommon_(fc) {};
+    ~DBHelper() {};
+    void SelectEventFromDB(bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list);
+    void UpdateEventIntoDB(const WatchPoint& watchPoint, int id);
+private:
+    std::shared_ptr<FreezeCommon> freezeCommon_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

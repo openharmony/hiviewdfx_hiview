@@ -14,12 +14,6 @@
  */
 #include "peer_binder_catcher.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include <sys/stat.h>
-
 #include "securec.h"
 
 #include "common_utils.h"
@@ -99,12 +93,6 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
 {
     std::map<int, std::list<BinderInfo>> manager;
     const int DECIMAL = 10;
-    const int WAIT_TIME_NUM = 3;
-    const int SERVCER_PID_NUM = 2;
-    const int CLIENT_PID_NUM = 1;
-    const int BINDER_TIMEOUT = 1;
-    std::string pattern = "(\\d+):.*to\\s*(\\d+):.*code.*wait:(\\d+)\\.";
-    std::regex reg(pattern);
     std::string line;
     bool findBinderHeader = false;
     FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
@@ -113,23 +101,46 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
         if (findBinderHeader) {
             continue;
         }
-        std::smatch match;
-        if (!std::regex_search(line, match, reg)) {
-            if (line.find("context") != line.npos) {
-                findBinderHeader = true;
-            }
+
+        if (line.find("async") != std::string::npos) {
             continue;
         }
-        BinderInfo info;
-        // 2: binder peer id, 10:dec
-        info.server = std::strtol(std::string(match[SERVCER_PID_NUM]).c_str(), nullptr, DECIMAL);
-        // 1: binder local id, 10:dec
-        info.client = std::strtol(std::string(match[CLIENT_PID_NUM]).c_str(), nullptr, DECIMAL);
-        // 3: binder wait time, 10:dec s
-        info.wait = std::strtol(std::string(match[WAIT_TIME_NUM]).c_str(), nullptr, DECIMAL);
-        HIVIEW_LOGI("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
-        if (info.wait >= BINDER_TIMEOUT) {
+
+        std::istringstream lineStream(line);
+        std::vector<std::string> strList;
+        std::string tmpstr;
+        while (lineStream >> tmpstr) {
+            strList.push_back(tmpstr);
+        }
+
+        auto stringSplit = [](const std::string& str, uint16_t index) -> std::string {
+            std::vector<std::string> strings;
+            StringUtil::SplitStr(str, ":", strings);
+            if (index < strings.size()) {
+                return strings[index];
+            }
+            return "";
+        };
+
+        if (strList.size() == 7) { // 7: valid array size
+            BinderInfo info = {0};
+            // 2: binder peer id,
+            std::string server = stringSplit(strList[2], 0);
+            // 0: binder local id,
+            std::string client = stringSplit(strList[0], 0);
+            // 5: binder wait time, s
+            std::string wait = stringSplit(strList[5], 1);
+            if (server == "" || client == "" || wait == "") {
+                continue;
+            }
+            info.server = std::strtol(server.c_str(), nullptr, DECIMAL);
+            info.client = std::strtol(client.c_str(), nullptr, DECIMAL);
+            info.wait = std::strtol(wait.c_str(), nullptr, DECIMAL);
+            HIVIEW_LOGI("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
             manager[info.client].push_back(info);
+        }
+        if (line.find("context") != line.npos) {
+            findBinderHeader = true;
         }
     }
     FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");

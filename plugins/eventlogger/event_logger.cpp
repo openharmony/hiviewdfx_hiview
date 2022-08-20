@@ -26,7 +26,6 @@
 #include "common_utils.h"
 #include "event_source.h"
 #include "file_util.h"
-#include "hiview_global.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
@@ -36,11 +35,11 @@
 
 #include "event_log_action.h"
 #include "event_logger_config.h"
+#include "freeze_common.h"
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventLogger);
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger");
-
 bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
 {
     if (event == nullptr) {
@@ -264,6 +263,20 @@ void EventLogger::OnLoad()
 
     eventPool_ = std::make_unique<EventThreadPool>(maxEventPoolCount, "EventLog");
     eventPool_->Start();
+
+    FreezeCommon freezeCommon;
+    if (!freezeCommon.Init()) {
+        HIVIEW_LOGE("FreezeCommon filed.");
+        return;
+    }
+    std::set<EventListener::EventIdRange> listenerInfo;
+    std::set<std::string> eventNames = freezeCommon.GetPrincipalStringIds();
+    auto context = GetHiviewContext();
+    if (context != nullptr) {
+        auto plugin = context->GetPluginByName("FreezeDetectorPlugin");
+        context->AddListenerInfo(Event::MessageType::SYS_EVENT, plugin, eventNames, listenerInfo);
+        context->RegisterDynamicListenerInfo(plugin);
+    }
 }
 
 void EventLogger::OnUnload()
@@ -320,9 +333,12 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
         HIVIEW_LOGW("Failed to parse EventLogger from queryResult file name %{public}s.", fileName.c_str());
         return;
     }
-    auto seq = HiviewGlobal::GetInstance()->GetPipelineSequenceByName("SysEventPipeline");
-    sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-    sysEvent->OnContinue();
+    auto context = GetHiviewContext();
+    if (context != nullptr) {
+        auto seq = context->GetPipelineSequenceByName("SysEventPipeline");
+        sysEvent->SetPipelineInfo("SysEventPipeline", seq);
+        sysEvent->OnContinue();
+    }
 }
 
 bool EventLogger::OnFileDescriptorEvent(int fd, int type)

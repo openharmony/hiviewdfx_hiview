@@ -17,42 +17,32 @@
 
 #include <sys/time.h>
 
-#include "db_helper.h"
 #include "file_util.h"
 #include "hiview_event_report.h"
 #include "logger.h"
-#include "plugin.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
-#include "vendor.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
-
-FreezeResolver::FreezeResolver() : startTime_(time(nullptr) * MILLISECOND)
-{
-}
-
-FreezeResolver::~FreezeResolver()
-{
-}
-
 bool FreezeResolver::Init()
 {
-    // freeze_rules.xml
-    if (FreezeRuleCluster::GetInstance().Init() == false) {
-        HIVIEW_LOGE("failed to init rule.");
-        HiviewEventReport::ReportPluginFault("FreezeDetector", "failed to init rule");
+    if (freezeCommon_ == nullptr) {
         return false;
     }
-
-    return true;
+    freezeRuleCluster_ = freezeCommon_->GetFreezeRuleCluster();
+    if (freezeRuleCluster_ == nullptr) {
+        return false;
+    }
+    dBHelper_ = std::make_unique<DBHelper>(freezeCommon_);
+    vendor_ = std::make_unique<Vendor>(freezeCommon_);
+    return vendor_->Init();
 }
 
-void FreezeResolver::MatchEvent(WatchPoint& watchPoint,
-    std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, FreezeResult& result) const
+void FreezeResolver::MatchEvent(const WatchPoint& watchPoint,
+    const std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, const FreezeResult& result) const
 {
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
@@ -73,10 +63,13 @@ void FreezeResolver::MatchEvent(WatchPoint& watchPoint,
     }
 }
 
-bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint,
+bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
 {
-    if (!FreezeRuleCluster::GetInstance().GetResult(watchPoint, result)) {
+    if (freezeRuleCluster_ == nullptr) {
+        return false;
+    }
+    if (!freezeRuleCluster_->GetResult(watchPoint, result)) {
         return false;
     }
     unsigned long long timestamp = watchPoint.GetTimestamp();
@@ -88,11 +81,15 @@ bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint,
         } else if (window > 0) {
             unsigned long long start = timestamp;
             unsigned long long end = timestamp + (window * MILLISECOND);
-            DBHelper::SelectEventFromDB(false, start, end, wpList);
+            if (dBHelper_ != nullptr) {
+                dBHelper_->SelectEventFromDB(false, start, end, wpList);
+            }
         } else {
             unsigned long long start = timestamp + (window * MILLISECOND);
             unsigned long long end = timestamp;
-            DBHelper::SelectEventFromDB(false, start, end, wpList);
+            if (dBHelper_ != nullptr) {
+                dBHelper_->SelectEventFromDB(false, start, end, wpList);
+            }
         }
         MatchEvent(watchPoint, wpList, list, i);
     }
@@ -101,8 +98,8 @@ bool FreezeResolver::ResolveEvent(WatchPoint& watchPoint,
     return true;
 }
 
-bool FreezeResolver::JudgmentResult(WatchPoint& watchPoint,
-    std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
+bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
+    const std::vector<WatchPoint>& list, const std::vector<FreezeResult>& result) const
 {
     if (watchPoint.GetDomain() == "ACE" && watchPoint.GetStringId() == "UI_BLOCK_6S") {
         if (list.size() == result.size()) {
@@ -124,11 +121,13 @@ bool FreezeResolver::JudgmentResult(WatchPoint& watchPoint,
     return false;
 }
 
-int FreezeResolver::ProcessEvent(WatchPoint &watchPoint) const
+int FreezeResolver::ProcessEvent(const WatchPoint &watchPoint) const
 {
     HIVIEW_LOGI("process event [%{public}s, %{public}s]",
         watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
-
+    if (vendor_ == nullptr) {
+        return -1;
+    }
     std::vector<WatchPoint> list;
     std::vector<FreezeResult> result;
     if (!ResolveEvent(watchPoint, list, result)) {
@@ -144,10 +143,12 @@ int FreezeResolver::ProcessEvent(WatchPoint &watchPoint) const
     }
 
     std::string digest;
-    std::string logPath = Vendor::GetInstance().MergeEventLog(watchPoint, list, result, digest);
+    std::string logPath = vendor_->MergeEventLog(watchPoint, list, result, digest);
 
     for (auto node : list) {
-        DBHelper::UpdateEventIntoDB(node, result[0].GetId());
+        if (dBHelper_ != nullptr) {
+            dBHelper_->UpdateEventIntoDB(node, result[0].GetId());
+        }
     }
     return 0;
 }

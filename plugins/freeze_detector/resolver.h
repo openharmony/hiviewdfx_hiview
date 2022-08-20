@@ -21,35 +21,43 @@
 #include <set>
 #include <vector>
 
-#include "pipeline.h"
-#include "rule_cluster.h"
-#include "singleton.h"
+#include "db_helper.h"
+#include "freeze_common.h"
 #include "watch_point.h"
+#include "vendor.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class FreezeResolver : public Singleton<FreezeResolver> {
-    DECLARE_SINGLETON(FreezeResolver);
-
+class FreezeResolver {
 public:
+    explicit FreezeResolver(std::shared_ptr<FreezeCommon> fc)
+        : startTime_(time(nullptr) * MILLISECOND), freezeCommon_(fc) {};
+    ~FreezeResolver() {};
+    FreezeResolver& operator=(const FreezeResolver&) = delete;
+    FreezeResolver(const FreezeResolver&) = delete;
+
     static const int MILLISECOND = 1000;
 
     bool Init();
     std::string GetTimeZone() const;
-    int ProcessEvent(WatchPoint &watchPoint) const;
+    int ProcessEvent(const WatchPoint &watchPoint) const;
 
 private:
     static const inline std::string HEADER = "*******************************************";
     static const int DEFAULT_TIME_WINDOW = 30;
     static const int MINUTES_IN_HOUR = 60;
 
-    bool ResolveEvent(WatchPoint& watchPoint,
+    bool ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
-    void MatchEvent(WatchPoint& watchPoint,
-        std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, FreezeResult& result) const;
-    bool JudgmentResult(WatchPoint& watchPoint,
-        std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
+    void MatchEvent(const WatchPoint& watchPoint,
+        const std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, const FreezeResult& result) const;
+    bool JudgmentResult(const WatchPoint& watchPoint,
+        const std::vector<WatchPoint>& list, const std::vector<FreezeResult>& result) const;
     unsigned long startTime_;
+    std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
+    std::shared_ptr<FreezeRuleCluster> freezeRuleCluster_ = nullptr;
+    std::unique_ptr<DBHelper> dBHelper_ = nullptr;
+    std::unique_ptr<Vendor> vendor_ = nullptr;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

@@ -23,9 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "singleton.h"
 #include "watch_point.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 class FreezeResult {
@@ -134,10 +132,13 @@ private:
     std::map<std::string, FreezeResult> results_;
 };
 
-class FreezeRuleCluster : public Singleton<FreezeRuleCluster> {
-    DECLARE_SINGLETON(FreezeRuleCluster);
-
+class FreezeRuleCluster {
 public:
+    FreezeRuleCluster();
+    ~FreezeRuleCluster();
+    FreezeRuleCluster& operator=(const FreezeRuleCluster&) = delete;
+    FreezeRuleCluster(const FreezeRuleCluster&) = delete;
+
     bool Init();
     bool CheckFileSize(const std::string& path);
     bool ParseRuleFile(const std::string& file);
@@ -151,6 +152,15 @@ public:
     template<typename T>
     T GetAttributeValue(xmlNode* node, const std::string& name);
     bool GetResult(const WatchPoint& watchPoint, std::vector<FreezeResult>& list);
+    std::map<std::string, std::pair<std::string, bool>> GetApplicationPairs() const
+    {
+        return applicationPairs_;
+    }
+
+    std::map<std::string, std::pair<std::string, bool>> GetSystemPairs() const
+    {
+        return systemPairs_;
+    }
 
 private:
     static const inline std::string DEFAULT_RULE_FILE = "/system/etc/hiview/freeze_rules.xml";
@@ -176,6 +186,8 @@ private:
     static const int MAX_FILE_SIZE = 512 * 1024;
 
     std::map<std::string, FreezeRule> rules_;
+    std::map<std::string, std::pair<std::string, bool>> applicationPairs_;
+    std::map<std::string, std::pair<std::string, bool>> systemPairs_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
