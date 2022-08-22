@@ -287,10 +287,6 @@ void EventLogger::OnUnload()
 
 void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)
 {
-    if (dirPath != MONITOR_STACK_LOG_PATH) {
-        return;
-    }
-
     uint8_t count = 0;
     for (auto& i : MONITOR_STACK_FLIE_NAME) {
         if (fileName.find(i) != fileName.npos) {
@@ -376,6 +372,10 @@ bool EventLogger::OnFileDescriptorEvent(int fd, int type)
             std::string fileName = std::string(event->name);
             HIVIEW_LOGI("fileName: %{public}s event->mask: 0x%{public}x, event->len: %{public}d",
                 fileName.c_str(), event->mask, event->len);
+                
+            if (it->second != MONITOR_STACK_LOG_PATH) {
+                return false;
+            }
             CreateAndPublishEvent(it->second, fileName);
         }
 
