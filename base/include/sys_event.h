@@ -72,7 +72,7 @@ public:
 
 public:
     static std::atomic<uint32_t> totalCount_;
-    static std::atomic<uint32_t> totalSize_;
+    static std::atomic<int64_t> totalSize_;
 
 private:
     int64_t seq_;
