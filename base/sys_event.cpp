@@ -63,7 +63,7 @@ static int GetValueFromJson(const std::string& jsonStr, const std::string& expr,
 }
 
 std::atomic<uint32_t> SysEvent::totalCount_(0);
-std::atomic<uint32_t> SysEvent::totalSize_(0);
+std::atomic<int64_t> SysEvent::totalSize_(0);
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr)
     : PipelineEvent(sender, handler), seq_(0), pid_(0), tid_(0), uid_(0), tz_(0)
@@ -86,9 +86,8 @@ SysEvent::~SysEvent()
         totalCount_.fetch_sub(1);
     }
 
-    if (totalSize_ > jsonExtraInfo_.length()) {
-        totalSize_.fetch_sub(jsonExtraInfo_.length());
-    } else {
+    totalSize_.fetch_sub(jsonExtraInfo_.length());
+    if (totalSize_ < 0) {
         totalSize_.store(0);
     }
 }
