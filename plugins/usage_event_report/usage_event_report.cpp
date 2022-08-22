@@ -29,14 +29,16 @@ namespace HiviewDFX {
 REGISTER(UsageEventReport);
 DEFINE_LOG_TAG("HiView-UsageEventReport");
 uint64_t UsageEventReport::lastReportTime_ = 0;
+uint64_t UsageEventReport::lastSysReportTime_ = 0;
 uint64_t UsageEventReport::nextReportTime_ = 0;
 std::string UsageEventReport::workPath_ = "";
 namespace {
 constexpr int TRIGGER_CYCLE = 5 * 60; // 5 min
+constexpr uint32_t TRIGGER_TWO_HOUR = 24; // 2h = 5min * 24
 const std::string SERVICE_NAME = "usage_report";
 }
 
-UsageEventReport::UsageEventReport() : callback_(nullptr)
+UsageEventReport::UsageEventReport() : callback_(nullptr), timeOutCnt_(0)
 {}
 
 void UsageEventReport::OnLoad()
@@ -61,8 +63,8 @@ void UsageEventReport::OnUnload()
 
 void UsageEventReport::Init()
 {
-    auto context = GetHiviewContext();
-    if (context != nullptr) {
+    auto nowTime = TimeUtil::GetMilliseconds();
+    if (auto context = GetHiviewContext(); context != nullptr) {
         workPath_ = context->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
 
         // get plugin stats event from db if any
@@ -77,16 +79,24 @@ void UsageEventReport::Init()
         if (sysUsageEvent != nullptr) {
             HIVIEW_LOGI("get sys usage event=%{public}s", sysUsageEvent->ToJsonString().c_str());
             lastReportTime_ = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_START).GetUint64();
+            lastSysReportTime_ = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_END).GetUint64();
         } else {
-            lastReportTime_ = TimeUtil::GetMilliseconds();
+            lastReportTime_ = nowTime;
+            lastSysReportTime_ = nowTime;
         }
     }
     nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
 
     // more than one day since the last report
-    if (TimeUtil::GetMilliseconds() >= (lastReportTime_ + TimeUtil::MILLISECS_PER_DAY)) {
-        HIVIEW_LOGI("lastReportTime=%{public}" PRIu64 ", need to report event now", lastReportTime_);
-        ReportEvent();
+    if (nowTime >= (lastReportTime_ + TimeUtil::MILLISECS_PER_DAY)) {
+        HIVIEW_LOGI("lastReportTime=%{public}" PRIu64 ", need to report daily event now", lastReportTime_);
+        ReportDailyEvent();
+    }
+
+    // more than two hours since the shutdown time
+    if (nowTime >= (lastSysReportTime_ + 7200000)) { // 7200000ms: 2h, 3600 * 2 * 1000
+        HIVIEW_LOGI("lastReportTime=%{public}" PRIu64 ", need to report sys usage event now", lastReportTime_);
+        ReportSysUsageEvent();
     }
 }
 
@@ -107,17 +117,8 @@ void UsageEventReport::Start()
 void UsageEventReport::TimeOut()
 {
     HIVIEW_LOGI("start checking whether events need to be reported");
-    auto nowTime = TimeUtil::GetMilliseconds();
-    // check whether time step occurs. If yes, update the next report time
-    if (nowTime > (nextReportTime_ + TimeUtil::MILLISECS_PER_DAY)
-        || nowTime < (nextReportTime_ - TimeUtil::MILLISECS_PER_DAY)) {
-        HIVIEW_LOGW("start to update the next report time");
-        nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
-    } else if (nowTime >= nextReportTime_) {
-        HIVIEW_LOGI("start to report event");
-        ReportEvent();
-        nextReportTime_ += TimeUtil::MILLISECS_PER_DAY;
-    }
+    ReportTimeOutEvent();
+    ReportDailyEvent();
 
     // init shutdown callback if necessary
     if (callback_ == nullptr) {
@@ -125,26 +126,44 @@ void UsageEventReport::TimeOut()
     }
 }
 
-void UsageEventReport::ReportEvent()
+void UsageEventReport::ReportDailyEvent()
 {
-    // report plugin stats event
-    HiviewEventReport::ReportPluginStats();
+    // check whether time step occurs. If yes, update the next report time
+    auto nowTime = TimeUtil::GetMilliseconds();
+    if (nowTime > (nextReportTime_ + TimeUtil::MILLISECS_PER_DAY)
+        || nowTime < (nextReportTime_ - TimeUtil::MILLISECS_PER_DAY)) {
+        HIVIEW_LOGW("start to update the next daily report time");
+        nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
+    } else if (nowTime >= nextReportTime_) {
+        // report plugin stats event
+        HIVIEW_LOGI("start to report daily event");
+        HiviewEventReport::ReportPluginStats();
+        DeletePluginStatsEvents();
 
-    // report sys usage event and app usage event
-    StartServiceByOption("-r");
+        // report app usage event
+        StartServiceByOption("-A");
 
-    // delete the cache event in db after report
-    DeleteCacheEvent();
-
-    // update the start time of the next report
-    lastReportTime_ = TimeUtil::GetMilliseconds();
+        // update report time
+        lastReportTime_ = TimeUtil::GetMilliseconds();
+        nextReportTime_ += TimeUtil::MILLISECS_PER_DAY;
+    } else {
+        HIVIEW_LOGI("No need to report daily events");
+    }
 }
 
-void UsageEventReport::DeleteCacheEvent()
+void UsageEventReport::ReportTimeOutEvent()
 {
-    UsageEventCacher cacher(workPath_);
-    cacher.DeletePluginStatsEventsFromDb();
-    cacher.DeleteSysUsageEventFromDb();
+    ++timeOutCnt_;
+    if (timeOutCnt_ >= TRIGGER_TWO_HOUR) {
+        ReportSysUsageEvent();
+        timeOutCnt_ = 0;
+    }
+}
+
+void UsageEventReport::ReportSysUsageEvent()
+{
+    StartServiceByOption("-S");
+    lastSysReportTime_ = TimeUtil::GetMilliseconds();
 }
 
 void UsageEventReport::SaveEventToDb()
@@ -165,6 +184,12 @@ void UsageEventReport::SavePluginStatsEvents()
     cacher.SavePluginStatsEventsToDb(events);
 }
 
+void UsageEventReport::DeletePluginStatsEvents()
+{
+    UsageEventCacher cacher(workPath_);
+    cacher.DeletePluginStatsEventsFromDb();
+}
+
 void UsageEventReport::SaveSysUsageEvent()
 {
     StartServiceByOption("-s");
@@ -173,7 +198,10 @@ void UsageEventReport::SaveSysUsageEvent()
 void UsageEventReport::StartServiceByOption(const std::string& opt)
 {
     std::stringstream ss;
-    ss << SERVICE_NAME << " -p " << workPath_ << " -t " << lastReportTime_ << " " << opt;
+    ss << SERVICE_NAME << " -p " << workPath_;
+    ss << " -t " << lastReportTime_;
+    ss << " -T " << lastSysReportTime_;
+    ss << " " << opt;
     HIVIEW_LOGI("start service cmd=%{public}s", ss.str().c_str());
     if (system(ss.str().c_str()) < 0) {
         HIVIEW_LOGE("failed to start the service=%{public}s", SERVICE_NAME.c_str());

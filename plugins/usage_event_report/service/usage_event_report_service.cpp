@@ -28,13 +28,15 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-UsageEventReportService");
 using namespace SysUsageEventSpace;
 namespace {
-constexpr char ARG_SELECTION[] = "p:t:rs";
+constexpr char ARG_SELECTION[] = "p:t:T:sSA";
 const std::string DEFAULT_WORK_PATH = "/data/log/hiview";
 const std::string LAST_SYS_USAGE_COLL = "last_sys_usage";
 const std::string SYS_USAGE_KEYS[] = { KEY_OF_POWER, KEY_OF_RUNNING, KEY_OF_SCREEN };
+constexpr uint64_t MILLISECS_TWO_HOURS = 60 * 60 * 2 * 1000;
 }
 
-UsageEventReportService::UsageEventReportService() : workPath_(DEFAULT_WORK_PATH), lastReportTime_(0)
+UsageEventReportService::UsageEventReportService() : workPath_(DEFAULT_WORK_PATH), lastReportTime_(0),
+    lastSysReportTime_(0)
 {}
 
 void UsageEventReportService::InitWorkPath(const char* path)
@@ -71,7 +73,7 @@ void UsageEventReportService::ReportSysUsage()
 {
     HIVIEW_LOGI("start to report sys usage event");
     std::shared_ptr<LoggerEvent> nowUsage = std::make_unique<SysUsageEventFactory>()->Create();
-    nowUsage->Update(KEY_OF_START, lastReportTime_);
+    nowUsage->Update(KEY_OF_START, lastSysReportTime_);
 
     // update last reported usage
     UsageEventCacher cacher(workPath_);
@@ -84,6 +86,9 @@ void UsageEventReportService::ReportSysUsage()
     // add cache usage time if any
     AddCacheSysUsage(nowUsage, cacher.GetSysUsageEvent());
     nowUsage->Report();
+
+    // clear cache event
+    cacher.DeleteSysUsageEventFromDb();
 }
 
 void UsageEventReportService::AddCacheSysUsage(std::shared_ptr<LoggerEvent>& nowUsage,
@@ -94,7 +99,7 @@ void UsageEventReportService::AddCacheSysUsage(std::shared_ptr<LoggerEvent>& now
     }
     for (auto key : SYS_USAGE_KEYS) {
         uint64_t sumUsage = nowUsage->GetValue(key).GetUint64() + cacheUsage->GetValue(key).GetUint64();
-        nowUsage->Update(key, std::min(sumUsage, TimeUtil::MILLISECS_PER_DAY));
+        nowUsage->Update(key, std::min(sumUsage, MILLISECS_TWO_HOURS * 2)); // total usage < 2h * 2
     }
 }
 
@@ -108,7 +113,7 @@ void UsageEventReportService::MinusLastSysUsage(std::shared_ptr<LoggerEvent>& no
         uint64_t nowUsageTime = nowUsage->GetValue(key).GetUint64();
         uint64_t lastUsageTime = lastUsage->GetValue(key).GetUint64();
         uint64_t curUsageTime = nowUsageTime > lastUsageTime ? (nowUsageTime - lastUsageTime) : nowUsageTime;
-        nowUsage->Update(key, std::min(curUsageTime, TimeUtil::MILLISECS_PER_DAY));
+        nowUsage->Update(key, std::min(curUsageTime, MILLISECS_TWO_HOURS));
     }
 }
 
@@ -127,6 +132,7 @@ void UsageEventReportService::SaveSysUsage()
 
     // save the last reported time
     nowUsage->Update(KEY_OF_START, lastReportTime_);
+    nowUsage->Update(KEY_OF_END, lastSysReportTime_);
 
     // save cur usage and delete the last reported usage
     cacher.SaveSysUsageEventToDb(nowUsage);
@@ -147,12 +153,17 @@ bool UsageEventReportService::ProcessArgsRequest(int argc, char* argv[])
             case 's':
                 SaveSysUsage();
                 break;
-            case 'r':
+            case 'A':
                 ReportAppUsage();
+                break;
+            case 'S':
                 ReportSysUsage();
                 break;
             case 't':
                 lastReportTime_ = strtoull(optarg, nullptr, 0);
+                break;
+            case 'T':
+                lastSysReportTime_ = strtoull(optarg, nullptr, 0);
                 break;
             default:
                 break;
