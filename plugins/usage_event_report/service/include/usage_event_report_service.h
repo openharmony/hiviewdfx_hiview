@@ -40,6 +40,7 @@ private:
 private:
     std::string workPath_;
     uint64_t lastReportTime_;
+    uint64_t lastSysReportTime_;
 }; // UsageEventReportService
 } // namespace HiviewDFX
 } // namespace OHOS

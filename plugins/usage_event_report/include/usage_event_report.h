@@ -38,14 +38,18 @@ private:
     void Init();
     void InitCallback();
     void Start();
-    void ReportEvent();
-    void DeleteCacheEvent();
+    void ReportDailyEvent();
+    void ReportTimeOutEvent();
+    void ReportSysUsageEvent();
+    void DeletePluginStatsEvents();
     static void StartServiceByOption(const std::string& opt);
     static void SavePluginStatsEvents();
     static void SaveSysUsageEvent();
 
 private:
     sptr<PowerMgr::IShutdownCallback> callback_;
+    uint64_t timeOutCnt_;
+    static uint64_t lastSysReportTime_;
     static uint64_t lastReportTime_;
     static uint64_t nextReportTime_;
     static std::string workPath_;
