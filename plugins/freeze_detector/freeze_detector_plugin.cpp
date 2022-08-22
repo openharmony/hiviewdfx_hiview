@@ -84,7 +84,7 @@ bool FreezeDetectorPlugin::CanProcessEvent(std::shared_ptr<Event> event)
     return false;
 }
 
-std::string FreezeDetectorPlugin::RemoveRedundantNewline(const std::string& content)
+std::string FreezeDetectorPlugin::RemoveRedundantNewline(const std::string& content) const
 {
     std::vector<std::string> lines;
     StringUtil::SplitStr(content, "\\n", lines, false, false);
@@ -161,7 +161,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 
-void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)
+void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint) const
 {
     HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
         watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());

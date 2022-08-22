@@ -105,14 +105,18 @@ bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
         if (list.size() == result.size()) {
             HIVIEW_LOGI("ACE UI_BLOCK has UI_BLOCK_3S UI_BLOCK_6S UI_BLOCK_RECOVERED as UI_JANK");
             return false;
-        } else if (list.size() == (result.size() - 1)) {
-            for (auto& i : list) {
-                if (i.GetStringId() == "UI_BLOCK_RECOVERED") {
-                    return false;
-                }
-            }
-            return true;
         }
+
+        if (list.size() != (result.size() - 1)) {
+            return false;
+        }
+
+        for (auto& i : list) {
+            if (i.GetStringId() == "UI_BLOCK_RECOVERED") {
+                return false;
+            }
+        }
+        return true;
     }
 
     if (list.size() == result.size()) {
