@@ -23,11 +23,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct AppUsageInfo {
-    AppUsageInfo(const std::string& package, int64_t usage, const std::string& date)
-        : package_(package), usage_(usage), date_(date)
+    AppUsageInfo(const std::string& package, const std::string& version, int64_t usage, const std::string& date)
+        : package_(package), version_(version), usage_(usage), date_(date)
     {}
 
     std::string package_;
+    std::string version_;
     uint64_t usage_;
     std::string date_;
 };
@@ -40,6 +41,7 @@ public:
 private:
     void GetAllCreatedOsAccountIds(std::vector<int32_t>& ids);
     void GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& infos, int32_t userId);
+    std::string GetAppVersion(const std::string& bundleName);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

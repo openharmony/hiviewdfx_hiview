@@ -24,7 +24,8 @@ AppUsageEvent::AppUsageEvent(const std::string &tag, const std::string &name, Hi
     : LoggerEvent(tag, name, type)
 {
     this->paramMap_ = {
-        {KEY_OF_PACKAGE, DEFAULT_STRING}, {KEY_OF_USAGE, DEFAULT_UINT64}, {KEY_OF_DATE, DEFAULT_STRING}
+        {KEY_OF_PACKAGE, DEFAULT_STRING}, {KEY_OF_VERSION, DEFAULT_STRING},
+        {KEY_OF_USAGE, DEFAULT_UINT64}, {KEY_OF_DATE, DEFAULT_STRING}
     };
 }
 
@@ -32,6 +33,7 @@ void AppUsageEvent::Report()
 {
     HiSysEvent::Write(this->eventDomain_, this->eventName_, this->eventType_,
         KEY_OF_PACKAGE, this->paramMap_[KEY_OF_PACKAGE].GetString(),
+        KEY_OF_VERSION, this->paramMap_[KEY_OF_VERSION].GetString(),
         KEY_OF_USAGE, this->paramMap_[KEY_OF_USAGE].GetUint64(),
         KEY_OF_DATE, this->paramMap_[KEY_OF_DATE].GetString());
 }
