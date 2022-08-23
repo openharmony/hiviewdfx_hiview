@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <list>
 #include <string>
 #include <unordered_map>
 
@@ -34,6 +35,15 @@ struct BaseInfo {
 using NAME_INFO_MAP = std::unordered_map<std::string, BaseInfo>;
 using DOMAIN_INFO_MAP = std::unordered_map<std::string, NAME_INFO_MAP>;
 using JSON_VALUE_LOOP_HANDLER = std::function<void(const std::string&, const Json::Value&)>;
+using FILTER_SIZE_TYPE = std::list<std::string>::size_type;
+
+class DuplicateIdFilter {
+public:
+    bool IsDuplicateEvent(const std::string& sysEventId);
+
+private:
+    std::list<std::string> sysEventIds;
+};
 
 class EventJsonParser {
 public:
@@ -43,10 +53,11 @@ public:
 public:
     std::string GetTagByDomainAndName(const std::string& domain, const std::string& name) const;
     int GetTypeByDomainAndName(const std::string& domain, const std::string& name) const;
-    bool HandleEventJson(const std::shared_ptr<SysEvent>& event) const;
+    bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
 
 private:
-    void AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr) const;
+    void AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr,
+        const std::string& sysEventId) const;
     bool CheckBaseInfoValidity(const BaseInfo& baseInfo, Json::Value& eventJson) const;
     bool CheckEventValidity(const Json::Value& eventJson) const;
     bool CheckTypeValidity(const BaseInfo& baseInfo, const Json::Value& eventJson) const;
@@ -60,6 +71,7 @@ private:
 
 private:
     DOMAIN_INFO_MAP hiSysEventDef;
+    DuplicateIdFilter filter;
 }; // SysEventDbMgr
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -20,6 +20,7 @@
 #include <mutex>
 #include <vector>
 
+#include "hiview_global.h"
 #include "logger.h"
 #include "pipeline.h"
 #include "sys_event_dao.h"
@@ -32,6 +33,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-Monitor");
 namespace {
 constexpr uint8_t SLEEP_TEN_SECONDS = 10;
+constexpr char EVENT_SERVICE_PLUGIN[] = "SysEventService";
 };
 void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, uint32_t> &stat)
 {
@@ -267,7 +269,7 @@ void PlatformMonitor::ReportCycleProfile()
 
     std::shared_ptr<SysEvent> sysEvent = CreateProfileReport(perfMeasure);
     HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
-    EventStore::SysEventDao::Insert(sysEvent);
+    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
     HIVIEW_LOGI("report performance profile have done");
 }
 
@@ -361,10 +363,11 @@ void PlatformMonitor::ReportBreakProfile()
     eventCreator.SetKeyValue("AVG_WAIT_TIME", avgWaitTime);
     eventCreator.SetKeyValue("TOP_EVENT", events);
     eventCreator.SetKeyValue("TOP_EVENT_COUNT", eventCounts);
-    eventCreator.SetKeyValue("TOP_DOMAIN_COUNT", domains);
+    eventCreator.SetKeyValue("TOP_DOMAIN", domains);
+    eventCreator.SetKeyValue("TOP_DOMAIN_COUNT", domainCounts);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
     HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
-    EventStore::SysEventDao::Insert(sysEvent);
+    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 
 void PlatformMonitor::ReportRecoverProfile()
@@ -375,7 +378,7 @@ void PlatformMonitor::ReportRecoverProfile()
     eventCreator.SetKeyValue("DURATION", duration);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
     HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
-    EventStore::SysEventDao::Insert(sysEvent);
+    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 
 void PlatformMonitor::Breaking()
@@ -388,7 +391,7 @@ void PlatformMonitor::Breaking()
     HIVIEW_LOGE("break as event reach critical size %{public}u", SysEvent::totalSize_.load());
     breakTimestamp_ = TimeUtil::GenerateTimestamp();
     ReportBreakProfile();
-    uint32_t recoveryBenchMark = totalSizeBenchMark_ * 0.8; // 0.8 of total size will recover
+    int64_t recoveryBenchMark = static_cast<int64_t>(totalSizeBenchMark_ * 0.8); // 0.8 of total size will recover
     while (true) {
         if (SysEvent::totalSize_ <= recoveryBenchMark) {
             break;

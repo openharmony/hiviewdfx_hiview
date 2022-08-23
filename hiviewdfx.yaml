@@ -49,3 +49,42 @@ SYS_USAGE:
   POWER: {type: UINT64, desc: power_on duration}
   SCREEN: {type: UINT64, desc: screen_on duration}
   RUNNING: {type: UINT64, desc: running duration}
+
+PROFILE_STAT:
+  __BASE: {type: STATISTIC, level: CRITICAL, desc: hisysevent profile status}
+  MAX_TOTAL_COUNT: {type: UINT32, desc: maximum total count}
+  MAX_TOTAL_SIZE: {type: UINT32, desc: maximum total size}
+  DOMAINS: {type: STRING, arrsize: 100, desc: domains}
+  DOMAIN_DETAIL: {type: UINT32, arrsize: 100, desc: domain detail}
+  TOTAL_COUNT: {type: UINT32, desc: total count}
+  TOTAL_SIZE: {type: UINT32, desc: total size}
+  BREAK_COUNT: {type: UINT8, desc: break count}
+  BREAK_DURATION: {type: UINT64, desc: break duration}
+  MIN_SPEED: {type: UINT32, desc: minimum speed}
+  MAX_SPEED: {type: UINT32, desc: maximum speed}
+  REAL_COUNT: {type: UINT32, arrsize: 10, desc: real time cost distribution}
+  PROCESS_COUNT: {type: UINT32, arrsize: 10, desc: process time cost distribution}
+  WAIT_COUNT: {type: UINT32, arrsize: 10, desc: wait count cost distribution}
+  FINISHED_COUNT: {type: UINT32, desc: finished count}
+  OVER_REAL_COUNT: {type: UINT32, desc: over real time benchmark count}
+  OVER_REAL_PCT: {type: UINT32, desc: over real time benchmark percentage}
+  OVER_PROC_COUNT: {type: UINT32, desc: over process time cost benchmark count}
+  OVER_PROC_PCT: {type: UINT32, desc: over process time cost percentage}
+
+BREAK:
+  __BASE: {type: BEHAVIOR, level: CRITICAL, desc: hisysevent is break}
+  TOTAL_COUNT: {type: UINT32, desc: total count}
+  TOTAL_SIZE: {type: UINT32, desc: total size}
+  REAL_SPEED: {type: UINT32, desc: real time of handle hisysevent each second}
+  PROC_SPEED: {type: UINT32, desc: process time of handle hisysevent each second}
+  AVG_REAL_TIME: {type: DOUBLE, desc: average real time cost}
+  AVG_PROC_TIME: {type: DOUBLE, desc: average process time cost}
+  AVG_WAIT_TIME: {type: DOUBLE, desc: average wait time cost}
+  TOP_EVENT: {type: STRING, arrsize: 3, desc: topN events}
+  TOP_EVENT_COUNT: {type: UINT32, arrsize: 3, desc: count of topN events}
+  TOP_DOMAIN: {type: STRING, arrsize: 3, desc: topN domains}
+  TOP_DOMAIN_COUNT: {type: UINT32, arrsize: 3, desc: count of topN domains}
+
+RECOVER:
+  __BASE: {type: BEHAVIOR, level: CRITICAL, desc: hisysevent is recover}
+  DURATION: {type: INT64, desc: recover after break duration}
