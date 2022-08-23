@@ -39,6 +39,7 @@ PLUGIN_FAULT:
 APP_USAGE:
   __BASE: {type: STATISTIC, level: CRITICAL, tag: usageStats, desc: application usage statistics}
   PACKAGE: {type: STRING, desc: package name}
+  VERSION: {type: STRING, desc: version name}
   USAGE: {type: UINT32, desc: usage duration}
   DATE: {type: STRING, desc: usage date}
 
