@@ -25,6 +25,7 @@ namespace HiviewDFX {
 namespace AppUsageEventSpace {
 const std::string EVENT_NAME = "APP_USAGE";
 const std::string KEY_OF_PACKAGE = "PACKAGE";
+const std::string KEY_OF_VERSION = "VERSION";
 const std::string KEY_OF_USAGE = "USAGE";
 const std::string KEY_OF_DATE = "DATE";
 }

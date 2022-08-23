@@ -21,6 +21,7 @@
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #endif
+#include "bundle_mgr_client.h"
 #include "logger.h"
 #include "os_account_manager.h"
 #include "time_util.h"
@@ -68,6 +69,7 @@ void AppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>>& eve
     for (auto info : appUsageInfos) {
         std::unique_ptr<LoggerEvent> event = Create();
         event->Update(KEY_OF_PACKAGE, info.package_);
+        event->Update(KEY_OF_VERSION, info.version_);
         event->Update(KEY_OF_USAGE, info.usage_);
         event->Update(KEY_OF_DATE, info.date_);
         events.push_back(std::move(event));
@@ -116,10 +118,23 @@ void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& a
         if (it != appUsageInfos.end()) {
             it->usage_ += usage;
         } else {
-            appUsageInfos.push_back(AppUsageInfo(stat.bundleName_, usage, dateStr));
+            std::string version = GetAppVersion(stat.bundleName_);
+            appUsageInfos.push_back(AppUsageInfo(stat.bundleName_, version, usage, dateStr));
         }
     }
 #endif
+}
+
+std::string AppUsageEventFactory::GetAppVersion(const std::string& bundleName)
+{
+    AppExecFwk::BundleInfo info;
+    AppExecFwk::BundleMgrClient client;
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info,
+        AppExecFwk::Constants::ALL_USERID)) {
+        HIVIEW_LOGE("Failed to get the version of the bundle=%{public}s", bundleName.c_str());
+        return "";
+    }
+    return info.versionName;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
