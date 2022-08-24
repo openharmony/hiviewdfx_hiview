@@ -51,6 +51,8 @@ ohos_executable("usage_report") {
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics_native:batterystats_client",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
     "ipc:ipc_core",
