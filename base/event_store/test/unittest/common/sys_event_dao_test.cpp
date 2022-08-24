@@ -370,8 +370,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
  * @tc.name: TestEventDaoQuery_008
  * @tc.desc: test query in different threads (more than 4) at the same time.
  * @tc.type: FUNC
- * @tc.require: AR000H02CO
- * @tc.author: x30012124
+ * @tc.require: issueI5L2RV
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
 {
@@ -401,8 +400,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
  * @tc.name: TestEventDaoQuery_009
  * @tc.desc: test query with over limit
  * @tc.type: FUNC
- * @tc.require: AR000H02CO
- * @tc.author: x30012124
+ * @tc.require: issueI5L2RV
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
 {
@@ -424,8 +422,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
  * @tc.name: TestEventDaoQuery_010
  * @tc.desc: test query in high frequency, query twice in 1 second
  * @tc.type: FUNC
- * @tc.require: AR000H02CO
- * @tc.author: x30012124
+ * @tc.require: issueI5L2RV
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
 {
@@ -447,6 +444,96 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
             }
         }));
     ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+}
+
+/**
+ * @tc.name: TestEventDaoQuery_011
+ * @tc.desc: test query in high frequency with ejdb newest configuration for defensing event storm
+ * @tc.type: FUNC
+ * @tc.require: issueI5LFCZ
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_011, testing::ext::TestSize.Level3)
+{
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    (*sysEventQuery).Where(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, "d1")
+        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, "e1");
+    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
+    int queryCount = 10;
+    (void)sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+        [&queryStatus] (EventStore::DbQueryStatus status) {
+            if (status != EventStore::DbQueryStatus::SUCCEED) {
+                queryStatus = status;
+            }
+        });
+    (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+        [&queryStatus] (EventStore::DbQueryStatus status) {
+            if (status != EventStore::DbQueryStatus::SUCCEED) {
+                queryStatus = status;
+            }
+        }));
+    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+}
+
+/**
+ * @tc.name: TestEventDaoInsertInHighFrequency_012
+ * @tc.desc: test write in high frequency which might cause plugin to start event storm defensing business
+ * @tc.type: FUNC
+ * @tc.require: issueI5FGT8
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoInsertInHighFrequency_012, testing::ext::TestSize.Level3)
+{
+/**
+     * @tc.steps: step1. create pipeline event and set event id
+     * @tc.steps: step2. invoke OnEvent func
+     * @tc.expected: all ASSERT_TRUE work through.
+     */
+    int retCode = 0;
+    std::string jsonStr;
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129100,
+        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
+        "keyChar":97})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
+
+    retCode = EventStore::SysEventDao::Insert(sysEvent);
+    ASSERT_TRUE(retCode == 0);
+
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129200,
+        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
+        "keyChar":97})~";
+    sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
+
+    retCode = EventStore::SysEventDao::Insert(sysEvent);
+    ASSERT_TRUE(retCode == 0);
+
+    jsonStr = R"~({"domain_":"demo","name_":"DuringQuery","type_":4,"tz_":8,"time_":162027129300,
+        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
+        "keyChar":97})~";
+    sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
+
+    retCode = EventStore::SysEventDao::Insert(sysEvent);
+    ASSERT_TRUE(retCode == 0);
+
+    int count = 0;
+    EventStore::SysEventCallBack c = [&](SysEvent &sysEvent) -> int {
+        count++;
+        std::cout << "callback->" << sysEvent.happenTime_ << std::endl;
+        if (sysEvent.happenTime_ >= 162027129200) {
+            std::cout << "break without read all data" << std::endl;
+            return 1;
+        }
+        return 0;
+    };
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::BEHAVIOR);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    (*sysEventQuery).Select(selections)
+        .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "DuringQuery")
+        .Order(EventStore::EventCol::TS)
+        .ExecuteWithCallback(c, 10);
+
+    ASSERT_TRUE(count > 0);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
