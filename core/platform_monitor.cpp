@@ -94,7 +94,7 @@ void PlatformMonitor::CollectPerfProfiler()
     }
     // total count, total size
     totalCount_ = SysEvent::totalCount_;
-    totalSize_ = SysEvent::totalSize_;
+    totalSize_ = static_cast<uint32_t>(SysEvent::totalSize_);
     // min speed, max speed
     uint32_t onceTotalRealTime = onceTotalRealTime_;
     uint32_t onceTotalProcTime = onceTotalProcTime_;
@@ -333,7 +333,7 @@ void PlatformMonitor::ReportBreakProfile()
 {
     // report current event size and count
     uint32_t curTotalCount_ = SysEvent::totalCount_;
-    uint32_t curTotalSize_ = SysEvent::totalSize_;
+    uint32_t curTotalSize_ = static_cast<uint32_t>(SysEvent::totalSize_);
 
     // report current speed
     uint32_t curRealSpeed = curRealSpeed_;
