@@ -117,7 +117,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     summary = EVENT_SUMMARY + FreezeCommon::COLON + NEW_LINE + summary;
 
     FaultLogInfoInner info;
-    info.time = watchPoint.GetTimestamp();
+    info.time = std::static_cast<int64_t>(watchPoint.GetTimestamp());
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
     info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
