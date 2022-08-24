@@ -15,128 +15,30 @@
 
 #include "vendor.h"
 
-#include "db_helper.h"
 #include "faultlogger_client.h"
 #include "file_util.h"
-#include "hisysevent.h"
 #include "logger.h"
-#include "plugin.h"
-#include "resolver.h"
 #include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
-
-const std::vector<std::pair<std::string, std::string>> Vendor::applicationPairs_ = {
-    {"ACE", "UI_BLOCK_3S"},
-    {"ACE", "UI_BLOCK_6S"},
-    {"ACE", "UI_BLOCK_RECOVERED"},
-    {"APPEXECFWK", "THREAD_BLOCK_3S"},
-    {"APPEXECFWK", "THREAD_BLOCK_6S"},
-    {"MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT"},
-    {"RELIABILITY", "STACK"},
-    {"AAFWK", "LIFECYCLE_TIMEOUT"},
-    {"AAFWK", "APP_LIFECYCLE_TIMEOUT"},
-    {"GRAPHIC", "NO_DRAW"},
-};
-
-const std::vector<std::pair<std::string, std::string>> Vendor::systemPairs_ = {
-    {"KERNEL_VENDOR", "HUNGTASK"},
-    {"KERNEL_VENDOR", "LONG_PRESS"},
-    {"KERNEL_VENDOR", "SCREEN_ON"},
-    {"KERNEL_VENDOR", "SCREEN_OFF"},
-    {"POWER", "SCREEN_ON_TIMEOUT"},
-};
-
-bool Vendor::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
-{
-    for (auto const &pair : applicationPairs_) {
-        if (domain == pair.first && stringId == pair.second) {
-            return true;
-        }
-    }
-    for (auto const &pair : systemPairs_) {
-        if (domain == pair.first && stringId == pair.second) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Vendor::IsApplicationEvent(const std::string& domain, const std::string& stringId) const
-{
-    for (auto const &pair : applicationPairs_) {
-        if (domain == pair.first && stringId == pair.second) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Vendor::IsSystemEvent(const std::string& domain, const std::string& stringId) const
-{
-    for (auto const &pair : systemPairs_) {
-        if (domain == pair.first && stringId == pair.second) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Vendor::IsSystemResult(const FreezeResult& result) const
-{
-    return result.GetId() == SYSTEM_RESULT_ID;
-}
-
-bool Vendor::IsApplicationResult(const FreezeResult& result) const
-{
-    return result.GetId() == APPLICATION_RESULT_ID;
-}
-
-bool Vendor::IsBetaVersion() const
-{
-    return true;
-}
-
-std::set<std::string> Vendor::GetFreezeStringIds() const
-{
-    std::set<std::string> set;
-
-    for (auto const &pair : applicationPairs_) {
-        set.insert(pair.second);
-    }
-    for (auto const &pair : systemPairs_) {
-        set.insert(pair.second);
-    }
-
-    return set;
-}
-
-bool Vendor::GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const
-{
-    std::regex reg(pattern);
-    std::smatch result;
-    if (std::regex_search(src, result, reg)) {
-        dst = StringUtil::TrimStr(result[1], '\n');
-        return true;
-    }
-    return false;
-}
-
 bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const
 {
     HIVIEW_LOGI("before size=%{public}zu", list.size());
-    if (IsSystemResult(result) == false && IsApplicationResult(result) == false) {
+    if (freezeCommon_ == nullptr) {
+        return false;
+    }
+    if (freezeCommon_->IsSystemResult(result) == false && freezeCommon_->IsApplicationResult(result) == false) {
         list.clear();
         return false;
     }
 
     // erase if not system event
-    if (IsSystemResult(result)) {
+    if (freezeCommon_->IsSystemResult(result)) {
         std::list<WatchPoint>::iterator watchPoint;
         for (watchPoint = list.begin(); watchPoint != list.end();) {
-            if (IsSystemEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
+            if (freezeCommon_->IsSystemEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
                 watchPoint++;
             } else {
                 watchPoint = list.erase(watchPoint);
@@ -145,10 +47,10 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
     }
 
     // erase if not application event
-    if (IsApplicationResult(result)) {
+    if (freezeCommon_->IsApplicationResult(result)) {
         std::list<WatchPoint>::iterator watchPoint;
         for (watchPoint = list.begin(); watchPoint != list.end();) {
-            if (IsApplicationEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
+            if (freezeCommon_->IsApplicationEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
                 watchPoint++;
             } else {
                 watchPoint = list.erase(watchPoint);
@@ -166,7 +68,7 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
 {
     struct tm tm;
     time_t ts;
-    ts = timestamp / FreezeResolver::MILLISECOND; // ms
+    ts = timestamp / FreezeCommon::MILLISECOND; // ms
     localtime_r(&ts, &tm);
     char buf[TIME_STRING_LEN] = {0};
 
@@ -174,7 +76,7 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
     return std::string(buf, strlen(buf));
 }
 
-bool Vendor::CheckPid(const WatchPoint &watchPoint, std::vector<WatchPoint>& list) const
+bool Vendor::CheckPid(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const
 {
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
@@ -194,6 +96,9 @@ bool Vendor::CheckPid(const WatchPoint &watchPoint, std::vector<WatchPoint>& lis
 std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
     const std::string& logName, std::string& digest) const
 {
+    if (freezeCommon_ == nullptr) {
+        return "";
+    }
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
@@ -204,18 +109,18 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
         packageName = stringId;
     }
 
-    std::string type = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
     auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
     digest = eventInfos[SP_ENDSTACK];
     std::string summary = eventInfos[SP_ENDSTACK];
-    summary = EVENT_SUMMARY + FreezeDetectorPlugin::COLON + NEW_LINE + summary;
+    summary = EVENT_SUMMARY + FreezeCommon::COLON + NEW_LINE + summary;
 
     FaultLogInfoInner info;
-    info.time = watchPoint.GetTimestamp();
+    info.time = static_cast<int64_t>(watchPoint.GetTimestamp());
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
-    info.faultLogType = IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+    info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = packageName;
     info.reason = stringId;
@@ -228,21 +133,24 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
 void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const
 {
     oss << header << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_DOMAIN << FreezeDetectorPlugin::COLON << watchPoint.GetDomain() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_STRINGID << FreezeDetectorPlugin::COLON << watchPoint.GetStringId() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_TIMESTAMP << FreezeDetectorPlugin::COLON <<
+    oss << FreezeCommon::EVENT_DOMAIN << FreezeCommon::COLON << watchPoint.GetDomain() << std::endl;
+    oss << FreezeCommon::EVENT_STRINGID << FreezeCommon::COLON << watchPoint.GetStringId() << std::endl;
+    oss << FreezeCommon::EVENT_TIMESTAMP << FreezeCommon::COLON <<
         watchPoint.GetTimestamp() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_PID << FreezeDetectorPlugin::COLON << watchPoint.GetPid() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_UID << FreezeDetectorPlugin::COLON << watchPoint.GetUid() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << FreezeDetectorPlugin::COLON << watchPoint.GetPackageName() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_PROCESS_NAME << FreezeDetectorPlugin::COLON << watchPoint.GetProcessName() << std::endl;
-    oss << FreezeDetectorPlugin::EVENT_MSG << FreezeDetectorPlugin::COLON << watchPoint.GetMsg() << std::endl;
+    oss << FreezeCommon::EVENT_PID << FreezeCommon::COLON << watchPoint.GetPid() << std::endl;
+    oss << FreezeCommon::EVENT_UID << FreezeCommon::COLON << watchPoint.GetUid() << std::endl;
+    oss << FreezeCommon::EVENT_PACKAGE_NAME << FreezeCommon::COLON << watchPoint.GetPackageName() << std::endl;
+    oss << FreezeCommon::EVENT_PROCESS_NAME << FreezeCommon::COLON << watchPoint.GetProcessName() << std::endl;
+    oss << FreezeCommon::EVENT_MSG << FreezeCommon::COLON << watchPoint.GetMsg() << std::endl;
 }
 
 std::string Vendor::MergeEventLog(
-    const WatchPoint &watchPoint, std::vector<WatchPoint>& list,
-    std::vector<FreezeResult>& result, std::string& digest) const
+    const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
+    const std::vector<FreezeResult>& result, std::string& digest) const
 {
+    if (freezeCommon_ == nullptr) {
+        return "";
+    }
     if (CheckPid(watchPoint, list) == false) {
         HIVIEW_LOGE("failed to match pid in file name %{public}s.", watchPoint.GetLogPath().c_str());
         return "";
@@ -265,7 +173,7 @@ std::string Vendor::MergeEventLog(
     std::string retPath;
     std::string logPath;
     std::string logName;
-    if (IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
+    if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
@@ -304,14 +212,14 @@ std::string Vendor::MergeEventLog(
 
         body << HEADER << std::endl;
         if (node.GetDomain() == "RELIABILITY" && node.GetStringId() == "STACK") {
-            body << FreezeDetectorPlugin::EVENT_DOMAIN << "=" << node.GetDomain() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_STRINGID << "=" << node.GetStringId() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_TIMESTAMP << "=" << node.GetTimestamp() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_PID << "=" << watchPoint.GetPid() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_UID << "=" << watchPoint.GetUid() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_PACKAGE_NAME << "=" << watchPoint.GetPackageName() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_PROCESS_NAME << "=" << watchPoint.GetProcessName() << std::endl;
-            body << FreezeDetectorPlugin::EVENT_MSG << "=" << node.GetMsg() << std::endl;
+            body << FreezeCommon::EVENT_DOMAIN << "=" << node.GetDomain() << std::endl;
+            body << FreezeCommon::EVENT_STRINGID << "=" << node.GetStringId() << std::endl;
+            body << FreezeCommon::EVENT_TIMESTAMP << "=" << node.GetTimestamp() << std::endl;
+            body << FreezeCommon::EVENT_PID << "=" << watchPoint.GetPid() << std::endl;
+            body << FreezeCommon::EVENT_UID << "=" << watchPoint.GetUid() << std::endl;
+            body << FreezeCommon::EVENT_PACKAGE_NAME << "=" << watchPoint.GetPackageName() << std::endl;
+            body << FreezeCommon::EVENT_PROCESS_NAME << "=" << watchPoint.GetProcessName() << std::endl;
+            body << FreezeCommon::EVENT_MSG << "=" << node.GetMsg() << std::endl;
             body << std::endl;
         }
         body << ifs.rdbuf();
@@ -329,33 +237,16 @@ std::string Vendor::MergeEventLog(
     return SendFaultLog(watchPoint, logPath, logName, digest);
 }
 
-std::shared_ptr<PipelineEvent> Vendor::MakeEvent(
-    const WatchPoint &watchPoint, const WatchPoint& matchedWatchPoint,
-    const std::list<WatchPoint>& list, const FreezeResult& result,
-    const std::string& logPath, const std::string& digest) const
-{
-    for (auto node : list) {
-        DBHelper::UpdateEventIntoDB(node, result.GetId());
-    }
-
-    return nullptr;
-}
-
 bool Vendor::Init()
 {
+    if (freezeCommon_ == nullptr) {
+        return false;
+    }
     logStore_ = std::make_unique<LogStoreEx>(FREEZE_DETECTOR_PATH, true);
     logStore_->SetMaxSize(MAX_FOLDER_SIZE);
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
     logStore_->Init();
     return true;
-}
-
-Vendor::Vendor()
-{
-}
-
-Vendor::~Vendor()
-{
 }
 } // namespace HiviewDFX
 } // namespace OHOS

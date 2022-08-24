@@ -17,6 +17,7 @@ config("event_logger_config") {
   include_dirs = [
     ".",
     "include",
+    "$hiview_plugin/freeze_detector",
   ]
 }
 
@@ -33,8 +34,10 @@ ohos_source_set("eventlogger") {
   deps = [
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
+    "$hiview_plugin/freeze_detector:freeze_detector",
     "config:eventlogger_config",
     "log_catcher:log_catcher",
+    "//third_party/libxml2:xml2",
   ]
 }
 
