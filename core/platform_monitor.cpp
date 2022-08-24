@@ -391,7 +391,7 @@ void PlatformMonitor::Breaking()
     HIVIEW_LOGE("break as event reach critical size %{public}u", SysEvent::totalSize_.load());
     breakTimestamp_ = TimeUtil::GenerateTimestamp();
     ReportBreakProfile();
-    uint32_t recoveryBenchMark = totalSizeBenchMark_ * 0.8; // 0.8 of total size will recover
+    int64_t recoveryBenchMark = static_cast<int64_t>(totalSizeBenchMark_ * 0.8); // 0.8 of total size will recover
     while (true) {
         if (SysEvent::totalSize_ <= recoveryBenchMark) {
             break;
