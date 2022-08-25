@@ -128,3 +128,16 @@ ohos_unittest("HiviewPlatformConfigTest") {
     "//third_party/googletest:gtest_main",
   ]
 }
+
+ohos_unittest("EventServerTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/event_server_test.cpp" ]
+
+  deps = [
+    "$hiview_adapter/utility:hiview_adapter_utility",
+    "$hiview_core:sysevent_source",
+    "//third_party/googletest:gtest_main",
+  ]
+}
