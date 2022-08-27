@@ -35,7 +35,7 @@ public:
     std::string GetListenerName() override;
 
 private:
-    static const inline std::string FAULT_LOG_PATH = "/data/log/faultlog/";
+    static const inline std::string FAULT_LOG_PATH = "/data/log/faultlog/faultlogger/";
     static const inline std::string STRINGID_SERVICE_TIMEOUT = "SERVICE_TIMEOUT"; // timer
     static const inline std::string STRINGID_SERVICE_BLOCK = "SERVICE_BLOCK"; // watchdog
     static const inline std::string EVENT_PID = "PID";
@@ -43,6 +43,11 @@ private:
     static const inline std::string EVENT_MSG = "MSG";
 
     void ProcessHiCollieEvent(SysEvent &sysEvent);
+    std::string GetTimeString(unsigned long long timestamp) const;
+    std::string SelectEventFromDB(
+        int32_t pid, const std::string& processName, const std::string& moduleName) const;
+    void SaveToFile(SysEvent &sysEvent, int32_t pid, const std::string& processName,
+    const std::string& path, const std::string& desPath) const;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

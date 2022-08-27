@@ -33,7 +33,10 @@ ohos_source_set("hicollie_collector") {
 
   external_deps = [ "hisysevent_native:libhisysevent" ]
 
-  deps = [ "$hiview_base:hiviewbase" ]
+  deps = [
+    "$hiview_adapter/system_service:system_service",
+    "$hiview_base:hiviewbase",
+  ]
 }
 
 group("unittest") {

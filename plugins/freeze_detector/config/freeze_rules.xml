@@ -37,20 +37,6 @@
         </event>
       </links>
     </rule>
-    <rule id="4" domain="POWER" stringid="SCREEN_ON_TIMEOUT">	<!-- SCREEN_ON_TIMEOUT -->
-      <links type="watchpoint">
-        <event window="0" domain="POWER" stringid="SCREEN_ON_TIMEOUT">	<!-- SCREEN_ON_TIMEOUT -->
-          <result code="1" scope="sys"/>
-        </event>
-      </links>
-    </rule>
-    <rule id="5" domain="FRAMEWORK" stringid="SERVICE_BLOCK">	<!-- SERVICE_BLOCK -->
-      <links type="watchpoint">
-        <event window="0" domain="FRAMEWORK" stringid="SERVICE_BLOCK">	<!-- SERVICE_BLOCK -->
-          <result code="1" scope="sys"/>
-        </event>
-      </links>
-    </rule>
   </rules>
   <rules resolver="AppResolver">
     <rule id="1" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->

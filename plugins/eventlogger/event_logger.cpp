@@ -144,7 +144,11 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     headerStream << "UID = " << uid << std::endl;
     long tid = event->GetTid();
     headerStream << "TID = " << tid << std::endl;
-    headerStream << "PACKAGE_NAME = " << event->GetEventValue("PACKAGE_NAME") << std::endl;
+    if (event->GetEventValue("MODULE_NAME") != "") {
+        headerStream << "MODULE_NAME = " << event->GetEventValue("MODULE_NAME") << std::endl;
+    } else {
+        headerStream << "PACKAGE_NAME = " << event->GetEventValue("PACKAGE_NAME") << std::endl;
+    }
     headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
     headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
     headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
