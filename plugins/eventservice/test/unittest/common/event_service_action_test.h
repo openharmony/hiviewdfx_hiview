@@ -22,9 +22,10 @@ namespace OHOS {
 namespace HiviewDFX {
 class EventServiceActionTest : public testing::Test {
 public:
+    static void SetUpTestCase();
+    static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    static void SetUpTestCase();
 };
 } // namespace HiviewDFX
 } // namespace OHOS
