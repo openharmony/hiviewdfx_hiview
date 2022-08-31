@@ -208,20 +208,6 @@ HWTEST_F(SysEventServiceOhosTest, OnSysEventTest001, testing::ext::TestSize.Leve
 }
 
 /**
- * @tc.name: StartService001
- * @tc.desc: Check StartService Function.
- * @tc.type: FUNC
- * @tc.require: SR000GGSVA
- */
-HWTEST_F(SysEventServiceOhosTest, StartService001, testing::ext::TestSize.Level3)
-{
-    SysEventService service;
-    auto notifyFunc = [] (std::shared_ptr<Event> event) -> void {};
-    SysEventServiceOhos::StartService(&service, notifyFunc);
-    system("kill -9 `pidof hiview`");
-}
-
-/**
  * @tc.name: SetDebugModeTest
  * @tc.desc: Check SetDebugMode Function.
  * @tc.type: FUNC

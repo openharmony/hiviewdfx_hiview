@@ -15,10 +15,11 @@
 
 #include "event_service_action_test.h"
 
+#include "event_json_parser.h"
 #include "event.h"
+#include "hiview_global.h"
 #include "hiview_platform.h"
 #include "sys_event.h"
-#include "sys_event_service.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,27 +34,29 @@ void EventServiceActionTest::SetUpTestCase()
     }
 }
 
+void EventServiceActionTest::TearDownTestCase() {}
+
 void EventServiceActionTest::SetUp() {}
 
 void EventServiceActionTest::TearDown() {}
 
 /**
- * @tc.name: EventServiceActionTest001
+ * @tc.name: EventJsonParserTest001
  * @tc.desc: parse a event and check Json info
  * @tc.type: FUNC
  * @tc.require: SR000GGSVB
  */
-HWTEST_F(EventServiceActionTest, EventServiceActionTest001, testing::ext::TestSize.Level3)
+HWTEST_F(EventServiceActionTest, EventJsonParserTest001, testing::ext::TestSize.Level3)
 {
     printf("start EventServiceActionTest\n");
     constexpr char JSON_STR[] = "{\"domain_\":\"DEMO\",\"name_\":\"EVENT_NAME_A\",\"type_\":4,\
         \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
-    auto eventService = std::make_unique<SysEventService>();
     auto sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, JSON_STR);
-    auto event = std::dynamic_pointer_cast<Event>(sysEvent);
-    event->messageType_ = Event::MessageType::SYS_EVENT;
-    eventService->OnLoad();
-    ASSERT_TRUE(eventService->OnEvent(event));
+    std::string yamlFile =
+        HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
+    yamlFile = (yamlFile.back() != '/') ? (yamlFile + "/hisysevent.def") : (yamlFile + "hisysevent.def");
+    auto sysEventParser = std::make_unique<EventJsonParser>(yamlFile);
+    ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
