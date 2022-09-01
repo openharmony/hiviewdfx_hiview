@@ -96,7 +96,7 @@ int32_t SysEventServiceStub::HandleQueryEvent(MessageParcel& data,
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IQuerySysEventCallback> callback = iface_cast<IQuerySysEventCallback>(remoteObject);
-    ret = reply.WriteInt32(QuerySysEvent(beginTime, endTime, maxEvents, queryRules, callback));
+    ret = reply.WriteInt32(Query(beginTime, endTime, maxEvents, queryRules, callback));
     if (!ret) {
         HiLog::Error(LABEL, "parcel write return-value of QuerySysEvent failed.");
         return ERR_FLATTEN_OBJECT;

@@ -29,38 +29,38 @@ int32_t SysEventServiceProxy::AddListener(const std::vector<SysEventRule>& rules
     auto remote = Remote();
     if (remote == nullptr) {
         HiLog::Error(LABEL, "SysEventService Remote is NULL.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventServiceProxy::GetDescriptor())) {
         HiLog::Error(LABEL, "write descriptor failed.");
-        return ERROR_CAN_NOT_WRITE_DIESCRIPTOR;
+        return ERR_CAN_NOT_WRITE_DIESCRIPTOR;
     }
     bool ret = WriteVectorToParcel(data, rules);
     if (!ret) {
         HiLog::Error(LABEL, "parcel write rules failed.");
-        return ERROR_CAN_NOT_WRITE_PARCEL;
+        return ERR_CAN_NOT_WRITE_PARCEL;
     }
     if (callback == nullptr) {
-        return ERROR_PARCEL_DATA_IS_NULL;
+        return ERR_PARCEL_DATA_IS_NULL;
     }
     ret = data.WriteRemoteObject(callback->AsObject());
     if (!ret) {
         HiLog::Error(LABEL, "parcel write callback failed.");
-        return ERROR_CAN_NOT_WRITE_REMOTE_OBJECT;
+        return ERR_CAN_NOT_WRITE_REMOTE_OBJECT;
     }
     MessageParcel reply;
     MessageOption option;
     int32_t res = remote->SendRequest(ADD_SYS_EVENT_LISTENER, data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
-        return ERROR_CAN_NOT_SEND_REQ;
+        return ERR_CAN_NOT_SEND_REQ;
     }
     int32_t result;
     ret = reply.ReadInt32(result);
     if (!ret) {
         HiLog::Error(LABEL, "parcel read result failed.");
-        return ERROR_CAN_NOT_READ_PARCEL;
+        return ERR_CAN_NOT_READ_PARCEL;
     }
     return result;
 }
@@ -70,76 +70,76 @@ int32_t SysEventServiceProxy::RemoveListener(const sptr<ISysEventCallback> &call
     auto remote = Remote();
     if (remote == nullptr) {
         HiLog::Error(LABEL, "SysEventService Remote is null.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventServiceProxy::GetDescriptor())) {
         HiLog::Error(LABEL, "write descriptor failed.");
-        return ERROR_CAN_NOT_WRITE_DIESCRIPTOR;
+        return ERR_CAN_NOT_WRITE_DIESCRIPTOR;
     }
     if (callback == nullptr) {
-        return ERROR_PARCEL_DATA_IS_NULL;
+        return ERR_PARCEL_DATA_IS_NULL;
     }
     bool ret = data.WriteRemoteObject(callback->AsObject());
     if (!ret) {
         HiLog::Error(LABEL, "parcel write object in callback failed.");
-        return ERROR_CAN_NOT_WRITE_REMOTE_OBJECT;
+        return ERR_CAN_NOT_WRITE_REMOTE_OBJECT;
     }
     MessageParcel reply;
     MessageOption option;
     int32_t res = remote->SendRequest(REMOVE_SYS_EVENT_LISTENER, data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
-        return ERROR_CAN_NOT_SEND_REQ;
+        return ERR_CAN_NOT_SEND_REQ;
     }
     int32_t result;
     ret = reply.ReadInt32(result);
     if (!ret) {
         HiLog::Error(LABEL, "parcel read result failed.");
-        return ERROR_CAN_NOT_READ_PARCEL;
+        return ERR_CAN_NOT_READ_PARCEL;
     }
     return result;
 }
 
-int32_t SysEventServiceProxy::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+int32_t SysEventServiceProxy::Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
     const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback)
 {
     auto remote = Remote();
     if (remote == nullptr) {
         HiLog::Error(LABEL, "SysEventService Remote is null.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventServiceProxy::GetDescriptor())) {
         HiLog::Error(LABEL, "write descriptor failed.");
-        return ERROR_CAN_NOT_WRITE_DIESCRIPTOR;
+        return ERR_CAN_NOT_WRITE_DIESCRIPTOR;
     }
     bool ret = data.WriteInt64(beginTime) && data.WriteInt64(endTime) &&
         data.WriteInt32(maxEvents) && WriteVectorToParcel(data, rules);
     if (!ret) {
         HiLog::Error(LABEL, "parcel write params failed.");
-        return ERROR_CAN_NOT_WRITE_PARCEL;
+        return ERR_CAN_NOT_WRITE_PARCEL;
     }
     if (callback == nullptr) {
-        return ERROR_PARCEL_DATA_IS_NULL;
+        return ERR_PARCEL_DATA_IS_NULL;
     }
     ret = data.WriteRemoteObject(callback->AsObject());
     if (!ret) {
         HiLog::Error(LABEL, "parcel write callback failed.");
-        return ERROR_CAN_NOT_WRITE_REMOTE_OBJECT;
+        return ERR_CAN_NOT_WRITE_REMOTE_OBJECT;
     }
     MessageParcel reply;
     MessageOption option;
     int32_t res = remote->SendRequest(QUERY_SYS_EVENT, data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
-        return ERROR_CAN_NOT_SEND_REQ;
+        return ERR_CAN_NOT_SEND_REQ;
     }
     int32_t result;
     ret = reply.ReadInt32(result);
     if (!ret) {
         HiLog::Error(LABEL, "parcel read result failed.");
-        return ERROR_CAN_NOT_READ_PARCEL;
+        return ERR_CAN_NOT_READ_PARCEL;
     }
     return result;
 }
@@ -149,38 +149,38 @@ int32_t SysEventServiceProxy::SetDebugMode(const sptr<ISysEventCallback>& callba
     auto remote = Remote();
     if (remote == nullptr) {
         HiLog::Error(LABEL, "SysEventService Remote is null.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventServiceProxy::GetDescriptor())) {
         HiLog::Error(LABEL, "write descriptor failed.");
-        return ERROR_CAN_NOT_WRITE_DIESCRIPTOR;
+        return ERR_CAN_NOT_WRITE_DIESCRIPTOR;
     }
     if (callback == nullptr) {
-        return ERROR_PARCEL_DATA_IS_NULL;
+        return ERR_PARCEL_DATA_IS_NULL;
     }
     bool ret = data.WriteRemoteObject(callback->AsObject());
     if (!ret) {
         HiLog::Error(LABEL, "parcel write callback failed.");
-        return ERROR_CAN_NOT_WRITE_REMOTE_OBJECT;
+        return ERR_CAN_NOT_WRITE_REMOTE_OBJECT;
     }
     ret = data.WriteBool(mode);
     if (!ret) {
         HiLog::Error(LABEL, "parcel write mode failed.");
-        return ERROR_CAN_NOT_WRITE_PARCEL;
+        return ERR_CAN_NOT_WRITE_PARCEL;
     }
     MessageParcel reply;
     MessageOption option;
     int32_t res = remote->SendRequest(SET_DEBUG_MODE, data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
-        return ERROR_CAN_NOT_SEND_REQ;
+        return ERR_CAN_NOT_SEND_REQ;
     }
     int32_t result;
     ret = reply.ReadInt32(result);
     if (!ret) {
         HiLog::Error(LABEL, "parcel read result failed.");
-        return ERROR_CAN_NOT_READ_PARCEL;
+        return ERR_CAN_NOT_READ_PARCEL;
     }
     return result;
 }
