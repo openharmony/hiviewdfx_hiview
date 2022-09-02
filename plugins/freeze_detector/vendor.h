@@ -38,10 +38,9 @@ public:
     bool Init();
     std::string GetTimeString(unsigned long long timestamp) const;
     void DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const;
-    bool CheckPid(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
     std::string MergeEventLog(
         const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
-        const std::vector<FreezeResult>& result, std::string& digest) const;
+        const std::vector<FreezeResult>& result) const;
     bool ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const;
 
 private:
@@ -65,7 +64,7 @@ private:
     static const inline std::string SMART_PARSER_PATH = "/system/etc/hiview/";
 
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
-        const std::string& logName, std::string& digest) const;
+        const std::string& logName) const;
 
     std::unique_ptr<LogStoreEx> logStore_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
