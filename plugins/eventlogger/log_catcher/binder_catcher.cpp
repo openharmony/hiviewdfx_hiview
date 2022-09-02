@@ -14,6 +14,8 @@
  */
 #include "binder_catcher.h"
 
+#include <fstream>
+
 #include "securec.h"
 
 #include "common_utils.h"
@@ -40,7 +42,22 @@ bool BinderCatcher::Initialize(const std::string& strParam1, int intParam1, int 
 
 int BinderCatcher::Catch(int fd)
 {
-    logSize_ = EventLogCatcher::AppendFile(fd, "/proc/transaction_proc");
+    std::string line;
+    int originSize = GetFdSize(fd);
+    std::ifstream fin;
+    fin.open("/proc/transaction_proc");
+    if (!fin.is_open()) {
+        std::string content = "open binder file failed :/proc/transaction_proc\r\n";
+        FileUtil::SaveStringToFd(fd, content);
+        goto end;
+    }
+    while (getline(fin, line)) {
+        FileUtil::SaveStringToFd(fd, line + "\n");
+    }
+    fin.close();
+
+    end:
+    logSize_ = GetFdSize(fd) - originSize;
     if (logSize_ <= 0) {
         FileUtil::SaveStringToFd(fd, "binder content is empty!");
     }

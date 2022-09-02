@@ -102,11 +102,11 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
-    if (packageName == "" && processName != "") {
-        packageName = processName;
+    if (processName == "" && packageName != "") {
+        processName = packageName;
     }
-    if (packageName == "" && processName == "") {
-        packageName = stringId;
+    if (processName == "" && packageName == "") {
+        processName = stringId;
     }
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
@@ -122,7 +122,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.pid = watchPoint.GetPid();
     info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
-    info.module = packageName;
+    info.module = processName;
     info.reason = stringId;
     info.summary = summary;
     info.logPath = logPath;
@@ -163,24 +163,29 @@ std::string Vendor::MergeEventLog(
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string msg = watchPoint.GetMsg();
-    if (packageName == "" && processName != "") {
-        packageName = processName;
+
+    if (processName == "" && packageName != "") {
+        processName = packageName;
     }
-    if (packageName == "" && processName == "") {
-        packageName = stringId;
+    if (processName == "" && packageName == "") {
+        processName = stringId;
     }
 
     std::string retPath;
     std::string logPath;
     std::string logName;
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
-        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-        logName = APPFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName
+            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + processName
+            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        logName = APPFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     } else {
-        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-        logName = SYSFREEZE + HYPHEN + packageName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + processName
+            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + processName
+            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        logName = SYSFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
 
     if (FileUtil::FileExists(retPath)) {
