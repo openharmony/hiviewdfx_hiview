@@ -10,16 +10,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import("//build/config/features.gni")
 import("//build/test.gni")
+
 ohos_fuzztest("HiviewdfxFaultloggerFuzzTest") {
   module_out_path = "hiviewdfx/faultlogger/"
+
   fuzz_config_file = "//base/hiviewdfx/hiview/plugins/faultlogger/test/common/hiviewdfxfaultlogger_fuzzer"
-  include_dirs = [
-    "//third_party/zlib/",
-    "//utils/native/base/",
-    "./",
-  ]
+
+  include_dirs = [ "./" ]
 
   cflags = [
     "-g",
