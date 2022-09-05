@@ -75,7 +75,7 @@ public:
     void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
     int32_t AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
     int32_t RemoveListener(const SysEventCallbackPtrOhos& callback) override;
-    int32_t QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+    int32_t Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
         const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback) override;
     int32_t SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
     void OnRemoteDied(const wptr<IRemoteObject> &remote);

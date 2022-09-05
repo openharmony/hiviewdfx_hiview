@@ -30,7 +30,7 @@ public:
 
     int32_t AddListener(const std::vector<SysEventRule>& rules, const sptr<ISysEventCallback>& callback);
     int32_t RemoveListener(const sptr<ISysEventCallback>& callback);
-    int32_t QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+    int32_t Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
         const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback);
     int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode);
 

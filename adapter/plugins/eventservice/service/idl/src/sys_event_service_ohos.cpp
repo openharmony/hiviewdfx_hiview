@@ -103,12 +103,12 @@ int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules,
     size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
     if (rules.size() > watchRuleCntLimit) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
-        return ERROR_TOO_MANY_WATCH_RULES;
+        return ERR_TOO_MANY_WATCH_RULES;
     }
     size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
     if (listeners.size() >= watcherTotalCntLimit) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
-        return ERROR_TOO_MANY_WATCHERS;
+        return ERR_TOO_MANY_WATCHERS;
     }
     return IPC_CALL_SUCCEED;
 }
@@ -118,7 +118,7 @@ int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
     size_t queryRuleCntLimit = 10; // count of query rule for each querier is limited to 10.
     if (rules.size() > queryRuleCntLimit) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyQueryRules(rules);
-        return ERROR_TOO_MANY_QUERY_RULES;
+        return ERR_TOO_MANY_QUERY_RULES;
     }
     return IPC_CALL_SUCCEED;
 }
@@ -235,7 +235,7 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed");
-        return ERROR_NO_PERMISSION;
+        return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventListenerAddingValidity(rules, registeredListeners_);
     if (checkRet != IPC_CALL_SUCCEED) {
@@ -244,16 +244,16 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, sys event service is null.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, callback is null.");
-        return ERROR_LISTENER_NOT_EXIST;
+        return ERR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "subscribe fail, object in callback is null.");
-        return ERROR_LISTENER_STATUS_INVALID;
+        return ERR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
@@ -266,7 +266,7 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
         HiLog::Error(LABEL, "subscribe fail, can not add death recipient.");
-        return ERROR_ADD_DEATH_RECIPIENT;
+        return ERR_ADD_DEATH_RECIPIENT;
     }
     registeredListeners_.insert(make_pair(callbackObject, rulesPair));
     HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
@@ -278,41 +278,41 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed");
-        return ERROR_NO_PERMISSION;
+        return ERR_NO_PERMISSION;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
         HiLog::Error(LABEL, "sys event service is null.");
-        return ERROR_REMOTE_SERVICE_IS_NULL;
+        return ERR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
         HiLog::Error(LABEL, "callback is null.");
-        return ERROR_LISTENER_NOT_EXIST;
+        return ERR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HiLog::Error(LABEL, "object in callback is null.");
-        return ERROR_LISTENER_STATUS_INVALID;
+        return ERR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
     lock_guard<mutex> lock(mutex_);
     if (registeredListeners_.empty()) {
         HiLog::Debug(LABEL, "has no any listeners.");
-        return ERROR_LISTENERS_EMPTY;
+        return ERR_LISTENERS_EMPTY;
     }
     auto registeredListener = registeredListeners_.find(callbackObject);
     if (registeredListener != registeredListeners_.end()) {
         if (!callbackObject->RemoveDeathRecipient(deathRecipient_)) {
             HiLog::Error(LABEL, "uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
-            return ERROR_ADD_DEATH_RECIPIENT;
+            return ERR_ADD_DEATH_RECIPIENT;
         }
         registeredListeners_.erase(registeredListener);
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
         return IPC_CALL_SUCCEED;
     } else {
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
-        return ERROR_LISTENER_NOT_EXIST;
+        return ERR_LISTENER_NOT_EXIST;
     }
 }
 
@@ -428,22 +428,22 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
     result = sysEventQuery->Execute(maxEvents, { false, isFirstPartialQuery }, callInfo,
         [&queryRetCode] (DbQueryStatus status) {
             std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
-                { DbQueryStatus::CONCURRENT, ERROR_TOO_MANY_CONCURRENT_QUERIES },
-                { DbQueryStatus::OVER_TIME, ERROR_QUERY_OVER_TIME },
-                { DbQueryStatus::OVER_LIMIT, ERROR_QUERY_OVER_LIMIT },
-                { DbQueryStatus::TOO_FREQENTLY, ERROR_QUERY_TOO_FREQUENTLY },
+                { DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
+                { DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
+                { DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
+                { DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
             };
             queryRetCode = statusToCode[status];
         });
     return queryRetCode;
 }
 
-int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, int32_t maxEvents,
+int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
     const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed.");
-        return ERROR_NO_PERMISSION;
+        return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventQueryingValidity(rules);
     if (checkRet != IPC_CALL_SUCCEED) {
@@ -453,7 +453,7 @@ int32_t SysEventServiceOhos::QuerySysEvent(int64_t beginTime, int64_t endTime, i
     ParseQueryArgs(rules, queryArgs);
     if (queryArgs.empty()) {
         HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
-        return ERROR_DOMIAN_INVALID;
+        return ERR_DOMIAN_INVALID;
     }
     auto realBeginTime = beginTime < 0 ? 0 : beginTime;
     auto realEndTime = endTime < 0 ? std::numeric_limits<int64_t>::max() : endTime;
@@ -512,12 +512,12 @@ int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callbac
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "permission denied");
-        return ERROR_NO_PERMISSION;
+        return ERR_NO_PERMISSION;
     }
 
     if (mode == isDebugMode_) {
         HiLog::Error(LABEL, "same config, no need set");
-        return ERROR_DEBUG_MODE_SET_REPEAT;
+        return ERR_DEBUG_MODE_SET_REPEAT;
     }
 
     auto event = std::make_shared<Event>("SysEventSource");

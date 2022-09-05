@@ -20,30 +20,30 @@ namespace OHOS {
 namespace HiviewDFX {
 static constexpr int32_t IPC_CALL_SUCCEED = 0;
 
-static constexpr int32_t ERROR_LISTENER_NOT_EXIST = -10;
-static constexpr int32_t ERROR_SYS_EVENT_SERVICE_NOT_FOUND = -11;
+static constexpr int32_t ERR_LISTENER_NOT_EXIST = -10;
+static constexpr int32_t ERR_SYS_EVENT_SERVICE_NOT_FOUND = -11;
 
-static constexpr int32_t ERROR_PARCEL_DATA_IS_NULL = -12;
-static constexpr int32_t ERROR_REMOTE_SERVICE_IS_NULL = -13;
-static constexpr int32_t ERROR_CAN_NOT_WRITE_DIESCRIPTOR = -14;
-static constexpr int32_t ERROR_CAN_NOT_WRITE_PARCEL = -15;
-static constexpr int32_t ERROR_CAN_NOT_WRITE_REMOTE_OBJECT = -16;
-static constexpr int32_t ERROR_CAN_NOT_SEND_REQ = -17;
-static constexpr int32_t ERROR_CAN_NOT_READ_PARCEL = -18;
-static constexpr int32_t ERROR_NO_PERMISSION = -19;
-static constexpr int32_t ERROR_LISTENER_STATUS_INVALID = -20;
-static constexpr int32_t ERROR_LISTENERS_EMPTY = -21;
-static constexpr int32_t ERROR_ADD_DEATH_RECIPIENT = -22;
-static constexpr int32_t ERROR_DOMIAN_INVALID = -23;
-static constexpr int32_t ERROR_DEBUG_MODE_SET_REPEAT = -24;
+static constexpr int32_t ERR_PARCEL_DATA_IS_NULL = -12;
+static constexpr int32_t ERR_REMOTE_SERVICE_IS_NULL = -13;
+static constexpr int32_t ERR_CAN_NOT_WRITE_DIESCRIPTOR = -14;
+static constexpr int32_t ERR_CAN_NOT_WRITE_PARCEL = -15;
+static constexpr int32_t ERR_CAN_NOT_WRITE_REMOTE_OBJECT = -16;
+static constexpr int32_t ERR_CAN_NOT_SEND_REQ = -17;
+static constexpr int32_t ERR_CAN_NOT_READ_PARCEL = -18;
+static constexpr int32_t ERR_NO_PERMISSION = -19;
+static constexpr int32_t ERR_LISTENER_STATUS_INVALID = -20;
+static constexpr int32_t ERR_LISTENERS_EMPTY = -21;
+static constexpr int32_t ERR_ADD_DEATH_RECIPIENT = -22;
+static constexpr int32_t ERR_DOMIAN_INVALID = -23;
+static constexpr int32_t ERR_DEBUG_MODE_SET_REPEAT = -24;
 
-static constexpr int32_t ERROR_TOO_MANY_WATCH_RULES = -25;
-static constexpr int32_t ERROR_TOO_MANY_WATCHERS = -26;
-static constexpr int32_t ERROR_TOO_MANY_QUERY_RULES = -27;
-static constexpr int32_t ERROR_TOO_MANY_CONCURRENT_QUERIES = -28;
-static constexpr int32_t ERROR_QUERY_OVER_TIME = -29;
-static constexpr int32_t ERROR_QUERY_OVER_LIMIT = -30;
-static constexpr int32_t ERROR_QUERY_TOO_FREQUENTLY = -31;
+static constexpr int32_t ERR_TOO_MANY_WATCH_RULES = -25;
+static constexpr int32_t ERR_TOO_MANY_WATCHERS = -26;
+static constexpr int32_t ERR_TOO_MANY_QUERY_RULES = -27;
+static constexpr int32_t ERR_TOO_MANY_CONCURRENT_QUERIES = -28;
+static constexpr int32_t ERR_QUERY_OVER_TIME = -29;
+static constexpr int32_t ERR_QUERY_OVER_LIMIT = -30;
+static constexpr int32_t ERR_QUERY_TOO_FREQUENTLY = -31;
 } // namespace HiviewDFX
 } // namespace OHOS
 
