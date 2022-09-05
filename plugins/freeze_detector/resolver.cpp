@@ -146,8 +146,7 @@ int FreezeResolver::ProcessEvent(const WatchPoint &watchPoint) const
         return -1;
     }
 
-    std::string digest;
-    std::string logPath = vendor_->MergeEventLog(watchPoint, list, result, digest);
+    std::string logPath = vendor_->MergeEventLog(watchPoint, list, result);
 
     for (auto node : list) {
         if (dBHelper_ != nullptr) {

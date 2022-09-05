@@ -67,9 +67,6 @@
         <event window="0" domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
           <result code="0" scope="app"/>
         </event>
-        <event window="6" domain="RELIABILITY" stringid="STACK">	<!-- STACK -->
-          <result code="0" scope="app"/>
-        </event>
       </links>
     </rule>
     <rule id="4" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->

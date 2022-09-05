@@ -76,25 +76,8 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
     return std::string(buf, strlen(buf));
 }
 
-bool Vendor::CheckPid(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const
-{
-    std::string domain = watchPoint.GetDomain();
-    std::string stringId = watchPoint.GetStringId();
-    if (domain != "MULTIMODALINPUT" || stringId != "APPLICATION_BLOCK_INPUT") {
-        return true; // only check pid for STACK rule
-    }
-
-    long pid = watchPoint.GetPid();
-    for (auto node = list.begin(); node != list.end(); ++node) {
-        if (node->GetDomain() == "RELIABILITY" && node->GetStringId() == "STACK" && node->GetPid() == pid) {
-            return true;
-        }
-    }
-    return false;
-}
-
 std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
-    const std::string& logName, std::string& digest) const
+    const std::string& logName) const
 {
     if (freezeCommon_ == nullptr) {
         return "";
@@ -110,11 +93,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     }
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? SP_APPFREEZE : SP_SYSTEMHUNGFAULT;
-    auto eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, type);
-    digest = eventInfos[SP_ENDSTACK];
-    std::string summary = eventInfos[SP_ENDSTACK];
-    summary = EVENT_SUMMARY + FreezeCommon::COLON + NEW_LINE + summary;
+        ? APPFREEZE : SYSFREEZE;
 
     FaultLogInfoInner info;
     info.time = watchPoint.GetTimestamp();
@@ -124,7 +103,8 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
         ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = processName;
     info.reason = stringId;
-    info.summary = summary;
+    info.summary = type + ": " + processName + " " + stringId
+        + " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
     info.logPath = logPath;
     AddFaultLog(info);
     return logPath;
@@ -146,13 +126,9 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
 
 std::string Vendor::MergeEventLog(
     const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
-    const std::vector<FreezeResult>& result, std::string& digest) const
+    const std::vector<FreezeResult>& result) const
 {
     if (freezeCommon_ == nullptr) {
-        return "";
-    }
-    if (CheckPid(watchPoint, list) == false) {
-        HIVIEW_LOGE("failed to match pid in file name %{public}s.", watchPoint.GetLogPath().c_str());
         return "";
     }
 
@@ -239,7 +215,7 @@ std::string Vendor::MergeEventLog(
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
-    return SendFaultLog(watchPoint, logPath, logName, digest);
+    return SendFaultLog(watchPoint, logPath, logName);
 }
 
 bool Vendor::Init()
