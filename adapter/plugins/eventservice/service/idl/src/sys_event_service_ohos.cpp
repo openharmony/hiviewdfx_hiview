@@ -531,6 +531,16 @@ int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callbac
     return IPC_CALL_SUCCEED;
 }
 
+int SysEventServiceOhos::Dump(int32_t fd, const std::vector<std::u16string> &args)
+{
+    if (fd < 0) {
+        HiLog::Error(LABEL, "invalid fd.");
+        return -1;
+    }
+    dprintf(fd, "%s\n", "Hiview SysEventService");
+    return 0;
+}
+
 void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
     SysEventServiceOhos::GetInstance().OnRemoteDied(remote);
