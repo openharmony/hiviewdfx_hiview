@@ -81,6 +81,7 @@ public:
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
+    int32_t Dump(int32_t fd, const std::vector<std::u16string> &args) override;
 
 private:
     bool HasAccessPermission() const;
