@@ -22,23 +22,22 @@
 
 #include "event_db_helper.h"
 #include "logger_event.h"
+#include "usage_event_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-const std::string SYS_USAGE_COLL = "sys_usage";
-}
 class UsageEventCacher {
 public:
     UsageEventCacher(const std::string& workPath);
     ~UsageEventCacher() {}
 
     void GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events);
-    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& coll = SYS_USAGE_COLL);
+    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
     void DeletePluginStatsEventsFromDb();
     void SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events);
-    void DeleteSysUsageEventFromDb(const std::string& coll = SYS_USAGE_COLL);
-    void SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event, const std::string& coll = SYS_USAGE_COLL);
+    void DeleteSysUsageEventFromDb(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
+    void SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event,
+        const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
 
 private:
     std::unique_ptr<EventDbHelper> dbHelper_;

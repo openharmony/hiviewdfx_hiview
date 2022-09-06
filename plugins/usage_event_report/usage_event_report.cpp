@@ -37,6 +37,8 @@ constexpr int TRIGGER_CYCLE = 5 * 60; // 5 min
 constexpr uint32_t TRIGGER_TWO_HOUR = 24; // 2h = 5min * 24
 const std::string SERVICE_NAME = "usage_report";
 }
+using namespace SysUsageDbSpace;
+using namespace SysUsageEventSpace;
 
 UsageEventReport::UsageEventReport() : callback_(nullptr), timeOutCnt_(0)
 {}
@@ -75,13 +77,18 @@ void UsageEventReport::Init()
         HIVIEW_LOGI("get plugin stats event=%{public}d", pluginStatEvents.size());
 
         // get last report time from db if any
-        auto sysUsageEvent = cacher.GetSysUsageEvent();
-        if (sysUsageEvent != nullptr) {
-            HIVIEW_LOGI("get sys usage event=%{public}s", sysUsageEvent->ToJsonString().c_str());
-            lastReportTime_ = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_START).GetUint64();
-            lastSysReportTime_ = sysUsageEvent->GetValue(SysUsageEventSpace::KEY_OF_END).GetUint64();
+        if (auto event = cacher.GetSysUsageEvent(); event != nullptr) {
+            HIVIEW_LOGI("get cache sys usage event=%{public}s", event->ToJsonString().c_str());
+            lastReportTime_ = event->GetValue(KEY_OF_START).GetUint64();
         } else {
             lastReportTime_ = nowTime;
+        }
+
+        // get last sys report time from db if any
+        if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL); event != nullptr) {
+            HIVIEW_LOGI("get last sys usage event=%{public}s", event->ToJsonString().c_str());
+            lastSysReportTime_ = event->GetValue(KEY_OF_END).GetUint64();
+        } else {
             lastSysReportTime_ = nowTime;
         }
     }
@@ -95,7 +102,7 @@ void UsageEventReport::Init()
 
     // more than two hours since the shutdown time
     if (nowTime >= (lastSysReportTime_ + 7200000)) { // 7200000ms: 2h, 3600 * 2 * 1000
-        HIVIEW_LOGI("lastReportTime=%{public}" PRIu64 ", need to report sys usage event now", lastReportTime_);
+        HIVIEW_LOGI("lastSysReportTime=%{public}" PRIu64 ", need to report sys usage event now", lastReportTime_);
         ReportSysUsageEvent();
     }
 }
