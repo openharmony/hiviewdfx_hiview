@@ -38,6 +38,11 @@ const std::string KEY_OF_POWER = "POWER";
 const std::string KEY_OF_SCREEN = "SCREEN";
 const std::string KEY_OF_RUNNING = "RUNNING";
 }
+
+namespace SysUsageDbSpace {
+const std::string SYS_USAGE_COLL = "sys_usage";
+const std::string LAST_SYS_USAGE_COLL = "last_sys_usage";
+}
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLUGINS_USAGE_EVENT_REPORT_SREVICE_USAGE_EVENT_COMMON_H
