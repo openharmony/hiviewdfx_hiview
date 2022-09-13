@@ -77,10 +77,10 @@ int DumpStacktrace(int fd, int pid)
     std::string msg = "";
     if (!GetDump(pid, msg)) {
         DfxDumpCatcher dumplog;
-        if (!dumplog.DumpCatch(pid, 0, msg)) {
+        if (!dumplog.DumpCatchMix(pid, 0, msg)) {
             msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n";
         }
-        FinshDump(pid, msg);
+        FinshDump(pid, "\n-repeat-\n" + msg);
     }
 
     if (msg == "") {

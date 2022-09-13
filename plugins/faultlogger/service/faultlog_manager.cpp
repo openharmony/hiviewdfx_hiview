@@ -109,6 +109,13 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
     FaultLogger::WriteFaultLogToFile(fd, info.faultLogType, info.sectionMap);
     FaultLogger::WriteLogToFile(fd, info.logPath);
     close(fd);
+    
+    std::string logFile = info.logPath;
+    if (logFile != "" && FileUtil::FileExists(logFile)) {
+        if (!FileUtil::RemoveFile(logFile)) {
+            HIVIEW_LOGW("remove logFile %{public}s filed.", logFile.c_str());
+        }
+    }
     store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, info.faultLogType, info.module),
         MAX_FAULT_LOG_PER_HAP);
     info.logPath = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + fileName;
