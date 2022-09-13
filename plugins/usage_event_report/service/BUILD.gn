@@ -47,7 +47,6 @@ ohos_executable("usage_report") {
   ]
 
   external_deps = [
-    "ability_base:want",
     "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics:batterystats_client",
