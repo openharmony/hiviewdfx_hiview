@@ -28,7 +28,7 @@ namespace {
     };
 }
 
-uint8_t FlatJsonParser::charFilter_[FlatJsonParser::CHAR_RANGE] {0};
+uint8_t FlatJsonParser::charFilter_[FlatJsonParser::CHAR_RANGE] { 0 };
 
 void FlatJsonParser::AppendStringValue(const std::string& key, const std::string& value)
 {
@@ -56,14 +56,14 @@ void FlatJsonParser::AppendUInt64Value(const std::string& key, const uint64_t va
 void FlatJsonParser::Initialize()
 {
     for (char c = '0'; c <= '9'; c++) {
-        charFilter_[static_cast<int>(c)] = NUMBER_FLAG;
+        charFilter_[static_cast<uint8_t>(c)] = NUMBER_FLAG;
     }
-    charFilter_[static_cast<int>('-')] = NUMBER_FLAG;
-    charFilter_[static_cast<int>('+')] = NUMBER_FLAG;
-    charFilter_[static_cast<int>('.')] = NUMBER_FLAG;
-    charFilter_[static_cast<int>('"')] = STRING_FLAG;
-    charFilter_[static_cast<int>('{')] = BRACKET_FLAG;
-    charFilter_[static_cast<int>('[')] = BRACKET_FLAG;
+    charFilter_[static_cast<uint8_t>('-')] = NUMBER_FLAG;
+    charFilter_[static_cast<uint8_t>('+')] = NUMBER_FLAG;
+    charFilter_[static_cast<uint8_t>('.')] = NUMBER_FLAG;
+    charFilter_[static_cast<uint8_t>('"')] = STRING_FLAG;
+    charFilter_[static_cast<uint8_t>('{')] = BRACKET_FLAG;
+    charFilter_[static_cast<uint8_t>('[')] = BRACKET_FLAG;
 }
 
 FlatJsonParser::FlatJsonParser(const std::string& jsonStr)
@@ -77,7 +77,7 @@ void FlatJsonParser::Parse(const std::string& jsonStr)
     index_ = 0;
     kvList_.clear();
     while (index_ < jsonStr.length()) {
-        if (charFilter_[static_cast<int>(jsonStr[index_])] != STRING_FLAG) {
+        if (charFilter_[static_cast<uint8_t>(jsonStr[index_])] != STRING_FLAG) {
             ++index_;
             continue;
         }
@@ -105,7 +105,7 @@ std::string FlatJsonParser::ParseKey(const std::string& jsonStr)
     std::string key;
     ++index_; // eat left quotation
     while (index_ < jsonStr.length()) {
-        if (charFilter_[static_cast<int>(jsonStr[index_])] == STRING_FLAG) {
+        if (charFilter_[static_cast<uint8_t>(jsonStr[index_])] == STRING_FLAG) {
             break;
         }
         key.push_back(jsonStr[index_]);
@@ -120,7 +120,7 @@ std::string FlatJsonParser::ParseValue(const std::string& jsonStr)
     std::string value;
     bool valueParsed = false;
     while (index_ < jsonStr.length()) {
-        int charCode = static_cast<int>(jsonStr[index_]);
+        int charCode = static_cast<uint8_t>(jsonStr[index_]);
         switch (charFilter_[charCode]) {
             case BRACKET_FLAG:
                 value = ParseBrackets(jsonStr, jsonStr[index_]);
@@ -150,7 +150,7 @@ std::string FlatJsonParser::ParseNumer(const std::string& jsonStr)
 {
     std::string number;
     while (index_ < jsonStr.length()) {
-        if (charFilter_[static_cast<int>(jsonStr[index_])] != NUMBER_FLAG) {
+        if (charFilter_[static_cast<uint8_t>(jsonStr[index_])] != NUMBER_FLAG) {
             break;
         }
         number.push_back(jsonStr[index_]);
@@ -164,7 +164,7 @@ std::string FlatJsonParser::ParseString(const std::string& jsonStr)
     std::string txt;
     txt.push_back(jsonStr[index_++]);
     while (index_ < jsonStr.length()) {
-        if (charFilter_[static_cast<int>(jsonStr[index_])] == STRING_FLAG &&
+        if (charFilter_[static_cast<uint8_t>(jsonStr[index_])] == STRING_FLAG &&
             jsonStr[index_ - 1] != '\\') {
             break;
         }
