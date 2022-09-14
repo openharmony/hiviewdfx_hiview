@@ -47,7 +47,6 @@ ohos_executable("usage_report") {
   ]
 
   external_deps = [
-    "ability_runtime:runtime",
     "ability_runtime:wantagent_innerkits",
     "battery_statistics:batterystats_client",
     "bundle_framework:appexecfwk_base",
@@ -57,8 +56,6 @@ ohos_executable("usage_report") {
     "hisysevent_native:libhisysevent",
     "ipc:ipc_core",
     "os_account:os_account_innerkits",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
     "time_service:time_client",
   ]
 
