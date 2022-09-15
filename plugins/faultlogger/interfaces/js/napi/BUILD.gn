@@ -17,6 +17,7 @@ ohos_shared_library("faultlogger_napi") {
   include_dirs = [
     "//third_party/node/src",
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits/include",
+    "//base/hiviewdfx/hiview/base/include",
   ]
 
   sources = [
@@ -26,7 +27,6 @@ ohos_shared_library("faultlogger_napi") {
 
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
-    "$hiview_base:hiviewbase",
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl",
     "//foundation/arkui/napi:ace_napi",
   ]
