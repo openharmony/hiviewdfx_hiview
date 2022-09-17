@@ -103,7 +103,7 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
     }
 
     offset = buffer;
-    event = (struct inotify_event *)buffer;
+    event = reinterpret_cast<struct inotify_event*>(buffer);
     while ((reinterpret_cast<char *>(event) - buffer) < len) {
         for (const auto &it : fileMap_) {
             if (it.second != event->wd) {
@@ -129,7 +129,7 @@ bool EventSourceExample::OnFileDescriptorEvent(int fd, int type)
             CreateAndPublishEvent(filePath);
         }
         auto tmpLen = sizeof(struct inotify_event) + event->len;
-        event = (struct inotify_event *)(offset + tmpLen);
+        event = reinterpret_cast<struct inotify_event*>(offset + tmpLen);
         offset += tmpLen;
     }
     return true;
