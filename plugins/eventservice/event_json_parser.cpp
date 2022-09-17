@@ -73,8 +73,8 @@ std::string GetConfiguredTestType(const std::string& configuredType)
 {
     std::string defaultType {""};
     size_t maxLen = 12;
-    if (configuredType.empty() || configuredType.length() > maxLen
-        || any_of(configuredType.cbegin(), configuredType.cend(), [] (char c) {
+    if (configuredType.empty() || configuredType.length() > maxLen ||
+        any_of(configuredType.cbegin(), configuredType.cend(), [] (char c) {
             return !isalnum(c);
         })) {
         return defaultType;

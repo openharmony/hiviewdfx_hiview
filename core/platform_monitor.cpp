@@ -38,7 +38,7 @@ constexpr char EVENT_SERVICE_PLUGIN[] = "SysEventService";
 void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, uint32_t> &stat)
 {
     std::lock_guard<std::mutex> lock(statMutex_);
-    auto it = std::lower_bound(intervals_, intervals_ + sizeof(intervals_)/sizeof(intervals_[0]), costTime);
+    auto it = std::lower_bound(intervals_, intervals_ + sizeof(intervals_) / sizeof(intervals_[0]), costTime);
     int index = it - intervals_;
     stat[index] += 1;
 }
