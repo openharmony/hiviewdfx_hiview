@@ -102,7 +102,7 @@ bool SaveStringToFd(int fd, const std::string& content)
         return false;
     }
 
-    if ((unsigned long)len != content.length()) {
+    if (static_cast<unsigned long>(len) != content.length()) {
         return false;
     }
 

@@ -29,7 +29,7 @@ namespace HiviewDFX {
 class SocketDevice : public DeviceNode {
 public:
     SocketDevice() {};
-    ~SocketDevice() {};
+    virtual ~SocketDevice() {};
     int Close() override;
     int Open() override;
     uint32_t GetEvents() override;
@@ -43,7 +43,7 @@ private:
 class BBoxDevice : public DeviceNode {
 public:
     BBoxDevice() {};
-    ~BBoxDevice() {};
+    virtual ~BBoxDevice() {};
     int Close() override;
     int Open() override;
     uint32_t GetEvents() override;
