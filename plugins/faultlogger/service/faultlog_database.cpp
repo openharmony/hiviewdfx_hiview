@@ -37,6 +37,7 @@ DEFINE_LOG_TAG("FaultLogDatabase");
 namespace {
 static const std::vector<std::string> QUERY_ITEMS =
     { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
+static const std::string LOG_PATH_BASE = "/data/log/faultlog/faultlogger/";
 std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
 {
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
@@ -93,7 +94,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
     info.summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
-    info.logPath = sysEvent->GetEventValue("LOG_PATH");
+    info.logPath = LOG_PATH_BASE + GetFaultLogName(info);
     return true;
 }
 }
