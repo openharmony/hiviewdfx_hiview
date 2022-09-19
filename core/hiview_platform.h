@@ -120,10 +120,10 @@ private:
     void LoadBusinessPlugin(const PluginConfig& config);
     void ExitHiviewIfNeed();
     std::string GetPluginConfigPath();
-    std::string SplitBundleNameFromPath(const std::string& path);
+    std::string SplitBundleNameFromPath(const std::string& filePath);
     void UpdateBetaConfigIfNeed();
     void LoadPluginBundles();
-    void LoadPluginBundle(const std::string& bundleName, const std::string& config);
+    void LoadPluginBundle(const std::string& bundleName, const std::string& filePath);
     void ScheduleCheckUnloadablePlugins();
     void CheckUnloadablePlugins();
     std::string SearchPluginBundle(const std::string& name) const;

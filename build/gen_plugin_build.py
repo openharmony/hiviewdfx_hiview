@@ -161,11 +161,11 @@ class ArgsPara():
             return -1
         size_int = int(size_str)
         if  size_unit == "k":
-            return 1024*size_int
+            return 1024 * size_int
         if size_unit == "m":
-            return 1024*1024*size_int
+            return 1024 * 1024 * size_int
         if size_unit == "g":
-            return 1024*1024*1024*size_int
+            return 1024 * 1024 * 1024 * size_int
         return -1
 
 
