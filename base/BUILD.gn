@@ -82,6 +82,7 @@ ohos_source_set("hiview_base") {
 }
 
 ohos_shared_library("hiviewbase") {
+  all_dependent_configs = [ ":hiview_base_config" ]
   public_configs = [ ":hiview_base_config" ]
   public_configs += [ "event_report:hiview_event_report_config" ]
 
