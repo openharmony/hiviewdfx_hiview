@@ -22,6 +22,7 @@
 
 #include "faultlog_info.h"
 #include "faultlog_util.h"
+#include "hisysevent.h"
 #include "hiview_global.h"
 #include "logger.h"
 #include "log_analyzer.h"
@@ -42,39 +43,27 @@ std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
 {
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     auto sysEvent = std::make_shared<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", GetFaultNameByType(info.faultLogType, false));
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", info.time);
-    sysEvent->SetEventValue("pid_", info.pid);
-    sysEvent->SetEventValue("uid_", info.id);
-    sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
-    sysEvent->SetEventValue("MODULE", info.module);
-    sysEvent->SetEventValue("REASON", info.reason);
-    sysEvent->SetEventValue("SUMMARY", StringUtil::EscapeJsonStringValue(info.summary));
-    sysEvent->SetEventValue("LOG_PATH", info.logPath);
-    sysEvent->SetEventValue("HAPPEN_TIME", info.time);
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
 
     std::map<std::string, std::string> eventInfos;
-    if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
-        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
-                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
-        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
-                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
-        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/ " :
-                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
-    }
-    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-    
-    if (info.sectionMap.find("VERSION") != info.sectionMap.end()) {
-        sysEvent->SetEventValue("VERSION", info.sectionMap.at("VERSION"));
-    }
+    AnalysisFaultlog(info, eventInfos);
 
-    if (sysEvent->ParseJson() < 0) {
-        HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
-        return nullptr;
-    }
+    HiSysEvent::Write("RELIABILITY", GetFaultNameByType(info.faultLogType, false), HiSysEvent::EventType::FAULT,
+        "FAULT_TYPE", std::to_string(info.faultLogType),
+        "PID", info.pid,
+        "UID", info.id,
+        "MODULE", info.module,
+        "REASON", info.reason,
+        "SUMMARY", info.summary,
+        "LOG_PATH", info.logPath,
+        "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
+        "HAPPEN_TIME", std::to_string(info.time),
+        "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
+        "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
+        "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
+        "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
+        "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
+    );
+
     return sysEvent;
 }
 
@@ -120,7 +109,12 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    (*query).Select(QUERY_ITEMS).Where("uid_", EventStore::Op::EQ, id).Order("time_", false);
+    EventStore::Cond uidCond("UID", EventStore::Op::EQ, id);
+    EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
+    EventStore::Cond condLeft = uidCond.And(hiviewCond);
+    EventStore::Cond condRight("uid_", EventStore::Op::EQ, id);
+    EventStore::Cond condTotal = condLeft.Or(condRight);
+    (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     if (id != 0) {
         query->And("MODULE", EventStore::Op::EQ, module);
     }
