@@ -468,7 +468,6 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
         uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, queryTimeRange, queryLimit,
             isFirstPartialQuery, ret);
         if (queryRetCode != IPC_CALL_SUCCEED) {
-            callback->OnComplete(0, totalEventCnt);
             return queryRetCode;
         }
         auto dropCnt = 0;
