@@ -504,7 +504,7 @@ bool SysEventServiceOhos::HasAccessPermission() const
         return true;
     }
     HiLog::Error(LABEL, "hiview service permission denial callingUid=%{public}d", callingUid);
-    return true;
+    return false;
 }
 
 int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
