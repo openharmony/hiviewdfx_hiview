@@ -96,6 +96,12 @@ void HiviewPlatform::SetCheckProxyIdlePeriod(time_t period)
 
 bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
 {
+    // wait util the samgr is ready
+    if (auto res = Parameter::WaitParamSync("bootevent.samgr.ready", "true", 5); res != 0) { // timeout is 5s
+        HIVIEW_LOGE("Fail to wait the samgr, err=%{public}d", res);
+        return false;
+    }
+
     // force create hiview working directories
     HiviewPlatformConfig platformConfig = HiviewPlatformConfig(platformConfigDir);
     HiviewPlatformConfig::PlatformConfigInfo platformConfigInfo;
