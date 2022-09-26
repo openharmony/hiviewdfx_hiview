@@ -39,7 +39,7 @@ public:
         PROXY,
     };
 public:
-    Plugin() : handle_(DynamicModuleDefault), context_(nullptr){};
+    Plugin() : handle_(DynamicModuleDefault), context_(nullptr), useCount_(0) {};
     virtual ~Plugin();
     // do not store the event in the callback
     // create a new one through copy constructor is preferred
@@ -165,6 +165,21 @@ public:
     {
         return lastActiveTime_;
     }
+
+    int64_t GetUseCount() const
+    {
+        return useCount_;
+    }
+
+    void AddUseCount()
+    {
+        ++useCount_;
+    }
+
+    void SubUseCount()
+    {
+        --useCount_;
+    }
 protected:
     std::string name_;
     std::string bundle_;
@@ -180,6 +195,7 @@ private:
     HiviewContext* context_;
     std::once_flag contextSetFlag_;
     std::atomic<bool> loaded_;
+    std::atomic<int64_t> useCount_;
 };
 class HiviewContext {
 public:

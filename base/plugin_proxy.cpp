@@ -110,6 +110,12 @@ void PluginProxy::DestroyInstanceIfNeed(time_t maxIdleTime)
     if (plugin_ == nullptr) {
         return;
     }
+
+    if (plugin_->GetUseCount() > 0) {
+        plugin_->UpdateActiveTime();
+        return;
+    }
+
     if (now - plugin_->GetLastActiveTime() >= maxIdleTime) {
         auto count = plugin_.use_count();
         if (count > 1) {

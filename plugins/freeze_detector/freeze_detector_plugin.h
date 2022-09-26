@@ -41,7 +41,7 @@ public:
 private:
     std::string RemoveRedundantNewline(const std::string& content) const;
     WatchPoint MakeWatchPoint(const Event& event);
-    void ProcessEvent(WatchPoint watchPoint) const;
+    void ProcessEvent(WatchPoint watchPoint);
     std::shared_ptr<EventLoop> threadLoop_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::unique_ptr<FreezeResolver> freezeResolver_ = nullptr;
