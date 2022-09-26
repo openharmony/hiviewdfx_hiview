@@ -154,6 +154,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
         event.domain_.c_str(), event.eventName_.c_str());
     HIVIEW_LOGD("threadLoop_->IsRunning() = %{public}d", threadLoop_->IsRunning());
+    this->AddUseCount();
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
@@ -161,11 +162,12 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 
-void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint) const
+void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)
 {
     HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
         watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str());
     if (freezeResolver_ == nullptr) {
+        this->SubUseCount();
         return;
     }
 
@@ -173,6 +175,7 @@ void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint) const
     if (ret < 0) {
         HIVIEW_LOGE("FreezeResolver ProcessEvent filled.");
     }
+    this->SubUseCount();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
