@@ -15,6 +15,7 @@
 
 #include "flat_json_parser.h"
 
+#include <algorithm>
 #include <sstream>
 
 namespace OHOS {
@@ -32,20 +33,20 @@ uint8_t FlatJsonParser::charFilter_[FlatJsonParser::CHAR_RANGE] { 0 };
 
 void FlatJsonParser::AppendStringValue(const std::string& key, const std::string& value)
 {
-    for (auto& i : kvList_) {
-        if (i.first == key) {
-            return;
-        }
+    if (std::any_of(kvList_.begin(), kvList_.end(), [&key] (auto& item) {
+        return item.first == key;
+    })) {
+        return;
     }
     kvList_.emplace_back(key, "\"" + value + "\"");
 }
 
 void FlatJsonParser::AppendUInt64Value(const std::string& key, const uint64_t value)
 {
-    for (auto& i : kvList_) {
-        if (i.first == key) {
-            return;
-        }
+    if (std::any_of(kvList_.begin(), kvList_.end(), [&key] (auto& item) {
+        return item.first == key;
+    })) {
+        return;
     }
     std::ostringstream os;
     os << value;

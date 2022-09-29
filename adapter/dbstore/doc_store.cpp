@@ -215,7 +215,7 @@ FINISH:
 
 static iwrc DocumentsVisitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step)
 {
-    CallBackInfo* callBackInfoPtr = (CallBackInfo*)ctx->opaque;
+    CallBackInfo* callBackInfoPtr = reinterpret_cast<CallBackInfo*>(ctx->opaque);
     if (callBackInfoPtr == nullptr) {
         return 0;
     }
@@ -249,7 +249,7 @@ int DocStore::GetEntryDuringQuery(const DataQuery &query, std::function<int (int
     ux.db = dbPtr->db_;
     ux.limit = 0;
     ux.log = 0;
-    ux.opaque = (CallBackInfo*)callBackInfoPtr;
+    ux.opaque = reinterpret_cast<CallBackInfo*>(callBackInfoPtr);
     ux.pool = 0;
     ux.q = q;
     ux.skip = 0;
