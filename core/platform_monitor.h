@@ -70,7 +70,7 @@ private:
     std::shared_ptr<SysEvent> CreateProfileReport(PerfMeasure &perfMeasure);
     void GetCostTimeInterval(PerfMeasure &perfMeasure);
     void GetDomainsStat(PerfMeasure &perfMeasure);
-    void GetMaxSpeed(PerfMeasure &perfMeasure);
+    void GetMaxSpeed(PerfMeasure &perfMeasure) const;
     void GetMaxTotalMeasure(PerfMeasure &perfMeasure);
     void GetBreakStat(PerfMeasure &perfMeasure);
     void GetTopDomains(std::vector<std::string> &domains, std::vector<uint32_t> &counts);
