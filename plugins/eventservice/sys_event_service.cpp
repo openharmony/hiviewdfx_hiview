@@ -49,7 +49,7 @@ void SysEventService::OnLoad()
     std::string yamlFile =
         HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
     yamlFile = (yamlFile.back() != '/') ? (yamlFile + "/hisysevent.def") : (yamlFile + "hisysevent.def");
-    HIVIEW_LOGE("yamlFile path is %{public}s", yamlFile.c_str());
+    HIVIEW_LOGI("yamlFile path is %{public}s", yamlFile.c_str());
     sysEventParser_ = std::make_unique<EventJsonParser>(yamlFile);
     auto getTagFunc = std::bind(&EventJsonParser::GetTagByDomainAndName, *(sysEventParser_.get()),
         std::placeholders::_1, std::placeholders::_2);

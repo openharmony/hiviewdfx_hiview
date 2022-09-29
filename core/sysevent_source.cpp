@@ -73,7 +73,7 @@ void SysEventSource::StartEventSource()
     eventServer.Start();
 }
 
-void SysEventSource::Recycle(PipelineEvent *event __UNUSED)
+void SysEventSource::Recycle(PipelineEvent *event)
 {
     platformMonitor_.CollectCostTime(event);
 }

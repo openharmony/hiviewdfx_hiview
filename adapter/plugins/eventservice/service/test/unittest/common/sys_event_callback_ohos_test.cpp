@@ -30,7 +30,7 @@ void SysEventCallbackOhosTest::Handle(const std::u16string& domain, const std::u
 {
     printf("domain %s.\n", U16String2String(domain).c_str());
     printf("eventName %s.\n", U16String2String(eventName).c_str());
-    printf("eventType %d.\n", eventType);
+    printf("eventType %u.\n", eventType);
     printf("eventDetail %s.\n", U16String2String(eventDetail).c_str());
 }
 } // namespace HiviewDFX
