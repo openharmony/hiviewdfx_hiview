@@ -23,7 +23,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class MonitorConfig {
 public:
-    explicit MonitorConfig(std::string configPath): configPath_(configPath) {}
+    explicit MonitorConfig(const std::string& configPath): configPath_(configPath) {}
     ~MonitorConfig() {}
 
     bool Parse();

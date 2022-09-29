@@ -212,7 +212,7 @@ void PlatformMonitor::GetBreakStat(PerfMeasure &perfMeasure)
     breakDuration_ = 0;
 }
 
-void PlatformMonitor::GetMaxSpeed(PerfMeasure &perfMeasure)
+void PlatformMonitor::GetMaxSpeed(PerfMeasure &perfMeasure) const
 {
     perfMeasure.minSpeed = minSpeed_;
     perfMeasure.maxSpeed = maxSpeed_;
@@ -251,8 +251,6 @@ void PlatformMonitor::ReportCycleProfile()
     GetMaxTotalMeasure(perfMeasure);
 
     // report event number of each domain
-    std::vector<std::string> domains;
-    std::vector<uint32_t> domainCounts;
     GetDomainsStat(perfMeasure);
 
     // report total number of event, time of break, duration of break
