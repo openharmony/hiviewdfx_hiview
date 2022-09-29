@@ -15,7 +15,8 @@
 #include "parameter_ex.h"
 #include <cstdint>
 
-#include <parameters.h>
+#include "parameter.h"
+#include "parameters.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -43,6 +44,11 @@ bool GetBoolean(const std::string& key, const bool defaultValue)
 bool SetProperty(const std::string& key, const std::string& defaultValue)
 {
     return OHOS::system::SetParameter(key, defaultValue);
+}
+
+int WaitParamSync(const char *key, const char *value, int timeout)
+{
+    return WaitParameter(key, value, timeout);
 }
 } // namespace Parameter
 } // namespace HiviewDFX
