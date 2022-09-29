@@ -1,0 +1,94 @@
+<!-- Copyright (c) 2022 Huawei Device Co., Ltd.
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<freeze version="1" >
+  <rules resolver="SysResolver">
+    <rule id="1" domain="KERNEL_VENDOR" stringid="LONG_PRESS">   <!-- LONG_PRESS -->
+      <links type="watchpoint">
+        <event  window="0" domain="KERNEL_VENDOR" stringid="LONG_PRESS">	<!-- LONG_PRESS -->
+           <result code="1" scope="sys"/>
+        </event>
+        <event  window="-120" domain="KERNEL_VENDOR" stringid="HUNGTASK">	<!-- HUNGTASK -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="2" domain="KERNEL_VENDOR" stringid="SCREEN_ON">   <!-- SCREEN_ON -->
+      <links type="watchpoint">
+        <event window="0" domain="KERNEL_VENDOR" stringid="SCREEN_ON">	<!-- SCREEN_ON -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="3" domain="KERNEL_VENDOR" stringid="SCREEN_OFF">   <!-- SCREEN_OFF -->
+      <links type="watchpoint">
+        <event window="0" domain="KERNEL_VENDOR" stringid="SCREEN_OFF">	<!-- SCREEN_OFF -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
+  </rules>
+  <rules resolver="AppResolver">
+    <rule id="1" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+      <links type="watchpoint">
+        <event window="0" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
+          <result code="0" scope="app" samePackage="true"/>
+        </event>
+        <event window="-6" domain="ACE" stringid="UI_BLOCK_3S">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app" samePackage="true"/>
+        </event>
+        <event window="10" domain="ACE" stringid="UI_BLOCK_RECOVERED">	<!-- UI_BLOCK_3S -->
+          <result code="0" scope="app" samePackage="true"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="2" domain="AAFWK" stringid="THREAD_BLOCK_6S">	<!-- THREAD_BLOCK_6S -->
+      <links type="watchpoint">
+        <event window="0" domain="AAFWK" stringid="THREAD_BLOCK_6S">	<!-- THREAD_BLOCK_6S -->
+          <result code="0" scope="app" samePackage="true"/>
+        </event>
+        <event window="-6" domain="AAFWK" stringid="THREAD_BLOCK_3S">	<!-- THREAD_BLOCK_3S -->
+          <result code="0" scope="app" samePackage="true"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="3" domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
+      <links type="watchpoint">
+        <event window="0" domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="4" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
+      <links type="watchpoint">
+        <event window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="5" domain="AAFWK" stringid="APP_LIFECYCLE_TIMEOUT">	<!-- APP_LIFECYCLE_TIMEOUT -->
+      <links type="watchpoint">
+        <event window="0" domain="AAFWK" stringid="APP_LIFECYCLE_TIMEOUT">	<!-- APP_LIFECYCLE_TIMEOUT -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="6" domain="GRAPHIC" stringid="NO_DRAW">	<!-- NO_DRAW -->
+      <links type="watchpoint">
+        <event window="0" domain="GRAPHIC" stringid="NO_DRAW">	<!-- NO_DRAW -->
+          <result code="0" scope="app"/>
+        </event>
+      </links>
+    </rule>
+  </rules>
+</freeze>
