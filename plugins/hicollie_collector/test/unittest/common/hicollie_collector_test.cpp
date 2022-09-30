@@ -149,7 +149,7 @@ bool HicollieCollectorTest::GetHicollieCollectorTest001File(uint64_t time1, uint
             FileUtil::LoadStringFromFile(i, content);
             if (content.find(std::to_string(time1)) == std::string::npos
                 || content.find(std::to_string(time2)) == std::string::npos) {
-                printf("time is not match. %llu\n", time1);
+                printf("time is not match.\n");
                 FileUtil::RemoveFile(i);
                 continue;
             }
