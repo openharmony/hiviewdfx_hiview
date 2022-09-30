@@ -34,10 +34,8 @@ namespace {
 constexpr char EVENT_CPP_CRASH[] = "CPP_CRASH";
 constexpr char KEY_PROCESS_EXIT[] = "PROCESS_EXIT";
 constexpr char KEY_NAME[] = "PROCESS_NAME";
-constexpr char KEY_PID_UPPER[] = "PID";
-constexpr char KEY_UID_UPPER[] = "UID";
-constexpr char KEY_PID_LOWER[] = "pid_";
-constexpr char KEY_UID_LOWER[] = "uid_";
+constexpr char KEY_PID[] = "PID";
+constexpr char KEY_UID[] = "UID";
 constexpr char KEY_STATUS[] = "STATUS";
 constexpr char KEY_LOG_PATH[] = "LOG_PATH";
 constexpr char KEY_MODULE[] = "MODULE";
@@ -158,8 +156,8 @@ void CrashValidator::HandleCppCrashEvent(SysEvent& sysEvent)
     CrashEvent crashEvent;
     crashEvent.isCppCrash = true;
     crashEvent.time = sysEvent.happenTime_;
-    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID_LOWER);
-    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID_LOWER);
+    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID);
+    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID);
     crashEvent.path = sysEvent.GetEventValue(KEY_LOG_PATH);
     crashEvent.name = sysEvent.GetEventValue(KEY_MODULE);
     HIVIEW_LOGI("CrashValidator Plugin is handling CPPCRASH event [PID : %{public}d]\n", crashEvent.pid);
@@ -173,8 +171,8 @@ void CrashValidator::HandleProcessExitEvent(SysEvent& sysEvent)
     CrashEvent crashEvent;
     crashEvent.isCppCrash = false;
     crashEvent.time = sysEvent.happenTime_;
-    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID_UPPER);
-    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID_UPPER);
+    crashEvent.pid = sysEvent.GetEventIntValue(KEY_PID);
+    crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID);
     crashEvent.name = sysEvent.GetEventValue(KEY_NAME);
     int status = static_cast<int>(sysEvent.GetEventIntValue(KEY_STATUS));
     if (!WIFSIGNALED(status)) {
@@ -226,8 +224,8 @@ void CrashValidator::CheckOutOfDateEvents()
         if (!it->isCppCrash) {
             HiSysEvent::Write("RELIABILITY", KEY_NO_LOG_EVENT_NAME, HiSysEvent::EventType::FAULT,
                 KEY_NAME, it->name,
-                KEY_PID_UPPER, it->pid,
-                KEY_UID_UPPER, it->uid,
+                KEY_PID, it->pid,
+                KEY_UID, it->uid,
                 KEY_HAPPEN_TIME, it->time);
             noLogEvents_.push_back(*it);
         } else {
@@ -256,7 +254,7 @@ void CrashValidator::ReadServiceCrashStatus()
             HIVIEW_LOGE("Failed to read kmsg");
             close(fd);
             return;
-        };
+        }
         if (len < 1) {
             continue;
         }
@@ -284,7 +282,7 @@ void CrashValidator::ReadServiceCrashStatus()
         HIVIEW_LOGI("report PROCESS_EXIT event[name : %{public}s  pid : %{public}d]", name, pid);
 
         HiSysEvent::Write(HiSysEvent::Domain::STARTUP, KEY_PROCESS_EXIT, HiSysEvent::EventType::BEHAVIOR,
-            KEY_NAME, name, KEY_PID_UPPER, pid, KEY_UID_UPPER, uid, KEY_STATUS, status);
+            KEY_NAME, name, KEY_PID, pid, KEY_UID, uid, KEY_STATUS, status);
     }
     close(fd);
 }
