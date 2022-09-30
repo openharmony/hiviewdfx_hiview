@@ -14,6 +14,8 @@
  */
 #include "usage_event_report.h"
 
+#include <sys/wait.h>
+
 #include "hiview_event_report.h"
 #include "hiview_event_cacher.h"
 #include "hiview_shutdown_callback.h"
@@ -35,7 +37,6 @@ std::string UsageEventReport::workPath_ = "";
 namespace {
 constexpr int TRIGGER_CYCLE = 5 * 60; // 5 min
 constexpr uint32_t TRIGGER_TWO_HOUR = 24; // 2h = 5min * 24
-const std::string SERVICE_NAME = "usage_report";
 }
 using namespace SysUsageDbSpace;
 using namespace SysUsageEventSpace;
@@ -204,14 +205,25 @@ void UsageEventReport::SaveSysUsageEvent()
 
 void UsageEventReport::StartServiceByOption(const std::string& opt)
 {
-    std::stringstream ss;
-    ss << SERVICE_NAME << " -p " << workPath_;
-    ss << " -t " << lastReportTime_;
-    ss << " -T " << lastSysReportTime_;
-    ss << " " << opt;
-    HIVIEW_LOGI("start service cmd=%{public}s", ss.str().c_str());
-    if (system(ss.str().c_str()) < 0) {
-        HIVIEW_LOGE("failed to start the service=%{public}s", SERVICE_NAME.c_str());
+    if (pid_t pid = fork(); pid < 0) {
+        HIVIEW_LOGE("failed to fork child process");
+        return;
+    } else if (pid == 0) {
+        const std::string serviceName = "usage_report";
+        const std::string servicePath = "/system/bin/usage_report";
+        HIVIEW_LOGI("start service %{public}s, opt=%{public}s", serviceName.c_str(), opt.c_str());
+        if (execl(servicePath.c_str(), serviceName.c_str(),
+            "-p", workPath_.c_str(),
+            "-t", std::to_string(lastReportTime_).c_str(),
+            "-T", std::to_string(lastSysReportTime_).c_str(),
+            opt.c_str(), nullptr) < 0) {
+            HIVIEW_LOGE("failed to execute %{public}s", serviceName.c_str());
+            _exit(-1);
+        }
+    } else {
+        if (waitpid(pid, nullptr, 0) != pid) {
+            HIVIEW_LOGE("failed to waitpid, err=%{public}d", errno);
+        }
     }
 }
 }  // namespace HiviewDFX
