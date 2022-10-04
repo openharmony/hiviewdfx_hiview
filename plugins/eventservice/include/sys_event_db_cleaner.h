@@ -16,27 +16,18 @@
 #ifndef HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_CLEANER_H
 #define HIVIEW_PLUGINS_EVENT_SERVICE_INCLUDE_SYS_EVENT_DB_CLEANER_H
 
-#include <string>
-
 #include "sys_event_dao.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventDbCleaner {
 public:
-    SysEventDbCleaner() : cleanTimes_(0) {}
-    ~SysEventDbCleaner() = default;
-    bool Clean();
-    static bool IfNeedClean();
+    static void TryToClean();
 
 private:
-    int CleanDbByHour(const std::string dbFile, int hour) const;
-    int CleanDbByTime(const std::string dbFile, int64_t time) const;
-    bool CleanDbs() const;
-    bool CleanDb(EventStore::StoreType type, int saveHours) const;
-
-private:
-    int cleanTimes_;
+    static void TryToCleanDb(EventStore::StoreType type, const std::pair<int, int>& config);
+    static int CleanDbByHour(EventStore::StoreType type, int64_t hour);
+    static int CleanDbByTime(EventStore::StoreType type, int64_t time);
 }; // SysEventDbCleaner
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -44,6 +44,7 @@ public:
     static int BackupDB(StoreType type);
     static int CloseDB(StoreType type);
     static int DeleteDB(StoreType type);
+    static int GetNum(StoreType type);
     static std::string GetDataDir();
     static std::string GetDataFile(StoreType type);
     static void GetDataFiles(std::vector<std::string>& dbFiles);

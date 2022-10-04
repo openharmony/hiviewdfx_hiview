@@ -15,85 +15,72 @@
 
 #include "sys_event_db_cleaner.h"
 
-#include <cmath>
+#include <map>
 
-#include "file_util.h"
 #include "logger.h"
-#include "sys_event_dao.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-SysEventDbCleaner");
+using EventStore::EventCol;
 using EventStore::SysEventDao;
-using EventStore::SysEventQuery;
 using EventStore::StoreType;
 namespace {
-#ifdef CUSTOM_MAX_FILE_SIZE_MB
-const int MAX_FILE_SIZE = 1024 * 1024 * CUSTOM_MAX_FILE_SIZE_MB;
-#else
-const int MAX_FILE_SIZE = 1024 * 1024 * 100; // 100M
-#endif // CUSTOM_MAX_FILE_SIZE
-
-constexpr std::pair<EventStore::StoreType, int> DB_CLEAN_CONFIGS[] = {
-    { StoreType::BEHAVIOR, 2 * 24 }, { StoreType::FAULT, 30 * 24 },
-    { StoreType::STATISTIC, 30 * 24 }, { StoreType::SECURITY, 90 * 24 },
+const std::map<StoreType, std::pair<int, int>> CLEAN_CONFIG_MAP = {
+    { StoreType::BEHAVIOR, { 300000, 7 * 24 } },    // behavior event, maxNum: 300k, maxTime: 7 days
+    { StoreType::FAULT, { 20000, 30 * 24 } },       // fault event, maxNum: 20k, maxTime: 30 days
+    { StoreType::STATISTIC, { 200000, 30 * 24 } },  // statistic event, maxNum: 200k, maxTime: 30 days
+    { StoreType::SECURITY, { 30000, 90 * 24} },     // security event, maxNum: 30k, maxTime: 90 days
 };
 }
 
-bool SysEventDbCleaner::IfNeedClean()
+void SysEventDbCleaner::TryToClean()
 {
-    return FileUtil::GetFolderSize(SysEventDao::GetDataDir()) >= MAX_FILE_SIZE;
+    for (auto cleanConfig : CLEAN_CONFIG_MAP) {
+        TryToCleanDb(cleanConfig.first, cleanConfig.second);
+    }
 }
 
-int SysEventDbCleaner::CleanDbByTime(const std::string dbFile, int64_t time) const
+void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& config)
 {
-    auto sysEventQuery = SysEventDao::BuildQuery(dbFile);
-    (*sysEventQuery).Where(EventStore::EventCol::TS, EventStore::Op::LT, time);
+    int curNum = SysEventDao::GetNum(type);
+    HIVIEW_LOGI("try to clean db: type=%{public}d, curNum=%{public}d, maxNum=%{public}d, maxTime=%{public}d",
+        type, curNum, config.first, config.second);
+
+    // delete events if the num of events exceeds 10%
+    const double delPct = 0.1;
+    if (curNum <= (config.first + config.first * delPct)) {
+        return;
+    }
+    double curDelPct = 0;
+    int64_t saveHour = config.second;
+    while (saveHour >= 0) {
+        if (int result = CleanDbByHour(type, saveHour); result != 0) {
+            HIVIEW_LOGE("failed to clean db, saveHour=%{public}d, err=%{public}d", saveHour, result);
+            return;
+        }
+        if (curNum = SysEventDao::GetNum(type); curNum < config.first) {
+            HIVIEW_LOGI("succ to clean db, curNum=%{public}d", curNum);
+            return;
+        }
+        curDelPct += delPct;
+        saveHour = config.second - config.second * curDelPct;
+    }
+    HIVIEW_LOGI("end to clean db, curNum=%{public}d", curNum);
+}
+
+int SysEventDbCleaner::CleanDbByTime(StoreType type, int64_t time)
+{
+    auto sysEventQuery = SysEventDao::BuildQuery(type);
+    (*sysEventQuery).Where(EventCol::TS, EventStore::Op::LT, time);
     return SysEventDao::Delete(sysEventQuery, 10000); // 10000 means delete limit
 }
 
-int SysEventDbCleaner::CleanDbByHour(const std::string dbFile, int hour) const
+int SysEventDbCleaner::CleanDbByHour(StoreType type, int64_t hour)
 {
-    int64_t delTime = TimeUtil::GetMilliseconds() - hour * TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
-    return CleanDbByTime(dbFile, delTime);
-}
-
-bool SysEventDbCleaner::CleanDb(EventStore::StoreType type, int saveHours) const
-{
-    std::string dbFile = SysEventDao::GetDataFile(type);
-    if (dbFile.empty()) {
-        HIVIEW_LOGE("failed to get db file");
-        return false;
-    }
-    return CleanDbByHour(dbFile, saveHours / std::pow(2, cleanTimes_)) == 0; // 2 means the power of cleaning period
-}
-
-bool SysEventDbCleaner::CleanDbs() const
-{
-    bool res = true;
-    for (auto config : DB_CLEAN_CONFIGS) {
-        if (!CleanDb(config.first, config.second)) {
-            HIVIEW_LOGE("failed to clean db, type=%{public}d", config.first);
-            res = false;
-        }
-    }
-    return res;
-}
-
-bool SysEventDbCleaner::Clean()
-{
-    HIVIEW_LOGI("start to delete db files");
-    for (auto config : DB_CLEAN_CONFIGS) {
-        if (SysEventDao::DeleteDB(config.first) != 0) {
-            HIVIEW_LOGE("failed to delete db file, type=%{public}d", config.first);
-            return false;
-        }
-        if (!IfNeedClean()) {
-            break;
-        }
-    }
-    return true;
+    int64_t now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
+    return CleanDbByTime(type, now - hour * 3600000); // 3600000 means ms per hour
 }
 } // namespace HiviewDFX
 } // namespace OHOS
