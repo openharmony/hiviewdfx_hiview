@@ -158,7 +158,38 @@ FINISH:
         HiLog::Error(LABEL, "delete data from doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
         return MapErrorCode(rc);
     }
+    HiLog::Debug(LABEL, "delete num=%{public}lld", ux.cnt);
     return 0;
+}
+
+int DocStore::GetNum()
+{
+    std::lock_guard<std::mutex> lock(dbStoreMutex);
+    if (dbPtr == nullptr) {
+        return -1;
+    }
+    int num = 0;
+    JBL meta = nullptr;
+    JBL jbl = nullptr;
+    iwrc rc = ejdb_get_meta(dbPtr->db_, &meta);
+    RCGO(rc, FINISH);
+    rc = jbl_at(meta, "/collections/0/rnum", &jbl);
+    RCGO(rc, FINISH);
+    num = jbl_get_i64(jbl);
+FINISH:
+    if (meta != nullptr) {
+        jbl_destroy(&meta);
+    }
+    if (jbl != nullptr) {
+        jbl_destroy(&jbl);
+    }
+    if (rc != 0) {
+        iwlog_ecode_error3(rc);
+        HiLog::Error(LABEL, "failed to get meta from doc store, reason:%{public}s", iwlog_ecode_explained(rc));
+        return MapErrorCode(rc);
+    }
+    HiLog::Debug(LABEL, "get num=%{public}d", num);
+    return num;
 }
 
 int DocStore::GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries, const char* coll) const

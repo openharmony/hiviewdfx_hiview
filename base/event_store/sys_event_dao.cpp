@@ -116,6 +116,22 @@ int SysEventDao::Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit)
     return 0;
 }
 
+int SysEventDao::GetNum(StoreType type)
+{
+    std::string dbFile = GetDataFile(type);
+    if (dbFile.empty()) {
+        HIVIEW_LOGE("failed to get db file by eventType=%{public}d", type);
+        return ERR_INVALID_DB_FILE;
+    }
+    int result = 0;
+    auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
+    if (result = docStore->GetNum(); result < 0) {
+        HIVIEW_LOGE("failed to get the number of events from db=%{public}s", dbFile.c_str());
+        return ERR_FAILED_DB_OPERATION;
+    }
+    return result;
+}
+
 int SysEventDao::BackupDB(StoreType type)
 {
     std::string dbFile = GetDataFile(type);

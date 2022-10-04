@@ -45,6 +45,8 @@ public:
 
     DOCSTORE_API int Delete(const DataQuery &query, const char* coll = COLLECTION);
 
+    DOCSTORE_API int GetNum();
+
     DOCSTORE_API int GetEntriesWithQuery(const DataQuery &query, std::vector<Entry> &entries,
         const char* coll = COLLECTION) const;
 
