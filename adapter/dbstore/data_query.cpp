@@ -137,7 +137,7 @@ std::string DataQuery::ToDelString(int limit) const
     if (limit <= 0) {
         return sql + " | del | count";
     } else {
-        return sql + " | del | limit " + std::to_string(limit) + " count";
+        return sql + " | del | asc /time_ limit " + std::to_string(limit) + " count";
     }
 }
 

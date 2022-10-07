@@ -59,14 +59,7 @@ void SysEventDbMgr::StartCheckStoreTask(std::shared_ptr<EventLoop> looper)
 void SysEventDbMgr::CheckStore()
 {
     HIVIEW_LOGI("start to check store");
-    if (SysEventDbCleaner::IfNeedClean()) {
-        SysEventDbCleaner cleaner;
-        if (!cleaner.Clean()) {
-            HIVIEW_LOGE("failed to clean store");
-            TryToRecover();
-            return;
-        }
-    }
+    SysEventDbCleaner::TryToClean();
 }
 
 void SysEventDbMgr::TryToRecover()
