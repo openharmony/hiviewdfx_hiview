@@ -158,7 +158,7 @@ FINISH:
         HiLog::Error(LABEL, "delete data from doc store failed, reason:%{public}s", iwlog_ecode_explained(rc));
         return MapErrorCode(rc);
     }
-    HiLog::Debug(LABEL, "delete num=%{public}lld", ux.cnt);
+    HiLog::Debug(LABEL, "delete num=%{public}" PRId64, ux.cnt);
     return 0;
 }
 
