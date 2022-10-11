@@ -98,9 +98,9 @@ void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& a
     int64_t gapTime = static_cast<int64_t>(TimeUtil::MILLISECS_PER_DAY);
     int64_t startTime = today0Time > gapTime ? (today0Time - gapTime) : 0;
     int64_t endTime = today0Time > MILLISEC_TO_SEC ? (today0Time - MILLISEC_TO_SEC) : 0;
-    int32_t errCode = ERR_OK;
-    auto pkgStats = BundleActiveClient::GetInstance().QueryPackageStats(INTERVAL_TYPE, startTime, endTime,
-        errCode, userId);
+    std::vector<BundleActivePackageStats> pkgStats;
+    int32_t errCode = BundleActiveClient::GetInstance().QueryBundleStatsInfoByInterval(pkgStats, INTERVAL_TYPE,
+        startTime, endTime, userId);
     if (errCode != ERR_OK) {
         HIVIEW_LOGE("failed to get package stats, errCode=%{public}d", errCode);
         return;
