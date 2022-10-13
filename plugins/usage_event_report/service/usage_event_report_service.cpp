@@ -72,70 +72,58 @@ void UsageEventReportService::ReportSysUsage()
 {
     HIVIEW_LOGI("start to report sys usage event");
     UsageEventCacher cacher(workPath_);
-    auto lastUsage = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL);
-    if (lastUsage != nullptr) {
-        lastSysReportTime_ = lastUsage->GetValue(KEY_OF_END).GetUint64();
-    }
-
-    // update last reported time
-    std::shared_ptr<LoggerEvent> nowUsage = std::make_unique<SysUsageEventFactory>()->Create();
-    nowUsage->Update(KEY_OF_START, lastSysReportTime_);
-    cacher.SaveSysUsageEventToDb(nowUsage, LAST_SYS_USAGE_COLL);
-
-    // calc the current usage of this report
-    MinusLastSysUsage(nowUsage, lastUsage);
-
-    // add cache usage time if any
-    AddCacheSysUsage(nowUsage, cacher.GetSysUsageEvent());
-    nowUsage->Report();
-
-    // clear cache event
-    cacher.DeleteSysUsageEventFromDb();
-}
-
-void UsageEventReportService::AddCacheSysUsage(std::shared_ptr<LoggerEvent>& nowUsage,
-    const std::shared_ptr<LoggerEvent>& cacheUsage)
-{
-    if (nowUsage == nullptr || cacheUsage == nullptr) {
+    auto cacheUsage = cacher.GetSysUsageEvent();
+    if (cacheUsage == nullptr) {
+        HIVIEW_LOGE("failed to report sys usage event, cache is null");
         return;
     }
+    cacheUsage->Report();
+
+    // after reporting, update cache_usage event to the db
+    cacheUsage->Update(KEY_OF_START, cacheUsage->GetValue(KEY_OF_END).GetUint64());
     for (auto key : SYS_USAGE_KEYS) {
-        uint64_t sumUsage = nowUsage->GetValue(key).GetUint64() + cacheUsage->GetValue(key).GetUint64();
-        nowUsage->Update(key, sumUsage);
+        cacheUsage->Update(key, DEFAULT_UINT64);
     }
+    cacher.SaveSysUsageEventToDb(cacheUsage);
 }
 
-void UsageEventReportService::MinusLastSysUsage(std::shared_ptr<LoggerEvent>& nowUsage,
-    const std::shared_ptr<LoggerEvent>& lastUsage)
+void UsageEventReportService::UpdateCacheSysUsage(std::shared_ptr<LoggerEvent>& cacheUsage,
+    const UsageEventCacher& cacher)
 {
-    if (nowUsage == nullptr || lastUsage == nullptr) {
-        return;
-    }
+    std::shared_ptr<LoggerEvent> nowUsage = std::make_unique<SysUsageEventFactory>()->Create();
+    auto lastUsage = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL);
     for (auto key : SYS_USAGE_KEYS) {
         uint64_t nowUsageTime = nowUsage->GetValue(key).GetUint64();
-        uint64_t lastUsageTime = lastUsage->GetValue(key).GetUint64();
+        uint64_t lastUsageTime = lastUsage == nullptr ?  0 : lastUsage->GetValue(key).GetUint64();
         uint64_t curUsageTime = nowUsageTime > lastUsageTime ? (nowUsageTime - lastUsageTime) : nowUsageTime;
-        nowUsage->Update(key, curUsageTime);
+        cacheUsage->Update(key, curUsageTime + cacheUsage->GetValue(key).GetUint64());
     }
+    cacheUsage->Update(KEY_OF_END, nowUsage->GetValue(KEY_OF_END).GetUint64());
+    UpdateLastSysUsage(nowUsage, cacher);
+}
+
+void UsageEventReportService::UpdateLastSysUsage(std::shared_ptr<LoggerEvent>& nowUsage,
+    const UsageEventCacher& cacher)
+{
+    nowUsage->Update(KEY_OF_START, lastReportTime_); // save the last report time for app_usage
+    cacher.SaveSysUsageEventToDb(nowUsage, LAST_SYS_USAGE_COLL);
 }
 
 void UsageEventReportService::SaveSysUsage()
 {
     HIVIEW_LOGI("start to save sys usage event to db");
-    std::shared_ptr<LoggerEvent> nowUsage = std::make_unique<SysUsageEventFactory>()->Create();
-
-    // minus the usage time up to the last reported usage if any
     UsageEventCacher cacher(workPath_);
-    MinusLastSysUsage(nowUsage, cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL));
-
-    // add cache usage time if any
-    AddCacheSysUsage(nowUsage, cacher.GetSysUsageEvent());
-
-    // save the last reported time
-    nowUsage->Update(KEY_OF_START, lastReportTime_);
-
-    // save current usage
-    cacher.SaveSysUsageEventToDb(nowUsage);
+    auto cacheUsage = cacher.GetSysUsageEvent();
+    if (cacheUsage == nullptr) {
+        // if it is the first save, set the current usage to the cache_usage
+        cacheUsage = std::make_unique<SysUsageEventFactory>()->Create();
+        UpdateLastSysUsage(cacheUsage, cacher);
+        cacheUsage->Update(KEY_OF_START, lastSysReportTime_);
+    } else {
+        // add the current usage to the cache_usage since the last save
+        UpdateCacheSysUsage(cacheUsage, cacher);
+    }
+    cacher.SaveSysUsageEventToDb(cacheUsage);
 }
 
 bool UsageEventReportService::ProcessArgsRequest(int argc, char* argv[])

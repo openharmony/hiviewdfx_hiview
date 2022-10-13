@@ -34,8 +34,8 @@ private:
     void ReportAppUsage();
     void ReportSysUsage();
     void SaveSysUsage();
-    void AddCacheSysUsage(std::shared_ptr<LoggerEvent>& nowUsage, const std::shared_ptr<LoggerEvent>& cacheUsage);
-    void MinusLastSysUsage(std::shared_ptr<LoggerEvent>& nowUsage, const std::shared_ptr<LoggerEvent>& lastUsage);
+    void UpdateCacheSysUsage(std::shared_ptr<LoggerEvent>& cacheUsage, const UsageEventCacher& cacher);
+    void UpdateLastSysUsage(std::shared_ptr<LoggerEvent>& nowUsage, const UsageEventCacher& cacher);
 
 private:
     std::string workPath_;
