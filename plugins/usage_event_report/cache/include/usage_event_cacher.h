@@ -31,13 +31,13 @@ public:
     UsageEventCacher(const std::string& workPath);
     ~UsageEventCacher() {}
 
-    void GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events);
-    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
-    void DeletePluginStatsEventsFromDb();
-    void SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events);
-    void DeleteSysUsageEventFromDb(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
+    void GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events) const;
+    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
+    void DeletePluginStatsEventsFromDb() const;
+    void SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events) const;
+    void DeleteSysUsageEventFromDb(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
     void SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event,
-        const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL);
+        const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
 
 private:
     std::unique_ptr<EventDbHelper> dbHelper_;
