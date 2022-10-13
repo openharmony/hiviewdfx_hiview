@@ -36,6 +36,7 @@ namespace HiviewDFX {
 constexpr int32_t UID_SHELL = 2000;
 constexpr int32_t UID_ROOT = 0;
 constexpr int32_t DFX_ABILITY_FAULTLOGGER_ID = 1202;
+constexpr int32_t UID_HIDUMPER = 1212;
 void FaultloggerServiceOhos::ClearQueryStub(int32_t uid)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -45,7 +46,7 @@ void FaultloggerServiceOhos::ClearQueryStub(int32_t uid)
 int32_t FaultloggerServiceOhos::Dump(int32_t fd, const std::vector<std::u16string> &args)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
-    if ((uid != UID_SHELL) && (uid != UID_ROOT)) {
+    if ((uid != UID_SHELL) && (uid != UID_ROOT) && (uid != UID_HIDUMPER)) {
         dprintf(fd, "No permission for uid:%d.\n", uid);
         return -1;
     }
