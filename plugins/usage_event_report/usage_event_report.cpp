@@ -34,7 +34,7 @@ uint64_t UsageEventReport::nextReportTime_ = 0;
 std::string UsageEventReport::workPath_ = "";
 namespace {
 constexpr int TRIGGER_CYCLE = 5 * 60; // 5 min
-constexpr uint32_t TRIGGER_TWO_HOUR = 24; // 2h = 5min * 24
+constexpr uint32_t TRIGGER_ONE_HOUR = 12; // 1h = 5min * 12
 const std::string SERVICE_NAME = "usage_report";
 }
 using namespace SysUsageDbSpace;
@@ -77,7 +77,7 @@ void UsageEventReport::Init()
         HIVIEW_LOGI("get plugin stats event=%{public}d", pluginStatEvents.size());
 
         // get last report time from db if any
-        if (auto event = cacher.GetSysUsageEvent(); event != nullptr) {
+        if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL); event != nullptr) {
             HIVIEW_LOGI("get cache sys usage event=%{public}s", event->ToJsonString().c_str());
             lastReportTime_ = event->GetValue(KEY_OF_START).GetUint64();
         } else {
@@ -85,9 +85,9 @@ void UsageEventReport::Init()
         }
 
         // get last sys report time from db if any
-        if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL); event != nullptr) {
+        if (auto event = cacher.GetSysUsageEvent(); event != nullptr) {
             HIVIEW_LOGI("get last sys usage event=%{public}s", event->ToJsonString().c_str());
-            lastSysReportTime_ = event->GetValue(KEY_OF_END).GetUint64();
+            lastSysReportTime_ = event->GetValue(KEY_OF_START).GetUint64();
         } else {
             lastSysReportTime_ = nowTime;
         }
@@ -100,8 +100,8 @@ void UsageEventReport::Init()
         ReportDailyEvent();
     }
 
-    // more than two hours since the shutdown time
-    if (nowTime >= (lastSysReportTime_ + 7200000)) { // 7200000ms: 2h, 3600 * 2 * 1000
+    // more than one hours since the shutdown time
+    if (nowTime >= (lastSysReportTime_ + 3600000)) { // 3600000ms: 1h
         HIVIEW_LOGI("lastSysReportTime=%{public}" PRIu64 ", need to report sys usage event now", lastReportTime_);
         ReportSysUsageEvent();
     }
@@ -161,7 +161,8 @@ void UsageEventReport::ReportDailyEvent()
 void UsageEventReport::ReportTimeOutEvent()
 {
     ++timeOutCnt_;
-    if (timeOutCnt_ >= TRIGGER_TWO_HOUR) {
+    SaveSysUsageEvent();
+    if (timeOutCnt_ >= TRIGGER_ONE_HOUR) {
         ReportSysUsageEvent();
         timeOutCnt_ = 0;
     }
