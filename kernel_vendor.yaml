@@ -34,5 +34,12 @@ HUNGTASK:
   MSG: {type: STRING, desc: HUNGTASK event message}
 
 PANIC:
-  __BASE: {type: FAULT, level: CRITICAL, desc: Panic}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: Panic}
   MSG: {type: STRING, desc: PANIC event message}
+  MODULE: {type: STRING, desc: module name}
+  REASON: {type: STRING, desc: fault reason}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  SUMMARY: {type: STRING, desc: fault summary}
+  LOG_PATH: {type: STRING, desc: fault log dir}
+  SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
