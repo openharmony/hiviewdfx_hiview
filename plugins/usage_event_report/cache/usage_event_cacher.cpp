@@ -25,7 +25,7 @@ UsageEventCacher::UsageEventCacher(const std::string& workPath) : dbHelper_(null
     dbHelper_ = std::make_unique<EventDbHelper>(workPath);
 }
 
-void UsageEventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events)
+void UsageEventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events) const
 {
     if (dbHelper_->QueryPluginStatsEvent(events) < 0) {
         HIVIEW_LOGE("failed to query plugin stats events from db");
@@ -33,7 +33,7 @@ void UsageEventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEv
     }
 }
 
-std::shared_ptr<LoggerEvent> UsageEventCacher::GetSysUsageEvent(const std::string& coll)
+std::shared_ptr<LoggerEvent> UsageEventCacher::GetSysUsageEvent(const std::string& coll) const
 {
     std::vector<std::shared_ptr<LoggerEvent>> events;
     if (dbHelper_->QuerySysUsageEvent(events, coll) < 0) {
@@ -43,7 +43,7 @@ std::shared_ptr<LoggerEvent> UsageEventCacher::GetSysUsageEvent(const std::strin
     return events.empty() ? nullptr : events[0];
 }
 
-void UsageEventCacher::DeletePluginStatsEventsFromDb()
+void UsageEventCacher::DeletePluginStatsEventsFromDb() const
 {
     std::vector<std::shared_ptr<LoggerEvent>> events;
     if (dbHelper_->QueryPluginStatsEvent(events) >= 0) {
@@ -51,7 +51,7 @@ void UsageEventCacher::DeletePluginStatsEventsFromDb()
     }
 }
 
-void UsageEventCacher::DeleteSysUsageEventFromDb(const std::string& coll)
+void UsageEventCacher::DeleteSysUsageEventFromDb(const std::string& coll) const
 {
     std::vector<std::shared_ptr<LoggerEvent>> events;
     if (dbHelper_->QuerySysUsageEvent(events, coll) >= 0) {
@@ -59,7 +59,7 @@ void UsageEventCacher::DeleteSysUsageEventFromDb(const std::string& coll)
     }
 }
 
-void UsageEventCacher::SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events)
+void UsageEventCacher::SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events) const
 {
     HIVIEW_LOGI("start to save plugin stats event to db");
     for (auto event : events) {
@@ -69,7 +69,7 @@ void UsageEventCacher::SavePluginStatsEventsToDb(const std::vector<std::shared_p
     }
 }
 
-void UsageEventCacher::SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event, const std::string& coll)
+void UsageEventCacher::SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event, const std::string& coll) const
 {
     if (event == nullptr) {
         return;
