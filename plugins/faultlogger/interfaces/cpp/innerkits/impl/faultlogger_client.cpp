@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,20 @@ std::string GetPrintableStr(const std::string& str)
         }
     }
     return str.substr(0, index);
+}
+
+bool CheckFaultloggerStatus()
+{
+    sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (serviceManager == nullptr) {
+        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find samgr, exit.");
+        return false;
+    }
+    if (serviceManager->CheckSystemAbility(DFX_HIVIEW_FAULTLOGGER_ID) == nullptr) {
+        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find faultlogger service, exit.");
+        return false;
+    }
+    return true;
 }
 
 sptr<FaultLoggerServiceProxy> GetFaultloggerService()

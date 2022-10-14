@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2021 Huawei Device Co., Ltd.
+* Copyright (C) 2021-2022 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -60,6 +60,7 @@ declare namespace FaultLogger {
   /**
    * Query the result of the current application FaultLog in callback Mode
    * @since 8
+   * @deprecated since 9
    * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
    * @param faultType fault type to query
    * @param callback faultlog information data callback function
@@ -69,11 +70,32 @@ declare namespace FaultLogger {
   /**
    * Query the result of the current application FaultLog in return promise mode.
    * @since 8
+   * @deprecated since 9
    * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
    * @param faultType fault type to query
    * @return return faultlog information data by promise
    */
   function querySelfFaultLog(faultType: FaultType) : Promise<Array<FaultLogInfo>>;
+
+  /**
+   * Query the result of the current application FaultLog in callback Mode
+   * @since 9
+   * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
+   * @param faultType fault type to query
+   * @param callback faultlog information data callback function
+   * @throws {error} if the param is invalid or service is broken
+   */
+   function query(faultType: FaultType, callback: AsyncCallback<Array<FaultLogInfo>>) : void;
+
+   /**
+    * Query the result of the current application FaultLog in return promise mode.
+    * @since 9
+    * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
+    * @param faultType fault type to query
+    * @throws {error} if the param is invalid or service is broken
+    * @return return faultlog information data by promise
+    */
+   function query(faultType: FaultType) : Promise<Array<FaultLogInfo>>;
 
   /**
    * FaultLog information data structure
