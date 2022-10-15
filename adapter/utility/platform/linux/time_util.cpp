@@ -68,14 +68,6 @@ std::string TimestampFormatToDate(time_t timeStamp, const std::string& format)
     return std::string(date);
 }
 
-std::string GetFomattedTime(unsigned int origin)
-{
-    unsigned int dec = 10;
-    std::string timeRet {static_cast<char>('0' + (origin / dec % dec))}; // add num at tens place
-    timeRet += static_cast<char>('0' + origin % dec); // add num at ones place
-    return timeRet;
-}
-
 std::string GetTimeZone()
 {
     struct timeval currentTime;
@@ -87,23 +79,13 @@ std::string GetTimeZone()
     if (localtime_r(&systemSeconds, &tmLocal) == nullptr) {
         return "";
     }
-    struct tm timeUtc;
-    if (gmtime_r(&systemSeconds, &timeUtc) == nullptr) {
-        return "";
+    int tzBufSize = 20;
+    char tz[tzBufSize];
+    auto ret = strftime(tz, tzBufSize, "%z", &tmLocal);
+    if (ret > 0) {
+        return std::string(tz);
     }
-    time_t offset = mktime(&tmLocal) - mktime(&timeUtc);
-    unsigned int secsPerHour = 3600;
-    unsigned int hour = static_cast<unsigned int>(std::abs(offset)) / secsPerHour;
-    unsigned int timeZoneUpper = 12; // max time zone is 12
-    if (hour > timeZoneUpper) {
-        hour = 0;
-    }
-    unsigned int secsPerMin = 60;
-    unsigned int min = (static_cast<unsigned int>(std::abs(offset)) % secsPerHour) / secsPerMin;
-    std::string timeZone {(offset < 0) ? "-" : "+"};
-    timeZone += GetFomattedTime(hour);
-    timeZone += GetFomattedTime(min);
-    return timeZone;
+    return std::string("+0000");
 }
 
 int64_t Get0ClockStampMs()
