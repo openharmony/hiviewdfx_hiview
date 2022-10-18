@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "logger.h"
 
 #include "faultlog_query_result.h"
+#include "napi_error.h"
 #include "napi_util.h"
 
 namespace OHOS {
@@ -239,6 +240,60 @@ static napi_value AddFaultLog(napi_env env, napi_callback_info info)
     return result;
 }
 
+static napi_value Query(napi_env env, napi_callback_info info)
+{
+    size_t parameterCount = 2;
+    napi_value parameters[2] = {0};
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    NAPI_CALL(env, napi_get_cb_info(env, info, &parameterCount, parameters, &thisVar, &data));
+
+    napi_value result = NapiUtil::CreateUndefined(env);
+    if (parameterCount < ONE_PARAMETER && parameterCount > TWO_PARAMETER) {
+        HIVIEW_LOGE("parameterCount Incorrect %{public}d", parameterCount);
+        NapiUtil::ThrowError(env, NapiError::ERR_INPUT_PARAM, NapiUtil::CreateParamCntErrMsg());
+        return result;
+    }
+
+    if (!NapiUtil::IsMatchType(env, parameters[ONE_PARAMETER - 1], napi_number)) {
+        HIVIEW_LOGE("parameters[0] type isn't number");
+        NapiUtil::ThrowError(env, NapiError::ERR_INPUT_PARAM, NapiUtil::CreateErrMsg("type", napi_number));
+        return result;
+    }
+    if (!CheckFaultloggerStatus()) {
+        NapiUtil::ThrowError(env, NapiError::ERR_SERVICE_STATUS, NapiUtil::CreateServiceErrMsg());
+        return result;
+    }
+
+    auto faultLogInfoContext = std::make_unique<FaultLogInfoContext>().release();
+    if (faultLogInfoContext == nullptr) {
+        HIVIEW_LOGE("faultLogInfoContext == nullptr");
+        return result;
+    }
+
+    napi_get_value_int32(env, parameters[ONE_PARAMETER - 1], &faultLogInfoContext->faultType);
+    if (parameterCount == ONE_PARAMETER) {
+        napi_create_promise(env, &faultLogInfoContext->deferred, &result);
+    } else if (parameterCount == TWO_PARAMETER) {
+        if (!NapiUtil::IsMatchType(env, parameters[TWO_PARAMETER - 1], napi_function)) {
+            HIVIEW_LOGE("parameters[1] type isn't function");
+            delete faultLogInfoContext;
+            NapiUtil::ThrowError(env, NapiError::ERR_INPUT_PARAM,
+                NapiUtil::CreateErrMsg("callback", napi_function), true);
+            return result;
+        }
+        NAPI_CALL(env, napi_create_reference(env, parameters[TWO_PARAMETER - 1], 1, &faultLogInfoContext->callbackRef));
+    }
+
+    napi_value resource = NapiUtil::CreateUndefined(env);
+    napi_value resourceName = nullptr;
+    napi_create_string_utf8(env, "QuerySelfFaultLog", NAPI_AUTO_LENGTH, &resourceName);
+    napi_create_async_work(env, resource, resourceName, FaultLogExecuteCallback,
+        FaultLogCompleteCallback, (void *)faultLogInfoContext, &faultLogInfoContext->work);
+    napi_queue_async_work(env, faultLogInfoContext->work);
+    return result;
+}
+
 napi_value FaultLogTypeConstructor(napi_env env, napi_callback_info info)
 {
     napi_value thisArg = nullptr;
@@ -338,6 +393,7 @@ napi_value InitNapiRegistry(napi_env env, napi_value exports)
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("querySelfFaultLog", QuerySelfFaultLog),
         DECLARE_NAPI_FUNCTION("addFaultLog", AddFaultLog),
+        DECLARE_NAPI_FUNCTION("query", Query),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     FaultLogTypeEnumInit(env, exports);

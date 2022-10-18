@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("Faultlogger-napi");
 napi_value NapiUtil::CreateErrorMessage(napi_env env, std::string msg)
 {
     napi_value result = nullptr;
@@ -64,6 +65,66 @@ bool NapiUtil::IsMatchType(napi_env env, napi_value value, napi_valuetype type)
         return true;
     }
     return false;
+}
+
+napi_value NapiUtil::CreateString(const napi_env env, const std::string& str)
+{
+    napi_value strValue = nullptr;
+    if (napi_create_string_utf8(env, str.c_str(), NAPI_AUTO_LENGTH, &strValue) != napi_ok) {
+        HIVIEW_LOGE("failed to create string");
+        return nullptr;
+    }
+    return strValue;
+}
+
+void NapiUtil::ThrowError(napi_env env, int code, const std::string& msg, bool isThrow)
+{
+    // no error needs to be thrown before api 9
+    if (!isThrow) {
+        return;
+    }
+
+    if (napi_throw_error(env, std::to_string(code).c_str(), msg.c_str()) != napi_ok) {
+        HIVIEW_LOGE("failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
+    }
+}
+
+std::string NapiUtil::CreateServiceErrMsg()
+{
+    return "FaultLogger service is not running or broken.";
+}
+
+std::string NapiUtil::CreateParamCntErrMsg()
+{
+    return "The count of input parameters is incorrect.";
+}
+
+std::string NapiUtil::CreateErrMsg(const std::string name)
+{
+    return "Parameter error. The " + name + " parameter is mandatory.";
+}
+
+std::string NapiUtil::CreateErrMsg(const std::string name, const std::string& type)
+{
+    return "Parameter error. The type of " + name + " must be " + type + ".";
+}
+std::string NapiUtil::CreateErrMsg(const std::string name, const napi_valuetype type)
+{
+    std::string typeStr = "";
+    switch (type) {
+        case napi_number:
+            typeStr = "number";
+            break;
+        case napi_string:
+            typeStr = "string";
+            break;
+        case napi_function:
+            typeStr = "function";
+            break;
+        default:
+            break;
+    }
+    return CreateErrMsg(name, typeStr);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
