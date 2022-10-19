@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
@@ -32,6 +33,14 @@ public:
     static void SetPropertyInt64(napi_env env, napi_value object, std::string name, int64_t value);
     static void SetPropertyStringUtf8(napi_env env, napi_value object, std::string name, std::string value);
     static bool IsMatchType(napi_env env, napi_value value, napi_valuetype type);
+    
+    static napi_value CreateString(const napi_env env, const std::string& str);
+    static void ThrowError(napi_env env, int code, const std::string& msg, bool isThrow = true);
+    static std::string CreateServiceErrMsg();
+    static std::string CreateParamCntErrMsg();
+    static std::string CreateErrMsg(const std::string name);
+    static std::string CreateErrMsg(const std::string name, const std::string& type);
+    static std::string CreateErrMsg(const std::string name, const napi_valuetype type);
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
