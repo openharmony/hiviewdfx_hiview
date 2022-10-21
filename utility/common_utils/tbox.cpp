@@ -14,11 +14,14 @@
  */
 #include "tbox.h"
 
+#include <unistd.h>
+
 #include <regex>
 #include "calc_fingerprint.h"
 #include "file_util.h"
 #include "log_parse.h"
 #include "string_util.h"
+#include "time_util.h"
 
 using namespace std;
 namespace OHOS {
@@ -143,6 +146,22 @@ void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
     eventInfo["FINGERPRINT"] = Tbox::CalcFingerPrint(block, 0, FP_BUFFER);
     std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3);  // 3 : first/second/last frame
     logparse.SetFrame(stackTop, eventInfo);
+}
+
+bool Tbox::WaitForDoneFile(const std::string& file, unsigned int timeout)
+{
+    uint64_t remainedTime = timeout * NS_PER_SECOND;
+    while (remainedTime > 0) {
+        if (FileUtil::FileExists(file)) {
+            HIVIEW_LOGD("Done file exist: %{public}s", file.c_str());
+            return true;
+        }
+        uint64_t startTime = TimeUtil::GetNanoTime();
+        sleep(1);
+        uint64_t duration = TimeUtil::GetNanoTime() - startTime;
+        remainedTime = (remainedTime > duration) ? (remainedTime - duration) : 0;
+    }
+    return false;
 }
 }
 }

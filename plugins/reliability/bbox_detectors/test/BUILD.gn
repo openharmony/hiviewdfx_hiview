@@ -1,0 +1,84 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+# Description: hiview build
+# Author: wangyanteng
+# Create: 2020-04-18
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+import("//build/test.gni")
+
+module_output_path = "hiview/hiview/base/plugins/reliability/bbox_detector"
+
+###############################################################################
+config("bbox_detector_test_config") {
+  visibility = [ ":*" ]
+  include_dirs = [
+    "../",
+    "../include",
+    "moduletest",
+    "unittest",
+    "$hiview_root/utility/common_utils/include",
+    "$hiview_root/utility/smart_parser",
+    "$hiview_root/utility/smart_parser/feature_analysis/include",
+  ]
+}
+
+ohos_unittest("BBoxDetectorUnitTest") {
+  sources = [
+    "../bbox_detector_plugin.cpp",
+    "unittest/bbox_detector_unit_test.cpp",
+  ]
+
+  configs = [ ":bbox_detector_test_config" ]
+
+  external_deps = [
+    "hisysevent_native:libhisysevent",
+  ]
+
+  cflags = [ "-DUNITTEST" ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "$hiview_root/utility/smart_parser:smart_parser",
+    "//utils/native/base:utils",
+  ]
+
+  module_out_path = module_output_path
+  resource_config_file = "./resource/harmony_test.xml"
+}
+
+
+ohos_moduletest("BBoxDetectorModuleTest") {
+  sources = [
+    "../bbox_detector_plugin.cpp",
+    "moduletest/bbox_detector_module_test.cpp",
+  ]
+
+  configs = [ ":bbox_detector_test_config" ]
+
+  cflags = [ "-DUNITTEST" ]
+
+  external_deps = [
+    "hisysevent_native:libhisysevent",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_base/event_store:event_store_source",
+    "$hiview_root/utility/smart_parser:smart_parser",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+  ]
+
+  module_out_path = module_output_path
+  resource_config_file = "./resource/harmony_test.xml"
+}
+
+group("unittest") {
+  testonly = true
+  deps = [ ":BBoxDetectorUnitTest" ]
+}
+
+group("moduletest") {
+  testonly = true
+  deps = [ ":BBoxDetectorModuleTest" ]
+}
