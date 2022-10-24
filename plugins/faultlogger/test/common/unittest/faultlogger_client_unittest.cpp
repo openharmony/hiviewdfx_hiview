@@ -45,6 +45,30 @@ public:
 };
 
 /**
+ * @tc.name: ReportCppCrashEventTest001
+ * @tc.desc: Test calling ReportCppCrashEvent Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerClientUnittest, ReportCppCrashEventTest001, testing::ext::TestSize.Level3)
+{
+    auto now = time(nullptr);
+    auto info = CreateFaultLogInfo(now, getuid(), FaultLogType::CPP_CRASH, "faultlogtest0");
+    ReportCppCrashEvent(&info);
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: CheckFaultloggerStatusTest001
+ * @tc.desc: Check status of the faultlogger systemcapabilty
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerClientUnittest, CheckFaultloggerStatusTest001, testing::ext::TestSize.Level3)
+{
+    bool status = CheckFaultloggerStatus();
+    ASSERT_TRUE(status);
+}
+
+/**
  * @tc.name: AddFaultLogTest001
  * @tc.desc: add multiple logs into faultlogger, check whether the logs have been created
  * @tc.type: FUNC
