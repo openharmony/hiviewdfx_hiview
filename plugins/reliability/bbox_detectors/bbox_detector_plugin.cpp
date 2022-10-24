@@ -85,6 +85,9 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string timeStr = sysEvent->GetEventValue("SUB_LOG_PATH");
     std::string LOG_PATH = sysEvent->GetEventValue("LOG_PATH");
     std::string dynamicPaths = LOG_PATH + timeStr;
+    auto times = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetRleftSubstr(timeStr, "-"),
+                                                               "%Y%m%d%H%M%S"));
+    sysEvent->SetEventValue("HAPPEN_TIME", times);
 
     WaitForLogs(dynamicPaths);
     auto eventInfos = SmartParser::Analysis(dynamicPaths, logParseConfig_, sysEvent->GetEventValue("name_"));
