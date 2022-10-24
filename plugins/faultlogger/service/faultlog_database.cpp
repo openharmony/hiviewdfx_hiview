@@ -75,7 +75,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
         HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
         return false;
     }
-    info.time = static_cast<uint64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
+    info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
     info.pid = sysEvent->GetEventIntValue("PID");
     info.id = sysEvent->GetEventIntValue("UID");
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());

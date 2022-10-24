@@ -27,6 +27,7 @@ ohos_source_set("faultlogger") {
 
   external_deps = [ "hilog_native:libhilog" ]
 }
+
 group("fuzztest") {
   testonly = true
   deps =
