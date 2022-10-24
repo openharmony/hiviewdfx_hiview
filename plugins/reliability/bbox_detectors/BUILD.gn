@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2022 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -25,9 +25,7 @@ config("bbox_detector_config") {
 }
 
 ohos_source_set("bbox_detector") {
-  sources = [
-    "bbox_detector_plugin.cpp",
-  ]
+  sources = [ "bbox_detector_plugin.cpp" ]
 
   configs = [ ":bbox_detector_config" ]
 
@@ -40,11 +38,10 @@ ohos_source_set("bbox_detector") {
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
-    "$hiview_root/utility/smart_parser:smart_parser",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "$hiview_root/utility/smart_parser:smart_parser",
     "//third_party/libxml2:xml2",
   ]
-
 }
 
 group("unittest") {

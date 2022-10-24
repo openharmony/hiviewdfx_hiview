@@ -30,9 +30,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
 
   configs = [ ":bbox_detector_test_config" ]
 
-  external_deps = [
-    "hisysevent_native:libhisysevent",
-  ]
+  external_deps = [ "hisysevent_native:libhisysevent" ]
 
   cflags = [ "-DUNITTEST" ]
 
@@ -47,7 +45,6 @@ ohos_unittest("BBoxDetectorUnitTest") {
   resource_config_file = "./resource/harmony_test.xml"
 }
 
-
 ohos_moduletest("BBoxDetectorModuleTest") {
   sources = [
     "../bbox_detector_plugin.cpp",
@@ -58,15 +55,13 @@ ohos_moduletest("BBoxDetectorModuleTest") {
 
   cflags = [ "-DUNITTEST" ]
 
-  external_deps = [
-    "hisysevent_native:libhisysevent",
-  ]
+  external_deps = [ "hisysevent_native:libhisysevent" ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
-    "$hiview_root/utility/smart_parser:smart_parser",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "$hiview_root/utility/smart_parser:smart_parser",
   ]
 
   module_out_path = module_output_path
