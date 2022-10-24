@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "bbox_detector_module_test.h"
 
 #include "bbox_detector_plugin.h"

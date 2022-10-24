@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "bbox_detector_plugin.h"
 
 #include <fstream>
@@ -101,7 +100,7 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/ " :
                                 StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     sysEvent->SetEventValue("FINGERPRINT", Tbox::CalcFingerPrint(event + module + eventInfos["FIRST_FRAME"] +
-                                eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER));
+        eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER));
     sysEvent->SetEventValue("LOG_PATH", dynamicPaths);
     if (sysEvent->GetSeq() != 0 && EventStore::SysEventDao::Update(sysEvent, false) != 0) {
         HIVIEW_LOGE("update failed, event: %{public}s", sysEvent->eventName_.c_str());

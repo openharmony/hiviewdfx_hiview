@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "bbox_detector_unit_test.h"
 
 #include "bbox_detector_plugin.h"
@@ -74,9 +73,9 @@ HWTEST_F(BBoxDetectorUnitTest, BBoxDetectorUnitTest002, TestSize.Level1)
      * @tc.steps: step2. Analysis panic file
      * @tc.steps: step3. check result
      */
-    std::string TEST_CONFIG = "/data/test/test_data/BBoxDetector/common/";
+    std::string testConfig = "/data/test/test_data/BBoxDetector/common/";
     std::string dynamicPaths = "/data/test/test_data/BBoxDetector/common/19700106031950-00001111";
-    auto eventInfos = SmartParser::Analysis(dynamicPaths, TEST_CONFIG, "PANIC");
+    auto eventInfos = SmartParser::Analysis(dynamicPaths, testConfig, "PANIC");
     Tbox::FilterTrace(eventInfos);
 
     ASSERT_EQ(eventInfos["F1NAME"], "sysrq_handle_term+0x0/0x94");
