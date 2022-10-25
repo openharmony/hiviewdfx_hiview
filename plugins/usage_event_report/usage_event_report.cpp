@@ -211,8 +211,10 @@ void UsageEventReport::StartServiceByOption(const std::string& opt)
     ss << " -T " << lastSysReportTime_;
     ss << " " << opt;
     HIVIEW_LOGI("start service cmd=%{public}s", ss.str().c_str());
-    if (system(ss.str().c_str()) < 0) {
-        HIVIEW_LOGE("failed to start the service=%{public}s", SERVICE_NAME.c_str());
+    if (auto res = system(ss.str().c_str()); res < 0) {
+        HIVIEW_LOGE("failed to start %{public}s, res=%{public}d, err=%{public}d", SERVICE_NAME.c_str(), res, errno);
+    } else {
+        HIVIEW_LOGI("succ to start %{public}s, res=%{public}d, err=%{public}d", SERVICE_NAME.c_str(), res, errno);
     }
 }
 }  // namespace HiviewDFX
