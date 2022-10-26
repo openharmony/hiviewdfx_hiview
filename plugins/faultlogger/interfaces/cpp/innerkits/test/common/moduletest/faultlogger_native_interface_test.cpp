@@ -16,7 +16,9 @@
 #include <list>
 
 #include <gtest/gtest.h>
+#include <string>
 
+#include "faultlog_info.h"
 #include "faultlog_query_result.h"
 #include "faultlogger_client.h"
 #include "faultlogger_client_test.h"
@@ -264,6 +266,37 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest005, testing::ext:
     ASSERT_EQ(nullptr, result);
     auto result2 = QuerySelfFaultLog(FaultLogType::CPP_CRASH, 100000); // 100000 : max count
     ASSERT_NE(nullptr, result2);
+}
+
+/**
+ * @tc.name: FaultlogInfoTest001
+ * @tc.desc: create faultloginfo object and check the getter&setter func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerNativeInterfaceTest, FaultlogInfoTest001, testing::ext::TestSize.Level3)
+{
+    auto info = std::make_unique<FaultLogInfo>();
+    int64_t ts = time(nullptr);
+    std::string reason = "TestReason";
+    std::string module = "com.example.myapplication";
+    std::string summary = "TestSummary";
+    info->SetId(getuid());
+    info->SetProcessId(getpid());
+    info->SetFaultType(FaultLogType::CPP_CRASH);
+    info->SetRawFileDescriptor(-1);
+    info->SetTimeStamp(ts);
+    info->SetFaultReason(reason);
+    info->SetModuleName(module);
+    info->SetFaultSummary(summary);
+    bool ret = info->GetId() == getuid();
+    ret &= info->GetProcessId() == getpid();
+    ret &= info->GetFaultType() == FaultLogType::CPP_CRASH;
+    ret &= info->GetRawFileDescriptor() == -1;
+    ret &= info->GetTimeStamp() == ts;
+    ret &= info->GetFaultReason() == reason;
+    ret &= info->GetModuleName() == module;
+    ret &= info->GetFaultSummary() == summary;
+    ASSERT_TRUE(ret);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
