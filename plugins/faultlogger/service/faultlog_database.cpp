@@ -39,34 +39,6 @@ namespace {
 static const std::vector<std::string> QUERY_ITEMS =
     { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
 static const std::string LOG_PATH_BASE = "/data/log/faultlog/faultlogger/";
-std::shared_ptr<SysEvent> GetSysEventFromFaultLogInfo(const FaultLogInfo& info)
-{
-    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
-    auto sysEvent = std::make_shared<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
-
-    std::map<std::string, std::string> eventInfos;
-    AnalysisFaultlog(info, eventInfos);
-
-    HiSysEvent::Write("RELIABILITY", GetFaultNameByType(info.faultLogType, false), HiSysEvent::EventType::FAULT,
-        "FAULT_TYPE", std::to_string(info.faultLogType),
-        "PID", info.pid,
-        "UID", info.id,
-        "MODULE", info.module,
-        "REASON", info.reason,
-        "SUMMARY", info.summary,
-        "LOG_PATH", info.logPath,
-        "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
-        "HAPPEN_TIME", std::to_string(info.time),
-        "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
-        "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
-        "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
-        "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
-        "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
-    );
-
-    return sysEvent;
-}
-
 bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
 {
     auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
@@ -90,16 +62,24 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
 void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    auto sysEvent = GetSysEventFromFaultLogInfo(info);
-    if (sysEvent == nullptr) {
-        HIVIEW_LOGI("Failed to save FaultLogInfo for %{public}s(%{public}d)", info.module.c_str(), info.pid);
-        return;
-    }
-#ifndef UNITTEST
-    auto seq = HiviewGlobal::GetInstance()->GetPipelineSequenceByName("SysEventPipeline");
-    sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-    sysEvent->OnContinue();
-#endif
+    std::map<std::string, std::string> eventInfos;
+    AnalysisFaultlog(info, eventInfos);
+    HiSysEvent::Write("RELIABILITY", GetFaultNameByType(info.faultLogType, false), HiSysEvent::EventType::FAULT,
+        "FAULT_TYPE", std::to_string(info.faultLogType),
+        "PID", info.pid,
+        "UID", info.id,
+        "MODULE", info.module,
+        "REASON", info.reason,
+        "SUMMARY", info.summary,
+        "LOG_PATH", info.logPath,
+        "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
+        "HAPPEN_TIME", std::to_string(info.time),
+        "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
+        "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
+        "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
+        "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
+        "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
+    );
 }
 
 std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& module, int32_t id,
@@ -140,9 +120,12 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    (*query).Select(QUERY_ITEMS).Where("pid_", EventStore::Op::EQ, pid).Order("time_", false);
-    query->And("uid_", EventStore::Op::EQ, uid);
-    query->And("FAULT_TYPE", EventStore::Op::EQ, faultType);
+    EventStore::Cond uidCond("UID", EventStore::Op::EQ, uid);
+    EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
+    EventStore::Cond condLeft = uidCond.And(hiviewCond);
+    EventStore::Cond condRight("FAULT_TYPE", EventStore::Op::EQ, faultType);
+    EventStore::Cond condTotal = condLeft.And(condRight);
+    (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     return query->Execute(1).HasNext();
 }
 }  // namespace HiviewDFX
