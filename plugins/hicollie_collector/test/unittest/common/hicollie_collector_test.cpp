@@ -25,6 +25,7 @@
 #include "time_util.h"
 
 #include "hiview_platform.h"
+#include "hisysevent.h"
 #include "sys_event.h"
 
 using namespace testing::ext;
@@ -43,11 +44,6 @@ void HicollieCollectorTest::SetUpTestCase()
      * @tc.setup: all first
      */
     printf("SetUpTestCase.\n");
-
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
-        printf("Fail to init environment.\n");
-    }
 }
 
 void HicollieCollectorTest::TearDownTestCase()
@@ -66,69 +62,16 @@ void HicollieCollectorTest::TearDown()
     printf("TearDown.\n");
 }
 
-bool HicollieCollectorTest::SendServiceWaring(uint64_t time, std::shared_ptr<Plugin> plugin)
+bool HicollieCollectorTest::SendEvent(uint64_t time, const std::string& name)
 {
-    auto jsonStr = "{\"domain_\":\"FRAMEWORK\"}";
-    auto sysEvent = std::make_shared<SysEvent>("HicollieCollectorTest001", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "SERVICE_WARNING");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", getpid());
-    sysEvent->SetEventValue("TGID", getgid());
-    sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("MSG", "this is test\n SERVICE_WARNING event time is " + std::to_string(time));
-    sysEvent->SetEventValue("MODULE_NAME", "HicollieCollectorTest001");
-    sysEvent->SetEventValue("PROCESS_NAME", "HicollieCollectorTest001");
-
-    sysEvent->SetEventValue("info_", "");
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult.\n");
-        return false;
-    }
-
-    auto context = plugin->GetHiviewContext();
-    if (context != nullptr) {
-        auto seq = context->GetPipelineSequenceByName("SysEventPipeline");
-        sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-        sysEvent->OnContinue();
-    }
-    return true;
-}
-
-bool HicollieCollectorTest::SendServiceBlock(uint64_t time, std::shared_ptr<Plugin> plugin)
-{
-    auto jsonStr = "{\"domain_\":\"FRAMEWORK\"}";
-    auto sysEvent = std::make_shared<SysEvent>("HicollieCollectorTest001", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "SERVICE_BLOCK");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", getpid());
-    sysEvent->SetEventValue("TGID", getgid());
-    sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("MSG", "this is test\n SERVICE_BLOCK event time is " + std::to_string(time));
-    sysEvent->SetEventValue("MODULE_NAME", "HicollieCollectorTest001");
-    sysEvent->SetEventValue("PROCESS_NAME", "HicollieCollectorTest001");
-
-    sysEvent->SetEventValue("info_", "");
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult\n");
-        return false;
-    }
-
-    auto context = plugin->GetHiviewContext();
-    if (context != nullptr) {
-        auto seq = context->GetPipelineSequenceByName("SysEventPipeline");
-        sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-        sysEvent->OnContinue();
-    }
+    HiSysEvent::Write("FRAMEWORK", name, HiSysEvent::EventType::FAULT,
+        "PID", getpid(),
+        "UID", getuid(),
+        "TGID", getgid(),
+        "MSG", "this is test\n " + name + " event time is " + std::to_string(time),
+        "MODULE_NAME", "HicollieCollectorTest001",
+        "PROCESS_NAME", "HicollieCollectorTest001"
+    );
     return true;
 }
 
@@ -194,20 +137,13 @@ bool HicollieCollectorTest::GetHicollieCollectorTest001File(uint64_t time1, uint
  */
 HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
 {
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("HiCollieCollector");
-    if (plugin == nullptr) {
-        printf("Get HiCollieCollector, failed");
-        FAIL();
-    }
-
     auto time1 = TimeUtil::GetMilliseconds();
-    SendServiceWaring(time1, plugin);
+    SendEvent(time1, "SERVICE_BLOCK");
 
     sleep(3);
 
     auto time2 = TimeUtil::GetMilliseconds();
-    SendServiceBlock(time2, plugin);
+    SendEvent(time1, "SERVICE_WARNING");
 
     if (!GetHicollieCollectorTest001File(time1, time2)) {
         printf("GetFreezeDectorTest001File, failed\n");
@@ -275,42 +211,15 @@ bool HicollieCollectorTest::GetHicollieCollectorTest002File(uint64_t time)
  */
 HWTEST_F(HicollieCollectorTest, HicollieCollectorTest002, TestSize.Level3)
 {
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("HiCollieCollector");
-    if (plugin == nullptr) {
-        printf("Get HiCollieCollector, failed");
-        FAIL();
-    }
-
     auto time = TimeUtil::GetMilliseconds();
-    auto jsonStr = "{\"domain_\":\"FRAMEWORK\"}";
-    auto sysEvent = std::make_shared<SysEvent>("HicollieCollectorTest002", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "SERVICE_TIMEOUT");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", getpid());
-    sysEvent->SetEventValue("TGID", getgid());
-    sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("MSG", "this is test\n SERVICE_TIMEOUT event time is " + std::to_string(time));
-    sysEvent->SetEventValue("MODULE_NAME", "HicollieCollectorTest002");
-    sysEvent->SetEventValue("PROCESS_NAME", "HicollieCollectorTest002");
-
-    sysEvent->SetEventValue("info_", "");
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult.\n");
-        FAIL();
-    }
-
-    auto context = plugin->GetHiviewContext();
-    if (context != nullptr) {
-        auto seq = context->GetPipelineSequenceByName("SysEventPipeline");
-        sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-        sysEvent->OnContinue();
-    }
+    HiSysEvent::Write("FRAMEWORK", "SERVICE_TIMEOUT", HiSysEvent::EventType::FAULT,
+        "PID", getpid(),
+        "UID", getuid(),
+        "TGID", getgid(),
+        "MSG", "this is test\n SERVICE_TIMEOUT event time is " + std::to_string(time),
+        "MODULE_NAME", "HicollieCollectorTest002",
+        "PROCESS_NAME", "HicollieCollectorTest002"
+    );
 
     if (!GetHicollieCollectorTest002File(time)) {
         printf("GetHicollieCollectorTest002File, failed\n");
