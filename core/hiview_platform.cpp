@@ -144,6 +144,16 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
     // start load plugin bundles
     LoadPluginBundles();
 
+    // maple delay start eventsource
+    for (const auto& plugin : eventSourceList_) {
+        auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
+        if (sharedSource == nullptr) {
+            HIVIEW_LOGE("Fail to cast plugin to event source!");
+            continue;
+        }
+        StartEventSource(sharedSource);
+    }
+    eventSourceList_.clear();
     isReady_ = true;
     NotifyPluginReady();
     ScheduleCheckUnloadablePlugins();
@@ -194,7 +204,7 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
         InitPlugin(config, pluginInfo);
     }
 
-    // 4. start EventSource
+    // 4. delay start EventSource
     for (auto const& pluginInfo : pluginInfoList) {
         if (pluginInfo.isEventSource) {
             HIVIEW_LOGI("Start to Load eventSource %{public}s", pluginInfo.name.c_str());
@@ -204,7 +214,7 @@ void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
                 HIVIEW_LOGE("Fail to cast plugin to event source!");
                 continue;
             }
-            StartEventSource(sharedSource);
+            eventSourceList_.push_back(plugin);
         }
     }
 
@@ -912,7 +922,7 @@ std::shared_ptr<Plugin> HiviewPlatform::InstancePluginByProxy(std::shared_ptr<Pl
         for (auto& pipelineName : config.pipelineNameList) {
             sharedSource->AddPipeline(pipelines_[pipelineName]);
         }
-        StartEventSource(sharedSource);
+        eventSourceList_.push_back(plugin);
     }
     return plugin;
 }
