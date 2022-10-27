@@ -16,6 +16,7 @@
     <target name="FreezeDetectorTest">
         <preparer>
             <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/plugin_config -> /data/test/test_data/" src="res"/>
             <option name="push" value="base/freeze_rules.xml -> /data/test/test_data/" src="res"/>
         </preparer>
         <cleaner>

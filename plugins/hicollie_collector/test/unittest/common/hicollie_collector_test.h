@@ -19,8 +19,6 @@
 #include <sys/types.h>
 
 #include <gtest/gtest.h>
-
-#include "plugin.h"
 namespace OHOS {
 namespace HiviewDFX {
 class HicollieCollectorTest : public testing::Test {
@@ -33,9 +31,7 @@ public:
 
     static void TearDownTestCase();
 
-    bool SendServiceWaring(uint64_t time, std::shared_ptr<Plugin> plugin);
-
-    bool SendServiceBlock(uint64_t time, std::shared_ptr<Plugin> plugin);
+    bool SendEvent(uint64_t time, const std::string& name);
 
     bool GetHicollieCollectorTest001File(uint64_t time1, uint64_t time2);
 
