@@ -38,15 +38,7 @@ ohos_unittest("HicollieCollectorTest") {
 
   deps = [
     "$hiview_base:hiviewbase",
-    "$hiview_core:hiview_core",
-    "$hiview_core:sysevent_source",
-    "$hiview_plugin/eventlogger:eventlogger",
-    "$hiview_plugin/eventservice:sys_event_service",
-    "$hiview_plugin/freeze_detector:freeze_detector",
     "$hiview_plugin/hicollie_collector:hicollie_collector",
     "//third_party/googletest:gtest_main",
   ]
-
-  resource_config_file =
-      "$hiview_plugin/hicollie_collector/test/resource/ohos_test.xml"
 }
