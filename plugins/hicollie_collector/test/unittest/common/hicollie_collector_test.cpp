@@ -138,15 +138,17 @@ bool HicollieCollectorTest::GetHicollieCollectorTest001File(uint64_t time1, uint
 HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
 {
     auto time1 = TimeUtil::GetMilliseconds();
+    printf("HicollieCollectorTest001, time1 %s \n", std::to_string(time1).c_str());
     SendEvent(time1, "SERVICE_BLOCK");
 
     sleep(3);
 
     auto time2 = TimeUtil::GetMilliseconds();
-    SendEvent(time1, "SERVICE_WARNING");
+    printf("HicollieCollectorTest001, time2 %s \n", std::to_string(time2).c_str());
+    SendEvent(time2, "SERVICE_WARNING");
 
     if (!GetHicollieCollectorTest001File(time1, time2)) {
-        printf("GetFreezeDectorTest001File, failed\n");
+        printf("GetHicollieCollectorTest001File, failed\n");
         FAIL();
     }
 }
