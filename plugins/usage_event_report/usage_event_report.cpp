@@ -206,13 +206,13 @@ void UsageEventReport::SaveSysUsageEvent()
 
 void UsageEventReport::StartServiceByOption(const std::string& opt)
 {
+    HIVIEW_LOGI("start service, opt=%{public}s", opt.c_str());
     if (pid_t pid = fork(); pid < 0) {
         HIVIEW_LOGE("failed to fork child process");
         return;
     } else if (pid == 0) {
         const std::string serviceName = "usage_report";
         const std::string servicePath = "/system/bin/usage_report";
-        HIVIEW_LOGI("start service %{public}s, opt=%{public}s", serviceName.c_str(), opt.c_str());
         if (execl(servicePath.c_str(), serviceName.c_str(),
             "-p", workPath_.c_str(),
             "-t", std::to_string(lastReportTime_).c_str(),
@@ -223,7 +223,9 @@ void UsageEventReport::StartServiceByOption(const std::string& opt)
         }
     } else {
         if (waitpid(pid, nullptr, 0) != pid) {
-            HIVIEW_LOGE("failed to waitpid, err=%{public}d", errno);
+            HIVIEW_LOGE("failed to waitpid, pid=%{public}d, err=%{public}d", pid, errno);
+        } else {
+            HIVIEW_LOGI("succ to waitpid, pid=%{public}d", pid);
         }
     }
 }
