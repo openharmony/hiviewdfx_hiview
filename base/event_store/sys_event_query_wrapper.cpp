@@ -208,11 +208,12 @@ void SysEventQueryWrapper::IncreaseConcurrentCnt(const std::string& dbFile, cons
 {
     std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
     auto iter = concurrentQueries_.find(dbFile);
-    if (iter == concurrentQueries_.end()) {
-        concurrentQueries_[dbFile] = std::make_pair(DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT);
+    if (iter != concurrentQueries_.end()) {
+        auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
+        concurrentQueryCnt++;
+        return;
     }
-    auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
-    concurrentQueryCnt++;
+    concurrentQueries_[dbFile] = std::make_pair(DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT);
 }
 
 void SysEventQueryWrapper::DecreaseConcurrentCnt(const std::string& dbFile, const DbQueryTag& tag)

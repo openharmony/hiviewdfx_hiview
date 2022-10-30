@@ -27,6 +27,7 @@
 #include "iservice_registry.h"
 #include "ret_code.h"
 #include "running_status_log_util.h"
+#include "string_ex.h"
 #include "system_ability_definition.h"
 
 using namespace std;
@@ -36,7 +37,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
-constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768 at one time
+constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int HID_ROOT = 0;
 constexpr int HID_SHELL = 2000;
@@ -89,13 +90,6 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
         }
     }
     return false;
-}
-
-u16string ConvertToString16(const string& source)
-{
-    wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> converter;
-    u16string result = converter.from_bytes(source);
-    return result;
 }
 
 int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules, RegisteredListeners& listeners)
@@ -174,8 +168,8 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             isMatched ? "success" : "fail");
         if (isMatched) {
             int eventType = static_cast<int>(event->what_);
-            callback->Handle(ConvertToString16(event->domain_), ConvertToString16(event->eventName_),
-                eventType, ConvertToString16(event->jsonExtraInfo_));
+            callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_), eventType,
+                Str8ToStr16(event->jsonExtraInfo_));
         }
     }
 }
@@ -326,7 +320,7 @@ int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEven
     int32_t totalRecords = 0;
     while (result.HasNext()) {
         iter = result.Next();
-        u16string curJson = ConvertToString16(iter->jsonExtraInfo_);
+        u16string curJson = Str8ToStr16(iter->jsonExtraInfo_);
         int32_t jsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(u16string));
         if (jsonSize > MAX_TRANS_BUF) { // too large events, drop
             drops++;
