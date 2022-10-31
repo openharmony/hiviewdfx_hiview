@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,12 +15,13 @@
 
 #include "query_sys_event_callback_proxy.h"
 
+#include "ash_mem_utils.h"
 #include "errors.h"
 #include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D08, "HiView-QuerySysEventCallbackProxy" };
+static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-QuerySysEventCallbackProxy" };
 void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysEvent, const std::vector<int64_t>& seq)
 {
     auto remote = Remote();
@@ -33,8 +34,7 @@ void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysE
         HiLog::Error(LABEL, "write descriptor failed.");
         return;
     }
-
-    bool ret = data.WriteString16Vector(sysEvent);
+    auto ret = AshMemUtils::WriteBulkData(data, sysEvent);
     if (!ret) {
         HiLog::Error(LABEL, "write sys event failed.");
         return;
@@ -44,7 +44,6 @@ void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysE
         HiLog::Error(LABEL, "write sys seq failed.");
         return;
     }
-
     MessageParcel reply;
     MessageOption option = {MessageOption::TF_ASYNC};
     int32_t res = remote->SendRequest(ON_QUERY, data, reply, option);
