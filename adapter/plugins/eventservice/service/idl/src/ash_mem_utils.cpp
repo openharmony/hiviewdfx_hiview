@@ -19,8 +19,8 @@
 #include <locale>
 #include <string>
 
-#include "string_ex.h"
 #include "hilog/log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
