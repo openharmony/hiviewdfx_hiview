@@ -78,7 +78,7 @@ bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& doma
 bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
     const string& tag)
 {
-    for (auto& rule : rules) {
+    return any_of(rules.begin(), rules.end(), [domain, eventName, tag] (auto& rule) {
         if (IsMatchedRule(rule, domain, eventName, tag)) {
             string logFormat("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, ");
             logFormat.append("tag is %{public}s for matched");
@@ -88,8 +88,8 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
                 rule.tag.empty() ? "empty" : rule.tag.c_str());
             return true;
         }
-    }
-    return false;
+        return false;
+    });
 }
 
 int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules, RegisteredListeners& listeners)
