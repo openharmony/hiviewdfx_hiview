@@ -27,7 +27,7 @@ public:
     SmartParser(const SmartParser&) = delete;
     SmartParser& operator=(const SmartParser&) = delete;
 
-    static std::map<std::string, std::string> Analysis(const std::string& eventFile,
+    static std::map<std::string, std::string> Analysis(const std::string& eventPath,
         const std::string& analysisConfig, const std::string& eventType);
 };
 } // namespace HiviewDFX
