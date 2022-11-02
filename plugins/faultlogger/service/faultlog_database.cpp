@@ -120,11 +120,15 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    EventStore::Cond uidCond("UID", EventStore::Op::EQ, uid);
+    EventStore::Cond pidUpperCond("PID", EventStore::Op::EQ, pid);
+    EventStore::Cond pidLowerCond("pid_", EventStore::Op::EQ, pid);
+    EventStore::Cond uidUpperCond("UID", EventStore::Op::EQ, uid);
+    EventStore::Cond uidLowerCond("uid_", EventStore::Op::EQ, uid);
     EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
-    EventStore::Cond condLeft = uidCond.And(hiviewCond);
-    EventStore::Cond condRight("FAULT_TYPE", EventStore::Op::EQ, faultType);
-    EventStore::Cond condTotal = condLeft.And(condRight);
+    EventStore::Cond typeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
+    EventStore::Cond condLeft = hiviewCond.And(pidUpperCond).And(uidUpperCond).And(typeCond);
+    EventStore::Cond condRight = pidLowerCond.And(uidLowerCond).And(typeCond);
+    EventStore::Cond condTotal = condLeft.Or(condRight);
     (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     return query->Execute(1).HasNext();
 }
