@@ -55,7 +55,7 @@ public:
         DbQueryCallback queryCallback) override;
 
 private:
-    bool IsConditionCntValid(const DataQuery& query);
+    bool IsConditionCntValid(const DataQuery& query, const DbQueryTag& tag);
     bool IsQueryCntLimitValid(const DataQuery& query, const DbQueryTag& tag, const int limit,
         const DbQueryCallback& callback);
     bool IsQueryCostTimeValid(const DataQuery& query, const DbQueryTag& tag, const time_t before,
