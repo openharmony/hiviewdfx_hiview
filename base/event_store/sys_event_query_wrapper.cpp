@@ -29,6 +29,20 @@ time_t GetCurTime()
     (void)time(&current);
     return current;
 }
+
+int GetSubStrCount(const std::string& content, const std::string& sub)
+{
+    int cnt = 0;
+    if (content.empty() || sub.empty()) {
+        return cnt;
+    }
+    size_t start = 0;
+    while ((start = content.find(sub, start)) != std::string::npos) {
+        start += sub.size();
+        cnt++;
+    }
+    return cnt;
+}
 }
 
 namespace EventStore {
@@ -91,7 +105,7 @@ ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessI
     SysEventQuery::BuildDataQuery(dataQuery, limit);
     ResultSet resultSet;
     int queryErrorCode = -1;
-    (void)IsConditionCntValid(dataQuery);
+    (void)IsConditionCntValid(dataQuery, tag);
     if (!IsQueryCntLimitValid(dataQuery, tag, limit, queryCallback) ||
         !IsConcurrentQueryCntValid(GetDbFile(), tag, queryCallback) ||
         !IsQueryFrequenceValid(dataQuery, tag, GetDbFile(), callerInfo, queryCallback)) {
@@ -113,10 +127,10 @@ ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessI
     return resultSet;
 }
 
-bool SysEventQueryWrapper::IsConditionCntValid(const DataQuery& query)
+bool SysEventQueryWrapper::IsConditionCntValid(const DataQuery& query, const DbQueryTag& tag)
 {
     int conditionCntLimit = 8;
-    if (query.GetConditionCnt() > conditionCntLimit) {
+    if (tag.isInnerQuery && GetSubStrCount(query.ToString(), "domain_=") > conditionCntLimit) {
         QueryStatusLogUtil::LogTooManyQueryRules(query.ToString());
         return false;
     }
