@@ -238,7 +238,6 @@ void CrashValidator::CheckOutOfDateEvents()
 
 void CrashValidator::ReadServiceCrashStatus()
 {
-    ssize_t len;
     char kmsg[KMSG_SIZE];
     int fd = open("/dev/kmsg", O_RDONLY | O_NONBLOCK);
     if (fd == -1) {
@@ -247,6 +246,7 @@ void CrashValidator::ReadServiceCrashStatus()
     }
     lseek(fd, 0, 3); // 3 : SEEK_DATA
     while (true) {
+        ssize_t len;
         if (-1 == (len = read(fd, kmsg, sizeof(kmsg))) && errno == EPIPE) {
             continue;
         }

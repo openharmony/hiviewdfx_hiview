@@ -118,7 +118,6 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    std::list<FaultLogInfo> queryResult;
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::Cond pidUpperCond("PID", EventStore::Op::EQ, pid);
     EventStore::Cond pidLowerCond("pid_", EventStore::Op::EQ, pid);
