@@ -193,7 +193,7 @@ bool SysEventQueryWrapper::IsQueryFrequenceValid(const DataQuery& query, const D
         return true;
     }
     time_t queryFrequent = 1;
-    if ((current - processIter->second) > queryFrequent) {
+    if (abs(current - processIter->second) > queryFrequent) {
         execIter->second[queryProcessId] = current;
         return true;
     }
