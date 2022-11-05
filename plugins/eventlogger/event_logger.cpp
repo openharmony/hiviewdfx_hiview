@@ -60,6 +60,15 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
         PostEvent(sysEvent);
         return false;
     }
+
+    long pid = sysEvent->GetEventIntValue("PID");
+    pid = pid ? pid : sysEvent->GetPid();
+    std::string content = CommonUtils::GetProcNameByPid(pid);
+    if (content.empty()) {
+        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : pid %{public}d is invalid",
+            sysEvent->eventId_,  sysEvent->eventName_.c_str(), pid);
+        return false;
+    }
     EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
     sysEvent->eventName_ = configOut.name;
     sysEvent->SetValue("eventLog_action", configOut.action);
@@ -78,6 +87,17 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->jsonExtraInfo_.c_str());
+
+        long pid = sysEvent->GetEventIntValue("PID");
+        pid = pid ? pid : sysEvent->GetPid();
+        std::string content = CommonUtils::GetProcNameByPid(pid);
+        if (content.empty()) {
+            std::string packageName = sysEvent->GetEventValue("PACKAGE_NAME");
+            HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s :"
+                "packageName:%{public}s, pid %{public}d is invalid",
+                sysEvent->eventId_,  sysEvent->eventName_.c_str(), pid, packageName.c_str());
+            return;
+        }
         this->StartLogCollect(sysEvent);
         this->PostEvent(sysEvent);
     };
