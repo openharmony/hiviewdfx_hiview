@@ -174,6 +174,7 @@ std::string Vendor::MergeEventLog(
 
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::ostringstream body;
+    int nologCount = 0;
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
@@ -181,6 +182,7 @@ std::string Vendor::MergeEventLog(
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
             DumpEventInfo(body, HEADER, node);
+            ++nologCount;
             continue;
         }
 
@@ -207,10 +209,18 @@ std::string Vendor::MergeEventLog(
         ifs.close();
     }
 
+    if (nologCount >= list.size()) {
+        return "";
+    }
+
     int fd = logStore_->CreateLogFile(logName);
     if (fd < 0) {
         HIVIEW_LOGE("failed to create log file %{public}s.", logPath.c_str());
         return "";
+    }
+
+    if (nologCount > 0) {
+        FileUtil::SaveStringToFd(fd, "This file is only used for statistics, not for locating problems\n");
     }
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
