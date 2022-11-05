@@ -19,6 +19,9 @@ namespace OHOS {
 namespace HiviewDFX {
 bool SysEventQueryRule::Marshalling(Parcel& parcel) const
 {
+    if (!parcel.WriteUint32(eventType)) {
+        return false;
+    }
     if (!parcel.WriteUint32(ruleType)) {
         return false;
     }
@@ -36,6 +39,9 @@ SysEventQueryRule* SysEventQueryRule::Unmarshalling(Parcel& parcel)
     SysEventQueryRule* ret = new SysEventQueryRule();
     if (ret == nullptr) {
         return ret;
+    }
+    if (!parcel.ReadUint32(ret->eventType)) {
+        goto error;
     }
     if (!parcel.ReadUint32(ret->ruleType)) {
         goto error;

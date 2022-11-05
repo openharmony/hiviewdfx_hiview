@@ -25,7 +25,7 @@ static constexpr int32_t ERR_SYS_EVENT_SERVICE_NOT_FOUND = -11;
 
 static constexpr int32_t ERR_PARCEL_DATA_IS_NULL = -12;
 static constexpr int32_t ERR_REMOTE_SERVICE_IS_NULL = -13;
-static constexpr int32_t ERR_CAN_NOT_WRITE_DIESCRIPTOR = -14;
+static constexpr int32_t ERR_CAN_NOT_WRITE_DESCRIPTOR = -14;
 static constexpr int32_t ERR_CAN_NOT_WRITE_PARCEL = -15;
 static constexpr int32_t ERR_CAN_NOT_WRITE_REMOTE_OBJECT = -16;
 static constexpr int32_t ERR_CAN_NOT_SEND_REQ = -17;

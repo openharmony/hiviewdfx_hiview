@@ -31,6 +31,9 @@ bool SysEventRule::Marshalling(Parcel& parcel) const
     if (!parcel.WriteUint32(ruleType)) {
         return false;
     }
+    if (!parcel.WriteUint32(eventType)) {
+        return false;
+    }
     return true;
 }
 
@@ -50,6 +53,9 @@ SysEventRule* SysEventRule::Unmarshalling(Parcel& parcel)
         goto error;
     }
     if (!parcel.ReadUint32(ret->ruleType)) {
+        goto error;
+    }
+    if (!parcel.ReadUint32(ret->eventType)) {
         goto error;
     }
     return ret;

@@ -25,13 +25,13 @@ class SysEventRule : public Parcelable {
 public:
     SysEventRule() {};
     SysEventRule(const std::string& domain, const std::string& eventName,
-        const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
-        : domain(domain), eventName(eventName), tag(tag), ruleType(ruleType) {}
+        const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD, uint32_t eventType = 0)
+        : domain(domain), eventName(eventName), tag(tag), ruleType(ruleType), eventType(eventType) {}
     SysEventRule(const std::string& domain, const std::string& eventName,
-        uint32_t ruleType = RuleType::WHOLE_WORD)
-        : SysEventRule(domain, eventName, "", ruleType) {}
-    SysEventRule(const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD)
-        : SysEventRule("", "", tag, ruleType) {}
+        uint32_t ruleType = RuleType::WHOLE_WORD, uint32_t eventType = 0)
+        : SysEventRule(domain, eventName, "", ruleType, eventType) {}
+    SysEventRule(const std::string& tag, uint32_t ruleType = RuleType::WHOLE_WORD, uint32_t eventType = 0)
+        : SysEventRule("", "", tag, ruleType, eventType) {}
     ~SysEventRule() = default;
 
     bool Marshalling(Parcel& parcel) const override;
@@ -41,6 +41,7 @@ public:
     std::string eventName;
     std::string tag;
     uint32_t ruleType = RuleType::WHOLE_WORD;
+    uint32_t eventType = 0;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
