@@ -36,7 +36,6 @@ using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
 using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
 using QuerySysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
-using DomainNameTagMap = std::map<std::pair<std::string, std::string>, std::string>;
 using EventNames = std::vector<std::string>;
 using DomainsWithNames = std::unordered_map<std::string, EventNames>;
 using QueryArgs = std::map<int, DomainsWithNames>;
@@ -87,11 +86,15 @@ private:
     bool HasAccessPermission() const;
     void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    int GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
+    uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, const QueryTimeRange& timeRange,
         int32_t maxEvents, bool isFirstPartialQuery, OHOS::HiviewDFX::EventStore::ResultSet& result);
     int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
         const QuerySysEventCallbackPtrOhos& callback, QueryTimeRange& timeRange, int32_t& drops);
+    void BuildQueryArgs(QueryArgs& queryArgs, const std::string& domain, const std::string& eventName,
+        const uint32_t eventType) const;
+    bool HasDomainNameConditon(EventStore::Cond& domainNameConds,
+        const DomainsWithNames::value_type& domainNames) const;
 
 private:
     std::mutex mutex_;
@@ -99,7 +102,6 @@ private:
     RegisteredListeners registeredListeners_;
     bool isDebugMode_;
     SysEventCallbackPtrOhos debugModeCallback_;
-    DomainNameTagMap tagCache_;
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
