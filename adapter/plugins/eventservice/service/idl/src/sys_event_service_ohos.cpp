@@ -454,9 +454,12 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
     auto sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
     Cond timeCond, domainNameConds;
     timeCond.And(EventCol::TS, Op::GE, timeRange.first).And(EventCol::TS, Op::LT, timeRange.second);
-    bool hasDomainNameCond = any_of(queryArgIter->second.cbegin(), queryArgIter->second.cend(),
-        [this, &domainNameConds] (const DomainsWithNames::value_type& domainNames) {
-            return this->HasDomainNameConditon(domainNameConds, domainNames);
+    auto hasDomainNameCond = false;
+    for_each(queryArgIter->second.cbegin(), queryArgIter->second.cend(),
+        [this, &hasDomainNameCond, &domainNameConds] (const DomainsWithNames::value_type& domainNames) {
+            if (this->HasDomainNameConditon(domainNameConds, domainNames)) {
+                hasDomainNameCond = true;
+            }
         });
     if (hasDomainNameCond) {
         (*sysEventQuery).Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
