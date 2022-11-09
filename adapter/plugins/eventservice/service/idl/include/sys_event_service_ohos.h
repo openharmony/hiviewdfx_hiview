@@ -39,6 +39,7 @@ using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRul
 using EventNames = std::vector<std::string>;
 using DomainsWithNames = std::unordered_map<std::string, EventNames>;
 using QueryArgs = std::map<int, DomainsWithNames>;
+using QueryConds = std::map<std::pair<std::string, std::string>, OHOS::HiviewDFX::EventStore::Cond>;
 using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
 
 namespace OHOS {
@@ -84,17 +85,19 @@ public:
 
 private:
     bool HasAccessPermission() const;
-    void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs);
+    void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs, QueryConds& extConds);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    uint32_t QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter, const QueryTimeRange& timeRange,
+    uint32_t QuerySysEventMiddle(const std::shared_ptr<EventStore::SysEventQuery>& sysEventQuery,
         int32_t maxEvents, bool isFirstPartialQuery, OHOS::HiviewDFX::EventStore::ResultSet& result);
     int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
         const QuerySysEventCallbackPtrOhos& callback, QueryTimeRange& timeRange, int32_t& drops);
     void BuildQueryArgs(QueryArgs& queryArgs, const std::string& domain, const std::string& eventName,
         const uint32_t eventType) const;
     bool HasDomainNameConditon(EventStore::Cond& domainNameConds,
-        const DomainsWithNames::value_type& domainNames) const;
+        const DomainsWithNames::value_type& domainNames, const QueryConds& extConds) const;
+    std::shared_ptr<EventStore::SysEventQuery> BuildSysEventQuery(QueryArgs::const_iterator queryArgIter,
+        const QueryConds& extConds, const QueryTimeRange& timeRange) const;
 
 private:
     std::mutex mutex_;

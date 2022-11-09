@@ -25,6 +25,7 @@
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "json/json.h"
 #include "ret_code.h"
 #include "running_status_log_util.h"
 #include "string_ex.h"
@@ -44,6 +45,8 @@ constexpr int HID_SHELL = 2000;
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 constexpr uint32_t INVALID_EVENT_TYPE = 0;
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
+const std::string LOGIC_AND_COND = "and";
+const std::string LOGIC_OR_COND = "or";
 
 bool MatchContent(int type, const string& rule, const string& match)
 {
@@ -123,6 +126,129 @@ int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
         return ERR_TOO_MANY_QUERY_RULES;
     }
     return IPC_CALL_SUCCEED;
+}
+
+bool ParseJsonString(const Json::Value& root, const std::string& key, std::string& value)
+{
+    if (!root.isMember(key.c_str()) || !root[key.c_str()].isString()) {
+        return false;
+    }
+    value = root[key].asString();
+    return true;
+}
+
+Op GetOpEnum(const std::string& op)
+{
+    const std::unordered_map<std::string, Op> opMap = {
+        { "=", Op::EQ },
+        { "<", Op::LT },
+        { ">", Op::GT },
+        { "<=", Op::LE },
+        { ">=", Op::GE },
+    };
+    return opMap.find(op) == opMap.end() ? Op::NONE : opMap.at(op);
+}
+
+void SpliceConditionByLogic(Cond& condition, const Cond& subCond, const std::string& logic)
+{
+    if (logic == LOGIC_OR_COND) {
+        condition.Or(subCond);
+    } else {
+        condition.And(subCond);
+    }
+}
+
+bool ParseLogicCondition(const Json::Value& root, const std::string& logic, Cond& condition)
+{
+    if (!root.isMember(logic) || !root[logic].isArray()) {
+        HiLog::Error(LABEL, "ParseLogicCondition err1.");
+        return false;
+    }
+
+    Cond subCondition;
+    for (size_t i = 0; i < root[logic].size(); ++i) {
+        auto cond = root[logic][static_cast<int>(i)];
+        std::string param;
+        if (!ParseJsonString(cond, "param", param) || param.empty()) {
+            return false;
+        }
+        std::string op;
+        if (!ParseJsonString(cond, "op", op) || GetOpEnum(op) == Op::NONE) {
+            return false;
+        }
+        const char valueKey[] = "value";
+        if (!cond.isMember(valueKey)) {
+            return false;
+        }
+        if (cond[valueKey].isString()) {
+            std::string value = cond[valueKey].asString();
+            SpliceConditionByLogic(subCondition, Cond(param, GetOpEnum(op), value), logic);
+        } else if (cond[valueKey].isInt64()) {
+            int64_t value = cond[valueKey].asInt64();
+            SpliceConditionByLogic(subCondition, Cond(param, GetOpEnum(op), value), logic);
+        } else {
+            return false;
+        }
+    }
+    condition.And(subCondition);
+    return true;
+}
+
+bool ParseOrCondition(const Json::Value& root, Cond& condition)
+{
+    return ParseLogicCondition(root, LOGIC_OR_COND, condition);
+}
+
+bool ParseAndCondition(const Json::Value& root, Cond& condition)
+{
+    return ParseLogicCondition(root, LOGIC_AND_COND, condition);
+}
+
+bool ParseQueryConditionJson(const Json::Value& root, Cond& condition)
+{
+    const char condKey[] = "condition";
+    if (!root.isMember(condKey) || !root[condKey].isObject()) {
+        return false;
+    }
+    bool res = false;
+    if (ParseOrCondition(root[condKey], condition)) {
+        res = true;
+    }
+    if (ParseAndCondition(root[condKey], condition)) {
+        res = true;
+    }
+    return res;
+}
+
+bool ParseQueryCondition(const std::string& condStr, Cond& condition)
+{
+    if (condStr.empty()) {
+        return false;
+    }
+    Json::Value root;
+    Json::CharReaderBuilder jsonRBuilder;
+    Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
+    std::unique_ptr<Json::CharReader> const reader(jsonRBuilder.newCharReader());
+    JSONCPP_STRING errs;
+    if (!reader->parse(condStr.data(), condStr.data() + condStr.size(), &root, &errs)) {
+        HiLog::Error(LABEL, "failed to parse condition string: %{public}s.", condStr.c_str());
+        return false;
+    }
+    std::string version;
+    if (!ParseJsonString(root, "version", version)) {
+        HiLog::Error(LABEL, "failed to parser version.");
+        return false;
+    }
+    const std::set<std::string> versionSet = { "V1" }; // set is used for future expansion
+    if (versionSet.find(version) == versionSet.end()) {
+        HiLog::Error(LABEL, "version is invalid.");
+        return false;
+    }
+    if (!ParseQueryConditionJson(root, condition)) {
+        HiLog::Error(LABEL, "condition is invalid.");
+        return false;
+    }
+    return true;
 }
 }
 
@@ -387,7 +513,8 @@ void SysEventServiceOhos::BuildQueryArgs(QueryArgs& queryArgs, const std::string
     }
 }
 
-void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs)
+void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs,
+    QueryConds& extConds)
 {
     if (rules.empty()) {
         for (auto eventType : EVENT_TYPES) {
@@ -396,6 +523,11 @@ void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules
         return;
     }
     for (auto ruleIter = rules.cbegin(); ruleIter < rules.cend(); ++ruleIter) {
+        Cond extCond;
+        bool isCondValid = false;
+        if (ParseQueryCondition(ruleIter->condition, extCond)) {
+            isCondValid = true;
+        }
         for (auto nameIter = ruleIter->eventList.cbegin(); nameIter < ruleIter->eventList.cend(); ++nameIter) {
             std::string eventName = *nameIter;
             auto eventType = GetTypeByDomainAndName(ruleIter->domain, eventName);
@@ -406,8 +538,15 @@ void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules
                     ruleIter->domain.c_str(), eventName.c_str(), eventType, ruleIter->eventType);
                 continue;
             }
-            if (ruleIter->eventType != INVALID_EVENT_TYPE) {
+            if (isCondValid) {
+                extConds.insert({std::make_pair(ruleIter->domain, eventName), extCond});
+            }
+            if (ruleIter->eventType != INVALID_EVENT_TYPE) { // for query by type
                 BuildQueryArgs(queryArgs, ruleIter->domain, eventName, ruleIter->eventType);
+                continue;
+            }
+            if (eventType != INVALID_EVENT_TYPE) { // for query by domain and name
+                BuildQueryArgs(queryArgs, ruleIter->domain, eventName, eventType);
                 continue;
             }
             for (auto type : EVENT_TYPES) {
@@ -418,7 +557,7 @@ void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules
 }
 
 bool SysEventServiceOhos::HasDomainNameConditon(EventStore::Cond& domainNameConds,
-    const DomainsWithNames::value_type& domainNames) const
+    const DomainsWithNames::value_type& domainNames, const QueryConds& extConds) const
 {
     auto isDomainCondsEmpty = true;
     auto isNameCondsEmpty = true;
@@ -429,11 +568,15 @@ bool SysEventServiceOhos::HasDomainNameConditon(EventStore::Cond& domainNameCond
     }
     Cond nameConds;
     for_each(domainNames.second.cbegin(), domainNames.second.cend(),
-        [&nameConds, &isNameCondsEmpty] (const std::string& name) {
+        [&nameConds, &isNameCondsEmpty, &extConds, &domainNames] (const std::string& name) {
             if (name.empty()) {
                 return;
             }
-            nameConds.Or("name_", Op::EQ, name);
+            Cond nameCond("name_", Op::EQ, name);
+            if (auto pair = std::make_pair(domainNames.first, name); extConds.find(pair) != extConds.end()) {
+                nameCond.And(extConds.at(pair));
+            }
+            nameConds.Or(nameCond);
             isNameCondsEmpty = false;
         });
     if (isDomainCondsEmpty && isNameCondsEmpty) {
@@ -441,23 +584,24 @@ bool SysEventServiceOhos::HasDomainNameConditon(EventStore::Cond& domainNameCond
     }
     if (!isDomainCondsEmpty && !isNameCondsEmpty) {
         domainConds.And(nameConds);
-    } else if (isDomainCondsEmpty) {
+    } else if (isDomainCondsEmpty && !isNameCondsEmpty) {
         domainConds = nameConds;
     }
     domainNameConds.Or(domainConds);
     return true;
 }
 
-uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter,
-    const QueryTimeRange& timeRange, int32_t maxEvents, bool isFirstPartialQuery, ResultSet& result)
+std::shared_ptr<SysEventQuery> SysEventServiceOhos::BuildSysEventQuery(QueryArgs::const_iterator queryArgIter,
+    const QueryConds& extConds, const QueryTimeRange& timeRange) const
 {
-    auto sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
-    Cond timeCond, domainNameConds;
+    Cond timeCond;
     timeCond.And(EventCol::TS, Op::GE, timeRange.first).And(EventCol::TS, Op::LT, timeRange.second);
-    auto hasDomainNameCond = false;
+    auto sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
+    Cond domainNameConds;
+    bool hasDomainNameCond = false;
     for_each(queryArgIter->second.cbegin(), queryArgIter->second.cend(),
-        [this, &hasDomainNameCond, &domainNameConds] (const DomainsWithNames::value_type& domainNames) {
-            if (this->HasDomainNameConditon(domainNameConds, domainNames)) {
+        [this, &domainNameConds, &hasDomainNameCond, &extConds] (const DomainsWithNames::value_type& domainNames) {
+            if (this->HasDomainNameConditon(domainNameConds, domainNames, extConds)) {
                 hasDomainNameCond = true;
             }
         });
@@ -466,6 +610,12 @@ uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator quer
     } else {
         (*sysEventQuery).Where(timeCond).Order(EventCol::TS, true);
     }
+    return sysEventQuery;
+}
+
+uint32_t SysEventServiceOhos::QuerySysEventMiddle(const std::shared_ptr<SysEventQuery>& sysEventQuery,
+    int32_t maxEvents, bool isFirstPartialQuery, ResultSet& result)
+{
     std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
     processName = processName.empty() ? "unknown" : processName;
     QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
@@ -495,7 +645,8 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
         return checkRet;
     }
     QueryArgs queryArgs;
-    ParseQueryArgs(rules, queryArgs);
+    QueryConds extConds;
+    ParseQueryArgs(rules, queryArgs, extConds);
     if (queryArgs.empty()) {
         HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
         return ERR_DOMIAN_INVALID;
@@ -510,8 +661,8 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
     while (remainCnt > 0) {
         ResultSet ret;
         auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
-        uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, queryTimeRange, queryLimit,
-            isFirstPartialQuery, ret);
+        uint32_t queryRetCode = QuerySysEventMiddle(BuildSysEventQuery(queryTypeIter, extConds, queryTimeRange),
+            queryLimit, isFirstPartialQuery, ret);
         if (queryRetCode != IPC_CALL_SUCCEED) {
             return queryRetCode;
         }
