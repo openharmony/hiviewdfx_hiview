@@ -28,6 +28,9 @@ bool SysEventQueryRule::Marshalling(Parcel& parcel) const
     if (!parcel.WriteString(domain)) {
         return false;
     }
+    if (!parcel.WriteString(condition)) {
+        return false;
+    }
     if (!parcel.WriteStringVector(eventList)) {
         return false;
     }
@@ -47,6 +50,9 @@ SysEventQueryRule* SysEventQueryRule::Unmarshalling(Parcel& parcel)
         goto error;
     }
     if (!parcel.ReadString(ret->domain)) {
+        goto error;
+    }
+    if (!parcel.ReadString(ret->condition)) {
         goto error;
     }
     if (!parcel.ReadStringVector(&(ret->eventList))) {
