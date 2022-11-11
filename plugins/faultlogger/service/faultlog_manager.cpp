@@ -106,6 +106,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
         return "";
     }
 
+    FaultLogger::WriteDfxLogToFile(fd);
     FaultLogger::WriteFaultLogToFile(fd, info.faultLogType, info.sectionMap);
     FaultLogger::WriteLogToFile(fd, info.logPath);
     close(fd);
