@@ -46,7 +46,7 @@ ohos_source_set("usage_event_report") {
   external_deps = [
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "power_manager:powermgr_client",
   ]
 }

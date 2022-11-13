@@ -45,17 +45,9 @@ ohos_unittest("HiviewSATest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  if (is_standard_system) {
-    external_deps = [
-      "communication_L2:ipc_core",
-      "safwk:system_ability_fwk",
-      "samgr:samgr_proxy",
-    ]
-  } else {
-    external_deps = [
-      "ipc:ipc_core",
-      "safwk:system_ability_fwk",
-      "samgr:samgr_proxy",
-    ]
-  }
+  external_deps = [
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
 }
