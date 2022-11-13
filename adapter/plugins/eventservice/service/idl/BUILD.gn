@@ -58,7 +58,7 @@ ohos_source_set("sys_event_service_ohos_common") {
   external_deps = [
     "c_utils:utils",
     "hilog_native:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -91,7 +91,7 @@ ohos_source_set("sys_event_service_ohos") {
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "hilog_native:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

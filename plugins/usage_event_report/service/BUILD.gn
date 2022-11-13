@@ -54,7 +54,7 @@ ohos_executable("usage_report") {
     "c_utils:utils",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "time_service:time_client",
   ]

@@ -63,7 +63,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
   external_deps = [
     "init:libbeget_proxy",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

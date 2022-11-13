@@ -41,7 +41,7 @@ ohos_source_set("sys_event_service_adapter") {
 
   external_deps = [
     "hilog_native:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

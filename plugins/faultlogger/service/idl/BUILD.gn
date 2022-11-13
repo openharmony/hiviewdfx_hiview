@@ -18,10 +18,7 @@ config("faultlogger_service_ohos_private_config") {
 }
 
 config("faultlogger_service_impl_config") {
-  include_dirs = [
-    "include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-  ]
+  include_dirs = [ "include" ]
 }
 
 ohos_source_set("faultlogger_service_ohos_common") {
@@ -47,7 +44,6 @@ ohos_source_set("faultlogger_service_ohos_common") {
     "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_single",
-    "samgr:samgr_proxy",
   ]
 }
 
@@ -72,7 +68,7 @@ ohos_source_set("faultlogger_service_impl") {
   external_deps = [
     "c_utils:utils",
     "hilog_native:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
