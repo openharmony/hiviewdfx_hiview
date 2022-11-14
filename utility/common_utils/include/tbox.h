@@ -37,6 +37,7 @@ public:
     static std::string GetStackName(std::string line);
     static bool HasCausedBy(const std::string& line);
     static void FilterTrace(std::map<std::string, std::string>& eventInfo);
+    static bool WaitForDoneFile(const std::string& file, unsigned int timeout);
 
 public:
     static const std::string ARRAY_STR;

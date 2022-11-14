@@ -12,34 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef COMMON_DEFS_H
-#define COMMON_DEFS_H
+#ifndef BBOX_DETECTOR_UNIT_TEST
+#define BBOX_DETECTOR_UNIT_TEST
 
-#include <sys/stat.h>
+#include <gtest/gtest.h>
 #include <string>
-
-#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static const std::string UNKNOWN_STR = "unknown";
-static const std::string PARAMETER_ENDSTACK = "END_STACK";
-static constexpr auto SMART_PARSER_PATH = "/system/etc/hiview/";
-// buffer size
-static const int HAS_LEN = 128;
-static const int MAX_BUFFER_SIZE = 8 * 1024 * 1024; // 8:8M
-
-enum ErrorCode {
-    FAILURE = -1,
-    SUCCESS = 0
-};
-
-enum FingerPrintMode {
-    FP_FILE = 0,
-    FP_BUFFER,
-    FP_ATTR
+class BBoxDetectorUnitTest : public testing::Test {
+public:
+    static void SetUpTestCase(void);
+    static void TearDownTestCase(void);
+    void SetUp();
+    void TearDown();
 };
 } // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // COMMON_DEFS_H
+#endif // BBOX_DETECTOR_UNIT_TEST

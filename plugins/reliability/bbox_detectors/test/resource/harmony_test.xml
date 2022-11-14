@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration ver="2.0">
+    <target name="BBoxDetectorUnitTest">
+        <preparer>
+            <option name="push" value="common -> /data/test/test_data/BBoxDetector/" src="res"/>
+        </preparer>
+    </target>
+    <target name="BBoxDetectorModuleTest">
+        <preparer>
+            <option name="push" value="common -> /data/test/test_data/BBoxDetector/" src="res"/>
+        </preparer>
+    </target>
+</configuration>

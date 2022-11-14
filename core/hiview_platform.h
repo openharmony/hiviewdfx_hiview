@@ -145,6 +145,7 @@ private:
 
     // Listener data structure:<pluginName, <domain_eventName, Plugin>>
     std::unordered_map<std::string, std::shared_ptr<ListenerInfo>> listeners_;
+    std::vector<std::shared_ptr<Plugin>> eventSourceList_;
 
     // the max waited time before destroy plugin instance
     const time_t DEFAULT_IDLE_TIME = 300; // 300 seconds
