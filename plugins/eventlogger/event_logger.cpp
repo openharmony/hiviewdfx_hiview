@@ -57,7 +57,6 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
         HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : EventLogger don't care and "
             "don't block other processes",
             sysEvent->eventId_,  sysEvent->eventName_.c_str());
-        PostEvent(sysEvent);
         return false;
     }
     EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
