@@ -638,10 +638,12 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
 {
     if (!HasAccessPermission()) {
         HiLog::Error(LABEL, "access permission check failed.");
+        callback->OnComplete(ERR_NO_PERMISSION, 0);
         return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventQueryingValidity(rules);
     if (checkRet != IPC_CALL_SUCCEED) {
+        callback->OnComplete(checkRet, 0);
         return checkRet;
     }
     QueryArgs queryArgs;
@@ -649,6 +651,7 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
     ParseQueryArgs(rules, queryArgs, extConds);
     if (queryArgs.empty()) {
         HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
+        callback->OnComplete(ERR_DOMIAN_INVALID, 0);
         return ERR_DOMIAN_INVALID;
     }
     auto realBeginTime = beginTime < 0 ? 0 : beginTime;
@@ -664,6 +667,7 @@ int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t m
         uint32_t queryRetCode = QuerySysEventMiddle(BuildSysEventQuery(queryTypeIter, extConds, queryTimeRange),
             queryLimit, isFirstPartialQuery, ret);
         if (queryRetCode != IPC_CALL_SUCCEED) {
+            callback->OnComplete(queryRetCode, totalEventCnt);
             return queryRetCode;
         }
         auto dropCnt = 0;
