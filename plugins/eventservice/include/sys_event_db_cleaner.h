@@ -26,8 +26,8 @@ public:
 
 private:
     static void TryToCleanDb(EventStore::StoreType type, const std::pair<int, int>& config);
-    static int CleanDbByHour(EventStore::StoreType type, int64_t hour);
     static int CleanDbByTime(EventStore::StoreType type, int64_t time);
+    static void DeleteDb(EventStore::StoreType type);
 }; // SysEventDbCleaner
 } // namespace HiviewDFX
 } // namespace OHOS

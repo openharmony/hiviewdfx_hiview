@@ -15,6 +15,7 @@
 
 #include "sys_event_db_cleaner.h"
 
+#include <cinttypes>
 #include <map>
 
 #include "logger.h"
@@ -33,6 +34,8 @@ const std::map<StoreType, std::pair<int, int>> CLEAN_CONFIG_MAP = {
     { StoreType::STATISTIC, { 200000, 30 * 24 } },  // statistic event, maxNum: 200k, maxTime: 30 days
     { StoreType::SECURITY, { 30000, 90 * 24} },     // security event, maxNum: 30k, maxTime: 90 days
 };
+const int64_t MILLISECS_PER_HOUR = TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
+const int64_t DELETE_LIMIT = 10000;
 }
 
 void SysEventDbCleaner::TryToClean()
@@ -53,19 +56,35 @@ void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& 
     if (curNum <= (config.first + config.first * delPct)) {
         return;
     }
-    double curDelPct = 0;
-    int64_t saveHour = config.second;
-    while (saveHour >= 0) {
-        if (int result = CleanDbByHour(type, saveHour); result != 0) {
-            HIVIEW_LOGE("failed to clean db, saveHour=%{public}d, err=%{public}d", saveHour, result);
+
+    int64_t delEndTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
+    int saveHour = config.second;
+    int64_t delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+    bool isDeleteLess = false;
+    while (curNum > config.first && delTime <= delEndTime) {
+        auto delNum = CleanDbByTime(type, delTime);
+        if (delNum < 0) { // db is corrupt
+            HIVIEW_LOGW("failed to clean db, err=%{public}d", delNum);
+            DeleteDb(type);
             return;
         }
-        if (curNum = SysEventDao::GetNum(type); curNum < config.first) {
-            HIVIEW_LOGI("succ to clean db, curNum=%{public}d", curNum);
+        curNum = SysEventDao::GetNum(type);
+        if (curNum < 0) {
+            HIVIEW_LOGW("failed to get num from db, err=%{public}d", curNum);
+            DeleteDb(type);
             return;
         }
-        curDelPct += delPct;
-        saveHour = config.second - config.second * curDelPct;
+        if (delNum < DELETE_LIMIT) { // change to the next time interval
+            saveHour -= isDeleteLess ? 1 : (config.second * delPct); // change from 10% to 1h
+            const int delBdyHour = 24;
+            if (saveHour < delBdyHour && !isDeleteLess) {
+                saveHour = delBdyHour;
+                isDeleteLess = true;
+            }
+            delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+        }
+        HIVIEW_LOGD("cleaning db: curNum=%{public}d, delTime=%{public}" PRId64 ", delEndTime=%{public}" PRId64,
+            curNum, delTime, delEndTime);
     }
     HIVIEW_LOGI("end to clean db, curNum=%{public}d", curNum);
 }
@@ -73,14 +92,15 @@ void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& 
 int SysEventDbCleaner::CleanDbByTime(StoreType type, int64_t time)
 {
     auto sysEventQuery = SysEventDao::BuildQuery(type);
-    (*sysEventQuery).Where(EventCol::TS, EventStore::Op::LT, time);
-    return SysEventDao::Delete(sysEventQuery, 10000); // 10000 means delete limit
+    sysEventQuery->Where(EventCol::TS, EventStore::Op::LE, time);
+    return SysEventDao::Delete(sysEventQuery, DELETE_LIMIT);
 }
 
-int SysEventDbCleaner::CleanDbByHour(StoreType type, int64_t hour)
+void SysEventDbCleaner::DeleteDb(StoreType type)
 {
-    int64_t now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
-    return CleanDbByTime(type, now - hour * 3600000); // 3600000 means ms per hour
+    if (SysEventDao::DeleteDB(type) != 0) {
+        HIVIEW_LOGE("failed to delete db file, type=%{public}d", type);
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
