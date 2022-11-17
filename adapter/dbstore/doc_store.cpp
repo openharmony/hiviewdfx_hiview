@@ -159,7 +159,7 @@ FINISH:
         return MapErrorCode(rc);
     }
     HiLog::Debug(LABEL, "delete num=%{public}" PRId64, ux.cnt);
-    return 0;
+    return ux.cnt;
 }
 
 int DocStore::GetNum()
