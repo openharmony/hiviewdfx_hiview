@@ -19,11 +19,15 @@
 #include <cctype>
 #include <fstream>
 #include <map>
+#include <cstdlib>
 
+#include "file_util.h"
 #include "flat_json_parser.h"
+#include "hiview_global.h"
 #include "logger.h"
 #include "parameter.h"
 #include "sys_event_query.h"
+#include "sys_event_service_adapter.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -43,6 +47,8 @@ constexpr char TYPE[] = "type";
 constexpr char TYPE_[] = "type_";
 constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
+constexpr char SEQ_[] = "seq_";
+constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
 const std::map<std::string, int> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
@@ -125,6 +131,8 @@ EventJsonParser::EventJsonParser(const std::string& path)
     if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, nullptr) != 0) {
         HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
     }
+
+    ReadSeqFromFile(curSeq);
 }
 
 std::string EventJsonParser::GetTagByDomainAndName(const std::string& domain, const std::string& name) const
@@ -177,6 +185,7 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
         return false; // ignore duplicate sys event
     }
     AppendExtensiveInfo(eventJson, jsonStr, curSysEventId);
+    WriteSeqToFile(++curSeq);
     event->jsonExtraInfo_ = jsonStr;
     return true;
 }
@@ -203,6 +212,9 @@ void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::str
     if (!testTypeConfigured.empty()) {
         parser.AppendStringValue(TEST_TYPE_KEY, testTypeConfigured);
     }
+
+    // add seq to sys event and then persist it into local file
+    parser.AppendUInt64Value(SEQ_, static_cast<uint64_t>(curSeq));
 
     jsonStr = parser.Print();
 }
@@ -338,6 +350,37 @@ NAME_INFO_MAP EventJsonParser::ParseNameConfig(const Json::Value& domainJson) co
         allNames[key] = ParseBaseConfig(value);
     });
     return allNames;
+}
+
+std::string EventJsonParser::GetSequenceFile() const
+{
+    std::string workPath = HiviewGlobal::GetInstance()->GetHiViewDirectory(
+        HiviewContext::DirectoryType::WORK_DIRECTORY);
+    if (workPath.back() != '/') {
+        workPath = workPath + "/";
+    }
+    return workPath + "sys_event_db/" + SEQ_PERSISTS_FILE_NAME;
+}
+
+void EventJsonParser::ReadSeqFromFile(int64_t& seq)
+{
+    std::string content;
+    std::string seqFile = GetSequenceFile();
+    if (!FileUtil::LoadStringFromFile(seqFile, content) && !content.empty()) {
+        HIVIEW_LOGE("failed to read sequence value from %{public}s.", seqFile.c_str());
+        return;
+    }
+    seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
+}
+
+void EventJsonParser::WriteSeqToFile(int64_t seq) const
+{
+    std::string seqFile = GetSequenceFile();
+    std::string content = std::to_string(seq);
+    if (!FileUtil::SaveStringToFile(seqFile, content, true)) {
+        HIVIEW_LOGE("failed to write sequence %{public}s to %{public}s.", content.c_str(), seqFile.c_str());
+    }
+    SysEventServiceAdapter::UpdateEventSeq(seq);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

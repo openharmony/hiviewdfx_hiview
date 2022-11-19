@@ -18,6 +18,7 @@
 #include "errors.h"
 #include "hilog/log.h"
 #include "parcelable_vector_rw.h"
+#include "query_argument.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -67,36 +68,25 @@ int32_t SysEventServiceStub::HandleRemoveSysEventListener(MessageParcel& data,
 int32_t SysEventServiceStub::HandleQueryEvent(MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
-    int64_t beginTime = 0;
-    bool ret = data.ReadInt64(beginTime);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel read begin time failed.");
-        return ERR_FLATTEN_OBJECT;
-    }
-    int64_t endTime = 0;
-    ret = data.ReadInt64(endTime);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel read end time failed.");
-        return ERR_FLATTEN_OBJECT;
-    }
-    int32_t maxEvents = 0;
-    ret = data.ReadInt32(maxEvents);
-    if (!ret) {
-        HiLog::Error(LABEL, "parcel read max events failed.");
+    QueryArgument* queryArgument = data.ReadParcelable<QueryArgument>();
+    if (queryArgument == nullptr) {
+        HiLog::Error(LABEL, "parcel read query arguments failed.");
         return ERR_FLATTEN_OBJECT;
     }
     std::vector<SysEventQueryRule> queryRules;
-    ret = ReadVectorFromParcel(data, queryRules);
+    auto ret = ReadVectorFromParcel(data, queryRules);
     if (!ret) {
         HiLog::Error(LABEL, "parcel read query rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
     if (remoteObject == nullptr) {
+        HiLog::Error(LABEL, "parcel read query callback failed.");
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IQuerySysEventCallback> callback = iface_cast<IQuerySysEventCallback>(remoteObject);
-    ret = reply.WriteInt32(Query(beginTime, endTime, maxEvents, queryRules, callback));
+    ret = reply.WriteInt32(Query(*queryArgument, queryRules, callback));
+    delete queryArgument;
     if (!ret) {
         HiLog::Error(LABEL, "parcel write return-value of QuerySysEvent failed.");
         return ERR_FLATTEN_OBJECT;

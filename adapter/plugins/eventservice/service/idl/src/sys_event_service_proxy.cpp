@@ -18,6 +18,7 @@
 #include "errors.h"
 #include "hilog/log.h"
 #include "parcelable_vector_rw.h"
+#include "query_argument.h"
 #include "ret_code.h"
 
 namespace OHOS {
@@ -101,8 +102,8 @@ int32_t SysEventServiceProxy::RemoveListener(const sptr<ISysEventCallback> &call
     return result;
 }
 
-int32_t SysEventServiceProxy::Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
-    const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback)
+int32_t SysEventServiceProxy::Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
+    const sptr<IQuerySysEventCallback>& callback)
 {
     auto remote = Remote();
     if (remote == nullptr) {
@@ -114,10 +115,13 @@ int32_t SysEventServiceProxy::Query(int64_t beginTime, int64_t endTime, int32_t 
         HiLog::Error(LABEL, "write descriptor failed.");
         return ERR_CAN_NOT_WRITE_DESCRIPTOR;
     }
-    bool ret = data.WriteInt64(beginTime) && data.WriteInt64(endTime) &&
-        data.WriteInt32(maxEvents) && WriteVectorToParcel(data, rules);
+    if (!data.WriteParcelable(&queryArgument)) {
+        HiLog::Error(LABEL, "parcel write query arguments failed.");
+        return ERR_CAN_NOT_WRITE_PARCEL;
+    }
+    bool ret = WriteVectorToParcel(data, rules);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write params failed.");
+        HiLog::Error(LABEL, "parcel write query rules failed.");
         return ERR_CAN_NOT_WRITE_PARCEL;
     }
     if (callback == nullptr) {

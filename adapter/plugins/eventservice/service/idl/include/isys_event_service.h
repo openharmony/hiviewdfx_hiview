@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include "iquery_sys_event_callback.h"
 #include "iremote_broker.h"
 #include "isys_event_callback.h"
+#include "query_argument.h"
 #include "sys_event_query_rule.h"
 #include "sys_event_rule.h"
 
@@ -31,8 +32,8 @@ public:
     virtual int32_t AddListener(const std::vector<SysEventRule>& rules,
         const sptr<ISysEventCallback>& callback) = 0;
     virtual int32_t RemoveListener(const sptr<ISysEventCallback>& callback) = 0;
-    virtual int32_t Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
-        const std::vector<SysEventQueryRule>& rules, const sptr<IQuerySysEventCallback>& callback) = 0;
+    virtual int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
+        const sptr<IQuerySysEventCallback>& callback) = 0;
     virtual int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) = 0;
 
     enum {

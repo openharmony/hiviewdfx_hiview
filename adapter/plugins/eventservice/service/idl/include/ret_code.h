@@ -34,7 +34,7 @@ static constexpr int32_t ERR_NO_PERMISSION = -19;
 static constexpr int32_t ERR_LISTENER_STATUS_INVALID = -20;
 static constexpr int32_t ERR_LISTENERS_EMPTY = -21;
 static constexpr int32_t ERR_ADD_DEATH_RECIPIENT = -22;
-static constexpr int32_t ERR_DOMIAN_INVALID = -23;
+static constexpr int32_t ERR_QUERY_RULE_INVALID = -23;
 static constexpr int32_t ERR_DEBUG_MODE_SET_REPEAT = -24;
 
 static constexpr int32_t ERR_TOO_MANY_WATCH_RULES = -25;

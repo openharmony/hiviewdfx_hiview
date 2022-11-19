@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,49 +13,49 @@
  * limitations under the License.
  */
 
-#include "sys_event_query_rule.h"
+#include "query_argument.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-bool SysEventQueryRule::Marshalling(Parcel& parcel) const
+bool QueryArgument::Marshalling(Parcel& parcel) const
 {
-    if (!parcel.WriteUint32(eventType)) {
+    if (!parcel.WriteInt64(beginTime)) {
         return false;
     }
-    if (!parcel.WriteUint32(ruleType)) {
+    if (!parcel.WriteInt64(endTime)) {
         return false;
     }
-    if (!parcel.WriteString(domain)) {
+    if (!parcel.WriteInt32(maxEvents)) {
         return false;
     }
-    if (!parcel.WriteString(condition)) {
+    if (!parcel.WriteInt64(fromSeq)) {
         return false;
     }
-    if (!parcel.WriteStringVector(eventList)) {
+    if (!parcel.WriteInt64(toSeq)) {
         return false;
     }
     return true;
 }
 
-SysEventQueryRule* SysEventQueryRule::Unmarshalling(Parcel& parcel)
+QueryArgument* QueryArgument::Unmarshalling(Parcel& parcel)
 {
-    SysEventQueryRule* ret = new(std::nothrow) SysEventQueryRule();
+    QueryArgument* ret = new(std::nothrow) QueryArgument();
     if (ret == nullptr) {
         return ret;
     }
-    if (!parcel.ReadUint32(ret->eventType)) {
+    if (!parcel.ReadInt64(ret->beginTime)) {
         goto error;
     }
-    if (!parcel.ReadUint32(ret->ruleType)) {
+    if (!parcel.ReadInt64(ret->endTime)) {
         goto error;
     }
-    if (!parcel.ReadString(ret->domain)) {
+    if (!parcel.ReadInt32(ret->maxEvents)) {
         goto error;
     }
-    if (!parcel.ReadString(ret->condition)) {
+    if (!parcel.ReadInt64(ret->fromSeq)) {
         goto error;
     }
-    if (!parcel.ReadStringVector(&(ret->eventList))) {
+    if (!parcel.ReadInt64(ret->toSeq)) {
         goto error;
     }
     return ret;
