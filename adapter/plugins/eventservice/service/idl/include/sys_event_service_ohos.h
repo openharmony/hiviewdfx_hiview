@@ -21,8 +21,10 @@
 #include <unordered_map>
 
 #include "event.h"
+#include "event_query_wrapper_builder.h"
 #include "iquery_sys_event_callback.h"
 #include "isys_event_callback.h"
+#include "query_argument.h"
 #include "singleton.h"
 #include "sys_event_dao.h"
 #include "sys_event_query.h"
@@ -36,10 +38,6 @@ using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
 using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
 using QuerySysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
-using EventNames = std::vector<std::string>;
-using DomainsWithNames = std::unordered_map<std::string, EventNames>;
-using QueryArgs = std::map<int, DomainsWithNames>;
-using QueryConds = std::map<std::pair<std::string, std::string>, OHOS::HiviewDFX::EventStore::Cond>;
 using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
 
 namespace OHOS {
@@ -47,7 +45,6 @@ namespace HiviewDFX {
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
 using GetTagByDomainNameFunc = std::function<std::string(std::string, std::string)>;
 using GetTypeByDomainNameFunc = std::function<int(std::string, std::string)>;
-using QueryTimeRange = std::pair<int64_t, int64_t>;
 
 class SysEventServiceBase {
 };
@@ -73,10 +70,11 @@ public:
     static SysEventServiceBase* GetSysEventService(
         OHOS::HiviewDFX::SysEventServiceBase* service = nullptr);
     void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
+    void UpdateEventSeq(int64_t seq);
     int32_t AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
     int32_t RemoveListener(const SysEventCallbackPtrOhos& callback) override;
-    int32_t Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
-        const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback) override;
+    int32_t Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
+        const QuerySysEventCallbackPtrOhos& callback) override;
     int32_t SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
@@ -85,19 +83,12 @@ public:
 
 private:
     bool HasAccessPermission() const;
-    void ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs, QueryConds& extConds);
+    bool BuildEventQuery(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
+        std::shared_ptr<EventQueryWrapperBuilder> builder);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    uint32_t QuerySysEventMiddle(const std::shared_ptr<EventStore::SysEventQuery>& sysEventQuery,
-        int32_t maxEvents, bool isFirstPartialQuery, OHOS::HiviewDFX::EventStore::ResultSet& result);
-    int64_t TransSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
-        const QuerySysEventCallbackPtrOhos& callback, QueryTimeRange& timeRange, int32_t& drops);
-    void BuildQueryArgs(QueryArgs& queryArgs, const std::string& domain, const std::string& eventName,
-        const uint32_t eventType) const;
-    bool HasDomainNameConditon(EventStore::Cond& domainNameConds,
-        const DomainsWithNames::value_type& domainNames, const QueryConds& extConds) const;
-    std::shared_ptr<EventStore::SysEventQuery> BuildSysEventQuery(QueryArgs::const_iterator queryArgIter,
-        const QueryConds& extConds, const QueryTimeRange& timeRange) const;
+    int64_t TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
+        const QuerySysEventCallbackPtrOhos& callback, std::shared_ptr<BaseEventQueryWrapper> wrapper, int32_t& drops);
 
 private:
     std::mutex mutex_;
@@ -108,6 +99,7 @@ private:
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
+    int64_t curSeq;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

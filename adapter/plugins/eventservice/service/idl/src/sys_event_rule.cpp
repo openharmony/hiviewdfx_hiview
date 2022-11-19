@@ -39,7 +39,7 @@ bool SysEventRule::Marshalling(Parcel& parcel) const
 
 SysEventRule* SysEventRule::Unmarshalling(Parcel& parcel)
 {
-    SysEventRule* ret = new SysEventRule();
+    SysEventRule* ret = new(std::nothrow) SysEventRule();
     if (ret == nullptr) {
         return ret;
     }
