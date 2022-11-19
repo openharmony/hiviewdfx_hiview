@@ -30,6 +30,7 @@ static const std::vector<ParseItem> PARSE_ORDER = {
     {"name_",       ":\"",  "\"",   nullptr, STATE_PARSING_NAME,            true},
     {"type_",       ":",    ",",    nullptr, STATE_PARSING_TYPE,            true},
     {"time_",       ":",    ",",    nullptr, STATE_PARSING_TIME,            true},
+    {"seq_",        ":",    ",",    "}",     STATE_PARSING_EVENT_SEQ,       true},
     {"tz_",         ":\"",  "\"",   nullptr, STATE_PARSING_TZONE,           true},
     {"pid_",        ":",    ",",    nullptr, STATE_PARSING_PID,             true},
     {"tid_",        ":",    ",",    nullptr, STATE_PARSING_TID,             true},
@@ -142,6 +143,9 @@ void SysEvent::InitialMember(ParseStatus status, const std::string &content)
         case STATE_PARSING_TIME:
             happenTime_ = static_cast<uint64_t>(std::atoll(content.c_str()));
             break;
+        case STATE_PARSING_EVENT_SEQ:
+            eventSeq_ = static_cast<int64_t>(std::atoll(content.c_str()));
+            break;
         case STATE_PARSING_TZONE:
             tz_ = std::atoi(content.c_str());
             break;
@@ -179,6 +183,11 @@ void SysEvent::SetSeq(int64_t seq)
 int64_t SysEvent::GetSeq() const
 {
     return seq_;
+}
+
+int64_t SysEvent::GetEventSeq() const
+{
+    return eventSeq_;
 }
 
 int32_t SysEvent::GetPid() const
@@ -283,6 +292,7 @@ SysEventCreator::SysEventCreator(const std::string &domain, const std::string &e
     SetKeyValue("type_", static_cast<int>(type));
     SetKeyValue("time_", TimeUtil::GetMilliseconds());
     SetKeyValue("tz_", TimeUtil::GetTimeZone());
+    SetKeyValue("seq_", 0);
     SetKeyValue("pid_", getpid());
     SetKeyValue("tid_", gettid());
     SetKeyValue("uid_", getuid());

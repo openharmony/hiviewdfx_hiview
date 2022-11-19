@@ -52,7 +52,7 @@ void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysE
     }
 }
 
-void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total)
+void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total, int64_t seq)
 {
     auto remote = Remote();
     if (remote == nullptr) {
@@ -67,6 +67,11 @@ void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total)
     bool ret = data.WriteInt32(reason) && data.WriteInt32(total);
     if (!ret) {
         HiLog::Error(LABEL, "write params failed.");
+        return;
+    }
+    ret = data.WriteInt64(seq);
+    if (!ret) {
+        HiLog::Error(LABEL, "write seq failed.");
         return;
     }
     MessageParcel reply;

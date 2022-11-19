@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,12 +24,12 @@ namespace HiviewDFX {
 class QuerySysEventCallbackProxy : public IRemoteProxy<IQuerySysEventCallback> {
 public:
     explicit QuerySysEventCallbackProxy(const sptr<IRemoteObject>& impl)
-        : IRemoteProxy<IQuerySysEventCallback>(impl) {};
+        : IRemoteProxy<IQuerySysEventCallback>(impl) {}
     virtual ~QuerySysEventCallbackProxy() = default;
     DISALLOW_COPY_AND_MOVE(QuerySysEventCallbackProxy);
 
     void OnQuery(const std::vector<std::u16string>& sysEvent, const std::vector<int64_t>& seq);
-    void OnComplete(int32_t reason, int32_t total);
+    void OnComplete(int32_t reason, int32_t total, int64_t seq);
 
 private:
     static inline BrokerDelegator<QuerySysEventCallbackProxy> delegator_;

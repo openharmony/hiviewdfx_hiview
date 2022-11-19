@@ -34,6 +34,7 @@ enum ParseStatus {
     STATE_PARSING_NAME,
     STATE_PARSING_TYPE,
     STATE_PARSING_TIME,
+    STATE_PARSING_EVENT_SEQ,
     STATE_PARSING_TZONE,
     STATE_PARSING_PID,
     STATE_PARSING_TID,
@@ -65,6 +66,7 @@ public:
     int16_t GetTz() const;
     void SetSeq(int64_t);
     int64_t GetSeq() const;
+    int64_t GetEventSeq() const;
     std::string GetEventValue(const std::string& key);
     uint64_t GetEventIntValue(const std::string& key);
     void SetEventValue(const std::string& key, int64_t value);
@@ -80,6 +82,7 @@ private:
     int32_t tid_;
     int32_t uid_;
     int16_t tz_;
+    int64_t eventSeq_;
     void InitialMember(ParseStatus status, const std::string &content);
 };
 

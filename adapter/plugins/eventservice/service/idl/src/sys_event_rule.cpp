@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,12 +31,15 @@ bool SysEventRule::Marshalling(Parcel& parcel) const
     if (!parcel.WriteUint32(ruleType)) {
         return false;
     }
+    if (!parcel.WriteUint32(eventType)) {
+        return false;
+    }
     return true;
 }
 
 SysEventRule* SysEventRule::Unmarshalling(Parcel& parcel)
 {
-    SysEventRule* ret = new SysEventRule();
+    SysEventRule* ret = new(std::nothrow) SysEventRule();
     if (ret == nullptr) {
         return ret;
     }
@@ -50,6 +53,9 @@ SysEventRule* SysEventRule::Unmarshalling(Parcel& parcel)
         goto error;
     }
     if (!parcel.ReadUint32(ret->ruleType)) {
+        goto error;
+    }
+    if (!parcel.ReadUint32(ret->eventType)) {
         goto error;
     }
     return ret;

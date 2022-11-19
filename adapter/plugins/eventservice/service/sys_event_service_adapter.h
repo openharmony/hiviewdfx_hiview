@@ -25,6 +25,7 @@ class SysEventServiceAdapter {
 public:
     static void StartService(SysEventServiceBase* service, OHOS::HiviewDFX::NotifySysEvent notify);
     static void OnSysEvent(std::shared_ptr<SysEvent>& event);
+    static void UpdateEventSeq(int64_t seq);
     static void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     static void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
 };

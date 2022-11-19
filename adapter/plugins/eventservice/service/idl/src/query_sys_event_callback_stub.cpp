@@ -62,7 +62,13 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
                 HiLog::Error(LABEL, "parcel read total failed.");
                 return ERR_FLATTEN_OBJECT;
             }
-            OnComplete(reason, total);
+            int64_t seq = 0;
+            ret = data.ReadInt64(seq);
+            if (!ret) {
+                HiLog::Error(LABEL, "parcel read seq failed.");
+                return ERR_FLATTEN_OBJECT;
+            }
+            OnComplete(reason, total, seq);
             return ERR_OK;
         }
         default:
