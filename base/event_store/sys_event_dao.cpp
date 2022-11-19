@@ -105,15 +105,16 @@ int SysEventDao::Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit)
     DataQuery dataQuery;
     sysEventQuery->GetDataQuery(dataQuery);
     dataQuery.Limit(limit);
+    int delNum = 0;
     for (auto dbFile : dbFiles) {
         HIVIEW_LOGD("delete event from db file %{public}s", dbFile.c_str());
         auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
-        if (docStore->Delete(dataQuery) != 0) {
+        if (delNum = docStore->Delete(dataQuery); delNum < 0) {
             HIVIEW_LOGE("delete event error from db file %{public}s", dbFile.c_str());
             return ERR_FAILED_DB_OPERATION;
         }
     }
-    return 0;
+    return delNum;
 }
 
 int SysEventDao::GetNum(StoreType type)
