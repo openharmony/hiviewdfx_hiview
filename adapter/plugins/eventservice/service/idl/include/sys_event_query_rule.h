@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,9 +27,9 @@ class SysEventQueryRule : public Parcelable {
 public:
     SysEventQueryRule() {};
     SysEventQueryRule(const std::string& domain, const std::vector<std::string>& events,
-        uint32_t ruleType = RuleType::WHOLE_WORD)
-        : domain(domain), eventList(events), ruleType(ruleType) {};
-    ~SysEventQueryRule() {};
+        uint32_t ruleType = RuleType::WHOLE_WORD, uint32_t eventType = 0, const std::string& cond = "")
+        : domain(domain), eventList(events), ruleType(ruleType), eventType(eventType), condition(cond) {};
+    ~SysEventQueryRule() {}
 
     bool Marshalling(Parcel& parcel) const override;
     static SysEventQueryRule* Unmarshalling(Parcel& parcel);
@@ -37,6 +37,8 @@ public:
     std::string domain;
     std::vector<std::string> eventList;
     uint32_t ruleType = RuleType::WHOLE_WORD;
+    uint32_t eventType = 0;
+    std::string condition;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -38,6 +38,11 @@ void SysEventServiceAdapter::OnSysEvent(std::shared_ptr<SysEvent> &event)
     OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().OnSysEvent(event);
 }
 
+void SysEventServiceAdapter::UpdateEventSeq(int64_t seq)
+{
+    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().UpdateEventSeq(seq);
+}
+
 void SysEventServiceAdapter::BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc)
 {
     OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTagFunc(getTagFunc);

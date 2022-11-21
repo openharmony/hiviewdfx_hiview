@@ -68,10 +68,14 @@ private:
     BaseInfo ParseBaseConfig(const Json::Value& eventNameJson) const;
     void ParseHiSysEventDef(const Json::Value& hiSysEventDef);
     NAME_INFO_MAP ParseNameConfig(const Json::Value& domainJson) const;
+    std::string GetSequenceFile() const;
+    void ReadSeqFromFile(int64_t& seq);
+    void WriteSeqToFile(int64_t seq) const;
 
 private:
     DOMAIN_INFO_MAP hiSysEventDef;
     DuplicateIdFilter filter;
+    int64_t curSeq = 0;
 }; // SysEventDbMgr
 } // namespace HiviewDFX
 } // namespace OHOS

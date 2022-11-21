@@ -21,6 +21,7 @@
 
 #include "accesstoken_kit.h"
 #include "common_utils.h"
+#include "event_query_wrapper_builder.h"
 #include "hilog/log.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
@@ -38,10 +39,10 @@ namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
 constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
-constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
-constexpr int HID_ROOT = 0;
-constexpr int HID_SHELL = 2000;
+constexpr pid_t HID_ROOT = 0;
+constexpr pid_t HID_SHELL = 2000;
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
+constexpr uint32_t INVALID_EVENT_TYPE = 0;
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
 
 bool MatchContent(int type, const string& rule, const string& match)
@@ -65,27 +66,34 @@ bool MatchContent(int type, const string& rule, const string& match)
     }
 }
 
+bool MatchEventType(int rule, int match)
+{
+    return rule == INVALID_EVENT_TYPE || rule == match;
+}
+
 bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& domain,
-    const string& eventName, const string& tag)
+    const string& eventName, const string& tag, uint32_t eventType)
 {
     if (rule.tag.empty()) {
         return MatchContent(rule.ruleType, rule.domain, domain)
-            && MatchContent(rule.ruleType, rule.eventName, eventName);
+            && MatchContent(rule.ruleType, rule.eventName, eventName)
+            && MatchEventType(rule.eventType, eventType);
     }
-    return MatchContent(rule.ruleType, rule.tag, tag);
+    return MatchContent(rule.ruleType, rule.tag, tag)
+        && MatchEventType(rule.eventType, eventType);
 }
 
 bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
-    const string& tag)
+    const string& tag, uint32_t eventType)
 {
-    return any_of(rules.begin(), rules.end(), [domain, eventName, tag] (auto& rule) {
-        if (IsMatchedRule(rule, domain, eventName, tag)) {
+    return any_of(rules.begin(), rules.end(), [domain, eventName, tag, eventType] (auto& rule) {
+        if (IsMatchedRule(rule, domain, eventName, tag, eventType)) {
             string logFormat("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, ");
-            logFormat.append("tag is %{public}s for matched");
+            logFormat.append("tag is %{public}s, eventType is %{public}u for matched");
             HiLog::Debug(LABEL, logFormat.c_str(),
                 rule.ruleType, rule.domain.empty() ? "empty" : rule.domain.c_str(),
                 rule.eventName.empty() ? "empty" : rule.eventName.c_str(),
-                rule.tag.empty() ? "empty" : rule.tag.c_str());
+                rule.tag.empty() ? "empty" : rule.tag.c_str(), eventType);
             return true;
         }
         return false;
@@ -137,19 +145,17 @@ void SysEventServiceOhos::StartService(SysEventServiceBase *service,
 
 string SysEventServiceOhos::GetTagByDomainAndName(const string& eventDomain, const string& eventName)
 {
-    string tag;
-    auto domainName = make_pair(eventDomain, eventName);
-    if (tagCache_.find(domainName) != tagCache_.end()) {
-        tag = tagCache_[domainName];
-    } else {
-        tag = getTagFunc_(eventDomain, eventName);
-        tagCache_.insert(make_pair(domainName, tag));
+    if (getTagFunc_ == nullptr) {
+        return "";
     }
-    return tag;
+    return getTagFunc_(eventDomain, eventName);
 }
 
-int SysEventServiceOhos::GetTypeByDomainAndName(const string& eventDomain, const string& eventName)
+uint32_t SysEventServiceOhos::GetTypeByDomainAndName(const string& eventDomain, const string& eventName)
 {
+    if (getTypeFunc_ == nullptr) {
+        return INVALID_EVENT_TYPE;
+    }
     return getTypeFunc_(eventDomain, eventName);
 }
 
@@ -163,15 +169,20 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             continue;
         }
         auto tag = GetTagByDomainAndName(event->domain_, event->eventName_);
-        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_, tag);
+        auto eventType = GetTypeByDomainAndName(event->domain_, event->eventName_);
+        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_, tag, eventType);
         HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
             isMatched ? "success" : "fail");
         if (isMatched) {
-            int eventType = static_cast<int>(event->what_);
-            callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_), eventType,
-                Str8ToStr16(event->jsonExtraInfo_));
+            callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_),
+                static_cast<int>(event->what_), Str8ToStr16(event->jsonExtraInfo_));
         }
     }
+}
+
+void SysEventServiceOhos::UpdateEventSeq(int64_t seq)
+{
+    curSeq = seq;
 }
 
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
@@ -310,191 +321,154 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
     }
 }
 
-int64_t SysEventServiceOhos::TransSysEvent(ResultSet& result, const QuerySysEventCallbackPtrOhos& callback,
-    QueryTimeRange& queryTimeRange, int32_t& drops)
+int64_t SysEventServiceOhos::TransportSysEvent(ResultSet& result, const QuerySysEventCallbackPtrOhos& callback,
+    std::shared_ptr<BaseEventQueryWrapper> wrapper, int32_t& ignoredCnt)
 {
     std::vector<u16string> events;
     std::vector<int64_t> seqs;
     ResultSet::RecordIter iter;
-    int32_t curTotal = 0;
-    int32_t totalRecords = 0;
+    int32_t transTotalJsonSize = 0;
+    int32_t transEventCnt = 0;
     while (result.HasNext()) {
         iter = result.Next();
         u16string curJson = Str8ToStr16(iter->jsonExtraInfo_);
-        int32_t jsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(u16string));
-        if (jsonSize > MAX_TRANS_BUF) { // too large events, drop
-            drops++;
+        int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(u16string));
+        if (eventJsonSize > MAX_TRANS_BUF) { // too large events, drop
+            ignoredCnt++;
             continue;
         }
-        if (jsonSize + curTotal > MAX_TRANS_BUF) {
+        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF) {
             callback->OnQuery(events, seqs);
             events.clear();
             seqs.clear();
-            curTotal = 0;
+            transTotalJsonSize = 0;
         }
         events.push_back(curJson);
         seqs.push_back(iter->GetSeq());
-        totalRecords++;
-        curTotal += jsonSize;
-        queryTimeRange.first = static_cast<int64_t>(iter->happenTime_);
+        transEventCnt++;
+        transTotalJsonSize += eventJsonSize;
+        wrapper->SyncQueryArgument(iter);
     }
-
-    if (events.size()) {
+    if (!events.empty()) {
         callback->OnQuery(events, seqs);
     }
-
-    return totalRecords;
+    return transEventCnt;
 }
 
-void SysEventServiceOhos::ParseQueryArgs(const SysEventQueryRuleGroupOhos& rules, QueryArgs& queryArgs)
+bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
+    std::shared_ptr<EventQueryWrapperBuilder> builder)
 {
-    if (rules.empty()) {
+    if (builder == nullptr) {
+        return false;
+    }
+    auto callingUid = IPCSkeleton::GetCallingUid();
+    if (rules.empty() && (callingUid == HID_SHELL || callingUid == HID_ROOT)) {
         for (auto eventType : EVENT_TYPES) {
-            queryArgs.insert(std::make_pair(eventType, DomainsWithNames()));
+            builder->Append(eventType);
         }
-        return;
+        return true;
     }
-    for (auto iter = rules.cbegin(); iter < rules.cend(); ++iter) {
-        for (auto it = iter->eventList.cbegin(); it < iter->eventList.cend(); ++it) {
-            std::string eventName = *it;
-            int eventType = GetTypeByDomainAndName(iter->domain, eventName);
-            if (find(EVENT_TYPES.cbegin(), EVENT_TYPES.cend(), eventType) == EVENT_TYPES.end()) {
-                HiLog::Warn(LABEL, "failed to get type from domain=%{public}s and name=%{public}s",
-                    iter->domain.c_str(), eventName.c_str());
+    for (auto ruleIter = rules.cbegin(); ruleIter < rules.cend(); ++ruleIter) {
+        if (ruleIter->domain.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+            return false;
+        }
+        for (auto nameIter = ruleIter->eventList.cbegin(); nameIter < ruleIter->eventList.cend(); ++nameIter) {
+            std::string eventName = *nameIter;
+            if (eventName.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+                return false;
+            }
+            auto eventType = GetTypeByDomainAndName(ruleIter->domain, eventName);
+            if (eventType != INVALID_EVENT_TYPE && ruleIter->eventType != INVALID_EVENT_TYPE &&
+                eventType != ruleIter->eventType) {
+                HiLog::Warn(LABEL, "domain=%{public}s, event name=%{public}s: event type configured is %{public}u, "
+                    "no match with query event type which is %{public}u.",
+                    ruleIter->domain.c_str(), eventName.c_str(), eventType, ruleIter->eventType);
                 continue;
             }
-            auto typeDomainsIter = queryArgs.find(eventType);
-            if (typeDomainsIter == queryArgs.end()) {
-                EventNames names = {eventName};
-                DomainsWithNames domainsWithNames = {{iter->domain, names}};
-                queryArgs.insert(std::make_pair(eventType, domainsWithNames));
+            if (eventType != INVALID_EVENT_TYPE && ruleIter->eventType == INVALID_EVENT_TYPE) {
+                builder->Append(ruleIter->domain, eventName, eventType, ruleIter->condition);
                 continue;
             }
-            auto domainNamesIter = typeDomainsIter->second.find(iter->domain);
-            if (domainNamesIter == typeDomainsIter->second.end()) {
-                EventNames names = {eventName};
-                typeDomainsIter->second.insert(std::make_pair(iter->domain, names));
+            if (ruleIter->eventType != INVALID_EVENT_TYPE) {
+                builder->Append(ruleIter->domain, eventName, ruleIter->eventType, ruleIter->condition);
                 continue;
             }
-            auto& names = domainNamesIter->second;
-            if (find(names.cbegin(), names.cend(), eventName) == names.cend()) {
-                names.emplace_back(eventName);
+            for (auto type : EVENT_TYPES) {
+                builder->Append(ruleIter->domain, eventName, type, ruleIter->condition);
             }
         }
     }
+    return true;
 }
 
-uint32_t SysEventServiceOhos::QuerySysEventMiddle(QueryArgs::const_iterator queryArgIter,
-    const QueryTimeRange& timeRange, int32_t maxEvents, bool isFirstPartialQuery, ResultSet& result)
+int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
+    const QuerySysEventCallbackPtrOhos& callback)
 {
-    auto sysEventQuery = SysEventDao::BuildQuery(static_cast<StoreType>(queryArgIter->first));
-    Cond timeCond;
-    timeCond.And(EventCol::TS, Op::GE, timeRange.first);
-    timeCond.And(EventCol::TS, Op::LT, timeRange.second);
-
-    auto domainsWithNames = queryArgIter->second;
-    Cond domainNameConds;
-    for_each(domainsWithNames.cbegin(), domainsWithNames.cend(),
-        [&domainNameConds] (const DomainsWithNames::value_type& domainNames) {
-            Cond domainConds("domain_", Op::EQ, domainNames.first);
-            Cond nameConds;
-            auto names = domainNames.second;
-            for_each(names.cbegin(), names.cend(), [&nameConds] (const std::string& name) {
-                nameConds.Or("name_", Op::EQ, name);
-            });
-            if (!names.empty()) {
-                domainConds.And(nameConds);
-            }
-            domainNameConds.Or(domainConds);
-        });
-
-    if (domainsWithNames.empty()) {
-        (*sysEventQuery).Where(timeCond).Order(EventCol::TS, true);
-    } else {
-        (*sysEventQuery).Where(timeCond).And(domainNameConds).Order(EventCol::TS, true);
+    if (!HasAccessPermission()) {
+        HiLog::Error(LABEL, "access permission check failed.");
+        callback->OnComplete(ERR_NO_PERMISSION, 0, curSeq);
+        return ERR_NO_PERMISSION;
+    }
+    auto checkRet = CheckEventQueryingValidity(rules);
+    if (checkRet != IPC_CALL_SUCCEED) {
+        callback->OnComplete(checkRet, 0, curSeq);
+        return checkRet;
+    }
+    auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
+    auto buildRet = BuildEventQuery(queryArgument, rules, queryWrapperBuilder);
+    auto queryWrapper = queryWrapperBuilder->Build();
+    if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
+        HiLog::Warn(LABEL, "invalid query rule, exit sys event querying.");
+        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq);
+        return ERR_QUERY_RULE_INVALID;
+    }
+    int32_t totalEventCnt = 0;
+    if (queryArgument.maxEvents == 0 && callback != nullptr) {
+        HiLog::Warn(LABEL, "query count is 0, query complete directly.");
+        callback->OnComplete(IPC_CALL_SUCCEED, totalEventCnt, curSeq);
+        return IPC_CALL_SUCCEED;
     }
     std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
-    if (processName.empty()) {
-        processName = "unknown";
-    }
+    processName = processName.empty() ? "unknown" : processName;
     QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
-    uint32_t queryRetCode = IPC_CALL_SUCCEED;
-    result = sysEventQuery->Execute(maxEvents, { false, isFirstPartialQuery }, callInfo,
-        [&queryRetCode] (DbQueryStatus status) {
-            std::unordered_map<DbQueryStatus, uint32_t> statusToCode {
+    auto queryRetCode = IPC_CALL_SUCCEED;
+    ResultSet ret;
+    while (queryWrapper != nullptr && !queryWrapper->IsQueryComplete()) {
+        if (!queryWrapper->Query(callInfo, [&queryRetCode] (DbQueryStatus status) {
+            std::unordered_map<DbQueryStatus, int32_t> statusToCode {
                 { DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
                 { DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
                 { DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
                 { DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
             };
             queryRetCode = statusToCode[status];
-        });
-    return queryRetCode;
-}
-
-int32_t SysEventServiceOhos::Query(int64_t beginTime, int64_t endTime, int32_t maxEvents,
-    const SysEventQueryRuleGroupOhos& rules, const QuerySysEventCallbackPtrOhos& callback)
-{
-    if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "access permission check failed.");
-        callback->OnComplete(ERR_NO_PERMISSION, 0);
-        return ERR_NO_PERMISSION;
-    }
-    auto checkRet = CheckEventQueryingValidity(rules);
-    if (checkRet != IPC_CALL_SUCCEED) {
-        callback->OnComplete(checkRet, 0);
-        return checkRet;
-    }
-    QueryArgs queryArgs;
-    ParseQueryArgs(rules, queryArgs);
-    if (queryArgs.empty()) {
-        HiLog::Warn(LABEL, "no valid query rule matched, exit event querying.");
-        callback->OnComplete(ERR_DOMIAN_INVALID, 0);
-        return ERR_DOMIAN_INVALID;
-    }
-    auto realBeginTime = beginTime < 0 ? 0 : beginTime;
-    auto realEndTime = endTime < 0 ? std::numeric_limits<int64_t>::max() : endTime;
-    QueryTimeRange queryTimeRange = std::make_pair(realBeginTime, realEndTime);
-    auto remainCnt = maxEvents < 0 ? std::numeric_limits<int32_t>::max() : maxEvents;
-    auto totalEventCnt = 0;
-    auto queryTypeIter = queryArgs.cbegin();
-    bool isFirstPartialQuery = true;
-    while (remainCnt > 0) {
-        ResultSet ret;
-        auto queryLimit = remainCnt < MAX_QUERY_EVENTS ? remainCnt : MAX_QUERY_EVENTS;
-        uint32_t queryRetCode = QuerySysEventMiddle(queryTypeIter, queryTimeRange, queryLimit,
-            isFirstPartialQuery, ret);
+        }, ret)) {
+            queryWrapper = queryWrapper->Next();
+            continue;
+        }
         if (queryRetCode != IPC_CALL_SUCCEED) {
-            callback->OnComplete(queryRetCode, totalEventCnt);
+            callback->OnComplete(queryRetCode, totalEventCnt, curSeq);
             return queryRetCode;
         }
-        auto dropCnt = 0;
-        auto queryRetCnt = TransSysEvent(ret, callback, queryTimeRange, dropCnt);
-        queryTimeRange.first++;
-        totalEventCnt += queryRetCnt;
-        remainCnt -= queryRetCnt;
-        if ((queryRetCnt + dropCnt) < queryLimit || queryTimeRange.first >= queryTimeRange.second) {
-            if ((++queryTypeIter) != queryArgs.cend()) {
-                queryTimeRange.first = realBeginTime;
-                queryTimeRange.second = realEndTime;
-            } else {
-                break;
-            }
+        auto ignoredEventCnt = 0;
+        auto queryEventCnt = TransportSysEvent(ret, callback, queryWrapper, ignoredEventCnt);
+        totalEventCnt += queryEventCnt;
+        if (queryWrapper->NeedStartNextQuery(queryEventCnt, ignoredEventCnt)) {
+            queryWrapper = queryWrapper->Next();
         }
-        isFirstPartialQuery = false;
     }
-    callback->OnComplete(0, totalEventCnt);
-    return IPC_CALL_SUCCEED;
+    callback->OnComplete(IPC_CALL_SUCCEED, totalEventCnt, curSeq);
+    return queryRetCode;
 }
 
 bool SysEventServiceOhos::HasAccessPermission() const
 {
     using namespace Security::AccessToken;
-    const int callingUid = IPCSkeleton::GetCallingUid();
+    auto callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid == HID_SHELL || callingUid == HID_ROOT) {
         return true;
     }
-    uint32_t tokenId = IPCSkeleton::GetFirstTokenID();
+    auto tokenId = IPCSkeleton::GetFirstTokenID();
     if (tokenId == 0) {
         tokenId = IPCSkeleton::GetCallingTokenID();
     }
