@@ -22,7 +22,7 @@ class FaultLogInfo {
 public:
     ~FaultLogInfo();
 
-    int32_t GetId() const;
+    uint32_t GetId() const;
     int32_t GetProcessId() const;
 
     // the fd is managed by fault log info obj
@@ -35,7 +35,7 @@ public:
     std::string GetModuleName() const;
     std::string GetFaultSummary() const;
 
-    void SetId(int32_t id);
+    void SetId(uint32_t id);
     void SetProcessId(int32_t pid);
     void SetTimeStamp(int64_t ts);
     void SetFaultType(int32_t faultType);
@@ -46,7 +46,7 @@ public:
 
 private:
     int32_t pid_ {-1};
-    int32_t uid_ {-1};
+    uint32_t uid_ {-1};
     int32_t type_ {0};
     int32_t fd_ {-1};
     int64_t ts_ {0};
