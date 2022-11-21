@@ -63,8 +63,8 @@
         ]
     },
     "Rule6":{
-        "DirOrFile":"/data/hisi_logs/",
-        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "DirOrFile":"/data/test/test_data/BBoxDetector/common/",
+        "Subcatalog":"\\d{14}-\\d{8}/dmesg-ramoops-0",
         "featureId":"04_PANIC_01",
         "segmentType":"OneLayer",
         "startSeg":["NocTrace.v_cpu"],

@@ -27,6 +27,10 @@
         "UsageEventReport": {
             "path": "plugins/usage_event_report",
             "name": "usage_event_report"
+        },
+        "BBoxDetectorPlugin": {
+            "path": "plugins/reliability/bbox_detectors",
+            "name": "bbox_detector"
         }
     },
     "rules": [
@@ -59,13 +63,17 @@
                     },
                     "UsageEventReport": {
                         "loadtime": 0
+                    },
+                    "BBoxDetectorPlugin": {
+                        "loadtime": 0
                     }
                 },
                 "pipelines": {
                     "SysEventPipeline": [
                         "SysEventService",
                         "Faultlogger",
-                        "EventLogger"
+                        "EventLogger",
+                        "BBoxDetectorPlugin"
                     ]
                 },
                 "pipelinegroups": {
@@ -79,7 +87,8 @@
                         "SysEventService": "sysevent_service",
                         "EventLogger": "event_logger",
                         "FreezeDetectorPlugin": "freeze_detector",
-                        "UsageEventReport": "usage_event_report"
+                        "UsageEventReport": "usage_event_report",
+                        "BBoxDetectorPlugin": "bbox_detector"
                     }
                 }
             }
