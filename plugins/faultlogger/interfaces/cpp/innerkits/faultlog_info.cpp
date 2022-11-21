@@ -30,7 +30,7 @@ FaultLogInfo::~FaultLogInfo()
     }
 }
 
-int32_t FaultLogInfo::GetId() const
+uint32_t FaultLogInfo::GetId() const
 {
     return uid_;
 }
@@ -70,7 +70,7 @@ std::string FaultLogInfo::GetFaultSummary() const
     return summary_;
 }
 
-void FaultLogInfo::SetId(int32_t id)
+void FaultLogInfo::SetId(uint32_t id)
 {
     uid_ = id;
 }
