@@ -18,6 +18,8 @@
 
 #include <gtest/gtest.h>
 
+#include "sys_event_service_ohos.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventServiceOhosTest : public testing::Test {
@@ -27,6 +29,8 @@ public:
     void SetUp();
     void TearDown();
 };
+
+class SysEventAdapterTestService : public SysEventServiceBase {};
 } // namespace HiviewDFX
 } // namespace OHOS
 
