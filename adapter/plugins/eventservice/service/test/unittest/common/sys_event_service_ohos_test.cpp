@@ -20,17 +20,20 @@
 #include <string>
 #include <vector>
 
+#include "ash_mem_utils.h"
 #include "event.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "isys_event_callback.h"
 #include "isys_event_service.h"
+#include "string_ex.h"
 #include "sys_event.h"
 #include "sys_event_callback_default.h"
 #include "sys_event_callback_ohos_test.h"
 #include "sys_event_rule.h"
 #include "sys_event_service.h"
+#include "sys_event_service_adapter.h"
 #include "sys_event_service_ohos.h"
 #include "sys_event_service_proxy.h"
 #include "system_ability.h"
@@ -233,6 +236,55 @@ HWTEST_F(SysEventServiceOhosTest, SetDebugModeTest, testing::ext::TestSize.Level
             ASSERT_TRUE(false);
         }
     }
+}
+
+/**
+ * @tc.name: SysEventServiceAdapterTest
+ * @tc.desc: test apis of SysEventServiceAdapter
+ * @tc.type: FUNC
+ * @tc.require: issueI62BDW
+ */
+HWTEST_F(SysEventServiceOhosTest, SysEventServiceAdapterTest, testing::ext::TestSize.Level3)
+{
+    OHOS::HiviewDFX::SysEventServiceAdapter::StartService(nullptr, nullptr);
+    auto adapterService = std::make_shared<SysEventAdapterTestService>();
+    OHOS::HiviewDFX::SysEventServiceAdapter::StartService(adapterService.get(), nullptr);
+    ASSERT_TRUE(true);
+    std::shared_ptr<SysEvent> sysEvent = nullptr;
+    OHOS::HiviewDFX::SysEventServiceAdapter::OnSysEvent(sysEvent);
+    SysEventCreator sysEventCreator("DEMO", "EVENT_NAME", SysEventCreator::FAULT);
+    std::vector<int> values = {1, 2, 3};
+    sysEventCreator.SetKeyValue("KEY", values);
+    sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    OHOS::HiviewDFX::SysEventServiceAdapter::OnSysEvent(sysEvent);
+    ASSERT_TRUE(true);
+    OHOS::HiviewDFX::SysEventServiceAdapter::UpdateEventSeq(0);
+    ASSERT_TRUE(true);
+    OHOS::HiviewDFX::SysEventServiceAdapter::BindGetTagFunc(nullptr);
+    ASSERT_TRUE(true);
+    OHOS::HiviewDFX::SysEventServiceAdapter::BindGetTypeFunc(nullptr);
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: TestAshMemory
+ * @tc.desc: Ashmemory test
+ * @tc.type: FUNC
+ * @tc.require: issueI62BDW
+ */
+HWTEST_F(SysEventServiceOhosTest, TestAshMemory, testing::ext::TestSize.Level1)
+{
+    MessageParcel data;
+    std::vector<std::u16string> src = {
+        Str8ToStr16(std::string("1")),
+        Str8ToStr16(std::string("2")),
+    };
+    AshMemUtils::WriteBulkData(data, src);
+    std::vector<std::u16string> dest;
+    AshMemUtils::ReadBulkData(data, dest);
+    ASSERT_TRUE(src.size() == dest.size());
+    ASSERT_TRUE(Str16ToStr8(dest[0]) == "1" &&
+        Str16ToStr8(dest[1]) == "2");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
