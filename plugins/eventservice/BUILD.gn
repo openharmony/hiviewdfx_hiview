@@ -65,3 +65,11 @@ group("moduletest") {
   testonly = true
   deps = []
 }
+
+group("fuzztest") {
+  testonly = true
+  deps = [
+    "test/fuzztest/common/eventservice_fuzzer:EventServiceFuzzTest",
+    "test/fuzztest/common/eventsource_fuzzer:EventSourceFuzzTest",
+  ]
+}
