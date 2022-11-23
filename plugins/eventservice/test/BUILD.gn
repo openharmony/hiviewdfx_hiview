@@ -16,11 +16,6 @@ import("//build/test.gni")
 
 module_output_path = "hiview/hiview/eventservice"
 
-group("unittest") {
-  testonly = true
-  deps = [ ":EventServiceActionTest" ]
-}
-
 config("hiview_eventservice_test_config") {
   visibility = [ ":*" ]
 
