@@ -16,7 +16,9 @@
     "package": "com.ohos.hiviewtest.faultlogjs",
     "name": ".MyApplication",
     "deviceType": [
-      "phone"
+      "default",
+      "phone",
+      "tablet"
     ],
     "distro": {
       "deliveryWithInstall": true,
