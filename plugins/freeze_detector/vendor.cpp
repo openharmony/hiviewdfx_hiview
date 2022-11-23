@@ -19,6 +19,7 @@
 #include "file_util.h"
 #include "logger.h"
 #include "string_util.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -112,11 +113,13 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
 
 void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const
 {
+    uint64_t timestamp = watchPoint.GetTimestamp() / TimeUtil::SEC_TO_MILLISEC;
     oss << header << std::endl;
     oss << FreezeCommon::EVENT_DOMAIN << FreezeCommon::COLON << watchPoint.GetDomain() << std::endl;
     oss << FreezeCommon::EVENT_STRINGID << FreezeCommon::COLON << watchPoint.GetStringId() << std::endl;
     oss << FreezeCommon::EVENT_TIMESTAMP << FreezeCommon::COLON <<
-        watchPoint.GetTimestamp() << std::endl;
+        TimeUtil::TimestampFormatToDate(timestamp, "%Y/%m/%d-%H:%M:%S") <<
+        ":" << watchPoint.GetTimestamp() % TimeUtil::SEC_TO_MILLISEC << std::endl;
     oss << FreezeCommon::EVENT_PID << FreezeCommon::COLON << watchPoint.GetPid() << std::endl;
     oss << FreezeCommon::EVENT_UID << FreezeCommon::COLON << watchPoint.GetUid() << std::endl;
     oss << FreezeCommon::EVENT_PACKAGE_NAME << FreezeCommon::COLON << watchPoint.GetPackageName() << std::endl;
@@ -178,11 +181,15 @@ std::string Vendor::MergeEventLog(
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
-        if (filePath == "" || filePath == "nolog" || FileUtil::FileExists(filePath) == false) {
+        if (filePath == "" || FileUtil::FileExists(filePath) == false) {
+            ++nologCount;
+            continue;
+        }
+
+        if (filePath == "nolog") {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
             DumpEventInfo(body, HEADER, node);
-            ++nologCount;
             continue;
         }
 

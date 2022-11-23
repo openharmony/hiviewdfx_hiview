@@ -42,6 +42,7 @@ pid_t GetPidByName(const std::string& processName);
 int32_t ExecCommand(const std::string &cmd, const std::vector<std::string> &args);
 bool IsSpecificCmdExist(const std::string& fullPath);
 bool WriteCommandResultToFile(int fd, const std::string& cmd);
+int WriteCommandResultToFile(int fd, const std::string &cmd, const std::vector<std::string> &args);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

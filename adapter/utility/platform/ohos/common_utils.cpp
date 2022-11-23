@@ -75,7 +75,7 @@ std::string GetProcNameByPid(pid_t pid)
 {
     std::string result;
     char buf[BUF_SIZE_256] = {0};
-    (void)snprintf_s(buf, BUF_SIZE_256, BUF_SIZE_256 - 1, "/proc/%d/cmdline", pid);
+    (void)snprintf_s(buf, BUF_SIZE_256, BUF_SIZE_256 - 1, "/proc/%d/comm", pid);
     FileUtil::LoadStringFromFile(std::string(buf, strlen(buf)), result);
     auto pos = result.find_last_not_of(" \n\r\t");
     if (pos == std::string::npos) {
@@ -121,6 +121,48 @@ bool WriteCommandResultToFile(int fd, const std::string& cmd)
         return true;
     }
     return false;
+}
+
+int WriteCommandResultToFile(int fd, const std::string &cmd, const std::vector<std::string> &args)
+{
+    if (cmd.empty()) {
+        return -1;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        return -1;
+    } else if (pid == 0) {
+        // follow standard, although dup2 may handle the case of invalid oldfd
+        if (fd >= 0) {
+            dup2(fd, STDOUT_FILENO);
+            dup2(fd, STDIN_FILENO);
+            dup2(fd, STDERR_FILENO);
+        }
+
+        std::vector<char *> argv;
+        for (const auto &arg : args) {
+            argv.push_back(const_cast<char *>(arg.c_str()));
+        }
+        argv.push_back(0);
+        execv(cmd.c_str(), &argv[0]);
+    }
+
+    constexpr uint64_t maxWaitingTime = 120; // 120 seconds
+    uint64_t endTime = TimeUtil::GetMilliseconds() + maxWaitingTime * TimeUtil::SEC_TO_MILLISEC;
+    while (endTime > TimeUtil::GetMilliseconds()) {
+        int status = 0;
+        pid_t p = waitpid(pid, &status, WNOHANG);
+        if (p < 0) {
+            return -1;
+        }
+
+        if (p == pid) {
+            return WEXITSTATUS(status);
+        }
+    }
+
+    return -1;
 }
 }
 } // namespace HiviewDFX

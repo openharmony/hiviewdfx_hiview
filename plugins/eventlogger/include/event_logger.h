@@ -75,7 +75,6 @@ private:
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
-    std::string GetFormatTime(uint64_t timestamp) const;
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
     bool PostEvent(std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
