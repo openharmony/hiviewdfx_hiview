@@ -22,9 +22,9 @@ namespace HiviewDFX {
 class PluginConfig {
 public:
     struct PluginInfo {
-        bool isStatic;
-        bool isEventSource;
-        int32_t loadDelay;
+        bool isStatic = false;
+        bool isEventSource = false;
+        int32_t loadDelay = 0;
         std::string name;
         std::string workHandlerType;
         std::string workHandlerName;
@@ -38,7 +38,7 @@ public:
 
     struct WorkPoolInfo {
         std::string name;
-        int32_t threadCount;
+        int32_t threadCount = 0;
     };
 
     PluginConfig() {};

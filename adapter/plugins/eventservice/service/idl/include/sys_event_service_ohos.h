@@ -99,7 +99,7 @@ private:
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
-    int64_t curSeq;
+    int64_t curSeq = 0;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
