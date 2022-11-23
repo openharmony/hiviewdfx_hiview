@@ -82,7 +82,7 @@ private:
     int32_t tid_;
     int32_t uid_;
     int16_t tz_;
-    int64_t eventSeq_;
+    int64_t eventSeq_ = 0;
     void InitialMember(ParseStatus status, const std::string &content);
 };
 

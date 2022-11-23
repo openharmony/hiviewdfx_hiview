@@ -82,11 +82,11 @@ protected:
 
 protected:
     QueryArgument argument;
-    int32_t queryLimit;
+    int32_t queryLimit = 0;
     std::shared_ptr<EventStore::SysEventQuery> query = nullptr;
 
 private:
-    uint32_t eventType;
+    uint32_t eventType = -1; // invalid event type is -1
     bool isFirstPartialQuery = true;
     std::shared_ptr<BaseEventQueryWrapper> next = nullptr;
     ConditionParser parser;
@@ -110,7 +110,6 @@ public:
 private:
     virtual void BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query);
     virtual void Order();
-    
 };
 
 class SeqEventQueryWrapper final : public BaseEventQueryWrapper {
