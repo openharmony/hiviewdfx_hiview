@@ -67,7 +67,7 @@ bool InitEnvironment()
 
 int32_t SysEventQueryTest(const uint8_t* data, size_t size)
 {
-    static QuerySysEventCallbackPtrOhos callback = new(std::nothrow) TestQueryCallback();
+    static OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback = new(std::nothrow) TestQueryCallback();
     if (callback == nullptr) {
         printf("callback is null, exit.\n");
         return -1;

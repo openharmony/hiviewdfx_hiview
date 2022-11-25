@@ -292,7 +292,6 @@ SysEventCreator::SysEventCreator(const std::string &domain, const std::string &e
     SetKeyValue("type_", static_cast<int>(type));
     SetKeyValue("time_", TimeUtil::GetMilliseconds());
     SetKeyValue("tz_", TimeUtil::GetTimeZone());
-    SetKeyValue("seq_", 0);
     SetKeyValue("pid_", getpid());
     SetKeyValue("tid_", gettid());
     SetKeyValue("uid_", getuid());

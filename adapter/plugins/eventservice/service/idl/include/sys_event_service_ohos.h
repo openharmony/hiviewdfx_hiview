@@ -16,6 +16,7 @@
 #ifndef OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_OHOS_H
 #define OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_OHOS_H
 
+#include <atomic>
 #include <functional>
 #include <vector>
 #include <unordered_map>
@@ -36,7 +37,6 @@
 using CallbackObjectOhos = OHOS::sptr<OHOS::IRemoteObject>;
 using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
 using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
-using QuerySysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
 using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
 
@@ -74,7 +74,7 @@ public:
     int32_t AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
     int32_t RemoveListener(const SysEventCallbackPtrOhos& callback) override;
     int32_t Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-        const QuerySysEventCallbackPtrOhos& callback) override;
+        const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>& callback) override;
     int32_t SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
     void OnRemoteDied(const wptr<IRemoteObject> &remote);
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
@@ -87,8 +87,6 @@ private:
         std::shared_ptr<EventQueryWrapperBuilder> builder);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
-    int64_t TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
-        const QuerySysEventCallbackPtrOhos& callback, std::shared_ptr<BaseEventQueryWrapper> wrapper, int32_t& drops);
 
 private:
     std::mutex mutex_;
@@ -99,7 +97,7 @@ private:
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
-    int64_t curSeq = 0;
+    std::atomic<int64_t> curSeq = 0;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

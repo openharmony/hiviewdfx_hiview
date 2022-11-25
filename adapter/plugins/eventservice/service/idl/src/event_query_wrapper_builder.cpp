@@ -15,10 +15,14 @@
 
 #include "event_query_wrapper_builder.h"
 
+#include <algorithm>
 #include <cinttypes>
 
+#include "common_utils.h"
 #include "hilog/log.h"
+#include "ipc_skeleton.h"
 #include "ret_code.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -30,8 +34,18 @@ constexpr char SEQ_[] = "seq_";
 constexpr char LOGIC_AND_COND[] = "and";
 constexpr char LOGIC_OR_COND[] = "or";
 constexpr int64_t INVALID_SEQ = -1;
+constexpr int64_t TRANS_DEFAULT_CNT = 0;
+constexpr int32_t IGNORED_DEFAULT_CNT = 0;
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
+constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
+
+EventStore::QueryProcessInfo GetCallingProcessInfo()
+{
+    std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
+    processName = processName.empty() ? "unknown" : processName;
+    return std::make_pair(IPCSkeleton::GetCallingPid(), processName);
+}
 }
 
 bool ConditionParser::ParseCondition(const std::string& condStr, EventStore::Cond& condition)
@@ -175,12 +189,39 @@ bool ConditionParser::ParseQueryCondition(const std::string& condStr, EventStore
     return true;
 }
 
-bool BaseEventQueryWrapper::Query(EventStore::QueryProcessInfo callerInfo, EventStore::DbQueryCallback queryCallback,
-    EventStore::ResultSet& resultSet)
+void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback,
+    int32_t& queryResult)
 {
+    if (callback == nullptr) {
+        return;
+    }
+    if (!HasNext() || IsQueryComplete()) {
+        // all queries have finished, call OnComplete directly
+        callback->OnComplete(queryResult, totalEventCnt, maxSeq);
+        return;
+    }
+    if (!NeedStartNextQuery()) { // keep current query
+        Query(callback, queryResult);
+        return;
+    }
+    if (HasNext()) { // start next query
+        Next()->SetMaxSequence(maxSeq);
+        Next()->SetEventTotalCount(totalEventCnt);
+        Next()->Query(callback, queryResult);
+    }
+}
+
+void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> eventQueryCallback,
+    int32_t& queryResult)
+{
+    if (eventQueryCallback == nullptr) {
+        queryResult = ERR_LISTENER_NOT_EXIST;
+        return;
+    }
     if (query == nullptr) {
         HiLog::Debug(LABEL, "current query is null.");
-        return false;
+        HandleCurrentQueryDone(eventQueryCallback, queryResult);
+        return;
     }
     BuildQuery(query);
     EventStore::Cond domainNameConds;
@@ -195,12 +236,63 @@ bool BaseEventQueryWrapper::Query(EventStore::QueryProcessInfo callerInfo, Event
     if (isFirstPartialQuery) {
         HiLog::Debug(LABEL, "current query is first partial query.");
     }
-    resultSet = query->Execute(queryLimit, { false, isFirstPartialQuery }, callerInfo, queryCallback);
+    auto resultSet = query->Execute(queryLimit, { false, isFirstPartialQuery }, GetCallingProcessInfo(),
+        [&queryResult] (EventStore::DbQueryStatus status) {
+            std::unordered_map<EventStore::DbQueryStatus, int32_t> statusToCode {
+                { EventStore::DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
+                { EventStore::DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
+                { EventStore::DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
+                { EventStore::DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
+            };
+            queryResult = statusToCode[status];
+        });
+    if (queryResult != IPC_CALL_SUCCEED) {
+        eventQueryCallback->OnComplete(queryResult, totalEventCnt, maxSeq);
+        return;
+    }
+    auto details = std::make_pair(TRANS_DEFAULT_CNT, IGNORED_DEFAULT_CNT);
+    TransportSysEvent(resultSet, eventQueryCallback, details);
+    transportedEventCnt = details.first;
+    totalEventCnt += transportedEventCnt;
+    ignoredEventCnt += details.second;
     SetIsFirstPartialQuery(false);
     if (HasNext()) {
         Next()->SetIsFirstPartialQuery(false);
     }
-    return true;
+    argument.maxEvents -= transportedEventCnt;
+    HandleCurrentQueryDone(eventQueryCallback, queryResult);
+}
+
+void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
+    const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback, std::pair<int64_t, int32_t>& details)
+{
+    std::vector<std::u16string> events;
+    std::vector<int64_t> seqs;
+    OHOS::HiviewDFX::EventStore::ResultSet::RecordIter iter;
+    int32_t transTotalJsonSize = 0;
+    while (result.HasNext()) {
+        iter = result.Next();
+        std::u16string curJson = Str8ToStr16(iter->jsonExtraInfo_);
+        int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(std::u16string));
+        if (eventJsonSize > MAX_TRANS_BUF) { // too large events, drop
+            details.second++;
+            continue;
+        }
+        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF) {
+            callback->OnQuery(events, seqs);
+            events.clear();
+            seqs.clear();
+            transTotalJsonSize = 0;
+        }
+        events.push_back(curJson);
+        seqs.push_back(iter->GetSeq());
+        details.first++;
+        transTotalJsonSize += eventJsonSize;
+        SyncQueryArgument(iter);
+    }
+    if (!events.empty()) {
+        callback->OnQuery(events, seqs);
+    }
 }
 
 bool BaseEventQueryWrapper::BuildConditonByDomainNameExtraInfo(EventStore::Cond& domainNameConds)
@@ -276,6 +368,16 @@ DomainNameExtraInfoMap& BaseEventQueryWrapper::GetDomainNameExtraInfoMap()
     return domainNameExtraInfos;
 }
 
+int64_t BaseEventQueryWrapper::GetMaxSequence() const
+{
+    return maxSeq;
+}
+
+int64_t BaseEventQueryWrapper::GetEventTotalCount() const
+{
+    return totalEventCnt;
+}
+
 bool BaseEventQueryWrapper::IsValid() const
 {
     return query != nullptr;
@@ -311,6 +413,12 @@ bool BaseEventQueryWrapper::IsQueryComplete() const
     return argument.maxEvents <= 0;
 }
 
+void BaseEventQueryWrapper::SetEventTotalCount(int64_t totalCount)
+{
+    HiLog::Debug(LABEL, "eventType[%{public}u] SetEventTotalCount: %{public}" PRId64 ".", eventType, totalCount);
+    totalEventCnt = totalCount;
+}
+
 void TimeStampEventQueryWrapper::BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query)
 {
     if (query == nullptr) {
@@ -332,11 +440,15 @@ void TimeStampEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::
     argument.beginTime = static_cast<int64_t>(iter->happenTime_);
 }
 
-bool TimeStampEventQueryWrapper::NeedStartNextQuery(int32_t transEventTotalCnt, int32_t ignoredEventCnt)
+void TimeStampEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
 {
-    argument.maxEvents -= transEventTotalCnt;
+    this->maxSeq = maxSeq;
+}
+
+bool TimeStampEventQueryWrapper::NeedStartNextQuery()
+{
     argument.beginTime++;
-    if (((transEventTotalCnt + ignoredEventCnt) < queryLimit || argument.beginTime >= argument.endTime)) {
+    if (((transportedEventCnt + ignoredEventCnt) < queryLimit || argument.beginTime >= argument.endTime)) {
         if (HasNext()) {
             argument.beginTime = Next()->GetQueryArgument().beginTime;
             argument.endTime = Next()->GetQueryArgument().endTime;
@@ -349,6 +461,9 @@ bool TimeStampEventQueryWrapper::NeedStartNextQuery(int32_t transEventTotalCnt, 
 
 void TimeStampEventQueryWrapper::Order()
 {
+    if (query == nullptr) {
+        return;
+    }
     query->Order(EventStore::EventCol::TS, true);
 }
 
@@ -371,11 +486,18 @@ void SeqEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::Record
     argument.fromSeq = iter->GetEventSeq();
 }
 
-bool SeqEventQueryWrapper::NeedStartNextQuery(int32_t transEventTotalCnt, int32_t ignoredEventCnt)
+void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
 {
-    argument.maxEvents -= transEventTotalCnt;
+    this->maxSeq = maxSeq;
+    HiLog::Debug(LABEL, "argument.toSeq is %{public}" PRId64 ", maxSeq is %{public}" PRId64 ".",
+        argument.toSeq, maxSeq);
+    argument.toSeq = std::min(argument.toSeq, maxSeq);
+}
+
+bool SeqEventQueryWrapper::NeedStartNextQuery()
+{
     argument.fromSeq++;
-    if (((transEventTotalCnt + ignoredEventCnt) < queryLimit || argument.fromSeq >= argument.toSeq)) {
+    if (((transportedEventCnt + ignoredEventCnt) < queryLimit || argument.fromSeq >= argument.toSeq)) {
         if (HasNext()) {
             argument.fromSeq = Next()->GetQueryArgument().fromSeq;
             argument.toSeq = Next()->GetQueryArgument().toSeq;
@@ -388,6 +510,9 @@ bool SeqEventQueryWrapper::NeedStartNextQuery(int32_t transEventTotalCnt, int32_
 
 void SeqEventQueryWrapper::Order()
 {
+    if (query == nullptr) {
+        return;
+    }
     query->Order(SEQ_, true);
 }
 
