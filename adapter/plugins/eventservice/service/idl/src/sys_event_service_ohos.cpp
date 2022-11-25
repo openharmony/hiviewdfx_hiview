@@ -20,7 +20,6 @@
 #include <set>
 
 #include "accesstoken_kit.h"
-#include "common_utils.h"
 #include "event_query_wrapper_builder.h"
 #include "hilog/log.h"
 #include "if_system_ability_manager.h"
@@ -38,7 +37,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
-constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
 constexpr pid_t HID_ROOT = 0;
 constexpr pid_t HID_SHELL = 2000;
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
@@ -182,7 +180,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
 
 void SysEventServiceOhos::UpdateEventSeq(int64_t seq)
 {
-    curSeq = seq;
+    curSeq.store(seq, std::memory_order_release);
 }
 
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
@@ -239,7 +237,6 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     const sptr<ISysEventCallback>& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "access permission check failed");
         return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventListenerAddingValidity(rules, registeredListeners_);
@@ -282,7 +279,6 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
 int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "access permission check failed");
         return ERR_NO_PERMISSION;
     }
     auto service = GetSysEventService();
@@ -319,40 +315,6 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
         HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
         return ERR_LISTENER_NOT_EXIST;
     }
-}
-
-int64_t SysEventServiceOhos::TransportSysEvent(ResultSet& result, const QuerySysEventCallbackPtrOhos& callback,
-    std::shared_ptr<BaseEventQueryWrapper> wrapper, int32_t& ignoredCnt)
-{
-    std::vector<u16string> events;
-    std::vector<int64_t> seqs;
-    ResultSet::RecordIter iter;
-    int32_t transTotalJsonSize = 0;
-    int32_t transEventCnt = 0;
-    while (result.HasNext()) {
-        iter = result.Next();
-        u16string curJson = Str8ToStr16(iter->jsonExtraInfo_);
-        int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(u16string));
-        if (eventJsonSize > MAX_TRANS_BUF) { // too large events, drop
-            ignoredCnt++;
-            continue;
-        }
-        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF) {
-            callback->OnQuery(events, seqs);
-            events.clear();
-            seqs.clear();
-            transTotalJsonSize = 0;
-        }
-        events.push_back(curJson);
-        seqs.push_back(iter->GetSeq());
-        transEventCnt++;
-        transTotalJsonSize += eventJsonSize;
-        wrapper->SyncQueryArgument(iter);
-    }
-    if (!events.empty()) {
-        callback->OnQuery(events, seqs);
-    }
-    return transEventCnt;
 }
 
 bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
@@ -402,62 +364,38 @@ bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, co
 }
 
 int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-    const QuerySysEventCallbackPtrOhos& callback)
+    const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>& callback)
 {
+    if (callback == nullptr) {
+        return ERR_LISTENER_NOT_EXIST;
+    }
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "access permission check failed.");
-        callback->OnComplete(ERR_NO_PERMISSION, 0, curSeq);
+        callback->OnComplete(ERR_NO_PERMISSION, 0, curSeq.load(std::memory_order_acquire));
         return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventQueryingValidity(rules);
     if (checkRet != IPC_CALL_SUCCEED) {
-        callback->OnComplete(checkRet, 0, curSeq);
+        callback->OnComplete(checkRet, 0, curSeq.load(std::memory_order_acquire));
         return checkRet;
     }
     auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
     auto buildRet = BuildEventQuery(queryArgument, rules, queryWrapperBuilder);
-    auto queryWrapper = queryWrapperBuilder->Build();
     if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
         HiLog::Warn(LABEL, "invalid query rule, exit sys event querying.");
-        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq);
+        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
         return ERR_QUERY_RULE_INVALID;
     }
-    int32_t totalEventCnt = 0;
-    if (queryArgument.maxEvents == 0 && callback != nullptr) {
+    if (queryArgument.maxEvents == 0) {
         HiLog::Warn(LABEL, "query count is 0, query complete directly.");
-        callback->OnComplete(IPC_CALL_SUCCEED, totalEventCnt, curSeq);
+        callback->OnComplete(IPC_CALL_SUCCEED, 0, curSeq.load(std::memory_order_acquire));
         return IPC_CALL_SUCCEED;
     }
-    std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
-    processName = processName.empty() ? "unknown" : processName;
-    QueryProcessInfo callInfo = std::make_pair(IPCSkeleton::GetCallingPid(), processName);
-    auto queryRetCode = IPC_CALL_SUCCEED;
-    ResultSet ret;
-    while (queryWrapper != nullptr && !queryWrapper->IsQueryComplete()) {
-        if (!queryWrapper->Query(callInfo, [&queryRetCode] (DbQueryStatus status) {
-            std::unordered_map<DbQueryStatus, int32_t> statusToCode {
-                { DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
-                { DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
-                { DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
-                { DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
-            };
-            queryRetCode = statusToCode[status];
-        }, ret)) {
-            queryWrapper = queryWrapper->Next();
-            continue;
-        }
-        if (queryRetCode != IPC_CALL_SUCCEED) {
-            callback->OnComplete(queryRetCode, totalEventCnt, curSeq);
-            return queryRetCode;
-        }
-        auto ignoredEventCnt = 0;
-        auto queryEventCnt = TransportSysEvent(ret, callback, queryWrapper, ignoredEventCnt);
-        totalEventCnt += queryEventCnt;
-        if (queryWrapper->NeedStartNextQuery(queryEventCnt, ignoredEventCnt)) {
-            queryWrapper = queryWrapper->Next();
-        }
+    auto queryWrapper = queryWrapperBuilder->Build();
+    if (queryWrapper != nullptr) {
+        queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
     }
-    callback->OnComplete(IPC_CALL_SUCCEED, totalEventCnt, curSeq);
+    auto queryRetCode = IPC_CALL_SUCCEED;
+    queryWrapper->Query(callback, queryRetCode);
     return queryRetCode;
 }
 
@@ -482,15 +420,12 @@ bool SysEventServiceOhos::HasAccessPermission() const
 int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
 {
     if (!HasAccessPermission()) {
-        HiLog::Error(LABEL, "permission denied");
         return ERR_NO_PERMISSION;
     }
-
     if (mode == isDebugMode_) {
         HiLog::Error(LABEL, "same config, no need set");
         return ERR_DEBUG_MODE_SET_REPEAT;
     }
-
     auto event = std::make_shared<Event>("SysEventSource");
     event->messageType_ = Event::ENGINE_SYSEVENT_DEBUG_MODE;
     event->SetValue("DEBUGMODE", mode ? "true" : "false");
