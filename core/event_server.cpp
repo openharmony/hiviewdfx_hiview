@@ -50,8 +50,7 @@ constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
 constexpr char SOCKET_CONFIG_FILE[] = "/system/etc/hiview/hisysevent_extra_socket";
 std::string g_extraSocketPath;
 
-struct Initializer
-{
+struct Initializer {
     Initializer()
     {
         if (access(SOCKET_CONFIG_FILE, F_OK) != 0) {
