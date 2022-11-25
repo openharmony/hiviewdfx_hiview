@@ -30,6 +30,7 @@
 #include "sys_event_db_mgr.h"
 #include "sys_event_dao.h"
 #include "sys_event_db_backup.h"
+#include "sys_event_service.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -163,13 +164,17 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
     }
     ASSERT_TRUE(count > 0);
     std::cout <<" count:" << count << std::endl;
-    for (int i = 0; i < 3000; i++) {
-        std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":1,"tz_":8,
-        "time_":1620271291200,"pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20",
-        "trace_flag_":4,"keyBool":1,"keyChar":97})~";
-        auto sysEventTemp = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-        sysEventTemp->ParseJson();
-        EventStore::SysEventDao::Insert(sysEventTemp);
+    for (int i = 0; i < 5000; i++) {
+        SysEventCreator sysEventCreator("domain1", "test1", SysEventCreator::FAULT);
+        auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
+        EventStore::SysEventDao::Insert(sysEvent1);
+    }
+    sysEventDbMgrPtr->StartCheckStoreTask(nullptr);
+    sysEventDbMgrPtr->CheckStore();
+    for (int i = 0; i < 20000; i++) {
+        SysEventCreator sysEventCreator("domain2", "test2", SysEventCreator::FAULT);
+        auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
+        EventStore::SysEventDao::Insert(sysEvent2);
     }
     sysEventDbMgrPtr->StartCheckStoreTask(nullptr);
     sysEventDbMgrPtr->CheckStore();
@@ -178,5 +183,40 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
     ASSERT_TRUE(dbBackup.Recover() == 1);
 }
 
+/**
+ * @tc.name: SysEventService
+ * @tc.desc: check sysEvent service
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(EventServiceActionTest, SysEventService004, testing::ext::TestSize.Level3)
+{
+    auto testPlugin = std::make_shared<SysEventService>();
+    std::shared_ptr<Event> nullEvent = nullptr;
+    std::cout << "ASSERT1:" << testPlugin->OnEvent(nullEvent) << std::endl;
+    ASSERT_FALSE(testPlugin->OnEvent(nullEvent));
+    testPlugin->OnLoad();
+    testPlugin->OnUnload();
+    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":1,"tz_":8,
+        "time_":1620271291200,"pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20",
+        "trace_flag_":4,"keyBool":1,"keyChar":97})~";
+    auto sysEventTemp = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    sysEventTemp->ParseJson();
+    std::shared_ptr<Event> event1 = std::static_pointer_cast<Event>(sysEventTemp);
+    event1->messageType_ = Event::MessageType::UE_EVENT;
+    ASSERT_FALSE(testPlugin->OnEvent(event1));
+    SysEventCreator sysEventCreator("domain1", "test1", SysEventCreator::FAULT);
+    auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
+    std::shared_ptr<Event> event2 = std::static_pointer_cast<Event>(sysEvent1);
+    std::cout << "ASSERT3:" << testPlugin->OnEvent(event2) << std::endl;
+    int fd5 = OpenTestFile("./fd5.txt");
+    testPlugin->Dump(fd5, {"start", "detail"});
+    testPlugin->Dump(fd5, {"start", "invalid"});
+    testPlugin->Dump(fd5, {"start", "clear"});
+    testPlugin->Dump(fd5, {"start", "aaa"});
+    testPlugin->Dump(fd5, {"start"});
+    std::string result = GetFileContent("./fd5.txt");
+    ASSERT_TRUE(result.size() > 0);
+}
 } // namespace HiviewDFX
 } // namespace OHOS
