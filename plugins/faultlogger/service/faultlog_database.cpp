@@ -48,8 +48,17 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
         return false;
     }
     info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
+    if (info.time == 0) {
+        info.time = sysEvent->GetEventIntValue("HAPPEN_TIME");
+    }
     info.pid = sysEvent->GetEventIntValue("PID");
+    if (info.pid == 0) {
+        info.pid = sysEvent->GetEventIntValue("pid_");
+    }
     info.id = sysEvent->GetEventIntValue("UID");
+    if (info.id == 0) {
+       info.id = sysEvent->GetEventIntValue("uid_"); 
+    }
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
