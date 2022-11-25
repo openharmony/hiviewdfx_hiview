@@ -18,6 +18,7 @@
 
 #include <unordered_map>
 
+#include "iquery_sys_event_callback.h"
 #include "json/json.h"
 #include "query_argument.h"
 #include "sys_event_dao.h"
@@ -56,18 +57,21 @@ public:
     virtual ~BaseEventQueryWrapper() {}
 
 public:
-    bool Query(EventStore::QueryProcessInfo callerInfo, EventStore::DbQueryCallback queryCallback,
-        EventStore::ResultSet& result);
+    void Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> eventQueryCallback, int32_t& queryResult);
     void SetQueryArgument(QueryArgument argument);
     void SetIsFirstPartialQuery(bool isFirstPartialQuery);
     void SetSysEventQuery(std::shared_ptr<EventStore::SysEventQuery> query);
     void SetNext(std::shared_ptr<BaseEventQueryWrapper> next);
     QueryArgument& GetQueryArgument();
     DomainNameExtraInfoMap& GetDomainNameExtraInfoMap();
+    int64_t GetMaxSequence() const;
+    int64_t GetEventTotalCount() const;
+    void TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
+        const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback, std::pair<int64_t, int32_t>& details);
 
 public:
-    virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter) = 0;
-    virtual bool NeedStartNextQuery(int32_t transEventTotalCnt, int32_t ignoredEventCnt) = 0;
+    virtual void SetMaxSequence(int64_t maxSeq) = 0;
+    void SetEventTotalCount(int64_t totalCount);
 
 public:
     bool IsValid() const;
@@ -77,12 +81,18 @@ public:
     bool IsQueryComplete() const;
 
 protected:
+    virtual bool NeedStartNextQuery() = 0;
+    virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter) = 0;
     virtual void BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query) = 0;
     virtual void Order() = 0;
 
 protected:
     QueryArgument argument;
     int32_t queryLimit = 0;
+    int64_t maxSeq = 0;
+    int64_t totalEventCnt = 0;
+    int64_t transportedEventCnt = 0;
+    int32_t ignoredEventCnt = 0;
     std::shared_ptr<EventStore::SysEventQuery> query = nullptr;
 
 private:
@@ -96,6 +106,8 @@ private:
     bool BuildConditonByDomainNameExtraInfo(EventStore::Cond& domainNameConds);
     bool HasDomainNameExtraConditon(EventStore::Cond& domainNameConds,
         const DomainNameExtraInfoMap::value_type& domainNameExtraInfo);
+    void HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback,
+        int32_t& queryResult);
 };
 
 class TimeStampEventQueryWrapper final : public BaseEventQueryWrapper {
@@ -105,7 +117,8 @@ public:
 
 public:
     virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter);
-    virtual bool NeedStartNextQuery(int32_t transEventTotalCnt, int32_t ignoredEventCnt);
+    virtual bool NeedStartNextQuery();
+    virtual void SetMaxSequence(int64_t maxSeq);
 
 private:
     virtual void BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query);
@@ -119,7 +132,8 @@ public:
 
 public:
     virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter);
-    virtual bool NeedStartNextQuery(int32_t transEventTotalCnt, int32_t ignoredEventCnt);
+    virtual bool NeedStartNextQuery();
+    virtual void SetMaxSequence(int64_t maxSeq);
 
 private:
     virtual void BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query);
