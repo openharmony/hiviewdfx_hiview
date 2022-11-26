@@ -25,6 +25,7 @@
 #include "plugin_factory.h"
 #include "sys_event_dao.h"
 #include "string_util.h"
+#include "tbox.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -210,8 +211,42 @@ void HiCollieCollector::ProcessHiCollieEvent(SysEvent &sysEvent)
         "PID", sysEvent.GetEventValue(EVENT_PID),
         "TGID", sysEvent.GetEventValue(EVENT_TGID),
         "MSG", sysEvent.GetEventValue(EVENT_MSG));
+    ReportSysFreezeIfNeed(sysEvent, timestamp, processName, desPath);
     HIVIEW_LOGI("send event [%{public}s, %{public}s] msg:%{public}s path:%{public}s",
         "RELIABILITY", sysEvent.eventName_.c_str(), sysEvent.GetEventValue(EVENT_MSG).c_str(), desPath.c_str());
+}
+
+bool HiCollieCollector::ShouldReportSysFreeze(const std::string& processName)
+{
+    if ((processName.find("foundation") == std::string::npos) &&
+        (processName.find("render_service") == std::string::npos)) {
+        return false;
+    }
+
+    return true;
+}
+
+void HiCollieCollector::ReportSysFreezeIfNeed(SysEvent &sysEvent, const std::string& timestamp, const std::string& processName,
+    const std::string& path)
+{
+    if (!ShouldReportSysFreeze(processName)) {
+        return;
+    }
+
+    int32_t pid = static_cast<int32_t>(sysEvent.GetEventIntValue("PID"));
+    pid = pid ? pid : sysEvent.GetPid();
+    int32_t uid = sysEvent.GetEventIntValue("UID");
+    uid = uid ? uid : sysEvent.GetUid();
+    std::string fingerPrint = Tbox::CalcFingerPrint(processName, 0, FP_BUFFER);
+    HiSysEvent::Write("RELIABILITY", "SYS_FREEZE", HiSysEvent::FAULT,
+        "LOG_PATH", path,
+        "PID", pid,
+        "UID", uid,
+        "MODULE", processName,
+        "REASON", "Watchdog",
+        "EVENT_TIME", timestamp,
+        "FINGERPRINT", fingerPrint,
+        "SUMMARY", sysEvent.GetEventValue(EVENT_MSG));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
