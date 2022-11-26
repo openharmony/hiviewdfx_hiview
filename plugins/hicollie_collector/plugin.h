@@ -48,6 +48,9 @@ private:
         int32_t pid, const std::string& processName, const std::string& moduleName) const;
     void SaveToFile(SysEvent &sysEvent, int32_t pid, const std::string& processName,
     const std::string& path, const std::string& desPath) const;
+    bool ShouldReportSysFreeze(const std::string& processName);
+    void ReportSysFreezeIfNeed(SysEvent &sysEvent, const std::string& timestamp, const std::string& processName,
+        const std::string& path);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
