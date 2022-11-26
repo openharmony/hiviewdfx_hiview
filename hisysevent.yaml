@@ -61,6 +61,7 @@ SYS_FREEZE:
   FIRST_FRAME: {type: STRING, desc: first stack info}
   SECOND_FRAME: {type: STRING, desc: second stack info}
   LAST_FRAME: {type: STRING, desc: last stack info}
+  LOG_PATH: {type: STRING, desc: fault log path}
 
 STACK:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}

@@ -43,7 +43,7 @@ int CalcFingerprint::ConvertToString(const unsigned char hash[SHA256_DIGEST_LENG
         outHash += charsEachHex;
     }
     *outHash = '\0';
-    return SUCCESS;
+    return 0;
 }
 
 /*
