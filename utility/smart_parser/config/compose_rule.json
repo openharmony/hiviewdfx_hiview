@@ -38,5 +38,12 @@
                 "F3NAME": "BasicParam.v_noc",
                 "END_STACK": "MainCallTrace.v_trace"
            }
+    },
+    "HWWATCHDOG": {
+        "04_HWWATCHDOG_00":{
+            "PNAME": "BasicParam.v_pname",
+            "F1NAME": "BasicParam.v_f1",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
     }
 }
