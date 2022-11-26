@@ -200,7 +200,7 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
         callback->OnComplete(queryResult, totalEventCnt, maxSeq);
         return;
     }
-    if (!NeedStartNextQuery()) { // keep current query
+    if (query != nullptr && !NeedStartNextQuery()) { // keep current query
         Query(callback, queryResult);
         return;
     }
