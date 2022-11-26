@@ -34,6 +34,12 @@ using namespace std;
 REGISTER(BBoxDetectorPlugin)
 DEFINE_LOG_TAG("BBoxDetectorPlugin");
 
+static std::vector<std::string> EVENT_LIST = { "PANIC", "HWWATCHDOG", "LPM3EXCEPTION", "BOOTLOADER_CRASH", "TRUSTZONE_REBOOTSYS",
+                                               "MODEM_REBOOTSYS", "BOOTFAIL", "HARDWARE_FAULT", "MODEMCRASH", "HIFICRASH",
+                                               "AUDIO_CODEC_CRASH", "SENSORHUBCRASH", "ISPCRASH", "IVPCRASH", "TRUSTZONECRASH",
+                                               "GENERAL_SEE_CRASH", "UNKNOWNS", "PRESS10S", "PRESS6S", "NPUEXCEPTION",
+                                               "CONNEXCEPTION", "FDULCRASH", "DSSCRASH"};
+                                               
 void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
@@ -47,7 +53,7 @@ void BBoxDetectorPlugin::OnUnload()
 
 bool BBoxDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
 {
-    if (!CanProcessEvent(event)) {
+    if (!IsInterestedPipelineEvent(event)) {
         return false;
     }
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
@@ -55,7 +61,7 @@ bool BBoxDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
     return true;
 }
 
-bool BBoxDetectorPlugin::CanProcessEvent(std::shared_ptr<Event> event)
+bool BBoxDetectorPlugin::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
 {
     if (event == nullptr || event->domain_ != "KERNEL_VENDOR") {
         return false;
@@ -63,10 +69,12 @@ bool BBoxDetectorPlugin::CanProcessEvent(std::shared_ptr<Event> event)
 
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
     auto subEventType = sysEvent->GetEventValue("name_");
-    if (subEventType != "PANIC") {
-        HIVIEW_LOGI("sub event type is %{public}s, not care", subEventType.c_str());
+    vector<std :: string>::iterator it = find(EVENT_LIST.begin(), EVENT_LIST.end(), subEventType);
+    if (it == EVENT_LIST.end()){
+        HIVIEW_LOGI("subsystem event %{public}s is ignored", subEventType.c_str());
         return false;
     }
+
     return true;
 }
 
