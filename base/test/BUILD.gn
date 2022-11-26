@@ -23,6 +23,7 @@ group("unittest") {
     ":SysEventTest",
     "$hiview_base/event_pool/test:EventPoolTest",
     "$hiview_base/event_store/test:unittest",
+    "$hiview_base/running_status_logger/test:unittest",
   ]
 }
 
