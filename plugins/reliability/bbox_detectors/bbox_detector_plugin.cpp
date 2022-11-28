@@ -70,7 +70,7 @@ bool BBoxDetectorPlugin::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
     auto subEventType = sysEvent->GetEventValue("name_");
     vector<std :: string>::iterator it = find(EVENT_LIST.begin(), EVENT_LIST.end(), subEventType);
-    if (it == EVENT_LIST.end()){
+    if (it == EVENT_LIST.end()) {
         HIVIEW_LOGI("subsystem event %{public}s is ignored", subEventType.c_str());
         return false;
     }
