@@ -109,7 +109,8 @@ public:
         return 0;
     }
 
-    int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) {
+    int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode)
+    {
         return 0;
     }
 
