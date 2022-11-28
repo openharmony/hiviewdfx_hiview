@@ -157,6 +157,9 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     this->AddUseCount();
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
+    if (watchPoint.GetLogPath().empty()) {
+        return;
+    }
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
     uint64_t constexpr delayTime = 10;
     threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);

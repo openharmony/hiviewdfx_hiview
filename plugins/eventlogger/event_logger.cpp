@@ -50,13 +50,18 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
+    if (eventLoggerConfig_.find(sysEvent->eventName_) == eventLoggerConfig_.end()) {
+        return false;
+    }
     HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
         sysEvent->jsonExtraInfo_.c_str());
 
-    if (eventLoggerConfig_.find(sysEvent->eventName_) == eventLoggerConfig_.end()) {
-        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : EventLogger don't care and "
-            "don't block other processes",
-            sysEvent->eventId_,  sysEvent->eventName_.c_str());
+    long pid = sysEvent->GetEventIntValue("PID");
+    pid = pid ? pid : sysEvent->GetPid();
+    std::string content = CommonUtils::GetProcNameByPid(pid);
+    if (content.empty()) {
+        HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s : pid %{public}d is invalid",
+            sysEvent->eventId_,  sysEvent->eventName_.c_str(), pid);
         return false;
     }
     EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
@@ -74,9 +79,27 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
+    if (sysEvent->GetValue("eventLog_action").empty()) {
+        UpdateDB(sysEvent, "nolog");
+        PostEvent(sysEvent);
+        return true;
+    }
+
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->jsonExtraInfo_.c_str());
+
+        long pid = sysEvent->GetEventIntValue("PID");
+        pid = pid ? pid : sysEvent->GetPid();
+        std::string content = CommonUtils::GetProcNameByPid(pid);
+        if (content.empty()) {
+            std::string packageName = sysEvent->GetEventValue("PACKAGE_NAME");
+            HIVIEW_LOGW("event: id:0x%{public}x, eventName:%{public}s :"
+                "packageName:%{public}s, pid %{public}d is invalid",
+                sysEvent->eventId_,  sysEvent->eventName_.c_str(), packageName.c_str(), pid);
+            return;
+        }
+
         this->StartLogCollect(sysEvent);
         this->PostEvent(sysEvent);
     };
@@ -95,7 +118,8 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
     int32_t pid = static_cast<int32_t>(event->GetEventIntValue("PID"));
     pid = pid ? pid : event->GetPid();
-    std::string logFile = idStr + "-" + std::to_string(pid) + "-" + GetFormatTime(logTime) + ".log";
+    std::string logFile = idStr + "-" + std::to_string(pid) + "-"
+                          + TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S") + ".log";
     if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
         UpdateDB(event, logFile);
@@ -109,7 +133,10 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     }
 
     auto start = TimeUtil::GetMilliseconds();
-    FileUtil::SaveStringToFd(fd, "start time: " + std::to_string(start) + "\n");
+    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
+    std::string startTimeStr = TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr += ":" + std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
+    FileUtil::SaveStringToFd(fd, "start time: " + startTimeStr + "\n");
     WriteCommonHead(fd, event);
     auto eventLogAction = std::make_unique<EventLogAction>(fd, event);
     eventLogAction->Init();
@@ -134,7 +161,10 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 
     headerStream << "DOMAIN = " << event->domain_ << std::endl;
     headerStream << "EVENTNAME = " << event->eventName_ << std::endl;
-    headerStream << "TIMESTAMP = " << event->happenTime_ << std::endl;
+    uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
+    uint64_t logTimeMs = event->happenTime_ % TimeUtil::SEC_TO_MILLISEC;
+    std::string happenTime = TimeUtil::TimestampFormatToDate(logTime, "%Y/%m/%d-%H:%M:%S");
+    headerStream << "TIMESTAMP = " << happenTime << ":" << logTimeMs << std::endl;
     long pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
     headerStream << "PID = " << pid << std::endl;
@@ -197,21 +227,6 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
         interval:%{public}ld normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
     return true;
-}
-
-std::string EventLogger::GetFormatTime(uint64_t timestamp) const
-{
-    struct tm tm;
-    time_t ts;
-    /* 20: the length of 'YYYYmmddHHMMSS' */
-    int strLen = 20;
-    ts = timestamp;
-    localtime_r(&ts, &tm);
-    char buf[strLen];
-
-    (void)memset_s(buf, strLen, 0, strLen);
-    strftime(buf, strLen - 1, "%Y%m%d%H%M%S", &tm);
-    return std::string(buf, strlen(buf));
 }
 
 bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)

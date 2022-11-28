@@ -44,13 +44,8 @@ bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, i
     packageName_ = packageNam;
 
     if (pid_ <= 0) {
-        int p = CommonUtils::GetPidByName(packageName_);
-        if (p > 0) {
-            pid_ = p;
-        } else {
-            description_ = "OpenStacktraceCatcher -- packageName is " + packageName_ + " pid is null\n";
-            return false;
-        }
+        description_ = "OpenStacktraceCatcher -- packageName is " + packageName_ + " pid is null\n";
+        return false;
     }
 
     if (packageName_.length() == 0) {
