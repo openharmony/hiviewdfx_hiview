@@ -104,7 +104,8 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         this->PostEvent(sysEvent);
     };
     eventPool_->AddTask(task, "eventlogger");
-
+    // finish pipeline
+    onEvent->OnFinish();
     return true;
 }
 
