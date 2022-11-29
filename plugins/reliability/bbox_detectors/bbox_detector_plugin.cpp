@@ -70,7 +70,7 @@ bool BBoxDetectorPlugin::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
     auto subEventType = sysEvent->GetEventValue("name_");
     vector<std :: string>::iterator it = find(EVENT_LIST.begin(), EVENT_LIST.end(), subEventType);
-    if (it == EVENT_LIST.end()){
+    if (it == EVENT_LIST.end()) {
         HIVIEW_LOGI("subsystem event %{public}s is ignored", subEventType.c_str());
         return false;
     }
@@ -92,7 +92,8 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string module = sysEvent->GetEventValue("MODULE");
     std::string timeStr = sysEvent->GetEventValue("SUB_LOG_PATH");
     std::string LOG_PATH = sysEvent->GetEventValue("LOG_PATH");
-    std::string dynamicPaths = LOG_PATH + timeStr;
+    std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
+                                  LOG_PATH : LOG_PATH + '/') + timeStr;
     auto times = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetRleftSubstr(timeStr, "-"),
                                                                "%Y%m%d%H%M%S"));
     sysEvent->SetEventValue("HAPPEN_TIME", times);
