@@ -49,6 +49,7 @@ constexpr int32_t KMSG_SIZE = 2049;
 CrashValidator::CrashValidator() : stopReadKmsg_(false), totalEventCount_(0),
     normalEventCount_(0), kmsgReaderThread_(nullptr)
 {
+    name_ = "CrashValidator";
 }
 
 CrashValidator::~CrashValidator()
@@ -116,6 +117,7 @@ void CrashValidator::Dump(int fd, const std::vector<std::string>& cmds)
 
 bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
 {
+    OnUnorderedEvent(*(event.get()));
     return true;
 }
 
@@ -301,6 +303,8 @@ void CrashValidator::OnLoad()
     AddListenerInfo(Event::MessageType::SYS_EVENT, KEY_PROCESS_EXIT);
     GetHiviewContext()->RegisterUnorderedEventListener(
         std::static_pointer_cast<CrashValidator>(shared_from_this()));
+
+    GetHiviewContext()->AppendPluginToPipeline(GetName(), "SysEventPipeline");
 }
 
 void CrashValidator::OnUnload()
