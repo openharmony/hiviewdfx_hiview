@@ -391,9 +391,12 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
         return IPC_CALL_SUCCEED;
     }
     auto queryWrapper = queryWrapperBuilder->Build();
-    if (queryWrapper != nullptr) {
-        queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
+    if (queryWrapper == nullptr) {
+        HiLog::Warn(LABEL, "query wrapper build failed.");
+        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
+        return ERR_QUERY_RULE_INVALID;
     }
+    queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
     auto queryRetCode = IPC_CALL_SUCCEED;
     queryWrapper->Query(callback, queryRetCode);
     return queryRetCode;
