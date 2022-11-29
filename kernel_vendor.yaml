@@ -35,7 +35,7 @@ HUNGTASK:
 
 PANIC:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: Panic}
-  MSG: {type: STRING, desc: PANIC event message}
+  MSG: {type: STRING, desc: panic event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -43,6 +43,9 @@ PANIC:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 BOOTFAIL:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
@@ -54,10 +57,13 @@ BOOTFAIL:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 HWWATCHDOG:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: hwwatchdog event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -65,10 +71,13 @@ HWWATCHDOG:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 LPM3EXCEPTION:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: lpm3exception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -76,10 +85,13 @@ LPM3EXCEPTION:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 BOOTLOADER_CRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: bootloader_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -87,10 +99,13 @@ BOOTLOADER_CRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 TRUSTZONE_REBOOTSYS:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: trustzone_rebootsys event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -98,10 +113,13 @@ TRUSTZONE_REBOOTSYS:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 MODEM_REBOOTSYS:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: modem_rebootsys event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -109,10 +127,13 @@ MODEM_REBOOTSYS:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 HARDWARE_FAULT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: hardware event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -120,10 +141,13 @@ HARDWARE_FAULT:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 MODEMCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: modemcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -131,10 +155,13 @@ MODEMCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 HIFICRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: hificrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -142,10 +169,13 @@ HIFICRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 AUDIO_CODEC_CRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: audio_codec_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -153,10 +183,13 @@ AUDIO_CODEC_CRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 SENSORHUBCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: sensorhubcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -164,10 +197,13 @@ SENSORHUBCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 ISPCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: ispcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -175,10 +211,13 @@ ISPCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 IVPCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: ivpcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -186,10 +225,13 @@ IVPCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 TRUSTZONECRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: trustzonecrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -197,10 +239,13 @@ TRUSTZONECRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 GENERAL_SEE_CRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: general_see_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -208,10 +253,13 @@ GENERAL_SEE_CRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 UNKNOWNS:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: unknows event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -219,10 +267,13 @@ UNKNOWNS:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 PRESS10S:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: press10s event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -230,10 +281,13 @@ PRESS10S:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 PRESS6S:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: press6s event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -241,10 +295,13 @@ PRESS6S:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 NPUEXCEPTION:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: npuexception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -252,10 +309,13 @@ NPUEXCEPTION:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 CONNEXCEPTION:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: connexception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -263,10 +323,13 @@ CONNEXCEPTION:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 FDULCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: fdulcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -274,10 +337,13 @@ FDULCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
 
 DSSCRASH:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
-  MSG: {type: STRING, desc: bootFail event message}
+  MSG: {type: STRING, desc: dsscrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
@@ -285,3 +351,6 @@ DSSCRASH:
   LOG_PATH: {type: STRING, desc: fault log dir}
   SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
