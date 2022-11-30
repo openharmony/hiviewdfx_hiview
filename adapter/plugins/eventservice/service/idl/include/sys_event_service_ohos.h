@@ -83,8 +83,7 @@ public:
 
 private:
     bool HasAccessPermission() const;
-    bool BuildEventQuery(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-        std::shared_ptr<EventQueryWrapperBuilder> builder);
+    bool BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder, const SysEventQueryRuleGroupOhos& rules);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
 
