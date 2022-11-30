@@ -317,8 +317,8 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
     }
 }
 
-bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-    std::shared_ptr<EventQueryWrapperBuilder> builder)
+bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder,
+    const SysEventQueryRuleGroupOhos& rules)
 {
     if (builder == nullptr) {
         return false;
@@ -330,38 +330,39 @@ bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, co
         }
         return true;
     }
-    for (auto ruleIter = rules.cbegin(); ruleIter < rules.cend(); ++ruleIter) {
-        if (ruleIter->domain.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
-            return false;
+    return !any_of(rules.cbegin(), rules.cend(), [this, callingUid, &builder] (auto& rule) {
+        if (rule.domain.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+            return true;
         }
-        for (auto nameIter = ruleIter->eventList.cbegin(); nameIter < ruleIter->eventList.cend(); ++nameIter) {
-            std::string eventName = *nameIter;
-            if (eventName.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+        return any_of(rule.eventList.cbegin(), rule.eventList.cend(),
+            [this, callingUid, &builder, &rule] (auto& eventName) {
+                if (eventName.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+                    return true;
+                }
+                auto eventType = this->GetTypeByDomainAndName(rule.domain, eventName);
+                if ((!rule.domain.empty() && !eventName.empty() && eventType == INVALID_EVENT_TYPE) ||
+                    (eventType != INVALID_EVENT_TYPE && rule.eventType != INVALID_EVENT_TYPE &&
+                    eventType != rule.eventType)) {
+                    HiLog::Warn(LABEL, "domain=%{public}s, event name=%{public}s: "
+                        "event type configured is %{public}u, "
+                        "no match with query event type which is %{public}u.",
+                        rule.domain.c_str(), eventName.c_str(), eventType, rule.eventType);
+                    return false;
+                }
+                if (eventType != INVALID_EVENT_TYPE && rule.eventType == INVALID_EVENT_TYPE) {
+                    builder->Append(rule.domain, eventName, eventType, rule.condition);
+                    return false;
+                }
+                if (rule.eventType != INVALID_EVENT_TYPE) {
+                    builder->Append(rule.domain, eventName, rule.eventType, rule.condition);
+                    return false;
+                }
+                for (auto type : EVENT_TYPES) {
+                    builder->Append(rule.domain, eventName, type, rule.condition);
+                }
                 return false;
-            }
-            auto eventType = GetTypeByDomainAndName(ruleIter->domain, eventName);
-            if ((!ruleIter->domain.empty() && !eventName.empty() && eventType == INVALID_EVENT_TYPE) ||
-                (eventType != INVALID_EVENT_TYPE && ruleIter->eventType != INVALID_EVENT_TYPE &&
-                eventType != ruleIter->eventType)) {
-                HiLog::Warn(LABEL, "domain=%{public}s, event name=%{public}s: event type configured is %{public}u, "
-                    "no match with query event type which is %{public}u.",
-                    ruleIter->domain.c_str(), eventName.c_str(), eventType, ruleIter->eventType);
-                continue;
-            }
-            if (eventType != INVALID_EVENT_TYPE && ruleIter->eventType == INVALID_EVENT_TYPE) {
-                builder->Append(ruleIter->domain, eventName, eventType, ruleIter->condition);
-                continue;
-            }
-            if (ruleIter->eventType != INVALID_EVENT_TYPE) {
-                builder->Append(ruleIter->domain, eventName, ruleIter->eventType, ruleIter->condition);
-                continue;
-            }
-            for (auto type : EVENT_TYPES) {
-                builder->Append(ruleIter->domain, eventName, type, ruleIter->condition);
-            }
-        }
-    }
-    return true;
+            });
+    });
 }
 
 int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
@@ -380,7 +381,7 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
         return checkRet;
     }
     auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
-    auto buildRet = BuildEventQuery(queryArgument, rules, queryWrapperBuilder);
+    auto buildRet = BuildEventQuery(queryWrapperBuilder, rules);
     if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
         HiLog::Warn(LABEL, "invalid query rule, exit sys event querying.");
         callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
