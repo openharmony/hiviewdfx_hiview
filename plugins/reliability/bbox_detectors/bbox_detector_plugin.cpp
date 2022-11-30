@@ -34,12 +34,12 @@ using namespace std;
 REGISTER(BBoxDetectorPlugin)
 DEFINE_LOG_TAG("BBoxDetectorPlugin");
 
-static std::vector<std::string> EVENT_LIST = { "PANIC", "HWWATCHDOG", "LPM3EXCEPTION", "BOOTLOADER_CRASH", "TRUSTZONE_REBOOTSYS",
-                                               "MODEM_REBOOTSYS", "BOOTFAIL", "HARDWARE_FAULT", "MODEMCRASH", "HIFICRASH",
-                                               "AUDIO_CODEC_CRASH", "SENSORHUBCRASH", "ISPCRASH", "IVPCRASH", "TRUSTZONECRASH",
-                                               "GENERAL_SEE_CRASH", "UNKNOWNS", "PRESS10S", "PRESS6S", "NPUEXCEPTION",
-                                               "CONNEXCEPTION", "FDULCRASH", "DSSCRASH"};
-                                               
+static std::vector<std::string> EVENT_LIST = { "PANIC", "HWWATCHDOG", "LPM3EXCEPTION", "BOOTLOADER_CRASH", "BOOTFAIL",
+                                               "TRUSTZONE_REBOOTSYS", "CONNEXCEPTION", "SENSORHUBCRASH", "HIFICRASH",
+                                               "HARDWARE_FAULT", "MODEMCRASH", "AUDIO_CODEC_CRASH","TRUSTZONECRASH",
+                                               "ISPCRASH", "IVPCRASH", "PRESS10S", "GENERAL_SEE_CRASH", "DSSCRASH",
+                                               "UNKNOWNS", "NPUEXCEPTION", "MODEM_REBOOTSYS", "FDULCRASH", "PRESS6S"};
+
 void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
