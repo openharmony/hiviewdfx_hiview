@@ -95,7 +95,7 @@ std::string GetFileContent(const std::string& filename)
  * @tc.name: SysEventStatTest002
  * @tc.desc: check event state
  * @tc.type: FUNC
- * @tc.require:
+ * @tc.require: issueI62WJT
  */
 HWTEST_F(EventServiceActionTest, SysEventStatTest002, testing::ext::TestSize.Level3)
 {
@@ -136,58 +136,10 @@ HWTEST_F(EventServiceActionTest, SysEventStatTest002, testing::ext::TestSize.Lev
 }
 
 /**
- * @tc.name: SysEventDao003
- * @tc.desc: check event Dao
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
-{
-    std::string jsonStr1 = R"~({"domain_":"demo","name_":"SysEventDaoTest_002","type_":1,"tz_":8,"time_":162027129110,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "keyBool":1})~";
-    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
-    std::cout <<" SysEventDao003:" << 0 << std::endl;
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
-    auto sysEventDbMgrPtr = std::make_unique<SysEventDbMgr>();
-    sysEventDbMgrPtr->SaveToStore(sysEvent);
-
-    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    std::vector<std::string> selections { EventStore::EventCol::NAME };
-    EventStore::ResultSet resultSet = (*sysEventQuery).Select(selections).
-        Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "SysEventDaoTest_002").Execute();
-    int count = 0;
-    while (resultSet.HasNext()) {
-        EventStore::ResultSet::RecordIter it = resultSet.Next();
-        std::cout << "seq=" << it->GetSeq() << std::endl;
-        count++;
-    }
-    ASSERT_TRUE(count > 0);
-    std::cout <<" count:" << count << std::endl;
-    for (int i = 0; i < 5000; i++) {
-        SysEventCreator sysEventCreator("domain1", "test1", SysEventCreator::FAULT);
-        auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
-        EventStore::SysEventDao::Insert(sysEvent1);
-    }
-    sysEventDbMgrPtr->StartCheckStoreTask(nullptr);
-    sysEventDbMgrPtr->CheckStore();
-    for (int i = 0; i < 20000; i++) {
-        SysEventCreator sysEventCreator("domain2", "test2", SysEventCreator::FAULT);
-        auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
-        EventStore::SysEventDao::Insert(sysEvent2);
-    }
-    sysEventDbMgrPtr->StartCheckStoreTask(nullptr);
-    sysEventDbMgrPtr->CheckStore();
-    SysEventDbBackup dbBackup(EventStore::StoreType::FAULT);
-    ASSERT_TRUE(dbBackup.IsBroken() == 0);
-    ASSERT_TRUE(dbBackup.Recover() == 1);
-}
-
-/**
  * @tc.name: SysEventService
  * @tc.desc: check sysEvent service
  * @tc.type: FUNC
- * @tc.require:
+ * @tc.require: issueI62WJT
  */
 HWTEST_F(EventServiceActionTest, SysEventService004, testing::ext::TestSize.Level3)
 {

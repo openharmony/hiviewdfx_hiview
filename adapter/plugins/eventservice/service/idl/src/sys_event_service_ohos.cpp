@@ -340,8 +340,9 @@ bool SysEventServiceOhos::BuildEventQuery(const QueryArgument& queryArgument, co
                 return false;
             }
             auto eventType = GetTypeByDomainAndName(ruleIter->domain, eventName);
-            if (eventType != INVALID_EVENT_TYPE && ruleIter->eventType != INVALID_EVENT_TYPE &&
-                eventType != ruleIter->eventType) {
+            if ((!ruleIter->domain.empty() && !eventName.empty() && eventType == INVALID_EVENT_TYPE) ||
+                (eventType != INVALID_EVENT_TYPE && ruleIter->eventType != INVALID_EVENT_TYPE &&
+                eventType != ruleIter->eventType)) {
                 HiLog::Warn(LABEL, "domain=%{public}s, event name=%{public}s: event type configured is %{public}u, "
                     "no match with query event type which is %{public}u.",
                     ruleIter->domain.c_str(), eventName.c_str(), eventType, ruleIter->eventType);
