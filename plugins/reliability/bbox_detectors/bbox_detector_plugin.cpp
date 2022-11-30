@@ -39,7 +39,7 @@ static std::vector<std::string> EVENT_LIST = { "PANIC", "HWWATCHDOG", "LPM3EXCEP
                                                "HARDWARE_FAULT", "MODEMCRASH", "AUDIO_CODEC_CRASH","TRUSTZONECRASH",
                                                "ISPCRASH", "IVPCRASH", "PRESS10S", "GENERAL_SEE_CRASH", "DSSCRASH",
                                                "UNKNOWNS", "NPUEXCEPTION", "MODEM_REBOOTSYS", "FDULCRASH", "PRESS6S"};
-                                               
+
 void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
