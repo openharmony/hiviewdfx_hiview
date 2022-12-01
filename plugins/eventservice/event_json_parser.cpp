@@ -373,6 +373,7 @@ void EventJsonParser::ReadSeqFromFile(int64_t& seq)
     }
     seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
     HIVIEW_LOGI("read max sequence from local file successful, value is %{public}" PRId64 ".", seq);
+    SysEventServiceAdapter::UpdateEventSeq(seq);
 }
 
 void EventJsonParser::WriteSeqToFile(int64_t seq) const
