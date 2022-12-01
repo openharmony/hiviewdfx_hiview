@@ -23,6 +23,8 @@
 #include "ash_mem_utils.h"
 #include "event.h"
 #include "event_query_wrapper_builder.h"
+#include "file_util.h"
+#include "hiview_global.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iquery_sys_event_callback.h"
@@ -32,6 +34,7 @@
 #include "query_argument.h"
 #include "query_sys_event_callback_proxy.h"
 #include "query_sys_event_callback_stub.h"
+#include "plugin.h"
 #include "ret_code.h"
 #include "running_status_log_util.h"
 #include "string_ex.h"
@@ -56,6 +59,8 @@ using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
 constexpr int SYS_EVENT_SERVICE_ID = 1203;
+constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
+const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 namespace {
 class TestQuerySysEventCallbackStub : public QuerySysEventCallbackStub {
 public:
@@ -122,6 +127,14 @@ public:
         QUERY_SYS_EVENT,
         SET_DEBUG_MODE
     };
+};
+
+class HiviewTestContext : public HiviewContext {
+public:
+    std::string GetHiViewDirectory(DirectoryType type __UNUSED)
+    {
+        return TEST_LOG_DIR;
+    }
 };
 }
 
@@ -197,7 +210,7 @@ HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Lev
             auto proxy = new SysEventServiceProxy(stub);
             auto ret = proxy->AddListener(rules, callbackTest);
             printf("add listener result is %d.\n", ret);
-            ASSERT_TRUE(ret == 0);
+            ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
             if (ret == 0) {
                 sleep(1);
                 proxy->AddListener(rules, callbackTest);
@@ -233,7 +246,7 @@ HWTEST_F(SysEventServiceOhosTest, RemoveListenerTest001, testing::ext::TestSize.
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
             auto ret = proxy->AddListener(rules, callbackTest);
-            if (ret == 0) {
+            if (ret == IPC_CALL_SUCCEED) {
                 sleep(1);
                 ret = proxy->RemoveListener(callbackTest);
                 printf("remove listener result is %d.\n", ret);
@@ -277,7 +290,7 @@ HWTEST_F(SysEventServiceOhosTest, OnSysEventTest001, testing::ext::TestSize.Leve
             rules.push_back(rule3);
             auto ret = proxy->AddListener(rules, callbackTest);
             sleep(5);
-            if (ret == 0) {
+            if (ret == IPC_CALL_SUCCEED) {
                 sleep(1);
                 proxy->RemoveListener(callbackTest);
             } else {
@@ -309,9 +322,15 @@ HWTEST_F(SysEventServiceOhosTest, SetDebugModeTest, testing::ext::TestSize.Level
         if (stub != nullptr) {
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
-            bool result = proxy->SetDebugMode(callbackTest, true);
+            auto result = proxy->SetDebugMode(callbackTest, true);
             printf("SetDebugMode result is %d.\n", result);
-            ASSERT_TRUE(result == 0);
+            if (result == IPC_CALL_SUCCEED) {
+                result = proxy->SetDebugMode(callbackTest, true);
+                ASSERT_TRUE(result == ERR_DEBUG_MODE_SET_REPEAT);
+                result = proxy->SetDebugMode(callbackTest, false);
+                ASSERT_TRUE(result == IPC_CALL_SUCCEED);
+            }
+            ASSERT_TRUE(true);
         } else {
             printf("check sys event service failed.\n");
             ASSERT_TRUE(false);
@@ -328,9 +347,6 @@ HWTEST_F(SysEventServiceOhosTest, SetDebugModeTest, testing::ext::TestSize.Level
 HWTEST_F(SysEventServiceOhosTest, SysEventServiceAdapterTest, testing::ext::TestSize.Level3)
 {
     OHOS::HiviewDFX::SysEventServiceAdapter::StartService(nullptr, nullptr);
-    auto adapterService = std::make_shared<SysEventAdapterTestService>();
-    OHOS::HiviewDFX::SysEventServiceAdapter::StartService(adapterService.get(), nullptr);
-    ASSERT_TRUE(true);
     std::shared_ptr<SysEvent> sysEvent = nullptr;
     OHOS::HiviewDFX::SysEventServiceAdapter::OnSysEvent(sysEvent);
     SysEventCreator sysEventCreator("DEMO", "EVENT_NAME", SysEventCreator::FAULT);
@@ -451,11 +467,11 @@ HWTEST_F(SysEventServiceOhosTest, TestSysEventService, testing::ext::TestSize.Le
     sysRules.emplace_back(sysEventRule);
     const sptr<SysEventCallbackStub>& listener(new(std::nothrow) TestSysEventCallbackStub);
     auto ret = sysEventServiceProxy.AddListener(sysRules, listener);
-    ASSERT_TRUE(ret == 0);
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
     ret = sysEventServiceProxy.SetDebugMode(listener, true);
-    ASSERT_TRUE(ret == 0);
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
     ret = sysEventServiceProxy.RemoveListener(listener);
-    ASSERT_TRUE(ret == 0);
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
     const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
     long long defaultTimeStap = -1;
     int queryCount = 10;
@@ -465,7 +481,7 @@ HWTEST_F(SysEventServiceOhosTest, TestSysEventService, testing::ext::TestSize.Le
     OHOS::HiviewDFX::SysEventQueryRule queryRule("DOMAIN", eventNames);
     queryRules.emplace_back(queryRule);
     ret = sysEventServiceProxy.Query(argument, queryRules, querier);
-    ASSERT_TRUE(ret == 0);
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
 }
 
 /**
@@ -503,12 +519,80 @@ HWTEST_F(SysEventServiceOhosTest, MarshallingTAndUnmarshallingTest, testing::ext
 }
 
 /**
- * @tc.name: ConditionParserTest
+ * @tc.name: RunningStatusLogUtilTest
+ * @tc.desc: Test apis of RunningStatusLogUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI62WJT
+ */
+HWTEST_F(SysEventServiceOhosTest, RunningStatusLogUtilTest, testing::ext::TestSize.Level1)
+{
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules;
+    std::vector<std::string> eventNames { "EVENT_NAME1", "EVENT_NAME2" };
+    OHOS::HiviewDFX::SysEventQueryRule queryRule("DOMAIN", eventNames);
+    RunningStatusLogUtil::LogTooManyQueryRules(queryRules);
+    ASSERT_TRUE(true);
+    queryRules.emplace_back(queryRule);
+    RunningStatusLogUtil::LogTooManyQueryRules(queryRules);
+    ASSERT_TRUE(true);
+    vector<SysEventRule> sysEventRules1;
+    RunningStatusLogUtil::LogTooManyWatchRules(sysEventRules1);
+    ASSERT_TRUE(true);
+    vector<SysEventRule> sysEventRules2 = GetTestRules(1, "", "");
+    RunningStatusLogUtil::LogTooManyWatchRules(sysEventRules2);
+    ASSERT_TRUE(true);
+    RunningStatusLogUtil::LogTooManyWatchers(30);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: SysEventServiceOhosIntanceTest
+ * @tc.desc: Test apis of SysEventServiceOhos
+ * @tc.type: FUNC
+ * @tc.require: issueI62WJT
+ */
+HWTEST_F(SysEventServiceOhosTest, SysEventServiceOhosIntanceTest, testing::ext::TestSize.Level1)
+{
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
+    long long defaultTimeStap = -1;
+    OHOS::HiviewDFX::QueryArgument argument1(defaultTimeStap, defaultTimeStap, 10);
+    std::vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules;
+    std::vector<std::string> eventNames { "" };
+    OHOS::HiviewDFX::SysEventQueryRule queryRule("", eventNames);
+    queryRules.emplace_back(queryRule);
+    auto ret = SysEventServiceOhos::GetInstance().Query(argument1, queryRules, querier);
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
+    ret = SysEventServiceOhos::GetInstance().Query(argument1, queryRules, querier);
+    ASSERT_TRUE(ret == ERR_QUERY_TOO_FREQUENTLY);
+    sptr<ISysEventCallback> callbackTest = new SysEventCallbackOhosTest();
+    vector<SysEventRule> rules;
+    SysEventRule rule = GetTestRule(0, "DOMAIN", "EVENT_NAME");
+    rules.push_back(rule);
+    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackTest);
+    ASSERT_TRUE(ret == ERR_ADD_DEATH_RECIPIENT);
+    ret = SysEventServiceOhos::GetInstance().RemoveListener(callbackTest);
+    ASSERT_TRUE(ret == ERR_LISTENERS_EMPTY);
+    std::vector<std::u16string> args;
+    auto dumpRet = SysEventServiceOhos::GetInstance().Dump(-1, args);
+    ASSERT_TRUE(dumpRet == -1);
+    dumpRet = SysEventServiceOhos::GetInstance().Dump(0, args);
+    ASSERT_TRUE(dumpRet == 0);
+    SysEventServiceOhos::GetInstance().OnRemoteDied(nullptr);
+    ASSERT_TRUE(true);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+}
+
+/**
+ * @tc.name: ConditionParserTest01
  * @tc.desc: Test apis of ConditionParser
  * @tc.type: FUNC
  * @tc.require: issueI62WJT
  */
-HWTEST_F(SysEventServiceOhosTest, ConditionParserTest, testing::ext::TestSize.Level1)
+HWTEST_F(SysEventServiceOhosTest, ConditionParserTest01, testing::ext::TestSize.Level1)
 {
     OHOS::HiviewDFX::ConditionParser parser;
     EventStore::Cond cond;
@@ -537,6 +621,130 @@ HWTEST_F(SysEventServiceOhosTest, ConditionParserTest, testing::ext::TestSize.Le
     ASSERT_TRUE(ret);
     ret = parser.ParseCondition(condStr3, cond);
     ASSERT_TRUE(ret);
+    std::string condStr4 = R"~({"version":"V1","condition":{"and":[{"param1":"type_","op":">","value":0},
+        {"param2":"uid_","op":"=","value":1201}],"or":[{"param4":"NAME","op":"=","value":"SysEventService"},
+        {"param3":"NAME","op":"=","value":"SysEventSource"}]}})~";
+    ret = parser.ParseCondition(condStr4, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condStr4, cond);
+    ASSERT_TRUE(!ret);
+    std::string condSt5 = R"~({"version":"V1","condition":{"and":[{"param":"","op":">","value":0},
+        {"param":"","op":"=","value":1201}],"or":[{"param":"","op":"=","value":"SysEventService"},
+        {"param":"","op":"=","value":"SysEventSource"}]}})~";
+    ret = parser.ParseCondition(condSt5, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condSt5, cond);
+    ASSERT_TRUE(!ret);
+    std::string condSt6 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op1":">","value":0},
+        {"param":"uid_","op2":"=","value":1201}],"or":[{"param":"NAME","op3":"=","value":"SysEventService"},
+        {"param":"NAME","op4":"=","value":"SysEventSource"}]}})~";
+    ret = parser.ParseCondition(condSt6, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condSt6, cond);
+    ASSERT_TRUE(!ret);
+}
+
+/**
+ * @tc.name: ConditionParserTest02
+ * @tc.desc: Test apis of ConditionParser
+ * @tc.type: FUNC
+ * @tc.require: issueI62WJT
+ */
+HWTEST_F(SysEventServiceOhosTest, ConditionParserTest02, testing::ext::TestSize.Level1)
+{
+    OHOS::HiviewDFX::ConditionParser parser;
+    EventStore::Cond cond;
+    std::string condSt7 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op":">","value11":0},
+        {"param":"uid_","op":"=","value2":1201}],"or":[{"param":"NAME","op":"=","value3":"SysEventService"},
+        {"param":"NAME","op":"=","value3":"SysEventSource"}]}})~";
+    auto ret = parser.ParseCondition(condSt7, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condSt7, cond);
+    ASSERT_TRUE(!ret);
+    std::string condStr8 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op":">","value":[]},
+        {"param":"uid_","op":"=","value":[]}],"or":[{"param":"NAME","op":"=","value":[]},
+        {"param":"NAME","op":"=","value":[]}]}})~";
+    ret = parser.ParseCondition(condStr8, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condStr8, cond);
+    ASSERT_TRUE(!ret);
+    std::string condStr9 = R"~({"version":"V1","condition1":{"and":[{"param":"type_","op":">","value":0},
+        {"param":"uid_","op":"=","value":1201}],"or":[{"param":"NAME","op":"=","value":"SysEventService"},
+        {"param":"NAME","op":"=","value":"SysEventSource"}]}})~";
+    ret = parser.ParseCondition(condStr9, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condStr9, cond);
+    ASSERT_TRUE(!ret);
+    std::string condStr10 = R"~({"version":"V1","condition":1})~";
+    ret = parser.ParseCondition(condStr10, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condStr10, cond);
+    ASSERT_TRUE(!ret);
+    std::string condStr11 = R"~({"version":"V2","condition":{"and":[{"param1":"type_","op":">","value":0},
+        {"param2":"uid_","op":"=","value":1201}],"or":[{"param4":"NAME","op":"=","value":"SysEventService"},
+        {"param3":"NAME","op":"=","value":"SysEventSource"}]}})~";
+    ret = parser.ParseCondition(condStr11, cond);
+    ASSERT_TRUE(!ret);
+    ret = parser.ParseCondition(condStr11, cond);
+    ASSERT_TRUE(!ret);
+}
+
+/**
+ * @tc.name: QueryWrapperTest01
+ * @tc.desc: BUild query wrapper with all event types
+ * @tc.type: FUNC
+ * @tc.require: issueI62WJT
+ */
+HWTEST_F(SysEventServiceOhosTest, QueryWrapperTest01, testing::ext::TestSize.Level1)
+{
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    QueryArgument queryArgument1(-1, -1, 10);
+    auto queryWrapperBuilder1 = std::make_shared<EventQueryWrapperBuilder>(queryArgument1);
+    QueryArgument queryArgument2(-1, -1, 10, 1, 20);
+    auto queryWrapperBuilder2 = std::make_shared<EventQueryWrapperBuilder>(queryArgument2);
+    for (auto eventType : EVENT_TYPES) {
+        queryWrapperBuilder1->Append(eventType);
+        queryWrapperBuilder2->Append(eventType);
+    }
+    auto queryWrapper1 = queryWrapperBuilder1->Build();
+    ASSERT_TRUE(queryWrapper1 != nullptr);
+    auto queryWrapper2 = queryWrapperBuilder2->Build();
+    ASSERT_TRUE(queryWrapper2 != nullptr);
+
+    const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
+    auto queryRetCode = IPC_CALL_SUCCEED;
+    sleep(2);
+    queryWrapper1->Query(querier, queryRetCode);
+    ASSERT_TRUE(queryRetCode == IPC_CALL_SUCCEED);
+    sleep(2);
+    queryWrapper2->Query(querier, queryRetCode);
+    ASSERT_TRUE(queryRetCode == IPC_CALL_SUCCEED);
+}
+
+/**
+ * @tc.name: QueryWrapperTest02
+ * @tc.desc: BUild query wrapper with domain, event name and event type.
+ * @tc.type: FUNC
+ * @tc.require: issueI62WJT
+ */
+HWTEST_F(SysEventServiceOhosTest, QueryWrapperTest02, testing::ext::TestSize.Level1)
+{
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    QueryArgument queryArgument1(-1, -1, 10);
+    auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument1);
+    queryWrapperBuilder->Append("DOMAIN1", "EVENTNAME1", 1, R"~({"version":"V1","condition":
+        {"and":[{"param":"NAME","op":"=","value":"SysEventService"}]}})~");
+    queryWrapperBuilder->Append("DOMAIN2", "EVENTNAME2", 3, R"~({"version":"V1","condition":
+        {"and":[{"param":"NAME","op":"=","value":"SysEventService"}]}})~");
+    auto queryWrapper = queryWrapperBuilder->Build();
+    ASSERT_TRUE(queryWrapper != nullptr);
+    const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
+    auto queryRetCode = IPC_CALL_SUCCEED;
+    sleep(2);
+    queryWrapper->Query(querier, queryRetCode);
+    ASSERT_TRUE(queryRetCode == IPC_CALL_SUCCEED);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
