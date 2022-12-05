@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "audit.h"
 #include "event_loop.h"
 #include "event_source.h"
 #include "event_source_example.h"
@@ -172,4 +173,70 @@ HWTEST_F(PipelineTest, PluginPipelineCreateTest004, TestSize.Level3)
      * @tc.steps: step4. check whether event has been processed
      */
     DoTest("event1", true, false);
+}
+
+/**
+ * @tc.name: PluginPipelineCreateTest005
+ * @tc.desc: create pipeline with empty processors.
+ * @tc.type: FUNC
+ * @tc.require: issueI642OH
+ */
+HWTEST_F(PipelineTest, PluginPipelineCreateTest005, TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create pipeline
+     * @tc.steps: step2. create pipeline event
+     * @tc.steps: step3. process pipeline event
+     * @tc.steps: step4. check whether event has been processed
+     */
+    std::list<std::weak_ptr<Plugin>> pluginList;
+    auto pipeline = std::make_shared<Pipeline>("PipelineTest", pluginList);
+    auto event = std::make_shared<PipelineEvent>("event1", std::make_shared<PipelineEventProducerTest>().get());
+    event->messageType_ = Event::MessageType::FAULT_EVENT;
+    event->eventId_ = EventSourceExample::PIPELINE_EVENT_ID_AAA;
+    event->OnPending();
+    ASSERT_TRUE(event->GetPipelineInfo().empty());
+    auto res = pipeline->CanProcessEvent(event);
+    ASSERT_FALSE(res);
+
+    auto plugin1 = PluginFactory::GetPlugin("EventProcessorExample1");
+    plugin1->SetName("EventProcessorExample1");
+    pipeline->AppendProcessor(plugin1);
+    res = pipeline->CanProcessEvent(event);
+    ASSERT_TRUE(res);
+
+    auto plugin2 = PluginFactory::GetPlugin("EventProcessorExample2");
+    plugin2->SetName("EventProcessorExample2");
+    pipeline->AppendProcessor(plugin2);
+    res = pipeline->CanProcessEvent(event);
+    ASSERT_TRUE(res);
+
+    plugin1.reset();
+    res = pipeline->CanProcessEvent(event);
+    ASSERT_FALSE(res);
+
+    pipeline->RemoveProcessor(plugin1);
+    pipeline->RemoveProcessor(plugin2);
+    res = pipeline->CanProcessEvent(event);
+    ASSERT_FALSE(res);
+}
+
+/**
+ * @tc.name: PluginPipelineCreateTest006
+ * @tc.desc: create pipeline with multiple plugins
+ * @tc.type: FUNC
+ * @tc.require: issueI642OH
+ */
+HWTEST_F(PipelineTest, PluginPipelineCreateTest006, TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. open audit function
+     * @tc.steps: step2. create pipeline
+     * @tc.steps: step3. create pipeline event
+     * @tc.steps: step4. process pipeline event
+     * @tc.steps: step5. check whether event has been processed
+     */
+    Audit::GetInstance().Init(true);
+    EXPECT_TRUE(Audit::GetInstance().IsEnabled());
+    DoTest("event1", true, true);
 }

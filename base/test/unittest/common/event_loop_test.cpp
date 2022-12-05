@@ -18,6 +18,8 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <limits>
+#include <thread>
 
 #include <gtest/gtest.h>
 #include <sys/inotify.h>
@@ -27,6 +29,7 @@
 
 #include "audit.h"
 #include "event_loop.h"
+#include "pipeline.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -234,7 +237,8 @@ HWTEST_F(EventLoopTest, EventLoopEventProcessTest002, TestSize.Level3)
      * @tc.steps: step1. create a timer event and send to target
      */
     auto eventReader = std::make_shared<DataFileEventReader>();
-    currentLooper_->AddFileDescriptorEventCallback("test1", eventReader);
+    auto res = currentLooper_->AddFileDescriptorEventCallback("test1", eventReader);
+    EXPECT_TRUE(res);
 
     auto eventhandler1 = std::make_shared<RealEventHandler>();
     auto event1 = std::make_shared<Event>("test1");
@@ -259,10 +263,20 @@ HWTEST_F(EventLoopTest, EventLoopEventProcessTest002, TestSize.Level3)
     testFile << "Writing this to a file.\n";
     testFile.close();
     sleep(1);
+
     /**
      * @tc.expected: step1. the event has been processed
      */
     EXPECT_EQ(3, eventhandler1->processedEventCount_);
+
+    res = currentLooper_->RemoveFileDescriptorEventCallback("test1");
+    EXPECT_TRUE(res);
+    res = currentLooper_->RemoveFileDescriptorEventCallback("invalid");
+    EXPECT_FALSE(res);
+
+    currentLooper_->StopLoop();
+    res = currentLooper_->AddFileDescriptorEventCallback("test1", eventReader);
+    EXPECT_FALSE(res);
 }
 
 /**
@@ -354,6 +368,12 @@ HWTEST_F(EventLoopTest, EventLoopEventProcessTest006, TestSize.Level3)
     currentLooper_->RemoveEvent(seq);
     sleep(2);
     EXPECT_EQ(1, eventhandler1->processedEventCount_);
+
+    // invalid interval
+    uint64_t interval = std::numeric_limits<uint64_t>::max() - 1;
+    auto event3 = std::make_shared<Event>("test3");
+    auto res = currentLooper_->AddTimerEvent(eventhandler1, event3, nullptr, interval, false);
+    EXPECT_EQ(res, -1);
 }
 
 /**
@@ -430,6 +450,57 @@ HWTEST_F(EventLoopTest, EventLoopWrongInputParamsTest001, TestSize.Level3)
     auto event = std::make_shared<Event>("testevent");
     auto result2 = currentLooper_->AddEventForResult(eventhandler, event);
     ASSERT_EQ(result2.get(), true);
+}
+
+/**
+ * @tc.name: EventLoopEventAuditTest001
+ * @tc.desc: Test audit function.
+ * @tc.type: FUNC
+ * @tc.require: issueI642OH
+ */
+HWTEST_F(EventLoopTest, EventLoopEventAuditTest001, TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. open the audit function.
+     * @tc.steps: step2. create pipeline event.
+     * @tc.steps: step3. add event to the handler.
+     */
+    Audit::GetInstance().Init(true);
+    EXPECT_TRUE(Audit::GetInstance().IsEnabled());
+    Event event("test");
+    auto pipelineEvent = std::make_shared<PipelineEvent>(event);
+    EXPECT_TRUE(pipelineEvent->isPipeline_);
+    auto eventhandler = std::make_shared<RealEventHandler>();
+    auto res1 = currentLooper_->AddEvent(eventhandler, pipelineEvent, nullptr);
+    sleep(2);
+    EXPECT_NE(0, res1);
+    EXPECT_EQ(1, eventhandler->processedEventCount_);
+
+    auto res2 = currentLooper_->AddEventForResult(eventhandler, pipelineEvent);
+    sleep(2);
+    ASSERT_EQ(res2.get(), true);
+    EXPECT_EQ(2, eventhandler->processedEventCount_);
+
+    res1 = currentLooper_->AddTimerEvent(eventhandler, pipelineEvent, nullptr, 1, false);
+    sleep(3);
+    EXPECT_NE(0, res1);
+    EXPECT_EQ(3, eventhandler->processedEventCount_);
+
+    currentLooper_->StopLoop();
+    res1 = currentLooper_->AddEvent(eventhandler, pipelineEvent, nullptr);
+    EXPECT_EQ(0, res1);
+    res2 = currentLooper_->AddEventForResult(eventhandler, nullptr);
+    ASSERT_EQ(res2.get(), false);
+    res1 = currentLooper_->AddTimerEvent(eventhandler, pipelineEvent, nullptr, 2, false);
+    sleep(3);
+    EXPECT_EQ(0, res1);
+
+    currentLooper_ = std::make_shared<EventLoop>("restart_loop");
+    currentLooper_->StartLoop();
+    res1 = currentLooper_->AddEvent(eventhandler, pipelineEvent, nullptr);
+    sleep(2);
+    EXPECT_NE(0, res1);
+    EXPECT_EQ(4, eventhandler->processedEventCount_);
 }
 }
 }
