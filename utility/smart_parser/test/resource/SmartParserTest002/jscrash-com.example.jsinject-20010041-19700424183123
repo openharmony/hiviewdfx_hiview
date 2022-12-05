@@ -1,0 +1,20 @@
+Device info:MatePad Pro
+Build info:OpenHarmony 3.2.6.1
+Module name:com.example.jsinject
+Version:1.0.0
+Pid:3608
+Uid:20010048
+Lifetime: 0.000000s
+Js-Engine: ark
+page: pages/index/index.js
+Error message: temp is not defined
+SourceCode: 
+    this.printContent = "注入JS Crash异常";
+^
+Stacktrace:
+    at judgeDeviceType (/ets/vm/notificationManagenmentViewModel.ts:67:9)
+    at ViewModelInit (/ets/vm/notificationManag3enmentrViewModel.ts:32:5)
+    at aboutToAppear00 (/ets/pages/notifica4tionManagenment.ets:191:5)
+    at aboutToAppear2 (/ets/pages/notificationManagenment3.ets:191:5)
+    at aboutToAppear3 (/ets/pages/not6ificationManagenment2.ets:1222:15)
+    at aboutToAppearlast (/ets/pag4es/notifi5cationManagenment2.ets:2343:000)

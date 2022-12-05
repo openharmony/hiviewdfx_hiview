@@ -14,7 +14,6 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-###############################################################################
 config("smart_parser_config") {
   visibility = [ "*:*" ]
 
@@ -60,4 +59,8 @@ ohos_source_set("smart_parser") {
     "//third_party/jsoncpp:jsoncpp",
   ]
 }
-###############################################################################
+
+group("moduletest") {
+  testonly = true
+  deps = [ "test:SmartParserModuleTest" ]
+}
