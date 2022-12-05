@@ -162,7 +162,7 @@ static vector<SysEventRule> GetTestRules(int type, const string &domain, const s
     return rules;
 }
 
-/* *
+/**
  * @tc.name: CommonTest001
  * @tc.desc: Check service is null condition.
  * @tc.type: FUNC
@@ -180,7 +180,7 @@ HWTEST_F(SysEventServiceOhosTest, CommonTest001, testing::ext::TestSize.Level3)
     ASSERT_TRUE(ret != 0);
 }
 
-/* *
+/**
  * @tc.name: AddListenerTest001
  * @tc.desc: Check AddListener Function.
  * @tc.type: FUNC
