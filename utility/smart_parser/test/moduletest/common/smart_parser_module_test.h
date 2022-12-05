@@ -20,8 +20,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-static const std::string TEST_CONFIG = "/data/test/test_data/SmartParser/common/";
-
 class SmartParserModuleTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -29,6 +27,9 @@ public:
     void SetUp();
     void TearDown();
     std::string GetTraceParam(std::map<std::string, std::string>& eventInfo) const;
+
+private:
+    static const std::string TEST_CONFIG = "/data/test/test_data/SmartParser/common/";
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

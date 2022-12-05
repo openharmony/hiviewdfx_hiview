@@ -51,7 +51,8 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest001, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest001/cppcrash-com.ohos.launcher-20010025-19700324235211";
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+                            "/SmartParserTest001/cppcrash-com.ohos.launcher-20010025-19700324235211";
     std::string trustStack = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest001/trace.txt";
 
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
@@ -91,7 +92,8 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest002, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest002/jscrash-com.example.jsinject-20010041-19700424183123";
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+                            "/SmartParserTest002/jscrash-com.example.jsinject-20010041-19700424183123";
     std::string trustStack = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest002/trace.txt";
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
     ASSERT_EQ(FileUtil::FileExists(trustStack), true);
@@ -131,7 +133,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest003, TestSize.Level1)
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
-        "/SmartParserTest003/appfreeze-com.example.jsinject-20010039-19700326211815";
+                            "/SmartParserTest003/appfreeze-com.example.jsinject-20010039-19700326211815";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest003/trace.txt";
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
     ASSERT_EQ(FileUtil::FileExists(traceFile), true);

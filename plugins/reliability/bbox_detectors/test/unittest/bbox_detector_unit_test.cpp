@@ -88,7 +88,7 @@ HWTEST_F(BBoxDetectorUnitTest, BBoxDetectorUnitTest002, TestSize.Level1)
                      "el0_svc+0x10/0x1c",
                      "vks_write+0x123/0xa6",
                      "el0_sync+0x180/0x1c0"
-                     )";
+                    )";
 
     std::map<std::string, std::string> eventInfos;
     eventInfos.insert(std::pair("END_STACK", stack));
