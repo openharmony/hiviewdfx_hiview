@@ -31,6 +31,8 @@ using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
 using namespace testing::ext;
+static const std::string TEST_CONFIG = "/data/test/test_data/SmartParser/common/";
+
 void SmartParserModuleTest::SetUpTestCase(void) {}
 
 void SmartParserModuleTest::TearDownTestCase(void) {}
@@ -165,7 +167,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest003, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest004
- * @tc.desc: process ACPU NOC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
  *           1. fault log should can be read;
  *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
  * @tc.type: FUNC
@@ -188,6 +190,41 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest004, TestSize.Level1)
      * @tc.steps: step2. smart parser process crash fault log
      */
     auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "PANIC");
+
+    std::vector<std::string> trace;
+    StringUtil::SplitStr(eventInfos["END_STACK"], LogUtil::SPLIT_PATTERN, trace, false, false);
+    std::string line;
+    size_t num = 0;
+    while (getline(buff, line) && num < trace.size()) {
+        EXPECT_STREQ(trace[num++].c_str(), line.c_str());
+    }
+}
+
+/**
+ * @tc.name: SmartParserTest005
+ * @tc.desc: process HWWATCHDOG fault, this case match FeatureAnalysisForRebootsys.Json.
+ *           1. fault log should can be read;
+ *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest005, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest005/dmesg-ramoops-0";
+    std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest005/trace.txt";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+    ASSERT_EQ(FileUtil::FileExists(traceFile), true);
+    std::stringstream buff;
+    LogUtil::ReadFileBuff(traceFile, buff);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "HWWATCHDOG");
 
     std::vector<std::string> trace;
     StringUtil::SplitStr(eventInfos["END_STACK"], LogUtil::SPLIT_PATTERN, trace, false, false);
