@@ -1,2 +1,4 @@
 plugins:1
 CrashValidator[thread:crash_validator]:0 static
+pipelines:0
+pipelinegroups:0
