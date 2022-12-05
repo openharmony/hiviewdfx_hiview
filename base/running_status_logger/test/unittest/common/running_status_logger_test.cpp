@@ -25,11 +25,38 @@
 #include "hiview_global.h"
 #include "plugin.h"
 #include "running_status_logger.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
+
+std::string FormatTimeStamp()
+{
+    time_t lt;
+    (void)time(&lt);
+    return TimeUtil::TimestampFormatToDate(lt - 24 * 60 * 60, "%Y%m%d");
+}
+
+std::string GetLogDir()
+{
+    std::string workPath = HiviewGlobal::GetInstance()->GetHiViewDirectory(
+        HiviewContext::DirectoryType::WORK_DIRECTORY);
+    if (workPath.back() != '/') {
+        workPath = workPath + "/";
+    }
+    std::string logDestDir = workPath + "sys_event/";
+    if (!FileUtil::FileExists(logDestDir)) {
+        FileUtil::ForceCreateDirectory(logDestDir, FileUtil::FILE_PERM_770);
+    }
+    return logDestDir;
+}
+
+std::string GenerateYesterdayLogFileName()
+{
+    return GetLogDir() + "runningstatus_" + FormatTimeStamp() + "_01";
+}
 
 class HiviewTestContext : public HiviewContext {
 public:
@@ -57,7 +84,7 @@ void RunningStatusLoggerTest::TearDown()
 
 /**
  * @tc.name: RunningStatusLoggerTest_001
- * @tc.desc: write log to file
+ * @tc.desc: write logs with size less than 2M into a local file
  * @tc.type: FUNC
  * @tc.require: issueI62PQY
  */
@@ -65,16 +92,18 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_001, testing::ext::Tes
 {
     /**
      * @tc.steps: step1. init hiview global with customized hiview context
-     * @tc.steps: step2. init string with 4k size
-     * @tc.steps: step3. log string to log file until the size of this log file over limit 2M.
+     * @tc.steps: step2. init string with 2k size
+     * @tc.steps: step3. log string with total size less than 2M to local file 
      */
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
-    std::string singleLine = "line";
-    for (int index = 0; index < 1024; index++) {
-        singleLine += "line";
+    std::string singleLine;
+    for (int index = 0; index < 512; index++) {
+        singleLine += "ohos";
     }
-    for (int index = 0; index < 1024; index++) {
+    for (int index = 0; index < 512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
@@ -84,11 +113,111 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_001, testing::ext::Tes
 
 /**
  * @tc.name: RunningStatusLoggerTest_002
+ * @tc.desc: write logs with size less more 2M into local files
+ * @tc.type: FUNC
+ * @tc.require: issueI64Q4L
+ */
+HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_002, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. init hiview global with customized hiview context
+     * @tc.steps: step2. init string with 2K size
+     * @tc.steps: step3. log string with total size less than 2M to local file
+     * @tc.steps: step4. keep logging string with size more than 2M to local file
+     */
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::string singleLine;
+    for (int index = 0; index < 512; index++) {
+        singleLine += "ohos";
+    }
+    for (int index = 0; index < 512; index++) {
+        RunningStatusLogger::GetInstance().Log(singleLine);
+    }
+    ASSERT_TRUE(true);
+    for (int index = 0; index < 512; index++) {
+        RunningStatusLogger::GetInstance().Log(singleLine);
+    }
+    ASSERT_TRUE(true);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+}
+
+
+/**
+ * @tc.name: RunningStatusLoggerTest_003
+ * @tc.desc: write logs with size more than 20M into local files
+ * @tc.type: FUNC
+ * @tc.require: issueI64Q4L
+ */
+HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_003, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. init hiview global with customized hiview context
+     * @tc.steps: step2. init string with 2K size
+     * @tc.steps: step3. log string with size more than 20M to local files
+     * @tc.steps: step4. keep logging string to local file
+     */
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::string singleLine;
+    for (int index = 0; index < 512; index++) {
+        singleLine += "ohos";
+    }
+    for (int index = 0; index < 10240; index++) {
+        RunningStatusLogger::GetInstance().Log(singleLine);
+    }
+    ASSERT_TRUE(true);
+    for (int index = 0; index < 512; index++) {
+        RunningStatusLogger::GetInstance().Log(singleLine);
+    }
+    ASSERT_TRUE(true);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: RunningStatusLoggerTest_004
+ * @tc.desc: write logs with newer timestamp
+ * @tc.type: FUNC
+ * @tc.require: issueI64Q4L
+ */
+HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_004, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. init hiview global with customized hiview context
+     * @tc.steps: step2. init string with 2K size
+     * @tc.steps: step3. log string to a local file with yesterday's time stamp
+     * @tc.steps: step4. keep logging string to local file
+     */
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::string singleLine;
+    for (int index = 0; index < 512; index++) {
+        singleLine += "ohos";
+    }
+    FileUtil::SaveStringToFile(GenerateYesterdayLogFileName(), singleLine);
+    for (int index = 0; index < 10; index++) {
+        RunningStatusLogger::GetInstance().Log(singleLine);
+    }
+    ASSERT_TRUE(true);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: RunningStatusLoggerTest_005
  * @tc.desc: time stamp format
  * @tc.type: FUNC
  * @tc.require: issueI62PQY
  */
-HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_002, testing::ext::TestSize.Level3)
+HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_005, testing::ext::TestSize.Level3)
 {
     auto simpleTimeStamp = RunningStatusLogger::GetInstance().FormatTimeStamp(true);
     ASSERT_TRUE(!simpleTimeStamp.empty());
