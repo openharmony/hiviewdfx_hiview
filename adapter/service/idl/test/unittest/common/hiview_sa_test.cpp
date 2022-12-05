@@ -34,7 +34,7 @@ void HiviewSATest::SetUp() {}
 
 void HiviewSATest::TearDown() {}
 
-/* *
+/**
  * @tc.name: CommonTest001
  * @tc.desc: Check whether the SA is successfully obtained.
  * @tc.type: FUNC
@@ -67,7 +67,7 @@ HWTEST_F(HiviewSATest, CommonTest001, testing::ext::TestSize.Level3)
     printf("end \r\n");
 }
 
-/* *
+/**
  * @tc.name: CommonTest001
  * @tc.desc: Check hidumper -s 1201.
  * @tc.type: FUNC
