@@ -189,8 +189,9 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest001, TestSize.Level3)
      * @tc.steps: step1. create event handler and events
      */
     constexpr int minQuantity = 8000;
+    int pid = CommonUtils::GetPidByName("foundation");
     auto ret = StartCreate("EventloggerCatcherTest001", "TEST01_SYS_STACKTRACE",
-        "S", -1, "", 0, minQuantity);
+        "s", pid, "foundation", 0, minQuantity);
     if (ret < 0) {
         printf("EventloggerCatcherTest001 StartCreate is error ret == %d\n", ret);
         FAIL();
