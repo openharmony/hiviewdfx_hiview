@@ -63,8 +63,8 @@
         ]
     },
     "Rule6":{
-        "DirOrFile":"/data/test/test_data/BBoxDetector/common/",
-        "Subcatalog":"\\d{14}-\\d{8}/dmesg-ramoops-0",
+        "DirOrFile":"/data/hisi_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
         "featureId":"04_PANIC_01",
         "segmentType":"OneLayer",
         "startSeg":["NocTrace.v_cpu"],
@@ -82,6 +82,16 @@
         ],
         "segmentRule":[
             {"namespace":"LayerOneCmd", "matchKey":"]CPU@&@: stopping", "num":1, "v_id":"\\]CPU(\\d+): stopping", "v_name":"\\](CPU\\d+): stopping"}
+        ]
+    },
+    "Rule7":{
+        "DirOrFile":"/data/bbox_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "featureId":"04_HWWATCHDOG_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"sysrq: Trigger a crash", "v_fiq":"(.*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_fiq","matchKey":"PC is at ", "v_f1":"PC is at ([^\\+ ]+.*)", "v_pname":"cpu[0-9],(.*?)[,:\\]]"},
+            {"namespace":"MainCallTrace", "depend":"BasicParam.v_fiq", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
         ]
     }
 }

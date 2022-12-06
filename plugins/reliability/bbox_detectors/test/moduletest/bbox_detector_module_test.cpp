@@ -68,5 +68,106 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest001, TestSize.Level1)
     ASSERT_EQ(sysEvent->GetEventValue("REASON"), "AP_S_PANIC");
     ASSERT_EQ(sysEvent->GetEventValue("LOG_PATH"), "/data/hisi_logs/19700106031950-00001111");
 }
+
+/**
+ * @tc.name: BBoxDetectorModuleTest002
+ * @tc.desc: check whether fault is processed.
+ *           1. check whether event is valid;
+ *           2. check whether category and reason is ignored;
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest002, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. construct HWWATCHDOG SysEvent
+     * @tc.steps: step2. construct BBOXDetectorPlugin
+     * @tc.steps: step3. OnEvent
+     * @tc.steps: step4. check result
+     */
+    SysEventCreator sysEventCreator("KERNEL_VENDOR", "HWWATCHDOG", SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("SUMMARY", "bootup_keypoint:97");
+    sysEventCreator.SetKeyValue("name_", "HWWATCHDOG");
+    sysEventCreator.SetKeyValue("HAPPEN_TIME", "443990995");
+    sysEventCreator.SetKeyValue("LOG_PATH", "/data/hisi_logs/");
+    sysEventCreator.SetKeyValue("SUB_LOG_PATH", "19700106031950-00001111");
+    sysEventCreator.SetKeyValue("MODULE", "AP");
+    sysEventCreator.SetKeyValue("REASON", "AP_S_HWWATCHDOG");
+    auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
+    testPlugin->OnLoad();
+    testPlugin->OnEvent(event);
+    ASSERT_EQ(sysEvent->GetEventValue("MODULE"), "AP");
+    ASSERT_EQ(sysEvent->GetEventValue("REASON"), "AP_S_HWWATCHDOG");
+    ASSERT_EQ(sysEvent->GetEventValue("LOG_PATH"), "/data/hisi_logs/19700106031950-00001111");
+}
+
+/**
+ * @tc.name: BBoxDetectorModuleTest003
+ * @tc.desc: check whether fault is processed.
+ *           1. check whether event is valid;
+ *           2. check whether category and reason is ignored;
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest003, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. construct HWWATCHDOG SysEvent
+     * @tc.steps: step2. construct BBOXDetectorPlugin
+     * @tc.steps: step3. OnEvent
+     * @tc.steps: step4. check result
+     */
+    SysEventCreator sysEventCreator("KERNEL_VENDOR", "MODEMCRASH", SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("SUMMARY", "bootup_keypoint:97");
+    sysEventCreator.SetKeyValue("name_", "MODEMCRASH");
+    sysEventCreator.SetKeyValue("HAPPEN_TIME", "443990995");
+    sysEventCreator.SetKeyValue("LOG_PATH", "/data/hisi_logs/");
+    sysEventCreator.SetKeyValue("SUB_LOG_PATH", "19700106031950-00001111");
+    sysEventCreator.SetKeyValue("MODULE", "AP");
+    sysEventCreator.SetKeyValue("REASON", "MODEMCRASH");
+    auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
+    testPlugin->OnLoad();
+    testPlugin->OnEvent(event);
+    ASSERT_EQ(sysEvent->GetEventValue("MODULE"), "AP");
+    ASSERT_EQ(sysEvent->GetEventValue("REASON"), "MODEMCRASH");
+    ASSERT_EQ(sysEvent->GetEventValue("LOG_PATH"), "/data/hisi_logs/19700106031950-00001111");
+}
+
+/**
+ * @tc.name: BBoxDetectorModuleTest004
+ * @tc.desc: check whether fault is processed.
+ *           1. check whether event is invalid;
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest004, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. construct CPP_CRASH SysEvent
+     * @tc.steps: step2. construct BBOXDetectorPlugin
+     * @tc.steps: step3. OnEvent
+     * @tc.steps: step4. check result should return false
+     */
+    SysEventCreator sysEventCreator("KERNEL_VENDOR", "CPP_CRASH", SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("SUMMARY", "bootup_keypoint:97");
+    sysEventCreator.SetKeyValue("name_", "CPP_CRASH");
+    sysEventCreator.SetKeyValue("HAPPEN_TIME", "443990995");
+    sysEventCreator.SetKeyValue("LOG_PATH", "/data/hisi_logs/");
+    sysEventCreator.SetKeyValue("SUB_LOG_PATH", "19700106031950-00001111");
+    sysEventCreator.SetKeyValue("MODULE", "AP");
+    sysEventCreator.SetKeyValue("REASON", "MODEMCRASH");
+    auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
+    testPlugin->OnLoad();
+    ASSERT_EQ(testPlugin->OnEvent(event), false);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

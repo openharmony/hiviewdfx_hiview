@@ -89,9 +89,9 @@
         "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
         "featureId":"04_HWWATCHDOG_00",
         "rules":[
-            {"namespace":"BasicParam", "matchKey":"fiq triggered by: Watchdog", "v_fiq":"(.*)"},
+            {"namespace":"BasicParam", "matchKey":"sysrq: Trigger a crash", "v_fiq":"(.*)"},
             {"namespace":"BasicParam", "depend":"BasicParam.v_fiq","matchKey":"PC is at ", "v_f1":"PC is at ([^\\+ ]+.*)", "v_pname":"cpu[0-9],(.*?)[,:\\]]"},
-            {"namespace":"MainCallTrace", "depend":"BasicParam.v_fiq", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_]+\\+0x[0-9a-f]+/0x[0-9a-f]+"}
+            {"namespace":"MainCallTrace", "depend":"BasicParam.v_fiq", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
         ]
     }
 }
