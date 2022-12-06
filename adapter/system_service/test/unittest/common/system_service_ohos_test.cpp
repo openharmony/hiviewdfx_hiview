@@ -57,5 +57,25 @@ HWTEST_F(SystemServiceOhosTest, SystemServiceTest002, testing::ext::TestSize.Lev
         ret == Parameter::DeviceType::TV ||
         ret == Parameter::DeviceType::IVI);
 }
+
+/**
+ * @tc.name: SystemServiceTest003
+ * @tc.desc: Test getter
+ * @tc.type: FUNC
+ * @tc.require: issueI64QXL
+ */
+HWTEST_F(SystemServiceOhosTest, SystemServiceTest003, testing::ext::TestSize.Level3)
+{
+    auto ret1 = Parameter::GetUnsignedInteger("TEST_KEY1", 200);
+    ASSERT_TRUE(ret1 == 200);
+    auto ret2 = Parameter::GetBoolean("TEST_KEY2", true);
+    ASSERT_TRUE(ret2);
+    auto ret3 = Parameter::SetProperty("TEST_KEY3", "1234");
+    ASSERT_TRUE(ret3);
+    auto ret4 = Parameter::GetString("TEST_KEY3", "");
+    ASSERT_TRUE(ret4 == "1234");
+    auto ret5 = Parameter::GetInteger("TEST_KEY3", 0);
+    ASSERT_TRUE(ret5 == 1234);
+}
 }
 }

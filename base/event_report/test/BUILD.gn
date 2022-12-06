@@ -1,0 +1,52 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/test.gni")
+
+module_output_path = "hiview/base/event_report"
+
+group("unittest") {
+  testonly = true
+  deps = [ ":EventReportUnitTest" ]
+}
+
+config("event_report_config_test") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "unittest/common",
+    "$hiview_base/event_report/cache/include",
+    "$hiview_base/event_report/event/include",
+    "$hiview_base/event_report/factory/include",
+    "$hiview_base/event_report/include",
+  ]
+
+  cflags = []
+}
+
+ohos_unittest("EventReportUnitTest") {
+  module_out_path = module_output_path
+
+  configs = [ ":event_report_config_test" ]
+
+  sources = [ "unittest/common/event_report_unit_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_core:hiview_core",
+    "//base/hiviewdfx/hiview/base/event_report:hiview_event_report",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest_main",
+  ]
+}
