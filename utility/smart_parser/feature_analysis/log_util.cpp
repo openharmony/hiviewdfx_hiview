@@ -197,6 +197,7 @@ void LogUtil::GetTrace(stringstream& buffer, int cursor, const string& reg, stri
     int num = 0;
     int skipNum = 0;
     startReg = startReg.empty() ? reg : startReg;
+
     while (getline(buffer, line) && num++ < TOTAL_LINE_NUM) {
         if (line.length() > BUF_LEN_2048) {
             continue;
@@ -211,13 +212,14 @@ void LogUtil::GetTrace(stringstream& buffer, int cursor, const string& reg, stri
             }
         }
 
-        if (regex_search(line, regex(reg))) {
+        smatch matches;
+        if (regex_search(line, matches, regex(reg))) {
             skipNum = 0;
         } else {
             skipNum++;
             continue;
         }
-        result += line + LogUtil::SPLIT_PATTERN;
+        result += matches.str(0) + LogUtil::SPLIT_PATTERN;
     }
 }
 
@@ -263,6 +265,18 @@ bool LogUtil::FileExist(const string& file)
 bool LogUtil::IsTestModel(const string& sourceFile, const string& name,
     const string& pattern, string& desPath)
 {
+    if (FileUtil::IsDirectory(LogUtil::SMART_PARSER_TEST_DIR)) {
+        HIVIEW_LOGI("test dir exist.");
+        std::string sourceFileName = StringUtil::GetRrightSubstr(sourceFile, "/");
+        std::string dirOrFileName = StringUtil::GetRrightSubstr(name, "/");
+        std::string fileName = pattern.find("/") != std::string::npos ? StringUtil::GetRrightSubstr(pattern, "/") : pattern;
+        smatch result;
+        if (regex_match(sourceFileName, result, regex(dirOrFileName)) ||
+            regex_match(sourceFileName, result, regex(fileName))) {
+            return LogUtil::FileExist(desPath);
+        }
+        return false;
+    }
     return false;
 }
 } // namespace HiviewDFX
