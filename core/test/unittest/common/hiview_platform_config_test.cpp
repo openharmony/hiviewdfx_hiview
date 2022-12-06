@@ -57,3 +57,17 @@ HWTEST_F(HiviewPlatformConfigTest, PlatformConfigParse001, TestSize.Level3)
     ASSERT_EQ(platformConfigInfo.commercialWorkDir, "/log/LogService/");
     ASSERT_EQ(platformConfigInfo.persistDir, "/log/hiview/");
 }
+
+/**
+ * @tc.name: PlatformConfigParse002
+ * @tc.desc: parse a incorrect config file and check result
+ * @tc.type: FUNC
+ * @tc.require: issueI64QXL
+ */
+HWTEST_F(HiviewPlatformConfigTest, PlatformConfigParse002, TestSize.Level3)
+{
+    HiviewPlatformConfig platformConfig = HiviewPlatformConfig("//data/test/test_data/just_for_test");
+    HiviewPlatformConfig::PlatformConfigInfo platformConfigInfo;
+    auto ret = platformConfig.ParsesConfig(platformConfigInfo);
+    ASSERT_TRUE(!ret);
+}

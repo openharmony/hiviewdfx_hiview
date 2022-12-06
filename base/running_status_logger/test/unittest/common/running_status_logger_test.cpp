@@ -31,12 +31,16 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
-
+constexpr int TIME_STAMP_OFFSET = 24 * 60 * 60; // one day
+const char TIME_FORMAT[] = "%Y%m%d";
+constexpr int SIZE_512 = 512; // test value
+constexpr int SIZE_10 = 10; // test value
+constexpr int SIZE_10240 = 10240; // test value
 std::string FormatTimeStamp()
 {
     time_t lt;
     (void)time(&lt);
-    return TimeUtil::TimestampFormatToDate(lt - 24 * 60 * 60, "%Y%m%d");
+    return TimeUtil::TimestampFormatToDate(lt - TIME_STAMP_OFFSET, TIME_FORMAT);
 }
 
 std::string GetLogDir()
@@ -51,6 +55,11 @@ std::string GetLogDir()
         FileUtil::ForceCreateDirectory(logDestDir, FileUtil::FILE_PERM_770);
     }
     return logDestDir;
+}
+
+std::string GenerateInvalidFileName(int index)
+{
+    return GetLogDir() + "runningstatus_2024_0" + std::to_string(index);
 }
 
 std::string GenerateYesterdayLogFileName()
@@ -93,17 +102,17 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_001, testing::ext::Tes
     /**
      * @tc.steps: step1. init hiview global with customized hiview context
      * @tc.steps: step2. init string with 2k size
-     * @tc.steps: step3. log string with total size less than 2M to local file 
+     * @tc.steps: step3. log string with total size less than 2M to local file
      */
     FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
     ASSERT_TRUE(true);
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
     std::string singleLine;
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         singleLine += "ohos";
     }
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
@@ -130,14 +139,14 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_002, testing::ext::Tes
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
     std::string singleLine;
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         singleLine += "ohos";
     }
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
@@ -165,14 +174,14 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_003, testing::ext::Tes
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
     std::string singleLine;
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         singleLine += "ohos";
     }
-    for (int index = 0; index < 10240; index++) {
+    for (int index = 0; index < SIZE_10240; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
@@ -199,11 +208,11 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_004, testing::ext::Tes
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
     std::string singleLine;
-    for (int index = 0; index < 512; index++) {
+    for (int index = 0; index < SIZE_512; index++) {
         singleLine += "ohos";
     }
     FileUtil::SaveStringToFile(GenerateYesterdayLogFileName(), singleLine);
-    for (int index = 0; index < 10; index++) {
+    for (int index = 0; index < SIZE_10; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
@@ -225,5 +234,38 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_005, testing::ext::Tes
     ASSERT_TRUE(!normalTimeStamp.empty() && normalTimeStamp.find(':') != std::string::npos &&
         normalTimeStamp.find('/') != std::string::npos);
 }
+
+/**
+ * @tc.name: RunningStatusLoggerTest_007
+ * @tc.desc: write logs with newer timestamp
+ * @tc.type: FUNC
+ * @tc.require: issueI64Q4L
+ */
+HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_007, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. init hiview global with customized hiview context
+      * @tc.steps: step2. init string with 2K size
+     * @tc.steps: step3. init 3 local files with invalid name
+     * @tc.steps: step4. log string to a local file with yesterday's time stamp
+     * @tc.steps: step5. keep logging string to local file
+     */
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::string singleLine;
+    for (int index = 0; index < SIZE_512; index++) {
+        singleLine += "ohos";
+    }
+    for (int index = 0; index < SIZE_10; index++) {
+        FileUtil::SaveStringToFile(GenerateInvalidFileName(index), singleLine);
+    }
+    RunningStatusLogger::GetInstance().Log(singleLine);
+    ASSERT_TRUE(true);
+    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+    ASSERT_TRUE(true);
+}
+
 } // namespace HiviewDFX
 } // namespace OHOS
