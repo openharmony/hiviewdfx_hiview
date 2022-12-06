@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2022 Huawei Device Co., Ltd.
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<configuration ver="2.0">
+    <target name="SmartParserModuleTest">
+        <preparer>
+            <option name="push" value="common/compose_rule.json -> /data/test/test_data/SmartParser/common" src="res"/>
+            <option name="push" value="common/extract_rule.json -> /data/test/test_data/SmartParser/common" src="res"/>
+            <option name="push" value="SmartParserTest001/cppcrash-com.ohos.launcher-20010025-19700324235211 -> /data/test/test_data/SmartParser/SmartParserTest001" src="res"/>
+            <option name="push" value="SmartParserTest001/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest001" src="res"/>
+            <option name="push" value="SmartParserTest002/jscrash-com.example.jsinject-20010041-19700424183123 -> /data/test/test_data/SmartParser/SmartParserTest002" src="res"/>
+            <option name="push" value="SmartParserTest002/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest002" src="res"/>
+            <option name="push" value="SmartParserTest003/appfreeze-com.example.jsinject-20010039-19700326211815 -> /data/test/test_data/SmartParser/SmartParserTest003" src="res"/>
+            <option name="push" value="SmartParserTest003/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest003" src="res"/>
+            <option name="push" value="SmartParserTest004/dmesg-ramoops-0 -> /data/test/test_data/SmartParser/SmartParserTest004" src="res"/>
+            <option name="push" value="SmartParserTest004/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest004" src="res"/>
+            <option name="push" value="SmartParserTest005/dmesg-ramoops-0 -> /data/test/test_data/SmartParser/SmartParserTest005" src="res"/>
+            <option name="push" value="SmartParserTest005/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest005" src="res"/>
+        </preparer>
+    </target>
+</configuration>

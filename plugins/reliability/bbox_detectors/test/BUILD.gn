@@ -14,9 +14,8 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 import("//build/test.gni")
 
-module_output_path = "hiview/hiview/base/plugins/reliability/bbox_detector"
+module_output_path = "hiview/hiview//bbox_detector"
 
-###############################################################################
 config("bbox_detector_test_config") {
   visibility = [ ":*" ]
   include_dirs = [
@@ -49,7 +48,6 @@ ohos_unittest("BBoxDetectorUnitTest") {
   ]
 
   module_out_path = module_output_path
-  resource_config_file = "./resource/harmony_test.xml"
 }
 
 ohos_moduletest("BBoxDetectorModuleTest") {
@@ -72,15 +70,4 @@ ohos_moduletest("BBoxDetectorModuleTest") {
   ]
 
   module_out_path = module_output_path
-  resource_config_file = "./resource/harmony_test.xml"
-}
-
-group("unittest") {
-  testonly = true
-  deps = [ ":BBoxDetectorUnitTest" ]
-}
-
-group("moduletest") {
-  testonly = true
-  deps = [ ":BBoxDetectorModuleTest" ]
 }

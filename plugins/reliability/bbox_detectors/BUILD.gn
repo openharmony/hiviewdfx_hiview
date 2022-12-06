@@ -45,10 +45,10 @@ ohos_source_set("bbox_detector") {
 
 group("unittest") {
   testonly = true
-  deps = []
+  deps = [ "test:BBoxDetectorUnitTest" ]
 }
 
 group("moduletest") {
   testonly = true
-  deps = []
+  deps = [ "test:BBoxDetectorModuleTest" ]
 }
