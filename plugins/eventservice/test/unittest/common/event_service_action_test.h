@@ -17,6 +17,10 @@
 #define EVENT_SERVICE_ACTION_TEST_H
 
 #include <gtest/gtest.h>
+#include "event_loop.h"
+#include "sys_event_db_mgr.h"
+#include "hiview_global.h"
+#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -26,6 +30,11 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
+    std::shared_ptr<EventLoop> currentLooper_;
+    std::unique_ptr<SysEventDbMgr> sysEventDbMgrPtr;
+
+private:
+    std::shared_ptr<HiviewPlatform> platform_ = nullptr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
