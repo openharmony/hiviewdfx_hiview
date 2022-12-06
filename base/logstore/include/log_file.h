@@ -12,8 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef LOG_STORE_LOG_FILE_H
 #define LOG_STORE_LOG_FILE_H
+
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
