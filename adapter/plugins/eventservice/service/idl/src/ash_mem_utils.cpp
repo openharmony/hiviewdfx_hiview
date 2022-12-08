@@ -64,18 +64,18 @@ void AshMemUtils::CloseAshmem(sptr<Ashmem> ashmem)
     HiLog::Info(LABEL, "ashmem closed.");
 }
 
-bool AshMemUtils::WriteBulkData(MessageParcel& parcel, const std::vector<std::u16string>& src)
+sptr<Ashmem> AshMemUtils::WriteBulkData(MessageParcel& parcel, const std::vector<std::u16string>& src)
 {
     std::vector<std::string> allData;
     std::vector<uint32_t> allSize;
     ParseAllStringItemSize(src, allData, allSize);
     if (!parcel.WriteUInt32Vector(allSize)) {
         HiLog::Error(LABEL, "writing allSize array failed.");
-        return false;
+        return nullptr;
     }
     auto ashmem = GetAshmem();
     if (ashmem == nullptr) {
-        return false;
+        return nullptr;
     }
     uint32_t offset = 0;
     for (uint32_t i = 0; i < allData.size(); i++) {
@@ -83,12 +83,16 @@ bool AshMemUtils::WriteBulkData(MessageParcel& parcel, const std::vector<std::u1
         if (!ashmem->WriteToAshmem(translated, strlen(translated), offset)) {
             HiLog::Error(LABEL, "writing ashmem failed.");
             CloseAshmem(ashmem);
-            return false;
+            return nullptr;
         }
         offset += allSize[i];
     }
-    ashmem->UnmapAshmem();
-    return parcel.WriteAshmem(ashmem);
+    if (!parcel.WriteAshmem(ashmem)) {
+        HiLog::Error(LABEL, "writing ashmem failed.");
+        CloseAshmem(ashmem);
+        return nullptr;
+    }
+    return ashmem;
 }
 
 bool AshMemUtils::ReadBulkData(MessageParcel& parcel, std::vector<std::u16string>& dest)
