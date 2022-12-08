@@ -24,12 +24,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class AshMemUtils {
 public:
-    static bool WriteBulkData(MessageParcel& parcel, const std::vector<std::u16string>& src);
+    static sptr<Ashmem> WriteBulkData(MessageParcel& parcel, const std::vector<std::u16string>& src);
     static bool ReadBulkData(MessageParcel& parcel, std::vector<std::u16string>& dest);
+    static void CloseAshmem(sptr<Ashmem> ashmem);
 
 private:
     static sptr<Ashmem> GetAshmem();
-    static void CloseAshmem(sptr<Ashmem> ashmem);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
