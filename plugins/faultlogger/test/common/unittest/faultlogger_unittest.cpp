@@ -17,6 +17,7 @@
 
 #include <fcntl.h>
 #include <gtest/gtest.h>
+#include "sys_event.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -26,6 +27,7 @@
 #include "faultlogger.h"
 #include "file_util.h"
 #include "hiview_platform.h"
+#include "log_analyzer.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
