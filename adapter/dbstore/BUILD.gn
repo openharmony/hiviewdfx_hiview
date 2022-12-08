@@ -46,3 +46,8 @@ ohos_source_set("db_store_source") {
     external_deps = [ "hilog:libhilog" ]
   }
 }
+
+group("unittest") {
+  testonly = true
+  deps = [ "test:DbStoreAdapterUnitTest" ]
+}
