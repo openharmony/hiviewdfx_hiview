@@ -34,12 +34,13 @@ void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysE
         HiLog::Error(LABEL, "write descriptor failed.");
         return;
     }
-    auto ret = AshMemUtils::WriteBulkData(data, sysEvent);
-    if (!ret) {
+    auto ashMemory = AshMemUtils::WriteBulkData(data, sysEvent);
+    if (ashMemory == nullptr) {
         HiLog::Error(LABEL, "write sys event failed.");
         return;
     }
-    ret = data.WriteInt64Vector(seq);
+    allAshMemories.emplace_back(ashMemory);
+    auto ret = data.WriteInt64Vector(seq);
     if (!ret) {
         HiLog::Error(LABEL, "write sys seq failed.");
         return;
@@ -80,6 +81,19 @@ void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total, int64
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
     }
+}
+
+QuerySysEventCallbackProxy::~QuerySysEventCallbackProxy()
+{
+    ClearAllAshMemories();
+}
+
+void QuerySysEventCallbackProxy::ClearAllAshMemories()
+{
+    for_each(allAshMemories.begin(), allAshMemories.end(), [] (auto& ashMem) {
+        AshMemUtils::CloseAshmem(ashMem);
+    });
+    allAshMemories.clear();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -377,10 +377,10 @@ HWTEST_F(SysEventServiceOhosTest, TestAshMemory, testing::ext::TestSize.Level1)
         Str8ToStr16(std::string("22")),
     };
     auto result = AshMemUtils::WriteBulkData(msgParcel, from);
-    ASSERT_TRUE(result);
+    ASSERT_TRUE(result != nullptr);
     std::vector<std::u16string> to;
-    result = AshMemUtils::ReadBulkData(msgParcel, to);
-    ASSERT_TRUE(result);
+    auto result1 = AshMemUtils::ReadBulkData(msgParcel, to);
+    ASSERT_TRUE(result1);
     ASSERT_TRUE(from.size() == to.size());
     ASSERT_TRUE(Str16ToStr8(to[0]) == "11" && Str16ToStr8(to[1]) == "22");
 }
