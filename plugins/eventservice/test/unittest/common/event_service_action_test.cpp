@@ -171,7 +171,6 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
         "keyBool":1})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
-    std::cout <<" SysEventDao003:" << 0 << std::endl;
     ASSERT_TRUE(sysEvent->ParseJson() == 0);
     sysEventDbMgrPtr->SaveToStore(sysEvent);
 
@@ -198,8 +197,8 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
     sysEventDbMgrPtr->StartCheckStoreTask(currentLooper_);
     sysEventDbMgrPtr->CheckStore();
     SysEventDbBackup dbBackup(EventStore::StoreType::FAULT);
+    dbBackup.Recover();
     ASSERT_TRUE(dbBackup.IsBroken() == 0);
-    ASSERT_TRUE(dbBackup.Recover() == 1);
 }
 
 /**
