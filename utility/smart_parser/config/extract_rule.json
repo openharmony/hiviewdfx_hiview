@@ -81,7 +81,7 @@
             {"namespace":"MainCallTrace", "depend":"BasicParam", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_.]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
         ],
         "segmentRule":[
-            {"namespace":"LayerOneCmd", "matchKey":"]CPU@&@: stopping", "num":1, "v_id":"\\]CPU(\\d+): stopping", "v_name":"\\](CPU\\d+): stopping"}
+            {"namespace":"LayerOneCmd", "matchKey":"]:CPU@&@: stopping", "num":1, "v_id":"\\]:CPU(\\d+): stopping", "v_name":"\\]:(CPU\\d+): stopping"}
         ]
     },
     "Rule7":{
