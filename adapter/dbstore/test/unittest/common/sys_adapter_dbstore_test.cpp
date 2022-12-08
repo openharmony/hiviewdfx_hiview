@@ -18,15 +18,16 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-void SysAdapterDbstoreTest::SetUpTestCase(){}
+void SysAdapterDbstoreTest::SetUpTestCase() {}
 
-void SysAdapterDbstoreTest::TearDownTestCase(){}
+void SysAdapterDbstoreTest::TearDownTestCase() {}
 
-void SysAdapterDbstoreTest::SetUp(){
+void SysAdapterDbstoreTest::SetUp()
+{
     storeMgr_ = std::make_unique<StoreManager>();
 }
 
-void SysAdapterDbstoreTest::TearDown(){}
+void SysAdapterDbstoreTest::TearDown() {}
 
 /**
  * @tc.name: StoreManagerTest001
@@ -76,7 +77,7 @@ HWTEST_F(SysAdapterDbstoreTest, StoreManagerTest001, testing::ext::TestSize.Leve
     Option option5;
     option5.db = "/data/test/test.db";
     std::string bakupfile = "/data/test/back_up_test.db";
-    std::string bakupfile1 = "/data/test/back_up_test.db1"; 
+    std::string bakupfile1 = "/data/test/back_up_test.db1";
     ASSERT_TRUE(storeMgr_->CloseDocStore(option4) != 0);
     ASSERT_TRUE(storeMgr_->OnlineBackupDocStore(option4, bakupfile1) != 0);
     storeMgr_->OnlineBackupDocStore(option5, bakupfile);

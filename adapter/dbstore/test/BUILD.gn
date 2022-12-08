@@ -14,13 +14,12 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
 
-
 config("db_store_adapter_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
-    "." ,
-    "unittest/common"
+    ".",
+    "unittest/common",
   ]
 
   cflags = [ "-D__UNITTEST__" ]
@@ -35,9 +34,7 @@ ohos_unittest("DbStoreAdapterUnitTest") {
 
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
-  deps = [
-    "$hiview_adapter/dbstore:db_store_source",
-  ]
+  deps = [ "$hiview_adapter/dbstore:db_store_source" ]
 
   external_deps = [
     "init:libbeget_proxy",
