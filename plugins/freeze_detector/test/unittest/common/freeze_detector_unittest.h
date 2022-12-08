@@ -12,15 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_FREEZE_DETECTOR_TEST_H
-#define HIVIEW_FREEZE_DETECTOR_TEST_H
+#ifndef HIVIEW_FREEZE_DETECTOR_UNITTESTTEST_H
+#define HIVIEW_FREEZE_DETECTOR_UNITTESTTEST_H
 #include <string>
 #include <sys/types.h>
 
 #include <gtest/gtest.h>
 namespace OHOS {
 namespace HiviewDFX {
-class FreezeDetectorTest : public testing::Test {
+class FreezeDetectorUnittest : public testing::Test {
 public:
     void SetUp();
 

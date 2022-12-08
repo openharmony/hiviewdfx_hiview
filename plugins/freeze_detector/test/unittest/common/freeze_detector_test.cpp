@@ -34,6 +34,97 @@
 using namespace testing::ext;
 namespace OHOS {
 namespace HiviewDFX {
+namespace
+{
+std::shared_ptr<SysEvent> makeEvent(const std::string& name,
+                                    const std::string& domain,
+                                    const std::string& eventName,
+                                    const std::string& packageName,
+                                    const std::string& logPath)
+{
+    auto time = TimeUtil::GetMilliseconds();
+    std::string str = "******************\n";
+    str += "this is test " + eventName + " at " + std::to_string(time) + "\n";
+    str += "******************\n";
+    FileUtil::SaveStringToFile(logPath, str);
+
+    auto jsonStr = "{\"domain_\":\"" + domain + "\"}";
+    auto sysEvent = std::make_shared<SysEvent>(name, nullptr, jsonStr);
+    sysEvent->SetEventValue("name_", eventName);
+    sysEvent->SetEventValue("type_", 1);
+    sysEvent->SetEventValue("time_", time);
+    sysEvent->SetEventValue("pid_", getpid());
+    sysEvent->SetEventValue("tid_", gettid());
+    sysEvent->SetEventValue("uid_", getuid());
+    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
+    sysEvent->SetEventValue("PID", getpid());
+    sysEvent->SetEventValue("UID", getuid());
+    sysEvent->SetEventValue("MSG", "test " + eventName + " event");
+    sysEvent->SetEventValue("PACKAGE_NAME", packageName);
+    sysEvent->SetEventValue("PROCESS_NAME", packageName);
+
+    std::string tmpStr = R"~(logPath:)~" + logPath;
+    sysEvent->SetEventValue("info_", tmpStr);
+    if (sysEvent->ParseJson() < 0) {
+        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
+        return nullptr;
+    }
+    return sysEvent;
+}
+
+bool GetFreezeDectorTestFile(const std::string& eventName,
+                             const std::string& packageName,
+                             uint64_t time)
+{
+    int count = 0;
+    std::string decLogPath = "";
+    while (count < 10) { // 10: 最大等待10s
+        sleep(1);
+        std::vector<std::string> files;
+        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
+        ++count;
+        for (auto& i : files) {
+            if (i.find(packageName) == std::string::npos) {
+                continue;
+            }
+            std::string content;
+            FileUtil::LoadStringFromFile(i, content);
+            if (content.find(std::to_string(time)) == std::string::npos) {
+                printf("time is not match.\n");
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+
+            if (content.find(eventName) == std::string::npos) {
+                printf("Not %s.\n", eventName.c_str());
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+
+            if (content.find(packageName) == std::string::npos) {
+                printf("Not %s.\n", packageName.c_str());
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+            decLogPath = i;
+            break;
+        }
+
+        if (decLogPath != "") {
+            break;
+        }
+    }
+
+    if (decLogPath == "") {
+        printf("Not find files.\n");
+        return false;
+    }
+
+    FileUtil::RemoveFile(decLogPath);
+    return true;
+}
+}
+
 void FreezeDetectorTest::SetUp()
 {
     /**
@@ -122,56 +213,6 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorProxyTest001, TestSize.Level3)
     }
 }
 
-bool FreezeDetectorTest::GetFreezeDectorTest001File(uint64_t time)
-{
-    int count = 0;
-    std::string decLogPath = "";
-    while (count < 10) { // 10: 最大等待10s
-        sleep(1);
-        std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
-        ++count;
-        for (auto& i : files) {
-            if (i.find("FreezeDectorTest001") == std::string::npos) {
-                continue;
-            }
-            std::string content;
-            FileUtil::LoadStringFromFile(i, content);
-            if (content.find(std::to_string(time)) == std::string::npos) {
-                printf("time is not match.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("APPLICATION_BLOCK_INPUT") == std::string::npos) {
-                printf("Not APPLICATION_BLOCK_INPUT.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("FreezeDectorTest001") == std::string::npos) {
-                printf("Not FreezeDectorTest001.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-            decLogPath = i;
-            break;
-        }
-
-        if (decLogPath != "") {
-            break;
-        }
-    }
-
-    if (decLogPath == "") {
-        printf("Not find files.\n");
-        return false;
-    }
-
-    FileUtil::RemoveFile(decLogPath);
-    return true;
-}
-
 /**
  * @tc.name: FreezeDetectorTest001
  * @tc.desc: FreezeDetector send APPLICATION_BLOCK_INPUT
@@ -202,89 +243,23 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest001, TestSize.Level3)
         FAIL();
     }
 
-    auto time = TimeUtil::GetMilliseconds();
-    std::string str = "******************\n";
-    str += "this is test APPLICATION_BLOCK_INPUT at " + std::to_string(time) + "\n";
-    str += "******************\n";
-    FileUtil::SaveStringToFile(logPath, str);
-
-    auto jsonStr = "{\"domain_\":\"MULTIMODALINPUT\"}";
-    auto sysEvent = std::make_shared<SysEvent>("FreezeDectorTest001", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "APPLICATION_BLOCK_INPUT");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", getpid());
-    sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("MSG", "test APPLICATION_BLOCK_INPUT event");
-    sysEvent->SetEventValue("PACKAGE_NAME", "FreezeDectorTest001");
-    sysEvent->SetEventValue("PROCESS_NAME", "FreezeDectorTest001");
-
-    std::string tmpStr = R"~(logPath:)~" + logPath;
-    sysEvent->SetEventValue("info_", tmpStr);
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
+    auto sysEvent = makeEvent("FreezeDectorTest001", "MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT",
+                              "FreezeDectorTest001", logPath);
+    if (sysEvent == nullptr) {
+        printf("GetFreezeDectorTest001File, failed\n");
         FAIL();
     }
-
+    uint64_t time = sysEvent->GetEventIntValue("time_");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
-    if (!GetFreezeDectorTest001File(time)) {
+    if (!GetFreezeDectorTestFile("APPLICATION_BLOCK_INPUT",
+                                 "FreezeDectorTest001",
+                                 time)) {
         printf("GetFreezeDectorTest001File, failed\n");
         FAIL();
     }
-}
-
-
-bool FreezeDetectorTest::GetFreezeDectorTest002File(uint64_t time)
-{
-    int count = 0;
-    std::string decLogPath = "";
-    while (count < 10) { // 10: 最大等待10s
-        sleep(1);
-        std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
-        ++count;
-        for (auto& i : files) {
-            if (i.find("FreezeDectorTest002") == std::string::npos) {
-                continue;
-            }
-
-            std::string content;
-            FileUtil::LoadStringFromFile(i, content);
-            if (content.find(std::to_string(time)) == std::string::npos) {
-                printf("time is not match.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("LIFECYCLE_TIMEOUT") == std::string::npos) {
-                printf("Not LIFECYCLE_TIMEOUT.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("FreezeDectorTest002") == std::string::npos) {
-                printf("Not FreezeDectorTest002.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-            decLogPath = i;
-            break;
-        }
-    }
-
-    if (decLogPath == "") {
-        printf("Not find files.\n");
-        return false;
-    }
-
-    return true;
 }
 
 /**
@@ -318,42 +293,93 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
         FAIL();
     }
 
-    auto time = TimeUtil::GetMilliseconds();
-    std::string str = "******************\n";
-    str += "this is test LIFECYCLE_TIMEOUT at " + std::to_string(time) + "\n";
-    str += "******************\n";
-    FileUtil::SaveStringToFile(logPath, str);
-
-    auto jsonStr = "{\"domain_\":\"AAFWK\"}";
-    auto sysEvent = std::make_shared<SysEvent>("FreezeDectorTest001", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "LIFECYCLE_TIMEOUT");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", getpid());
-    sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("MSG", "test LIFECYCLE_TIMEOUT event");
-    sysEvent->SetEventValue("PACKAGE_NAME", "FreezeDectorTest002");
-    sysEvent->SetEventValue("PROCESS_NAME", "FreezeDectorTest002");
-
-    std::string tmpStr = R"~(logPath:)~" + logPath;
-    sysEvent->SetEventValue("info_", tmpStr);
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
+    auto sysEvent = makeEvent("FreezeDectorTest002", "AAFWK", "LIFECYCLE_TIMEOUT",
+                              "FreezeDectorTest002", logPath);
+    if (sysEvent == nullptr) {
+        printf("GetFreezeDectorTest002File, failed\n");
         FAIL();
     }
-
+    uint64_t time = sysEvent->GetEventIntValue("time_");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
-    if (!GetFreezeDectorTest002File(time)) {
+    if (!GetFreezeDectorTestFile("LIFECYCLE_TIMEOUT",
+                                 "FreezeDectorTest002",
+                                 time)) {
         printf("GetFreezeDectorTest002File, failed\n");
         FAIL();
     }
+}
+
+/**
+ * @tc.name: FreezeDetectorTest003
+ * @tc.desc: FreezeDetector send LIFECYCLE_TIMEOUT
+ * @tc.type: FUNC
+ * @tc.require: AR000H3T5D
+ */
+HWTEST_F(FreezeDetectorTest, FreezeDetectorTest003, TestSize.Level3)
+{
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("FreezeDetectorPlugin");
+    if (plugin == nullptr) {
+        printf("Get FreezeDetectorPlugin, failed");
+        FAIL();
+    }
+
+    std::string logPath = "/data/test/test_data/LOG003_1.log";
+    FileUtil::CreateFile(logPath);
+    if (!FileUtil::FileExists(logPath)) {
+        printf("CreateFile file, failed\n");
+        FAIL();
+    }
+
+    auto sysEvent = makeEvent("FreezeDectorTest003", "ACE", "UI_BLOCK_6S",
+                              "FreezeDectorTest003", logPath);
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    plugin->OnEventListeningCallback(*(event.get()));
+    sleep(10);
+    ASSERT_EQ(plugin->GetName(), "FreezeDetectorPlugin");
+}
+
+/**
+ * @tc.name: FreezeDetectorTest003
+ * @tc.desc: FreezeDetector send LIFECYCLE_TIMEOUT
+ * @tc.type: FUNC
+ * @tc.require: AR000H3T5D
+ */
+HWTEST_F(FreezeDetectorTest, FreezeDetectorTest004, TestSize.Level3)
+{
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("FreezeDetectorPlugin");
+    if (plugin == nullptr) {
+        printf("Get FreezeDetectorPlugin, failed");
+        FAIL();
+    }
+
+    /*
+        {"domain_":"AAFWK","name_":"LIFECYCLE_TIMEOUT","type_":1,"time_":1504095513772,"tz_":"+0000",
+            "pid_":444,"tid_":1290,
+            "uid_":5523,"UID":20010031,"PID":2070,"PACKAGE_NAME":"com.ohos.example.openapi9",
+            "PROCESS_NAME":"com.ohos.example.openapi9",
+            "MSG":"ability:MainAbility background timeout","level_":"CRITICAL",
+            "tag_":"STABILITY","id_":"13720438474024340534",
+            "info_":"logPath:/data/log/eventlog/LIFECYCLE_TIMEOUT-2070-20170830121833.log,"}
+    */
+    std::string logPath = "/data/test/test_data/LOG004.log";
+    FileUtil::CreateFile(logPath);
+    if (!FileUtil::FileExists(logPath)) {
+        printf("CreateFile file, failed\n");
+        FAIL();
+    }
+
+    auto sysEvent = makeEvent("FreezeDectorTest004", "AAFWK", "UI_BLOCK_3S",
+                              "FreezeDectorTest004", logPath);
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    plugin->OnEventListeningCallback(*(event.get()));
+
+    sleep(10);
+    ASSERT_EQ(plugin->GetName(), "FreezeDetectorPlugin");
 }
 
 /**
