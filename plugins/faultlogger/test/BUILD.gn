@@ -21,6 +21,7 @@ config("hiview_faultlogger_test_config") {
     ".",
     "$hiview_core",
     "$hiview_faultlogger/service/",
+    "$hiview_faultlogger/service/idl/include/",
     "common",
     "common/unittest",
   ]
