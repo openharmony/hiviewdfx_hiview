@@ -30,12 +30,6 @@ public:
     static void SetUpTestCase();
 
     static void TearDownTestCase();
-
-    bool SendEvent(uint64_t time, const std::string& name);
-
-    bool GetHicollieCollectorTest001File(uint64_t time1, uint64_t time2);
-
-    bool GetHicollieCollectorTest002File(uint64_t time);
 };
 }
 }
