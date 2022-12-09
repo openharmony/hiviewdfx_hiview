@@ -30,11 +30,8 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    std::shared_ptr<EventLoop> currentLooper_;
+    std::shared_ptr<EventLoop> currentLooper_ = nullptr;
     std::unique_ptr<SysEventDbMgr> sysEventDbMgrPtr;
-
-private:
-    std::shared_ptr<HiviewPlatform> platform_ = nullptr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
