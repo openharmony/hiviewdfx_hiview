@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@
 #include "faultlogger_client.h"
 #include "faultlogger_client_test.h"
 #include "file_util.h"
+#include "hisysevent.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
@@ -266,6 +267,33 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest005, testing::ext:
     ASSERT_EQ(nullptr, result);
     auto result2 = QuerySelfFaultLog(FaultLogType::CPP_CRASH, 100000); // 100000 : max count
     ASSERT_NE(nullptr, result2);
+}
+
+static void SendJsErrorEvent()
+{
+    HiSysEvent::Write("ACE",
+        "JS_ERROR",
+        HiSysEvent::EventType::FAULT,
+        "PID", 478, // 478 : test pid
+        "UID", 103, // 103 : test uid
+        "PACKAGE_NAME", "com.ohos.faultlogger.test",
+        "PROCESS_NAME", "com.ohos.faultlogger.test",
+        "MSG", "faultlogger testcase test.",
+        "REASON", "faultlogger testcase test.");
+}
+
+/**
+ * @tc.name: QuerySelfFaultLogTest006
+ * @tc.desc: query js crash log
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest006, testing::ext::TestSize.Level3)
+{
+    const int maxQueryCount = 10;
+    SendJsErrorEvent();
+    sleep(3); // 3 : wait for event saving
+    auto result = QuerySelfFaultLog(FaultLogType::JS_CRASH, maxQueryCount);
+    ASSERT_NE(nullptr, result);
 }
 
 /**
