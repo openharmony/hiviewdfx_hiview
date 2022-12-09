@@ -20,7 +20,9 @@ config("hiview_faultlogger_test_config") {
   include_dirs = [
     ".",
     "$hiview_core",
+    "$hiview_base/include/",
     "$hiview_faultlogger/service/",
+    "$hiview_faultlogger/service/idl/include/",
     "common",
     "common/unittest",
   ]

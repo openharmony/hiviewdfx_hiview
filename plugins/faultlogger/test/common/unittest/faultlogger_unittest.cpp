@@ -23,9 +23,13 @@
 #include <unistd.h>
 
 #include "event.h"
+#include "faultlog_database.h"
 #include "faultlog_util.h"
+#define private public
 #include "faultlogger.h"
+#undef private
 #include "file_util.h"
+#include "hiview_global.h"
 #include "hiview_platform.h"
 #include "log_analyzer.h"
 
@@ -33,6 +37,15 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
+constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
+class HiviewTestContext : public HiviewContext {
+public:
+    std::string GetHiViewDirectory(DirectoryType type __UNUSED)
+    {
+        return TEST_LOG_DIR;
+    }
+};
+
 class FaultloggerUnittest : public testing::Test {
 public:
     void SetUp()
@@ -115,6 +128,8 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
      * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
      * @tc.expected: the calling is success and the file has been created
      */
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
     auto plugin = CreateFaultloggerInstance();
     FaultLogInfo info;
     info.time = 1607161163;
@@ -137,6 +152,54 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(size, 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
+    ASSERT_EQ(faultLogDb->IsFaultExist(7497, 0, 2), false);
+}
+
+/**
+ * @tc.name: SaveFaultLogInfoTest001
+ * @tc.desc: Test calling SaveFaultLogInfo Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
+{
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
+    FaultLogInfo info;
+    info.time = 1607161333; // 3 : index of timestamp
+    info.pid = getpid();
+    info.id = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest";
+    info.reason = "unittest for SaveFaultLogInfo";
+    info.summary = "summary for SaveFaultLogInfo";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "abort";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    faultLogDb->SaveFaultLogInfo(info);
+
+    sleep(1);
+    std::list<FaultLogInfo> infoList = faultLogDb->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
+    ASSERT_EQ(infoList.size(), 0);
+}
+
+/**
+ * @tc.name: FaultLogUtilTest001
+ * @tc.desc: check ExtractInfoFromFileName Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogUtilTest001, testing::ext::TestSize.Level3)
+{
+    std::string filename = "appfreeze-com.ohos.systemui-10006-20170805172159";
+    auto info = ExtractInfoFromFileName(filename);
+    ASSERT_EQ(info.pid, 0);
+    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.module, "com.ohos.systemui");
+    ASSERT_EQ(info.id, 10006); // 10006 : test uid
 }
 
 /**
