@@ -17,6 +17,7 @@
 
 #include <fcntl.h>
 #include <gtest/gtest.h>
+#include "sys_event.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -26,6 +27,7 @@
 #include "faultlogger.h"
 #include "file_util.h"
 #include "hiview_platform.h"
+#include "log_analyzer.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -135,6 +137,64 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(size, 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
+}
+
+/**
+ * @tc.name: genCppCrashtoAnalysisFaultlog
+ * @tc.desc: create cpp crash event and check AnalysisFaultlog
+ * @tc.type: FUNC
+ * @tc.require: SR000F7UQ6 AR000F4380
+ */
+HWTEST_F(FaultloggerUnittest, genCppCrashtoAnalysisFaultlog001, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
+     * @tc.expected: AnalysisFaultlog return expected result
+     */
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 0;
+    info.pid = 7497;
+    info.faultLogType = 2;
+    info.module = "com.example.testapplication";
+    info.reason = "TestReason";
+    std::map<std::string, std::string> eventInfos;
+    ASSERT_EQ(AnalysisFaultlog(info, eventInfos), false);
+    ASSERT_EQ(!eventInfos["fingerPrint"].empty(), true);
+}
+
+/**
+ * @tc.name: genjserrorLogTest002
+ * @tc.desc: create JS ERROR event and send it to faultlogger
+ * @tc.type: FUNC
+ * @tc.require: SR000F7UQ6 AR000F4380
+ */
+HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create a jss_error event and pass it to faultlogger
+     * @tc.expected: the calling is success and the file has been created
+     */
+
+    SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("SUMMARY", "Error message:is not callable\nStacktrace:");
+    sysEventCreator.SetKeyValue("name_", "JS_ERROR");
+    sysEventCreator.SetKeyValue("happenTime_", 1670248360359);
+    sysEventCreator.SetKeyValue("REASON", "TypeError");
+    sysEventCreator.SetKeyValue("tz_", "+0800");
+    sysEventCreator.SetKeyValue("pid_", 2413);
+    sysEventCreator.SetKeyValue("tid_", 2413);
+    sysEventCreator.SetKeyValue("what_", 3);
+    sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
+    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+    sysEventCreator.SetKeyValue("TYPE", 3);
+    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+
+    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    auto testPlugin = CreateFaultloggerInstance();
+    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+    bool result = testPlugin->OnEvent(event);
+    ASSERT_EQ(result, true);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
