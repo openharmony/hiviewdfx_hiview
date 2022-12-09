@@ -38,7 +38,10 @@ ohos_unittest("HicollieCollectorTest") {
 
   deps = [
     "$hiview_base:hiviewbase",
+    "$hiview_core:hiview_core",
     "$hiview_plugin/hicollie_collector:hicollie_collector",
     "//third_party/googletest:gtest_main",
   ]
+
+  resource_config_file = "//base/hiviewdfx/hiview/plugins/hicollie_collector/test/resource/ohos_test.xml"
 }

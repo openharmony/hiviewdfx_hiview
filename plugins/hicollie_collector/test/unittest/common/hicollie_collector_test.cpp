@@ -26,11 +26,103 @@
 
 #include "hiview_platform.h"
 #include "hisysevent.h"
+#include "plugin.h"
 #include "sys_event.h"
 
 using namespace testing::ext;
 namespace OHOS {
 namespace HiviewDFX {
+namespace
+{
+std::shared_ptr<SysEvent> makeEvent(const std::string& name,
+                                    const std::string& domain,
+                                    const std::string& eventName,
+                                    const std::string& packageName,
+                                    const std::string& logPath)
+{
+    auto time = TimeUtil::GetMilliseconds();
+    std::string str = "******************\n";
+    str += "this is test " + eventName + " at " + std::to_string(time) + "\n";
+    str += "******************\n";
+    FileUtil::SaveStringToFile(logPath, str);
+
+    auto jsonStr = "{\"domain_\":\"" + domain + "\"}";
+    auto sysEvent = std::make_shared<SysEvent>(name, nullptr, jsonStr);
+    sysEvent->SetEventValue("name_", eventName);
+    sysEvent->SetEventValue("type_", 1);
+    sysEvent->SetEventValue("time_", time);
+    sysEvent->SetEventValue("pid_", getpid());
+    sysEvent->SetEventValue("tid_", gettid());
+    sysEvent->SetEventValue("uid_", getuid());
+    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
+    sysEvent->SetEventValue("PID", getpid());
+    sysEvent->SetEventValue("UID", getuid());
+    sysEvent->SetEventValue("MSG", "test " + eventName + " event");
+    sysEvent->SetEventValue("PACKAGE_NAME", packageName);
+    sysEvent->SetEventValue("PROCESS_NAME", packageName);
+
+    std::string tmpStr = R"~(logPath:)~" + logPath;
+    sysEvent->SetEventValue("info_", tmpStr);
+    if (sysEvent->ParseJson() < 0) {
+        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
+        return nullptr;
+    }
+    return sysEvent;
+}
+
+bool GetFreezeDectorTestFile(const std::string& eventName,
+                             const std::string& packageName,
+                             uint64_t time)
+{
+    int count = 0;
+    std::string decLogPath = "";
+    while (count < 10) { // 10: 最大等待10s
+        sleep(1);
+        std::vector<std::string> files;
+        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
+        ++count;
+        for (auto& i : files) {
+            if (i.find(packageName) == std::string::npos) {
+                continue;
+            }
+            std::string content;
+            FileUtil::LoadStringFromFile(i, content);
+            if (content.find(std::to_string(time)) == std::string::npos) {
+                printf("time is not match.\n");
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+
+            if (content.find(eventName) == std::string::npos) {
+                printf("Not %s.\n", eventName.c_str());
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+
+            if (content.find(packageName) == std::string::npos) {
+                printf("Not %s.\n", packageName.c_str());
+                FileUtil::RemoveFile(i);
+                continue;
+            }
+            decLogPath = i;
+            break;
+        }
+
+        if (decLogPath != "") {
+            break;
+        }
+    }
+
+    if (decLogPath == "") {
+        printf("Not find files.\n");
+        return false;
+    }
+
+    FileUtil::RemoveFile(decLogPath);
+    return true;
+}
+}
+
 void HicollieCollectorTest::SetUp()
 {
     /**
@@ -44,6 +136,10 @@ void HicollieCollectorTest::SetUpTestCase()
      * @tc.setup: all first
      */
     printf("SetUpTestCase.\n");
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
+        printf("Fail to init environment.\n");
+    }
 }
 
 void HicollieCollectorTest::TearDownTestCase()
@@ -62,73 +158,6 @@ void HicollieCollectorTest::TearDown()
     printf("TearDown.\n");
 }
 
-bool HicollieCollectorTest::SendEvent(uint64_t time, const std::string& name)
-{
-    HiSysEvent::Write("FRAMEWORK", name, HiSysEvent::EventType::FAULT,
-        "PID", getpid(),
-        "UID", getuid(),
-        "TGID", getgid(),
-        "MSG", "this is test\n " + name + " event time is " + std::to_string(time),
-        "MODULE_NAME", "HicollieCollectorTest001",
-        "PROCESS_NAME", "HicollieCollectorTest001"
-    );
-    return true;
-}
-
-bool HicollieCollectorTest::GetHicollieCollectorTest001File(uint64_t time1, uint64_t time2)
-{
-    int count = 0;
-    std::string decLogPath = "";
-    while (count < 10) { // 10: 最大等待10s
-        sleep(1);
-        std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
-        ++count;
-        for (auto& i : files) {
-            if (i.find("HicollieCollectorTest001") == std::string::npos) {
-                continue;
-            }
-            std::string content;
-            FileUtil::LoadStringFromFile(i, content);
-            if (content.find(std::to_string(time1)) == std::string::npos
-                || content.find(std::to_string(time2)) == std::string::npos) {
-                printf("time is not match.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("SERVICE_WARNING") == std::string::npos
-                || content.find("SERVICE_BLOCK") == std::string::npos) {
-                printf("Not SERVICE_WARNING || SERVICE_BLOCK.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("HicollieCollectorTest001") == std::string::npos) {
-                printf("Not HicollieCollectorTest001.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-            decLogPath = i;
-            break;
-        }
-
-        if (decLogPath != "") {
-            printf("decLogPath is %s.\n", decLogPath.c_str());
-            break;
-        }
-    }
-
-    printf("decLogPath is %s.\n", decLogPath.c_str());
-    if (decLogPath == "") {
-        printf("Not find files.\n");
-        return false;
-    }
-
-    FileUtil::RemoveFile(decLogPath);
-    return true;
-}
-
 /**
  * @tc.name: HicollieCollectorTest001
  * @tc.desc: HicollieCollector send SERVICE_BLOCK
@@ -137,72 +166,38 @@ bool HicollieCollectorTest::GetHicollieCollectorTest001File(uint64_t time1, uint
  */
 HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
 {
-    auto time1 = TimeUtil::GetMilliseconds();
-    printf("HicollieCollectorTest001, time1 %s \n", std::to_string(time1).c_str());
-    SendEvent(time1, "SERVICE_BLOCK");
-
-    sleep(3);
-
-    auto time2 = TimeUtil::GetMilliseconds();
-    printf("HicollieCollectorTest001, time2 %s \n", std::to_string(time2).c_str());
-    SendEvent(time2, "SERVICE_WARNING");
-
-    if (!GetHicollieCollectorTest001File(time1, time2)) {
-        printf("GetHicollieCollectorTest001File, failed\n");
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("HiCollieCollector");
+    if (plugin == nullptr) {
+        printf("Get HiCollieCollector, failed\n");
         FAIL();
     }
-}
 
-bool HicollieCollectorTest::GetHicollieCollectorTest002File(uint64_t time)
-{
-    int count = 0;
-    std::string decLogPath = "";
-    while (count < 10) { // 10: 最大等待10s
-        sleep(1);
-        std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
-        ++count;
-        for (auto& i : files) {
-            if (i.find("HicollieCollectorTest002") == std::string::npos) {
-                continue;
-            }
-            std::string content;
-            FileUtil::LoadStringFromFile(i, content);
-            if (content.find(std::to_string(time)) == std::string::npos) {
-                printf("time is not match.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("SERVICE_TIMEOUT") == std::string::npos) {
-                printf("Not SERVICE_TIMEOUT.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-
-            if (content.find("HicollieCollectorTest002") == std::string::npos) {
-                printf("Not HicollieCollectorTest002.\n");
-                FileUtil::RemoveFile(i);
-                continue;
-            }
-            decLogPath = i;
-            break;
-        }
-
-        if (decLogPath != "") {
-            printf("decLogPath is %s.\n", decLogPath.c_str());
-            break;
-        }
+    std::string logPath = "/data/test/test_data/LOG001.log";
+    FileUtil::CreateFile(logPath);
+    if (!FileUtil::FileExists(logPath)) {
+        printf("CreateFile file, failed\n");
+        FAIL();
     }
 
-    printf("decLogPath is %s.\n", decLogPath.c_str());
-    if (decLogPath == "") {
-        printf("Not find files.\n");
-        return false;
+    auto sysEvent = makeEvent("HicollieCollectorTest001", "FRAMEWORK", "SERVICE_TIMEOUT",
+                              "HicollieCollectorTest001", logPath);
+    if (sysEvent == nullptr) {
+        printf("GetFreezeDectorTest001File, failed\n");
+        FAIL();
     }
+    uint64_t time = sysEvent->GetEventIntValue("time_");
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    std::shared_ptr<HiCollieCollector> hiCollieCollector = std::static_pointer_cast<HiCollieCollector>(plugin);
+    hiCollieCollector->OnUnorderedEvent(*(event.get()));
 
-    FileUtil::RemoveFile(decLogPath);
-    return true;
+    sleep(3);
+    if (!GetFreezeDectorTestFile("SERVICE_TIMEOUT",
+                                 "HicollieCollectorTest001",
+                                 time)) {
+        printf("GetFreezeDectorTest001File, failed\n");
+        FAIL();
+    }
 }
 
 /**
@@ -213,20 +208,32 @@ bool HicollieCollectorTest::GetHicollieCollectorTest002File(uint64_t time)
  */
 HWTEST_F(HicollieCollectorTest, HicollieCollectorTest002, TestSize.Level3)
 {
-    auto time = TimeUtil::GetMilliseconds();
-    HiSysEvent::Write("FRAMEWORK", "SERVICE_TIMEOUT", HiSysEvent::EventType::FAULT,
-        "PID", getpid(),
-        "UID", getuid(),
-        "TGID", getgid(),
-        "MSG", "this is test\n SERVICE_TIMEOUT event time is " + std::to_string(time),
-        "MODULE_NAME", "HicollieCollectorTest002",
-        "PROCESS_NAME", "HicollieCollectorTest002"
-    );
-
-    if (!GetHicollieCollectorTest002File(time)) {
-        printf("GetHicollieCollectorTest002File, failed\n");
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    std::shared_ptr<Plugin> plugin = platform.GetPluginByName("HiCollieCollector");
+    if (plugin == nullptr) {
+        printf("Get HiCollieCollector, failed\n");
         FAIL();
     }
+
+    std::string logPath = "/data/test/test_data/LOG002.log";
+    FileUtil::CreateFile(logPath);
+    if (!FileUtil::FileExists(logPath)) {
+        printf("CreateFile file, failed\n");
+        FAIL();
+    }
+
+    auto sysEvent = makeEvent("HicollieCollectorTest002", "FRAMEWORK", "SERVICE_BLOCK",
+                              "HicollieCollectorTest002", logPath);
+    if (sysEvent == nullptr) {
+        printf("GetFreezeDectorTest001File, failed\n");
+        FAIL();
+    }
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    std::shared_ptr<HiCollieCollector> hiCollieCollector = std::static_pointer_cast<HiCollieCollector>(plugin);
+    hiCollieCollector->OnUnorderedEvent(*(event.get()));
+
+    sleep(3);
+    ASSERT_EQ(plugin->GetPluginInfo(), "HiCollieCollector");
 }
 }
 }
