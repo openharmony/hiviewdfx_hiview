@@ -35,31 +35,22 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-void EventServiceActionTest::SetUpTestCase() {}
-
-void EventServiceActionTest::TearDownTestCase() {}
-
-void EventServiceActionTest::SetUp()
+void EventServiceActionTest::SetUpTestCase()
 {
-    platform_ =  std::make_shared<HiviewPlatform>();
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
     std::string defaultDir = "/data/test/test_data/hiview_platform_config";
-    if (!platform_->InitEnvironment(defaultDir)) {
+    if (!platform.InitEnvironment(defaultDir)) {
         std::cout << "fail to init environment" << std::endl;
     } else {
         std::cout << "init environment successful" << std::endl;
     }
-    sysEventDbMgrPtr = std::make_unique<SysEventDbMgr>();
-    currentLooper_ = std::make_shared<EventLoop>("EventServiceActionTest");
-    currentLooper_->StartLoop();
 }
 
-void EventServiceActionTest::TearDown()
-{
-    if (currentLooper_ != nullptr) {
-        currentLooper_->StopLoop();
-        currentLooper_.reset();
-    }
-}
+void EventServiceActionTest::TearDownTestCase() {}
+
+void EventServiceActionTest::SetUp() {}
+
+void EventServiceActionTest::TearDown() {}
 
 /**
  * @tc.name: EventJsonParserTest001
@@ -69,7 +60,7 @@ void EventServiceActionTest::TearDown()
  */
 HWTEST_F(EventServiceActionTest, EventJsonParserTest001, testing::ext::TestSize.Level3)
 {
-    printf("start EventServiceActionTest\n");
+    printf("start EventJsonParserTest001\n");
     constexpr char JSON_STR[] = "{\"domain_\":\"DEMO\",\"name_\":\"EVENT_NAME_A\",\"type_\":4,\
         \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
     auto sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, JSON_STR);
@@ -167,13 +158,15 @@ HWTEST_F(EventServiceActionTest, SysEventStatTest002, testing::ext::TestSize.Lev
  */
 HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
 {
+    sysEventDbMgrPtr = std::make_unique<SysEventDbMgr>();
+    currentLooper_ = std::make_shared<EventLoop>("EventServiceActionTest");
+    currentLooper_->StartLoop();
     std::string jsonStr1 = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":1,"tz_":8,"time_":162027129110,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
         "keyBool":1})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
     ASSERT_TRUE(sysEvent->ParseJson() == 0);
     sysEventDbMgrPtr->SaveToStore(sysEvent);
-
     auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     std::vector<std::string> selections { EventStore::EventCol::NAME };
     EventStore::ResultSet resultSet = (*sysEventQuery).Select(selections).
@@ -199,6 +192,10 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
     SysEventDbBackup dbBackup(EventStore::StoreType::FAULT);
     dbBackup.Recover();
     ASSERT_TRUE(dbBackup.IsBroken() == 0);
+    if (currentLooper_ != nullptr) {
+        currentLooper_->StopLoop();
+        currentLooper_.reset();
+    }
 }
 
 /**
@@ -213,7 +210,6 @@ HWTEST_F(EventServiceActionTest, SysEventService004, testing::ext::TestSize.Leve
     std::shared_ptr<Event> nullEvent = nullptr;
     std::cout << "ASSERT1:" << testPlugin->OnEvent(nullEvent) << std::endl;
     ASSERT_FALSE(testPlugin->OnEvent(nullEvent));
-    testPlugin->OnLoad();
     testPlugin->OnUnload();
     std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_003","type_":1,"tz_":8,
         "time_":1620271291200,"pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20",
