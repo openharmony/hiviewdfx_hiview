@@ -80,6 +80,7 @@ bool RemoveFile(const std::string& fileName);
 uint64_t GetFolderSize(const std::string& path);
 uint64_t GetFileSize(const std::string& path);
 bool ChangeMode(const std::string& fileName, const mode_t& mode);
+bool ChangeModeFile(const std::string& fileName, const mode_t& mode);
 bool ChangeModeDirectory(const std::string& path, const mode_t& mode);
 bool PathToRealPath(const std::string& path, std::string& realPath);
 mode_t Umask(const mode_t& mode);

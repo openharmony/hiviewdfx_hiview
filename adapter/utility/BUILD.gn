@@ -20,6 +20,7 @@ config("hiview_adapter_utils_config") {
     ".",
     "include",
     "$hiview_adapter/system_service/include",
+    "$hiview_adapter/utility/include",
   ]
 }
 
@@ -44,4 +45,9 @@ ohos_source_set("hiview_adapter_utility") {
     "c_utils:utils",
     "hilog_native:libhilog",
   ]
+}
+
+group("unittest") {
+  testonly = true
+  deps = [ "test:unittest" ]
 }
