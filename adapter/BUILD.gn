@@ -17,6 +17,7 @@ group("unittest") {
   deps = [
     "plugins/eventservice/service:unittest",
     "system_service:unittest",
+    "utility:unittest",
   ]
 }
 

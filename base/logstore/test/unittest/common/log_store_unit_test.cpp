@@ -62,6 +62,7 @@ void LogStoreUnitTest::SetUp()
 
 void LogStoreUnitTest::TearDown()
 {
+    (void)FileUtil::ForceRemoveDirectory(LOG_FILE_PATH);
 }
 
 /**
@@ -89,14 +90,14 @@ HWTEST_F(LogStoreUnitTest, LogStoreUnitTest001, testing::ext::TestSize.Level3)
     ASSERT_EQ(testLogDir, file1.path_);
     ASSERT_EQ(FileUtil::ExtractFileName(testLogDir), file1.name_);
     const std::string testLogFile = testLogDir + "logFile";
-    FileUtil::SaveStringToFile(testLogFile, LOG_CONTENT);
+    (void)FileUtil::SaveStringToFile(testLogFile, LOG_CONTENT);
     LogFile file2(testLogFile);
     ASSERT_EQ(true, file2.isValid_);
     ASSERT_EQ(false, file2.isDir_);
     ASSERT_EQ(std::string(LOG_CONTENT).size(), file2.size_);
     ASSERT_EQ(testLogFile, file2.path_);
     ASSERT_EQ(FileUtil::ExtractFileName(testLogFile), file2.name_);
-    FileUtil::ForceRemoveDirectory(testLogDir);
+    (void)FileUtil::ForceRemoveDirectory(testLogDir);
     ASSERT_TRUE(true);
 }
 
@@ -111,7 +112,7 @@ HWTEST_F(LogStoreUnitTest, LogStoreUnitTest002, testing::ext::TestSize.Level3)
     const std::string logStorePath = std::string(LOG_FILE_PATH);
     FileUtil::ForceRemoveDirectory(logStorePath);
     ASSERT_TRUE(true);
-    FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
+    (void)FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
     LogStoreEx logStoreEx(logStorePath);
     auto ret = logStoreEx.Init();
     ASSERT_EQ(true, ret);
@@ -121,7 +122,7 @@ HWTEST_F(LogStoreUnitTest, LogStoreUnitTest002, testing::ext::TestSize.Level3)
     ASSERT_EQ(1, allLogFiles.size());
     auto ret1 = logStoreEx.Clear();
     ASSERT_EQ(true, ret1);
-    FileUtil::ForceRemoveDirectory(logStorePath);
+    (void)FileUtil::ForceRemoveDirectory(logStorePath);
     auto ret2 = logStoreEx.Clear();
     ASSERT_EQ(false, ret2);
     std::string singleLine;
@@ -129,15 +130,15 @@ HWTEST_F(LogStoreUnitTest, LogStoreUnitTest002, testing::ext::TestSize.Level3)
         singleLine += "ohos";
     }
     for (int index = 0; index < SIZE_10240; index++) {
-        FileUtil::SaveStringToFile(GenerateLogFileName(index), singleLine);
+        (void)FileUtil::SaveStringToFile(GenerateLogFileName(index), singleLine);
     }
     (void)logStoreEx.ClearOldestFilesIfNeeded();
     ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(logStorePath);
+    (void)FileUtil::ForceRemoveDirectory(logStorePath);
     ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(logStorePath);
+    (void)FileUtil::ForceRemoveDirectory(logStorePath);
     ASSERT_TRUE(true);
-    FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
+    (void)FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
     logStoreEx.ClearSameLogFilesIfNeeded([] (auto& logFile) {
         return logFile.isValid_;
     }, 0);
@@ -146,13 +147,11 @@ HWTEST_F(LogStoreUnitTest, LogStoreUnitTest002, testing::ext::TestSize.Level3)
         return logFile.isValid_;
     }, 1);
     ASSERT_TRUE(true);
-    FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
+    (void)FileUtil::SaveStringToFile(GenerateLogFileName(LOG_FILE_START_INDEX), LOG_CONTENT);
     auto ret3 = logStoreEx.RemoveLogFile("logfile0");
     ASSERT_EQ(true, ret3);
     auto ret4 = logStoreEx.RemoveLogFile("logfile1");
     ASSERT_EQ(false, ret4);
-    FileUtil::ForceRemoveDirectory(logStorePath);
-    ASSERT_TRUE(true);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
