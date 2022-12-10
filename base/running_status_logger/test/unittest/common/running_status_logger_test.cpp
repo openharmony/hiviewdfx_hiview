@@ -89,6 +89,7 @@ void RunningStatusLoggerTest::SetUp()
 
 void RunningStatusLoggerTest::TearDown()
 {
+    (void)FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
 }
 
 /**
@@ -115,8 +116,6 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_001, testing::ext::Tes
     for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
-    ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
     ASSERT_TRUE(true);
 }
 
@@ -149,8 +148,6 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_002, testing::ext::Tes
     for (int index = 0; index < SIZE_512; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
-    ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
     ASSERT_TRUE(true);
 }
 
@@ -185,8 +182,6 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_003, testing::ext::Tes
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
     ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
-    ASSERT_TRUE(true);
 }
 
 /**
@@ -211,12 +206,10 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_004, testing::ext::Tes
     for (int index = 0; index < SIZE_512; index++) {
         singleLine += "ohos";
     }
-    FileUtil::SaveStringToFile(GenerateYesterdayLogFileName(), singleLine);
+    (void)FileUtil::SaveStringToFile(GenerateYesterdayLogFileName(), singleLine);
     for (int index = 0; index < SIZE_10; index++) {
         RunningStatusLogger::GetInstance().Log(singleLine);
     }
-    ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
     ASSERT_TRUE(true);
 }
 
@@ -259,11 +252,9 @@ HWTEST_F(RunningStatusLoggerTest, RunningStatusLoggerTest_007, testing::ext::Tes
         singleLine += "ohos";
     }
     for (int index = 0; index < SIZE_10; index++) {
-        FileUtil::SaveStringToFile(GenerateInvalidFileName(index), singleLine);
+        (void)FileUtil::SaveStringToFile(GenerateInvalidFileName(index), singleLine);
     }
     RunningStatusLogger::GetInstance().Log(singleLine);
-    ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
     ASSERT_TRUE(true);
 }
 
