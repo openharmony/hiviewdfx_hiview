@@ -15,7 +15,10 @@
 
 #include "adapter_utility_ohos_test.h"
 
+#include <fcntl.h>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "common_utils.h"
 #include "file_util.h"
