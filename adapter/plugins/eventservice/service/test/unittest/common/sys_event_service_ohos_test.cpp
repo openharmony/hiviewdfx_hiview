@@ -58,10 +58,25 @@ using namespace std;
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+constexpr char ASH_MEM_NAME[] = "TestSharedMemory";
+constexpr int32_t ASH_MEM_SIZE = 1024 * 2; // 2K
 constexpr int SYS_EVENT_SERVICE_ID = 1203;
 constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
-namespace {
+
+sptr<Ashmem> GetAshmem()
+{
+    auto ashmem = Ashmem::CreateAshmem(ASH_MEM_NAME, ASH_MEM_SIZE);
+    if (ashmem == nullptr) {
+        return nullptr;
+    }
+    if (!ashmem->MapReadAndWriteAshmem()) {
+        return ashmem;
+    }
+    return ashmem;
+}
+
 class TestQuerySysEventCallbackStub : public QuerySysEventCallbackStub {
 public:
     TestQuerySysEventCallbackStub() {}
@@ -144,7 +159,9 @@ void SysEventServiceOhosTest::TearDownTestCase() {}
 
 void SysEventServiceOhosTest::SetUp() {}
 
-void SysEventServiceOhosTest::TearDown() {}
+void SysEventServiceOhosTest::TearDown() {
+    (void)FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
+}
 
 static SysEventRule GetTestRule(int type, const string &domain, const string &eventName)
 {
@@ -383,6 +400,10 @@ HWTEST_F(SysEventServiceOhosTest, TestAshMemory, testing::ext::TestSize.Level1)
     ASSERT_TRUE(result1);
     ASSERT_TRUE(from.size() == to.size());
     ASSERT_TRUE(Str16ToStr8(to[0]) == "11" && Str16ToStr8(to[1]) == "22");
+    AshMemUtils::CloseAshmem(nullptr);
+    ASSERT_TRUE(true);
+    AshMemUtils::CloseAshmem(GetAshmem());
+    ASSERT_TRUE(true);
 }
 
 /**
@@ -543,8 +564,6 @@ HWTEST_F(SysEventServiceOhosTest, RunningStatusLogUtilTest, testing::ext::TestSi
     RunningStatusLogUtil::LogTooManyWatchRules(sysEventRules2);
     ASSERT_TRUE(true);
     RunningStatusLogUtil::LogTooManyWatchers(30);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
-    ASSERT_TRUE(true);
 }
 
 /**
@@ -582,8 +601,6 @@ HWTEST_F(SysEventServiceOhosTest, SysEventServiceOhosIntanceTest, testing::ext::
     dumpRet = SysEventServiceOhos::GetInstance().Dump(0, args);
     ASSERT_TRUE(dumpRet == 0);
     SysEventServiceOhos::GetInstance().OnRemoteDied(nullptr);
-    ASSERT_TRUE(true);
-    FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
 }
 
 /**

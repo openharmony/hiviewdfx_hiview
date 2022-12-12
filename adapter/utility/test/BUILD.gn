@@ -14,34 +14,38 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
 
-module_output_path = "hiview/hiview/hicollieCollector"
+module_output_path = "hiview/adapter/utility"
+
+group("unittest") {
+  testonly = true
+  deps = [ ":AdapterUtilityOhosTest" ]
+}
 
 config("unittest_config") {
   include_dirs = [
-    "./unittest/common/",
     "$hiview_adapter/utility/include",
-    "$hiview_core/",
-    "$hiview_plugin/hicollie_collector",
+    "$hiview_adapter/utility/test/unittest/common",
   ]
 
-  cflags_cc = [
-    "-D__UNITTEST__",
-    "-D__HIVIEW_OHOS__",
-  ]
+  cflags_cc = [ "-D__UNITTEST__" ]
 }
 
-ohos_unittest("HicollieCollectorTest") {
+ohos_unittest("AdapterUtilityOhosTest") {
   module_out_path = module_output_path
+
   configs = [ ":unittest_config" ]
 
-  sources = [ "unittest/common/hicollie_collector_test.cpp" ]
+  sources = [ "$hiview_adapter/utility/test/unittest/common/adapter_utility_ohos_test.cpp" ]
+
+  cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
-    "$hiview_core:hiview_core",
-    "$hiview_plugin/hicollie_collector:hicollie_collector",
+    "$hiview_adapter/utility:hiview_adapter_utility",
     "//third_party/googletest:gtest_main",
   ]
 
-  resource_config_file = "//base/hiviewdfx/hiview/plugins/hicollie_collector/test/resource/ohos_test.xml"
+  external_deps = [
+    "init:libbeget_proxy",
+    "init:libbegetutil",
+  ]
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,27 +13,21 @@
  * limitations under the License.
  */
 
-#ifndef EVENT_SERVICE_ACTION_TEST_H
-#define EVENT_SERVICE_ACTION_TEST_H
+#ifndef HIVIEWDFX_ADAPTER_UTILITY_OHOS_TEST_H
+#define HIVIEWDFX_ADAPTER_UTILITY_OHOS_TEST_H
 
 #include <gtest/gtest.h>
-#include "event_loop.h"
-#include "sys_event_db_mgr.h"
-#include "hiview_global.h"
-#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class EventServiceActionTest : public testing::Test {
+class AdapterUtilityOhosTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    std::shared_ptr<EventLoop> currentLooper_ = nullptr;
-    std::unique_ptr<SysEventDbMgr> sysEventDbMgrPtr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // EVENT_SERVICE_ACTION_TEST_H
+#endif // HIVIEWDFX_ADAPTER_UTILITY_OHOS_TEST_H
