@@ -23,8 +23,8 @@
 #include <unistd.h>
 
 #include "event.h"
-#include "faultlog_database.h"
 #include "faultlog_util.h"
+#include "faultlog_database.h"
 #define private public
 #include "faultlogger.h"
 #undef private
@@ -32,6 +32,8 @@
 #include "hiview_global.h"
 #include "hiview_platform.h"
 #include "log_analyzer.h"
+#include "sys_event.h"
+#include "sys_event_dao.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -56,6 +58,13 @@ public:
         return plugin;
     }
 };
+
+static void InitHiviewContext()
+{
+    OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    bool result = platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
+    printf("InitHiviewContext result:%d\n", result);
+}
 
 /**
  * @tc.name: dumpFileListTest001
@@ -144,6 +153,30 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
 }
 
 /**
+ * @tc.name: genCppCrashtoAnalysisFaultlog
+ * @tc.desc: create cpp crash event and check AnalysisFaultlog
+ * @tc.type: FUNC
+ * @tc.require: SR000F7UQ6 AR000F4380
+ */
+HWTEST_F(FaultloggerUnittest, genCppCrashtoAnalysisFaultlog001, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
+     * @tc.expected: AnalysisFaultlog return expected result
+     */
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 0;
+    info.pid = 7497;
+    info.faultLogType = 2;
+    info.module = "com.example.testapplication";
+    info.reason = "TestReason";
+    std::map<std::string, std::string> eventInfos;
+    ASSERT_EQ(AnalysisFaultlog(info, eventInfos), false);
+    ASSERT_EQ(!eventInfos["fingerPrint"].empty(), true);
+}
+
+/**
  * @tc.name: genjserrorLogTest002
  * @tc.desc: create JS ERROR event and send it to faultlogger
  * @tc.type: FUNC
@@ -183,11 +216,10 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
  */
 HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
 {
-    std::unique_ptr<HiviewPlatform> platform = std::make_unique<HiviewPlatform>();
-    HiviewGlobal::CreateInstance(*(platform.get()));
+    InitHiviewContext();
     FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     FaultLogInfo info;
-    info.time = 1607161333; // 3 : index of timestamp
+    info.time = std::time(nullptr); // 3 : index of timestamp
     info.pid = getpid();
     info.id = 0;
     info.faultLogType = 2;
@@ -202,7 +234,42 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     faultLogDb->SaveFaultLogInfo(info);
 
-    sleep(1);
+    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
+    FILE* fp = popen(cmd.c_str(), "r");
+    char buffer[1024] = {0};
+    if (fp != nullptr) {
+        fgets(buffer, sizeof(buffer), fp);
+        pclose(fp);
+        std::string str(buffer);
+        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
+            printf("sucess!\r\n");
+        } else {
+            FAIL();
+        }
+    } else {
+        FAIL();
+    }
+}
+
+/**
+ * @tc.name: GetFaultInfoListTest001
+ * @tc.desc: Test calling GetFaultInfoList Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GetFaultInfoListTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
+    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":"+0800",
+    "pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest","REASON"
+    :"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
+    "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
+    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
+    "17165544771317691984","info_":"","seq_":447})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
+    EventStore::SysEventDao::Insert(sysEvent);
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     std::list<FaultLogInfo> infoList = faultLogDb->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
     ASSERT_GT(infoList.size(), 0);
 }
@@ -214,19 +281,27 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
  */
 HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
 {
-    std::unique_ptr<HiviewPlatform> platform = std::make_unique<HiviewPlatform>();
-    HiviewGlobal::CreateInstance(*(platform.get()));
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
     int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
     ASSERT_GT(fd, 0);
+}
 
+/**
+ * @tc.name: FaultLogManager::SaveFaultInfoToRawDb
+ * @tc.desc: Test calling SaveFaultInfoToRawDb Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
     FaultLogInfo info;
-    info.time = 1607161333; // 3 : index of timestamp
+    info.time = std::time(nullptr); // 3 : index of timestamp
     info.pid = getpid();
     info.id = 0;
     info.faultLogType = 2;
-    info.module = "FaultloggerUnittest";
+    info.module = "FaultloggerUnittest1111";
     info.reason = "unittest for SaveFaultLogInfo";
     info.summary = "summary for SaveFaultLogInfo";
     info.sectionMap["APPVERSION"] = "1.0";
@@ -235,38 +310,53 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
     faultLogManager->SaveFaultInfoToRawDb(info);
 
-    auto list = faultLogManager->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
-    ASSERT_GT(list.size(), 0);
-
-    auto isProcessedFault = faultLogManager->IsProcessedFault(getpid(), 0, 2);
-    printf("isProcessedFault:%d", isProcessedFault);
-    ASSERT_EQ(isProcessedFault, false);
-}
-
-/**
- * @tc.name: FaultloggerServiceOhos002
- * @tc.desc: Check Dump func by command <hidumper -s 1201> .
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhos002, testing::ext::TestSize.Level3)
-{
-    char buffer[256];
-    FILE* fp = popen("hidumper -s 1201", "r");
+    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
+    FILE* fp = popen(cmd.c_str(), "r");
+    char buffer[1024] = {0};
     if (fp != nullptr) {
         fgets(buffer, sizeof(buffer), fp);
-        printf("%s", buffer);
         pclose(fp);
         std::string str(buffer);
-        if (str.find("Error") != std::string::npos) {
-            printf("hidumper -s 1201 fail!\r\n");
+        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
+            printf("sucess!\r\n");
+        } else {
             FAIL();
         }
     } else {
-        printf("popen fail!\r\n");
         FAIL();
     }
+}
+
+/**
+ * @tc.name: faultLogManager GetFaultInfoListTest001
+ * @tc.desc: Test calling faultLogManager.GetFaultInfoList Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
+    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":"+0800",
+    "pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest","REASON"
+    :"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
+    "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
+    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
+    "17165544771317691984","info_":"","seq_":447})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    ASSERT_TRUE(sysEvent->ParseJson() == 0);
+    EventStore::SysEventDao::Insert(sysEvent);
+
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
+    auto list = faultLogManager->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
+    ASSERT_GT(list.size(), 0);
+
+    auto isProcessedFault = faultLogManager->IsProcessedFault(1854, 0, 2);
+    ASSERT_EQ(isProcessedFault, true);
 }
 
 /**
@@ -285,61 +375,16 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest001, testing::ext::TestSize.Level3
 }
 
 /**
- * @tc.name: genCppCrashtoAnalysisFaultlog
- * @tc.desc: create cpp crash event and check AnalysisFaultlog
+ * @tc.name: FaultLogUtilTest002
+ * @tc.desc: check ExtractInfoFromTempFile Func
  * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F4380
  */
-HWTEST_F(FaultloggerUnittest, genCppCrashtoAnalysisFaultlog001, testing::ext::TestSize.Level3)
+HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3)
 {
-    /**
-     * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
-     * @tc.expected: AnalysisFaultlog return expected result
-     */
-    FaultLogInfo info;
-    info.time = 1607161163;
-    info.id = 0;
-    info.pid = 7497;
-    info.faultLogType = 2;
-    info.module = "com.example.testapplication";
-    info.reason = "TestReason";
-    std::map<std::string, std::string> eventInfos;
-    ASSERT_EQ(AnalysisFaultlog(info, eventInfos), false);
-    ASSERT_EQ(!eventInfos["fingerPrint"].empty(), true);
-}
-
-/**
- * @tc.name: genjserrorLogTest002
- * @tc.desc: create JS ERROR event and send it to faultlogger
- * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F4380
- */
-HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. create a jss_error event and pass it to faultlogger
-     * @tc.expected: the calling is success and the file has been created
-     */
-
-    SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
-    sysEventCreator.SetKeyValue("SUMMARY", "Error message:is not callable\nStacktrace:");
-    sysEventCreator.SetKeyValue("name_", "JS_ERROR");
-    sysEventCreator.SetKeyValue("happenTime_", 1670248360359);
-    sysEventCreator.SetKeyValue("REASON", "TypeError");
-    sysEventCreator.SetKeyValue("tz_", "+0800");
-    sysEventCreator.SetKeyValue("pid_", 2413);
-    sysEventCreator.SetKeyValue("tid_", 2413);
-    sysEventCreator.SetKeyValue("what_", 3);
-    sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-    sysEventCreator.SetKeyValue("TYPE", 3);
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-
-    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    auto testPlugin = CreateFaultloggerInstance();
-    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
-    bool result = testPlugin->OnEvent(event);
-    ASSERT_EQ(result, true);
+    std::string filename = "appfreeze-10006-20170805172159";
+    auto info = ExtractInfoFromTempFile(filename);
+    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.pid, 10006); // 10006 : test uid
 }
 } // namespace HiviewDFX
 } // namespace OHOS
