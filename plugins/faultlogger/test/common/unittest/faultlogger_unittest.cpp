@@ -37,15 +37,6 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
-constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
-class HiviewTestContext : public HiviewContext {
-public:
-    std::string GetHiViewDirectory(DirectoryType type __UNUSED)
-    {
-        return TEST_LOG_DIR;
-    }
-};
-
 class FaultloggerUnittest : public testing::Test {
 public:
     void SetUp()
@@ -128,8 +119,6 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
      * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
      * @tc.expected: the calling is success and the file has been created
      */
-    HiviewTestContext hiviewTestContext;
-    HiviewGlobal::CreateInstance(hiviewTestContext);
     auto plugin = CreateFaultloggerInstance();
     FaultLogInfo info;
     info.time = 1607161163;
@@ -152,8 +141,6 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(size, 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
-    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
-    ASSERT_EQ(faultLogDb->IsFaultExist(7497, 0, 2), false);
 }
 
 /**
@@ -168,7 +155,6 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
      * @tc.steps: step1. create a jss_error event and pass it to faultlogger
      * @tc.expected: the calling is success and the file has been created
      */
-
     SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
     sysEventCreator.SetKeyValue("SUMMARY", "Error message:is not callable\nStacktrace:");
     sysEventCreator.SetKeyValue("name_", "JS_ERROR");
@@ -197,8 +183,8 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
  */
 HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
 {
-    HiviewTestContext hiviewTestContext;
-    HiviewGlobal::CreateInstance(hiviewTestContext);
+    std::unique_ptr<HiviewPlatform> platform = std::make_unique<HiviewPlatform>();
+    HiviewGlobal::CreateInstance(*(platform.get()));
     FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     FaultLogInfo info;
     info.time = 1607161333; // 3 : index of timestamp
@@ -218,7 +204,69 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
 
     sleep(1);
     std::list<FaultLogInfo> infoList = faultLogDb->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
-    ASSERT_EQ(infoList.size(), 0);
+    ASSERT_GT(infoList.size(), 0);
+}
+
+/**
+ * @tc.name: FaultLogManager::CreateTempFaultLogFile
+ * @tc.desc: Test calling CreateTempFaultLogFile Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
+{
+    std::unique_ptr<HiviewPlatform> platform = std::make_unique<HiviewPlatform>();
+    HiviewGlobal::CreateInstance(*(platform.get()));
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
+    int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
+    ASSERT_GT(fd, 0);
+
+    FaultLogInfo info;
+    info.time = 1607161333; // 3 : index of timestamp
+    info.pid = getpid();
+    info.id = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest";
+    info.reason = "unittest for SaveFaultLogInfo";
+    info.summary = "summary for SaveFaultLogInfo";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "abort";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    faultLogManager->SaveFaultInfoToRawDb(info);
+
+    auto list = faultLogManager->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
+    ASSERT_GT(list.size(), 0);
+
+    auto isProcessedFault = faultLogManager->IsProcessedFault(getpid(), 0, 2);
+    printf("isProcessedFault:%d", isProcessedFault);
+    ASSERT_EQ(isProcessedFault, false);
+}
+
+/**
+ * @tc.name: FaultloggerServiceOhos002
+ * @tc.desc: Check Dump func by command <hidumper -s 1201> .
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhos002, testing::ext::TestSize.Level3)
+{
+    char buffer[256];
+    FILE* fp = popen("hidumper -s 1201", "r");
+    if (fp != nullptr) {
+        fgets(buffer, sizeof(buffer), fp);
+        printf("%s", buffer);
+        pclose(fp);
+        std::string str(buffer);
+        if (str.find("Error") != std::string::npos) {
+            printf("hidumper -s 1201 fail!\r\n");
+            FAIL();
+        }
+    } else {
+        printf("popen fail!\r\n");
+        FAIL();
+    }
 }
 
 /**
