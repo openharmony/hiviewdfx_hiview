@@ -28,6 +28,8 @@
 #define private public
 #include "faultlogger.h"
 #undef private
+#include "faultlog_info_ohos.h"
+#include "faultlogger_service_ohos.h"
 #include "file_util.h"
 #include "hiview_global.h"
 #include "hiview_platform.h"
@@ -385,6 +387,33 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
     auto info = ExtractInfoFromTempFile(filename);
     ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
     ASSERT_EQ(info.pid, 10006); // 10006 : test uid
+}
+
+/**
+ * @tc.name: FaultloggerServiceOhos.StartService
+ * @tc.desc: Test calling FaultloggerServiceOhos.StartService Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
+    auto service = CreateFaultloggerInstance();
+    FaultloggerServiceOhos serviceOhos;
+    FaultloggerServiceOhos::StartService(service.get());
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
+
+    FaultLogInfoOhos info;
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+
+    auto list = serviceOhos.QuerySelfFaultLog(2, 10);
+    ASSERT_NE(list, nullptr);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
