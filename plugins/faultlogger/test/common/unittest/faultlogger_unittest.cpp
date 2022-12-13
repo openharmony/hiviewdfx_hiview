@@ -29,6 +29,7 @@
 #include "faultlogger.h"
 #undef private
 #include "faultlog_info_ohos.h"
+#include "faultlogger_adapter.h"
 #include "faultlogger_service_ohos.h"
 #include "file_util.h"
 #include "hiview_global.h"
@@ -353,12 +354,22 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Lev
     EventStore::SysEventDao::Insert(sysEvent);
 
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    auto isProcessedFault1 = faultLogManager->IsProcessedFault(1854, 0, 2);
+    ASSERT_EQ(isProcessedFault1, false);
+
     faultLogManager->Init();
+
     auto list = faultLogManager->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
     ASSERT_GT(list.size(), 0);
 
-    auto isProcessedFault = faultLogManager->IsProcessedFault(1854, 0, 2);
-    ASSERT_EQ(isProcessedFault, true);
+    auto isProcessedFault2 = faultLogManager->IsProcessedFault(1854, 0, 2);
+    ASSERT_EQ(isProcessedFault2, true);
+
+    auto isProcessedFault3 = faultLogManager->IsProcessedFault(1855, 0, 2);
+    ASSERT_EQ(isProcessedFault3, false);
+
+    auto isProcessedFault4 = faultLogManager->IsProcessedFault(1855, 5, 2);
+    ASSERT_EQ(isProcessedFault4, false);
 }
 
 /**
@@ -390,6 +401,22 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
 }
 
 /**
+ * @tc.name: FaultloggerAdapter.StartService
+ * @tc.desc: Test calling FaultloggerAdapter.StartService Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerAdapterTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    FaultloggerAdapter::StartService(nullptr);
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), nullptr);
+
+    Faultlogger faultlogger;
+    FaultloggerAdapter::StartService(&faultlogger);
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), &faultlogger);
+}
+
+/**
  * @tc.name: FaultloggerServiceOhos.StartService
  * @tc.desc: Test calling FaultloggerServiceOhos.StartService Func
  * @tc.type: FUNC
@@ -402,7 +429,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
-
     FaultLogInfoOhos info;
     info.time = std::time(nullptr); // 3 : index of timestamp
     info.pid = getpid();
@@ -411,9 +437,28 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     info.module = "FaultloggerUnittest333";
     info.reason = "unittest for SaveFaultLogInfo";
     serviceOhos.AddFaultLog(info);
-
     auto list = serviceOhos.QuerySelfFaultLog(2, 10);
     ASSERT_NE(list, nullptr);
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 10;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+    list = serviceOhos.QuerySelfFaultLog(2, 10);
+    ASSERT_EQ(list, nullptr);
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+    list = serviceOhos.QuerySelfFaultLog(8, 10);
+    ASSERT_EQ(list, nullptr);
+
+    serviceOhos.Destroy();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
