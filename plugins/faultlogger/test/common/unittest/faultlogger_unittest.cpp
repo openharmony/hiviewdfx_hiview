@@ -28,6 +28,9 @@
 #define private public
 #include "faultlogger.h"
 #undef private
+#include "faultlog_info_ohos.h"
+#include "faultlogger_adapter.h"
+#include "faultlogger_service_ohos.h"
 #include "file_util.h"
 #include "hiview_global.h"
 #include "hiview_platform.h"
@@ -351,12 +354,22 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Lev
     EventStore::SysEventDao::Insert(sysEvent);
 
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    auto isProcessedFault1 = faultLogManager->IsProcessedFault(1854, 0, 2);
+    ASSERT_EQ(isProcessedFault1, false);
+
     faultLogManager->Init();
+
     auto list = faultLogManager->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
     ASSERT_GT(list.size(), 0);
 
-    auto isProcessedFault = faultLogManager->IsProcessedFault(1854, 0, 2);
-    ASSERT_EQ(isProcessedFault, true);
+    auto isProcessedFault2 = faultLogManager->IsProcessedFault(1854, 0, 2);
+    ASSERT_EQ(isProcessedFault2, true);
+
+    auto isProcessedFault3 = faultLogManager->IsProcessedFault(1855, 0, 2);
+    ASSERT_EQ(isProcessedFault3, false);
+
+    auto isProcessedFault4 = faultLogManager->IsProcessedFault(1855, 5, 2);
+    ASSERT_EQ(isProcessedFault4, false);
 }
 
 /**
@@ -369,7 +382,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest001, testing::ext::TestSize.Level3
     std::string filename = "appfreeze-com.ohos.systemui-10006-20170805172159";
     auto info = ExtractInfoFromFileName(filename);
     ASSERT_EQ(info.pid, 0);
-    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.faultLogType, FaultLogType::APP_FREEZE); // 4 : APP_FREEZE
     ASSERT_EQ(info.module, "com.ohos.systemui");
     ASSERT_EQ(info.id, 10006); // 10006 : test uid
 }
@@ -383,8 +396,94 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
 {
     std::string filename = "appfreeze-10006-20170805172159";
     auto info = ExtractInfoFromTempFile(filename);
-    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.faultLogType, FaultLogType::APP_FREEZE); // 4 : APP_FREEZE
     ASSERT_EQ(info.pid, 10006); // 10006 : test uid
+
+    std::string filename2 = "javacrash-10006-20170805172159";
+    auto info2 = ExtractInfoFromTempFile(filename2);
+    ASSERT_EQ(info2.faultLogType, FaultLogType::JAVA_CRASH); // 1 : JAVA_CRASH
+    ASSERT_EQ(info2.pid, 10006); // 10006 : test uid
+
+    std::string filename3 = "jscrash-10006-20170805172159";
+    auto info3 = ExtractInfoFromTempFile(filename3);
+    ASSERT_EQ(info3.faultLogType, FaultLogType::JS_CRASH); // 3 : JS_CRASH
+    ASSERT_EQ(info3.pid, 10006); // 10006 : test uid
+
+    std::string filename4 = "cppcrash-10006-20170805172159";
+    auto info4 = ExtractInfoFromTempFile(filename4);
+    ASSERT_EQ(info4.faultLogType, FaultLogType::CPP_CRASH); // 2 : CPP_CRASH
+    ASSERT_EQ(info4.pid, 10006); // 10006 : test uid
+
+    std::string filename5 = "all-10006-20170805172159";
+    auto info5 = ExtractInfoFromTempFile(filename5);
+    ASSERT_EQ(info5.faultLogType, FaultLogType::ALL); // 0 : ALL
+    ASSERT_EQ(info5.pid, 10006); // 10006 : test uid
+
+    std::string filename6 = "other-10006-20170805172159";
+    auto info6 = ExtractInfoFromTempFile(filename6);
+    ASSERT_EQ(info6.faultLogType, -1); // -1 : other
+    ASSERT_EQ(info6.pid, 10006); // 10006 : test uid
+}
+
+/**
+ * @tc.name: FaultloggerAdapter.StartService
+ * @tc.desc: Test calling FaultloggerAdapter.StartService Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerAdapterTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    FaultloggerAdapter::StartService(nullptr);
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), nullptr);
+
+    Faultlogger faultlogger;
+    FaultloggerAdapter::StartService(&faultlogger);
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), &faultlogger);
+}
+
+/**
+ * @tc.name: FaultloggerServiceOhos.StartService
+ * @tc.desc: Test calling FaultloggerServiceOhos.StartService Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
+    auto service = CreateFaultloggerInstance();
+    FaultloggerServiceOhos serviceOhos;
+    FaultloggerServiceOhos::StartService(service.get());
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
+    FaultLogInfoOhos info;
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+    auto list = serviceOhos.QuerySelfFaultLog(2, 10);
+    ASSERT_NE(list, nullptr);
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 10;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+    list = serviceOhos.QuerySelfFaultLog(2, 10);
+    ASSERT_EQ(list, nullptr);
+    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.pid = getpid();
+    info.uid = 0;
+    info.faultLogType = 2;
+    info.module = "FaultloggerUnittest333";
+    info.reason = "unittest for SaveFaultLogInfo";
+    serviceOhos.AddFaultLog(info);
+    list = serviceOhos.QuerySelfFaultLog(8, 10);
+    ASSERT_EQ(list, nullptr);
+
+    serviceOhos.Destroy();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

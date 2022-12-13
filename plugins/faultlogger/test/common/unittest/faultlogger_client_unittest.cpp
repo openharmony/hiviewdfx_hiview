@@ -139,5 +139,48 @@ HWTEST_F(FaultloggerClientUnittest, QuerySelfFaultLogTest001, testing::ext::Test
     printf("currentCount :%d \n", currentCount);
     ASSERT_EQ(currentCount, maxQueryCount);
 }
+
+/**
+ * @tc.name: FaultLogInfoTest001
+ * @tc.desc: check FaultLogInfo class
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerClientUnittest, FaultLogInfoTest001, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.SetId(123);
+    ASSERT_EQ(info.GetId(), 123);
+    info.SetProcessId(1123);
+    ASSERT_EQ(info.GetProcessId(), 1123);
+    info.SetRawFileDescriptor(11);
+    ASSERT_EQ(info.GetRawFileDescriptor(), 11);
+    time_t time = std::time(nullptr);
+    info.SetTimeStamp(time);
+    ASSERT_EQ(info.GetTimeStamp(), time);
+    info.SetFaultReason("some reason");
+    ASSERT_EQ(info.GetFaultReason(), "some reason");
+    info.SetModuleName("some module");
+    ASSERT_EQ(info.GetModuleName(), "some module");
+    info.SetFaultSummary("some summary");
+    ASSERT_EQ(info.GetFaultSummary(), "some summary");
+    info.SetFaultType(2);
+    ASSERT_EQ(info.GetFaultType(), 2);
+    ASSERT_EQ(info.GetStringFaultType(), "CppCrash");
+    info.SetFaultType(1);
+    ASSERT_EQ(info.GetFaultType(), 1);
+    ASSERT_EQ(info.GetStringFaultType(), "JavaCrash");
+    info.SetFaultType(3);
+    ASSERT_EQ(info.GetFaultType(), 3);
+    ASSERT_EQ(info.GetStringFaultType(), "JsCrash");
+    info.SetFaultType(4);
+    ASSERT_EQ(info.GetFaultType(), 4);
+    ASSERT_EQ(info.GetStringFaultType(), "AppFreeze");
+    info.SetFaultType(5);
+    ASSERT_EQ(info.GetFaultType(), 5);
+    ASSERT_EQ(info.GetStringFaultType(), "SysFreeze");
+    info.SetFaultType(6);
+    ASSERT_EQ(info.GetFaultType(), 6);
+    ASSERT_EQ(info.GetStringFaultType(), "UnknownFaultType");
+}
 } // namespace HiviewDFX
 } // namespace OHOS
