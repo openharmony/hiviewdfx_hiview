@@ -382,7 +382,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest001, testing::ext::TestSize.Level3
     std::string filename = "appfreeze-com.ohos.systemui-10006-20170805172159";
     auto info = ExtractInfoFromFileName(filename);
     ASSERT_EQ(info.pid, 0);
-    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.faultLogType, FaultLogType::APP_FREEZE); // 4 : APP_FREEZE
     ASSERT_EQ(info.module, "com.ohos.systemui");
     ASSERT_EQ(info.id, 10006); // 10006 : test uid
 }
@@ -396,8 +396,33 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
 {
     std::string filename = "appfreeze-10006-20170805172159";
     auto info = ExtractInfoFromTempFile(filename);
-    ASSERT_EQ(info.faultLogType, 4); // 4 : APP_FREEZE
+    ASSERT_EQ(info.faultLogType, FaultLogType::APP_FREEZE); // 4 : APP_FREEZE
     ASSERT_EQ(info.pid, 10006); // 10006 : test uid
+
+    std::string filename2 = "javacrash-10006-20170805172159";
+    auto info2 = ExtractInfoFromTempFile(filename2);
+    ASSERT_EQ(info2.faultLogType, FaultLogType::JAVA_CRASH); // 1 : JAVA_CRASH
+    ASSERT_EQ(info2.pid, 10006); // 10006 : test uid
+
+    std::string filename3 = "jscrash-10006-20170805172159";
+    auto info3 = ExtractInfoFromTempFile(filename3);
+    ASSERT_EQ(info3.faultLogType, FaultLogType::JS_CRASH); // 3 : JS_CRASH
+    ASSERT_EQ(info3.pid, 10006); // 10006 : test uid
+
+    std::string filename4 = "cppcrash-10006-20170805172159";
+    auto info4 = ExtractInfoFromTempFile(filename4);
+    ASSERT_EQ(info4.faultLogType, FaultLogType::CPP_CRASH); // 2 : CPP_CRASH
+    ASSERT_EQ(info4.pid, 10006); // 10006 : test uid
+
+    std::string filename5 = "all-10006-20170805172159";
+    auto info5 = ExtractInfoFromTempFile(filename5);
+    ASSERT_EQ(info5.faultLogType, FaultLogType::ALL); // 0 : ALL
+    ASSERT_EQ(info5.pid, 10006); // 10006 : test uid
+
+    std::string filename6 = "other-10006-20170805172159";
+    auto info6 = ExtractInfoFromTempFile(filename6);
+    ASSERT_EQ(info6.faultLogType, -1); // -1 : other
+    ASSERT_EQ(info6.pid, 10006); // 10006 : test uid
 }
 
 /**
