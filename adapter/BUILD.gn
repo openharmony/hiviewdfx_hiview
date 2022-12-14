@@ -15,6 +15,7 @@ import("//build/test.gni")
 group("unittest") {
   testonly = true
   deps = [
+    "dbstore:unittest",
     "plugins/eventservice/service:unittest",
     "system_service:unittest",
     "utility:unittest",
