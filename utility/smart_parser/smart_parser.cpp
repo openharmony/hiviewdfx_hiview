@@ -44,7 +44,6 @@ std::map<std::string, std::string> SmartParser::Analysis(const std::string& even
     for (const auto& composeRule : composeRules) {
         FeatureAnalysis feature(featureSets[composeRule.first], composeRule.second, eventType);
         if (feature.AnalysisLog()) {
-            feature.SegmentAnalysis(featureSets[composeRule.first], feature.GetParamSeekRecord(), segStatusCfg);
             auto result = feature.GetReasult();
             for (const auto& one : result) {
                 eventInfoMap.emplace(one.first, one.second);

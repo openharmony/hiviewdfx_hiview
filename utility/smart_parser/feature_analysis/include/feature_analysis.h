@@ -49,15 +49,11 @@ public:
 
     // interface
     bool AnalysisLog();
-    void SegmentAnalysis(FeatureSet& featureSet, const std::vector<std::pair<std::string, LineFeature>>&
-        paramSeekRecord, std::map<std::string, std::vector<std::string>>& segStatusCfg);
     int GetErrorCode() const { return errorCode_; };
     std::map<std::string, std::string> GetReasult() const { return eventInfo_; };
     std::vector<std::pair<std::string, LineFeature>> GetParamSeekRecord() {return paramSeekRecord_;};
 
 private:
-    void UpdateStartSegment(const std::vector<std::pair<std::string, LineFeature>>& rec,
-        std::vector<std::string>& startSeg) const;
     void Extract();
     void ExtraProcess();
     void RawInfoPosition(std::stringstream& buffer);

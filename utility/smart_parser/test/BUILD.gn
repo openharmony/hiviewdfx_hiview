@@ -22,7 +22,6 @@ config("smart_parser_test_config") {
     "$hiview_root/utility/smart_parser",
     "$hiview_root/utility/smart_parser/rule/include",
     "$hiview_root/utility/smart_parser/feature_analysis/include",
-    "$hiview_root/utility/smart_parser/segment_analysis/include",
   ]
 
   cflags_cc = [ "-DUNITTEST" ]
@@ -35,11 +34,6 @@ ohos_moduletest("SmartParserModuleTest") {
     "$hiview_root/utility/smart_parser/rule/compose_rule.cpp",
     "$hiview_root/utility/smart_parser/rule/extract_rule.cpp",
     "$hiview_root/utility/smart_parser/rule/rule.cpp",
-    "$hiview_root/utility/smart_parser/segment_analysis/segment.cpp",
-    "$hiview_root/utility/smart_parser/segment_analysis/segment_analysis.cpp",
-    "$hiview_root/utility/smart_parser/segment_analysis/segment_analysis_factory.cpp",
-    "$hiview_root/utility/smart_parser/segment_analysis/segment_analysis_onelayer.cpp",
-    "$hiview_root/utility/smart_parser/segment_analysis/segment_analysis_twolayers.cpp",
     "$hiview_root/utility/smart_parser/smart_parser.cpp",
     "moduletest/common/smart_parser_module_test.cpp",
   ]
