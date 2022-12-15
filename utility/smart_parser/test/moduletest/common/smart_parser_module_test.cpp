@@ -234,5 +234,53 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest005, TestSize.Level1)
         EXPECT_STREQ(trace[num++].c_str(), line.c_str());
     }
 }
+
+/**
+ * @tc.name: SmartParserTest006
+ * @tc.desc: process HWWATCHDOG fault, this case match FeatureAnalysisForRebootsys.Json.
+ *           1. fault log should can be read;
+ *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest006, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */  
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest005/dmesg-ramoops-1";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), false);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "HWWATCHDOG");
+    ASSERT_EQ(eventInfos.empty(), true);
+}
+
+/**
+ * @tc.name: SmartParserTest007
+ * @tc.desc: process JAVA_CRASH fault, this case match FeatureAnalysisForRebootsys.Json.
+ *           1. fault log should can be read;
+ *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest007, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    auto eventInfos = SmartParser::Analysis("", "/system/etc/hiview/reliability", "JAVA_CRASH");
+    ASSERT_EQ(eventInfos.empty(), true);
+    eventInfos = SmartParser::Analysis("", "", "JAVA_CRASH");
+    ASSERT_EQ(eventInfos.empty(), true);
+    eventInfos = SmartParser::Analysis("", "", "");
+    ASSERT_EQ(eventInfos.empty(), true);
+    eventInfos = SmartParser::Analysis("test", "test", "test");
+    ASSERT_EQ(eventInfos.empty(), true);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
