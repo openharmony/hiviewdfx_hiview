@@ -23,7 +23,6 @@
 #include "file_util.h"
 #include "log_util.h"
 #include "logger.h"
-#include "segment_analysis_factory.h"
 #include "string_util.h"
 
 using namespace std;
@@ -461,41 +460,6 @@ void FeatureAnalysis::GetCrashFaultLine(const std::string& file, std::string& li
         }
     }
     line = "NoExceptionInfo";
-}
-
-void FeatureAnalysis::SegmentAnalysis(FeatureSet& featureSet,
-    const std::vector<std::pair<std::string, LineFeature>>& paramSeekRecord,
-    std::map<std::string, std::vector<std::string>>& segStatusCfg)
-{
-    if (featureSet.segmentType.empty()) {
-        return;
-    }
-
-    auto segAnalysis = SegmentAnalysisFactory::GetInstance().CreateParser(featureSet.segmentType);
-    if (segAnalysis != nullptr) {
-        auto startSeg = featureSet.startSegVec; // like: ["BasicParam.s_process", "main"]
-        UpdateStartSegment(paramSeekRecord, startSeg);
-        segAnalysis->SetSegStatusCfg(segStatusCfg);
-        if (segAnalysis->Analyze(featureSet.fullPath, paramSeekRecord, startSeg, featureSet.segStackVec)) {
-            std::map<std::string, std::string> segEventInfo;
-            segAnalysis->GetResult(segEventInfo);
-            for (const auto& seg : segEventInfo) {
-                eventInfo_[seg.first] = seg.second;
-            }
-        }
-    }
-}
-
-void FeatureAnalysis::UpdateStartSegment(const vector<pair<string, LineFeature>>& rec,
-    vector<string>& startSeg) const
-{
-    for (auto&& name : startSeg) {
-        auto isEqual = [&](const pair<string, LineFeature> &p) {return p.first == name;};
-        auto iter = find_if(begin(rec), end(rec), isEqual);
-        if (iter != end(rec)) {
-            name = iter->second.value;  // replace with the actual feature value
-        }
-    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

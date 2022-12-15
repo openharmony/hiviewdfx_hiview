@@ -26,7 +26,6 @@ config("smart_parser_config") {
     "../include",
     "./rule/include",
     "./feature_analysis/include",
-    "./segment_analysis/include",
   ]
 }
 
@@ -38,11 +37,6 @@ ohos_source_set("smart_parser") {
     "./rule/compose_rule.cpp",
     "./rule/extract_rule.cpp",
     "./rule/rule.cpp",
-    "./segment_analysis/segment.cpp",
-    "./segment_analysis/segment_analysis.cpp",
-    "./segment_analysis/segment_analysis_factory.cpp",
-    "./segment_analysis/segment_analysis_onelayer.cpp",
-    "./segment_analysis/segment_analysis_twolayers.cpp",
     "smart_parser.cpp",
   ]
 
