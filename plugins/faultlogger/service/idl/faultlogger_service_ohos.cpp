@@ -76,7 +76,8 @@ void FaultloggerServiceOhos::StartService(OHOS::HiviewDFX::Faultlogger *service)
         return;
     }
 
-    serviceManager->AddSystemAbility(DFX_ABILITY_FAULTLOGGER_ID, &(FaultloggerServiceOhos::GetInstance()));
+    static sptr<FaultloggerServiceOhos> instance = new FaultloggerServiceOhos();
+    serviceManager->AddSystemAbility(DFX_ABILITY_FAULTLOGGER_ID, instance);
     HIVIEW_LOGI("FaultLogger Service started.");
 }
 
