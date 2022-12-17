@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "singleton.h"
 #include "system_ability.h"
 
 #include "faultlogger_service_stub.h"
@@ -31,8 +30,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 class FaultloggerServiceOhos : public SystemAbility,
-                            public FaultLoggerServiceStub,
-                            public Singleton<FaultloggerServiceOhos> {
+                            public FaultLoggerServiceStub {
     DECLARE_SYSTEM_ABILITY(FaultloggerServiceOhos);
 public:
     FaultloggerServiceOhos() {};
