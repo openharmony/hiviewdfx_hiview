@@ -335,6 +335,40 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
 }
 
 /**
+ * @tc.name: FaultLogManager::SaveFaultLogToFile
+ * @tc.desc: Test calling SaveFaultLogToFile Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    
+    FaultLogInfo info;
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
+    for (int i = 1; i < 7; i++) {
+        info.time = std::time(nullptr); // 3 : index of timestamp
+        info.pid = getpid();
+        info.id = 0;
+        info.faultLogType = i;
+        info.module = "FaultloggerUnittest1111";
+        info.reason = "unittest for SaveFaultLogInfo";
+        info.summary = "summary for SaveFaultLogInfo";
+        info.sectionMap["APPVERSION"] = "1.0";
+        info.sectionMap["FAULT_MESSAGE"] = "abort";
+        info.sectionMap["TRACEID"] = "0x1646145645646";
+        info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+        info.sectionMap["REASON"] = "TestReason";
+        info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+        
+        std::string fileName = faultLogManager->SaveFaultLogToFile(info);
+        if (fileName.find("FaultloggerUnittest1111") == std::string::npos) {
+            FAIL();
+        }
+    }
+}
+
+/**
  * @tc.name: faultLogManager GetFaultInfoListTest001
  * @tc.desc: Test calling faultLogManager.GetFaultInfoList Func
  * @tc.type: FUNC
