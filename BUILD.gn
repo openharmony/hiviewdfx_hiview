@@ -115,10 +115,12 @@ group("hiview_package") {
     ":hiview",
     ":plugin_config",
     "plugins/faultlogger/crash_validator:crashvalidator",
-    "plugins/usage_event_report/service:usage_report",
-
-    #"plugins/faultlogger/crash_validator:crash_validator_config",
   ]
+
+  if (enable_hiview_usage_event_report_build) {
+    deps += [ "plugins/usage_event_report/service:usage_report" ]
+  }
+
   deps += plugin_dynamic_deps
   deps += oem_dynamic_deps
 }
