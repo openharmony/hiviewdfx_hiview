@@ -15,6 +15,7 @@
 
 #include "event_server.h"
 
+#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -46,26 +47,90 @@ constexpr int EVENT_READ_BUFFER = 2048;
 #else
 constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
 #endif
+constexpr char SOCKET_CONFIG_FILE[] = "/system/etc/hiview/hisysevent_extra_socket";
+std::string g_extraSocketPath;
 
-void InitRecvBuffer(int socketId)
+struct Initializer {
+    Initializer()
+    {
+        if (access(SOCKET_CONFIG_FILE, F_OK) != 0) {
+            HIVIEW_LOGE("socket config file does not exist");
+            return;
+        }
+        std::ifstream file;
+        file.open(SOCKET_CONFIG_FILE);
+        if (file.fail()) {
+            HIVIEW_LOGE("open socket config file failed");
+            return;
+        }
+        g_extraSocketPath.clear();
+        file >> g_extraSocketPath;
+        HIVIEW_LOGI("read extra socket path: %{public}s", g_extraSocketPath.c_str());
+    }
+};
+Initializer g_initializer;
+
+void InitSocketBuf(int socketId, int optName)
 {
-    int oldN = 0;
-    socklen_t oldOutSize = static_cast<socklen_t>(sizeof(int));
-    if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&oldN), &oldOutSize) < 0) {
+    int bufferSizeOld = 0;
+    socklen_t sizeOfInt = static_cast<socklen_t>(sizeof(int));
+    if (getsockopt(socketId, SOL_SOCKET, optName, static_cast<void *>(&bufferSizeOld), &sizeOfInt) < 0) {
         HIVIEW_LOGE("get socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
     }
 
-    int sendBuffSize = BUFFER_SIZE;
-    if (setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&sendBuffSize), sizeof(int)) < 0) {
+    int bufferSizeSet = BUFFER_SIZE;
+    if (setsockopt(socketId, SOL_SOCKET, optName, static_cast<void *>(&bufferSizeSet), sizeof(int)) < 0) {
         HIVIEW_LOGE("set socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
     }
 
-    int newN = 0;
-    socklen_t newOutSize = static_cast<socklen_t>(sizeof(int));
-    if (getsockopt(socketId, SOL_SOCKET, SO_RCVBUF, static_cast<void *>(&newN), &newOutSize) < 0) {
+    int bufferSizeNew = 0;
+    sizeOfInt = static_cast<socklen_t>(sizeof(int));
+    if (getsockopt(socketId, SOL_SOCKET, optName, static_cast<void *>(&bufferSizeNew), &sizeOfInt) < 0) {
         HIVIEW_LOGE("get new socket buffer error=%{public}d, msg=%{public}s", errno, strerror(errno));
     }
-    HIVIEW_LOGI("reset recv buffer size old=%{public}d, new=%{public}d", oldN, newN);
+    HIVIEW_LOGI("reset buffer size old=%{public}d, new=%{public}d", bufferSizeOld, bufferSizeNew);
+}
+
+void InitSendBuffer(int socketId)
+{
+    InitSocketBuf(socketId, SO_SNDBUF);
+}
+
+void InitRecvBuffer(int socketId)
+{
+    InitSocketBuf(socketId, SO_RCVBUF);
+}
+
+void TransferEvent(std::string& text)
+{
+    HIVIEW_LOGD("event need to transfer: %{public}s", text.c_str());
+    if (text.back() == '}') {
+        text.pop_back();
+        text += ", \"transfer_\":1}";
+    }
+    struct sockaddr_un serverAddr;
+    serverAddr.sun_family = AF_UNIX;
+    if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), g_extraSocketPath.c_str()) != EOK) {
+        HIVIEW_LOGE("can not assign server path");
+        return;
+    }
+    serverAddr.sun_path[sizeof(serverAddr.sun_path) - 1] = '\0';
+
+    int socketId = TEMP_FAILURE_RETRY(socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
+    if (socketId < 0) {
+        HIVIEW_LOGE("create hisysevent socket failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        return;
+    }
+    InitSendBuffer(socketId);
+    if (TEMP_FAILURE_RETRY(sendto(socketId, text.c_str(), text.size(), 0, reinterpret_cast<sockaddr*>(&serverAddr),
+        sizeof(serverAddr))) < 0) {
+        close(socketId);
+        socketId = -1;
+        HIVIEW_LOGE("send data failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        return;
+    }
+    close(socketId);
+    HIVIEW_LOGD("send data successful");
 }
 }
 
@@ -75,13 +140,13 @@ void SocketDevice::InitSocket(int &socketId)
     serverAddr.sun_family = AF_UNIX;
     if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), SOCKET_FILE_DIR) != EOK) {
         socketId = -1;
-        HIVIEW_LOGE("copy hisysevent dev path fail %{public}d, msg=%{public}s", errno, strerror(errno));
+        HIVIEW_LOGE("copy hisysevent dev path failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
     serverAddr.sun_path[sizeof(serverAddr.sun_path) - 1] = '\0';
     socketId = TEMP_FAILURE_RETRY(socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
     if (socketId < 0) {
-        HIVIEW_LOGE("create hisysevent socket fail %{public}d, msg=%{public}s", errno, strerror(errno));
+        HIVIEW_LOGE("create hisysevent socket failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
     InitRecvBuffer(socketId_);
@@ -89,7 +154,7 @@ void SocketDevice::InitSocket(int &socketId)
     if (TEMP_FAILURE_RETRY(bind(socketId, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) < 0) {
         close(socketId);
         socketId = -1;
-        HIVIEW_LOGE("bind hisysevent socket fail %{public}d, msg=%{public}s", errno, strerror(errno));
+        HIVIEW_LOGE("bind hisysevent socket failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
 }
@@ -106,7 +171,7 @@ int SocketDevice::Open()
     }
 
     if (socketId_ < 0) {
-        HIVIEW_LOGE("hisysevent create socket fail");
+        HIVIEW_LOGE("hisysevent create socket failed");
         return -1;
     }
     return socketId_;
@@ -133,22 +198,26 @@ std::string SocketDevice::GetName()
 
 int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
 {
-    char* recvbuf = new char[BUFFER_SIZE + 1]();
+    char* buffer = new char[BUFFER_SIZE + 1]();
     while (true) {
         struct sockaddr_un clientAddr;
         socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
-        int n = recvfrom(socketId_, recvbuf, sizeof(char) * BUFFER_SIZE, 0,
+        int n = recvfrom(socketId_, buffer, sizeof(char) * BUFFER_SIZE, 0,
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
         if (n <= 0) {
             break;
         }
-        recvbuf[n] = 0;
-        HIVIEW_LOGD("receive data from client %s", recvbuf);
+        buffer[n] = 0;
+        HIVIEW_LOGD("receive data from client %s", buffer);
+        std::string event(buffer);
+        if (!g_extraSocketPath.empty()) {
+            TransferEvent(event);
+        }
         for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
-            (*receiver)->HandlerEvent(std::string(recvbuf));
+            (*receiver)->HandlerEvent(std::string(buffer));
         }
     }
-    delete[] recvbuf;
+    delete[] buffer;
     return 0;
 }
 
@@ -165,7 +234,7 @@ int BBoxDevice::Open()
 {
     fd_ = open("/dev/bbox", O_RDONLY, 0);
     if (fd_ < 0) {
-        HIVIEW_LOGE("open bbox fail error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        HIVIEW_LOGE("open bbox failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return -1;
     }
     return fd_;
@@ -191,6 +260,10 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
     }
     buffer[EVENT_READ_BUFFER - 1] = '\0';
     HIVIEW_LOGD("receive from kernel %{public}s", buffer);
+    std::string event(buffer);
+    if (!g_extraSocketPath.empty()) {
+        TransferEvent(event);
+    }
     for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
         (*receiver)->HandlerEvent(std::string(buffer));
     }
@@ -256,7 +329,7 @@ void EventServer::Start()
 
     int pollFd = epoll_create1(EPOLL_CLOEXEC);
     if (pollFd < 0) {
-        HIVIEW_LOGE("create poll fail error=%{public}d, msg=%{public}s", errno, strerror(errno));
+        HIVIEW_LOGE("create poll failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return;
     }
 
