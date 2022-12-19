@@ -57,7 +57,7 @@ bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
     }
     info.id = sysEvent->GetEventIntValue("UID");
     if (info.id == 0) {
-        info.id = sysEvent->GetEventIntValue("uid_"); 
+        info.id = sysEvent->GetEventIntValue("uid_");
     }
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");

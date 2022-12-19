@@ -303,7 +303,6 @@ void CrashValidator::OnLoad()
     AddListenerInfo(Event::MessageType::SYS_EVENT, KEY_PROCESS_EXIT);
     GetHiviewContext()->RegisterUnorderedEventListener(
         std::static_pointer_cast<CrashValidator>(shared_from_this()));
-
     GetHiviewContext()->AppendPluginToPipeline(GetName(), "SysEventPipeline");
 }
 
