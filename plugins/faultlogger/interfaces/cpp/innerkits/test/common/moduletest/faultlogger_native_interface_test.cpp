@@ -316,7 +316,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, FaultlogInfoTest001, testing::ext::Test
     info->SetFaultReason(reason);
     info->SetModuleName(module);
     info->SetFaultSummary(summary);
-    bool ret = info->GetId() == getuid();
+    bool ret = info->GetId() == static_cast<int32_t>(getuid());
     ret &= info->GetProcessId() == getpid();
     ret &= info->GetFaultType() == FaultLogType::CPP_CRASH;
     ret &= info->GetRawFileDescriptor() == -1;

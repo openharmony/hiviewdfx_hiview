@@ -388,6 +388,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
             return false;
         }
 
+        HIVIEW_LOGI("Receive JS_ERROR Event:%{public}s.", event->jsonExtraInfo_.c_str());
         FaultLogInfo info;
         auto sysEvent = std::static_pointer_cast<SysEvent>(event);
         info.time = sysEvent->happenTime_;
