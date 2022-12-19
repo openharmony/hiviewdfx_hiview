@@ -20,15 +20,14 @@
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-
 #include "refbase.h"
+#include "system_ability_definition.h"
 
 #include "faultlog_info_ohos.h"
 #include "faultlogger_service_proxy.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-constexpr int32_t DFX_HIVIEW_FAULTLOGGER_ID = 1202;
 FaultLogQueryResultImpl::~FaultLogQueryResultImpl()
 {
     sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -36,7 +35,7 @@ FaultLogQueryResultImpl::~FaultLogQueryResultImpl()
         return;
     }
 
-    auto service = serviceManager->CheckSystemAbility(DFX_HIVIEW_FAULTLOGGER_ID);
+    auto service = serviceManager->CheckSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID);
     if (service == nullptr) {
         return;
     }

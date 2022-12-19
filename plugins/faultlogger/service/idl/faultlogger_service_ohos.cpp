@@ -21,6 +21,7 @@
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "system_ability_definition.h"
 
 #include "logger.h"
 
@@ -35,7 +36,6 @@ namespace OHOS {
 namespace HiviewDFX {
 constexpr int32_t UID_SHELL = 2000;
 constexpr int32_t UID_ROOT = 0;
-constexpr int32_t DFX_ABILITY_FAULTLOGGER_ID = 1202;
 constexpr int32_t UID_HIDUMPER = 1212;
 void FaultloggerServiceOhos::ClearQueryStub(int32_t uid)
 {
@@ -77,7 +77,7 @@ void FaultloggerServiceOhos::StartService(OHOS::HiviewDFX::Faultlogger *service)
     }
 
     static sptr<FaultloggerServiceOhos> instance = new FaultloggerServiceOhos();
-    serviceManager->AddSystemAbility(DFX_ABILITY_FAULTLOGGER_ID, instance);
+    serviceManager->AddSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID, instance);
     HIVIEW_LOGI("FaultLogger Service started.");
 }
 
