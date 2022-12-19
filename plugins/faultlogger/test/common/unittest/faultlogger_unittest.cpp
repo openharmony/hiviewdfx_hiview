@@ -339,7 +339,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
  * @tc.desc: Test calling SaveFaultLogToFile Func
  * @tc.type: FUNC
  */
-HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
+HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
     
