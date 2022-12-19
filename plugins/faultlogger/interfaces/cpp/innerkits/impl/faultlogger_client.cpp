@@ -22,6 +22,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "refbase.h"
+#include "system_ability_definition.h"
 
 #include "faultlog_info_ohos.h"
 #include "faultlog_query_result.h"
@@ -33,7 +34,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = {LOG_CORE, 0xD002D10, "FaultloggerClient"};
-constexpr int32_t DFX_HIVIEW_FAULTLOGGER_ID = 1202;
 
 std::string GetPrintableStr(const std::string& str)
 {
@@ -55,7 +55,7 @@ bool CheckFaultloggerStatus()
         OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find samgr, exit.");
         return false;
     }
-    if (serviceManager->CheckSystemAbility(DFX_HIVIEW_FAULTLOGGER_ID) == nullptr) {
+    if (serviceManager->CheckSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID) == nullptr) {
         OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find faultlogger service, exit.");
         return false;
     }
@@ -70,7 +70,7 @@ sptr<FaultLoggerServiceProxy> GetFaultloggerService()
         return nullptr;
     }
 
-    auto service = serviceManager->CheckSystemAbility(DFX_HIVIEW_FAULTLOGGER_ID);
+    auto service = serviceManager->CheckSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID);
     if (service == nullptr) {
         OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find faultlogger service, exit.");
         return nullptr;
