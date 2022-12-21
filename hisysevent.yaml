@@ -111,5 +111,42 @@ CPP_CRASH_NO_LOG:
   UID: {type: INT32, desc: uid}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
 
+MEMORY_LEAK:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: MemoryLeak}
+  MODULE: {type: STRING, desc: module name}
+  VERSION: {type: STRING, desc: module version}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FIRST_FRAME: {type: STRING, desc: f1Name}
+  MEMTOTAL: {type: STRING, desc: memory total}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  LOG_PATH: {type: STRING, desc: memory leak log path}
+  HAPPEN_TIME: {type: STRING, desc: leaked time}
+
+FD_LEAK:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: FdLeak}
+  MODULE: {type: STRING, desc: module name}
+  VERSION: {type: STRING, desc: module version}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  FD_NUM: {type: INT32, desc: fd num}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  LOG_PATH: {type: STRING, desc: fd leak log path}
+  HAPPEN_TIME: {type: INT64, desc: leaked time}
+  
+THREAD_LEAK:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: ThreadLeak}
+  MODULE: {type: STRING, desc: module name}
+  VERSION: {type: STRING, desc: module version}
+  PID: {type: INT32, desc: pid}
+  UID: {type: INT32, desc: uid}
+  THREAD_NUM: {type: INT64, desc: thread num}
+  SUMMARY: {type: STRING, desc: fault summary}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  LOG_PATH: {type: STRING, desc: thread leak log path}
+  HAPPEN_TIME: {type: INT64, desc: leaked time}
 
 
