@@ -34,7 +34,7 @@ HUNGTASK:
   MSG: {type: STRING, desc: HUNGTASK event message}
 
 PANIC:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: Panic}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: kernel panic}
   MSG: {type: STRING, desc: panic event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -48,7 +48,7 @@ PANIC:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 BOOTFAIL:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: device reboot fail}
   MSG: {type: STRING, desc: bootFail event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -62,7 +62,7 @@ BOOTFAIL:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 HWWATCHDOG:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: hw_watchdog event in device}
   MSG: {type: STRING, desc: hwwatchdog event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -76,7 +76,7 @@ HWWATCHDOG:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 LPM3EXCEPTION:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: lpm3exception subsystem event}
   MSG: {type: STRING, desc: lpm3exception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -90,7 +90,7 @@ LPM3EXCEPTION:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 BOOTLOADER_CRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: bootloader_crash subsystem event}
   MSG: {type: STRING, desc: bootloader_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -104,7 +104,7 @@ BOOTLOADER_CRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 TRUSTZONE_REBOOTSYS:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: trustzone_rebootsys subsystem event}
   MSG: {type: STRING, desc: trustzone_rebootsys event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -118,7 +118,7 @@ TRUSTZONE_REBOOTSYS:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 MODEM_REBOOTSYS:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: modem_rebootsys subsystem event}
   MSG: {type: STRING, desc: modem_rebootsys event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -132,7 +132,7 @@ MODEM_REBOOTSYS:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 HARDWARE_FAULT:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: hardware fault in device}
   MSG: {type: STRING, desc: hardware event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -146,7 +146,7 @@ HARDWARE_FAULT:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 MODEMCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: modemcrash subsystem event}
   MSG: {type: STRING, desc: modemcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -160,7 +160,7 @@ MODEMCRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 HIFICRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: hificrash subsystem event}
   MSG: {type: STRING, desc: hificrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -174,7 +174,7 @@ HIFICRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 AUDIO_CODEC_CRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: audio_codec_crash subsystem event}
   MSG: {type: STRING, desc: audio_codec_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -188,7 +188,7 @@ AUDIO_CODEC_CRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 SENSORHUBCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: sensorhubcrash subsystem event}
   MSG: {type: STRING, desc: sensorhubcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -202,7 +202,7 @@ SENSORHUBCRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 ISPCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: ispcrash subsystem event}
   MSG: {type: STRING, desc: ispcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -216,7 +216,7 @@ ISPCRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 IVPCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: ivpcrash subsystem event}
   MSG: {type: STRING, desc: ivpcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -230,7 +230,7 @@ IVPCRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 TRUSTZONECRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: trustzonecrash subsystem event}
   MSG: {type: STRING, desc: trustzonecrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -244,7 +244,7 @@ TRUSTZONECRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 GENERAL_SEE_CRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: general_see_crash subsystem event}
   MSG: {type: STRING, desc: general_see_crash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -258,7 +258,7 @@ GENERAL_SEE_CRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 UNKNOWNS:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: unknows event in device}
   MSG: {type: STRING, desc: unknows event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -272,7 +272,7 @@ UNKNOWNS:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 PRESS10S:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: press10s subsystem event}
   MSG: {type: STRING, desc: press10s event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -286,7 +286,7 @@ PRESS10S:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 PRESS6S:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: press6s subsystem event}
   MSG: {type: STRING, desc: press6s event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -300,7 +300,7 @@ PRESS6S:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 NPUEXCEPTION:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: npuexception subsystem event}
   MSG: {type: STRING, desc: npuexception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -314,7 +314,7 @@ NPUEXCEPTION:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 CONNEXCEPTION:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: connexception subsystem event}
   MSG: {type: STRING, desc: connexception event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -328,7 +328,7 @@ CONNEXCEPTION:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 FDULCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: fdulcrash subsystem event}
   MSG: {type: STRING, desc: fdulcrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
@@ -342,7 +342,7 @@ FDULCRASH:
   LAST_FRAME: {type: STRING, desc: last stack info}
 
 DSSCRASH:
-  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: BootFail}
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: dsscrash subsystem event}
   MSG: {type: STRING, desc: dsscrash event message}
   MODULE: {type: STRING, desc: module name}
   REASON: {type: STRING, desc: fault reason}
