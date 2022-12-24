@@ -39,6 +39,7 @@ namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
 constexpr pid_t HID_ROOT = 0;
 constexpr pid_t HID_SHELL = 2000;
+constexpr pid_t HID_OHOS = 1000;
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 constexpr uint32_t INVALID_EVENT_TYPE = 0;
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
@@ -324,19 +325,22 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
         return false;
     }
     auto callingUid = IPCSkeleton::GetCallingUid();
-    if (rules.empty() && (callingUid == HID_SHELL || callingUid == HID_ROOT)) {
+    if (rules.empty() && (callingUid == HID_SHELL || callingUid == HID_ROOT ||
+        callingUid == HID_OHOS)) {
         for (auto eventType : EVENT_TYPES) {
             builder->Append(eventType);
         }
         return true;
     }
     return !any_of(rules.cbegin(), rules.cend(), [this, callingUid, &builder] (auto& rule) {
-        if (rule.domain.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+        if (rule.domain.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT &&
+            callingUid != HID_OHOS) {
             return true;
         }
         return any_of(rule.eventList.cbegin(), rule.eventList.cend(),
             [this, callingUid, &builder, &rule] (auto& eventName) {
-                if (eventName.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT) {
+                if (eventName.empty() && callingUid != HID_SHELL && callingUid != HID_ROOT &&
+                    callingUid != HID_OHOS) {
                     return true;
                 }
                 auto eventType = this->GetTypeByDomainAndName(rule.domain, eventName);
@@ -408,7 +412,7 @@ bool SysEventServiceOhos::HasAccessPermission() const
 {
     using namespace Security::AccessToken;
     auto callingUid = IPCSkeleton::GetCallingUid();
-    if (callingUid == HID_SHELL || callingUid == HID_ROOT) {
+    if (callingUid == HID_SHELL || callingUid == HID_ROOT || callingUid == HID_OHOS) {
         return true;
     }
     auto tokenId = IPCSkeleton::GetFirstTokenID();
