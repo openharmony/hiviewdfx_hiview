@@ -34,6 +34,23 @@
         </event>
       </links>
     </rule>
+    <rule id="4" domain="WINDOWMANAGER" stringid="NO_FOCUS_WINDOW">   <!-- NO_FOCUS_WINDOW -->
+      <links type="watchpoint">
+        <event window="0" domain="WINDOWMANAGER" stringid="NO_FOCUS_WINDOW">	<!-- NO_FOCUS_WINDOW -->
+           <result code="1" scope="sys"/>
+        </event>
+        <event window="10" domain="MULTIMODALINPUT" stringid="TARGET_POINTER_EVENT_FAILURE">	<!-- TARGET_POINTER_EVENT_FAILURE -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="5" domain="POWER" stringid="SCREEN_ON_TIMEOUT">   <!-- SCREEN_ON_TIMEOUT -->
+      <links type="watchpoint">
+        <event window="0" domain="POWER" stringid="SCREEN_ON_TIMEOUT">	<!-- SCREEN_ON_TIMEOUT -->
+           <result code="1" scope="sys"/>
+        </event>
+      </links>
+    </rule>
   </rules>
   <rules resolver="AppResolver">
     <rule id="1" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->
