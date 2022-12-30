@@ -86,15 +86,17 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
-    if (processName == "" && packageName != "") {
+    
+    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? APPFREEZE : SYSFREEZE;
+    if (type == SYSFREEZE) {
+        processName = stringId;
+    } else if (processName == "" && packageName != "") {
         processName = packageName;
     }
     if (processName == "" && packageName == "") {
         processName = stringId;
     }
-
-    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? APPFREEZE : SYSFREEZE;
 
     FaultLogInfoInner info;
     info.time = watchPoint.GetTimestamp();
@@ -143,7 +145,11 @@ std::string Vendor::MergeEventLog(
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string msg = watchPoint.GetMsg();
 
-    if (processName == "" && packageName != "") {
+    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? APPFREEZE : SYSFREEZE;
+    if (type == SYSFREEZE) {
+        processName = stringId;
+    } else if (processName == "" && packageName != "") {
         processName = packageName;
     }
     if (processName == "" && packageName == "") {
@@ -177,16 +183,11 @@ std::string Vendor::MergeEventLog(
 
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::ostringstream body;
-    int nologCount = 0;
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
-        if (filePath == "" || FileUtil::FileExists(filePath) == false) {
-            ++nologCount;
-            continue;
-        }
 
-        if (filePath == "nolog") {
+        if (filePath == "nolog" || filePath == "" || FileUtil::FileExists(filePath) == false) {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
             DumpEventInfo(body, HEADER, node);
@@ -216,19 +217,12 @@ std::string Vendor::MergeEventLog(
         ifs.close();
     }
 
-    if (nologCount >= list.size()) {
-        return "";
-    }
-
     int fd = logStore_->CreateLogFile(logName);
     if (fd < 0) {
         HIVIEW_LOGE("failed to create log file %{public}s.", logPath.c_str());
         return "";
     }
 
-    if (nologCount > 0) {
-        FileUtil::SaveStringToFd(fd, "This file is only used for statistics, not for locating problems\n");
-    }
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
