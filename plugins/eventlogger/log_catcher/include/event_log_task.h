@@ -74,6 +74,7 @@ private:
     void CpuUsageCapture();
     void MemoryUsageCapture();
     void WMSUsageCapture();
+    void AMSUsageCapture();
     void PMSUsageCapture();
 };
 } // namespace HiviewDFX

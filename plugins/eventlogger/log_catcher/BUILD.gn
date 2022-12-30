@@ -18,6 +18,7 @@ config("log_catcher_config") {
   include_dirs = [
     "include",
     "$hiview_adapter/plugins/eventlogger/log_catcher/include",
+    "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include",
   ]
 
   cflags_cc = [ "-DDUMP_STACK_IN_PROCESS" ]
@@ -40,5 +41,6 @@ ohos_source_set("log_catcher") {
     "$hiview_adapter/plugins/eventlogger/log_catcher:eventlogger_adapter_logcatcher",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
+    "//base/hiviewdfx/hidumper/frameworks/native:hidumperclient",
   ]
 }

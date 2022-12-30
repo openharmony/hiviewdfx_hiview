@@ -48,6 +48,7 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
 }
 
@@ -244,7 +245,14 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 void EventLogTask::WMSUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-        std::vector<std::string> cmd = {"hidumper", "-s", "WindowManagerService", "-a", "\'-a\'"};
+    std::vector<std::string> cmd = {"hidumper", "-s", "WindowManagerService", "-a", "-a"};
+    cmdCatcher->AddCmd(cmd);
+}
+
+void EventLogTask::AMSUsageCapture()
+{
+    auto cmdCatcher = GetCmdCatcher();
+    std::vector<std::string> cmd = {"hidumper", "-s", "AbilityManagerService", "-a", "-a"};
     cmdCatcher->AddCmd(cmd);
 }
 
@@ -265,9 +273,9 @@ void EventLogTask::MemoryUsageCapture()
 void EventLogTask::PMSUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "-s", "3301", "-a", "-s"};
+    std::vector<std::string> cmd = {"hidumper", "-s", "PowerManagerService", "-a", "-s"};
     cmdCatcher->AddCmd(cmd);
-    std::vector<std::string> cmd1 = {"hidumper", "-s", "3308"};
+    std::vector<std::string> cmd1 = {"hidumper", "-s", "DisplayPowerManagerService"};
     cmdCatcher->AddCmd(cmd1);
 }
 } // namespace HiviewDFX
