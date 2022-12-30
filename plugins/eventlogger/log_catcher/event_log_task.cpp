@@ -48,6 +48,7 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
 }
 
@@ -244,7 +245,13 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 void EventLogTask::WMSUsageCapture()
 {
     auto cmdCatcher = GetCmdCatcher();
-    cmdCatcher->AddCmd("hidumper -s WindowManagerService -a \'-a\'\n");
+    cmdCatcher->AddCmd("hidumper -s WindowManagerService -a -a\n");
+}
+
+void EventLogTask::AMSUsageCapture()
+{
+    auto cmdCatcher = GetCmdCatcher();
+    cmdCatcher->AddCmd("hidumper -s AbilityManagerService -a -a\n");
 }
 
 void EventLogTask::CpuUsageCapture()

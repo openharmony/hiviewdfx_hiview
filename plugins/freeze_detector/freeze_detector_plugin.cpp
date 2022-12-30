@@ -160,8 +160,24 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     if (watchPoint.GetLogPath().empty()) {
         return;
     }
+
+    std::shared_ptr<FreezeRuleCluster> freezeRuleCluster = freezeCommon_->GetFreezeRuleCluster();
+    std::vector<FreezeResult> freezeResultList;
+    bool ruleRet = freezeRuleCluster->GetResult(watchPoint, freezeResultList);
+    if (!ruleRet) {
+        return;
+    }
+    long delayTime = 0;
+    if (freezeResultList.size() > 1) {
+        for (auto& i : freezeResultList) {
+            long window = i.GetWindow();
+            delayTime = std::max(delayTime, window);
+        }
+        if (delayTime == 0) {
+            delayTime = 10; // delay: 10s
+        }
+    }
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
-    uint64_t constexpr delayTime = 10;
     threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 
