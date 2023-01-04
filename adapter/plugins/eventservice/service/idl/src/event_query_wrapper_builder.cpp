@@ -195,8 +195,7 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
     if (callback == nullptr) {
         return;
     }
-    if (!HasNext() || IsQueryComplete()) {
-        // all queries have finished, call OnComplete directly
+    if (IsQueryComplete()) { // all queries have finished, call OnComplete directly
         callback->OnComplete(queryResult, totalEventCnt, maxSeq);
         return;
     }
@@ -208,7 +207,9 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
         Next()->SetMaxSequence(maxSeq);
         Next()->SetEventTotalCount(totalEventCnt);
         Next()->Query(callback, queryResult);
+        return;
     }
+    callback->OnComplete(queryResult, totalEventCnt, maxSeq);
 }
 
 void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> eventQueryCallback,
