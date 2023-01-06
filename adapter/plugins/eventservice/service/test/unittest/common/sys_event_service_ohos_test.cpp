@@ -159,7 +159,8 @@ void SysEventServiceOhosTest::TearDownTestCase() {}
 
 void SysEventServiceOhosTest::SetUp() {}
 
-void SysEventServiceOhosTest::TearDown() {
+void SysEventServiceOhosTest::TearDown()
+{
     (void)FileUtil::ForceRemoveDirectory(TEST_LOG_DIR);
 }
 
