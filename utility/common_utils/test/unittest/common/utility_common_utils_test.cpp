@@ -57,13 +57,14 @@ void UtilityCommonUtilsTest::TearDownTestCase() {}
 
 void UtilityCommonUtilsTest::SetUp() {}
 
-void UtilityCommonUtilsTest::TearDown() {
+void UtilityCommonUtilsTest::TearDown()
+{
     (void)FileUtil::ForceRemoveDirectory(LOG_FILE_PATH);
 }
 
 /**
  * @tc.name: CalcFingerprintTest001
- * @tc.desc: Test CalcFileSha interface method of class CalcFingerprint 
+ * @tc.desc: Test CalcFileSha interface method of class CalcFingerprint
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -89,7 +90,7 @@ HWTEST_F(UtilityCommonUtilsTest, CalcFingerprintTest001, testing::ext::TestSize.
 
 /**
  * @tc.name: CalcFingerprintTest002
- * @tc.desc: Test CalcBufferSha interface method of class CalcFingerprint 
+ * @tc.desc: Test CalcBufferSha interface method of class CalcFingerprint
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -107,7 +108,7 @@ HWTEST_F(UtilityCommonUtilsTest, CalcFingerprintTest002, testing::ext::TestSize.
 }
 
 /* @tc.name: LogParseTest001
- * @tc.desc: Test IsIgnoreLibrary interface method of class LogParse 
+ * @tc.desc: Test IsIgnoreLibrary interface method of class LogParse
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -121,7 +122,7 @@ HWTEST_F(UtilityCommonUtilsTest, LogParseTest001, testing::ext::TestSize.Level3)
 }
 
 /* @tc.name: LogParseTest002
- * @tc.desc: Test MatchExceptionLibrary interface method of class LogParse 
+ * @tc.desc: Test MatchExceptionLibrary interface method of class LogParse
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -135,7 +136,7 @@ HWTEST_F(UtilityCommonUtilsTest, LogParseTest002, testing::ext::TestSize.Level3)
 }
 
 /* @tc.name: TboxTest001
- * @tc.desc: Test interfaces method of class Tbox 
+ * @tc.desc: Test interfaces method of class Tbox
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -168,7 +169,7 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest001, testing::ext::TestSize.Level3)
 }
 
 /* @tc.name: TboxTest002
- * @tc.desc: Test GetStackName method of class Tbox 
+ * @tc.desc: Test GetStackName method of class Tbox
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
@@ -183,7 +184,7 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest002, testing::ext::TestSize.Level3)
 }
 
 /* @tc.name: TboxTest003
- * @tc.desc: Test WaitForDoneFile method of class Tbox 
+ * @tc.desc: Test WaitForDoneFile method of class Tbox
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
