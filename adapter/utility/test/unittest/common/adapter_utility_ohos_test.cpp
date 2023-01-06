@@ -61,7 +61,8 @@ void AdapterUtilityOhosTest::TearDownTestCase() {}
 
 void AdapterUtilityOhosTest::SetUp() {}
 
-void AdapterUtilityOhosTest::TearDown() {
+void AdapterUtilityOhosTest::TearDown()
+{
     (void)FileUtil::ForceRemoveDirectory(LOG_FILE_PATH);
 }
 
