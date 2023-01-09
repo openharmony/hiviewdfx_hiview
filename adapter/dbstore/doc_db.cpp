@@ -68,7 +68,8 @@ int DocDB::OpenDB(const std::string &dbFile, iwkv_openflags flag)
     } else {
         HiLog::Info(LABEL, "open ejdb success");
         ejdb_ensure_index(db_, "collection", "/time_", EJDB_IDX_I64);
-        HiLog::Debug(LABEL, "the time_ index is created successfully");
+        ejdb_ensure_index(db_, "collection", "/seq_", EJDB_IDX_I64);
+        HiLog::Debug(LABEL, "Indexes for time_ and seq_ columns are created successfully");
     }
     return 0;
 }
