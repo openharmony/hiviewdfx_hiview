@@ -37,10 +37,7 @@ const std::map<std::string, std::set<std::string>> LogParse::ignoreList_ = {
         "__switch_to",
         "dump_backtrace",
         "show_stack",
-        "dump_stack",
-        "java.lang.Object",
-        "java.lang.Thread",
-        "java.lang.reflect.Method.invoke"}
+        "dump_stack"}
     },
     {"Level3", {
         "panic"}
