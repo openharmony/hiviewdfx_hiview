@@ -273,9 +273,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest007, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    auto eventInfos = SmartParser::Analysis("", "/system/etc/hiview/reliability", "JAVA_CRASH");
+    auto eventInfos = SmartParser::Analysis("", "/system/etc/hiview/reliability", "TEST");
     ASSERT_EQ(eventInfos.empty(), true);
-    eventInfos = SmartParser::Analysis("", "", "JAVA_CRASH");
+    eventInfos = SmartParser::Analysis("", "", "TEST");
     ASSERT_EQ(eventInfos.empty(), true);
     eventInfos = SmartParser::Analysis("", "", "");
     ASSERT_EQ(eventInfos.empty(), true);
