@@ -97,7 +97,6 @@ HWTEST_F(FreezeDetectorUnittest, FreezeResolver_003, TestSize.Level3)
     ASSERT_EQ(ret1, true);
     auto freezeResolver = std::make_unique<FreezeResolver>(freezeCommon);
     ASSERT_EQ(freezeResolver->Init(), true);
-    
 }
 
 /**
@@ -194,7 +193,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_004, TestSize.Level3)
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .Build();
     list.push_back(watchPoint1);
-     WatchPoint watchPoint2 = OHOS::HiviewDFX::WatchPoint::Builder()
+    WatchPoint watchPoint2 = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("AAFWK")
         .InitStringId("LIFECYCLE_TIMEOUT")
         .InitTimestamp(TimeUtil::GetMilliseconds())

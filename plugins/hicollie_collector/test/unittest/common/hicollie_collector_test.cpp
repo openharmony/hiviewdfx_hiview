@@ -32,8 +32,7 @@
 using namespace testing::ext;
 namespace OHOS {
 namespace HiviewDFX {
-namespace
-{
+namespace {
 std::shared_ptr<SysEvent> makeEvent(const std::string& name,
                                     const std::string& domain,
                                     const std::string& eventName,
