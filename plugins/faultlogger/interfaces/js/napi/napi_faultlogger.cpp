@@ -68,7 +68,7 @@ static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogI
         ret.fullLog += buf;
     }
     close(fd);
-    
+
     return ret;
 }
 
@@ -168,7 +168,7 @@ static napi_value QuerySelfFaultLog(napi_env env, napi_callback_info info)
         HIVIEW_LOGE("parameters[0] type isn't number");
         return result;
     }
-    
+
     auto faultLogInfoContext = std::make_unique<FaultLogInfoContext>().release();
     if (faultLogInfoContext == nullptr) {
         HIVIEW_LOGE("faultLogInfoContext == nullptr");
@@ -310,20 +310,17 @@ napi_value FaultLogTypeConstructor(napi_env env, napi_callback_info info)
 static void FaultLogTypeEnumInit(napi_env env, napi_value exports)
 {
     napi_value noSpecific = nullptr;
-    napi_value javaCrash = nullptr;
     napi_value cppCrash = nullptr;
     napi_value jsCrash = nullptr;
     napi_value appCrash = nullptr;
 
     napi_create_int32(env, FaultLogType::NO_SPECIFIC, &noSpecific);
-    napi_create_int32(env, FaultLogType::JAVA_CRASH, &javaCrash);
     napi_create_int32(env, FaultLogType::CPP_CRASH, &cppCrash);
     napi_create_int32(env, FaultLogType::JS_CRASH, &jsCrash);
     napi_create_int32(env, FaultLogType::APP_FREEZE, &appCrash);
 
     napi_property_descriptor descriptors[] = {
         DECLARE_NAPI_STATIC_PROPERTY("NO_SPECIFIC", noSpecific),
-        DECLARE_NAPI_STATIC_PROPERTY("JAVA_CRASH", javaCrash),
         DECLARE_NAPI_STATIC_PROPERTY("CPP_CRASH", cppCrash),
         DECLARE_NAPI_STATIC_PROPERTY("JS_CRASH", jsCrash),
         DECLARE_NAPI_STATIC_PROPERTY("APP_FREEZE", appCrash),

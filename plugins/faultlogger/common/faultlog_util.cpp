@@ -54,8 +54,6 @@ std::string GetFaultNameByType(int32_t faultType, bool asFileName)
     switch (faultType) {
         case FaultLogType::JS_CRASH:
             return asFileName ? "jscrash" : "JS_ERROR";
-        case FaultLogType::JAVA_CRASH:
-            return asFileName ? "javacrash" : "JAVA_CRASH";
         case FaultLogType::CPP_CRASH:
             return asFileName ? "cppcrash" : "CPP_CRASH";
         case FaultLogType::APP_FREEZE:
@@ -90,8 +88,6 @@ int32_t GetLogTypeByName(const std::string& type)
 {
     if (type == "jscrash") {
         return FaultLogType::JS_CRASH;
-    } else if (type == "javacrash") {
-        return FaultLogType::JAVA_CRASH;
     } else if (type == "cppcrash") {
         return FaultLogType::CPP_CRASH;
     } else if (type == "appfreeze") {

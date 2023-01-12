@@ -262,7 +262,7 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
 HWTEST_F(FaultloggerUnittest, GetFaultInfoListTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-    
+
     std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":
     "+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest",
     "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
@@ -298,7 +298,7 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-    
+
     FaultLogInfo info;
     info.time = std::time(nullptr); // 3 : index of timestamp
     info.pid = getpid();
@@ -342,7 +342,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-    
+
     FaultLogInfo info;
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
@@ -360,7 +360,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
         info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
         info.sectionMap["REASON"] = "TestReason";
         info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-        
+
         std::string fileName = faultLogManager->SaveFaultLogToFile(info);
         if (fileName.find("FaultloggerUnittest1111") == std::string::npos) {
             FAIL();
@@ -376,7 +376,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-    
+
     std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":
     "+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest",
     "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
@@ -433,11 +433,6 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
     ASSERT_EQ(info.faultLogType, FaultLogType::APP_FREEZE); // 4 : APP_FREEZE
     ASSERT_EQ(info.pid, 10006); // 10006 : test uid
 
-    std::string filename2 = "javacrash-10006-20170805172159";
-    auto info2 = ExtractInfoFromTempFile(filename2);
-    ASSERT_EQ(info2.faultLogType, FaultLogType::JAVA_CRASH); // 1 : JAVA_CRASH
-    ASSERT_EQ(info2.pid, 10006); // 10006 : test uid
-
     std::string filename3 = "jscrash-10006-20170805172159";
     auto info3 = ExtractInfoFromTempFile(filename3);
     ASSERT_EQ(info3.faultLogType, FaultLogType::JS_CRASH); // 3 : JS_CRASH
@@ -483,7 +478,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerAdapterTest001, testing::ext::TestSize.
 HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-    
+
     auto service = CreateFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
