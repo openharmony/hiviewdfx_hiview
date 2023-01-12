@@ -248,7 +248,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest006, TestSize.Level1)
 {
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
-     */  
+     */
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest005/dmesg-ramoops-1";
     ASSERT_EQ(FileUtil::FileExists(faultFile), false);
 
@@ -261,7 +261,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest006, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest007
- * @tc.desc: process JAVA_CRASH fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process test fault, this case match FeatureAnalysisForRebootsys.Json.
  *           1. fault log should can be read;
  *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
  * @tc.type: FUNC

@@ -113,8 +113,6 @@ void FaultLogInfo::SetFaultSummary(const std::string &summary)
 std::string FaultLogInfo::GetStringFaultType() const
 {
     switch (type_) {
-        case JAVA_CRASH:
-            return "JavaCrash";
         case CPP_CRASH:
             return "CppCrash";
         case JS_CRASH:

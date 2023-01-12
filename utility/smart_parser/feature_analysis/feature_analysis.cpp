@@ -52,7 +52,6 @@ bool FeatureAnalysis::AnalysisLog()
         return false;
     }
     Compose();
-    ExtraProcess();
     return true;
 }
 
@@ -432,15 +431,6 @@ void FeatureAnalysis::SetStackRegex(const std::string& key, const std::string& r
 {
     if (regex.find(L3_VARIABLE_TRACE_BLOCK) != string::npos) {
         stackRegex_.emplace(pair(key, StringUtil::EraseString(regex, L3_VARIABLE_TRACE_BLOCK)));
-    }
-}
-
-void FeatureAnalysis::ExtraProcess()
-{
-    if (eventType_ == "JAVA_CRASH" && eventInfo_.find("END_STACK") != eventInfo_.end()) {
-        string lastLine;
-        GetCrashFaultLine(featureSet_.fullPath, lastLine);
-        eventInfo_["END_STACK"] = lastLine + LogUtil::SPLIT_PATTERN + eventInfo_["END_STACK"];
     }
 }
 

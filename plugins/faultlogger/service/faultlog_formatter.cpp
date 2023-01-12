@@ -58,11 +58,6 @@ static const char *TRACE_ID[] = {"TRACEID", "Trace-Id:"};
 static const char *SUMMARY[] = {"SUMMARY", "Summary:\n"};
 static const char *TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
 
-auto JAVA_CRASH_LOG_SEQUENCE = {
-    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID, MODULE_UID,
-    FAULT_TYPE,  FOREGROUND, LIFETIME,    REASON,         TRACE_ID,   STACKTRACE
-};
-
 auto CPP_CRASH_LOG_SEQUENCE = {
     DEVICE_INFO,      BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID, MODULE_UID,      FAULT_TYPE,
     SYSVMTYPE,        APPVMTYPE,  REASON,      FAULT_MESSAGE,  TRACE_ID,   PROCESS_NAME,    KEY_THREAD_INFO,
@@ -92,8 +87,6 @@ auto SYS_FREEZE_LOG_SEQUENCE = {
 std::list<const char **> GetLogParseList(int32_t logType)
 {
     switch (logType) {
-        case FaultLogType::JAVA_CRASH:
-            return JAVA_CRASH_LOG_SEQUENCE;
         case FaultLogType::CPP_CRASH:
             return CPP_CRASH_LOG_SEQUENCE;
         case FaultLogType::JS_CRASH:
@@ -111,7 +104,6 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
 {
     std::string summary = "";
     switch (logType) {
-        case FaultLogType::JAVA_CRASH:
         case FaultLogType::JS_CRASH:
         case FaultLogType::APP_FREEZE:
         case FaultLogType::SYS_FREEZE:
