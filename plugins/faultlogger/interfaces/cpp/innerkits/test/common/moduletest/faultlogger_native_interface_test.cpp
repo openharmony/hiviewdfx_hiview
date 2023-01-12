@@ -113,26 +113,6 @@ HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest003, testing::ext::TestS
 }
 
 /**
- * @tc.name: AddFaultLogTest004
- * @tc.desc: add java crash log and check whether the log file is exist
- * @tc.type: FUNC
- * @tc.require: SR000F7ULN AR000F83BB
- */
-HWTEST_F(FaultloggerNativeInterfaceTest, AddFaultLogTest004, testing::ext::TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. add faultlog with complete parameters
-     * @tc.steps: step2. check the existence of target log file
-     * @tc.expected: the calling is success and the file has been created
-     */
-    auto now = time(nullptr);
-    auto module = "faultlogtest4";
-    AddFaultLog(now, FaultLogType::JAVA_CRASH, module, "faultloggertestsummary2");
-    sleep(1);
-    ASSERT_TRUE(CheckLogFileExist(now, getuid(), "javacrash", module));
-}
-
-/**
  * @tc.name: QuerySelfFaultLogTest001
  * @tc.desc: check the existence of the previous added faultlog
  * @tc.type: FUNC
@@ -206,26 +186,6 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest002, testing::ext:
     auto result = QuerySelfFaultLog(FaultLogType::NO_SPECIFIC, maxQueryCount);
     ASSERT_NE(nullptr, result);
     auto result2 = QuerySelfFaultLog(FaultLogType::NO_SPECIFIC, maxQueryCount);
-    ASSERT_EQ(nullptr, result2);
-}
-
-/**
- * @tc.name: QuerySelfFaultLogTest003
- * @tc.desc: query java crash log
- * @tc.type: FUNC
- * @tc.require: SR000F7ULN AR000F83AH
- */
-HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest003, testing::ext::TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. call QuerySelfFaultLog interface twice
-     * @tc.steps: step2. check the query result
-     * @tc.expected: the first query success and the second fail
-     */
-    const int maxQueryCount = 10;
-    auto result = QuerySelfFaultLog(FaultLogType::JAVA_CRASH, maxQueryCount);
-    ASSERT_NE(nullptr, result);
-    auto result2 = QuerySelfFaultLog(FaultLogType::JAVA_CRASH, maxQueryCount);
     ASSERT_EQ(nullptr, result2);
 }
 

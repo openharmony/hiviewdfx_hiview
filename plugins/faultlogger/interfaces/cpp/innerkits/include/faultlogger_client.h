@@ -42,8 +42,7 @@ namespace OHOS {
 namespace HiviewDFX {
 enum FaultLogType {
     NO_SPECIFIC = 0,
-    JAVA_CRASH,
-    CPP_CRASH,
+    CPP_CRASH = 2,
     JS_CRASH,
     APP_FREEZE,
     SYS_FREEZE,

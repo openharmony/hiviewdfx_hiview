@@ -176,9 +176,6 @@ std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, s
 {
     std::string key = "";
     switch (type) {
-        case JAVA_CRASH:
-            key = "TRUSTSTACK";
-            break;
         case CPP_CRASH:
             key = "KEY_THREAD_INFO";
             break;

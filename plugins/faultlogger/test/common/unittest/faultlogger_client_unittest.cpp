@@ -166,9 +166,6 @@ HWTEST_F(FaultloggerClientUnittest, FaultLogInfoTest001, testing::ext::TestSize.
     info.SetFaultType(2);
     ASSERT_EQ(info.GetFaultType(), 2);
     ASSERT_EQ(info.GetStringFaultType(), "CppCrash");
-    info.SetFaultType(1);
-    ASSERT_EQ(info.GetFaultType(), 1);
-    ASSERT_EQ(info.GetStringFaultType(), "JavaCrash");
     info.SetFaultType(3);
     ASSERT_EQ(info.GetFaultType(), 3);
     ASSERT_EQ(info.GetStringFaultType(), "JsCrash");
