@@ -55,7 +55,6 @@ public:
 
 private:
     void Extract();
-    void ExtraProcess();
     void RawInfoPosition(std::stringstream& buffer);
     bool IsSourceMatch(const std::string& line, const FeatureRule& rule) const;
     bool ParseElementForParam(const std::string& src, FeatureRule& rule);
