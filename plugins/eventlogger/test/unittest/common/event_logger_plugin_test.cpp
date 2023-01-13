@@ -82,9 +82,9 @@ HWTEST_F(EventloggerPluginTest, EventloggerPluginTest002, TestSize.Level3)
     std::shared_ptr<EventLoop> loop = std::make_shared<EventLoop>("eventLoop");
     loop->StartLoop();
     eventLogger.BindWorkLoop(loop);
-    constexpr int EVENT_MAX_ID = 1000001;
+    constexpr int eventMaxId = 1000001;
     std::shared_ptr<Event> event = std::make_shared<Event>("Eventlogger002");
-    event->eventId_ = EVENT_MAX_ID;
+    event->eventId_ = eventMaxId;
     ASSERT_EQ(eventLogger.IsInterestedPipelineEvent(event), false);
 }
 
