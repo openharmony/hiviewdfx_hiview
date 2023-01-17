@@ -315,7 +315,7 @@ HWTEST_F(EventLoopTest, EventLoopEventProcessTest004, TestSize.Level3)
     auto task = std::bind(&RealEventHandler::DoTask, eventhandler1.get());
     currentLooper_->AddTimerEvent(nullptr, nullptr, task, 2, true);
     printf("On Main Thread:%d \n", gettid());
-    sleep(10);
+    sleep(9);
     /**
      * @tc.expected: step1. the event has been processed
      */
