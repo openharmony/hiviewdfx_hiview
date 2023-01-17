@@ -141,7 +141,7 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
 
 void ReportCppCrashEvent(const FaultLogInfoInner &info)
 {
-    HiSysEvent::Write("RELIABILITY",
+    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY,
         "CPP_CRASH",
         HiSysEvent::EventType::FAULT,
         "MODULE", GetPrintableStr(info.module),

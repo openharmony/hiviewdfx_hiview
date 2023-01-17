@@ -22,7 +22,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class PluginFaultEvent : public LoggerEvent {
 public:
-    PluginFaultEvent(const std::string &tag, const std::string &name, HiSysEvent::EventType type);
+    PluginFaultEvent(const std::string &name, HiSysEvent::EventType type);
     void Report() override;
 };
 } // namespace HiviewDFX

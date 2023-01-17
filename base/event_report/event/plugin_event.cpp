@@ -20,15 +20,15 @@ namespace OHOS {
 namespace HiviewDFX {
 using namespace PluginEventSpace;
 
-PluginEvent::PluginEvent(const std::string &domain, const std::string &name, HiSysEvent::EventType type)
-    : LoggerEvent(domain, name, type)
+PluginEvent::PluginEvent(const std::string &name, HiSysEvent::EventType type)
+    : LoggerEvent(name, type)
 {
     this->paramMap_ = { {KEY_OF_PLUGIN_NAME, DEFAULT_STRING}, {KEY_OF_RESULT, DEFAULT_UINT32} };
 }
 
 void PluginEvent::Report()
 {
-    HiSysEvent::Write(this->eventDomain_, this->eventName_, this->eventType_,
+    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
         KEY_OF_PLUGIN_NAME, this->paramMap_[KEY_OF_PLUGIN_NAME].GetString(),
         KEY_OF_RESULT, this->paramMap_[KEY_OF_RESULT].GetUint32());
 }

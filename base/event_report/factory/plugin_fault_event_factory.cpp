@@ -21,7 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 std::unique_ptr<LoggerEvent> PluginFaultEventFactory::Create()
 {
-    return std::make_unique<PluginFaultEvent>(EVENT_DOMAIN, PluginFaultEventSpace::EVENT_NAME, HiSysEvent::FAULT);
+    return std::make_unique<PluginFaultEvent>(PluginFaultEventSpace::EVENT_NAME, HiSysEvent::FAULT);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

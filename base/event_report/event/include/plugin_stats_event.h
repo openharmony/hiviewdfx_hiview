@@ -24,7 +24,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class PluginStatsEvent : public LoggerEvent {
 public:
-    PluginStatsEvent(const std::string &tag, const std::string &name, HiSysEvent::EventType type);
+    PluginStatsEvent(const std::string &name, HiSysEvent::EventType type);
     void Report() override;
 
 protected:

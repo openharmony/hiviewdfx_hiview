@@ -26,8 +26,8 @@ namespace OHOS {
 namespace HiviewDFX {
 class LoggerEvent {
 public:
-    LoggerEvent(const std::string &domain, const std::string &name, HiSysEvent::EventType type)
-        : eventDomain_(domain), eventName_(name), eventType_(type) {}
+    LoggerEvent(const std::string &name, HiSysEvent::EventType type)
+        : eventName_(name), eventType_(type) {}
 
     virtual ~LoggerEvent() {}
 
@@ -47,7 +47,6 @@ protected:
     virtual void InnerUpdate(const std::string &name, const ParamValue& value);
 
 protected:
-    std::string eventDomain_;
     std::string eventName_;
     HiSysEvent::EventType eventType_;
     std::map<std::string, ParamValue> paramMap_;

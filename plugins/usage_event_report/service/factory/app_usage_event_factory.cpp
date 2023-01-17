@@ -46,7 +46,7 @@ using namespace OHOS::DeviceUsageStats;
 
 std::unique_ptr<LoggerEvent> AppUsageEventFactory::Create()
 {
-    return std::make_unique<AppUsageEvent>(EVENT_DOMAIN, EVENT_NAME, HiSysEvent::STATISTIC);
+    return std::make_unique<AppUsageEvent>(EVENT_NAME, HiSysEvent::STATISTIC);
 }
 
 void AppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>>& events)

@@ -35,7 +35,7 @@ using namespace SysUsageEventSpace;
 std::unique_ptr<LoggerEvent> SysUsageEventFactory::Create()
 {
     std::unique_ptr<LoggerEvent> event =
-        std::make_unique<SysUsageEvent>(EVENT_DOMAIN, EVENT_NAME, HiSysEvent::STATISTIC);
+        std::make_unique<SysUsageEvent>(EVENT_NAME, HiSysEvent::STATISTIC);
     event->Update(KEY_OF_START, DEFAULT_UINT64);
     event->Update(KEY_OF_END, TimeUtil::GetMilliseconds());
 

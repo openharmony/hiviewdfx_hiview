@@ -85,7 +85,7 @@ ParamValue LoggerEvent::GetValue(const std::string& name)
 std::string LoggerEvent::ToJsonString()
 {
     Json::Value root;
-    root[KEY_OF_DOMAIN] = this->eventDomain_;
+    root[KEY_OF_DOMAIN] = HiSysEvent::Domain::HIVIEWDFX;
     root[KEY_OF_NAME] = this->eventName_;
     root[KEY_OF_TYPE] = (int)this->eventType_;
 

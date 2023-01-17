@@ -224,7 +224,7 @@ void CrashValidator::CheckOutOfDateEvents()
         }
 
         if (!it->isCppCrash) {
-            HiSysEvent::Write("RELIABILITY", KEY_NO_LOG_EVENT_NAME, HiSysEvent::EventType::FAULT,
+            HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, KEY_NO_LOG_EVENT_NAME, HiSysEvent::EventType::FAULT,
                 KEY_NAME, it->name,
                 KEY_PID, it->pid,
                 KEY_UID, it->uid,
@@ -283,7 +283,7 @@ void CrashValidator::ReadServiceCrashStatus()
 
         HIVIEW_LOGI("report PROCESS_EXIT event[name : %{public}s  pid : %{public}d]", name, pid);
 
-        HiSysEvent::Write(HiSysEvent::Domain::STARTUP, KEY_PROCESS_EXIT, HiSysEvent::EventType::BEHAVIOR,
+        HiSysEventWrite(HiSysEvent::Domain::STARTUP, KEY_PROCESS_EXIT, HiSysEvent::EventType::BEHAVIOR,
             KEY_NAME, name, KEY_PID, pid, KEY_UID, uid, KEY_STATUS, status);
     }
     close(fd);

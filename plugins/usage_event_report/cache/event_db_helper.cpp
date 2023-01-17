@@ -177,7 +177,7 @@ int EventDbHelper::QuerySysUsageEvent(std::vector<std::shared_ptr<LoggerEvent>>&
     for (auto entry : entries) {
         res = entry.id;
         std::shared_ptr<LoggerEvent> event =
-            std::make_shared<SysUsageEvent>(EVENT_DOMAIN, EVENT_NAME, HiSysEvent::STATISTIC);
+            std::make_shared<SysUsageEvent>(EVENT_NAME, HiSysEvent::STATISTIC);
         if (!JsonParser::ParseSysUsageEvent(event, entries[0].value)) {
             HIVIEW_LOGE("failed to parse the database records=%{public}s", entries[0].value.c_str());
             continue;
