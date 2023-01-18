@@ -320,27 +320,30 @@ HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest014, testing::ext::TestSize.Lev
 HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest015, testing::ext::TestSize.Level3)
 {
     std::string origin = "1234:5678:abcd";
-    auto ret = StringUtil::SplitStr(origin, ':');
-    int size = 3;
-    ASSERT_TRUE(ret.size() == size);
-    if (ret.empty()) {
+    auto ret1 = StringUtil::SplitStr(origin, ':');
+    size_t expectSize = 3;
+    ASSERT_TRUE(ret1.size() == expectSize);
+    if (ret1.empty()) {
         return;
     }
-    auto element = ret.front();
+    auto element = ret1.front();
     ASSERT_EQ("1234", element);
-    ret.pop_front();
-    if (ret.empty()) {
+    ret1.pop_front();
+    if (ret1.empty()) {
         return;
     }
-    element = ret.front();
+    element = ret1.front();
     ASSERT_EQ("5678", element);
-    ret.pop_front();
-    if (ret.empty()) {
+    ret1.pop_front();
+    if (ret1.empty()) {
         return;
     }
-    element = ret.front();
+    element = ret1.front();
     ASSERT_EQ("abcd", element);
-    ret.pop_front();
+    ret1.pop_front();
+    std::vector<std::string> ret2;
+    StringUtil::SplitStr(origin, ":", ret2);
+    ASSERT_TRUE(ret2.size() == expectSize);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
