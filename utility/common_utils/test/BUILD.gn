@@ -48,7 +48,7 @@ ohos_unittest("UtilityCommonUtilsTest") {
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "//third_party/googletest:gtest_main",
-    "//third_party/openssl:crypto_source",
+    "//third_party/openssl:libcrypto_shared",
   ]
 
   external_deps = [
