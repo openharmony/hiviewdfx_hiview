@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include "file_util.h"
 #include "hiview_event_report.h"
 #include "logger.h"
+#include "memory_util.h"
 #include "plugin.h"
 #include "thread_util.h"
 #include "time_util.h"
@@ -38,6 +39,9 @@ EventDispatchQueue::~EventDispatchQueue()
 
 void EventDispatchQueue::Run()
 {
+    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
+        HIVIEW_LOGW("Failed to optimize memory for current thread");
+    }
     const int threadNameLen = 15;
     Thread::SetThreadDescription(threadName_.substr(0, threadNameLen));
     isRunning_ = true;

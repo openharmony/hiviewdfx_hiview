@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "logger.h"
+#include "memory_util.h"
 #include "thread_util.h"
 
 namespace OHOS {
@@ -81,6 +82,10 @@ TaskEvent EventThreadPool::ObtainTask(uint64_t &targetTime)
 
 void EventThreadPool::TaskCallback()
 {
+    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
+        HIVIEW_LOGW("Failed to optimize memory for current thread");
+    }
+
     std::string tid = std::to_string(Thread::GetTid());
     const int maxLength = 10;
     if (name_.length() > maxLength) {
