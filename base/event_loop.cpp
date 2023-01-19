@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,7 @@
 #include "audit.h"
 #include "file_util.h"
 #include "logger.h"
+#include "memory_util.h"
 #include "thread_util.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -393,6 +394,10 @@ void EventLoop::PollNextEvent(uint64_t timeout)
 
 void EventLoop::Run()
 {
+    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
+        HIVIEW_LOGW("Failed to optimize memory for current thread");
+    }
+
     // set thread name
     const int maxLength = 16;
     std::string restrictedName = name_;
