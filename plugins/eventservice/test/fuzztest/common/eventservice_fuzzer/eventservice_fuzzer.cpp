@@ -77,7 +77,12 @@ int32_t SysEventQueryTest(const uint8_t* data, size_t size)
     QueryArgument arg(int64Data, int64Data, int32Data);
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
     SysEventQueryRuleGroupOhos rules = { SysEventQueryRule(strData, { strData }) };
-    return SysEventServiceOhos::GetInstance().Query(arg,  rules, callback);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        printf("SysEventServiceOhos service is null.\n");
+        return -1;
+    }
+    return service->Query(arg,  rules, callback);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
