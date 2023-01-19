@@ -235,7 +235,7 @@ void HiCollieCollector::ReportSysFreezeIfNeed(SysEvent &sysEvent, const std::str
 
     int32_t pid = static_cast<int32_t>(sysEvent.GetEventIntValue("PID"));
     pid = pid ? pid : sysEvent.GetPid();
-    int32_t uid = sysEvent.GetEventIntValue("UID");
+    int32_t uid = static_cast<int32_t>(sysEvent.GetEventIntValue("UID"));
     uid = uid ? uid : sysEvent.GetUid();
     std::string fingerPrint = Tbox::CalcFingerPrint(processName, 0, FP_BUFFER);
     HiSysEvent::Write("RELIABILITY", "SYS_FREEZE", HiSysEvent::FAULT,
