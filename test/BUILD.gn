@@ -34,7 +34,7 @@ ohos_unittest("HiviewPlatformModuleTest") {
   sources = [ "moduletest/common/hiview_plugin_platform_module_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "//third_party/googletest:gtest_main",
   ]
 }
@@ -60,7 +60,7 @@ ohos_unittest("HolisticPlatformTest") {
   sources = [ "unittest/common/holistic_platform_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_root/test/plugins/examples/dynamic_load_plugin_example:dynamicloadpluginexample",
     "$hiview_root/test/plugins/examples/event_processor_example1:event_processor_example1",

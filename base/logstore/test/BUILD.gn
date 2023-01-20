@@ -40,7 +40,7 @@ ohos_unittest("LogStoreUnitTest") {
   sources = [ "unittest/common/log_store_unit_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/logstore:log_store",
     "//third_party/googletest:gmock",

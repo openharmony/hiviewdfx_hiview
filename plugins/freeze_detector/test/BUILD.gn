@@ -36,7 +36,7 @@ ohos_unittest("FreezeDetectorTest") {
   sources = [ "unittest/common/freeze_detector_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_eventlogger:eventlogger",
     "$hiview_plugin/freeze_detector:freeze_detector",
@@ -70,7 +70,7 @@ ohos_unittest("FreezeDetectorUnittest") {
   ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_plugin/freeze_detector:freeze_detector",
     "$hiview_root/utility/smart_parser:smart_parser",
     "//third_party/googletest:gtest_main",

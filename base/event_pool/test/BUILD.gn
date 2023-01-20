@@ -37,7 +37,7 @@ ohos_unittest("EventPoolTest") {
 
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "../:eventpool",
     "//third_party/googletest:gtest_main",
   ]

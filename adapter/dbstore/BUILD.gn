@@ -47,6 +47,30 @@ ohos_source_set("db_store_source") {
   }
 }
 
+ohos_source_set("db_store_source_static_lib_for_tdd") {
+  part_name = "hiview"
+  public_configs = [ ":db_store_config" ]
+
+  sources = [
+    "data_query.cpp",
+    "doc_db.cpp",
+    "doc_store.cpp",
+    "doc_util.cpp",
+    "store_manager.cpp",
+  ]
+
+  deps = [
+    "//third_party/ejdb:ejdb_static_lib_for_tdd",
+    "//third_party/iowow:iowow",
+  ]
+
+  if (is_standard_system) {
+    external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  } else {
+    external_deps = [ "hilog:libhilog" ]
+  }
+}
+
 group("unittest") {
   testonly = true
   deps = [ "test:DbStoreAdapterUnitTest" ]
