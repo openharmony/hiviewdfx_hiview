@@ -101,7 +101,14 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
     EventStore::Cond condLeft = uidCond.And(hiviewCond);
     EventStore::Cond condRight("uid_", EventStore::Op::EQ, id);
-    EventStore::Cond condTotal = condLeft.Or(condRight);
+    EventStore::Cond condTotal;
+    if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
+        condTotal = condLeft;
+    } else if (faultType == FaultLogType::JS_CRASH) {
+        condTotal = condRight;
+    } else {
+        condTotal = condLeft.Or(condRight);
+    }
     (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     if (id != 0) {
         query->And("MODULE", EventStore::Op::EQ, module);
@@ -136,7 +143,14 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
     EventStore::Cond typeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
     EventStore::Cond condLeft = hiviewCond.And(pidUpperCond).And(uidUpperCond).And(typeCond);
     EventStore::Cond condRight = pidLowerCond.And(uidLowerCond).And(typeCond);
-    EventStore::Cond condTotal = condLeft.Or(condRight);
+    EventStore::Cond condTotal;
+    if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
+        condTotal = condLeft;
+    } else if (faultType == FaultLogType::JS_CRASH) {
+        condTotal = condRight;
+    } else {
+        condTotal = condLeft.Or(condRight);
+    }
     (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     return query->Execute(1).HasNext();
 }
