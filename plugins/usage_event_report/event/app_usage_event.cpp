@@ -20,8 +20,8 @@ namespace OHOS {
 namespace HiviewDFX {
 using namespace AppUsageEventSpace;
 
-AppUsageEvent::AppUsageEvent(const std::string &tag, const std::string &name, HiSysEvent::EventType type)
-    : LoggerEvent(tag, name, type)
+AppUsageEvent::AppUsageEvent(const std::string &name, HiSysEvent::EventType type)
+    : LoggerEvent(name, type)
 {
     this->paramMap_ = {
         {KEY_OF_PACKAGE, DEFAULT_STRING}, {KEY_OF_VERSION, DEFAULT_STRING},
@@ -31,7 +31,7 @@ AppUsageEvent::AppUsageEvent(const std::string &tag, const std::string &name, Hi
 
 void AppUsageEvent::Report()
 {
-    HiSysEvent::Write(this->eventDomain_, this->eventName_, this->eventType_,
+    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
         KEY_OF_PACKAGE, this->paramMap_[KEY_OF_PACKAGE].GetString(),
         KEY_OF_VERSION, this->paramMap_[KEY_OF_VERSION].GetString(),
         KEY_OF_USAGE, this->paramMap_[KEY_OF_USAGE].GetUint64(),

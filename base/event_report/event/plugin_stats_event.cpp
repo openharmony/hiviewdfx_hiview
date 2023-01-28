@@ -26,8 +26,8 @@ const std::vector<std::string> INIT_TOP_K_EVENT(TOP_K_NUM, "");
 }
 using namespace PluginStatsEventSpace;
 
-PluginStatsEvent::PluginStatsEvent(const std::string &domain, const std::string &name, HiSysEvent::EventType type)
-    : LoggerEvent(domain, name, type)
+PluginStatsEvent::PluginStatsEvent(const std::string &name, HiSysEvent::EventType type)
+    : LoggerEvent(name, type)
 {
     paramMap_ = {
         {KEY_OF_PLUGIN_NAME, DEFAULT_STRING}, {KEY_OF_PROC_NAME, DEFAULT_STRING},
@@ -88,7 +88,7 @@ void PluginStatsEvent::InnerUpdate(const std::string &name, const ParamValue& va
 
 void PluginStatsEvent::Report()
 {
-    HiSysEvent::Write(eventDomain_, eventName_, eventType_,
+    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, eventName_, eventType_,
         KEY_OF_PLUGIN_NAME, paramMap_[KEY_OF_PLUGIN_NAME].GetString(),
         KEY_OF_AVG_TIME, paramMap_[KEY_OF_AVG_TIME].GetUint32(),
         KEY_OF_TOP_K_TIME,  paramMap_[KEY_OF_TOP_K_TIME].GetUint32Vec(),

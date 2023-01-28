@@ -20,8 +20,8 @@ namespace OHOS {
 namespace HiviewDFX {
 using namespace SysUsageEventSpace;
 
-SysUsageEvent::SysUsageEvent(const std::string &domain, const std::string &name, HiSysEvent::EventType type)
-    : LoggerEvent(domain, name, type)
+SysUsageEvent::SysUsageEvent(const std::string &name, HiSysEvent::EventType type)
+    : LoggerEvent(name, type)
 {
     this->paramMap_ = {
         {KEY_OF_START, DEFAULT_UINT64}, {KEY_OF_END, DEFAULT_UINT64}, {KEY_OF_POWER, DEFAULT_UINT64},
@@ -31,7 +31,7 @@ SysUsageEvent::SysUsageEvent(const std::string &domain, const std::string &name,
 
 void SysUsageEvent::Report()
 {
-    HiSysEvent::Write(this->eventDomain_, this->eventName_, this->eventType_,
+    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
         KEY_OF_START, this->paramMap_[KEY_OF_START].GetUint64(),
         KEY_OF_END, this->paramMap_[KEY_OF_END].GetUint64(),
         KEY_OF_POWER, this->paramMap_[KEY_OF_POWER].GetUint64(),

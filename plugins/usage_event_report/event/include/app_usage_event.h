@@ -22,7 +22,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class AppUsageEvent : public LoggerEvent {
 public:
-    AppUsageEvent(const std::string &tag, const std::string &name, HiSysEvent::EventType type);
+    AppUsageEvent(const std::string &name, HiSysEvent::EventType type);
     void Report() override;
 };
 } // namespace HiviewDFX

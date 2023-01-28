@@ -206,7 +206,7 @@ void HiCollieCollector::ProcessHiCollieEvent(SysEvent &sysEvent)
     SaveToFile(sysEvent, pid, processName, path, desPath);
 
     std::vector<std::string> paths = {desPath};
-    HiSysEvent::Write("RELIABILITY", sysEvent.eventName_ + "_REPORT", HiSysEvent::FAULT,
+    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, sysEvent.eventName_ + "_REPORT", HiSysEvent::FAULT,
         "HIVIEW_LOG_FILE_PATHS", paths,
         "PID", sysEvent.GetEventValue(EVENT_PID),
         "TGID", sysEvent.GetEventValue(EVENT_TGID),
@@ -238,7 +238,7 @@ void HiCollieCollector::ReportSysFreezeIfNeed(SysEvent &sysEvent, const std::str
     int32_t uid = static_cast<int32_t>(sysEvent.GetEventIntValue("UID"));
     uid = uid ? uid : sysEvent.GetUid();
     std::string fingerPrint = Tbox::CalcFingerPrint(processName, 0, FP_BUFFER);
-    HiSysEvent::Write("RELIABILITY", "SYS_FREEZE", HiSysEvent::FAULT,
+    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, "SYS_FREEZE", HiSysEvent::FAULT,
         "LOG_PATH", path,
         "PID", pid,
         "UID", uid,

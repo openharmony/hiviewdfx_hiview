@@ -231,7 +231,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest005, testing::ext:
 
 static void SendJsErrorEvent()
 {
-    HiSysEvent::Write("ACE",
+    HiSysEventWrite(HiSysEvent::Domain::ACE,
         "JS_ERROR",
         HiSysEvent::EventType::FAULT,
         "PID", 478, // 478 : test pid

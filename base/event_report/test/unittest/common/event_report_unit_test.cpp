@@ -30,8 +30,8 @@ namespace HiviewDFX {
 namespace {
 class TestLoggerEvent : public LoggerEvent {
 public:
-    TestLoggerEvent(const std::string& domain, const std::string& name, HiSysEvent::EventType type)
-        : LoggerEvent(domain, name, type) {}
+    TestLoggerEvent(const std::string& name, HiSysEvent::EventType type)
+        : LoggerEvent(name, type) {}
 
 public:
     void Report()
@@ -64,7 +64,7 @@ HWTEST_F(EventReportUnitTest, EventReportUnitTest001, testing::ext::TestSize.Lev
 {
     HiviewEventCacher eventCacher;
     std::vector<std::shared_ptr<LoggerEvent>> events;
-    events.emplace_back(std::make_shared<TestLoggerEvent>("DOMAIN", "EVENT_NAME", HiSysEvent::EventType::FAULT));
+    events.emplace_back(std::make_shared<TestLoggerEvent>("EVENT_NAME", HiSysEvent::EventType::FAULT));
     eventCacher.AddPluginStatsEvent(events);
     ASSERT_TRUE(true);
     std::vector<std::shared_ptr<LoggerEvent>> events1;
