@@ -22,6 +22,7 @@
 #include "logger.h"
 #include "plugin_factory.h"
 #include "power_mgr_client.h"
+#include "string_util.h"
 #include "time_util.h"
 #include "usage_event_cacher.h"
 #include "usage_event_common.h"
@@ -215,8 +216,8 @@ void UsageEventReport::StartServiceByOption(const std::string& opt)
         const std::string servicePath = "/system/bin/usage_report";
         if (execl(servicePath.c_str(), serviceName.c_str(),
             "-p", workPath_.c_str(),
-            "-t", std::to_string(lastReportTime_).c_str(),
-            "-T", std::to_string(lastSysReportTime_).c_str(),
+            "-t", StringUtil::ToChars<uint64_t>(lastReportTime_).c_str(),
+            "-T", StringUtil::ToChars<uint64_t>(lastSysReportTime_).c_str(),
             opt.c_str(), nullptr) < 0) {
             HIVIEW_LOGE("failed to execute %{public}s", serviceName.c_str());
             _exit(-1);
