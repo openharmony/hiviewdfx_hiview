@@ -55,7 +55,7 @@ PROFILE_STAT:
   __BASE: {type: STATISTIC, level: CRITICAL, desc: hisysevent profile status}
   MAX_TOTAL_COUNT: {type: UINT32, desc: maximum total count}
   MAX_TOTAL_SIZE: {type: UINT32, desc: maximum total size}
-  DOMAINS: {type: STRING, arrsize: 100, desc: domains}
+  DOMAINS: {type: STRING, arrsize: 100, desc: measured domains}
   DOMAIN_DETAIL: {type: UINT32, arrsize: 100, desc: domain detail}
   TOTAL_COUNT: {type: UINT32, desc: total count}
   TOTAL_SIZE: {type: UINT32, desc: total size}
