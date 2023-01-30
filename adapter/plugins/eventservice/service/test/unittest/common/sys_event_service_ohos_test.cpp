@@ -190,10 +190,14 @@ HWTEST_F(SysEventServiceOhosTest, CommonTest001, testing::ext::TestSize.Level3)
 {
     sptr<ISysEventCallback> callbackDefault = new SysEventCallbackDefault();
     vector<SysEventRule> rules = GetTestRules(1, "", "");
-    auto ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    auto ret = service->AddListener(rules, callbackDefault);
     printf("add listener result is %d.\n", ret);
     ASSERT_TRUE(ret != 0);
-    ret = SysEventServiceOhos::GetInstance().RemoveListener(callbackDefault);
+    ret = service->RemoveListener(callbackDefault);
     printf("remove listener result is %d.\n", ret);
     ASSERT_TRUE(ret != 0);
 }
@@ -209,13 +213,17 @@ HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Lev
     sptr<ISysEventCallback> callbackDefault = new SysEventCallbackDefault();
     sptr<ISysEventCallback> callbackTest = new SysEventCallbackOhosTest();
     vector<SysEventRule> rules = GetTestRules(1, "", "");
-    SysEventService service;
-    SysEventServiceOhos::GetSysEventService(&service);
-    auto ret = SysEventServiceOhos::GetInstance().AddListener(rules, nullptr);
+    SysEventService sysEventService;
+    SysEventServiceOhos::GetSysEventService(&sysEventService);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    auto ret = service->AddListener(rules, nullptr);
     ASSERT_TRUE(ret != 0);
-    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackDefault);
+    ret = service->AddListener(rules, callbackDefault);
     ASSERT_TRUE(ret != 0);
-    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackTest);
+    ret = service->AddListener(rules, callbackTest);
     ASSERT_TRUE(ret != 0);
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -251,7 +259,11 @@ HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Lev
  */
 HWTEST_F(SysEventServiceOhosTest, RemoveListenerTest001, testing::ext::TestSize.Level3)
 {
-    SysEventServiceOhos::GetInstance().RemoveListener(nullptr);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    service->RemoveListener(nullptr);
     sptr<ISysEventCallback> callbackTest = new SysEventCallbackOhosTest();
     vector<SysEventRule> rules = GetTestRules(1, "", "");
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -575,6 +587,10 @@ HWTEST_F(SysEventServiceOhosTest, RunningStatusLogUtilTest, testing::ext::TestSi
  */
 HWTEST_F(SysEventServiceOhosTest, SysEventServiceOhosIntanceTest, testing::ext::TestSize.Level1)
 {
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
     HiviewTestContext hiviewTestContext;
     HiviewGlobal::CreateInstance(hiviewTestContext);
     const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
@@ -584,24 +600,24 @@ HWTEST_F(SysEventServiceOhosTest, SysEventServiceOhosIntanceTest, testing::ext::
     std::vector<std::string> eventNames { "" };
     OHOS::HiviewDFX::SysEventQueryRule queryRule("", eventNames);
     queryRules.emplace_back(queryRule);
-    auto ret = SysEventServiceOhos::GetInstance().Query(argument1, queryRules, querier);
+    auto ret = service->Query(argument1, queryRules, querier);
     ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
-    ret = SysEventServiceOhos::GetInstance().Query(argument1, queryRules, querier);
+    ret = service->Query(argument1, queryRules, querier);
     ASSERT_TRUE(ret == ERR_QUERY_TOO_FREQUENTLY);
     sptr<ISysEventCallback> callbackTest = new SysEventCallbackOhosTest();
     vector<SysEventRule> rules;
     SysEventRule rule = GetTestRule(0, "DOMAIN", "EVENT_NAME");
     rules.push_back(rule);
-    ret = SysEventServiceOhos::GetInstance().AddListener(rules, callbackTest);
+    ret = service->AddListener(rules, callbackTest);
     ASSERT_TRUE(ret == ERR_ADD_DEATH_RECIPIENT);
-    ret = SysEventServiceOhos::GetInstance().RemoveListener(callbackTest);
+    ret = service->RemoveListener(callbackTest);
     ASSERT_TRUE(ret == ERR_LISTENERS_EMPTY);
     std::vector<std::u16string> args;
-    auto dumpRet = SysEventServiceOhos::GetInstance().Dump(-1, args);
+    auto dumpRet = service->Dump(-1, args);
     ASSERT_TRUE(dumpRet == -1);
-    dumpRet = SysEventServiceOhos::GetInstance().Dump(0, args);
+    dumpRet = service->Dump(0, args);
     ASSERT_TRUE(dumpRet == 0);
-    SysEventServiceOhos::GetInstance().OnRemoteDied(nullptr);
+    service->OnRemoteDied(nullptr);
 }
 
 /**

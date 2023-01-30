@@ -35,22 +35,42 @@ void SysEventServiceAdapter::OnSysEvent(std::shared_ptr<SysEvent> &event)
         HIVIEW_LOGE("sys event is nullptr.");
         return;
     }
-    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().OnSysEvent(event);
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
+        return;
+    }
+    service->OnSysEvent(event);
 }
 
 void SysEventServiceAdapter::UpdateEventSeq(int64_t seq)
 {
-    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().UpdateEventSeq(seq);
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
+        return;
+    }
+    service->UpdateEventSeq(seq);
 }
 
 void SysEventServiceAdapter::BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc)
 {
-    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTagFunc(getTagFunc);
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
+        return;
+    }
+    service->BindGetTagFunc(getTagFunc);
 }
 
 void SysEventServiceAdapter::BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc)
 {
-    OHOS::HiviewDFX::SysEventServiceOhos::GetInstance().BindGetTypeFunc(getTypeFunc);
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
+        return;
+    }
+    service->BindGetTypeFunc(getTypeFunc);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

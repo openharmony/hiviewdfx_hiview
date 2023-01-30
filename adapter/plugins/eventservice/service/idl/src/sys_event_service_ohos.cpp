@@ -126,6 +126,13 @@ int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
 }
 
 OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify_;
+sptr<OHOS::HiviewDFX::SysEventServiceOhos> SysEventServiceOhos::instance(new SysEventServiceOhos);
+
+sptr<OHOS::HiviewDFX::SysEventServiceOhos> SysEventServiceOhos::GetInstance()
+{
+    return instance;
+}
+
 void SysEventServiceOhos::StartService(SysEventServiceBase *service,
     const OHOS::HiviewDFX::NotifySysEvent notify)
 {
@@ -136,7 +143,11 @@ void SysEventServiceOhos::StartService(SysEventServiceBase *service,
         HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
         return;
     }
-    int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, &(SysEventServiceOhos::GetInstance()));
+    if (instance == nullptr) {
+        HiLog::Error(LABEL, "SysEventServiceOhos service is null.");
+        return;
+    }
+    int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, instance);
     if (ret != 0) {
         HiLog::Error(LABEL, "failed to add sys event service ability.");
     }
@@ -458,7 +469,12 @@ int SysEventServiceOhos::Dump(int32_t fd, const std::vector<std::u16string> &arg
 
 void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
-    SysEventServiceOhos::GetInstance().OnRemoteDied(remote);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HiLog::Error(LABEL, "SysEventServiceOhos service is null.");
+        return;
+    }
+    service->OnRemoteDied(remote);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

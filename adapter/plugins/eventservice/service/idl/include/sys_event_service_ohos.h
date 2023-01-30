@@ -57,14 +57,14 @@ public:
 };
 
 class SysEventServiceOhos : public SystemAbility,
-                            public SysEventServiceStub,
-                            public Singleton<SysEventServiceOhos> {
+                            public SysEventServiceStub {
     DECLARE_SYSTEM_ABILITY(SysEventServiceOhos);
 public:
     DISALLOW_COPY_AND_MOVE(SysEventServiceOhos);
     SysEventServiceOhos() : deathRecipient_(new CallbackDeathRecipient()), isDebugMode_(false) {};
     virtual ~SysEventServiceOhos() = default;
 
+    static sptr<SysEventServiceOhos> GetInstance();
     static void StartService(SysEventServiceBase* service,
         const OHOS::HiviewDFX::NotifySysEvent notify);
     static SysEventServiceBase* GetSysEventService(
@@ -97,6 +97,9 @@ private:
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
     std::atomic<int64_t> curSeq = 0;
+
+private:
+    static sptr<SysEventServiceOhos> instance;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
