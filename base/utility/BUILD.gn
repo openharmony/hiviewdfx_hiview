@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -24,15 +24,24 @@ config("hiview_utils_config") {
 }
 
 ohos_source_set("hiview_utility") {
-  part_name = "hiview"
   public_configs = [ ":hiview_utils_config" ]
 
-  sources = [ "string_util.cpp" ]
+  sources = [
+    "memory_util.cpp",
+    "string_util.cpp",
+  ]
 
   deps = [ "$hiview_adapter/utility:hiview_adapter_utility" ]
+
+  defines = []
+  if (use_musl && use_jemalloc && use_jemalloc_dfx_intf) {
+    defines += [ "USE_JEMALLOC_DFX_INTF" ]
+  }
 
   external_deps = [
     "c_utils:utils",
     "hilog_native:libhilog",
   ]
+
+  part_name = "hiview"
 }

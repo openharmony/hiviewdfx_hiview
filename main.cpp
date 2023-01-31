@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,11 +19,18 @@
 
 #include "defines.h"
 #include "logger.h"
+#include "memory_util.h"
 
 DEFINE_LOG_TAG("HiView-Main");
+using namespace OHOS::HiviewDFX;
+
 int main(int argc __UNUSED, char* argv[] __UNUSED)
 {
-    auto& hiview = OHOS::HiviewDFX::HiviewPlatform::GetInstance();
+    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
+        HIVIEW_LOGW("Failed to optimize memory for current thread");
+    }
+
+    auto& hiview = HiviewPlatform::GetInstance();
     // process cmdline
     hiview.ProcessArgsRequest(argc, argv);
 
@@ -34,7 +41,7 @@ int main(int argc __UNUSED, char* argv[] __UNUSED)
     }
 
     // start service
-    auto hiviewService = std::make_unique<OHOS::HiviewDFX::HiviewService>();
+    auto hiviewService = std::make_unique<HiviewService>();
     hiviewService->StartService();
     return 0;
 }
