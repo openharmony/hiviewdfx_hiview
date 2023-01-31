@@ -233,12 +233,7 @@
         "OHOS::HiviewDFX::StringUtil::SplitStr(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_t ... )";
         "OHOS::HiviewDFX::StringUtil::SplitStr(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >&, bool, bool)";
         "OHOS::HiviewDFX::StringUtil::ReplaceStr(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
+
         vtable?for?OHOS::HiviewDFX::PluginProxy;
         vtable?for?OHOS::HiviewDFX::Audit;
         vtable?for?OHOS::HiviewDFX::EventSource;
@@ -247,19 +242,6 @@
         vtable?for?OHOS::HiviewDFX::PipelineEvent;
         vtable?for?OHOS::HiviewDFX::PluginStatsEventFactory;
         vtable?for?OHOS::HiviewDFX::LoggerEvent;
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
-        "";
     };
   local:
     *;
