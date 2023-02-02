@@ -17,6 +17,7 @@
 
 #include "errors.h"
 #include "hilog/log.h"
+#include "memory_util.h"
 #include "parcelable_vector_rw.h"
 #include "query_argument.h"
 
@@ -119,6 +120,9 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
 int32_t SysEventServiceStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
+    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
+        HiLog::Warn(LABEL, "Failed to optimize memory for current thread");
+    }
     std::u16string descripter = SysEventServiceStub::GetDescriptor();
     std::u16string remoteDescripter = data.ReadInterfaceToken();
     if (descripter != remoteDescripter) {
