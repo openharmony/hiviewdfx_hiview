@@ -18,5 +18,5 @@ ohos_source_set("event_processor_example5") {
     "../event_source_example",
   ]
   sources = [ "event_processor_example5.cpp" ]
-  deps = [ "$hiview_base:hiviewbase" ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 }

@@ -42,7 +42,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
   cflags = [ "-DUNITTEST" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
@@ -63,7 +63,7 @@ ohos_moduletest("BBoxDetectorModuleTest") {
   external_deps = [ "hisysevent_native:libhisysevent" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",

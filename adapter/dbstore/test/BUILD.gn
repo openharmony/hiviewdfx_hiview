@@ -34,7 +34,7 @@ ohos_unittest("DbStoreAdapterUnitTest") {
 
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
-  deps = [ "$hiview_adapter/dbstore:db_store_source" ]
+  deps = [ "$hiview_adapter/dbstore:db_store_source_static_lib_for_tdd" ]
 
   external_deps = [
     "init:libbeget_proxy",

@@ -40,7 +40,7 @@ ohos_unittest("BaseUtilityUnitTest") {
   sources = [ "unittest/common/base_utility_unit_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/utility:hiview_utility",
     "//third_party/googletest:gmock",
