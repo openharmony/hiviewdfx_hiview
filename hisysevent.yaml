@@ -17,16 +17,16 @@ APP_FREEZE:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   SUB_EVENT_TYPE: {type: STRING, desc: sub event type}
   EVENT_TIME: {type: STRING, desc: event time}
-  MODULE: {type: STRING, desc: module}
+  MODULE: {type: STRING, desc: module name}
   PNAME: {type: STRING, desc: process name}
-  REASON: {type: STRING, desc: reason}
+  REASON: {type: STRING, desc: app_freeze reason}
   DIAG_INFO: {type: STRING, desc: diagnostic info}
-  STACK: {type: STRING, desc: stack}
+  STACK: {type: STRING, desc: app_freeze stack}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   DOMAIN: {type: STRING, desc: event domain}
   STRING_ID: {type: STRING, desc: event stringid}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: app_freeze pid}
+  UID: {type: INT32, desc: app_freeze uid}
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
@@ -43,16 +43,16 @@ SYS_FREEZE:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}
   SUB_EVENT_TYPE: {type: STRING, desc: sub event type}
   EVENT_TIME: {type: STRING, desc: event time}
-  MODULE: {type: STRING, desc: module}
+  MODULE: {type: STRING, desc: module name}
   PNAME: {type: STRING, desc: process name}
-  REASON: {type: STRING, desc: reason}
+  REASON: {type: STRING, desc: sys_freeze reason}
   DIAG_INFO: {type: STRING, desc: diagnostic info}
-  STACK: {type: STRING, desc: stack}
+  STACK: {type: STRING, desc: sys_freeze stack}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
   DOMAIN: {type: STRING, desc: event domain}
   STRING_ID: {type: STRING, desc: event stringid}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: sys_freeze pid}
+  UID: {type: INT32, desc: sys_freeze uid}
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
@@ -65,8 +65,8 @@ SYS_FREEZE:
 
 STACK:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: system freeze}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: stack pid}
+  UID: {type: INT32, desc: stack uid}
   PACKAGE_NAME: {type: STRING, desc: package name}
   PROCESS_NAME: {type: STRING, desc: process name}
   MSG: {type: STRING, desc: application event message}
@@ -74,15 +74,15 @@ STACK:
 SERVICE_BLOCK_REPORT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
-  PID: {type: INT32, desc: pid}
-  TGID: {type: INT32, desc: tgid}
+  PID: {type: INT32, desc: service_block_report pid}
+  TGID: {type: INT32, desc: service_block_report tgid}
   MSG: {type: STRING, desc: watchdog event message}
 
 SERVICE_TIMEOUT_REPORT:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: application freeze}
   HIVIEW_LOG_FILE_PATHS: {type: STRING, arrsize: 10, desc: log paths}
-  PID: {type: INT32, desc: pid}
-  TGID: {type: INT32, desc: tgid}
+  PID: {type: INT32, desc: service_timeout_report pid}
+  TGID: {type: INT32, desc: service_timeout_report tgid}
   MSG: {type: STRING, desc: timer event message}
 
 CPP_CRASH:
@@ -90,8 +90,8 @@ CPP_CRASH:
   MODULE: {type: STRING, desc: module name}
   VERSION: {type: STRING, desc: module version}
   REASON: {type: STRING, desc: fault reason}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: cpp_crash pid}
+  UID: {type: INT32, desc: cpp_crash uid}
   SUMMARY: {type: STRING, desc: fault summary}
   FAULT_TYPE: {type: STRING, desc: fault type}
   LOG_PATH: {type: STRING, desc: fault log path}
@@ -107,8 +107,8 @@ CPP_CRASH:
 CPP_CRASH_NO_LOG:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: encounter cpp crash but no log generated}
   PROCESS_NAME: {type: STRING, desc: process name}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: cpp_crash_no_log pid}
+  UID: {type: INT32, desc: cpp_crash_no_log uid}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
 
 ADDR_SANITIZER:
@@ -142,8 +142,8 @@ MEMORY_LEAK:
   MODULE: {type: STRING, desc: module name}
   VERSION: {type: STRING, desc: module version}
   REASON: {type: STRING, desc: fault reason}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: memory_leak pid}
+  UID: {type: INT32, desc: memory_leak uid}
   SUMMARY: {type: STRING, desc: fault summary}
   FIRST_FRAME: {type: STRING, desc: f1Name}
   MEMTOTAL: {type: STRING, desc: memory total}
@@ -155,8 +155,8 @@ FD_LEAK:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: FdLeak}
   MODULE: {type: STRING, desc: module name}
   VERSION: {type: STRING, desc: module version}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: fd_leak pid}
+  UID: {type: INT32, desc: fd_leak uid}
   FD_NUM: {type: INT32, desc: fd num}
   SUMMARY: {type: STRING, desc: fault summary}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
@@ -167,8 +167,8 @@ THREAD_LEAK:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: ThreadLeak}
   MODULE: {type: STRING, desc: module name}
   VERSION: {type: STRING, desc: module version}
-  PID: {type: INT32, desc: pid}
-  UID: {type: INT32, desc: uid}
+  PID: {type: INT32, desc: thread_leak pid}
+  UID: {type: INT32, desc: thread_leak uid}
   THREAD_NUM: {type: INT64, desc: thread num}
   SUMMARY: {type: STRING, desc: fault summary}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
