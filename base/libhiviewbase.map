@@ -243,6 +243,7 @@
         vtable?for?OHOS::HiviewDFX::PipelineEvent;
         vtable?for?OHOS::HiviewDFX::PluginStatsEventFactory;
         vtable?for?OHOS::HiviewDFX::LoggerEvent;
+        vtable?for?OHOS::HiviewDFX::Plugin;
     };
   local:
     *;
