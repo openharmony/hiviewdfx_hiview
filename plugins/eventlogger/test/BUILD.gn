@@ -37,7 +37,7 @@ ohos_unittest("EventloggerActionTest") {
   sources = [ "unittest/common/event_logger_action_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_eventlogger:eventlogger",
     "//third_party/googletest:gtest_main",
   ]
@@ -50,7 +50,7 @@ ohos_unittest("EventloggerPluginTest") {
   sources = [ "unittest/common/event_logger_plugin_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",

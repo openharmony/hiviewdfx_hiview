@@ -36,7 +36,7 @@ ohos_unittest("EventloggerCatcherTest") {
   sources = [ "unittest/common/event_logger_catcher_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
     "//third_party/googletest:gtest_main",

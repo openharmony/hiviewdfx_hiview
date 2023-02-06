@@ -22,5 +22,5 @@ config("bundle_example1_config") {
 ohos_source_set("bundle_plugin_example1") {
   public_configs = [ ":bundle_example1_config" ]
   sources = [ "bundle_plugin_example1.cpp" ]
-  deps = [ "$hiview_base:hiviewbase" ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 }

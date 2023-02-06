@@ -36,7 +36,7 @@ ohos_moduletest("FaultloggerNativeInterfaceTest") {
   ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_faultlogger:libfaultlogger",
     "//third_party/googletest:gtest_main",
   ]

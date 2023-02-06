@@ -35,7 +35,7 @@ ohos_unittest("SysEventDaoTest") {
   sources = [ "unittest/common/sys_event_dao_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",

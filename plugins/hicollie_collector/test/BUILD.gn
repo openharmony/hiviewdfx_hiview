@@ -37,7 +37,7 @@ ohos_unittest("HicollieCollectorTest") {
   sources = [ "unittest/common/hicollie_collector_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_plugin/hicollie_collector:hicollie_collector",
     "//third_party/googletest:gtest_main",
