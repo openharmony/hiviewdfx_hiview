@@ -342,7 +342,7 @@ void EventServer::Start()
     isStart_ = true;
     while (isStart_) {
         struct epoll_event chkPollEvents[devs_.size()];
-        int eventCount = epoll_wait(pollFd, chkPollEvents, devs_.size(), 10000); // 10000: 10 seconds
+        int eventCount = epoll_wait(pollFd, chkPollEvents, devs_.size(), -1); // -1: Wait indefinitely
         if (eventCount <= 0) {
             HIVIEW_LOGD("read event timeout");
             continue;
