@@ -169,6 +169,7 @@ bool SysEventQueryWrapper::IsQueryCostTimeValid(const DataQuery& query, const Db
 bool SysEventQueryWrapper::IsConcurrentQueryCntValid(const std::string& dbFile, const DbQueryTag& tag,
     const DbQueryCallback& callback)
 {
+    std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
     auto iter = concurrentQueries_.find(dbFile);
     if (iter != concurrentQueries_.end()) {
         auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
