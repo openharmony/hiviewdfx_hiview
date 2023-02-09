@@ -32,7 +32,7 @@ ohos_fuzztest("EventSourceFuzzTest") {
   sources = [ "eventsource_fuzzer.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:sysevent_source",
   ]
 }

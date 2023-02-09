@@ -15,7 +15,7 @@ import("//build/ohos.gni")
 import("//build/test.gni")
 
 ohos_shared_library("bundletest") {
-  deps = [ "$hiview_base:hiviewbase" ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
   deps += [
     "event_processor_example1:event_processor_example1",
     "event_processor_example2:event_processor_example2",

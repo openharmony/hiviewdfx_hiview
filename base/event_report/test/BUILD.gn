@@ -43,7 +43,7 @@ ohos_unittest("EventReportUnitTest") {
   sources = [ "unittest/common/event_report_unit_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/event_report:hiview_event_report",
     "//third_party/googletest:gmock",

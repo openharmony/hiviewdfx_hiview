@@ -44,7 +44,7 @@ ohos_unittest("PlatformConfigTest") {
   sources = [ "unittest/common/platform_config_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
@@ -65,7 +65,7 @@ ohos_unittest("PluginPlatformTest") {
   ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_root/test/plugins/examples/dynamic_load_plugin_example:dynamicloadpluginexample",
     "$hiview_root/test/plugins/examples/event_processor_example1:event_processor_example1",
@@ -89,7 +89,7 @@ ohos_unittest("PluginBundleTest") {
   ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_root/test/plugins/examples:bundletest",
     "//third_party/googletest:gtest_main",

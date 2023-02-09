@@ -36,7 +36,7 @@ ohos_unittest("RunningStatusLoggerTest") {
   sources = [ "unittest/common/running_status_logger_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/running_status_logger:running_status_logger_source",
     "//third_party/googletest:gmock",
