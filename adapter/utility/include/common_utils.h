@@ -41,6 +41,7 @@ std::string GetProcNameByPid(int32_t pid);
 pid_t GetPidByName(const std::string& processName);
 int32_t ExecCommand(const std::string &cmd, const std::vector<std::string> &args);
 bool IsSpecificCmdExist(const std::string& fullPath);
+bool IsTheProcessExist(pid_t pid);
 bool WriteCommandResultToFile(int fd, const std::string& cmd);
 int WriteCommandResultToFile(int fd, const std::string &cmd, const std::vector<std::string> &args);
 };
