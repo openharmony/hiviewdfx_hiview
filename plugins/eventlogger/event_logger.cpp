@@ -59,6 +59,12 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     long pid = sysEvent->GetEventIntValue("PID");
     pid = pid ? pid : sysEvent->GetPid();
 
+    if (!CommonUtils::IsTheProcessExist(pid)) {
+        HIVIEW_LOGW("event: eventName:%{public}s, pid:%{public}d is invalid, errno:%{public}d:%{public}s",
+            sysEvent->eventName_.c_str(), pid, errno, strerror(errno));
+        return false;
+    }
+
     EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
     sysEvent->eventName_ = configOut.name;
     sysEvent->SetValue("eventLog_action", configOut.action);
@@ -86,7 +92,11 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
         long pid = sysEvent->GetEventIntValue("PID");
         pid = pid ? pid : sysEvent->GetPid();
-
+        if (!CommonUtils::IsTheProcessExist(pid)) {
+            HIVIEW_LOGW("event: eventName:%{public}s, pid:%{public}d is invalid, errno:%{public}d:%{public}s",
+                sysEvent->eventName_.c_str(), pid, errno, strerror(errno));
+            return;
+        }
         this->StartLogCollect(sysEvent);
         this->PostEvent(sysEvent);
     };

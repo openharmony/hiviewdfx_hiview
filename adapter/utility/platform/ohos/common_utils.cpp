@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 #include <sys/wait.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
 
@@ -99,6 +100,15 @@ pid_t GetPidByName(const std::string& processName)
         pclose(fp);
     }
     return pid;
+}
+
+bool IsTheProcessExist(pid_t pid)
+{
+    int ret = syscall(SYS_tgkill, pid, pid, 0);
+    if (ret != 0 && errno == ESRCH) {
+         return false;
+    }
+    return true;
 }
 
 bool IsSpecificCmdExist(const std::string& fullPath)
