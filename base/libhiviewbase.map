@@ -235,7 +235,13 @@
         "OHOS::HiviewDFX::StringUtil::ReplaceStr(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)";
         "OHOS::HiviewDFX::MemoryUtil::DisableThreadCache()";
         "OHOS::HiviewDFX::MemoryUtil::DisableDelayFree()";
-		"";
+        "OHOS::HiviewDFX::Pipeline::RemoveProcessor(std::__h::weak_ptr<OHOS::HiviewDFX::Plugin>)";
+        "OHOS::HiviewDFX::StringUtil::StrToInt(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, int&)";
+        "OHOS::HiviewDFX::StringUtil::TrimStr(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, char)";
+        "OHOS::HiviewDFX::StringUtil::SplitStr(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, char)";
+        "OHOS::HiviewDFX::StringUtil::EraseString(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)";
+        "OHOS::HiviewDFX::StringUtil::VectorToString(std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> >, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > > > const&, bool, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char> > const&)";
+        "OHOS::HiviewDFX::TimeUtil::GetNanoTime()";
         vtable?for?OHOS::HiviewDFX::PluginProxy;
         vtable?for?OHOS::HiviewDFX::Audit;
         vtable?for?OHOS::HiviewDFX::EventSource;
