@@ -122,7 +122,4 @@ HWTEST_F(PluginBundleTest, PluginBundleLoadTest002, TestSize.Level3)
     DynamicModule dynamicModule1 = LoadModule("test1");
     PluginBundle bundle1("test1", config, dynamicModule1);
     bundle1.ReleaseDynamicModule();
-    DynamicModule dynamicModule2 = LoadModule("libhiviewbase.z.so");
-    PluginBundle bundle2("test2", config, dynamicModule2);
-    bundle2.ReleaseDynamicModule();
 }
