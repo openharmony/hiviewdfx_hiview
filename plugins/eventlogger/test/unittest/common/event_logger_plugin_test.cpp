@@ -231,3 +231,36 @@ HWTEST_F(EventloggerPluginTest, EventloggerPluginTest009, TestSize.Level3)
     ASSERT_EQ(eventLogger->OnEvent(onEvent), true);
     std::this_thread::sleep_for(std::chrono::seconds(3)); // 3: 3second;
 }
+
+/**
+ * @tc.name: EventloggerPluginTest010
+ * @tc.desc: parse a correct config file and check result
+ */
+HWTEST_F(EventloggerPluginTest, EventloggerPluginTest010, TestSize.Level3)
+{
+    std::shared_ptr<EventLogger> eventLogger = std::make_shared<EventLogger>();
+    std::shared_ptr<EventLoop> loop = std::make_shared<EventLoop>("eventLoop");
+    loop->StartLoop();
+    eventLogger->BindWorkLoop(loop);
+    eventLogger->OnLoad();
+    eventLogger->SetHiviewContext(&HiviewPlatform::GetInstance());
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("Eventlogger009", nullptr, jsonStr);
+    event->eventId_ = 0;
+    event->domain_ = "FRAMEWORK";
+    event->eventName_ = "SERVICE_BLOCK";
+    event->happenTime_ = TimeUtil::GetMilliseconds();
+
+    pid_t pid = 19990; // Non-existent pid
+    while (CommonUtils::IsSpecificCmdExist("/proc/" + std::to_string(pid) + "/status")) {
+        ++pid;
+    }
+
+    event->SetEventValue("PID", pid);
+    event->SetValue("eventLog_action", "s,pb:0,cmd:c,cmd:m");
+    event->SetValue("eventLog_interval", 0);
+    std::shared_ptr<Event> onEvent = event;
+    ASSERT_EQ(eventLogger->IsInterestedPipelineEvent(onEvent), false);
+    ASSERT_EQ(eventLogger->OnEvent(onEvent), true);
+    std::this_thread::sleep_for(std::chrono::seconds(3)); // 3: 3second;
+}
