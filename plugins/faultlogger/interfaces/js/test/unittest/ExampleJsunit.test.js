@@ -212,7 +212,7 @@ describe("FaultlogJsTest", function () {
             for (let i = 0; i < loopTimes; i++) {
                 console.info("--------FaultlogJsTest_006 + " + i + "----------");
                 faultlogger.addFaultLog(i - 100,
-                    faultlogger.FaultType.CPP_CRASH, module, "faultloggertestsummary06 " + i);
+                    faultlogger.FaultType.APP_FREEZE, module, "faultloggertestsummary06 " + i);
                 await msleep(300);
             }
             await msleep(1000);
@@ -237,7 +237,7 @@ describe("FaultlogJsTest", function () {
                 }
                 done();
             }
-            faultlogger.query(faultlogger.FaultType.CPP_CRASH, queryFaultLogCallback);
+            faultlogger.query(faultlogger.FaultType.APP_FREEZE, queryFaultLogCallback);
             return;
         } catch (err) {
             console.info(err);
