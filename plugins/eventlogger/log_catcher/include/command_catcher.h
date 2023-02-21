@@ -28,7 +28,7 @@ public:
     ~CommandCatcher() override {};
     bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
     int Catch(int fd) override;
-    void AddCmd(const std::string& cmd);
+    void AddCmd(const std::vector<std::string>& cmd);
     int GetPid() const
     {
         return pid_;
@@ -36,7 +36,9 @@ public:
 private:
     int pid_ = -1;
     std::string packageName_ = "";
-    std::string cmdString_ = "";
+    std::vector<std::vector<std::string>> cmdString_;
+
+    int HiDumper(int fd, const std::vector<std::string> &args);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

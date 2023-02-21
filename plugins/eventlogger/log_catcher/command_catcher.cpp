@@ -14,6 +14,8 @@
  */
 #include "command_catcher.h"
 
+#include "dump_client_main.h"
+
 #include "common_utils.h"
 #include "log_catcher_utils.h"
 namespace OHOS {
@@ -23,9 +25,9 @@ CommandCatcher::CommandCatcher() : EventLogCatcher()
     name_ = "CommandCatcher";
 }
 
-void CommandCatcher::AddCmd(const std::string& cmd)
+void CommandCatcher::AddCmd(const std::vector<std::string>& cmd)
 {
-    cmdString_ += cmd;
+    cmdString_.push_back(cmd);
 }
 
 bool CommandCatcher::Initialize(const std::string& packageNam, int pid, int intParam)
@@ -57,9 +59,24 @@ int CommandCatcher::Catch(int fd)
     }
     auto originSize = GetFdSize(fd);
 
-    CommonUtils::WriteCommandResultToFile(fd, cmdString_);
+    for (auto& args : cmdString_) {
+        HiDumper(fd, args);
+    }
+
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
+}
+
+int CommandCatcher::HiDumper(int fd, const std::vector<std::string> &args)
+{
+    int argc = args.size();
+
+    std::vector<char *> argv;
+    for (const auto &arg : args) {
+        argv.push_back(const_cast<char *>(arg.c_str()));
+    }
+
+    return DumpClientMain::GetInstance().Main(argc, &argv[0], fd);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
