@@ -26,6 +26,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cerrno>
+#include <thread>
+#include <unistd.h>
+
 #include "common_utils.h"
 #include "constants.h"
 #include "event.h"
@@ -47,12 +51,26 @@
 #include "log_analyzer.h"
 
 #include "bundle_mgr_client.h"
+
+#include "securec.h"
+#ifndef UNIT_TEST
+#include "sanitizerd_log.h"
+#include "asan_collector.h"
+#include "sanitizerd_collector.h"
+#include "sanitizerd_monitor.h"
+#include "reporter.h"
+#endif
+
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(Faultlogger);
 DEFINE_LOG_TAG("Faultlogger");
 using namespace FaultLogger;
 using namespace OHOS::AppExecFwk;
+#ifndef UNIT_TEST
+static std::unordered_map<std::string, std::string> g_stacks;
+static AsanCollector g_collector(g_stacks);
+#endif
 namespace {
 constexpr char FILE_SEPERATOR[] = "******";
 constexpr uint32_t DUMP_MAX_NUM = 100;
@@ -64,6 +82,10 @@ constexpr int DUMP_PARSE_TIME = 2;
 constexpr int DUMP_START_PARSE_MODULE_NAME = 3;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
 constexpr char TEMP_LOG_PATH[] = "/data/log/faultlog/temp";
+#ifndef UNIT_TEST
+constexpr int RETRY_COUNT = 10;
+constexpr int RETRY_DELAY = 10;
+#endif
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -471,7 +493,62 @@ void Faultlogger::OnLoad()
         eventloop->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
         workLoop_ = eventloop;
     }
+#ifndef UNIT_TEST
+    std::thread SanitizerdThread(&Faultlogger::RunSanitizerd);
+    SanitizerdThread.detach();
+#endif
 }
+
+#ifndef UNIT_TEST
+void Faultlogger::HandleNotify(int32_t type, const std::string& fname)
+{
+    HIVIEW_LOGE("HandleNotify file:[%{public}s]\n", fname.c_str());
+    // start sanitizerd work thread if log ready
+    std::thread collector(&AsanCollector::Collect, &g_collector, fname);
+    collector.detach();
+    // Work done.
+}
+
+int Faultlogger::RunSanitizerd()
+{
+    SanitizerdMonitor sanMonitor;
+
+    // Init the monitor first.
+    bool ready = false;
+    int rcount = RETRY_COUNT;
+    for (; rcount > 0; rcount--) {
+        if (sanMonitor.Init(&Faultlogger::HandleNotify) != 0) {
+            sleep(RETRY_DELAY); // 10s
+            continue;
+        } else {
+            ready = true;
+            break;
+        }
+    }
+
+    if (!ready) {
+        HIVIEW_LOGE("sanitizerd: failed to initialize monitor");
+        return -1;
+    }
+
+    // Waits on notify callback and resume the collector.
+    HIVIEW_LOGE("sanitizerd: starting\n");
+
+    // Waiting for notify event.
+    while (true) {
+        std::string rfile;
+        // Let the monitor check if log ready.
+        if (sanMonitor.RunMonitor(&rfile, -1) == 0) {
+            HIVIEW_LOGE("sanitizerd ready file:[%s]\n", rfile.c_str());
+        } else {
+            break;
+        }
+    }
+
+    sanMonitor.Uninit();
+    return 0;
+}
+#endif
 
 void Faultlogger::AddFaultLog(FaultLogInfo& info)
 {
@@ -579,3 +656,4 @@ void Faultlogger::StartBootScan()
 }
 } // namespace HiviewDFX
 } // namespace OHOS
+

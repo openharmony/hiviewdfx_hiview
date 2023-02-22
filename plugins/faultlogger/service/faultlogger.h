@@ -37,6 +37,7 @@ struct DumpRequest {
     std::string moduleName;
     time_t time;
 };
+
 class Faultlogger : public FaultloggerPlugin, public EventListener {
 public:
     Faultlogger() : mgr_(nullptr), hasInit_(false) {};
@@ -63,6 +64,7 @@ public:
     // for intercepting JsCrash from engine pipeline
     void OnUnorderedEvent(const Event &msg) override;
     std::string GetListenerName() override;
+    static int RunSanitizerd();
 
 private:
     void AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event);
@@ -73,7 +75,9 @@ private:
     std::unique_ptr<FaultLogManager> mgr_;
     volatile bool hasInit_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
+    static void HandleNotify(int32_t type, const std::string& fname);
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEWDFX_HIVIEW_FAULTLOGGER_H
+
