@@ -246,6 +246,9 @@ void HiCollieCollector::ReportSysFreezeIfNeed(SysEvent &sysEvent, const std::str
         "REASON", "Watchdog",
         "EVENT_TIME", timestamp,
         "FINGERPRINT", fingerPrint,
+        "FIRST_FRAME", "/",
+        "SECOND_FRAME", "/",
+        "LAST_FRAME", "/",
         "SUMMARY", sysEvent.GetEventValue(EVENT_MSG));
 }
 } // namespace HiviewDFX
