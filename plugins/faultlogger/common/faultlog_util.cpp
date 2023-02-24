@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,6 +60,8 @@ std::string GetFaultNameByType(int32_t faultType, bool asFileName)
             return asFileName ? "appfreeze" : "APP_FREEZE";
         case FaultLogType::SYS_FREEZE:
             return asFileName ? "sysfreeze" : "SYS_FREEZE";
+        case FaultLogType::RUST_PANIC:
+            return asFileName ? "rustpanic" : "RUST_PANIC";
         default:
             break;
     }

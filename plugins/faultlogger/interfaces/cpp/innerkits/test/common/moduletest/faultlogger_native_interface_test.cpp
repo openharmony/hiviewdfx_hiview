@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -235,7 +235,7 @@ static void SendJsErrorEvent()
         "JS_ERROR",
         HiSysEvent::EventType::FAULT,
         "PID", 478, // 478 : test pid
-        "UID", 103, // 103 : test uid
+        "UID", getuid(),
         "PACKAGE_NAME", "com.ohos.faultlogger.test",
         "PROCESS_NAME", "com.ohos.faultlogger.test",
         "MSG", "faultlogger testcase test.",
@@ -249,11 +249,60 @@ static void SendJsErrorEvent()
  */
 HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest006, testing::ext::TestSize.Level3)
 {
-    const int maxQueryCount = 10;
+    const int maxQueryCount = 1;
     SendJsErrorEvent();
     sleep(3); // 3 : wait for event saving
-    auto result = QuerySelfFaultLog(FaultLogType::JS_CRASH, maxQueryCount);
-    ASSERT_NE(nullptr, result);
+    auto results = QuerySelfFaultLog(FaultLogType::JS_CRASH, maxQueryCount);
+    ASSERT_NE(nullptr, results);
+    while (results->HasNext()) {
+        auto result = results->Next();
+        if (result != nullptr) {
+            ASSERT_EQ(result->GetId(), getuid());
+            ASSERT_EQ(result->GetProcessId(), 478); // 478 : test pid
+            ASSERT_EQ(result->GetFaultReason(), "faultlogger testcase test.");
+            GTEST_LOG_(INFO) << "finish check js error log";
+            break;
+        }
+    }
+}
+
+static void SendRustPanicEvent()
+{
+    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY,
+        "RUST_PANIC",
+        HiSysEvent::EventType::FAULT,
+        "MODULE", "test_rust_module",
+        "REASON", "file:panic_maker/main.rs line:42 msg:panic in main thread",
+        "PID", 666, // 666 : test pid
+        "TID", 666, // 666 : test tid
+        "UID", getuid(),
+        "SUMMARY", "Test rust panic summary log");
+}
+
+/**
+ * @tc.name: QuerySelfFaultLogTest007
+ * @tc.desc: query rust panic log
+ * @tc.type: FUNC
+ * @tc.require: issueI6HM7C
+ */
+HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest007, testing::ext::TestSize.Level3)
+{
+    const int maxQueryCount = 1;
+    SendRustPanicEvent();
+    sleep(3); // 3 : wait for event saving
+    auto results = QuerySelfFaultLog(FaultLogType::RUST_PANIC, maxQueryCount);
+    ASSERT_NE(nullptr, results);
+    while (results->HasNext()) {
+        auto result = results->Next();
+        if (result != nullptr) {
+            ASSERT_EQ(result->GetId(), getuid());
+            ASSERT_EQ(result->GetProcessId(), 666); // 666 : test pid
+            ASSERT_EQ(result->GetFaultReason(), "file:panic_maker/main.rs line:42 msg:panic in main thread");
+            ASSERT_EQ(result->GetFaultSummary(), "Test rust panic summary log");
+            GTEST_LOG_(INFO) << "finish check rust panic log";
+            break;
+        }
+    }
 }
 
 /**
