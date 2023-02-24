@@ -295,10 +295,6 @@ bool AsanCollector::ReadRecordToString(std::string& fullFile, const std::string&
         if (ComputeStackSignature(captured[DESCRIPTION_FIELD].str(), signature, false)) {
             // Do filtering here before upload the data
             // for capture from hilog whith multiple asan fault log
-            if (IsDuplicate(signature)) {
-                record = captured.suffix().str();
-                continue;
-            }
             SetHappenTime();
             curr_.logName = fileName;
             curr_.hash = signature;
