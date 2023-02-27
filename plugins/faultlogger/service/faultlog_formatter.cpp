@@ -84,6 +84,11 @@ auto SYS_FREEZE_LOG_SEQUENCE = {
     MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE
 };
 
+auto RUST_PANIC_LOG_SEQUENCE = {
+    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME,   MODULE_VERSION, MODULE_PID,
+    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON
+};
+
 std::list<const char **> GetLogParseList(int32_t logType)
 {
     switch (logType) {
@@ -95,6 +100,8 @@ std::list<const char **> GetLogParseList(int32_t logType)
             return APP_FREEZE_LOG_SEQUENCE;
         case FaultLogType::SYS_FREEZE:
             return SYS_FREEZE_LOG_SEQUENCE;
+        case FaultLogType::RUST_PANIC:
+            return RUST_PANIC_LOG_SEQUENCE;
         default:
             return std::list<const char **>();
     }

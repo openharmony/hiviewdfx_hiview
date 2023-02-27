@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -110,7 +110,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
     FaultLogger::WriteFaultLogToFile(fd, info.faultLogType, info.sectionMap);
     FaultLogger::WriteLogToFile(fd, info.logPath);
     close(fd);
-    
+
     std::string logFile = info.logPath;
     if (logFile != "" && FileUtil::FileExists(logFile)) {
         if (!FileUtil::RemoveFile(logFile)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -389,7 +389,8 @@ bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     }
 
     if (event->eventName_ != "PROCESS_EXIT" &&
-        event->eventName_ != "JS_ERROR") {
+        event->eventName_ != "JS_ERROR" &&
+        event->eventName_ != "RUST_PANIC") {
         return false;
     }
 
@@ -401,70 +402,69 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (!hasInit_ || event == nullptr) {
         return false;
     }
-
-    if (event->eventName_ == "JS_ERROR") {
-        if (event->jsonExtraInfo_.empty()) {
-            return false;
-        }
-
-        HIVIEW_LOGI("Receive JS_ERROR Event:%{public}s.", event->jsonExtraInfo_.c_str());
-        FaultLogInfo info;
-        auto sysEvent = std::static_pointer_cast<SysEvent>(event);
-        info.time = sysEvent->happenTime_;
-        info.id = sysEvent->GetUid();
-        info.pid = sysEvent->GetPid();
-        info.faultLogType = FaultLogType::JS_CRASH;
-        info.module = sysEvent->GetEventValue("PACKAGE_NAME");
-        info.reason = sysEvent->GetEventValue("REASON");
-        auto summary = sysEvent->GetEventValue("SUMMARY");
-        info.summary = StringUtil::UnescapeJsonStringValue(summary);
-        info.sectionMap = sysEvent->GetKeyValuePairs();
-        AddFaultLog(info);
-
-        auto eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
-        std::vector<std::string> selections { EventStore::EventCol::TS };
-        EventStore::ResultSet set = (*eventQuery).Select(selections)
-            .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
-            .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
-            .And(EventStore::EventCol::NAME, EventStore::Op::EQ, sysEvent->eventName_)
-            .Execute();
-        if (set.GetErrCode() != 0) {
-            HIVIEW_LOGE("failed to get db, error:%{public}d.", set.GetErrCode());
-            return false;
-        }
-        if (set.HasNext()) {
-            auto record = set.Next();
-            if (record->GetSeq() == sysEvent->GetSeq()) {
-                HIVIEW_LOGI("Seq match success, info.logPath %{public}s", info.logPath.c_str());
-                sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
-                sysEvent->SetEventValue("MODULE", info.module);
-                sysEvent->SetEventValue("LOG_PATH", info.logPath);
-                sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
-                sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-                sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
-
-                std::map<std::string, std::string> eventInfos;
-                if (AnalysisFaultlog(info, eventInfos)) {
-                    sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
-                    sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
-                                            StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
-                    sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
-                                            StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
-                    sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
-                                            StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
-                }
-                sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-                auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
-                if (retCode == 0) {
-                    return true;
-                }
-            }
-        }
-
-        HIVIEW_LOGE("eventLog LogPath update to DB failed!");
+    if (event->eventName_ != "JS_ERROR" && event->eventName_ != "RUST_PANIC") {
+        return true;
+    }
+    if (event->jsonExtraInfo_.empty()) {
         return false;
     }
-    return true;
+    HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(), event->jsonExtraInfo_.c_str());
+    bool isJsError = event->eventName_ == "JS_ERROR";
+    FaultLogInfo info;
+    auto sysEvent = std::static_pointer_cast<SysEvent>(event);
+    info.time = sysEvent->happenTime_;
+    info.id = sysEvent->GetUid();
+    info.pid = sysEvent->GetPid();
+    info.faultLogType = isJsError ? FaultLogType::JS_CRASH : FaultLogType::RUST_PANIC;
+    info.module = isJsError ? sysEvent->GetEventValue("PACKAGE_NAME") : sysEvent->GetEventValue("MODULE");
+    info.reason = sysEvent->GetEventValue("REASON");
+    auto summary = sysEvent->GetEventValue("SUMMARY");
+    info.summary = StringUtil::UnescapeJsonStringValue(summary);
+    info.sectionMap = sysEvent->GetKeyValuePairs();
+    AddFaultLog(info);
+
+    auto eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet set = (*eventQuery).Select(selections)
+        .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
+        .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
+        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, sysEvent->eventName_)
+        .Execute();
+    if (set.GetErrCode() != 0) {
+        HIVIEW_LOGE("failed to get db, error:%{public}d.", set.GetErrCode());
+        return false;
+    }
+    if (set.HasNext()) {
+        auto record = set.Next();
+        if (record->GetSeq() == sysEvent->GetSeq()) {
+            HIVIEW_LOGI("Seq match success, info.logPath %{public}s", info.logPath.c_str());
+            sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
+            sysEvent->SetEventValue("MODULE", info.module);
+            sysEvent->SetEventValue("LOG_PATH", info.logPath);
+            sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
+            sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
+            sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
+
+            std::map<std::string, std::string> eventInfos;
+            if (AnalysisFaultlog(info, eventInfos)) {
+                sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+                sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
+                                        StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
+                sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
+                                        StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
+                sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
+                                        StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
+            }
+            sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+            auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
+            if (retCode == 0) {
+                return true;
+            }
+        }
+    }
+
+    HIVIEW_LOGE("eventLog LogPath update to DB failed!");
+    return false;
 }
 
 bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
@@ -577,7 +577,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
         return nullptr;
     }
 
-    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::SYS_FREEZE)) {
+    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::RUST_PANIC)) {
         HIVIEW_LOGW("Unsupported fault type");
         return nullptr;
     }
@@ -599,7 +599,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
 
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
 {
-    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::SYS_FREEZE)) {
+    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::RUST_PANIC)) {
         HIVIEW_LOGW("Unsupported fault type");
         return;
     }
@@ -619,7 +619,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
 
     AddPublicInfo(info);
     mgr_->SaveFaultLogToFile(info);
-    if (info.faultLogType != FaultLogType::JS_CRASH) {
+    if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
     HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"
