@@ -89,3 +89,9 @@ BREAK:
 RECOVER:
   __BASE: {type: BEHAVIOR, level: CRITICAL, desc: hisysevent is recover}
   DURATION: {type: INT64, desc: recover after break duration}
+
+XPOWER_STACKTRACE:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: stack trace info}
+  TAGNAME: {type: STRING,  desc: tag name}
+  INFO: {type: STRING,  desc: additional information}
+  STACKTRACE: {type: STRING,  desc: stack data}

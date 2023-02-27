@@ -68,6 +68,24 @@
                             "faultlogger_client.h"
                         ]
                     }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event:libxpower_event",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
+                        "header_files": [
+                            "xpower_event.h"
+                        ]
+                    }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event:libxpower_event_js",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
+                        "header_files": [
+                            "xpower_event_js.h"
+                        ]
+                    }
                 }
             ],
             "test": [ "//base/hiviewdfx/hiview:hiview_test_package" ]
