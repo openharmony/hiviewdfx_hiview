@@ -106,7 +106,6 @@ if (!defined(ohos_lite)) {
       module_out_path = module_output_path
       cflags = [ "-g3" ]
       defines = [ "NAPI_TEST" ]
-      configs = [ "//arkcompiler/ets_runtime:ark_jsruntime_public_config" ]
       include_dirs = ark_include
       include_dirs += [
         "//foundation/arkui/napi/test/unittest/engine/",
@@ -127,6 +126,7 @@ if (!defined(ohos_lite)) {
       external_deps = [
         "bounds_checking_function:libsec_shared",
         "c_utils:utils",
+        "ets_runtime:libark_jsruntime",
         "init:libbegetutil",
         "napi:ace_napi",
       ]
