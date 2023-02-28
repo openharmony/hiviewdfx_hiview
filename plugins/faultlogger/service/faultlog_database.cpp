@@ -103,9 +103,20 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     EventStore::Cond condRight("uid_", EventStore::Op::EQ, id);
     EventStore::Cond condTotal;
     if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
-        condTotal = condLeft;
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
+        std::string faultName = "CPP_CRASH";
+        if (faultType == FaultLogType::APP_FREEZE) {
+           faultName = "APP_FREEZE";
+        }
+        EventStore::Cond keyCond = domainCond.And(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
+        condTotal = keyCond.And(condLeft);
     } else if (faultType == FaultLogType::JS_CRASH) {
-        condTotal = condRight;
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
+        EventStore::Cond domainTotalCond = domainCond.Or(EventStore::EventCol::DOMAIN,
+                                                         EventStore::Op::EQ,
+                                                         HiSysEvent::Domain::AAFWK);
+        EventStore::Cond keyCond = domainTotalCond.And(EventStore::EventCol::NAME, EventStore::Op::EQ, "JS_ERROR");
+        condTotal = keyCond.And(condRight);
     } else {
         condTotal = condLeft.Or(condRight);
     }
@@ -145,9 +156,20 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
     EventStore::Cond condRight = pidLowerCond.And(uidLowerCond).And(typeCond);
     EventStore::Cond condTotal;
     if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
-        condTotal = condLeft;
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN,EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
+        std::string faultName = "CPP_CRASH";
+        if (faultType == FaultLogType::APP_FREEZE) {
+           faultName = "APP_FREEZE";
+        }
+        EventStore::Cond keyCond = domainCond.And(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
+        condTotal = keyCond.And(condLeft);
     } else if (faultType == FaultLogType::JS_CRASH) {
-        condTotal = condRight;
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
+        EventStore::Cond domainTotalCond = domainCond.Or(EventStore::EventCol::DOMAIN,
+                                                         EventStore::Op::EQ,
+                                                         HiSysEvent::Domain::AAFWK);
+        EventStore::Cond keyCond = domainTotalCond.And(EventStore::EventCol::NAME, EventStore::Op::EQ, "JS_ERROR");
+        condTotal = keyCond.And(condRight);
     } else {
         condTotal = condLeft.Or(condRight);
     }
