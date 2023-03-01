@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <sys/types.h>
 
 #include "reporter.h"
 
