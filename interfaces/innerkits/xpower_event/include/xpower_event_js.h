@@ -18,6 +18,7 @@
 #include <string>
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
+#include "native_engine/native_engine.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,6 +33,7 @@ namespace HiviewDFX {
  * @return other error codes. see @HiSysEventWrite
  */
 int ReportXPowerJsStackSysEvent(napi_env env, const std::string &tagName, const std::string &info = "");
+int ReportXPowerJsStackSysEvent(NativeEngine *engine, const std::string &tagName, const std::string &info = "");
 } // HiviewDFX
 } // OHOS
 

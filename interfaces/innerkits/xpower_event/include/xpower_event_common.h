@@ -22,6 +22,7 @@ namespace HiviewDFX {
 static constexpr int ERR_SUCCESS = 0; // 0 means success, same with @OHOS::HiviewDFX::SUCCESS in hisysevent.h
 static constexpr int ERR_PROP_NOT_ENABLE = 1; // propertity @PROP_XPOWER_OPTIMIZE_ENABLE not enabled
 static constexpr int ERR_DUMP_STACK_FAILED = 2;
+static constexpr int ERR_PARAM_INVALID = 3;
 
 // tag name for XPower stack trace
 #define TAG_XPOWER_STACKTRACE "XPOWER_STACKTRACE"

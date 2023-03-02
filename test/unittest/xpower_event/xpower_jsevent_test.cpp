@@ -58,7 +58,7 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest001, testing::ext::TestSize
  */
 HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest002, testing::ext::TestSize.Level1)
 {
-    printf("ReportXPowerEventTest001.\n");
+    printf("ReportXPowerJsEventTest002.\n");
     napi_env env = (napi_env)engine_;
     bool succ = OHOS::system::SetParameter(PROP_XPOWER_OPTIMIZE_ENABLE, "0");
     ASSERT_TRUE(succ);
@@ -68,7 +68,7 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest002, testing::ext::TestSize
     int ret = ReportXPowerJsStackSysEvent(env, "XPOWER_HIVIEW_JSAPI_TEST", "info=1,succ=true");
     ASSERT_EQ(ret, ERR_PROP_NOT_ENABLE);
 
-    printf("ReportXPowerEventTest001.\n");
+    printf("ReportXPowerJsEventTest002.\n");
     succ = OHOS::system::SetParameter(PROP_XPOWER_OPTIMIZE_ENABLE, "1");
     ASSERT_TRUE(succ);
     sleep(1);
@@ -79,5 +79,42 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest002, testing::ext::TestSize
 
     printf("enable parameter and test default info.\n");
     ret = ReportXPowerJsStackSysEvent(env, "XPOWER_HIVIEW_JSAPI_TEST");
+    ASSERT_EQ(ret, ERR_SUCCESS);
+}
+
+/**
+ * @tc.name: ReportXPowerJsEventTest003
+ * @tc.desc: used to test ReportXPowerJsEventTest
+ * @tc.type: FUNC
+ */
+HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest003, testing::ext::TestSize.Level1)
+{
+    printf("ReportXPowerJsEventTest003 nullptr.\n");
+    NativeEngine *engine = nullptr;
+    int ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST", "info=5,succ=true");
+    ASSERT_EQ(ret, ERR_PARAM_INVALID);
+
+    printf("ReportXPowerJsEventTest003 test when disabled.\n");
+    napi_env env = (napi_env)engine_;
+    bool succ = OHOS::system::SetParameter(PROP_XPOWER_OPTIMIZE_ENABLE, "0");
+    ASSERT_TRUE(succ);
+    sleep(1);
+    int param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
+    ASSERT_EQ(param, 0);
+    engine = reinterpret_cast<NativeEngine*>(env);
+    ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST", "info=6,succ=true");
+    ASSERT_EQ(ret, ERR_PROP_NOT_ENABLE);
+
+    printf("ReportXPowerJsEventTest003.\n");
+    succ = OHOS::system::SetParameter(PROP_XPOWER_OPTIMIZE_ENABLE, "1");
+    ASSERT_TRUE(succ);
+    sleep(1);
+    param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
+    ASSERT_EQ(param, 1);
+    ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST", "info=7,succ=true");
+    ASSERT_EQ(ret, ERR_SUCCESS);
+
+    printf("enable parameter and test default info.\n");
+    ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST");
     ASSERT_EQ(ret, ERR_SUCCESS);
 }
