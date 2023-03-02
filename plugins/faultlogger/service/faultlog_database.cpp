@@ -95,29 +95,35 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     int32_t faultType, int32_t maxNum)
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    std::string faultName = GetFaultNameByType(faultType, false);
     std::list<FaultLogInfo> queryResult;
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::Cond uidCond("UID", EventStore::Op::EQ, id);
     EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
     EventStore::Cond condLeft = uidCond.And(hiviewCond);
     EventStore::Cond condRight("uid_", EventStore::Op::EQ, id);
+    EventStore::Cond nameCond(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
     EventStore::Cond condTotal;
-    if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
-        condTotal = condLeft;
+    if (faultType == FaultLogType::CPP_CRASH ||
+        faultType == FaultLogType::APP_FREEZE ||
+        faultType == FaultLogType::RUST_PANIC) {
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
+        condTotal = domainCond.And(nameCond).And(condLeft);
     } else if (faultType == FaultLogType::JS_CRASH) {
-        condTotal = condRight;
+        EventStore::Cond domainOneCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
+        EventStore::Cond domainTwoCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::AAFWK);
+        condTotal = domainOneCond.And(nameCond).And(condRight).Or(domainTwoCond.And(nameCond).And(condRight));
     } else {
         condTotal = condLeft.Or(condRight);
+        if (faultType != 0) {
+            EventStore::Cond faultTypeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
+            condTotal = condLeft.Or(condRight).And(faultTypeCond);
+        }
     }
     (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     if (id != 0) {
         query->And("MODULE", EventStore::Op::EQ, module);
     }
-
-    if (faultType != 0) {
-        query->And("FAULT_TYPE", EventStore::Op::EQ, faultType);
-    }
-
     EventStore::ResultSet resultSet = query->Execute(maxNum);
     while (resultSet.HasNext()) {
         auto it = resultSet.Next();
@@ -134,22 +140,29 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    std::string faultName = GetFaultNameByType(faultType, false);
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
     EventStore::Cond pidUpperCond("PID", EventStore::Op::EQ, pid);
     EventStore::Cond pidLowerCond("pid_", EventStore::Op::EQ, pid);
     EventStore::Cond uidUpperCond("UID", EventStore::Op::EQ, uid);
     EventStore::Cond uidLowerCond("uid_", EventStore::Op::EQ, uid);
     EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
-    EventStore::Cond typeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
-    EventStore::Cond condLeft = hiviewCond.And(pidUpperCond).And(uidUpperCond).And(typeCond);
-    EventStore::Cond condRight = pidLowerCond.And(uidLowerCond).And(typeCond);
+    EventStore::Cond condLeft = hiviewCond.And(pidUpperCond).And(uidUpperCond);
+    EventStore::Cond condRight = pidLowerCond.And(uidLowerCond);
+    EventStore::Cond nameCond(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
     EventStore::Cond condTotal;
-    if (faultType == FaultLogType::CPP_CRASH || faultType == FaultLogType::APP_FREEZE) {
-        condTotal = condLeft;
+    if (faultType == FaultLogType::CPP_CRASH ||
+        faultType == FaultLogType::APP_FREEZE ||
+        faultType == FaultLogType::RUST_PANIC) {
+        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
+        condTotal = domainCond.And(nameCond).And(condLeft);
     } else if (faultType == FaultLogType::JS_CRASH) {
-        condTotal = condRight;
+        EventStore::Cond domainOneCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
+        EventStore::Cond domainTwoCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::AAFWK);
+        condTotal = domainOneCond.And(nameCond).And(condRight).Or(domainTwoCond.And(nameCond).And(condRight));
     } else {
-        condTotal = condLeft.Or(condRight);
+        EventStore::Cond faultTypeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
+        condTotal = condLeft.Or(condRight).And(faultTypeCond);
     }
     (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
     return query->Execute(1).HasNext();
