@@ -24,11 +24,19 @@ namespace HiviewDFX {
 
 int ReportXPowerJsStackSysEvent(napi_env env, const std::string &tagName, const std::string &info)
 {
+    auto engine = reinterpret_cast<NativeEngine*>(env);
+    return ReportXPowerJsStackSysEvent(engine, tagName, info);
+}
+
+int ReportXPowerJsStackSysEvent(NativeEngine *engine, const std::string &tagName, const std::string &info)
+{
+    if (engine == nullptr) {
+        return ERR_PARAM_INVALID;
+    }
     if ((OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0) != 1)) {
         return ERR_PROP_NOT_ENABLE;
     }
     std::string stack = "";
-    auto engine = reinterpret_cast<NativeEngine*>(env);
     bool succ = engine->BuildJsStackTrace(stack);
     if (!succ) {
         return ERR_DUMP_STACK_FAILED;
