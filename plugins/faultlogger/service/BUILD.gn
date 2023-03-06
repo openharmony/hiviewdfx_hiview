@@ -49,6 +49,7 @@ ohos_source_set("faultlogger_service") {
   include_dirs = [
     ".",
     "$hiview_plugin/faultlogger/common",
+    "$hiview_plugin/faultlogger/service/sanitizer_collector",
   ]
 
   sources = [
@@ -56,20 +57,33 @@ ohos_source_set("faultlogger_service") {
     "faultlog_formatter.cpp",
     "faultlog_manager.cpp",
     "faultlogger.cpp",
+    "sanitizer_collector/asan_collector.cpp",
+    "sanitizer_collector/reporter.cpp",
+    "sanitizer_collector/sanitizerd_collector.cpp",
+    "sanitizer_collector/sanitizerd_monitor.cpp",
+    "sanitizer_collector/zip_helper.cpp",
   ]
 
   deps = [
     ":faultlogger_service_ability",
     "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
+    "//third_party/bounds_checking_function:libsec_shared",
+    "//third_party/zlib:libz",
   ]
 
   external_deps = [
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "hilog_native:libhilog",
     "hisysevent_native:libhisysevent",
+    "init:libbegetutil",
     "ipc:ipc_core",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 }
