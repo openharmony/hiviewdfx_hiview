@@ -74,16 +74,24 @@ bool CrashValidator::CanProcessEvent(std::shared_ptr<Event> event)
     return false;
 }
 
-void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events)
+void CrashValidator::PrintEvents(int fd, const std::vector<CrashEvent>& events, bool isMatched)
 {
-    std::vector<CrashEvent>::const_iterator it = events.begin(); 
+    std::vector<CrashEvent>::const_iterator it = events.begin();
     while (it != events.end()) {
-        dprintf(fd, "Module:%s Time:%" PRIu64 " Pid:%" PRIu64 " Uid:%" PRIu64 " HasLog:%d\n",
-            it->name.c_str(),
-            static_cast<uint64_t>(it->time),
-            static_cast<uint64_t>(it->pid),
-            static_cast<uint64_t>(it->uid),
-            it->isCppCrash);
+        if (isMatched) {
+            dprintf(fd, "Module:%s Time:%" PRIu64 " Pid:%" PRIu64 " Uid:%" PRIu64 "\n",
+                it->name.c_str(),
+                static_cast<uint64_t>(it->time),
+                static_cast<uint64_t>(it->pid),
+                static_cast<uint64_t>(it->uid));
+        } else {
+            dprintf(fd, "Module:%s Time:%" PRIu64 " Pid:%" PRIu64 " Uid:%" PRIu64 " HasLog:%d\n",
+                it->name.c_str(),
+                static_cast<uint64_t>(it->time),
+                static_cast<uint64_t>(it->pid),
+                static_cast<uint64_t>(it->uid),
+                it->isCppCrash);
+        }
         it++;
     }
 }
@@ -101,17 +109,17 @@ void CrashValidator::Dump(int fd, const std::vector<std::string>& cmds)
     std::lock_guard<std::mutex> lock(lock_);
     if (!noLogEvents_.empty()) {
         dprintf(fd, "No CppCrash Log Events(%zu):\n", noLogEvents_.size());
-        PrintEvents(fd, noLogEvents_);
+        PrintEvents(fd, noLogEvents_, false);
     }
 
     if (!pendingEvents_.empty()) {
         dprintf(fd, "Pending CppCrash Log Events(%zu):\n", pendingEvents_.size());
-        PrintEvents(fd, pendingEvents_);
+        PrintEvents(fd, pendingEvents_, false);
     }
 
     if (!matchedEvents_.empty()) {
         dprintf(fd, "Matched Events(%zu):\n", matchedEvents_.size());
-        PrintEvents(fd, matchedEvents_);
+        PrintEvents(fd, matchedEvents_, true);
     }
 }
 
@@ -140,11 +148,19 @@ void CrashValidator::OnUnorderedEvent(const Event &event)
 
 bool CrashValidator::RemoveSimilarEvent(const CrashEvent& event)
 {
-    std::vector<CrashEvent>::iterator it = pendingEvents_.begin(); 
+    for (auto& matchedEvent : matchedEvents_) {
+        if (matchedEvent.pid == event.pid && matchedEvent.uid == event.uid) {
+            return true;
+        }
+    }
+    std::vector<CrashEvent>::iterator it = pendingEvents_.begin();
     while (it != pendingEvents_.end()) {
         if (it->uid == event.uid && it->pid == event.pid) {
-            it = pendingEvents_.erase(it);
-            normalEventCount_++;
+            if (it->isCppCrash != event.isCppCrash) {
+                it = pendingEvents_.erase(it);
+                normalEventCount_++;
+                matchedEvents_.push_back(event);
+            }
             return true;
         } else {
             ++it;
@@ -164,6 +180,7 @@ void CrashValidator::HandleCppCrashEvent(SysEvent& sysEvent)
     crashEvent.name = sysEvent.GetEventValue(KEY_MODULE);
     HIVIEW_LOGI("CrashValidator Plugin is handling CPPCRASH event [PID : %{public}d]\n", crashEvent.pid);
     if (!RemoveSimilarEvent(crashEvent)) {
+        totalEventCount_++;
         pendingEvents_.push_back(crashEvent);
     }
 }
@@ -202,15 +219,15 @@ void CrashValidator::HandleProcessExitEvent(SysEvent& sysEvent)
         crashEvent.pid,
         crashEvent.uid,
         status);
-    totalEventCount_++;
     if (!RemoveSimilarEvent(crashEvent)) {
+        totalEventCount_++;
         pendingEvents_.push_back(crashEvent);
     }
 }
 
 void CrashValidator::CheckOutOfDateEvents()
 {
-    std::vector<CrashEvent>::iterator it = pendingEvents_.begin(); 
+    std::vector<CrashEvent>::iterator it = pendingEvents_.begin();
     while (it != pendingEvents_.end()) {
         uint64_t now = time(nullptr);
         uint64_t eventTime = it->time;
@@ -299,10 +316,6 @@ void CrashValidator::OnLoad()
 {
     kmsgReaderThread_ = std::make_unique<std::thread>(&CrashValidator::ReadServiceCrashStatus, this);
     kmsgReaderThread_->detach();
-    AddListenerInfo(Event::MessageType::SYS_EVENT, EVENT_CPP_CRASH);
-    AddListenerInfo(Event::MessageType::SYS_EVENT, KEY_PROCESS_EXIT);
-    GetHiviewContext()->RegisterUnorderedEventListener(
-        std::static_pointer_cast<CrashValidator>(shared_from_this()));
     GetHiviewContext()->AppendPluginToPipeline(GetName(), "SysEventPipeline");
 }
 
