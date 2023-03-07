@@ -55,7 +55,7 @@ private:
     bool RemoveSimilarEvent(const CrashEvent& event);
     void HandleCppCrashEvent(SysEvent& sysEvent);
     void HandleProcessExitEvent(SysEvent& sysEvent);
-    void PrintEvents(int fd, const std::vector<CrashEvent>& events);
+    void PrintEvents(int fd, const std::vector<CrashEvent>& events, bool isMatched);
     void ReadServiceCrashStatus();
     void CheckOutOfDateEvents();
     bool stopReadKmsg_;
