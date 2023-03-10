@@ -27,6 +27,6 @@ ohos_source_set("eventlogger_adapter_logcatcher") {
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
-    "//base/hiviewdfx/faultloggerd/interfaces/innerkits/dump_catcher:lib_dfx_dump_catcher",
+    "//base/hiviewdfx/faultloggerd/interfaces/innerkits/dump_catcher:libdfx_dumpcatcher",
   ]
 }

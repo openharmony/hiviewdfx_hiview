@@ -31,6 +31,7 @@ bool ShellCatcher::Initialize(const std::string& cmd, int time, int intParam __U
 {
     catcherCmd = cmd;
     shellWaitTime = time;
+    description_ = "catcher cmd: " + cmd + "\n";
     return true;
 }
 
@@ -51,7 +52,7 @@ bool ShellCatcher::ReadShellToFile(int fd, const std::string& cmd)
     size_t restNum = 0;
     while (!feof(fp)) {
         restNum = fread(buf, 1, BUF_SIZE_4096 - 1, fp);
-        if (FileUtil::WriteBufferToFd(fd, buf, restNum)) {
+        if (!FileUtil::WriteBufferToFd(fd, buf, restNum)) {
             HIVIEW_LOGE("WriteBufferToFd fail, resNum: %{public}d", restNum);
             break;
         }

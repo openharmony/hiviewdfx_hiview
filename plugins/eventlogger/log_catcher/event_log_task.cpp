@@ -54,6 +54,7 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture, this)));
 }
@@ -69,7 +70,6 @@ void EventLogTask::AddLog(const std::string &cmd)
         return;
     }
     PeerBinderCapture(cmd);
-    HilogCapture(cmd);
 }
 
 EventLogTask::Status EventLogTask::StartCompose()
@@ -294,24 +294,10 @@ void EventLogTask::HitraceCapture()
     tasks_.push_back(capture);
 }
 
-void EventLogTask::HilogCapture(const std::string &cmd)
+void EventLogTask::HilogCapture()
 {
-    auto find = cmd.find("T:");
-    if (find == cmd.npos) {
-        return;
-    }
-
-    std::vector<std::string> cmdList;
-    StringUtil::SplitStr(cmd, ":", cmdList, true);
-    if (cmdList.front() != "T") {
-        return;
-    }
-
-    std::string hilogCmd = "hilog -x -T ";
-    hilogCmd += cmdList[1];
-
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize(hilogCmd, 0, 0);
+    capture->Initialize("hilog -x", 0, 0);
     tasks_.push_back(capture);
 }
 

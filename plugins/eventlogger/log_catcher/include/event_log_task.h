@@ -77,7 +77,7 @@ private:
     void AMSUsageCapture();
     void PMSUsageCapture();
     void HitraceCapture();
-    void HilogCapture(const std::string &cmd);
+    void HilogCapture();
     void DmesgCapture();
     void SysrqCapture();
 };
