@@ -31,10 +31,12 @@ ohos_source_set("log_catcher") {
   sources = [
     "binder_catcher.cpp",
     "command_catcher.cpp",
+    "dmesg_catcher.cpp",
     "event_log_catcher.cpp",
     "event_log_task.cpp",
     "open_stacktrace_catcher.cpp",
     "peer_binder_catcher.cpp",
+    "shell_catcher.cpp",
   ]
 
   deps = [

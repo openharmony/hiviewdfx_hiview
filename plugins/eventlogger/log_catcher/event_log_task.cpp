@@ -21,11 +21,14 @@
 #include "common_utils.h"
 #include "logger.h"
 #include "string_util.h"
+#include "parameter_ex.h"
 
 #include "binder_catcher.h"
 #include "open_stacktrace_catcher.h"
 #include "peer_binder_catcher.h"
 #include "command_catcher.h"
+#include "dmesg_catcher.h"
+#include "shell_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -50,6 +53,10 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -277,6 +284,35 @@ void EventLogTask::PMSUsageCapture()
     cmdCatcher->AddCmd(cmd);
     std::vector<std::string> cmd1 = {"hidumper", "-s", "DisplayPowerManagerService"};
     cmdCatcher->AddCmd(cmd1);
+}
+
+void EventLogTask::HitraceCapture()
+{
+    constexpr int hitraceWaitTime = 5;
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hitrace", hitraceWaitTime, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::HilogCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hilog -x", 0, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::DmesgCapture()
+{
+    auto capture = std::make_shared<DmesgCatcher>();
+    capture->Initialize("", 0, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::SysrqCapture()
+{
+    auto capture = std::make_shared<DmesgCatcher>();
+    capture->Initialize("", 0, 1);
+    tasks_.push_back(capture);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

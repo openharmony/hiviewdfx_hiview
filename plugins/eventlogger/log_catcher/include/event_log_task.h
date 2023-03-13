@@ -76,6 +76,10 @@ private:
     void WMSUsageCapture();
     void AMSUsageCapture();
     void PMSUsageCapture();
+    void HitraceCapture();
+    void HilogCapture();
+    void DmesgCapture();
+    void SysrqCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS
