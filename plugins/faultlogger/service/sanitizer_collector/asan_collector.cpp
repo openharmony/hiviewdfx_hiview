@@ -238,7 +238,7 @@ void AsanCollector::CalibrateErrTypeProcName()
         HIVIEW_LOGI("Get procName %{public}s from uid %{public}d.", curr_.procName.c_str(), curr_.uid);
         curr_.appVersion = GetApplicationVersion(curr_.uid, curr_.procName);
         HIVIEW_LOGI("Version is %{public}s.", curr_.appVersion.c_str());
-    } else if (OHOS::HiviewDFX::GetNameByPid(static_cast<pid_t>(curr_.pid), procName) == true) {
+    } else if (OHOS::HiviewDFX::GetNameByPid(static_cast<pid_t>(curr_.pid), procName, sizeof(procName)) == true) {
         curr_.procName = std::string(procName);
     } else if (SKIP_SPECIAL_PROCESS.find(curr_.procName.c_str()) != std::string::npos) {
         // get top stack

@@ -30,7 +30,7 @@
 #include "file_util.h"
 #include "string_ex.h"
 #include "securec.h"
-
+#include "limits.h"
 #include "bundle_mgr_client.h"
 #include "sanitizerd_log.h"
 #include "parameters.h"
@@ -59,9 +59,9 @@ bool IsLinkFile(const std::string& sfilename)
 bool GetRealPath(const std::string& fn, std::string& out)
 {
     char buf[SL_BUF_LEN];
-    int32_t count = readlink(fn.c_str(), buf, sizeof(buf));
-    if (count >= 0) {
-        buf[count] = '\0';
+    uint32_t count = readlink(fn.c_str(), buf, sizeof(buf));
+    if (0 <= count && count <= sizeof(buf)) {
+        buf[count] = {'\0'};
         out = std::string(buf);
         return true;
     }
@@ -115,7 +115,11 @@ bool ReadGZFile(const std::string& gzfn, std::string& out)
 
 bool ReadNormalFileToString(const std::string& path, std::string& content)
 {
-    // int32_t fd = open(path.c_str(), O_RDWR | O_SYNC | O_APPEND);
+    char *realpathRes = nullptr;
+    realpathRes = realpath(path.c_str(), nullptr);
+    if (realpathRes == nullptr) {
+    	return false;
+    }
     int32_t fd = open(path.c_str(), O_RDONLY);
     if (fd < 0) {
         SANITIZERD_LOGE("open file %{public}s err: %{public}s", path.c_str(), strerror(errno));
@@ -172,7 +176,7 @@ unsigned HashString(const std::string& input)
     return hash;
 }
 
-bool GetNameByPid(pid_t pid, const char procName[])
+bool GetNameByPid(pid_t pid, const char procName[], size_t len)
 {
     char pidPath[BUF_SIZE];
     char buf[BUF_SIZE];
@@ -319,6 +323,11 @@ static std::string CalcCollectedLogName(T_SANITIZERD_PARAMS *params)
 static int32_t CreateLogFile(const std::string& name)
 {
     int32_t fd = -1;
+    char *realpathRes = nullptr;
+    realpathRes = realpath(name.c_str(), nullptr);
+    if (realpathRes == nullptr) {
+        return 0;
+    }
     fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     return fd;
 }

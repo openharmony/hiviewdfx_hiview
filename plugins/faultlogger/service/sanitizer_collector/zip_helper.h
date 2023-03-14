@@ -51,7 +51,7 @@ bool ReadNormalFileToString(const std::string& path, std::string& content);
 bool ReadFileToString(const std::string& path, std::string& out);
 std::vector<std::string> SplitString(const std::string& input, const std::string& regex);
 unsigned HashString(const std::string& input);
-bool GetNameByPid(pid_t pid, const char procName[]);
+bool GetNameByPid(pid_t pid, const char procName[], size_t len);
 bool IsModuleNameValid(const std::string& name);
 std::string RegulateModuleNameIfNeed(const std::string& name);
 std::string GetApplicationNameById(int32_t uid);
