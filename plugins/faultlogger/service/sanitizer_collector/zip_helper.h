@@ -31,9 +31,7 @@ constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr unsigned HASH_FACTOR = 16127;
 constexpr unsigned MILLISEC_OF_PER_SEC = 1000;
 constexpr unsigned MICROSEC_OF_PER_MILLISEC = 1000;
-constexpr int RETRY_COUNT = 10;
-constexpr int RETRY_DELAY = 10;
-constexpr int MIN_APP_UID = 10000;
+constexpr int MIN_APP_USERID = 10000;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
 constexpr int AID_ROOT   = 0;
 constexpr int AID_SYSTEM = 1000;
@@ -45,18 +43,17 @@ const std::string DEVICE_OHOS_VERSION_PARAM = "hw_sc.build.os.version";
 const std::string EMPTY_PARAM = "";
 
 bool IsLinkFile(const std::string& filename);
-bool IsGZipFile(const std::string& filename);
 bool GetRealPath(const std::string& fn, std::string& out);
 bool ReadNormalFileToString(const std::string& path, std::string& content);
 bool ReadFileToString(const std::string& path, std::string& out);
 std::vector<std::string> SplitString(const std::string& input, const std::string& regex);
 unsigned HashString(const std::string& input);
-bool GetNameByPid(pid_t pid, const char procName[], size_t len);
+bool GetNameByPid(pid_t pid, const char procName[]);
 bool IsModuleNameValid(const std::string& name);
+bool GetNameByPid(pid_t pid, const char *procName);
 std::string RegulateModuleNameIfNeed(const std::string& name);
 std::string GetApplicationNameById(int32_t uid);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
-bool ReadGZFile(const std::string& gzfn, std::string& out);
 void WriteCollectedData(T_SANITIZERD_PARAMS *params);
 } // namespace HiviewDFX
 } // namespace OHOS
