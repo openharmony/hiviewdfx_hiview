@@ -53,13 +53,12 @@
 #include "bundle_mgr_client.h"
 
 #include "securec.h"
-#ifndef UNIT_TEST
 #include "sanitizerd_log.h"
 #include "asan_collector.h"
 #include "sanitizerd_collector.h"
 #include "sanitizerd_monitor.h"
 #include "reporter.h"
-#endif
+#include "zip_helper.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -95,37 +94,6 @@ DumpRequest InitDumpRequest()
     request.moduleName = "";
     request.time = -1;
     return request;
-}
-
-bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
-{
-    std::vector<std::string> nameVec;
-    StringUtil::SplitStr(name, sep, nameVec, canEmpty, false);
-    std::regex re("^[a-zA-Z][a-zA-Z0-9_]*$");
-    for (auto const& splitName : nameVec) {
-        if (!std::regex_match(splitName, re)) {
-            HIVIEW_LOGI("Invalid splitName:%{public}s", splitName.c_str());
-            return false;
-        }
-    }
-    return true;
-}
-
-bool IsModuleNameValid(const std::string& name)
-{
-    if (name.empty() || name.size() > MAX_NAME_LENGTH) {
-        HIVIEW_LOGI("invalid log name.");
-        return false;
-    }
-
-    if (name.find("/") != std::string::npos || name.find(".") == std::string::npos) {
-        std::string path = name.substr(1); // may skip first .
-        path.erase(path.find_last_not_of(" \n\r\t") + 1);
-        HIVIEW_LOGI("module name:%{public}s", name.c_str());
-        return IsNameValid(path, "/", false);
-    }
-
-    return IsNameValid(name, ".", true);
 }
 
 bool IsLogNameValid(const std::string& name)
@@ -214,31 +182,6 @@ std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, s
         return "";
     }
     return value->second;
-}
-
-std::string GetApplicationNameById(int32_t uid)
-{
-    std::string bundleName;
-    AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleNameForUid(uid, bundleName)) {
-        HIVIEW_LOGW("Failed to query bundleName from bms, uid:%{public}d.", uid);
-    } else {
-        HIVIEW_LOGD("bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
-    }
-    return bundleName;
-}
-
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
-{
-    AppExecFwk::BundleInfo info;
-    AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info, Constants::ALL_USERID)) {
-        HIVIEW_LOGW("Failed to query BundleInfo from bms, uid:%{public}d.", uid);
-        return "";
-    } else {
-        HIVIEW_LOGD("The version of %{public}s is %{public}s", bundleName.c_str(), info.versionName.c_str());
-    }
-    return info.versionName;
 }
 } // namespace
 
@@ -494,8 +437,8 @@ void Faultlogger::OnLoad()
         workLoop_ = eventloop;
     }
 #ifndef UNIT_TEST
-    std::thread SanitizerdThread(&Faultlogger::RunSanitizerd);
-    SanitizerdThread.detach();
+    std::thread sanitizerdThread(&Faultlogger::RunSanitizerd);
+    sanitizerdThread.detach();
 #endif
 }
 
