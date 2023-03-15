@@ -12,16 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef XPOWER_EVENT_JS_H
-#define XPOWER_EVENT_JS_H
+#ifndef XPOWER_EVENT_JSVM_H
+#define XPOWER_EVENT_JSVM_H
 
 #include <string>
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
-#include "native_engine/native_engine.h"
+#include "ecmascript/napi/include/dfx_jsnapi.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+using panda::ecmascript::EcmaVM;
 /**
  * Used to report js stack info to XPower
  *
@@ -32,8 +31,7 @@ namespace HiviewDFX {
  * @return 2 when dump stack failed. see @ERR_DUMP_STACK_FAILED
  * @return other error codes. see @HiSysEventWrite
  */
-int ReportXPowerJsStackSysEvent(napi_env env, const std::string &tagName, const std::string &info = "");
-int ReportXPowerJsStackSysEvent(NativeEngine *engine, const std::string &tagName, const std::string &info = "");
+int ReportXPowerJsStackSysEvent(EcmaVM *vm, const std::string &tagName, const std::string &info = "");
 } // HiviewDFX
 } // OHOS
 

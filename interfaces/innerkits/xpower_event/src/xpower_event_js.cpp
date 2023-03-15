@@ -14,6 +14,7 @@
  */
 
 #include "xpower_event_js.h"
+#include "xpower_event_jsvm.h"
 #include "xpower_event_common.h"
 #include <parameters.h>
 #include "hisysevent.h"
@@ -38,6 +39,24 @@ int ReportXPowerJsStackSysEvent(NativeEngine *engine, const std::string &tagName
     }
     std::string stack = "";
     bool succ = engine->BuildJsStackTrace(stack);
+    if (!succ) {
+        return ERR_DUMP_STACK_FAILED;
+    }
+    int ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, TAG_XPOWER_STACKTRACE,
+        HiSysEvent::EventType::STATISTIC, "TAGNAME", tagName, "INFO", info, "STACKTRACE", stack);
+    return ret; // 0 success or error code in HiSysEventWrite
+}
+
+int ReportXPowerJsStackSysEvent(EcmaVM *vm, const std::string &tagName, const std::string &info)
+{
+    if (vm == nullptr) {
+        return ERR_PARAM_INVALID;
+    }
+    if ((OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0) != 1)) {
+        return ERR_PROP_NOT_ENABLE;
+    }
+    std::string stack = "";
+    bool succ = panda::DFXJSNApi::BuildJsStackTrace(vm, stack);
     if (!succ) {
         return ERR_DUMP_STACK_FAILED;
     }
