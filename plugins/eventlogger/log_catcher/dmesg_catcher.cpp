@@ -79,6 +79,7 @@ bool DmesgCatcher::WriteSysrq()
 
     fwrite("l", 1, 1, file);
     sleep(1);
+    fclose(file);
     return true;
 }
 
