@@ -69,7 +69,7 @@ int CommandCatcher::Catch(int fd)
 
 int CommandCatcher::HiDumper(int fd, const std::vector<std::string> &args)
 {
-    int argc = args.size();
+    int argc = static_cast<int>(args.size());
 
     std::vector<char *> argv;
     for (const auto &arg : args) {
