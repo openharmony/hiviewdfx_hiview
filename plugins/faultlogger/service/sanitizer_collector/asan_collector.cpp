@@ -229,11 +229,11 @@ void AsanCollector::CalibrateErrTypeProcName()
         curr_.errTypeInShort = curr_.errType;
     }
 
-    if (curr_.uid >= MIN_APP_UID) {
-        curr_.procName = OHOS::HiviewDFX::GetApplicationNameById(curr_.uid);
+    if (curr_.uid >= MIN_APP_USERID) {
+        curr_.procName = GetApplicationNameById(curr_.uid);
     }
 
-    if  (curr_.uid >= MIN_APP_UID && !curr_.procName.empty() && IsModuleNameValid(curr_.procName)) {
+    if  (curr_.uid >= MIN_APP_USERID && !curr_.procName.empty() && IsModuleNameValid(curr_.procName)) {
         curr_.procName = RegulateModuleNameIfNeed(curr_.procName);
         HIVIEW_LOGI("Get procName %{public}s from uid %{public}d.", curr_.procName.c_str(), curr_.uid);
         curr_.appVersion = GetApplicationVersion(curr_.uid, curr_.procName);
@@ -248,7 +248,7 @@ void AsanCollector::CalibrateErrTypeProcName()
 
 void AsanCollector::SetHappenTime()
 {
-    time_t timeNow = time(NULL);
+    time_t timeNow = time(nullptr);
     uint64_t timeTmp = timeNow;
     std::string timeStr = GetFormatedTime(timeTmp);
     curr_.happenTime = std::stoll(timeStr);

@@ -22,6 +22,7 @@ config("hiview_faultlogger_test_config") {
     "$hiview_core",
     "$hiview_base/include/",
     "$hiview_faultlogger/service/",
+    "$hiview_faultlogger/service/sanitizer_collector",
     "$hiview_faultlogger/service/idl/include/",
     "common",
     "common/unittest",
@@ -42,6 +43,7 @@ ohos_unittest("FaultloggerUnittest") {
     "$hiview_faultlogger/service/faultlog_formatter.cpp",
     "$hiview_faultlogger/service/faultlog_manager.cpp",
     "$hiview_faultlogger/service/faultlogger.cpp",
+    "$hiview_faultlogger/service/sanitizer_collector/zip_helper.cpp",
     "common/unittest/faultlogger_unittest.cpp",
   ]
 
@@ -62,6 +64,7 @@ ohos_unittest("FaultloggerUnittest") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog_native:libhilog",
+    "init:libbegetutil",
     "ipc:ipc_core",
   ]
 
