@@ -150,6 +150,27 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.name: FaultlogJsException_005
+     * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
+     * @tc.require: issueI5VRCC
+     * @tc.author:
+     */
+    it('FaultlogJsException_005', 0, function () {
+        console.info("---------------------------FaultlogJsException_005----------------------------------");
+        try {
+            let ret = faultlogger.query("aaa", "bbb", "ccc");
+            console.info("FaultlogJsException_005 ret == " + ret);
+            return;
+        } catch(err) {
+            console.info(err.code);
+            console.info(err.message);
+            expect(err.code == 401).assertTrue();
+        }
+    })
+
+    /**
+     * test
+     *
      * @tc.name: FaultlogJsTest_005
      * @tc.desc: API9 检验promise同步方式获取faultlog日志
      * @tc.require: issueI5VRCC
