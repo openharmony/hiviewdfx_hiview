@@ -22,6 +22,7 @@
 #include "logger.h"
 #include "plugin_factory.h"
 #include "power_mgr_client.h"
+#include "securec.h"
 #include "string_util.h"
 #include "time_util.h"
 #include "usage_event_cacher.h"
@@ -212,12 +213,23 @@ void UsageEventReport::StartServiceByOption(const std::string& opt)
         HIVIEW_LOGE("failed to fork child process");
         return;
     } else if (pid == 0) {
+        const size_t len = 20; // 20: max_len(uint64_t) + '\0'
+        char lastRTBuf[len] = {0};
+        if (sprintf_s(lastRTBuf, len, "%" PRIu64, lastReportTime_) < 0) {
+            HIVIEW_LOGE("failed to convert lastReportTime_=%{public}" PRIu64 " to string", lastReportTime_);
+            _exit(-1);
+        }
+        char lastSRTBuf[len] = {0};
+        if (sprintf_s(lastSRTBuf, len, "%" PRIu64, lastSysReportTime_) < 0) {
+            HIVIEW_LOGE("failed to convert lastSysReportTime_=%{public}" PRIu64 " to string", lastSysReportTime_);
+            _exit(-1);
+        }
         const std::string serviceName = "usage_report";
         const std::string servicePath = "/system/bin/usage_report";
         if (execl(servicePath.c_str(), serviceName.c_str(),
             "-p", workPath_.c_str(),
-            "-t", StringUtil::ToChars<uint64_t>(lastReportTime_).c_str(),
-            "-T", StringUtil::ToChars<uint64_t>(lastSysReportTime_).c_str(),
+            "-t", lastRTBuf,
+            "-T", lastSRTBuf,
             opt.c_str(), nullptr) < 0) {
             HIVIEW_LOGE("failed to execute %{public}s", serviceName.c_str());
             _exit(-1);
