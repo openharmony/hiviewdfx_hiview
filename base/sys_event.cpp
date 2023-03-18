@@ -41,28 +41,6 @@ static const std::vector<ParseItem> PARSE_ORDER = {
     {"trace_flag_", ":\"",  "\"",   nullptr, STATE_PARSING_TRACE_FLAG,      false},
 };
 
-static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, std::string& value)
-{
-    std::smatch result;
-    const std::regex pattern(expr);
-    if (std::regex_search(jsonStr, result, pattern)) {
-        value = result.str(1);
-        return 0;
-    }
-    return -1;
-}
-
-static int GetValueFromJson(const std::string& jsonStr, const std::string& expr, uint64_t& value)
-{
-    std::smatch result;
-    const std::regex pattern(expr);
-    if (std::regex_search(jsonStr, result, pattern)) {
-        value = std::atoll(result.str(1).c_str());
-        return 0;
-    }
-    return -1;
-}
-
 std::atomic<uint32_t> SysEvent::totalCount_(0);
 std::atomic<int64_t> SysEvent::totalSize_(0);
 
@@ -212,21 +190,54 @@ int16_t SysEvent::GetTz() const
 
 std::string SysEvent::GetEventValue(const std::string& key)
 {
-    std::string value;
-    std::string regexStr = "\"" + key + R"~(":"((\\"|[^"])*)")~";
-    GetValueFromJson(jsonExtraInfo_, regexStr, value);
-    if (!value.empty() && !key.empty()) {
-        SetValue(key, value);
+    if (jsonExtraInfo_.empty() || key.empty()) {
+        return "";
     }
-    return value;
+    std::string targetStr = "\"" + key + "\":\"";
+    size_t startPos = jsonExtraInfo_.find(targetStr);
+    if (startPos == std::string::npos) {
+        return "";
+    }
+    startPos += targetStr.size();
+
+    size_t endPos = startPos;
+    while (endPos < jsonExtraInfo_.size()) {
+        if (jsonExtraInfo_[endPos] == '\"') {
+            std::string value = jsonExtraInfo_.substr(startPos, endPos - startPos);
+            if (!value.empty()) {
+                SetValue(key, value);
+            }
+            return value;
+        }
+        if (jsonExtraInfo_[endPos] == '\\' && endPos < (jsonExtraInfo_.size() - 1)) { // 1: for '"'
+            endPos += 2; // 2: for '\' and '"'
+            continue;
+        }
+        endPos++;
+    }
+    return "";
 }
 
 uint64_t SysEvent::GetEventIntValue(const std::string& key)
 {
-    uint64_t value = 0;
-    std::string regexStr = "\"" + key + "\":(\\d+)"; // "PID":PID
-    GetValueFromJson(jsonExtraInfo_, regexStr, value);
-    return value;
+    if (jsonExtraInfo_.empty() || key.empty()) {
+        return 0;
+    }
+    std::string targetStr = "\"" + key + "\":";
+    size_t startPos = jsonExtraInfo_.find(targetStr);
+    if (startPos == std::string::npos) {
+        return 0;
+    }
+    startPos += targetStr.size();
+
+    size_t endPos = startPos;
+    while (endPos < jsonExtraInfo_.size()) {
+        if (!std::isdigit(jsonExtraInfo_[endPos])) {
+            break;
+        }
+        endPos++;
+    }
+    return std::atoll(jsonExtraInfo_.substr(startPos, endPos - startPos).c_str());
 }
 
 void SysEvent::SetEventValue(const std::string& key, int64_t value)
