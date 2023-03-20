@@ -15,6 +15,8 @@
 #include "xpower_jsevent_test.h"
 #include "test.h"
 #include "xpower_event_js.h"
+#include "xpower_event_jsvm.h"
+#include "native_engine/impl/ark/ark_native_engine.h"
 #include "xpower_event_common.h"
 #include <parameters.h>
 
@@ -116,5 +118,29 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest003, testing::ext::TestSize
 
     printf("enable parameter and test default info.\n");
     ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST");
+    ASSERT_EQ(ret, ERR_SUCCESS);
+}
+
+/**
+ * @tc.name: ReportXPowerJsEventTest004
+ * @tc.desc: used to test ReportXPowerJsEventTest
+ * @tc.type: FUNC
+ */
+HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest004, testing::ext::TestSize.Level1)
+{
+    ArkNativeEngine* arkEngine = reinterpret_cast<ArkNativeEngine*>(engine_);
+    EcmaVM* vm = const_cast<EcmaVM*>(arkEngine->GetEcmaVm());
+
+    printf("ReportXPowerJsEventTest003.\n");
+    bool succ = OHOS::system::SetParameter(PROP_XPOWER_OPTIMIZE_ENABLE, "1");
+    ASSERT_TRUE(succ);
+    sleep(1);
+    int param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
+    ASSERT_EQ(param, 1);
+    int ret = ReportXPowerJsStackSysEvent(vm, "XPOWER_HIVIEW_JSAPI2_TEST", "info=7,succ=true");
+    ASSERT_EQ(ret, ERR_SUCCESS);
+
+    printf("enable parameter and test default info.\n");
+    ret = ReportXPowerJsStackSysEvent(vm, "XPOWER_HIVIEW_JSAPI2_TEST");
     ASSERT_EQ(ret, ERR_SUCCESS);
 }

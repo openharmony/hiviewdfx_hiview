@@ -38,6 +38,7 @@ ohos_shared_library("libxpower_event_js") {
   sources = [ "src/xpower_event_js.cpp" ]
 
   external_deps = [
+    "ets_runtime:libark_jsruntime",
     "hisysevent_native:libhisysevent",
     "init:libbegetutil",
     "napi:ace_napi",
