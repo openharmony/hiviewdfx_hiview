@@ -60,7 +60,7 @@ bool GetRealPath(const std::string& fn, std::string& out)
 {
     char buf[SL_BUF_LEN];
     ssize_t count = readlink(fn.c_str(), buf, sizeof(buf));
-    if (count != -1 && count <= sizeof(buf)) {
+    if (count != -1 && count <= static_cast<ssize_t>(sizeof(buf))) {
         buf[count] = '\0';
         out = std::string(buf);
         return true;
@@ -183,7 +183,7 @@ std::string GetApplicationNameById(int32_t uid)
 {
     std::string bundleName;
     AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleNameForUid(uid, bundleName)) {
+    if (client.GetNameForUid(uid, bundleName) != ERR_OK) {
         SANITIZERD_LOGW("Failed to query bundleName from bms, uid:%{public}d.", uid);
     } else {
         SANITIZERD_LOGI("bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
