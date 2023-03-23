@@ -60,7 +60,7 @@ bool GetRealPath(const std::string& fn, std::string& out)
 {
     char buf[SL_BUF_LEN];
     ssize_t count = readlink(fn.c_str(), buf, sizeof(buf));
-    if (count != -1 && count <= sizeof(buf)) {
+    if (count != -1 && count <= static_cast<ssize_t>(sizeof(buf))) {
         buf[count] = '\0';
         out = std::string(buf);
         return true;
