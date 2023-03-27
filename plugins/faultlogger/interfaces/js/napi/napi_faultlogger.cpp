@@ -159,7 +159,7 @@ static napi_value QuerySelfFaultLog(napi_env env, napi_callback_info info)
     NAPI_CALL(env, napi_get_cb_info(env, info, &parameterCount, parameters, &thisVar, &data));
 
     napi_value result = NapiUtil::CreateUndefined(env);
-    if (parameterCount < ONE_PARAMETER && parameterCount > TWO_PARAMETER) {
+    if (parameterCount < ONE_PARAMETER || parameterCount > TWO_PARAMETER) {
         HIVIEW_LOGE("parameterCount Incorrect %{public}d", parameterCount);
         return result;
     }
@@ -249,7 +249,7 @@ static napi_value Query(napi_env env, napi_callback_info info)
     NAPI_CALL(env, napi_get_cb_info(env, info, &parameterCount, parameters, &thisVar, &data));
 
     napi_value result = NapiUtil::CreateUndefined(env);
-    if (parameterCount < ONE_PARAMETER && parameterCount > TWO_PARAMETER) {
+    if (parameterCount < ONE_PARAMETER || parameterCount > TWO_PARAMETER) {
         HIVIEW_LOGE("parameterCount Incorrect %{public}d", parameterCount);
         NapiUtil::ThrowError(env, NapiError::ERR_INPUT_PARAM, NapiUtil::CreateParamCntErrMsg());
         return result;
