@@ -78,7 +78,7 @@ int DumpStacktrace(int fd, int pid)
     if (!GetDump(pid, msg)) {
         DfxDumpCatcher dumplog;
         std::string ret;
-        if (!dumplog.DumpCatchMix(pid, 0, ret)) {
+        if (!dumplog.DumpCatch(pid, 0, ret)) {
             msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n" + ret;
         } else {
             msg = ret;

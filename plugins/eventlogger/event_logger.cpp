@@ -183,6 +183,11 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     std::string msg = event->GetEventValue("MSG");
     headerStream << "MSG = " << msg << std::endl;
 
+    std::string stack = event->GetEventValue("STACK");
+    if (!stack.empty()) {
+        headerStream << StringUtil::UnescapeJsonStringValue(stack) << std::endl;
+    }
+
     FileUtil::SaveStringToFd(fd, headerStream.str());
     return true;
 }
