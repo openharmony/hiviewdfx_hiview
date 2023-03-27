@@ -14,7 +14,9 @@
  */
 #ifndef HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H
 #define HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H
+
 #include <cstdint>
+#include <ctime>
 #include <string>
 
 #include "faultlog_info.h"
@@ -29,6 +31,7 @@ FaultLogInfo ExtractInfoFromFileName(const std::string& fileName);
 FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName);
 int32_t GetRawEventIdByType(int32_t logType);
 std::string RegulateModuleNameIfNeed(const std::string& name);
+time_t GetFileLastAccessTimeStamp(const std::string& fileName);
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H

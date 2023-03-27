@@ -17,6 +17,7 @@
 #include <ctime>
 #include <mutex>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 #include "constants.h"
@@ -144,6 +145,15 @@ std::string RegulateModuleNameIfNeed(const std::string& name)
         return splitStr[size - 1];
     }
     return name;
+}
+
+time_t GetFileLastAccessTimeStamp(const std::string& fileName)
+{
+    struct stat fileInfo;
+    if (stat(fileName.c_str(), &fileInfo) != 0) {
+        return 0;
+    }
+    return fileInfo.st_atime;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
