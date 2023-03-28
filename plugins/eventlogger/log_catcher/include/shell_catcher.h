@@ -27,11 +27,15 @@ public:
     explicit ShellCatcher();
     ~ShellCatcher() override {};
     bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
+    void SetCmdArgument(const char* arg[], size_t argSize);
     int Catch(int fd) override;
 private:
     std::string catcherCmd;
+    const char** cmdArgument = nullptr;
     int shellWaitTime = 0;
 
+    void DoChildProcess(int &inFd, int &outFd);
+    void DoFatherProcess(int &inFd, int &outFd, int childPid, int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
 };
 } // namespace HiviewDFX
