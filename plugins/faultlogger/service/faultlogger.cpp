@@ -34,6 +34,7 @@
 #include "constants.h"
 #include "event.h"
 #include "file_util.h"
+#include "hisysevent.h"
 #include "hiview_global.h"
 #include "logger.h"
 #include "parameter_ex.h"
@@ -81,6 +82,7 @@ constexpr int DUMP_PARSE_TIME = 2;
 constexpr int DUMP_START_PARSE_MODULE_NAME = 3;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
 constexpr char TEMP_LOG_PATH[] = "/data/log/faultlog/temp";
+constexpr time_t FORTYEIGHT_HOURS = 48 * 60 * 60;
 #ifndef UNIT_TEST
 constexpr int RETRY_COUNT = 10;
 constexpr int RETRY_DELAY = 10;
@@ -587,9 +589,28 @@ std::string Faultlogger::GetListenerName()
 void Faultlogger::StartBootScan()
 {
     std::vector<std::string> files;
+    time_t now = time(nullptr);
     FileUtil::GetDirFiles(TEMP_LOG_PATH, files);
     for (const auto& file : files) {
+        time_t lastAccessTime = GetFileLastAccessTimeStamp(file);
+        if (now > lastAccessTime && now - lastAccessTime > FORTYEIGHT_HOURS) {
+            HIVIEW_LOGI("Skip this file(%{public}s) that were created 48 hours ago.", file.c_str());
+            continue;
+        }
         auto info = ParseFaultLogInfoFromFile(file, true);
+        if (info.summary.find("#00") == std::string::npos) {
+            HIVIEW_LOGI("Skip this file(%{public}s) which stack is empty.", file.c_str());
+            HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, "CPP_CRASH_NO_LOG", HiSysEvent::EventType::FAULT,
+                "PID", info.pid,
+                "UID", info.id,
+                "PROCESS_NAME", info.module,
+                "HAPPEN_TIME", std::to_string(info.time)
+            );
+            if (remove(file.c_str()) != 0) {
+                HIVIEW_LOGE("Failed to remove file(%{public}s) which stack is empty", file.c_str());
+            }
+            continue;
+        }
         if (mgr_->IsProcessedFault(info.pid, info.id, info.faultLogType)) {
             HIVIEW_LOGI("Skip processed fault.(%{public}d:%{public}d) ", info.pid, info.id);
             continue;
