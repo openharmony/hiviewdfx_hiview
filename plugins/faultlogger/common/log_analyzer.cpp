@@ -16,6 +16,7 @@
 
 #include "faultlog_util.h"
 #include "smart_parser.h"
+#include "string_util.h"
 #include "tbox.h"
 
 namespace OHOS {
@@ -28,11 +29,11 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
         eventInfos.insert(std::make_pair("fingerPrint", Tbox::CalcFingerPrint(info.module + info.reason +
                                                                               info.summary, 0, FP_BUFFER)));
         return false;
-    }
+    } 
 
     Tbox::FilterTrace(eventInfos);
-    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + info.reason + eventInfos["FIRST_FRAME"] +
-        eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
+    std::string fingerPrint = Tbox::CalcFingerPrint(info.module + StringUtil::GetLeftSubstr(info.reason, "@") +
+        eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
     return true;
 }
