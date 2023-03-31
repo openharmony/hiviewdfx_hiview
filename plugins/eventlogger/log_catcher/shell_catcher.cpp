@@ -14,11 +14,13 @@
  */
 #include "shell_catcher.h"
 #include <unistd.h>
+#include <sys/wait.h>
 #include "dump_client_main.h"
 #include "logger.h"
 #include "common_utils.h"
 #include "log_catcher_utils.h"
 #include "securec.h"
+#include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-ShellCatcher");
@@ -27,82 +29,55 @@ ShellCatcher::ShellCatcher() : EventLogCatcher()
     name_ = "ShellCatcher";
 }
 
-bool ShellCatcher::Initialize(const std::string& cmd, int time, int intParam __UNUSED)
+bool ShellCatcher::Initialize(const std::string& cmd, int type, int intParam __UNUSED)
 {
     catcherCmd = cmd;
-    shellWaitTime = time;
+    catcherType = CATCHER_TYPE(type);
     description_ = "catcher cmd: " + catcherCmd + " ";
     return true;
 }
 
-void ShellCatcher::SetCmdArgument(const char* arg[], size_t argSize)
+void ShellCatcher::DoChildProcess(int writeFd)
 {
-    if (arg == nullptr || argSize == 0) {
-        HIVIEW_LOGE("SetCmdArgument fail");
-	return;
+    if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
+        dup2(writeFd, STDIN_FILENO) == -1 || dup2(writeFd, STDERR_FILENO) == -1) {
+        HIVIEW_LOGE("dup2 writeFd fail");
+        _exit(-1);
     }
-    cmdArgument = arg;
-}
 
-void ShellCatcher::DoChildProcess(int &inFd, int &outFd)
-{
-    close(outFd);
-    if (dup2(inFd, 1) == -1) {
-        HIVIEW_LOGE("dup2 inFd fail");
-    }
-    close(inFd);
-
-    int ret = execv(catcherCmd.c_str(), (char * const *)cmdArgument);
-    HIVIEW_LOGE("execv %{public}d, errno: %{public}d", ret, errno);
-}
-
-void ShellCatcher::DoFatherProcess(int &inFd, int &outFd, int childPid, int writeFd)
-{
-    char buf[BUF_SIZE_4096] = {0};
-    size_t restNum = 0;
-    time_t startTime = time(nullptr);
-    constexpr int timeSpaceLimit = 5;
-
-    close(inFd);
-    while (true) {
-        restNum = read(outFd, buf, sizeof(buf));
-        if (restNum == 0 || !FileUtil::WriteBufferToFd(writeFd, buf, restNum)) {
-            HIVIEW_LOGE("WriteBufferToFd fail, resNum: %{public}d", restNum);
+    int ret = 0;
+    switch (catcherType) {
+        case CATCHER_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
             break;
-        }
-
-	if (time(nullptr) > startTime + timeSpaceLimit) {
-            HIVIEW_LOGE("timeout limit");
+        case CATCHER_HITRACE:
+            ret = execl("/system/bin/hitrace", "hitrace", nullptr);
             break;
-	}
+        default:
+            break;        
     }
-    close(outFd);
+    if (ret < 0) {
+        HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
+        _exit(-1);
+    }
 }
 
 bool ShellCatcher::ReadShellToFile(int writeFd, const std::string& cmd)
 {
-    constexpr int pipeCnt = 2;
-    int pipes[pipeCnt];
-    if (pipe(pipes) != 0) {
-        HIVIEW_LOGE("pipe creat fail");
-	return false;
-    }
-
-    int outFd = pipes[0];
-    int inFd = pipes[1];
-
     int childPid = fork();
     if (childPid < 0) {
-	HIVIEW_LOGE("fork fail");
-	return false;
+        HIVIEW_LOGE("fork fail");
+        return false;
     } else if (childPid == 0) {
-	DoChildProcess(inFd, outFd);
+        DoChildProcess(writeFd);
     } else {
-	sleep(shellWaitTime);
-	DoFatherProcess(inFd, outFd, childPid, writeFd);
+        if (waitpid(childPid, nullptr, 0) != childPid) {
+            HIVIEW_LOGE("waitpid fail, pid: %{public}d, errno: %{public}d", childPid, errno);
+            return false;
+        }
+        HIVIEW_LOGI("waitpid %{public}d success", childPid);
     }
     return true;
-
 }
 
 int ShellCatcher::Catch(int fd)
