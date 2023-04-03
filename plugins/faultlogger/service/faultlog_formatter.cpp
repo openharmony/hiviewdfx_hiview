@@ -227,6 +227,19 @@ static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
     info.module = info.sectionMap[PROCESS_NAME[LOG_MAP_KEY]];
     info.reason = info.sectionMap[REASON[LOG_MAP_KEY]];
     info.summary = info.sectionMap[KEY_THREAD_INFO[LOG_MAP_KEY]];
+    size_t removeStartPos = info.summary.find("Tid:");
+    size_t removeEndPos = info.summary.find("Name:");
+    if (removeStartPos != std::string::npos && removeEndPos != std::string::npos) {
+        auto iterator = info.summary.begin() + removeEndPos;
+        while (*iterator != '\n') {
+            if (isdigit(*iterator)) {
+                iterator = info.summary.erase(iterator);
+            } else {
+                iterator++;
+            }
+        }
+        info.summary.replace(removeStartPos, removeEndPos - removeStartPos + 1, "Thread n");
+    }
     info.sectionMap.clear();
 }
 
