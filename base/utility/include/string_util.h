@@ -26,7 +26,6 @@
 #include <regex>
 #include <codecvt>
 #include <list>
-#include <charconv>
 namespace OHOS {
 namespace HiviewDFX {
 namespace StringUtil {
@@ -53,20 +52,6 @@ template<class T>
 inline std::string ToString(T iValue)
 {
     return std::to_string(iValue);
-}
-
-/**
- * The ToString function convert int and double and so on to char[].
- */
-template<class T>
-inline std::string ToChars(T iValue)
-{
-    const size_t len = 20; // 20: max_len(uint64_t) + '\0'
-    char str[len] = {0};
-    if (auto [ptr, ec] = std::to_chars(str, str + len, iValue); ec == std::errc()) {
-        return str;
-    }
-    return "";
 }
 
 /**
