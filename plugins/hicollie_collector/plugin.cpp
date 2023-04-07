@@ -17,6 +17,7 @@
 
 #include <fstream>
 #include <regex>
+#include <set>
 
 #include "file_util.h"
 #include "hisysevent.h"
@@ -52,8 +53,8 @@ void HiCollieCollector::OnLoad()
     SetName("HiCollieCollector");
     SetVersion("HiCollieCollector 1.0");
     HIVIEW_LOGI("OnLoad.");
-    AddListenerInfo(Event::MessageType::SYS_EVENT, STRINGID_SERVICE_TIMEOUT);
-    AddListenerInfo(Event::MessageType::SYS_EVENT, STRINGID_SERVICE_BLOCK);
+    std::set<std::string> eventNames = {STRINGID_SERVICE_TIMEOUT, STRINGID_SERVICE_BLOCK};
+    AddListenerInfo(Event::MessageType::SYS_EVENT, eventNames);
     GetHiviewContext()->RegisterUnorderedEventListener(
         std::static_pointer_cast<HiCollieCollector>(shared_from_this()));
 }

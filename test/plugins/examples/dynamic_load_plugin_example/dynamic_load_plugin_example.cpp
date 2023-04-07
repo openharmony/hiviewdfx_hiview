@@ -33,13 +33,11 @@ void DynamicLoadPluginExample::OnLoad()
 {
     SetVersion("DynamicLoadPluginExample1.0");
     printf("DynamicLoadPluginExample OnLoad \n");
-    AddListenerInfo(Event::PLUGIN_MAINTENANCE);
+    AddListenerInfo(Event::PLUGIN_MAINTENANCE, {"event_test1"});
     auto ptr = std::static_pointer_cast<DynamicLoadPluginExample>(shared_from_this());
     printf("register event listener %p \n", ptr.get());
     GetHiviewContext()->RegisterUnorderedEventListener(ptr);
-    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testbb");
-    const int EVENT_ID_1 = 901000111;
-    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT, EVENT_ID_1);
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, {"testbb"});
 }
 
 void DynamicLoadPluginExample::OnUnload()

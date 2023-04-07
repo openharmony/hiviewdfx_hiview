@@ -1,12 +1,12 @@
 {
     "plugins": {
         "SysEventSource": {
-            "path": "core",
+            "path": "plugins/sysevent_source",
             "name": "sysevent_source"
         },
-        "SysEventService": {
-            "path": "plugins/eventservice",
-            "name": "sys_event_service"
+        "SysEventStore": {
+            "path": "plugins/event_store",
+            "name": "sys_event_store"
         },
         "Faultlogger": {
             "path": "plugins/faultlogger",
@@ -31,6 +31,10 @@
         "BBoxDetectorPlugin": {
             "path": "plugins/reliability/bbox_detectors",
             "name": "bbox_detector"
+        },
+        "SysEventDispatcher": {
+            "path": "plugins/sys_dispatcher",
+            "name": "sys_dispatcher"
         }
     },
     "rules": [
@@ -55,7 +59,7 @@
                     "HiCollieCollector": {
                         "loadtime": 0
                     },
-                    "SysEventService": {
+                    "SysEventStore": {
                         "loadtime": 0
                     },
                     "Faultlogger": {
@@ -66,11 +70,15 @@
                     },
                     "BBoxDetectorPlugin": {
                         "loadtime": 0
+                    }, 
+                    "SysEventDispatcher": {
+                        "loadtime": 0
                     }
                 },
                 "pipelines": {
                     "SysEventPipeline": [
-                        "SysEventService",
+                        "SysEventDispatcher",
+                        "SysEventStore",
                         "Faultlogger",
                         "EventLogger",
                         "BBoxDetectorPlugin"
@@ -84,11 +92,12 @@
                 "threads": {
                     "singledthread": {
                         "SysEventSource": "sysevent_source",
-                        "SysEventService": "sysevent_service",
+                        "SysEventStore": "sysevent_store",
                         "EventLogger": "event_logger",
                         "FreezeDetectorPlugin": "freeze_detector",
                         "UsageEventReport": "usage_event_report",
-                        "BBoxDetectorPlugin": "bbox_detector"
+                        "BBoxDetectorPlugin": "bbox_detector",
+                        "SysEventDispatcher": "sys_dispatcher"
                     }
                 }
             }

@@ -95,60 +95,14 @@ void Plugin::DelayProcessEvent(std::shared_ptr<Event> event, uint64_t delay)
     return;
 }
 
-void Plugin::AddEventListenerInfo(uint32_t type, const EventListener::EventIdRange& range)
+void Plugin::AddDispatchInfo(const std::unordered_set<uint8_t>& types,
+    const std::unordered_set<std::string> &eventNames, const std::unordered_set<std::string> &tags,
+    const std::unordered_map<std::string, DomainRule>& domainRulesMap)
 {
     if (context_ == nullptr) {
         return;
     }
-    std::set<std::string> eventNames;
-    std::set<EventListener::EventIdRange> listenerInfo;
-    listenerInfo.insert(range);
-    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
-}
-
-void Plugin::AddEventListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
-{
-    if (context_ == nullptr) {
-        return;
-    }
-    std::set<std::string> eventNames;
-    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
-}
-
-bool Plugin::GetEventListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
-{
-    if (context_ == nullptr) {
-        return false;
-    }
-    return context_->GetListenerInfo(type, name_, listenerInfo);
-}
-
-void Plugin::AddEventListenerInfo(uint32_t type, const std::string& eventName)
-{
-    if (context_ == nullptr) {
-        return;
-    }
-    std::set<std::string> eventNames;
-    eventNames.insert(eventName);
-    std::set<EventListener::EventIdRange> listenerInfo;
-    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
-}
-
-void Plugin::AddEventListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
-{
-    if (context_ == nullptr) {
-        return;
-    }
-    std::set<EventListener::EventIdRange> listenerInfo;
-    context_->AddListenerInfo(type, shared_from_this(), eventNames, listenerInfo);
-}
-
-bool Plugin::GetEventListenerInfo(uint32_t type, std::set<std::string> &eventNames)
-{
-    if (context_ == nullptr) {
-        return false;
-    }
-    return context_->GetListenerInfo(type, name_, eventNames);
+    context_->AddDispatchInfo(shared_from_this(), types, eventNames, tags, domainRulesMap);
 }
 
 std::string Plugin::GetPluginInfo()

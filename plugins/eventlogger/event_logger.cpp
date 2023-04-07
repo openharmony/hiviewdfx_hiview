@@ -290,14 +290,6 @@ void EventLogger::OnLoad()
         HIVIEW_LOGE("FreezeCommon filed.");
         return;
     }
-    std::set<EventListener::EventIdRange> listenerInfo;
-    std::set<std::string> eventNames = freezeCommon.GetPrincipalStringIds();
-    auto context = GetHiviewContext();
-    if (context != nullptr) {
-        auto plugin = context->GetPluginByName("FreezeDetectorPlugin");
-        context->AddListenerInfo(Event::MessageType::SYS_EVENT, plugin, eventNames, listenerInfo);
-        context->RegisterDynamicListenerInfo(plugin);
-    }
 }
 
 void EventLogger::OnUnload()

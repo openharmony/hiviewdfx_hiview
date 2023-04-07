@@ -26,7 +26,9 @@ config("unittest_config") {
     "//third_party/jsoncpp/include",
     "//third_party/bounds_checking_function/include",
     "unittest/common",
-    "$hiview_plugin/eventservice/include",
+    "$hiview_plugin/event_store/include",
+    "$hiview_plugin/sysevent_source/include",
+    "$hiview_core/include",
     "$hiview_base/include",
   ]
 
@@ -38,13 +40,6 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
   configs = [ ":unittest_config" ]
 
   sources = [
-    "$hiview_plugin/eventservice/event_json_parser.cpp",
-    "$hiview_plugin/eventservice/flat_json_parser.cpp",
-    "$hiview_plugin/eventservice/service/sys_event_stat.cpp",
-    "$hiview_plugin/eventservice/store/sys_event_db_backup.cpp",
-    "$hiview_plugin/eventservice/store/sys_event_db_cleaner.cpp",
-    "$hiview_plugin/eventservice/store/sys_event_db_mgr.cpp",
-    "$hiview_plugin/eventservice/sys_event_service.cpp",
     "unittest/common/sys_event_callback_ohos_test.cpp",
     "unittest/common/sys_event_service_ohos_test.cpp",
   ]

@@ -75,29 +75,18 @@ void EventDispatchQueue::Run()
 
 void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
 {
-    auto eventName = event.domain_ + "_" + event.eventName_;
-    auto listeners = context_->GetListenerInfo(event.messageType_, eventName, event.eventId_);
-    for (auto& tmp : listeners) {
-        auto listener = tmp.lock();
-        if (listener == nullptr) {
-            continue;
-        }
+    auto listeners = context_->GetListenerInfo(event.messageType_, event.eventName_, event.domain_);
+    for (auto& listener : listeners) {
+        auto ptr = listener.lock();
         auto timePtr = std::make_shared<uint64_t>(0);
         {
             TimeUtil::TimeCalculator tc(timePtr);
-            if (listener->isPlugin) {
-                auto ptr = listener->plugin.lock();
-                if (ptr != nullptr) {
-                    ptr->OnEventListeningCallback(event);
-                }
-            } else {
-                auto ptr = listener->listener.lock();
-                if (ptr != nullptr) {
-                    ptr->OnUnorderedEvent(event);
-                }
+            if (ptr == nullptr) {
+                continue;
             }
+            ptr->OnUnorderedEvent(event);
         }
-        HiviewEventReport::UpdatePluginStats(listener->name, event.eventName_, *timePtr);
+        HiviewEventReport::UpdatePluginStats(ptr->GetListenerName(), event.eventName_, *timePtr);
     }
 }
 

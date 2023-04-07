@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include "defines.h"
 #include "public_defines.h"
+#include "dispatch_config.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -251,32 +252,6 @@ public:
 };
 class EventListener {
 public:
-    struct EventIdRange {
-        uint32_t begin;
-        uint32_t end;
-        EventIdRange(uint32_t id)
-        {
-            begin = id;
-            end = id;
-        };
-
-        EventIdRange(uint32_t begin, uint32_t end)
-        {
-            this->begin = begin;
-            this->end = end;
-        };
-
-        bool operator<(const EventIdRange &range) const
-        {
-            return (end < range.begin);
-        };
-
-        bool operator==(const EventIdRange &range) const
-        {
-            return ((begin == range.begin) && (end == range.end));
-        };
-    };
-
     EventListener() {};
     virtual ~EventListener(){};
 
@@ -286,15 +261,10 @@ public:
     }
     virtual void OnUnorderedEvent(const Event &msg) = 0;
     virtual std::string GetListenerName() = 0;
-
-    // Make sure that you insert non-overlayed range
-    void AddListenerInfo(uint32_t type, const EventListener::EventIdRange &range = EventListener::EventIdRange(0));
-    void AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo);
-    bool GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo);
-
-    void AddListenerInfo(uint32_t type, const std::string& eventName);
-    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames);
-    bool GetListenerInfo(uint32_t type, std::set<std::string> &eventNames);
+    void AddListenerInfo(uint32_t type);
+    void AddListenerInfo(uint32_t type, const std::map<std::string, DomainRule>& domainRulesMap);
+    void AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames,
+        const std::map<std::string, DomainRule>& domainRulesMap = {});
 };
 } // namespace HiviewDFX
 } // namespace OHOS
