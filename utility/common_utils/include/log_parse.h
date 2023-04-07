@@ -34,7 +34,8 @@ public:
     static std::string MatchExceptionLibrary(const std::string& val);
     void GetCrashFaultLine(const std::string& file, std::string& line) const;
     void SetFrame(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const;
-    std::string GetFilterTrace(const std::string& info, std::vector<std::string>& trace) const;
+    std::string GetFilterTrace(const std::string& info, std::vector<std::string>& trace,
+        const std::string& eventType) const;
     std::stack<std::string> GetStackTop(const std::vector<std::string>& validStack, const size_t num) const;
 
 public:
