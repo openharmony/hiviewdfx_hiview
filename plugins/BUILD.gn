@@ -17,7 +17,6 @@ import("//build/test.gni")
 group("unittest") {
   testonly = true
   deps = []
-  deps += [ "eventservice:unittest" ]
 }
 
 group("moduletest") {
@@ -29,8 +28,5 @@ group("moduletest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [
-    "eventservice:fuzztest",
-    "faultlogger:fuzztest",
-  ]
+  deps += [ "faultlogger:fuzztest" ]
 }

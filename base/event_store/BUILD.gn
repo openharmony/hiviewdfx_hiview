@@ -17,6 +17,7 @@ config("event_store_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
+    "//third_party/jsoncpp/include",
     "//third_party/bounds_checking_function/include",
     "//commonlibrary/c_utils/base/include",
     "include",
@@ -46,7 +47,10 @@ ohos_source_set("event_store_source") {
     "sys_event_query_wrapper.cpp",
   ]
 
-  deps = [ "$hiview_base/running_status_logger:running_status_logger_source" ]
+  deps = [
+    "$hiview_base/running_status_logger:running_status_logger_source",
+    "//third_party/jsoncpp:jsoncpp",
+  ]
 
   external_deps = [ "hilog_native:libhilog" ]
 }

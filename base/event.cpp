@@ -73,66 +73,33 @@ std::map<std::string, std::string> Event::GetKeyValuePairs() const
     return bundle_;
 }
 
-void EventListener::AddListenerInfo(uint32_t type, const EventListener::EventIdRange &range)
+void EventListener::AddListenerInfo(uint32_t type, const std::map<std::string, DomainRule>& domainRulesMap)
 {
     auto& context = HiviewGlobal::GetInstance();
     if (context == nullptr) {
         return;
     }
     std::set<std::string> eventNames;
-    std::set<EventListener::EventIdRange> listenerInfo;
-    listenerInfo.insert(range);
-    context->AddListenerInfo(type, GetListenerName(), eventNames, listenerInfo);
+    context->AddListenerInfo(type, GetListenerName(), eventNames, domainRulesMap);
 }
 
-void EventListener::AddListenerInfo(uint32_t type, const std::set<EventListener::EventIdRange> &listenerInfo)
+void EventListener::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames,
+    const std::map<std::string, DomainRule>& domainRulesMap)
 {
     auto& context = HiviewGlobal::GetInstance();
     if (context == nullptr) {
         return;
     }
-    std::set<std::string> eventNames;
-    context->AddListenerInfo(type, GetListenerName(), eventNames, listenerInfo);
+    context->AddListenerInfo(type, GetListenerName(), eventNames, domainRulesMap);
 }
 
-bool EventListener::GetListenerInfo(uint32_t type, std::set<EventListener::EventIdRange> &listenerInfo)
-{
-    auto& context = HiviewGlobal::GetInstance();
-    if (context == nullptr) {
-        return false;
-    }
-    return context->GetListenerInfo(type, GetListenerName(), listenerInfo);
-}
-
-void EventListener::AddListenerInfo(uint32_t type, const std::string& eventName)
+void EventListener::AddListenerInfo(uint32_t type)
 {
     auto& context = HiviewGlobal::GetInstance();
     if (context == nullptr) {
         return;
     }
-    std::set<std::string> eventNames;
-    std::set<EventListener::EventIdRange> listenerInfo;
-    eventNames.insert(eventName);
-    context->AddListenerInfo(type, GetListenerName(), eventNames, listenerInfo);
-}
-
-void EventListener::AddListenerInfo(uint32_t type, const std::set<std::string> &eventNames)
-{
-    auto& context = HiviewGlobal::GetInstance();
-    if (context == nullptr) {
-        return;
-    }
-    std::set<EventListener::EventIdRange> listenerInfo;
-    context->AddListenerInfo(type, GetListenerName(), eventNames, listenerInfo);
-}
-
-bool EventListener::GetListenerInfo(uint32_t type, std::set<std::string> &eventNames)
-{
-    auto& context = HiviewGlobal::GetInstance();
-    if (context == nullptr) {
-        return false;
-    }
-    return context->GetListenerInfo(type, GetListenerName(), eventNames);
+    context->AddListenerInfo(type, GetListenerName());
 }
 }
 }

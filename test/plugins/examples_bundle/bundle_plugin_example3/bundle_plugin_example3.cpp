@@ -52,12 +52,6 @@ void BundlePluginExample3::OnLoad()
 {
     SetVersion("BundlePluginExample3.0");
     printf("BundlePluginExample3 OnLoad\n");
-    auto ptr = std::static_pointer_cast<BundlePluginExample3>(shared_from_this());
-    GetHiviewContext()->RegisterDynamicListenerInfo(ptr);
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testaa");
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testbb");
-    const int EVENT_ID_1 = 901000111;
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT, EVENT_ID_1);
 }
 
 void BundlePluginExample3::OnUnload()

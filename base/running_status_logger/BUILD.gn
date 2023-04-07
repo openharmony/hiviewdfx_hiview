@@ -26,6 +26,7 @@ config("running_status_logger_config") {
     "$hiview_base/include",
     "$hiview_base/running_status_logger/include",
     "$hiview_root/include",
+    "//third_party/jsoncpp/include",
   ]
 }
 
@@ -44,6 +45,8 @@ ohos_source_set("running_status_logger_source") {
   configs = [ ":running_status_logger_private_config" ]
 
   sources = [ "running_status_logger.cpp" ]
+
+  deps = [ "//third_party/jsoncpp:jsoncpp" ]
 
   external_deps = [ "hilog_native:libhilog" ]
 }

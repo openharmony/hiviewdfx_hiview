@@ -71,6 +71,9 @@ public:
     uint64_t GetEventIntValue(const std::string& key);
     void SetEventValue(const std::string& key, int64_t value);
     void SetEventValue(const std::string& key, const std::string& value, bool append = false);
+    std::string tag_;
+    int eventType_;
+    bool preserve_;
 
 public:
     static std::atomic<uint32_t> totalCount_;

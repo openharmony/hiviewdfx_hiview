@@ -1,0 +1,44 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/config/features.gni")
+import("//build/test.gni")
+
+ohos_fuzztest("EventServiceFuzzTest") {
+  module_out_path = "hiview/eventservice"
+
+  fuzz_config_file =
+      "$hiview_plugin/eventservice/test/fuzztest/common/eventservice_fuzzer"
+
+  include_dirs = [
+    "eventservice_fuzzer.h",
+    "//third_party/jsoncpp/include",
+  ]
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+
+  sources = [ "eventservice_fuzzer.cpp" ]
+
+  deps = [
+    "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
+    "$hiview_adapter/utility:hiview_adapter_utility",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_core:hiview_core",
+    "//third_party/jsoncpp:jsoncpp",
+  ]
+}

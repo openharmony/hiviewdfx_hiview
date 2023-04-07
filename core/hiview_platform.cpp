@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,6 @@
 #include "common_utils.h"
 #include "defines.h"
 #include "dynamic_module.h"
-#include "engine_event_dispatcher.h"
 #include "file_util.h"
 #include "hiview_event_report.h"
 #include "hiview_global.h"
@@ -44,13 +43,14 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr uint32_t AID_SYSTEM = 1000;
-constexpr char ENGINE_EVENT_DISPATCHER[] = "EngineEventDispatcher";
 static const char VERSION[] = "1.0.0.0";
 static const char SEPARATOR_VERSION[] = " ";
 static const char RECORDER_VERSION[] = "01.00";
 static const char PLUGIN_CONFIG_NAME[] = "plugin_config";
 static const char HIVIEW_PID_FILE_NAME[] = "hiview.pid";
 static const char DEFAULT_CONFIG_DIR[] = "/system/etc/hiview/";
+static const char PIPELINE_RULE_CONFIG_DIR[] = "/system/etc/hiview/dispatch_rule/";
+static const char DISPATCH_RULE_CONFIG_DIR[] = "/system/etc/hiview/listener_rule/";
 static const char DEFAULT_WORK_DIR[] = "/data/log/hiview/";
 static const char DEFAULT_COMMERCIAL_WORK_DIR[] = "/log/LogService/";
 static const char DEFAULT_PERSIST_DIR[] = "/log/hiview/";
@@ -101,8 +101,48 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
         HIVIEW_LOGE("Fail to wait the samgr, err=%{public}d", res);
         return false;
     }
+    CreateWorkingDirectories(platformConfigDir);
+   
+    // update beta config
+    UpdateBetaConfigIfNeed();
 
-    // force create hiview working directories
+    // check whether hiview is already started
+    ExitHiviewIfNeed();
+
+    std::string cfgPath = GetPluginConfigPath();
+    PluginConfig config(cfgPath);
+    if (!config.StartParse()) {
+        HIVIEW_LOGE("Fail to parse plugin config. exit!, cfgPath %{public}s", cfgPath.c_str());
+        return false;
+    }
+    StartPlatformDispatchQueue();
+
+    // init global context helper, remove in the future
+    HiviewGlobal::CreateInstance(static_cast<HiviewContext&>(*this));
+    InitSysEventParser();
+    LoadBusinessPlugin(config);
+
+    // start load plugin bundles
+    LoadPluginBundles();
+
+    // maple delay start eventsource
+    for (const auto& plugin : eventSourceList_) {
+        auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
+        if (sharedSource == nullptr) {
+            HIVIEW_LOGE("Fail to cast plugin to event source!");
+            continue;
+        }
+        StartEventSource(sharedSource);
+    }
+    eventSourceList_.clear();
+    isReady_ = true;
+    NotifyPluginReady();
+    ScheduleCheckUnloadablePlugins();
+    return true;
+}
+
+void HiviewPlatform::CreateWorkingDirectories(const std::string& platformConfigDir)
+{
     HiviewPlatformConfig platformConfig = HiviewPlatformConfig(platformConfigDir);
     HiviewPlatformConfig::PlatformConfigInfo platformConfigInfo;
     bool state = platformConfig.ParsesConfig(platformConfigInfo);
@@ -127,43 +167,16 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
                                      platformConfigInfo.workDir,
                                      platformConfigInfo.persistDir);
     }
+}
 
-    // update beta config
-    UpdateBetaConfigIfNeed();
-
-    // check whether hiview is already started
-    ExitHiviewIfNeed();
-
-    std::string cfgPath = GetPluginConfigPath();
-    PluginConfig config(cfgPath);
-    if (!config.StartParse()) {
-        HIVIEW_LOGE("Fail to parse plugin config. exit!, cfgPath %{public}s", cfgPath.c_str());
-        return false;
+void HiviewPlatform::InitSysEventParser()
+{
+    if (sysEventParser_ == nullptr) {
+        std::string yamlFile = (defaultConfigDir_.back() != '/') ? (defaultConfigDir_ + "/hisysevent.def") :
+            (defaultConfigDir_ + "hisysevent.def");
+        HIVIEW_LOGI("yamlFile path is %{public}s", yamlFile.c_str());
+        sysEventParser_ = std::make_shared<EventJsonParser>(yamlFile);
     }
-    StartPlatformDispatchQueue();
-
-    // init global context helper, remove in the future
-    HiviewGlobal::CreateInstance(static_cast<HiviewContext&>(*this));
-
-    LoadBusinessPlugin(config);
-
-    // start load plugin bundles
-    LoadPluginBundles();
-
-    // maple delay start eventsource
-    for (const auto& plugin : eventSourceList_) {
-        auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
-        if (sharedSource == nullptr) {
-            HIVIEW_LOGE("Fail to cast plugin to event source!");
-            continue;
-        }
-        StartEventSource(sharedSource);
-    }
-    eventSourceList_.clear();
-    isReady_ = true;
-    NotifyPluginReady();
-    ScheduleCheckUnloadablePlugins();
-    return true;
 }
 
 void HiviewPlatform::UpdateBetaConfigIfNeed()
@@ -422,6 +435,12 @@ void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineIn
         pluginList.push_back(pluginMap_[pluginName]);
     }
     std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(pipelineInfo.name, pluginList);
+    std::string pipelineConfigPath = PIPELINE_RULE_CONFIG_DIR + pipelineInfo.name;
+    HIVIEW_LOGI("pipelineConfigPath = %{public}s", pipelineConfigPath.c_str());
+    if (FileUtil::FileExists(pipelineConfigPath)) {
+        HiviewRuleParser ruleParser(pipelineConfigPath);
+        pipelineRules_[pipelineInfo.name] = ruleParser.getRule();
+    }
     pipelines_[pipelineInfo.name] = std::move(pipeline);
 }
 
@@ -439,6 +458,13 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
 
     auto begin = TimeUtil::GenerateTimestamp();
     plugin->OnLoad();
+    std::string dispatchConfiPath = DISPATCH_RULE_CONFIG_DIR + pluginInfo.name;
+    if (FileUtil::FileExists(dispatchConfiPath)) {
+        HiviewRuleParser ruleParser(dispatchConfiPath);
+        auto dispatchConfig = ruleParser.getRule();
+        AddDispatchInfo(std::weak_ptr<Plugin>(plugin), dispatchConfig->typeList, dispatchConfig->eventList,
+            dispatchConfig->tagList, dispatchConfig->domainRuleMap);
+    }
     if (pluginInfo.isEventSource) {
         auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
         if (sharedSource == nullptr) {
@@ -580,53 +606,15 @@ void HiviewPlatform::RegisterUnorderedEventListener(std::weak_ptr<EventListener>
     if (ptr == nullptr) {
         return;
     }
-
     auto name = ptr->GetListenerName();
     auto itListenerInfo = listeners_.find(name);
     if (itListenerInfo == listeners_.end()) {
         auto tmp = std::make_shared<ListenerInfo>();
-        tmp->instanceInfo = std::make_shared<InstanceInfo>();
-        tmp->instanceInfo->isPlugin = false;
-        tmp->instanceInfo->listener = listener;
-        tmp->instanceInfo->name = name;
+        tmp->listener_ = listener;
         listeners_[name] = tmp;
     } else {
         auto tmp = listeners_[name];
-        tmp->instanceInfo->isPlugin = false;
-        tmp->instanceInfo->listener = listener;
-    }
-
-    // dispatch engine event
-    std::map<std::string, std::shared_ptr<Plugin>>::iterator it = pluginMap_.find(ENGINE_EVENT_DISPATCHER);
-    if ((it != pluginMap_.end()) && (it->second != nullptr)) {
-        auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
-        dispatcher->RegisterListener(listener);
-    }
-}
-
-void HiviewPlatform::RegisterDynamicListenerInfo(std::weak_ptr<Plugin> plugin)
-{
-    auto ptr = plugin.lock();
-    if (ptr == nullptr) {
-        return;
-    }
-
-    auto name = ptr->GetName();
-    auto itListenerInfo = listeners_.find(name);
-    if (itListenerInfo == listeners_.end()) {
-        auto tmp = std::make_shared<ListenerInfo>();
-        tmp->instanceInfo = std::make_shared<InstanceInfo>();
-        tmp->instanceInfo->isPlugin = true;
-        tmp->instanceInfo->plugin = GetPluginByName(ptr->GetName());
-        tmp->instanceInfo->name = name;
-        listeners_[name] = tmp;
-    }
-
-    // dispatch engine event
-    std::map<std::string, std::shared_ptr<Plugin>>::iterator it = pluginMap_.find(ENGINE_EVENT_DISPATCHER);
-    if ((it != pluginMap_.end()) && (it->second != nullptr)) {
-        auto dispatcher = std::static_pointer_cast<EngineEventDispatcher>(it->second);
-        dispatcher->RegisterListener(GetPluginByName(ptr->GetName()));
+        tmp->listener_ = listener;
     }
 }
 
@@ -989,141 +977,107 @@ void HiviewPlatform::ScheduleCheckUnloadablePlugins()
     sharedWorkLoop_->AddTimerEvent(nullptr, nullptr, task, checkIdlePeriod_, true);
 }
 
-void HiviewPlatform::AddListenerInfo(uint32_t type, std::weak_ptr<Plugin> plugin,
-    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+void HiviewPlatform::AddDispatchInfo(std::weak_ptr<Plugin> plugin, const std::unordered_set<uint8_t>& types,
+    const std::unordered_set<std::string>& eventNames, const std::unordered_set<std::string>& tags,
+    const std::unordered_map<std::string, DomainRule>& domainRulesMap)
 {
     auto ptr = plugin.lock();
     if (ptr == nullptr) {
         return;
     }
     auto name = ptr->GetName();
-    auto itListenerInfo = listeners_.find(name);
-    std::shared_ptr<ListenerInfo> data = nullptr;
-    if (itListenerInfo == listeners_.end()) {
-        auto tmp = std::make_shared<ListenerInfo>();
-        tmp->instanceInfo = std::make_shared<InstanceInfo>();
-        tmp->instanceInfo->isPlugin = true;
-        tmp->instanceInfo->plugin = GetPluginByName(ptr->GetName());
-        listeners_[name] = tmp;
-        data = listeners_[name];
+    auto itDispatchInfo = dispatchers_.find(name);
+    std::shared_ptr<DispatchInfo> data = nullptr;
+    if (itDispatchInfo == dispatchers_.end()) {
+        auto tmp = std::make_shared<DispatchInfo>();
+        tmp->plugin_ = plugin;
+        dispatchers_[name] = tmp;
+        data = dispatchers_[name];
     } else {
-        data = itListenerInfo->second;
+        data = itDispatchInfo->second;
     }
-
+    if (!types.empty()) {
+        data->typesInfo_.insert(types.begin(), types.end());
+    }
+    if (!tags.empty()) {
+        data->tagsInfo_.insert(tags.begin(), tags.end());
+    }
     if (!eventNames.empty()) {
-        auto it = data->strListenerInfo.find(type);
-        if (it != data->strListenerInfo.end()) {
-            it->second.insert(eventNames.begin(), eventNames.end());
-        } else {
-            data->strListenerInfo[type] = eventNames;
-        }
+        data->eventsInfo_.insert(eventNames.begin(), eventNames.end());
     }
-
-    if (!listenerInfo.empty()) {
-        auto it = data->idListenerInfo.find(type);
-        if (it != data->idListenerInfo.end()) {
-            it->second.insert(listenerInfo.begin(), listenerInfo.end());
-        } else {
-            data->idListenerInfo[type] = listenerInfo;
-        }
+    if (!domainRulesMap.empty()) {
+        data->domainsInfo_.insert(domainRulesMap.begin(), domainRulesMap.end());
     }
 }
 
-void HiviewPlatform::AddListenerInfo(uint32_t type, const std::string& name,
-    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+void HiviewPlatform::AddListenerInfo(uint32_t type, const std::string& name, const std::set<std::string>& eventNames,
+    const std::map<std::string, DomainRule>& domainRulesMap)
 {
     auto itListenerInfo = listeners_.find(name);
     std::shared_ptr<ListenerInfo> data = nullptr;
     if (itListenerInfo == listeners_.end()) {
         auto tmp = std::make_shared<ListenerInfo>();
-        tmp->instanceInfo = std::make_shared<InstanceInfo>();
-        tmp->instanceInfo->isPlugin = false;
         listeners_[name] = tmp;
         data = listeners_[name];
     } else {
         data = itListenerInfo->second;
     }
-
     if (!eventNames.empty()) {
-        auto it = data->strListenerInfo.find(type);
-        if (it != data->strListenerInfo.end()) {
+        auto it = data->eventsInfo_.find(type);
+        if (it != data->eventsInfo_.end()) {
             it->second.insert(eventNames.begin(), eventNames.end());
         } else {
-            data->strListenerInfo[type] = eventNames;
+            data->eventsInfo_[type] = eventNames;
         }
     }
-
-    if (!listenerInfo.empty()) {
-        auto it = data->idListenerInfo.find(type);
-        if (it != data->idListenerInfo.end()) {
-            it->second.insert(listenerInfo.begin(), listenerInfo.end());
+    if (!domainRulesMap.empty()) {
+        auto it = data->domainsInfo_.find(type);
+        if (it != data->domainsInfo_.end()) {
+            it->second.insert(domainRulesMap.begin(), domainRulesMap.end());
         } else {
-            data->idListenerInfo[type] = listenerInfo;
+            data->domainsInfo_[type] = domainRulesMap;
         }
     }
 }
 
-std::vector<std::weak_ptr<HiviewContext::InstanceInfo>> HiviewPlatform::GetListenerInfo(uint32_t type,
-    const std::string& eventName, uint32_t eventId)
+void HiviewPlatform::AddListenerInfo(uint32_t type, const std::string& name)
 {
-    std::vector<std::weak_ptr<InstanceInfo>> ret;
-    for (auto& tmp : listeners_) {
-        auto data = tmp.second;
+    auto itListenerInfo = listeners_.find(name);
+    std::shared_ptr<ListenerInfo> data = nullptr;
+    if (itListenerInfo == listeners_.end()) {
+        auto tmp = std::make_shared<ListenerInfo>();
+        listeners_[name] = tmp;
+        data = listeners_[name];
+    } else {
+        data = itListenerInfo->second;
+    }
+    data->messageTypes_.push_back(type);
+}
 
-        bool retString = false;
-        auto itStrInfo = data->strListenerInfo.find(type);
-        if (itStrInfo != data->strListenerInfo.end()) {
-            retString = std::any_of(itStrInfo->second.begin(), itStrInfo->second.end(),
-                [&](const std::string& name) {
-                    return (eventName.find(name) != std::string::npos);
-                });
-        }
-
-        bool retId = false;
-        auto itIdInfo = data->idListenerInfo.find(type);
-        if (itIdInfo != data->idListenerInfo.end()) {
-            retId = std::any_of(itIdInfo->second.begin(), itIdInfo->second.end(),
-                [&](const EventListener::EventIdRange& range) {
-                    return ((eventId >= range.begin) && (eventId <= range.end));
-                });
-        }
-
-        if (retString || retId) {
-            ret.push_back(data->instanceInfo);
+std::vector<std::weak_ptr<EventListener>> HiviewPlatform::GetListenerInfo(uint32_t type,
+    const std::string& eventName, const std::string& domain)
+{
+    std::vector<std::weak_ptr<EventListener>> ret;
+    for (auto& pairListener : listeners_) {
+        auto listenerInfo = pairListener.second;
+        if (listenerInfo->Match(type, eventName, domain)) {
+            ret.push_back(listenerInfo->listener_);
         }
     }
     return ret;
 }
 
-bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::string& name,
-    std::set<EventListener::EventIdRange> &listenerInfo)
+std::vector<std::weak_ptr<Plugin>> HiviewPlatform::GetDisPatcherInfo(uint32_t type,
+    const std::string& eventName, const std::string& tag, const std::string& domain)
 {
-    auto it = listeners_.find(name);
-    if (it == listeners_.end()) {
-        return false;
+    std::vector<std::weak_ptr<Plugin>> ret;
+    for (auto& pairDispatcher : dispatchers_) {
+        auto dispatcherInfo = pairDispatcher.second;
+        if (dispatcherInfo->Match(type, eventName, tag, domain)) {
+            ret.push_back(dispatcherInfo->plugin_);
+        }
     }
-    auto tmp = it->second->idListenerInfo.find(type);
-    if (tmp != it->second->idListenerInfo.end()) {
-        listenerInfo = tmp->second;
-        return true;
-    }
-    return false;
-}
-
-bool HiviewPlatform::GetListenerInfo(uint32_t type, const std::string& name,
-    std::set<std::string> &eventNames)
-{
-    auto it = listeners_.find(name);
-    if (it == listeners_.end()) {
-        return false;
-    }
-
-    auto tmp = it->second->strListenerInfo.find(type);
-    if (tmp != it->second->strListenerInfo.end()) {
-        eventNames = tmp->second;
-        return true;
-    }
-    return false;
+    return ret;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

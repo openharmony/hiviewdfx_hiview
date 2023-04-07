@@ -17,6 +17,7 @@ config("hiview_base_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
+    "//third_party/jsoncpp/include",
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//third_party/bounds_checking_function/include",
     "//commonlibrary/c_utils/base/include",
@@ -52,9 +53,9 @@ ohos_source_set("hiview_base") {
   sources = [
     "audit.cpp",
     "audit_log_parser.cpp",
+    "dispatch_config.cpp",
     "event.cpp",
     "event_dispatch_queue.cpp",
-    "event_dispatcher.cpp",
     "event_loop.cpp",
     "event_source.cpp",
     "hiview_global.cpp",
@@ -72,6 +73,7 @@ ohos_source_set("hiview_base") {
     "event_store:event_store_source",
     "running_status_logger:running_status_logger_source",
     "utility:hiview_utility",
+    "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [

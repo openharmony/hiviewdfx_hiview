@@ -16,10 +16,11 @@ import("//build/ohos.gni")
 config("hiview_core_config") {
   visibility = [ "*:*" ]
   include_dirs = [
-    ".",
+    "include",
     "$hiview_root/include",
     "$hiview_base/utility/include",
     "$hiview_adapter/utility/include",
+    "//third_party/jsoncpp/include",
   ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
 }
@@ -29,53 +30,26 @@ ohos_source_set("hiview_core") {
   public_configs = [ ":hiview_core_config" ]
 
   sources = [
+    "event_json_parser.cpp",
+    "flat_json_parser.cpp",
     "hiview_platform.cpp",
     "plugin_bundle.cpp",
     "plugin_config.cpp",
   ]
 
   deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
+    "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
     "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "platform_config:hiviewplatform_config",
   ]
 
-  external_deps = [ "hisysevent_native:libhisysevent" ]
-}
-
-ohos_prebuilt_etc("hiview.para.dac") {
-  source = "config/hiview.para.dac"
-  relative_install_dir = "param"
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-}
-
-ohos_prebuilt_etc("monitor_config") {
-  source = "config/monitor.cfg"
-  relative_install_dir = "hiview"
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-}
-
-ohos_source_set("sysevent_source") {
-  part_name = "hiview"
-  public_configs = [ ":hiview_core_config" ]
-
-  sources = [
-    "event_server.cpp",
-    "monitor_config.cpp",
-    "platform_monitor.cpp",
-    "sysevent_source.cpp",
+  external_deps = [
+    "hisysevent_native:libhisysevent",
+    "init:libbeget_proxy",
+    "init:libbegetutil",
   ]
-
-  deps = [
-    ":hiview.para.dac",
-    ":monitor_config",
-    "$hiview_adapter/system_service:system_service",
-    "$hiview_base:hiviewbase",
-  ]
-
-  external_deps = [ "init:libbegetutil" ]
 }
 
 group("unittest") {

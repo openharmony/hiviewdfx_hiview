@@ -76,20 +76,14 @@ void HiviewGlobal::PostUnorderedEvent(std::shared_ptr<Event> event)
 }
 
 void HiviewGlobal::AddListenerInfo(uint32_t type, const std::string& name,
-    const std::set<std::string>& eventNames, const std::set<EventListener::EventIdRange>& listenerInfo)
+    const std::set<std::string>& eventNames, const std::map<std::string, DomainRule>& domainRulesMap)
 {
-    context_.AddListenerInfo(type, name, eventNames, listenerInfo);
+    context_.AddListenerInfo(type, name, eventNames, domainRulesMap);
 }
 
-bool HiviewGlobal::GetListenerInfo(uint32_t type, const std::string& name,
-    std::set<EventListener::EventIdRange> &listenerInfo)
+void HiviewGlobal::AddListenerInfo(uint32_t type, const std::string& name)
 {
-    return context_.GetListenerInfo(type, name, listenerInfo);
-}
-
-bool HiviewGlobal::GetListenerInfo(uint32_t type, const std::string& name, std::set<std::string> &eventNames)
-{
-    return context_.GetListenerInfo(type, name, eventNames);
+    context_.AddListenerInfo(type, name);
 }
 
 std::list<std::weak_ptr<Plugin>> HiviewGlobal::GetPipelineSequenceByName(const std::string& name)

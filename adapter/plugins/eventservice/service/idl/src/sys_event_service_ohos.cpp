@@ -178,9 +178,8 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             HiLog::Error(LABEL, "interface is null, no need to match rules.");
             continue;
         }
-        auto tag = GetTagByDomainAndName(event->domain_, event->eventName_);
-        auto eventType = GetTypeByDomainAndName(event->domain_, event->eventName_);
-        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_, tag, eventType);
+        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_,
+            event->tag_, event->eventType_);
         HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
             isMatched ? "success" : "fail");
         if (isMatched) {

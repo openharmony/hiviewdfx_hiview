@@ -90,11 +90,6 @@ void EventProcessorExample4::OnLoad()
 {
     SetVersion("EventProcessorExample4.0");
     printf("EventProcessorExample4 OnLoad \n");
-    auto ptr = std::static_pointer_cast<EventProcessorExample4>(shared_from_this());
-    GetHiviewContext()->RegisterDynamicListenerInfo(ptr);
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testaa");
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, "testbb");
-    AddEventListenerInfo(OHOS::HiviewDFX::Event::MessageType::FAULT_EVENT, EventSourceExample::PIPELINE_EVENT_ID_AAA);
 }
 
 void EventProcessorExample4::OnUnload()

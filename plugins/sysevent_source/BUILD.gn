@@ -1,0 +1,72 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+config("hiview_core_config") {
+  visibility = [ "*:*" ]
+  include_dirs = [ "include" ]
+  cflags_cc = [ "-D__HIVIEW_OHOS__" ]
+}
+
+ohos_prebuilt_etc("hiview.para.dac") {
+  source = "config/hiview.para.dac"
+  relative_install_dir = "param"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
+ohos_prebuilt_etc("monitor_config") {
+  source = "config/monitor.cfg"
+  relative_install_dir = "hiview"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
+ohos_source_set("sysevent_source") {
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  public_configs = [ ":hiview_core_config" ]
+
+  sources = [
+    "event_server.cpp",
+    "monitor_config.cpp",
+    "platform_monitor.cpp",
+    "sys_event_stat.cpp",
+    "sysevent_source.cpp",
+  ]
+
+  deps = [
+    ":hiview.para.dac",
+    ":monitor_config",
+    "$hiview_base:hiviewbase",
+    "$hiview_core:hiview_core",
+  ]
+
+  external_deps = [ "init:libbegetutil" ]
+}
+
+group("unittest") {
+  testonly = true
+  deps = []
+}
+
+group("moduletest") {
+  testonly = true
+  deps = []
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = []
+}

@@ -137,7 +137,7 @@ ohos_unittest("EventServerTest") {
 
   deps = [
     "$hiview_adapter/utility:hiview_adapter_utility",
-    "$hiview_core:sysevent_source",
+    "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
 }

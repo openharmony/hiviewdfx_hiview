@@ -1,0 +1,52 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+config("hiview_core_config") {
+  visibility = [ "*:*" ]
+  include_dirs = [ "include" ]
+  cflags_cc = [ "-D__HIVIEW_OHOS__" ]
+}
+
+ohos_source_set("sys_dispatcher") {
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  public_configs = [ ":hiview_core_config" ]
+
+  sources = [ "sys_dispatcher.cpp" ]
+
+  deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
+    "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
+    "$hiview_adapter/system_service:system_service",
+    "$hiview_base:hiviewbase",
+  ]
+
+  external_deps = [ "init:libbegetutil" ]
+}
+
+group("unittest") {
+  testonly = true
+  deps = []
+}
+
+group("moduletest") {
+  testonly = true
+  deps = []
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = []
+}
