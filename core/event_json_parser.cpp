@@ -188,7 +188,7 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
     }
     auto curSysEventId = GenerateHash(jsonStr);
     if (filter_.IsDuplicateEvent(curSysEventId)) {
-        HIVIEW_LOGW("duplicate sys event, ignore it directly.");
+        HIVIEW_LOGD("duplicate sys event, ignore it directly.");
         return false; // ignore duplicate sys event
     }
     AppendExtensiveInfo(eventJson, jsonStr, curSysEventId);
