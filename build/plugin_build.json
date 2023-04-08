@@ -80,13 +80,24 @@
                         "SysEventDispatcher",
                         "SysEventStore",
                         "Faultlogger",
-                        "EventLogger",
-                        "BBoxDetectorPlugin"
+                        "EventLogger"
+                    ],
+                    "faultloggerPipeline": [
+                        "Faultlogger",
+                        "SysEventDispatcher",
+                        "SysEventStore"
+                    ],
+                    "BBoxDetectorPipeline": [
+                        "BBoxDetectorPlugin",
+                        "SysEventDispatcher",
+                        "SysEventStore"
                     ]
                 },
                 "pipelinegroups": {
                     "SysEventSource": [
-                        "SysEventPipeline"
+                        "SysEventPipeline",
+                        "faultloggerPipeline",
+                        "BBoxDetectorPipeline"
                     ]
                 },
                 "threads": {

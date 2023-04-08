@@ -367,49 +367,24 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     info.summary = StringUtil::UnescapeJsonStringValue(summary);
     info.sectionMap = sysEvent->GetKeyValuePairs();
     AddFaultLog(info);
-
-    auto eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet set = (*eventQuery).Select(selections)
-        .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
-        .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, sysEvent->domain_)
-        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, sysEvent->eventName_)
-        .Execute();
-    if (set.GetErrCode() != 0) {
-        HIVIEW_LOGE("failed to get db, error:%{public}d.", set.GetErrCode());
-        return false;
+    sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
+    sysEvent->SetEventValue("MODULE", info.module);
+    sysEvent->SetEventValue("LOG_PATH", info.logPath);
+    sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
+    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
+    sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
+    std::map<std::string, std::string> eventInfos;
+    if (AnalysisFaultlog(info, eventInfos)) {
+        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
+        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
+        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     }
-    if (set.HasNext()) {
-        auto record = set.Next();
-        if (record->GetSeq() == sysEvent->GetSeq()) {
-            HIVIEW_LOGI("Seq match success, info.logPath %{public}s", info.logPath.c_str());
-            sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
-            sysEvent->SetEventValue("MODULE", info.module);
-            sysEvent->SetEventValue("LOG_PATH", info.logPath);
-            sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
-            sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-            sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
-
-            std::map<std::string, std::string> eventInfos;
-            if (AnalysisFaultlog(info, eventInfos)) {
-                sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
-                sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
-                                        StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
-                sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
-                                        StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
-                sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
-                                        StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
-            }
-            sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-            auto retCode = EventStore::SysEventDao::Update(sysEvent, false);
-            if (retCode == 0) {
-                return true;
-            }
-        }
-    }
-
-    HIVIEW_LOGE("eventLog LogPath update to DB failed!");
-    return false;
+    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+    return true;
 }
 
 bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
