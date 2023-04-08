@@ -33,7 +33,10 @@ ohos_source_set("sys_dispatcher") {
     "$hiview_base:hiviewbase",
   ]
 
-  external_deps = [ "init:libbegetutil" ]
+  external_deps = [
+    "init:libbegetutil",
+    "ipc:ipc_core",
+  ]
 }
 
 group("unittest") {
