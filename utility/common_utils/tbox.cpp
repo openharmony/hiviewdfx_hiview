@@ -133,7 +133,7 @@ string Tbox::GetStackName(string line)
     return stackname;
 }
 
-void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
+void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo, string eventType)
 {
     auto iterEndStack = eventInfo.find(PARAMETER_ENDSTACK);
     if (eventInfo.empty() || iterEndStack == eventInfo.end() || iterEndStack->second.empty()) {
@@ -141,7 +141,7 @@ void Tbox::FilterTrace(std::map<std::string, std::string>& eventInfo)
     }
     std::vector<std::string> trace;
     LogParse logparse;
-    std::string block = logparse.GetFilterTrace(iterEndStack->second, trace);
+    std::string block = logparse.GetFilterTrace(iterEndStack->second, trace, eventType);
     eventInfo[PARAMETER_ENDSTACK] = block;
     eventInfo["FINGERPRINT"] = Tbox::CalcFingerPrint(block, 0, FP_BUFFER);
     std::stack<std::string> stackTop = logparse.GetStackTop(trace, 3);  // 3 : first/second/last frame

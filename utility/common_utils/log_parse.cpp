@@ -267,10 +267,11 @@ void LogParse::MatchIgnoreLibrary(stack<string> inStack, stack<string>& outStack
  *  trace : last part trace to get Frame
  *  return string : valid trace spliting by "\n"
  */
-std::string LogParse::GetFilterTrace(const std::string& info, std::vector<std::string>& trace, const std::string& eventType) const
+std::string LogParse::GetFilterTrace(const std::string& info, std::vector<std::string>& trace,
+    std::string eventType) const
 {
     std::string newInfo = info;
-    if (eventType == "JS_ERROR" && str.find() != std::string::npos) {
+    if (eventType == "JS_ERROR" && newInfo.find("libace_napi.z.so") != std::string::npos) {
         newInfo = StringUtil::GetRightSubstr(info, "libace_napi.z.so");
     }
     StringUtil::SplitStr(newInfo, "\n", trace, false, false);
