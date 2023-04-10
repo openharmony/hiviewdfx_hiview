@@ -30,7 +30,6 @@ public:
     bool OnEvent(std::shared_ptr<Event> &event) override;
 
 private:
-    bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;
     void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
     void WaitForLogs(const std::string& logDir);
 
