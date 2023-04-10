@@ -6,10 +6,10 @@
                 "END_STACK":"MainCallTrace.v_trace"
             },
             "63_APP_FREEZE_01": {
-                "F3NAME":"BasicParam.v_state"
+                "LAST_FRAME":"BasicParam.v_state"
             },
             "63_APP_FREEZE_02": {
-                "F3NAME":"BasicParam.v_exit"
+                "LAST_FRAME":"BasicParam.v_exit"
             }
     },
     "SYS_FREEZE": {
