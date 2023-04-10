@@ -316,7 +316,7 @@ void CrashValidator::OnLoad()
 {
     kmsgReaderThread_ = std::make_unique<std::thread>(&CrashValidator::ReadServiceCrashStatus, this);
     kmsgReaderThread_->detach();
-    GetHiviewContext()->AppendPluginToPipeline(GetName(), "SysEventPipeline");
+    GetHiviewContext()->AppendPluginToPipeline(GetName(), "faultloggerPipeline");
 }
 
 void CrashValidator::OnUnload()

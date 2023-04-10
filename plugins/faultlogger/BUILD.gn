@@ -23,7 +23,10 @@ ohos_shared_library("libfaultlogger") {
 
 ohos_source_set("faultlogger") {
   part_name = "hiview"
-  deps = [ "service:faultlogger_service" ]
+  deps = [
+    "config:faultloggerPipeline",
+    "service:faultlogger_service",
+  ]
 
   external_deps = [ "hilog_native:libhilog" ]
 }

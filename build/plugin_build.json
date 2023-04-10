@@ -82,6 +82,11 @@
                         "Faultlogger",
                         "EventLogger"
                     ],
+                    "faultloggerPipeline": [
+                        "Faultlogger",
+                        "SysEventDispatcher",
+                        "SysEventStore"
+                    ],
                     "BBoxDetectorPipeline": [
                         "BBoxDetectorPlugin",
                         "SysEventDispatcher",
@@ -91,6 +96,7 @@
                 "pipelinegroups": {
                     "SysEventSource": [
                         "SysEventPipeline",
+                        "faultloggerPipeline",
                         "BBoxDetectorPipeline"
                     ]
                 },
