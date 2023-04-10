@@ -36,7 +36,7 @@ public:
     static bool IsCallStack(std::string& line);
     static std::string GetStackName(std::string line);
     static bool HasCausedBy(const std::string& line);
-    static void FilterTrace(std::map<std::string, std::string>& eventInfo);
+    static void FilterTrace(std::map<std::string, std::string>& eventInfo, std::string eventType = "");
     static bool WaitForDoneFile(const std::string& file, unsigned int timeout);
 
 public:
