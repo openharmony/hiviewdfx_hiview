@@ -15,9 +15,7 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 group("config") {
-  deps = [
-    ":BBoxDetectorPipeline"
-  ]
+  deps = [ ":BBoxDetectorPipeline" ]
 }
 
 ohos_prebuilt_etc("BBoxDetectorPipeline") {
