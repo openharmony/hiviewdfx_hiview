@@ -80,8 +80,7 @@
                         "SysEventDispatcher",
                         "SysEventStore",
                         "Faultlogger",
-                        "EventLogger",
-                        "BBoxDetectorPlugin"
+                        "EventLogger"
                     ],
                     "BBoxDetectorPipeline": [
                         "BBoxDetectorPlugin",
