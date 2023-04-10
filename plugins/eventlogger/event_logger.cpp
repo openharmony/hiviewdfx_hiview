@@ -82,10 +82,10 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
     if (sysEvent->GetValue("eventLog_action").empty()) {
         UpdateDB(sysEvent, "nolog");
-        PostEvent(sysEvent);
         return true;
     }
 
+    sysEvent->OnPending();
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->jsonExtraInfo_.c_str());
@@ -98,7 +98,8 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
             return;
         }
         this->StartLogCollect(sysEvent);
-        this->PostEvent(sysEvent);
+        sysEvent->ResetPendingStatus();
+        sysEvent->OnContinue();
     };
     eventPool_->AddTask(task, "eventlogger");
     // finish pipeline
@@ -144,13 +145,6 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
     UpdateDB(event, logFile);
-}
-
-bool EventLogger::PostEvent(std::shared_ptr<SysEvent> event)
-{
-    auto eventPtr = std::make_shared<SysEvent>(*(event.get()));
-    GetHiviewContext()->PostUnorderedEvent(shared_from_this(), eventPtr);
-    return true;
 }
 
 bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
@@ -289,6 +283,18 @@ void EventLogger::OnLoad()
     if (!freezeCommon.Init()) {
         HIVIEW_LOGE("FreezeCommon filed.");
         return;
+    }
+
+    std::set<std::string> freezeeventNames = freezeCommon.GetPrincipalStringIds();
+    std::unordered_set<std::string> eventNames;
+    for (auto& i : freezeeventNames) {
+        eventNames.insert(i);
+    }
+    auto context = GetHiviewContext();
+    if (context != nullptr) {
+        auto plugin = context->GetPluginByName("FreezeDetectorPlugin");
+        HIVIEW_LOGE("plugin plugin %{public}s.", plugin->GetName().c_str());
+        context->AddDispatchInfo(plugin, {}, eventNames, {}, {});
     }
 }
 

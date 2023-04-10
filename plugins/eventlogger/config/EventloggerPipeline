@@ -1,0 +1,23 @@
+{
+    "domains": [
+        {
+            "domain": "WINDOWMANAGER",
+            "include": ["ANIMATION_CALLBACK_TIMEOUT", "WINDOW_ANIMATION_ABNORMAL", "NO_FOCUS_WINDOW"]
+        },{
+            "domain": "ACE",
+            "include": ["UI_BLOCK_6S", "UI_BLOCK_3S"]
+        },{
+            "domain": "MULTIMODALINPUT",
+            "include": ["APPLICATION_BLOCK_INPUT"]
+        },{
+            "domain": "AAFWK",
+            "include": ["THREAD_BLOCK_6S", "THREAD_BLOCK_3S", "LIFECYCLE_TIMEOUT", "APP_LIFECYCLE_TIMEOUT"]
+        },{
+            "domain": "FRAMEWORK",
+            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT"]
+        },{
+            "domain": "KERNEL_VENDOR",
+            "include": ["SCREEN_ON", "SCREEN_OFF", "HUNGTASK"]
+        }
+    ]
+}
