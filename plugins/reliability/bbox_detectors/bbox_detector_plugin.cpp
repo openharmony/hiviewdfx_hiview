@@ -34,12 +34,6 @@ using namespace std;
 REGISTER(BBoxDetectorPlugin)
 DEFINE_LOG_TAG("BBoxDetectorPlugin");
 
-static std::vector<std::string> EVENT_LIST = { "PANIC", "HWWATCHDOG", "LPM3EXCEPTION", "BOOTLOADER_CRASH", "BOOTFAIL",
-                                               "TRUSTZONE_REBOOTSYS", "CONNEXCEPTION", "SENSORHUBCRASH", "HIFICRASH",
-                                               "HARDWARE_FAULT", "MODEMCRASH", "AUDIO_CODEC_CRASH", "TRUSTZONECRASH",
-                                               "ISPCRASH", "IVPCRASH", "PRESS10S", "GENERAL_SEE_CRASH", "DSSCRASH",
-                                               "UNKNOWNS", "NPUEXCEPTION", "MODEM_REBOOTSYS", "FDULCRASH", "PRESS6S"};
-
 void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
@@ -53,28 +47,11 @@ void BBoxDetectorPlugin::OnUnload()
 
 bool BBoxDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
 {
-    if (!IsInterestedPipelineEvent(event)) {
+    if (event == nullptr || event->domain_ != "KERNEL_VENDOR") {
         return false;
     }
     auto sysEvent = Event::DownCastTo<SysEvent>(event);
     HandleBBoxEvent(sysEvent);
-    return true;
-}
-
-bool BBoxDetectorPlugin::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
-{
-    if (event == nullptr || event->domain_ != "KERNEL_VENDOR") {
-        return false;
-    }
-
-    auto sysEvent = Event::DownCastTo<SysEvent>(event);
-    auto subEventType = sysEvent->GetEventValue("name_");
-    vector<std::string>::iterator it = find(EVENT_LIST.begin(), EVENT_LIST.end(), subEventType);
-    if (it == EVENT_LIST.end()) {
-        HIVIEW_LOGI("subsystem event %{public}s is ignored", subEventType.c_str());
-        return false;
-    }
-
     return true;
 }
 
@@ -111,9 +88,6 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     sysEvent->SetEventValue("FINGERPRINT", Tbox::CalcFingerPrint(event + module + eventInfos["FIRST_FRAME"] +
         eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER));
     sysEvent->SetEventValue("LOG_PATH", dynamicPaths);
-    if (sysEvent->GetSeq() != 0 && EventStore::SysEventDao::Update(sysEvent, false) != 0) {
-        HIVIEW_LOGE("update failed, event: %{public}s", sysEvent->eventName_.c_str());
-    }
 }
 }
 }

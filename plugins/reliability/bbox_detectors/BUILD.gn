@@ -40,6 +40,7 @@ ohos_source_set("bbox_detector") {
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
     "//third_party/libxml2:xml2",
+    "config:config",
   ]
 }
 
