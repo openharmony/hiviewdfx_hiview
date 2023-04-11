@@ -288,22 +288,15 @@ void EventLogTask::PMSUsageCapture()
 
 void EventLogTask::HitraceCapture()
 {
-    constexpr int hitraceWaitTime = 5;
     auto capture = std::make_shared<ShellCatcher>();
-    constexpr int argNum = 1;
-    const char* arg[argNum] = {NULL};
-    capture->SetCmdArgument(arg, argNum);
-    capture->Initialize("/system/bin/hitrace", hitraceWaitTime, 0);
+    capture->Initialize("hitrace", 1, 0);
     tasks_.push_back(capture);
 }
 
 void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("/system/bin/hilog", 0, 0);
-    constexpr int argNum = 2;
-    const char* arg[argNum] = {"-x", NULL};
-    capture->SetCmdArgument(arg, argNum);
+    capture->Initialize("hilog -x", 0, 0);
     tasks_.push_back(capture);
 }
 

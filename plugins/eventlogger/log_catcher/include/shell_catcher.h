@@ -26,16 +26,16 @@ class ShellCatcher : public EventLogCatcher {
 public:
     explicit ShellCatcher();
     ~ShellCatcher() override {};
-    bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
-    void SetCmdArgument(const char* arg[], size_t argSize);
+    bool Initialize(const std::string& cmd, int type, int intParam2) override;
     int Catch(int fd) override;
 private:
     std::string catcherCmd;
-    const char** cmdArgument = nullptr;
-    int shellWaitTime = 0;
+    enum CATCHER_TYPE {
+        CATCHER_HILOG,
+        CATCHER_HITRACE
+    } catcherType;
 
-    void DoChildProcess(int &inFd, int &outFd);
-    void DoFatherProcess(int &inFd, int &outFd, int childPid, int writeFd);
+    void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
 };
 } // namespace HiviewDFX
