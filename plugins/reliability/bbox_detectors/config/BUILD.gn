@@ -20,7 +20,7 @@ group("config") {
 
 ohos_prebuilt_etc("BBoxDetectorPipeline") {
   source = "BBoxDetectorPipeline"
-  relative_install_dir = "hiview/listener_rule"
+  relative_install_dir = "hiview/dispatch_rule"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
