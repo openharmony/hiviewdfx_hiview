@@ -22,17 +22,16 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class HiCollieCollector : public EventListener, public EventSource {
+class HiCollieCollector : public EventSource {
 public:
     bool ReadyToLoad() override;
     void OnLoad() override;
     void OnUnload() override;
     bool OnEvent(std::shared_ptr<Event> &event) override;
-    void OnUnorderedEvent(const Event &event) override;
+    void OnEventListeningCallback(const Event& msg) override;
     bool CanProcessEvent(std::shared_ptr<Event> event) override;
     void Recycle(PipelineEvent* event) override {};
     void PauseDispatch(std::weak_ptr<Plugin> plugin) override {};
-    std::string GetListenerName() override;
 
 private:
     static const inline std::string FAULT_LOG_PATH = "/data/log/faultlog/faultlogger/";

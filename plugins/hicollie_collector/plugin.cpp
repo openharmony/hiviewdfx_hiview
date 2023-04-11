@@ -33,11 +33,6 @@ namespace HiviewDFX {
 REGISTER(HiCollieCollector);
 DEFINE_LOG_TAG("HiCollieCollector");
 
-std::string HiCollieCollector::GetListenerName()
-{
-    return name_;
-}
-
 bool HiCollieCollector::ReadyToLoad()
 {
     return true;
@@ -53,10 +48,8 @@ void HiCollieCollector::OnLoad()
     SetName("HiCollieCollector");
     SetVersion("HiCollieCollector 1.0");
     HIVIEW_LOGI("OnLoad.");
-    std::set<std::string> eventNames = {STRINGID_SERVICE_TIMEOUT, STRINGID_SERVICE_BLOCK};
-    AddListenerInfo(Event::MessageType::SYS_EVENT, eventNames);
-    GetHiviewContext()->RegisterUnorderedEventListener(
-        std::static_pointer_cast<HiCollieCollector>(shared_from_this()));
+    std::unordered_set<std::string> eventNames = {STRINGID_SERVICE_TIMEOUT, STRINGID_SERVICE_BLOCK};
+    AddDispatchInfo({}, eventNames);
 }
 
 void HiCollieCollector::OnUnload()
@@ -69,7 +62,7 @@ bool HiCollieCollector::OnEvent(std::shared_ptr<Event> &event)
     return true;
 }
 
-void HiCollieCollector::OnUnorderedEvent(const Event &event)
+void HiCollieCollector::OnEventListeningCallback(const Event &event)
 {
     HIVIEW_LOGI("received event domain=%{public}s, stringid=%{public}s.\n",
         event.domain_.c_str(), event.eventName_.c_str());
