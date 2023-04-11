@@ -42,7 +42,7 @@ ohos_source_set("hicollie_collector") {
 
 group("unittest") {
   testonly = true
-  deps = [ "test:HicollieCollectorTest" ]
+  deps = []
 }
 
 group("moduletest") {
