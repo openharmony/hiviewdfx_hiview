@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <mutex>
 
 #include "common_utils.h"
 #include "event_source.h"
@@ -188,16 +189,17 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 
 bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
 {
-    auto interval = event->GetIntValue("eventLog_interval");
+    int32_t interval = event->GetIntValue("eventLog_interval");
     if (interval == 0) {
         return true;
     }
 
-    long pid = event->GetEventIntValue("PID");
+    int64_t pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
 
+    std::unique_lock<std::mutex> lck(intervalMutex_);
     std::time_t now = std::time(0);
     for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
         if (it->first.find(eventName) != it->first.npos) {
