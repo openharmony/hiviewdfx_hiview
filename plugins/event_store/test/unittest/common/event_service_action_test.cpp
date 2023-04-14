@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,7 +29,6 @@
 #include "sys_event_stat.h"
 #include "sys_event_db_mgr.h"
 #include "sys_event_dao.h"
-#include "sys_event_db_backup.h"
 #include "sys_event_service.h"
 #include "flat_json_parser.h"
 
@@ -183,15 +182,11 @@ HWTEST_F(EventServiceActionTest, SysEventDao003, testing::ext::TestSize.Level3)
         SysEventCreator sysEventCreator("domain1", "test1", SysEventCreator::FAULT);
         sysEventCreator.SetKeyValue("KEY_INT", i);
         auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, sysEventCreator);
-        EventStore::SysEventDao::Insert(sysEvent1);
+        ASSERT_EQ(EventStore::SysEventDao::Insert(sysEvent1), 0);
     }
-    auto testPlugin = std::make_shared<SysEventService>();
     sysEventDbMgrPtr->StartCheckStoreTask(nullptr);
     sysEventDbMgrPtr->StartCheckStoreTask(currentLooper_);
     sysEventDbMgrPtr->CheckStore();
-    SysEventDbBackup dbBackup(EventStore::StoreType::FAULT);
-    dbBackup.Recover();
-    ASSERT_TRUE(dbBackup.IsBroken() == 0);
     if (currentLooper_ != nullptr) {
         currentLooper_->StopLoop();
         currentLooper_.reset();
