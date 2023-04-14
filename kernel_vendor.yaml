@@ -354,3 +354,57 @@ DSSCRASH:
   FIRST_FRAME: {type: STRING, desc: first stack info}
   SECOND_FRAME: {type: STRING, desc: second stack info}
   LAST_FRAME: {type: STRING, desc: last stack info}
+
+CMA:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: cma event}
+  MSG: {type: STRING, desc: cma event message}
+  MODULE: {type: STRING, desc: module name}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: cma leak pid}
+  UID: {type: INT32, desc: cma leak uid}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  PACKAGE_NAME: {type: STRING, desc: process package name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  SUMMARY: {type: STRING, desc: fault summary}
+  LOG_PATH: {type: STRING, desc: fault log dir}
+  SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
+
+SLUB_OBJ:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: slub obj event}
+  MSG: {type: STRING, desc: slub obj event message}
+  MODULE: {type: STRING, desc: module name}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: slub obj leak pid}
+  UID: {type: INT32, desc: slub obj leak uid}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  PACKAGE_NAME: {type: STRING, desc: process package name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  SUMMARY: {type: STRING, desc: fault summary}
+  LOG_PATH: {type: STRING, desc: fault log dir}
+  SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
+
+LOWMEM:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: lowmem event}
+  MSG: {type: STRING, desc: lowmem event message}
+  MODULE: {type: STRING, desc: module name}
+  REASON: {type: STRING, desc: fault reason}
+  PID: {type: INT32, desc: lowmem leak pid}
+  UID: {type: INT32, desc: lowmem leak uid}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  PACKAGE_NAME: {type: STRING, desc: process package name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  SUMMARY: {type: STRING, desc: fault summary}
+  LOG_PATH: {type: STRING, desc: fault log dir}
+  SUB_LOG_PATH: {type: STRING, desc: sub fault log dir}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
