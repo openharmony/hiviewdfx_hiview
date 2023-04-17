@@ -29,6 +29,7 @@
 #include "command_catcher.h"
 #include "dmesg_catcher.h"
 #include "shell_catcher.h"
+#include "hitrace_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -288,8 +289,8 @@ void EventLogTask::PMSUsageCapture()
 
 void EventLogTask::HitraceCapture()
 {
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hitrace", 1, 0);
+    auto capture = std::make_shared<HitraceCatcher>();
+    capture->Initialize("", 0, 0);
     tasks_.push_back(capture);
 }
 
