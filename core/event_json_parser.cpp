@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,6 @@
 #include "hiview_global.h"
 #include "logger.h"
 #include "parameter.h"
-#include "sys_event_query.h"
 #include "sys_event_service_adapter.h"
 
 namespace OHOS {

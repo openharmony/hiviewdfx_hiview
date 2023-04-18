@@ -14,6 +14,7 @@
  */
 #include "log_analyzer.h"
 
+#include "common_utils.h"
 #include "faultlog_util.h"
 #include "file_util.h"
 #include "smart_parser.h"
@@ -47,6 +48,11 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
         eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"] +
         ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : ""), 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
+
+    if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty()) && eventInfos["TRACER_PID"] != "0") {
+        std::string processName = CommonUtils::GetProcNameByPid(std::stoi(eventInfos["TRACER_PID"]));
+        eventInfos["LAST_FRAME"] += ("(Tracer Process Name:" + processName + ")");
+    }
 
     return true;
 }

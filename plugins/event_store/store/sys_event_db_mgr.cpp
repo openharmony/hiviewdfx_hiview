@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,21 +22,14 @@
 #include "file_util.h"
 #include "logger.h"
 #include "sys_event_dao.h"
-#include "sys_event_db_backup.h"
 #include "sys_event_db_cleaner.h"
 #include "sys_event.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-using EventStore::StoreType;
 using EventStore::SysEventDao;
 DEFINE_LOG_TAG("HiView-SysEventDbMgr");
-namespace {
-constexpr StoreType STORE_TYPES[] = {
-    StoreType::BEHAVIOR, StoreType::FAULT, StoreType::STATISTIC, StoreType::SECURITY
-};
-}
 
 void SysEventDbMgr::SaveToStore(std::shared_ptr<SysEvent> event) const
 {
@@ -60,16 +53,6 @@ void SysEventDbMgr::CheckStore()
 {
     HIVIEW_LOGI("start to check store");
     SysEventDbCleaner::TryToClean();
-}
-
-void SysEventDbMgr::TryToRecover()
-{
-    for (auto type : STORE_TYPES) {
-        SysEventDbBackup dbBackup(type);
-        if (dbBackup.IsBroken() && !dbBackup.Recover()) {
-            HIVIEW_LOGE("failed to recover db, type=%{public}d", type);
-        }
-    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
