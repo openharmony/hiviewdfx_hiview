@@ -41,7 +41,6 @@ private:
     std::string DmesgSaveTofile();
     bool DumpDmesgLog(int fd);
     bool WriteSysrq();
-
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -83,6 +83,10 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
         "LOG_PATH", info.logPath,
         "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
         "HAPPEN_TIME", std::to_string(info.time),
+        "HITRACE_TIME", info.sectionMap.find("HITRACE_TIME") != info.sectionMap.end()?
+                        info.sectionMap.at("HITRACE_TIME") : "",
+        "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end()?
+                      info.sectionMap.at("SYSRQ_TIME") : "",
         "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
         "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
         "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],

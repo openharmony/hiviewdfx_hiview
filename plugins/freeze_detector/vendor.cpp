@@ -109,6 +109,8 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.summary = type + ": " + processName + " " + stringId
         + " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
     info.logPath = logPath;
+    info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
+    info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
     AddFaultLog(info);
     return logPath;
 }
@@ -185,14 +187,20 @@ std::string Vendor::MergeEventLog(
     std::ostringstream body;
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
-        HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
-
-        if (filePath == "nolog" || filePath == "" || FileUtil::FileExists(filePath) == false) {
+        if (filePath == "nolog" || filePath == "") {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
                 node.GetDomain().c_str(), node.GetStringId().c_str());
             DumpEventInfo(body, HEADER, node);
             continue;
         }
+
+        if (FileUtil::FileExists(filePath) == false) {
+            HIVIEW_LOGE("[%{public}s, %{public}s] File:%{public}s does not exist",
+                node.GetDomain().c_str(), node.GetStringId().c_str(), filePath.c_str());
+            return "";
+        }
+
+        HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
 
         std::ifstream ifs(filePath, std::ios::in);
         if (!ifs.is_open()) {

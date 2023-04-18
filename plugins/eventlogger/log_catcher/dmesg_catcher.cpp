@@ -102,6 +102,11 @@ std::string DmesgCatcher::DmesgSaveTofile()
     std::string sysrqTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
     std::string fullPath = FULL_DIR + "sysrq-" + sysrqTime + ".log";
 
+    if (FileUtil::FileExists(fullPath)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", fullPath.c_str());
+        return fullPath;
+    }
+
     auto fd = open(fullPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     if (fd < 0) {
         HIVIEW_LOGI("Fail to create %s.", fullPath.c_str());
