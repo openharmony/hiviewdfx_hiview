@@ -45,6 +45,25 @@ std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& dbFile
     return std::make_shared<SysEventQueryWrapper>(dbFile);
 }
 
+std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& domain,
+    const std::vector<std::string>& names)
+{
+    if (domain.empty() || names.empty()) {
+        return nullptr;
+    }
+    EventStore::Cond domainCond = EventStore::Cond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, domain);
+    EventStore::Cond nameConds;
+    for_each(names.cbegin(), names.cend(),
+        [&nameConds] (const auto& item) {
+            EventStore::Cond nameCond(EventStore::EventCol::NAME, EventStore::Op::EQ, item);
+            nameConds.Or(nameCond);
+        });
+    domainCond.And(nameConds);
+    auto query = std::make_shared<SysEventQueryWrapper>(GetDataFile(StoreType::FAULT));
+    query->And(domainCond);
+    return query;
+}
+
 int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)
 {
     std::string dbFile = GetDataFile(static_cast<StoreType>(sysEvent->what_));
