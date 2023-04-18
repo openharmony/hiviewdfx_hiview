@@ -57,8 +57,10 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture, this, false)));
-    captureList_.insert(std::pair<std::string, capture>("k:SysRqFile", std::bind(&EventLogTask::SysrqCapture, this, true)));
+    captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture,
+                                                        this, false)));
+    captureList_.insert(std::pair<std::string, capture>("k:SysRqFile", std::bind(&EventLogTask::SysrqCapture,
+                                                        this, true)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
