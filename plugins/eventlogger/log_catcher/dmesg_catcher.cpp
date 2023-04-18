@@ -17,10 +17,15 @@
 #include <string>
 #include <sys/klog.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "logger.h"
 #include "log_catcher_utils.h"
 #include "common_utils.h"
+#include "file_util.h"
+#include "time_util.h"
 #include "securec.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,39 +33,47 @@ DEFINE_LOG_LABEL(0xD002D01, "EventLogger-DmesgCatcher");
 namespace {
     constexpr int SYSLOG_ACTION_READ_ALL = 3;
     constexpr int SYSLOG_ACTION_SIZE_BUFFER = 10;
+    constexpr mode_t DEFAULT_LOG_FILE_MODE = 0664;
 }
 DmesgCatcher::DmesgCatcher() : EventLogCatcher()
 {
+    event_ = nullptr;
     name_ = "DmesgCatcher";
 }
 
 bool DmesgCatcher::Initialize(const std::string& packageNam  __UNUSED,
-    int pid  __UNUSED, int intParam)
+    int isWriteNewFile  __UNUSED, int intParam)
 {
-    needWriteSysrq = intParam;
-    description_ = needWriteSysrq ? "catcher: SysrqCatcher\n" : "catcher: DmesgCatcher\n";
+    isWriteNewFile_ = isWriteNewFile;
+    needWriteSysrq_ = intParam;
     return true;
 }
 
-int DmesgCatcher::DumpDmesgLog(int fd)
+bool DmesgCatcher::Init(std::shared_ptr<SysEvent> event)
+{
+    event_ = event;
+    return true;
+}
+
+bool DmesgCatcher::DumpDmesgLog(int fd)
 {
     if (fd < 0) {
-        return -1;
+        return false;
     }
     int size = klogctl(SYSLOG_ACTION_SIZE_BUFFER, 0, 0);
     if (size <= 0) {
-        return -1;
+        return false;
     }
     char *data = (char *)malloc(size + 1);
     if (data == nullptr) {
-        return -1;
+        return false;
     }
 
     memset_s(data, size + 1, 0, size + 1);
     int readSize = klogctl(SYSLOG_ACTION_READ_ALL, data, size);
     if (readSize < 0) {
         free(data);
-        return -1;
+        return false;
     }
     bool res = FileUtil::SaveStringToFd(fd, data);
     free(data);
@@ -83,13 +96,50 @@ bool DmesgCatcher::WriteSysrq()
     return true;
 }
 
+std::string DmesgCatcher::DmesgSaveTofile()
+{
+    auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+    std::string sysrqTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
+    std::string fullPath = FULL_DIR + "sysrq-" + sysrqTime + ".log";
+
+    auto fd = open(fullPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
+    if (fd < 0) {
+        HIVIEW_LOGI("Fail to create %s.", fullPath.c_str());
+        return "";
+    }
+    bool dumpRet = DumpDmesgLog(fd);
+    close(fd);
+
+    if (!dumpRet) {
+        return "";
+    }
+    if (event_ != nullptr) {
+        event_->SetEventValue("SYSRQ_TIME", sysrqTime);
+    }
+    return fullPath;
+}
+
 int DmesgCatcher::Catch(int fd)
 {
-    auto originSize = GetFdSize(fd);
-    if (needWriteSysrq && !WriteSysrq()) {
-        return -1;
+    if (needWriteSysrq_ && !WriteSysrq()) {
+        return 0;
     }
-    DumpDmesgLog(fd);
+
+    description_ = needWriteSysrq_ ? "\nSysrqCatcher -- " : "DmesgCatcher -- ";
+
+    auto originSize = GetFdSize(fd);
+    if (isWriteNewFile_) {
+        std::string fullPath = DmesgSaveTofile();
+        if (fullPath.empty()) {
+            return 0;
+        }
+        description_ += "fullPath:" + fullPath + "\n";
+        FileUtil::SaveStringToFd(fd, description_);
+    } else {
+        description_ += "\n";
+        FileUtil::SaveStringToFd(fd, description_);
+        DumpDmesgLog(fd);
+    }
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }

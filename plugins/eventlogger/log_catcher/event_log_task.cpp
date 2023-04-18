@@ -57,7 +57,8 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("k:SysRq", std::bind(&EventLogTask::SysrqCapture, this, false)));
+    captureList_.insert(std::pair<std::string, capture>("k:SysRqFile", std::bind(&EventLogTask::SysrqCapture, this, true)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -166,7 +167,7 @@ void EventLogTask::AddSeparator(int fd, std::shared_ptr<EventLogCatcher> catcher
         return;
     }
 
-    int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1, "\n%s:\n", summary.c_str());
+    int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1, "\n%s\n", summary.c_str());
     if (ret > 0) {
         write(fd, buf, strnlen(buf, BUF_SIZE_512));
         fsync(fd);
@@ -308,10 +309,10 @@ void EventLogTask::DmesgCapture()
     tasks_.push_back(capture);
 }
 
-void EventLogTask::SysrqCapture()
+void EventLogTask::SysrqCapture(bool isWriteNewFile)
 {
     auto capture = std::make_shared<DmesgCatcher>();
-    capture->Initialize("", 0, 1);
+    capture->Initialize("", isWriteNewFile, 1);
     tasks_.push_back(capture);
 }
 } // namespace HiviewDFX

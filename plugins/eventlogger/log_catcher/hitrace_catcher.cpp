@@ -57,12 +57,19 @@ int64_t GetSystemBootTime()
 
 HitraceCatcher::HitraceCatcher() : EventLogCatcher()
 {
+    event_ = nullptr;
     name_ = "HitraceCatcher";
 }
 
 bool HitraceCatcher::Initialize(const std::string& strParam1, int intParam1, int intParam2)
 {
     description_ = "";
+    return true;
+}
+
+bool HitraceCatcher::Init(std::shared_ptr<SysEvent> event)
+{
+    event_ = event;
     return true;
 }
 
@@ -89,26 +96,31 @@ int HitraceCatcher::Catch(int fd)
     int64_t currentTime = GetSystemBootTime();
     int64_t beginTime = currentTime - EXTRACE_TIME;
     auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
-    char fullTracePath[BUF_SIZE_256] = {0};
-    int ret = snprintf_s(fullTracePath, BUF_SIZE_256, BUF_SIZE_256 - 1, "%shitrace-%s-%08lld.sys",
-                         FULL_DIR.c_str(),
+    const unsigned int bufSize25 = 25;
+    char hitraceTimeBuf[bufSize25] = {0};
+    int ret = snprintf_s(hitraceTimeBuf, bufSize25, bufSize25 - 1, "%s-%08lld",
                          TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S").c_str(),
-                         beginTime);
+                         currentTime);
     if (ret < 0) {
-        HIVIEW_LOGE("snprintf_s error %{public}d!", ret);
+        HIVIEW_LOGE("hitraceTime snprintf_s error %{public}d!", ret);
         return 0;
     }
+    std::string hitraceTime = hitraceTimeBuf;
+    std::string fullTracePath = FULL_DIR + "hitrace-" + hitraceTime + ".sys";
 
-    HIVIEW_LOGI("start dumpHitrace beginTime:%{public}lld, fullTracePath:%{public}s", beginTime, fullTracePath);
+    HIVIEW_LOGI("start dumpHitrace beginTime:%{public}lld, Path:%{public}s", beginTime, fullTracePath.c_str());
     ret = iHitraceService->DumpHitrace(fullTracePath, beginTime);
     if (ret != 0) {
-        HIVIEW_LOGE("Get iHitraceService DumpHitrace failed!");
+        HIVIEW_LOGE("Get iHitraceService DumpHitrace failed : %{public}d!", ret);
         return 0;
     }
     HIVIEW_LOGI("end dumpHitrace");
 
+    if (event_ != nullptr) {
+        event_->SetEventValue("HITRACE_TIME", hitraceTime);
+    }
     auto originSize = GetFdSize(fd);
-    FileUtil::SaveStringToFd(fd, "HitraceCatcher--fullTracePath:" + std::string(fullTracePath) + "\n");
+    FileUtil::SaveStringToFd(fd, "\nHitraceCatcher--fullTracePath:" + std::string(fullTracePath) + "\n");
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }
