@@ -14,7 +14,8 @@
  */
 #include "peer_binder_catcher.h"
 
-#include "securec.h"
+#include <securec.h>
+#include <sys/wait.h>
 
 #include "common_utils.h"
 #include "file_util.h"
@@ -22,10 +23,13 @@
 #include "logger.h"
 #include "string_util.h"
 
+#include "hiperf_client.h"
 #include "open_stacktrace_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-PeerBinderCatcher");
+using namespace Developtools::HiPerf;
+constexpr char EVENT_LOG_PATH[] = "/data/log/eventlog";
 PeerBinderCatcher::PeerBinderCatcher() : EventLogCatcher()
 {
     name_ = "PeerBinderCatcher";
@@ -72,6 +76,7 @@ int PeerBinderCatcher::Catch(int fd)
         FileUtil::SaveStringToFd(fd, content);
     }
 
+    ForkToDumpHiperf(pids);
     std::string pidStr = "";
     for (auto pidTemp : pids) {
         if (pidTemp != pid_) {
@@ -196,6 +201,56 @@ void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
     FileUtil::SaveStringToFd(fd, content);
 
     LogCatcherUtils::DumpStacktrace(fd, pid);
+}
+
+void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set<int>& pids)
+{
+    HiperfClient::RecordOption opt;
+    opt.SetOutputFilename(fileName);
+    constexpr int collectTime = 1;
+    opt.SetTimeStopSec(collectTime);
+    opt.SetFrequency(1000); // 1000 : 1kHz
+    opt.SetCallGraph("fp");
+    opt.SetOffCPU(true);
+    std::vector<pid_t> selectPids;
+    selectPids.push_back(pid_);
+    for (const auto& pid : pids) {
+        if (pid > 0) {
+            selectPids.push_back(pid);
+        }
+    }
+    opt.SetSelectPids(selectPids);
+    HiperfClient::Client client(EVENT_LOG_PATH);
+    client.Start(opt);
+    sleep(collectTime);
+    client.Stop();
+}
+
+void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
+{
+#if defined(__aarch64__)
+    std::string fileName = "hiperf-" + std::to_string(pid_) + ".data";
+    std::string fullPath = std::string(EVENT_LOG_PATH) + "/" + fileName;
+    if (access(fullPath.c_str(), F_OK) == 0) {
+        // already exist
+        return;
+    }
+
+    pid_t child = fork();
+    if (child < 0) {
+        // failed to fork child
+        return;
+    } else if (child == 0) {
+        pid_t grandChild = fork();
+        if (grandChild == 0) {
+            DoExecHiperf(fileName, pids);
+        }
+        _exit(0);
+    } else {
+        // do not left a zombie
+        waitpid(child, nullptr, 0);
+    }
+#endif
 }
 } // namespace HiviewDFX
 } // namespace OHOS
