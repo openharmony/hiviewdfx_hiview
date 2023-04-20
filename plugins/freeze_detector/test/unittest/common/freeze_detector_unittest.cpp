@@ -195,7 +195,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_004, TestSize.Level3)
     list.push_back(watchPoint1);
     WatchPoint watchPoint2 = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("AAFWK")
-        .InitStringId("LIFECYCLE_TIMEOUT")
+        .InitStringId("THREAD_BLOCK_6S")
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .Build();
     list.push_back(watchPoint2);
