@@ -38,6 +38,7 @@ public:
     static std::shared_ptr<SysEventQuery> BuildQuery(StoreType type);
     static std::shared_ptr<SysEventQuery> BuildQuery(uint16_t eventType);
     static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& dbFile);
+    static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& domain, const std::vector<std::string>& names);
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
     static int Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit = 100);
     static int Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange = true);
