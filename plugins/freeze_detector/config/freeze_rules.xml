@@ -54,7 +54,7 @@
     <rule id="6" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
       <links type="watchpoint">
         <event window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
-          <result code="0" scope="sys"/>
+          <result code="1" scope="sys"/>
         </event>
       </links>
     </rule>
