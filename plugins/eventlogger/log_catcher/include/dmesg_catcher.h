@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "sys_event.h"
+
 #include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -26,14 +28,19 @@ class DmesgCatcher : public EventLogCatcher {
 public:
     explicit DmesgCatcher();
     ~DmesgCatcher() override {};
-    bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
+    bool Initialize(const std::string& packageNam, int isWriteNewFile, int intParam2) override;
     int Catch(int fd) override;
+    bool Init(std::shared_ptr<SysEvent> event);
+
 private:
-    bool needWriteSysrq = false;
+    static const inline std::string FULL_DIR = "/data/log/eventlog/";
+    bool needWriteSysrq_ = false;
+    bool isWriteNewFile_ = false;
+    std::shared_ptr<SysEvent> event_;
 
-    int DumpDmesgLog(int fd);
+    std::string DmesgSaveTofile();
+    bool DumpDmesgLog(int fd);
     bool WriteSysrq();
-
 };
 } // namespace HiviewDFX
 } // namespace OHOS

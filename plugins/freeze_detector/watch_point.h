@@ -38,6 +38,8 @@ public:
         Builder& InitPackageName(const std::string& packageName);
         Builder& InitProcessName(const std::string& processNam);
         Builder& InitLogPath(const std::string& logPath);
+        Builder& InitHitraceTime(const std::string& hitraceTime);
+        Builder& InitSysrqTime(const std::string& sysrqTime);
         WatchPoint Build() const;
 
     private:
@@ -52,6 +54,8 @@ public:
         std::string packageName_;
         std::string processName_;
         std::string logPath_;
+        std::string hitraceTime_;
+        std::string sysrqTime_;
         friend class WatchPoint;
     };
 
@@ -70,6 +74,8 @@ public:
     std::string GetPackageName() const;
     std::string GetProcessName() const;
     std::string GetLogPath() const;
+    std::string GetHitraceTime() const;
+    std::string GetSysrqTime() const;
     void SetLogPath(const std::string& logPath);
     void SetSeq(long seq);
     bool operator<(const WatchPoint& node) const;
@@ -87,6 +93,8 @@ private:
     std::string packageName_;
     std::string processName_;
     std::string logPath_;
+    std::string hitraceTime_;
+    std::string sysrqTime_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

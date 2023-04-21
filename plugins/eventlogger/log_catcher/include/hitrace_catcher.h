@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "sys_event.h"
+
 #include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -27,8 +29,10 @@ public:
     ~HitraceCatcher() override{};
     bool Initialize(const std::string& strParam1, int intParam1, int intParam2) override;
     int Catch(int fd) override;
+    bool Init(std::shared_ptr<SysEvent> event);
 private:
     static const inline std::string FULL_DIR = "/data/log/eventlog/";
+    std::shared_ptr<SysEvent> event_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

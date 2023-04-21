@@ -79,7 +79,7 @@ private:
     void HitraceCapture();
     void HilogCapture();
     void DmesgCapture();
-    void SysrqCapture();
+    void SysrqCapture(bool isWriteNewFile);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

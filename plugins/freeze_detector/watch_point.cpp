@@ -35,7 +35,9 @@ WatchPoint::WatchPoint(const WatchPoint::Builder& builder)
     msg_(builder.msg_),
     packageName_(builder.packageName_),
     processName_(builder.processName_),
-    logPath_(builder.logPath_)
+    logPath_(builder.logPath_),
+    hitraceTime_(builder.hitraceTime_),
+    sysrqTime_(builder.sysrqTime_)
 {
 }
 
@@ -112,6 +114,18 @@ WatchPoint::Builder& WatchPoint::Builder::InitLogPath(const std::string& logPath
     return *this;
 }
 
+WatchPoint::Builder& WatchPoint::Builder::InitHitraceTime(const std::string& hitraceTime)
+{
+    hitraceTime_ = hitraceTime;
+    return *this;
+}
+
+WatchPoint::Builder& WatchPoint::Builder::InitSysrqTime(const std::string& sysrqTime)
+{
+    sysrqTime_ = sysrqTime;
+    return *this;
+}
+
 WatchPoint WatchPoint::Builder::Build() const
 {
     WatchPoint watchPoint = WatchPoint(*this);
@@ -171,6 +185,16 @@ std::string WatchPoint::GetProcessName() const
 std::string WatchPoint::GetLogPath() const
 {
     return logPath_;
+}
+
+std::string WatchPoint::GetHitraceTime() const
+{
+    return hitraceTime_;
+}
+
+std::string WatchPoint::GetSysrqTime() const
+{
+    return sysrqTime_;
 }
 
 void WatchPoint::SetLogPath(const std::string& logPath)
