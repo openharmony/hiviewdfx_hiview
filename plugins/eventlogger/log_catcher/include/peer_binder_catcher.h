@@ -55,6 +55,8 @@ private:
     std::set<int>& pids, int pid) const;
     std::set<int> GetBinderPeerPids(int fd) const;
     void CatcherStacktrace(int fd, int pid) const;
+    void ForkToDumpHiperf(const std::set<int>& pids);
+    void DoExecHiperf(const std::string& fileName, const std::set<int>& pids);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
