@@ -124,7 +124,7 @@ list<vector<string>> LogParse::StackToMultipart(stack<string>& inStack, size_t n
     stack<string> partStack;
     vector<string> validPart;
     list<vector<string>> multiPart;
-    for (size_t i = 0; i < inStack.size(); i++) {
+    while (!inStack.empty()) {
         string topStr = inStack.top();
         StringUtil::EraseString(topStr, "\t");
         if (Tbox::HasCausedBy(topStr)) {
