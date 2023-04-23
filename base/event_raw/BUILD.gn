@@ -1,0 +1,91 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+config("hiview_event_raw_base_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "include" ]
+}
+
+ohos_source_set("hiview_event_raw_base") {
+  sources = [
+    "base/raw_data.cpp",
+    "base/raw_data_base_def.cpp",
+  ]
+
+  public_configs = [ ":hiview_event_raw_base_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
+config("hiview_event_raw_decode_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "include" ]
+}
+
+ohos_source_set("hiview_event_raw_decode") {
+  sources = [
+    "decoded/decoded_event.cpp",
+    "decoded/decoded_param.cpp",
+    "decoded/raw_data_decoder.cpp",
+  ]
+
+  public_configs = [ ":hiview_event_raw_decode_config" ]
+
+  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_base" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
+config("hiview_event_raw_encode_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "include" ]
+}
+
+ohos_source_set("hiview_event_raw_encode") {
+  sources = [
+    "encoded/encoded_param.cpp",
+    "encoded/raw_data_builder.cpp",
+    "encoded/raw_data_builder_json_parser.cpp",
+    "encoded/raw_data_encoder.cpp",
+  ]
+
+  public_configs = [ ":hiview_event_raw_encode_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
+
+  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_base" ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}

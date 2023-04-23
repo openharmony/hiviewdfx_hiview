@@ -37,15 +37,11 @@ constexpr uint64_t PRIME = 0x100000001B3ull;
 constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
 constexpr int INVALID_EVENT_TYPE = 0;
 constexpr char BASE[] = "__BASE";
-constexpr char DOMAIN_[] = "domain_";
-constexpr char NAME_[] = "name_";
-constexpr char ID_[] = "id_";
 constexpr char LEVEL[] = "level";
 constexpr char LEVEL_[] = "level_";
 constexpr char TAG[] = "tag";
 constexpr char TAG_[] = "tag_";
 constexpr char TYPE[] = "type";
-constexpr char TYPE_[] = "type_";
 constexpr char PRESERVE[] = "preserve";
 constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
@@ -154,104 +150,89 @@ bool EventJsonParser::GetPreserveByDomainAndName(const std::string& domain, cons
 
 bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
 {
-    Json::Value eventJson;
-    std::string jsonStr = event->jsonExtraInfo_;
-#ifdef JSONCPP_VERSION_STRING
-    Json::CharReaderBuilder jsonRBuilder;
-    Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
-    std::unique_ptr<Json::CharReader> const reader(jsonRBuilder.newCharReader());
-    JSONCPP_STRING errs;
-    if (!reader->parse(jsonStr.data(), jsonStr.data() + jsonStr.size(), &eventJson, &errs)) {
-#else
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(jsonStr, eventJson)) {
-#endif
-        HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s.", jsonStr.c_str());
+    if (event == nullptr) {
+        HIVIEW_LOGD("sysevent is null.");
         return false;
     }
 
-    if (!CheckEventValidity(eventJson)) {
+    if (!CheckEventValidity(event)) {
         HIVIEW_LOGD("domain_ or name_ not found in the event json string.");
         return false;
     }
-    std::string domain = eventJson[DOMAIN_].asString();
-    std::string name = eventJson[NAME_].asString();
-    auto baseInfo = GetDefinedBaseInfoByDomainName(domain, name);
+
+    auto baseInfo = GetDefinedBaseInfoByDomainName(event->domain_, event->eventName_);
     if (baseInfo.type == INVALID_EVENT_TYPE) {
         HIVIEW_LOGD("type defined for domain: %{public}s, name: %{public}s is invalid.",
-            domain.c_str(), name.c_str());
+            event->domain_.c_str(), event->eventName_.c_str());
         return false;
     }
-    if (!CheckBaseInfoValidity(baseInfo, eventJson)) {
+    if (!CheckBaseInfoValidity(baseInfo, event)) {
         HIVIEW_LOGD("failed to verify the base info of the event.");
         return false;
     }
-    auto curSysEventId = GenerateHash(jsonStr);
+
+    auto curSysEventId = GenerateHash(event->AsJsonStr());
     if (filter_.IsDuplicateEvent(curSysEventId)) {
         HIVIEW_LOGD("duplicate sys event, ignore it directly.");
         return false; // ignore duplicate sys event
     }
-    AppendExtensiveInfo(eventJson, jsonStr, curSysEventId);
+
+    AppendExtensiveInfo(event, curSysEventId);
     WriteSeqToFile(++curSeq);
-    event->jsonExtraInfo_ = jsonStr;
+
     return true;
 }
 
-void EventJsonParser::AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr,
-    const std::string& sysEventId) const
+void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const std::string& sysEventId) const
 {
-    // this customized parser would maintain the original order of JSON key-value pairs
-    FlatJsonParser parser(jsonStr);
-
-    // cJsonArr need to add "level_" and "tag_" by hisysevent.def, "level" is must-option
-    parser.AppendStringValue(LEVEL_, eventJson[LEVEL_].asString());
-    if (eventJson.isMember(TAG_)) {
-        parser.AppendStringValue(TAG_, eventJson[TAG_].asString());
+    if (event == nullptr) {
+        return;
     }
 
     // hash code need to add
-    parser.AppendStringValue(ID_, sysEventId);
+    event->SetId(sysEventId);
 
     // FreezeDetector needs to add
-    parser.AppendStringValue(EventStore::EventCol::INFO.c_str(), "");
+    event->SetEventValue(EventStore::EventCol::INFO, "");
 
     // add testtype configured as system property named persist.sys.hiview.testtype
     if (!testTypeConfigured.empty()) {
-        parser.AppendStringValue(TEST_TYPE_KEY, testTypeConfigured);
+        event->SetEventValue(TEST_TYPE_KEY, testTypeConfigured);
     }
 
     // add seq to sys event and then persist it into local file
-    parser.AppendUInt64Value(SEQ_, static_cast<uint64_t>(curSeq));
-
-    jsonStr = parser.Print();
+    event->SetEventValue(SEQ_, static_cast<uint64_t>(curSeq));
 }
 
-bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, Json::Value& eventJson) const
+bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
 {
-    if (!CheckTypeValidity(baseInfo, eventJson)) {
+    if (!CheckTypeValidity(baseInfo, event)) {
         return false;
     }
     if (!baseInfo.level.empty()) {
-        eventJson[LEVEL_] = baseInfo.level;
+        event->SetEventValue(LEVEL_, baseInfo.level);
     }
     if (!baseInfo.tag.empty()) {
-        eventJson[TAG_] = baseInfo.tag;
+        event->SetEventValue(TAG_, baseInfo.tag);
     }
     return true;
 }
 
-bool EventJsonParser::CheckEventValidity(const Json::Value& eventJson) const
+bool EventJsonParser::CheckEventValidity(std::shared_ptr<SysEvent> event) const
 {
-    return HasStringMember(eventJson, DOMAIN_) && HasStringMember(eventJson, NAME_);
-}
-
-bool EventJsonParser::CheckTypeValidity(const BaseInfo& baseInfo, const Json::Value& eventJson) const
-{
-    if (!HasIntMember(eventJson, TYPE_)) {
-        HIVIEW_LOGD("value of type_ found in the event json string need INT type.");
+    if (event == nullptr) {
         return false;
     }
-    return eventJson[TYPE_].asInt() == baseInfo.type;
+    return !(event->domain_.empty()) && !(event->eventName_.empty());
+}
+
+bool EventJsonParser::CheckTypeValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
+{
+    if (event == nullptr) {
+        return false;
+    }
+    HIVIEW_LOGD("base info type is %{public}d, event type is %{public}d", baseInfo.type, event->GetEventType());
+    return event->GetEventType() == baseInfo.type;
 }
 
 BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& domain,

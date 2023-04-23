@@ -135,7 +135,6 @@ int EventloggerActionTest::StartCreate(const std::string sender, const std::stri
     std::string jsonStr = R"~({"domain_":"demo","name_":")~" + name + R"~(","pid_":)~" +
         std::to_string(pid) + R"~(,"tid_":6527,"PACKAGE_NAME":")~" + packageName + R"~("})~";
     auto event = std::make_shared<SysEvent>("sender", nullptr, jsonStr);
-    event->ParseJson();
     std::time_t timeTmp = 0;
     time(&timeTmp);
     event->happenTime_ = timeTmp;

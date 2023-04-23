@@ -31,6 +31,8 @@
 #include "sys_event_dao.h"
 #include "time_util.h"
 
+#include "decoded/decoded_event.h"
+
 using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
@@ -39,14 +41,14 @@ namespace {
 static const std::vector<std::string> QUERY_ITEMS =
     { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
 static const std::string LOG_PATH_BASE = "/data/log/faultlog/faultlogger/";
-bool ParseFaultLogInfoFromJson(const std::string& jsonStr, FaultLogInfo& info)
+bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, FaultLogInfo& info)
 {
-    auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, jsonStr);
-    HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", jsonStr.c_str());
-    if (sysEvent->ParseJson() < 0) {
-        HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
+    if (rawData == nullptr) {
+        HIVIEW_LOGE("raw data of sys event is null.");
         return false;
     }
+    auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, rawData);
+    HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", sysEvent->AsJsonStr().c_str());
     info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
     if (info.time == 0) {
         info.time = sysEvent->GetEventIntValue("HAPPEN_TIME");
@@ -128,7 +130,7 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
     while (resultSet.HasNext()) {
         auto it = resultSet.Next();
         FaultLogInfo info;
-        if (!ParseFaultLogInfoFromJson(it->jsonExtraInfo_, info)) {
+        if (!ParseFaultLogInfoFromJson(it->rawData_, info)) {
             HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
             continue;
         }

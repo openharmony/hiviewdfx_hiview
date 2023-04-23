@@ -76,7 +76,6 @@ HWTEST_F(SysEventDaoTest, TestSysEventDaoInsert_001, testing::ext::TestSize.Leve
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 }
@@ -106,7 +105,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
-    ASSERT_TRUE(sysEvent1->ParseJson() == 0);
     int retCode1 = EventStore::SysEventDao::Insert(sysEvent1);
     ASSERT_TRUE(retCode1 == 0);
 
@@ -121,7 +119,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr2);
-    ASSERT_TRUE(sysEvent2->ParseJson() == 0);
     int retCode2 = EventStore::SysEventDao::Insert(sysEvent2);
     ASSERT_TRUE(retCode2 == 0);
 
@@ -134,7 +131,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         count++;
         EventStore::ResultSet::RecordIter it = resultSet.Next();
         ASSERT_TRUE(it->GetSeq() == sysEvent1->GetSeq());
-        std::cout << "seq=" << it->GetSeq() << ", json=" << it->jsonExtraInfo_ << std::endl;
+        std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
     }
     ASSERT_TRUE(count == 1);
 }
@@ -157,7 +154,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
     auto sysEventQuery1 = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::STATISTIC);
@@ -169,7 +165,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoDel_003, testing::ext::TestSize.Level3)
         count++;
         EventStore::ResultSet::RecordIter it = resultSet.Next();
         ASSERT_TRUE(it->GetSeq() == sysEvent->GetSeq());
-        std::cout << "seq=" << it->GetSeq() << ", json=" << it->jsonExtraInfo_ << std::endl;
+        std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
     }
     ASSERT_TRUE(count == 1);
 
@@ -276,12 +272,11 @@ HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
-    sysEvent->jsonExtraInfo_ = R"~({"info_":"update"})~";
+    sysEvent->SetEventValue("info_", "update");
     retCode = EventStore::SysEventDao::Update(sysEvent);
     ASSERT_TRUE(retCode == 0);
 
@@ -296,7 +291,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
         count++;
         EventStore::ResultSet::RecordIter it = resultSet.Next();
         ASSERT_TRUE(it->GetSeq() == sysEvent->GetSeq());
-        std::cout << "seq=" << it->GetSeq() << ", json=" << it->jsonExtraInfo_ << std::endl;
+        std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
         std::string info = it->GetEventValue("info_");
         ASSERT_TRUE(info == "update");
     }
@@ -323,7 +318,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -332,7 +326,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -341,7 +334,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoHandleRecordDuringQuery_007, testing::ext:
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -493,7 +485,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoInsertInHighFrequency_012, testing::ext::T
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -502,7 +493,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoInsertInHighFrequency_012, testing::ext::T
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
@@ -511,7 +501,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoInsertInHighFrequency_012, testing::ext::T
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
         "keyChar":97})~";
     sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    ASSERT_TRUE(sysEvent->ParseJson() == 0);
 
     retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);

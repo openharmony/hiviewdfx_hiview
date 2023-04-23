@@ -30,9 +30,11 @@
 
 #include <securec.h>
 
+#include "decoded/decoded_event.h"
 #include "device_node.h"
 #include "init_socket.h"
 #include "logger.h"
+#include "base/raw_data.h"
 #include "socket_util.h"
 
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
@@ -208,13 +210,16 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
             break;
         }
         buffer[n] = 0;
-        HIVIEW_LOGD("receive data from client %s", buffer);
-        std::string event(buffer);
+        auto dataByteCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(buffer)));
+        HIVIEW_LOGD("length of data received from client is %{public}zu.", dataByteCnt);
+        EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
+        std::string eventJsonStr = event.AsJsonStr();
+        HIVIEW_LOGD("receive from client %{public}s", eventJsonStr.c_str());
         if (!g_extraSocketPath.empty()) {
-            TransferEvent(event);
+            TransferEvent(eventJsonStr);
         }
         for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
-            (*receiver)->HandlerEvent(std::string(buffer));
+            (*receiver)->HandlerEvent(event.GetRawData());
         }
     }
     delete[] buffer;
@@ -259,13 +264,16 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
         return -1;
     }
     buffer[EVENT_READ_BUFFER - 1] = '\0';
-    HIVIEW_LOGD("receive from kernel %{public}s", buffer);
-    std::string event(buffer);
+    auto dataByteCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(buffer)));
+    HIVIEW_LOGD("length of data received from kernel is %{public}zu.", dataByteCnt);
+    EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
+    std::string eventJsonStr = event.AsJsonStr();
+    HIVIEW_LOGD("receive from kernel %{public}s", eventJsonStr.c_str());
     if (!g_extraSocketPath.empty()) {
-        TransferEvent(event);
+        TransferEvent(eventJsonStr);
     }
     for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
-        (*receiver)->HandlerEvent(std::string(buffer));
+        (*receiver)->HandlerEvent(event.GetRawData());
     }
     return 0;
 }

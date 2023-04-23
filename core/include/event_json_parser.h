@@ -58,11 +58,10 @@ public:
     bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
 
 private:
-    void AppendExtensiveInfo(const Json::Value& eventJson, std::string& jsonStr,
-        const std::string& sysEventId) const;
-    bool CheckBaseInfoValidity(const BaseInfo& baseInfo, Json::Value& eventJson) const;
-    bool CheckEventValidity(const Json::Value& eventJson) const;
-    bool CheckTypeValidity(const BaseInfo& baseInfo, const Json::Value& eventJson) const;
+    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const std::string& sysEventId) const;
+    bool CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;
+    bool CheckEventValidity(std::shared_ptr<SysEvent> event) const;
+    bool CheckTypeValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;
     BaseInfo GetDefinedBaseInfoByDomainName(const std::string& domain, const std::string& name) const;
     bool HasIntMember(const Json::Value& jsonObj, const std::string& name) const;
     bool HasStringMember(const Json::Value& jsonObj, const std::string& name) const;

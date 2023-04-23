@@ -56,7 +56,8 @@ int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)
     HIVIEW_LOGD("insert db file %{public}s with %{public}s", dbFile.c_str(), sysEvent->eventName_.c_str());
     Entry entry;
     entry.id = 0;
-    entry.value = sysEvent->jsonExtraInfo_;
+    entry.value = sysEvent->AsJsonStr();
+    HIVIEW_LOGD("insert sys event content: %{public}s", entry.value.c_str());
     auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
     if (docStore->Put(entry) != 0) {
         HIVIEW_LOGE("insert error for event %{public}s", sysEvent->eventName_.c_str());
@@ -77,7 +78,8 @@ int SysEventDao::Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange)
     HIVIEW_LOGD("update db file %{public}s", dbFile.c_str());
     Entry entry;
     entry.id = sysEvent->GetSeq();
-    entry.value = sysEvent->jsonExtraInfo_;
+    entry.value = sysEvent->AsJsonStr();
+    HIVIEW_LOGD("update sys event content: %{public}s", entry.value.c_str());
     auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
     if (docStore->Merge(entry) != 0) {
         HIVIEW_LOGE("update error for event %{public}s", sysEvent->eventName_.c_str());

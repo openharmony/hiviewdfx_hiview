@@ -48,7 +48,6 @@
         "OHOS::HiviewDFX::SysEventCreator::EscapeStringValue(char const*)";
         "OHOS::HiviewDFX::SysEventCreator::EscapeStringValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, OHOS::HiviewDFX::SysEventCreator&)";
-        "OHOS::HiviewDFX::SysEvent::ParseJson()";
         "OHOS::HiviewDFX::EventSource::PublishPipelineEvent(std::__h::shared_ptr<OHOS::HiviewDFX::PipelineEvent>)";
         "OHOS::HiviewDFX::Plugin::~Plugin()";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
@@ -268,6 +267,9 @@
         vtable?for?OHOS::HiviewDFX::PluginStatsEventFactory;
         vtable?for?OHOS::HiviewDFX::LoggerEvent;
         vtable?for?OHOS::HiviewDFX::Plugin;
+        "OHOS::HiviewDFX::SysEvent::AsJsonStr()";
+        "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>)";
+        "OHOS::HiviewDFX::SysEvent::GetEventType()";
     };
   local:
     *;

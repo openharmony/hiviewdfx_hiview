@@ -15,49 +15,52 @@
 #include "sys_event.h"
 
 #include <chrono>
+#include <functional>
+#include <memory>
 #include <regex>
 #include <sstream>
 #include <string>
 #include <sys/time.h>
 
+#include "encoded/raw_data_builder_json_parser.h"
 #include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static const std::vector<ParseItem> PARSE_ORDER = {
-    {"domain_",     ":\"",  "\"",   nullptr, STATE_PARSING_DOMAIN,          true},
-    {"name_",       ":\"",  "\"",   nullptr, STATE_PARSING_NAME,            true},
-    {"type_",       ":",    ",",    nullptr, STATE_PARSING_TYPE,            true},
-    {"time_",       ":",    ",",    nullptr, STATE_PARSING_TIME,            true},
-    {"seq_",        ":",    ",",    "}",     STATE_PARSING_EVENT_SEQ,       true},
-    {"tz_",         ":\"",  "\"",   nullptr, STATE_PARSING_TZONE,           true},
-    {"pid_",        ":",    ",",    nullptr, STATE_PARSING_PID,             true},
-    {"tid_",        ":",    ",",    nullptr, STATE_PARSING_TID,             true},
-    {"uid_",        ":",    ",",    "}",     STATE_PARSING_UID,             true},
-    {"traceid_",    ":\"",  "\"",   nullptr, STATE_PARSING_TRACE_ID,        false},
-    {"spanid_",     ":\"",  "\"",   nullptr, STATE_PARSING_SPAN_ID,         false},
-    {"pspanid_",    ":\"",  "\"",   nullptr, STATE_PARSING_PARENT_SPAN_ID,  false},
-    {"trace_flag_", ":\"",  "\"",   nullptr, STATE_PARSING_TRACE_FLAG,      false},
-};
-
+using EventRaw::UnsignedVarintEncodedParam;
+using EventRaw::SignedVarintEncodedParam;
+using EventRaw::FloatingNumberEncodedParam;
+using EventRaw::StringEncodedParam;
+using EventRaw::UnsignedVarintEncodedArrayParam;
+using EventRaw::SignedVarintEncodedArrayParam;
+using EventRaw::FloatingNumberEncodedArrayParam;
+using EventRaw::StringEncodedArrayParam;
 std::atomic<uint32_t> SysEvent::totalCount_(0);
 std::atomic<int64_t> SysEvent::totalSize_(0);
 
-SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr)
+SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
+    std::shared_ptr<EventRaw::RawData> rawData)
     : PipelineEvent(sender, handler), seq_(0), pid_(0), tid_(0), uid_(0), tz_(0)
 {
     messageType_ = Event::MessageType::SYS_EVENT;
-    jsonExtraInfo_ = jsonStr;
+    if (rawData == nullptr) {
+        return;
+    }
+    rawData_ = rawData;
+    InitEventBuilder(rawData_, rawDataBuilder_);
     totalCount_.fetch_add(1);
-    totalSize_.fetch_add(jsonStr.length());
+    totalSize_.fetch_add(AsJsonStr().length());
+    InitialMember();
 }
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator)
-    : SysEvent(sender, handler, sysEventCreator.BuildSysEventJson())
-{
-    ParseJson();
-}
+    : SysEvent(sender, handler, sysEventCreator.GetRawData())
+{}
+
+SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr)
+    : SysEvent(sender, handler, TansJsonStrToRawData(jsonStr))
+{}
 
 SysEvent::~SysEvent()
 {
@@ -65,92 +68,157 @@ SysEvent::~SysEvent()
         totalCount_.fetch_sub(1);
     }
 
-    totalSize_.fetch_sub(jsonExtraInfo_.length());
+    totalSize_.fetch_sub(AsJsonStr().length());
     if (totalSize_ < 0) {
         totalSize_.store(0);
     }
 }
 
-int SysEvent::ParseJson()
+void SysEvent::InitialMember()
 {
-    if (jsonExtraInfo_.empty()) {
-        return -1;
+    domain_ = rawDataBuilder_.GetDomain();
+    eventName_ = rawDataBuilder_.GetName();
+    auto header = rawDataBuilder_.GetHeader();
+    what_ = static_cast<uint16_t>(rawDataBuilder_.GetEventType());
+    happenTime_ = header.timestamp;
+    auto seqParam = rawDataBuilder_.GetValue("seq_");
+    if (seqParam != nullptr) {
+        seqParam->AsInt64(eventSeq_);
     }
-    size_t curPos = 0;
-    for (auto ele = PARSE_ORDER.cbegin(); ele != PARSE_ORDER.cend(); ele++) {
-        size_t keyPos = jsonExtraInfo_.find(ele->keyString, curPos);
-        if (keyPos != std::string::npos) {
-            size_t startPos = jsonExtraInfo_.find(ele->valueStart, keyPos);
-            if (startPos == std::string::npos) {
-                continue;
-            }
-            startPos += strlen(ele->valueStart);
-            size_t endPos = jsonExtraInfo_.find(ele->valueEnd1, startPos);
-            if (endPos == std::string::npos && ele->valueEnd2 != nullptr) {
-                endPos = jsonExtraInfo_.find(ele->valueEnd2, startPos);
-            }
-            if (endPos != std::string::npos) {
-                std::string content = jsonExtraInfo_.substr(startPos, endPos - startPos);
-                InitialMember(ele->status, content);
-                curPos = endPos;
-            }
-        } else {
-            if (!ele->isParseContinue) {
-                break;
-            }
-        }
+    tz_ = static_cast<int16_t>(header.timeZone);
+    pid_ = header.pid;
+    tid_ = header.tid;
+    uid_ = header.uid;
+    if (header.isTraceOpened == 1) {
+        auto traceInfo = rawDataBuilder_.GetTraceInfo();
+        traceId_ = StringUtil::ToString(traceInfo.traceId);
+        spanId_ =  StringUtil::ToString(traceInfo.spanId);
+        parentSpanId_ =  StringUtil::ToString(traceInfo.pSpanId);
+        traceFlag_ =  StringUtil::ToString(traceInfo.traceFlag);
     }
-    if (domain_.empty() || eventName_.empty() || what_ == 0 || happenTime_ == 0) {
-        return -1;
-    }
-    return 0;
 }
 
-void SysEvent::InitialMember(ParseStatus status, const std::string &content)
+void SysEvent::InitEventBuilder(std::shared_ptr<EventRaw::RawData> rawData,
+    EventRaw::RawDataBuilder& builder)
 {
-    switch (status) {
-        case STATE_PARSING_DOMAIN:
-            domain_ = content;
-            break;
-        case STATE_PARSING_NAME:
-            eventName_ = content;
-            break;
-        case STATE_PARSING_TYPE:
-            what_ = static_cast<uint16_t>(std::atoi(content.c_str()));
-            break;
-        case STATE_PARSING_TIME:
-            happenTime_ = static_cast<uint64_t>(std::atoll(content.c_str()));
-            break;
-        case STATE_PARSING_EVENT_SEQ:
-            eventSeq_ = static_cast<int64_t>(std::atoll(content.c_str()));
-            break;
-        case STATE_PARSING_TZONE:
-            tz_ = std::atoi(content.c_str());
-            break;
-        case STATE_PARSING_PID:
-            pid_ = std::atoi(content.c_str());
-            break;
-        case STATE_PARSING_TID:
-            tid_ = std::atoi(content.c_str());
-            break;
-        case STATE_PARSING_UID:
-            uid_ = std::atoi(content.c_str());
-            break;
-        case STATE_PARSING_TRACE_ID:
-            traceId_ = content;
-            break;
-        case STATE_PARSING_SPAN_ID:
-            spanId_ = content;
-            break;
-        case STATE_PARSING_PARENT_SPAN_ID:
-            parentSpanId_ = content;
-            break;
-        case STATE_PARSING_TRACE_FLAG:
-            traceFlag_ = content;
-            break;
-        default:
-            break;
+    if (rawData == nullptr) {
+        return;
     }
+    EventRaw::DecodedEvent event(rawData->GetData());
+    auto header = event.GetHeader();
+    auto traceInfo = event.GetTraceInfo();
+    builder.AppendDomain(header.domain).AppendName(header.name).AppendType(static_cast<int>(header.type) + 1).
+        AppendTimeStamp(header.timestamp).AppendTimeZone(header.timeZone).
+        AppendUid(header.uid).AppendPid(header.pid).AppendTid(header.tid).AppendId(header.id);
+    if (header.isTraceOpened == 1) {
+        builder.AppendTraceInfo(traceInfo.traceId, traceInfo.spanId, traceInfo.pSpanId, traceInfo.traceFlag);
+    }
+    InitEventBuilderValueParams(event.GetAllCustomizedValues(), builder);
+}
+
+void SysEvent::InitEventBuilderValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
+    EventRaw::RawDataBuilder& builder)
+{
+    std::unordered_map<EventRaw::DataCodedType,
+        std::function<void(std::shared_ptr<EventRaw::DecodedParam>)>> paramFuncs = {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (uint64_t val = 0; param->AsUint64(val)) {
+                    builder.AppendValue(std::make_shared<UnsignedVarintEncodedParam<uint64_t>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::SIGNED_VARINT, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (int64_t val = 0; param->AsInt64(val)) {
+                    builder.AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::FLOATING, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (double val = 0.0; param->AsDouble(val)) {
+                    builder.AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::DSTRING, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (std::string val; param->AsString(val)) {
+                    builder.AppendValue(std::make_shared<StringEncodedParam>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+    };
+    auto iter = paramFuncs.begin();
+    for (auto param : params) {
+        if (param == nullptr) {
+            continue;
+        }
+        iter = paramFuncs.find(param->GetDataCodedType());
+        if (iter == paramFuncs.end()) {
+            continue;
+        }
+        iter->second(param);
+    }
+    InitEventBuilderArrayValueParams(params, builder);
+}
+
+void SysEvent::InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
+    EventRaw::RawDataBuilder& builder)
+{
+    std::unordered_map<EventRaw::DataCodedType,
+        std::function<void(std::shared_ptr<EventRaw::DecodedParam>)>> paramFuncs = {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (std::vector<uint64_t> vals; param->AsUint64Vec(vals)) {
+                    builder.AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::SIGNED_VARINT_ARRAY, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (std::vector<int64_t> vals; param->AsInt64Vec(vals)) {
+                    builder.AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::FLOATING_ARRAY, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (std::vector<double> vals; param->AsDoubleVec(vals)) {
+                    builder.AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::DSTRING_ARRAY, std::bind(
+            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
+                if (std::vector<std::string> vals; param->AsStringVec(vals)) {
+                    builder.AppendValue(std::make_shared<StringEncodedArrayParam>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+    };
+    auto iter = paramFuncs.begin();
+    for (auto param : params) {
+        if (param == nullptr) {
+            continue;
+        }
+        iter = paramFuncs.find(param->GetDataCodedType());
+        if (iter == paramFuncs.end()) {
+            continue;
+        }
+        iter->second(param);
+    }
+}
+
+std::shared_ptr<EventRaw::RawData> SysEvent::TansJsonStrToRawData(const std::string& jsonStr)
+{
+    EventRaw::RawDataBuilderJsonParser parser(jsonStr);
+    auto rawDataBuilder = parser.Parse();
+    if (rawDataBuilder == nullptr) {
+        return nullptr;
+    }
+    return rawDataBuilder->Build();
 }
 
 void SysEvent::SetSeq(int64_t seq)
@@ -190,144 +258,55 @@ int16_t SysEvent::GetTz() const
 
 std::string SysEvent::GetEventValue(const std::string& key)
 {
-    if (jsonExtraInfo_.empty() || key.empty()) {
-        return "";
-    }
-    std::string targetStr = "\"" + key + "\":\"";
-    size_t startPos = jsonExtraInfo_.find(targetStr);
-    if (startPos == std::string::npos) {
-        return "";
-    }
-    startPos += targetStr.size();
-
-    size_t endPos = startPos;
-    while (endPos < jsonExtraInfo_.size()) {
-        if (jsonExtraInfo_[endPos] == '\"') {
-            std::string value = jsonExtraInfo_.substr(startPos, endPos - startPos);
-            if (!value.empty()) {
-                SetValue(key, value);
-            }
-            return value;
-        }
-        if (jsonExtraInfo_[endPos] == '\\' && endPos < (jsonExtraInfo_.size() - 1)) { // 1: for '"'
-            endPos += 2; // 2: for '\' and '"'
-            continue;
-        }
-        endPos++;
-    }
-    return "";
+    std::string dest;
+    rawDataBuilder_.ParseValueByKey(key, dest);
+    return dest;
 }
 
 uint64_t SysEvent::GetEventIntValue(const std::string& key)
 {
-    if (jsonExtraInfo_.empty() || key.empty()) {
-        return 0;
-    }
-    std::string targetStr = "\"" + key + "\":";
-    size_t startPos = jsonExtraInfo_.find(targetStr);
-    if (startPos == std::string::npos) {
-        return 0;
-    }
-    startPos += targetStr.size();
-
-    size_t endPos = startPos;
-    while (endPos < jsonExtraInfo_.size()) {
-        if (!std::isdigit(jsonExtraInfo_[endPos])) {
-            break;
-        }
-        endPos++;
-    }
-    return std::atoll(jsonExtraInfo_.substr(startPos, endPos - startPos).c_str());
+    uint64_t dest;
+    rawDataBuilder_.ParseValueByKey(key, dest);
+    return dest;
 }
 
-void SysEvent::SetEventValue(const std::string& key, int64_t value)
+int SysEvent::GetEventType()
 {
-    std::smatch keyMatch;
-    std::string keyReplace = "\"" + key + "\":" + std::to_string(value);
-    std::regex keyReg("\"" + key + "\":([\\d]*)");
-    if (std::regex_search(jsonExtraInfo_, keyMatch, keyReg)) {
-        jsonExtraInfo_ = std::regex_replace(jsonExtraInfo_, keyReg, keyReplace);
-        return;
-    }
-
-    // new key here
-    std::regex newReg("\\{([.\\s\\S\\r\\n]*)\\}");
-    std::string newReplace = "{$1,\"" + key + "\":" + std::to_string(value) + "}";
-    if (std::regex_search(jsonExtraInfo_, keyMatch, newReg)) {
-        jsonExtraInfo_ = std::regex_replace(jsonExtraInfo_, newReg, newReplace);
-    }
-    else {
-        jsonExtraInfo_ = "{\"" + key + "\":" + std::to_string(value) + "}";
-    }
-    return;
+    return rawDataBuilder_.GetEventType();
 }
 
-void SysEvent::SetEventValue(const std::string& key, const std::string& value, bool append)
+std::string SysEvent::AsJsonStr()
 {
-    // fixme, $1 in value may cause error
-    std::smatch keyMatch;
-    std::string keyReplace;
-    if (append) {
-        keyReplace = "\"" + key + "\":\"" + value + ",$1\"";
+    auto rawData = rawDataBuilder_.Build(); // update
+    if (rawData == nullptr) {
+        return "";
     }
-    else {
-        keyReplace = "\"" + key + "\":\"" + value + "\"";
-    }
-    std::regex keyReg("\"" + key + "\":\"([.\\s\\S\\r\\n]*?)\"");
-    if (std::regex_search(jsonExtraInfo_, keyMatch, keyReg)) {
-        jsonExtraInfo_ = std::regex_replace(jsonExtraInfo_, keyReg, keyReplace);
-        return;
-    }
-
-    // new key here
-    std::regex newReg("\\{([.\\s\\S\\r\\n]*)\\}");
-    auto kvStr = "\"" + key + "\":\"" + value + "\"";
-    if (std::regex_search(jsonExtraInfo_, keyMatch, newReg)) {
-        auto pos = jsonExtraInfo_.find_last_of("}");
-        if (pos == std::string::npos) {
-            return;
-        }
-        jsonExtraInfo_.insert(pos, "," + kvStr);
-    } else {
-        jsonExtraInfo_ = "{" + kvStr + "}";
-    }
-    return;
+    rawData_ = rawData;
+    EventRaw::DecodedEvent event(rawData_->GetData());
+    return event.AsJsonStr();
 }
 
-SysEventCreator::SysEventCreator(const std::string &domain, const std::string &eventName,
+uint8_t* SysEvent::AsRawData()
+{
+    auto rawData = rawDataBuilder_.Build();
+    if (rawData != nullptr) {
+        rawData_ = rawData;
+        return rawData_->GetData();
+    }
+    return nullptr;
+}
+
+SysEventCreator::SysEventCreator(const std::string& domain, const std::string& eventName,
     SysEventCreator::EventType type)
 {
-    jsonStr_ << "{";
-    SetKeyValue("domain_", domain);
-    SetKeyValue("name_", eventName);
-    SetKeyValue("type_", static_cast<int>(type));
-    SetKeyValue("time_", TimeUtil::GetMilliseconds());
-    SetKeyValue("tz_", TimeUtil::GetTimeZone());
-    SetKeyValue("pid_", getpid());
-    SetKeyValue("tid_", gettid());
-    SetKeyValue("uid_", getuid());
+    rawDataBuilder_.AppendDomain(domain).AppendName(eventName).AppendType(static_cast<int>(type)).
+        AppendTimeStamp(TimeUtil::GetMilliseconds()).AppendTimeZone(TimeUtil::GetTimeZone()).
+        AppendPid(getpid()).AppendTid(gettid()).AppendUid(getuid());
 }
 
-std::string SysEventCreator::BuildSysEventJson()
+std::shared_ptr<EventRaw::RawData> SysEventCreator::GetRawData()
 {
-    jsonStr_.seekp(-1, std::ios_base::end);
-    jsonStr_ << "}";
-    return jsonStr_.str();
-}
-
-std::string SysEventCreator::EscapeStringValue(const std::string& value)
-{
-    return StringUtil::EscapeJsonStringValue(value);
-}
-
-std::string SysEventCreator::EscapeStringValue(const char* value)
-{
-    return StringUtil::EscapeJsonStringValue(value);
-}
-
-std::string SysEventCreator::EscapeStringValue(char* value)
-{
-    return StringUtil::EscapeJsonStringValue(value);
+    return rawDataBuilder_.Build();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
