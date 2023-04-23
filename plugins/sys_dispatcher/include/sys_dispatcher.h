@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-class SysEventDispatcher : public Plugin, SysEventServiceBase {
+class SysEventDispatcher : public Plugin, public SysEventServiceBase {
 public:
     bool OnEvent(std::shared_ptr<Event> &event) override;
     void OnLoad() override;

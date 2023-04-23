@@ -52,6 +52,7 @@
 #include "sys_event_callback_stub.h"
 #include "sys_event_service_proxy.h"
 #include "sys_event_service_stub.h"
+#include "sys_dispatcher.h"
 
 using namespace std;
 
@@ -199,6 +200,55 @@ HWTEST_F(SysEventServiceOhosTest, CommonTest001, testing::ext::TestSize.Level3)
     ret = service->RemoveListener(callbackDefault);
     printf("remove listener result is %d.\n", ret);
     ASSERT_TRUE(ret != 0);
+}
+
+/**
+ * @tc.name: AddListenerTest001
+ * @tc.desc: Check AddListener Function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGS49
+ */
+HWTEST_F(SysEventServiceOhosTest, AddListenerTest001, testing::ext::TestSize.Level3)
+{
+    sptr<ISysEventCallback> callbackDefault = new SysEventCallbackDefault();
+    sptr<ISysEventCallback> callbackTest = new SysEventCallbackOhosTest();
+    vector<SysEventRule> rules = GetTestRules(1, "", "");
+    SysEventDispatcher sysEventDispatcher;
+    SysEventServiceOhos::GetSysEventService(&sysEventDispatcher);
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    auto ret = service->AddListener(rules, nullptr);
+    ASSERT_TRUE(ret != 0);
+    ret = service->AddListener(rules, callbackDefault);
+    ASSERT_TRUE(ret != 0);
+    ret = service->AddListener(rules, callbackTest);
+    ASSERT_TRUE(ret != 0);
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        printf("SystemAbilityManager is nullptr.\n");
+        ASSERT_TRUE(false);
+    } else {
+        sptr<IRemoteObject> stub = sam->CheckSystemAbility(SYS_EVENT_SERVICE_ID);
+        if (stub != nullptr) {
+            printf("check sys event service success.\n");
+            auto proxy = new SysEventServiceProxy(stub);
+            auto ret = proxy->AddListener(rules, callbackTest);
+            printf("add listener result is %d.\n", ret);
+            ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
+            if (ret == 0) {
+                sleep(1);
+                proxy->AddListener(rules, callbackTest);
+            } else {
+                printf("add listener fail.\n");
+                ASSERT_TRUE(false);
+            }
+        } else {
+            printf("check sys event service failed.\n");
+            ASSERT_TRUE(false);
+        }
+    }
 }
 
 /**

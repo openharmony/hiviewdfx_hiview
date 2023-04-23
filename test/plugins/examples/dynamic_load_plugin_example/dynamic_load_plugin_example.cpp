@@ -37,6 +37,7 @@ void DynamicLoadPluginExample::OnLoad()
     auto ptr = std::static_pointer_cast<DynamicLoadPluginExample>(shared_from_this());
     printf("register event listener %p \n", ptr.get());
     GetHiviewContext()->RegisterUnorderedEventListener(ptr);
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT);
     AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::SYS_EVENT, {"testbb"});
 }
 

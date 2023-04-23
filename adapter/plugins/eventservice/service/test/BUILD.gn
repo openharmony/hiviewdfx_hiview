@@ -26,7 +26,6 @@ config("unittest_config") {
     "//third_party/jsoncpp/include",
     "//third_party/bounds_checking_function/include",
     "unittest/common",
-    "$hiview_plugin/event_store/include",
     "$hiview_plugin/sysevent_source/include",
     "$hiview_core/include",
     "$hiview_base/include",
@@ -51,6 +50,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
+    "$hiview_plugin/sys_dispatcher:sys_dispatcher",
     "//third_party/googletest:gtest_main",
     "//third_party/jsoncpp:jsoncpp",
   ]
