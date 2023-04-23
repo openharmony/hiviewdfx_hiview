@@ -34,7 +34,7 @@
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
-            {"namespace":"BasicParam", "matchKey":"State:", "v_state":"State:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"State:", "v_state":"\\bState:(.*)"},
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
