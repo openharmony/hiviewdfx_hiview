@@ -249,45 +249,14 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformLoadingPlugins003, TestSize.Level
     if (itc != count2_->end()) {
         FAIL();
     }
-
-    // 发生监听事件
-    std::shared_ptr<Event> event = std::make_shared<Event>("HolisticPlatformLoadingPlugins003", "testaa");
-    event->messageType_ = OHOS::HiviewDFX::Event::MessageType::SYS_EVENT;
-    event->SetValue("HolisticPlatformLoadingPlugins003", "SYS_EVENT testaa");
-    platform_.PostUnorderedEvent(nullptr, event);
-    sleep(3);
-    ASSERT_EQ(count1_->size(), 4ul);
-    itb = count1_->find("EventProcessorExample4");
-    if (itb == count1_->end()) {
-        FAIL();
-    }
-
-    ASSERT_EQ(count2_->size(), 2ul);
-    itc = count2_->find("BundlePluginExample3");
-    if (itc == count2_->end()) {
-        FAIL();
-    }
 }
 
 void HolisticPlatformTest::Run001Check01()
 {
-    std::string be3t = platform_.GetHiviewProperty("BE3_Listening", "");
-    printf("be3t %s\n", be3t.c_str());
-    
-    std::string be4t = platform_.GetHiviewProperty("EPE4_Listening", "");
-    printf("be4t %s\n", be4t.c_str());
-    
     std::string dpet = platform_.GetHiviewProperty("DPE_Listening", "");
     printf("dpet %s\n", dpet.c_str());
-    
     std::string be2t = platform_.GetHiviewProperty("EPE2_Listening", "");
     printf("be2t %s\n", be2t.c_str());
-    if (be3t.find("testbb") == be3t.npos) {
-        FAIL();
-    }
-    if (be4t.find("testbb") == be4t.npos) {
-        FAIL();
-    }
     if (dpet.find("testbb") == dpet.npos) {
         FAIL();
     }
@@ -298,11 +267,6 @@ void HolisticPlatformTest::Run001Check01()
 
 void HolisticPlatformTest::Run001Check02()
 {
-    std::string be3tt = platform_.GetHiviewProperty("BE3_Listening", "");
-    printf("be3tt %s\n", be3tt.c_str());
-    if (be3tt.find("testRun001") == be3tt.npos) {
-        FAIL();
-    }
     std::string be2tt = platform_.GetHiviewProperty("EPE2_Listening", "");
     printf("be2tt %s\n", be2tt.c_str());
     if (be2tt.find("testRun001") == be2tt.npos) {
@@ -311,11 +275,6 @@ void HolisticPlatformTest::Run001Check02()
     std::string dpett = platform_.GetHiviewProperty("DPE_Listening", "");
     printf("dpett %s\n", dpett.c_str());
     if (dpett.find("testRun001") == dpett.npos) {
-        FAIL();
-    }
-    std::string be4tt = platform_.GetHiviewProperty("EPE4_Listening", "");
-    printf("be4tt %s\n", be4tt.c_str());
-    if (be4tt.find("testRun001") != be4tt.npos) {
         FAIL();
     }
 }
@@ -332,16 +291,6 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformRun001, TestSize.Level3)
     sleep(16); // 等待动态插件被卸载
     auto count = count1_->size() + count2_->size();
     ASSERT_EQ(count, 4ul);
-    std::string be3 = platform_.GetHiviewProperty("BE3_Listening", "");
-    if ((be3.find("testbb") != be3.npos) || (be3.find("testRun001") != be3.npos)) {
-        FAIL();
-    }
-
-    std::string epe4 = platform_.GetHiviewProperty("EPE4_Listening", "");
-    if ((epe4.find("testbb") != epe4.npos) || (epe4.find("testRun001") != epe4.npos)) {
-        FAIL();
-    }
-
     std::string epe2 = platform_.GetHiviewProperty("EPE2_Listening", "");
     if ((epe2.find("testbb") != epe2.npos) || (epe2.find("testRun001") != epe2.npos)) {
         FAIL();

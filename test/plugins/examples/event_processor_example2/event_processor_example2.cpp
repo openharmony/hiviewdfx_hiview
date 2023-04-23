@@ -78,6 +78,7 @@ void EventProcessorExample2::OnLoad()
     printf("EventProcessorExample2 OnLoad \n");
     auto ptr = std::static_pointer_cast<EventProcessorExample2>(shared_from_this());
     printf("register event listener %p \n", ptr.get());
+    AddListenerInfo(OHOS::HiviewDFX::Event::MessageType::RAW_EVENT);
     GetHiviewContext()->RegisterUnorderedEventListener(ptr);
 }
 
