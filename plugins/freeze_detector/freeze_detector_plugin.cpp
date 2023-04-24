@@ -22,6 +22,8 @@
 #include "string_util.h"
 #include "sys_event_dao.h"
 
+#include "decoded/decoded_event.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER_PROXY(FreezeDetectorPlugin);
@@ -146,8 +148,17 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
 
 void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
 {
+    if (event.rawData_ == nullptr) {
+        HIVIEW_LOGE("raw data of event is null.");
+        return;
+    }
+    EventRaw::DecodedEvent decodedEvent(event.rawData_->GetData());
+    if (!decodedEvent.IsValid()) {
+        HIVIEW_LOGE("failed to decode the raw data of event.");
+        return;
+    }
     HIVIEW_LOGD("received event id=%{public}u, domain=%{public}s, stringid=%{public}s, extraInfo=%{public}s.",
-        event.eventId_, event.domain_.c_str(), event.eventName_.c_str(), event.jsonExtraInfo_.c_str());
+        event.eventId_, event.domain_.c_str(), event.eventName_.c_str(), decodedEvent.AsJsonStr().c_str());
     if (freezeCommon_ == nullptr) {
         return;
     }

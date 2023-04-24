@@ -55,7 +55,7 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
         return false;
     }
     HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
-        sysEvent->jsonExtraInfo_.c_str());
+        sysEvent->AsJsonStr().c_str());
 
     long pid = sysEvent->GetEventIntValue("PID");
     pid = pid ? pid : sysEvent->GetPid();
@@ -89,7 +89,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     sysEvent->OnPending();
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
-            sysEvent->jsonExtraInfo_.c_str());
+            sysEvent->AsJsonStr().c_str());
 
         long pid = sysEvent->GetEventIntValue("PID");
         pid = pid ? pid : sysEvent->GetPid();
@@ -346,10 +346,6 @@ void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileN
     sysEvent->SetEventValue("MSG", "application stack");
     std::string tmpStr = R"~(logPath:)~" + logPath;
     sysEvent->SetEventValue(EventStore::EventCol::INFO, tmpStr);
-    if (sysEvent->ParseJson() < 0) {
-        HIVIEW_LOGW("Failed to parse EventLogger from queryResult file name %{public}s.", fileName.c_str());
-        return;
-    }
     auto context = GetHiviewContext();
     if (context != nullptr) {
         auto seq = context->GetPipelineSequenceByName("SysEventPipeline");

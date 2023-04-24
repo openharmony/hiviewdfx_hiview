@@ -62,10 +62,6 @@ std::shared_ptr<SysEvent> makeEvent(const std::string& name,
 
     std::string tmpStr = R"~(logPath:)~" + logPath;
     sysEvent->SetEventValue("info_", tmpStr);
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
-        return nullptr;
-    }
     return sysEvent;
 }
 

@@ -18,6 +18,7 @@
 #include <functional>
 #include <memory>
 
+#include "decoded/decoded_event.h"
 #include "defines.h"
 #include "logger.h"
 #include "plugin_factory.h"
@@ -31,23 +32,29 @@ namespace HiviewDFX {
 REGISTER(SysEventSource);
 DEFINE_LOG_TAG("HiView-SysEventSource");
 
-std::shared_ptr<PipelineEvent> SysEventParser::Parser(const std::string& rawMsg) const
+std::shared_ptr<PipelineEvent> SysEventParser::Parser(std::shared_ptr<EventRaw::RawData> rawData) const
 {
-    HIVIEW_LOGD("parser raw message size=%{public}d, %{public}s", rawMsg.length(), rawMsg.c_str());
-    auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawMsg);
-    if (baseEvent->ParseJson() != 0) {
-        HIVIEW_LOGI("parser sys event error");
+    if (rawData == nullptr) {
+        HIVIEW_LOGI("raw data of sys event is null");
         return nullptr;
     }
+    EventRaw::DecodedEvent decodedEvent(rawData->GetData());
+    if (!decodedEvent.IsValid()) {
+        HIVIEW_LOGE("failed to decode the raw data of event.");
+        return nullptr;
+    }
+    HIVIEW_LOGD("parser raw message size=%{public}zu, %{public}s", rawData->GetDataLength(),
+        decodedEvent.AsJsonStr().c_str());
+    auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawData);
     HIVIEW_LOGI("parser result domain_=%{public}s eventName_=%{public}s",
         baseEvent->domain_.c_str(), baseEvent->eventName_.c_str());
     return baseEvent;
 }
 
-void SysEventReceiver::HandlerEvent(const std::string& rawMsg)
+void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
 {
     SysEventParser sysEventParser(static_cast<PipelineEventProducer *>(&eventSource));
-    std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawMsg);
+    std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawData);
     if (event != nullptr) {
         event->realtime_ += TimeUtil::GenerateTimestamp() - event->createTime_;
     }

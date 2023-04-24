@@ -20,12 +20,13 @@
 #include <string>
 #include <vector>
 
+#include "event_json_parser.h"
 #include "event_server.h"
 #include "event_source.h"
 #include "pipeline.h"
 #include "plugin.h"
 #include "platform_monitor.h"
-#include "event_json_parser.h"
+#include "base/raw_data.h"
 #include "sys_event_stat.h"
 
 namespace OHOS {
@@ -36,7 +37,7 @@ class SysEventParser {
 public:
     explicit SysEventParser(PipelineEventProducer* producer): pipeProducer(producer) {};
     ~SysEventParser() {};
-    std::shared_ptr<PipelineEvent> Parser(const std::string& rawMsg) const;
+    std::shared_ptr<PipelineEvent> Parser(std::shared_ptr<EventRaw::RawData> rawData) const;
 private:
     PipelineEventProducer* pipeProducer;
 };
@@ -45,7 +46,7 @@ class SysEventReceiver : public EventReceiver {
 public:
     explicit SysEventReceiver(SysEventSource& source): eventSource(source) {};
     ~SysEventReceiver() override {};
-    void HandlerEvent(const std::string& rawMsg) override;
+    void HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData) override;
 private:
     SysEventSource& eventSource;
 };

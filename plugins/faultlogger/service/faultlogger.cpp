@@ -350,13 +350,14 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (event->eventName_ != "JS_ERROR" && event->eventName_ != "RUST_PANIC") {
         return true;
     }
-    if (event->jsonExtraInfo_.empty()) {
+    if (event->rawData_ == nullptr) {
         return false;
     }
-    HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(), event->jsonExtraInfo_.c_str());
     bool isJsError = event->eventName_ == "JS_ERROR";
-    FaultLogInfo info;
     auto sysEvent = std::static_pointer_cast<SysEvent>(event);
+    HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(),
+        sysEvent->AsJsonStr().c_str());
+    FaultLogInfo info;
     info.time = sysEvent->happenTime_;
     info.id = sysEvent->GetUid();
     info.pid = sysEvent->GetPid();

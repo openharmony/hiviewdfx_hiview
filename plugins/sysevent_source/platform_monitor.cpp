@@ -266,7 +266,10 @@ void PlatformMonitor::ReportCycleProfile()
     CalcOverBenckMarkPct(perfMeasure);
 
     std::shared_ptr<SysEvent> sysEvent = CreateProfileReport(perfMeasure);
-    HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
+    if (sysEvent == nullptr) {
+        return;
+    }
+    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
     HIVIEW_LOGI("report performance profile have done");
 }
@@ -364,7 +367,7 @@ void PlatformMonitor::ReportBreakProfile()
     eventCreator.SetKeyValue("TOP_DOMAIN", domains);
     eventCreator.SetKeyValue("TOP_DOMAIN_COUNT", domainCounts);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
+    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 
@@ -375,7 +378,7 @@ void PlatformMonitor::ReportRecoverProfile()
     SysEventCreator eventCreator("HIVIEWDFX", "RECOVER", SysEventCreator::BEHAVIOR);
     eventCreator.SetKeyValue("DURATION", duration);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report=%{public}s", sysEvent->jsonExtraInfo_.c_str());
+    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 

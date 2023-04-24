@@ -24,53 +24,67 @@
 #include <type_traits>
 #include <vector>
 
+#include "encoded/encoded_param.h"
+#include "decoded/decoded_event.h"
 #include "pipeline.h"
+#include "encoded/raw_data_builder.h"
+#include "base/raw_data.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventCreator;
-enum ParseStatus {
-    STATE_PARSING_DOMAIN,
-    STATE_PARSING_NAME,
-    STATE_PARSING_TYPE,
-    STATE_PARSING_TIME,
-    STATE_PARSING_EVENT_SEQ,
-    STATE_PARSING_TZONE,
-    STATE_PARSING_PID,
-    STATE_PARSING_TID,
-    STATE_PARSING_UID,
-    STATE_PARSING_TRACE_ID,
-    STATE_PARSING_SPAN_ID,
-    STATE_PARSING_PARENT_SPAN_ID,
-    STATE_PARSING_TRACE_FLAG,
-};
-struct ParseItem {
-    const char* keyString;
-    const char* valueStart;
-    const char* valueEnd1;
-    const char* valueEnd2;
-    ParseStatus status;
-    bool isParseContinue;
-};
-
 class SysEvent : public PipelineEvent {
 public:
-    SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr);
+    SysEvent(const std::string& sender, PipelineEventProducer* handler, std::shared_ptr<EventRaw::RawData> rawData);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator);
+    SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr);
     ~SysEvent();
+
 public:
-    int ParseJson();
     int32_t GetPid() const;
     int32_t GetTid() const;
     int32_t GetUid() const;
     int16_t GetTz() const;
-    void SetSeq(int64_t);
+    void SetSeq(int64_t seq);
     int64_t GetSeq() const;
     int64_t GetEventSeq() const;
     std::string GetEventValue(const std::string& key);
     uint64_t GetEventIntValue(const std::string& key);
-    void SetEventValue(const std::string& key, int64_t value);
-    void SetEventValue(const std::string& key, const std::string& value, bool append = false);
+    int GetEventType();
+    std::string AsJsonStr();
+    uint8_t* AsRawData();
+
+public:
+    template<typename T>
+    void SetEventValue(const std::string& key, T value, bool appendValue = false)
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+            auto param = rawDataBuilder_.GetValue(key);
+            std::string paramValue;
+            if (appendValue && (param != nullptr) && param->AsString(paramValue)) {
+                value.append(paramValue);
+            }
+        }
+        rawDataBuilder_.AppendValue(key, value);
+    }
+
+    template<typename T,
+        std::enable_if_t<std::is_same_v<std::decay_t<T>, uint64_t> ||
+        std::is_same_v<std::decay_t<T>, std::string>>* = nullptr>
+    void SetId(T id)
+    {
+        uint64_t eventHash = 0;
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+            auto idStream = std::stringstream(id);
+            idStream >> eventHash;
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
+            eventHash = id;
+        }
+        rawDataBuilder_.AppendId(eventHash);
+    }
+
+public:
     std::string tag_;
     int eventType_;
     bool preserve_;
@@ -80,13 +94,22 @@ public:
     static std::atomic<int64_t> totalSize_;
 
 private:
+    void InitialMember();
+    void InitEventBuilder(std::shared_ptr<EventRaw::RawData> rawData, EventRaw::RawDataBuilder& builder);
+    void InitEventBuilderValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
+        EventRaw::RawDataBuilder& builder);
+    void InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
+        EventRaw::RawDataBuilder& builder);
+    std::shared_ptr<EventRaw::RawData> TansJsonStrToRawData(const std::string& jsonStr);
+
+private:
     int64_t seq_;
     int32_t pid_;
     int32_t tid_;
     int32_t uid_;
     int16_t tz_;
     int64_t eventSeq_ = 0;
-    void InitialMember(ParseStatus status, const std::string &content);
+    EventRaw::RawDataBuilder rawDataBuilder_;
 };
 
 class SysEventCreator {
@@ -97,89 +120,22 @@ public:
         SECURITY  = 3,    // system security event
         BEHAVIOR  = 4     // system behavior event
     };
+
 public:
     SysEventCreator(const std::string &domain, const std::string &eventName, EventType type);
 
-    template <typename T, typename U, typename... Rest>
-    struct is_one_of : std::conditional_t<std::is_same_v<typename std::decay_t<T>, typename std::decay_t<U>>,
-        std::true_type, is_one_of<T, Rest...>> {};
-
-    template <typename T, typename U>
-    struct is_one_of<T, U> : std::conditional_t<std::is_same_v<typename std::decay_t<T>, typename std::decay_t<U>>,
-        std::true_type, std::false_type> {};
-
-    template <typename Inst, template <typename...> typename Tmpl>
-    struct is_instantiation_of : std::false_type {};
-
-    template <template <typename...> typename Tmpl, typename... Args>
-    struct is_instantiation_of<Tmpl<Args...>, Tmpl> : std::true_type {};
-
-    // supported types of the key
-    template <typename T>
-    struct is_type_key : is_one_of<T, char *, char const *, std::string>::type {};
-
-    template <typename T>
-    inline static constexpr bool is_type_key_v = is_type_key<T>::value;
-
-    // supported base types of the value
-    template <typename T>
-    struct is_type_value_base : is_one_of<T, bool, char, signed char, unsigned char, short, unsigned short, int,
-        unsigned int, long, unsigned long, long long, unsigned long long, float, double, char *, char const *,
-        std::string>::type {};
-
-    template <typename T>
-    inline static constexpr bool is_type_value_base_v = is_type_value_base<T>::value;
-
-    // supported vector types of the value
-    template <typename T>
-    inline static constexpr bool is_type_value_vector_v = []() {
-        if constexpr(is_instantiation_of<typename std::decay_t<T>, std::vector>::value) {
-            return is_type_value_base_v<typename std::decay_t<T>::value_type>;
-        }
-        return false;
-    }();
-
+public:
     template<typename T>
-    static decltype(auto) GetItem(T&& item)
+    void SetKeyValue(const std::string& key, T value)
     {
-        if constexpr(is_one_of<T, char, signed char, unsigned char>::value) {
-            return static_cast<short>(item);
-        } else if constexpr(is_one_of<T, char *, char const *, std::string>::value) {
-            std::string result;
-            result.append("\"").append(EscapeStringValue(item)).append("\"");
-            return result;
-        } else {
-            return std::forward<T>(item);
-        }
+        rawDataBuilder_.AppendValue(key, value);
     }
 
-    template<typename K, typename V>
-    SysEventCreator& SetKeyValue(K&& key, V&& value)
-    {
-        jsonStr_ << GetItem(std::forward<K>(key)) << ":";
-        if constexpr(is_type_value_base_v<V>) {
-            jsonStr_ << GetItem(std::forward<V>(value)) << ",";
-        } else if constexpr(is_type_value_vector_v<V>) {
-            jsonStr_ << "[";
-            for (const auto &it : value) {
-                jsonStr_ << GetItem(it) << ",";
-            }
-            if (!value.empty()) {
-                jsonStr_.seekp(-1, std::ios_base::end);
-            }
-            jsonStr_ << "],";
-        }
-        return *this;
-    }
+public:
+    std::shared_ptr<EventRaw::RawData> GetRawData();
 
 private:
-    friend class SysEvent;
-    std::string BuildSysEventJson();
-    static std::string EscapeStringValue(const std::string &value);
-    static std::string EscapeStringValue(const char* value);
-    static std::string EscapeStringValue(char* value);
-private:
-    std::stringstream jsonStr_;
+    EventRaw::RawDataBuilder rawDataBuilder_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

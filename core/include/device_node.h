@@ -15,9 +15,12 @@
 
 #ifndef CORE_DEVICE_NODE_H
 #define CORE_DEVICE_NODE_H
+
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "base/raw_data.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -25,7 +28,7 @@ class EventReceiver {
 public:
     EventReceiver() {};
     virtual ~EventReceiver() {};
-    virtual void HandlerEvent(const std::string& rawMsg) = 0;
+    virtual void HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData) = 0;
 };
 
 class DeviceNode {

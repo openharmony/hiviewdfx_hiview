@@ -184,7 +184,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             isMatched ? "success" : "fail");
         if (isMatched) {
             callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_),
-                static_cast<int>(event->what_), Str8ToStr16(event->jsonExtraInfo_));
+                static_cast<int>(event->what_), Str8ToStr16(event->AsJsonStr()));
         }
     }
 }
@@ -354,13 +354,12 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
                     return true;
                 }
                 auto eventType = this->GetTypeByDomainAndName(rule.domain, eventName);
+                HiLog::Debug(LABEL, "event type configured with domain[%{public}s] and name[%{public}s] "
+                    " is %{public}u, and event type in query rule is %{public}u.",
+                    rule.domain.c_str(), eventName.c_str(), eventType, rule.eventType);
                 if ((!rule.domain.empty() && !eventName.empty() && eventType == INVALID_EVENT_TYPE) ||
                     (eventType != INVALID_EVENT_TYPE && rule.eventType != INVALID_EVENT_TYPE &&
                     eventType != rule.eventType)) {
-                    HiLog::Warn(LABEL, "domain=%{public}s, event name=%{public}s: "
-                        "event type configured is %{public}u, "
-                        "no match with query event type which is %{public}u.",
-                        rule.domain.c_str(), eventName.c_str(), eventType, rule.eventType);
                     return false;
                 }
                 if (eventType != INVALID_EVENT_TYPE && rule.eventType == INVALID_EVENT_TYPE) {

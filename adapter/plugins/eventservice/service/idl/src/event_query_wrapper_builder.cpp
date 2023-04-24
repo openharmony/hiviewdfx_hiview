@@ -273,7 +273,11 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
     int32_t transTotalJsonSize = 0;
     while (result.HasNext()) {
         iter = result.Next();
-        std::u16string curJson = Str8ToStr16(iter->jsonExtraInfo_);
+        auto eventJsonStr = iter->AsJsonStr();
+        if (eventJsonStr.empty()) {
+            continue;
+        }
+        std::u16string curJson = Str8ToStr16(eventJsonStr);
         int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(std::u16string));
         if (eventJsonSize > MAX_TRANS_BUF) { // too large events, drop
             details.second++;

@@ -26,6 +26,8 @@
 #include "public_defines.h"
 #include "dispatch_config.h"
 
+#include "base/raw_data.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class DllExport Event : public std::enable_shared_from_this<Event> {
@@ -51,7 +53,7 @@ public:
           parentSpanId_(""),
           traceFlag_(""),
           normalExtraInfo_(""),
-          jsonExtraInfo_("")
+          rawData_(nullptr)
     {
         ResetTimestamp();
     };
@@ -77,7 +79,7 @@ public:
           parentSpanId_(""),
           traceFlag_(""),
           normalExtraInfo_(""),
-          jsonExtraInfo_("")
+          rawData_(nullptr)
     {
         ResetTimestamp();
     };
@@ -158,7 +160,7 @@ public:
     std::string parentSpanId_;
     std::string traceFlag_;
     std::string normalExtraInfo_;
-    std::string jsonExtraInfo_;
+    std::shared_ptr<EventRaw::RawData> rawData_ = nullptr;
     void SetValue(const std::string &name, const std::string &value);
     void SetValue(const std::string &name, int32_t value);
     void SetKeyValuePairs(std::map<std::string, std::string> keyValuePairs);

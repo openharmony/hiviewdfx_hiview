@@ -64,10 +64,6 @@ std::shared_ptr<SysEvent> makeEvent(const std::string& name,
 
     std::string tmpStr = R"~(logPath:)~" + logPath;
     sysEvent->SetEventValue("info_", tmpStr);
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult file name %s.\n", logPath.c_str());
-        return nullptr;
-    }
     return sysEvent;
 }
 
@@ -195,12 +191,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorProxyTest001, TestSize.Level3)
     sysEvent->SetEventValue("MSG", "test TEST_INPUT event");
     sysEvent->SetEventValue("PACKAGE_NAME", "FreezeDetectorProxyTest001");
     sysEvent->SetEventValue("PROCESS_NAME", "FreezeDetectorProxyTest001");
-
     sysEvent->SetEventValue("info_", "");
-    if (sysEvent->ParseJson() < 0) {
-        printf("Failed to parse from queryResult\n");
-        FAIL();
-    }
 
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     plugin->OnEventListeningCallback(*(event.get()));

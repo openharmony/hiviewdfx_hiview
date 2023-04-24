@@ -837,7 +837,6 @@ ResultSet SysEventQuery::ExecuteSQL(int limit)
     }
     for (auto it = entries.begin(); it != entries.end(); it++) {
         SysEvent sysEvent("", nullptr, it->value);
-        sysEvent.ParseJson();
         sysEvent.SetSeq(it->id);
         resultSet.eventRecords_.emplace_back(sysEvent);
     }
@@ -854,7 +853,6 @@ int SysEventQuery::ExecuteWithCallback(SysEventCallBack callback, int limit)
     std::shared_ptr<DocStore> docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile_);
     std::function<int (int, const Entry&)> c = [&](int cnt, const Entry &entry) -> int {
         SysEvent sysEvent("", nullptr, entry.value);
-        sysEvent.ParseJson();
         sysEvent.SetSeq(entry.id);
         return callback(sysEvent);
     };

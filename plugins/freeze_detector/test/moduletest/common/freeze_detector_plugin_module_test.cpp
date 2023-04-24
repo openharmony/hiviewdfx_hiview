@@ -54,14 +54,15 @@ void FreezeDetectorPluginModuleTest::TearDownTestCase()
 std::shared_ptr<SysEvent> FreezeDetectorPluginModuleTest::CreateFreezeEvent(const std::string& extraInfo,
     bool fromKernel, long happenTime, const std::string& domain, const std::string& stringid) const
 {
-    auto event = std::make_shared<SysEvent>("SysEvent", nullptr);
+    auto event = std::make_shared<SysEvent>("SysEvent", nullptr, extraInfo);
     if (fromKernel) {
         event->normalExtraInfo_ = extraInfo;
-    } else {
-        event->jsonExtraInfo_ = extraInfo;
     }
+    event->SetEventValue("domain_", domain);
     event->domain_ = domain;
+    event->SetEventValue("name_", stringid);
     event->eventName_ = stringid;
+    event->SetEventValue("time_", happenTime);
     event->happenTime_ = happenTime;
     return event;
 }

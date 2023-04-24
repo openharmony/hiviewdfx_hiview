@@ -45,6 +45,8 @@ ohos_source_set("faultlogger_common") {
 
   deps = [
     "$hiview_base:logger",
+    "$hiview_base/event_raw:hiview_event_raw_decode",
+    "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_base/utility:hiview_utility",
   ]
 

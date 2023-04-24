@@ -48,6 +48,8 @@ ohos_source_set("event_store_source") {
   ]
 
   deps = [
+    "$hiview_base/event_raw:hiview_event_raw_decode",
+    "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_base/running_status_logger:running_status_logger_source",
     "//third_party/jsoncpp:jsoncpp",
   ]
