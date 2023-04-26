@@ -91,34 +91,5 @@ void DBHelper::SelectEventFromDB(
     list.sort();
     HIVIEW_LOGI("select event from db, size =%{public}zu.", list.size());
 }
-
-void DBHelper::UpdateEventIntoDB(const WatchPoint& watchPoint, int id)
-{
-    auto eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet set = (*eventQuery).Select(selections)
-        .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(watchPoint.GetTimestamp()))
-        .Execute();
-    if (set.GetErrCode() != 0) {
-        HIVIEW_LOGE("failed to select event from db, error:%{public}d.", set.GetErrCode());
-        return;
-    }
-
-    if (set.HasNext()) {
-        auto record = set.Next();
-
-        std::string info = "isResolved,eventId:" + std::to_string(id);
-        std::string logPath = watchPoint.GetLogPath();
-        if (logPath != "" && logPath != "nolog") {
-            info += ",logPath:" + logPath;
-        }
-        record->SetEventValue(EventStore::EventCol::INFO, info);
-
-        std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(*record);
-        if (EventStore::SysEventDao::Update(sysEvent, false) != 0) {
-            HIVIEW_LOGE("failed to update info into db, stringId:%{public}s.", watchPoint.GetStringId().c_str());
-        }
-    }
-}
 } // namespace HiviewDFX
 } // namespace OHOS
