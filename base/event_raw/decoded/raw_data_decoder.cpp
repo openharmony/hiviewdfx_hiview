@@ -82,13 +82,14 @@ bool RawDataDecoder::StringValueDecoded(uint8_t* rawData, const size_t maxLen, s
     if (valByteCnt == 0) { // no need to copy
         return true;
     }
-    uint8_t* cpyStrPtr = new uint8_t[valByteCnt];
+    uint8_t* cpyStrPtr = new uint8_t[valByteCnt + 1];
     auto ret = memcpy_s(cpyStrPtr, valByteCnt, rawData + pos, valByteCnt);
     if (ret != EOK) {
         HiLog::Error(LABEL, "String value copy failed, ret is %{public}d.", ret);
         delete []cpyStrPtr;
         return false;
     }
+    cpyStrPtr[valByteCnt] = '\0';
     dest = std::string(reinterpret_cast<char*>(cpyStrPtr));
     delete []cpyStrPtr;
     pos += valByteCnt;

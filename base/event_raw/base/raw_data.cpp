@@ -37,7 +37,7 @@ RawData::RawData()
 
 RawData::RawData(uint8_t* data, size_t dataLen)
 {
-    if (dataLen == 0) {
+    if (data == nullptr || dataLen == 0) {
         data_ = new uint8_t[EXPAND_BUF_SIZE];
         capacity_ = EXPAND_BUF_SIZE;
         len_ = 0;

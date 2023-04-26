@@ -31,6 +31,9 @@ constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DecodedEvent" };
 
 DecodedEvent::DecodedEvent(uint8_t* src)
 {
+    if (src == nullptr) {
+        return;
+    }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
     HiLog::Debug(LABEL, "decoded blockSize is %{public}zu.", blockSize);
     if (blockSize > 0) {
