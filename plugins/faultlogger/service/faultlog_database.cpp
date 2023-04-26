@@ -27,7 +27,6 @@
 #include "logger.h"
 #include "log_analyzer.h"
 #include "string_util.h"
-#include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
 
@@ -97,48 +96,64 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
     );
 }
 
+std::list<std::shared_ptr<EventStore::SysEventQuery>> CreateQueries(
+    int32_t faultType, EventStore::Cond upperCaseCond, EventStore::Cond lowerCaseCond)
+{
+    std::list<std::shared_ptr<EventStore::SysEventQuery>> queries;
+    if (faultType == FaultLogType::JS_CRASH || faultType == FaultLogType::ALL) {
+        std::vector<std::string> faultNames = { "JS_ERROR" };
+        std::vector<std::string> domains = { HiSysEvent::Domain::ACE, HiSysEvent::Domain::AAFWK };
+        for (std::string domain : domains) {
+            auto query = EventStore::SysEventDao::BuildQuery(domain, faultNames);
+            query->And(lowerCaseCond);
+            query->Select(QUERY_ITEMS).Order("time_", false);
+            queries.push_back(query);
+        }
+    }
+    if (faultType != FaultLogType::JS_CRASH) {
+        std::string faultName = GetFaultNameByType(faultType, false);
+        std::vector<std::string> faultNames = { faultName };
+        if (faultType == FaultLogType::ALL) {
+            faultNames = { "CPP_CRASH", "APP_FREEZE", "SYS_FREEZE", "RUST_PANIC" };
+        }
+        auto query = EventStore::SysEventDao::BuildQuery(HiSysEvent::Domain::RELIABILITY, faultNames);
+        query->And(upperCaseCond);
+        query->Select(QUERY_ITEMS).Order("time_", false);
+        queries.push_back(query);
+    }
+    return queries;
+}
+
 std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& module, int32_t id,
     int32_t faultType, int32_t maxNum)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    std::string faultName = GetFaultNameByType(faultType, false);
     std::list<FaultLogInfo> queryResult;
-    auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    EventStore::Cond uidCond("UID", EventStore::Op::EQ, id);
-    EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
-    EventStore::Cond condLeft = uidCond.And(hiviewCond);
-    EventStore::Cond condRight("uid_", EventStore::Op::EQ, id);
-    EventStore::Cond nameCond(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
-    EventStore::Cond condTotal;
-    if (faultType == FaultLogType::CPP_CRASH ||
-        faultType == FaultLogType::APP_FREEZE ||
-        faultType == FaultLogType::RUST_PANIC) {
-        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
-        condTotal = domainCond.And(nameCond).And(condLeft);
-    } else if (faultType == FaultLogType::JS_CRASH) {
-        EventStore::Cond domainOneCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
-        EventStore::Cond domainTwoCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::AAFWK);
-        condTotal = domainOneCond.And(nameCond).And(condRight).Or(domainTwoCond.And(nameCond).And(condRight));
-    } else {
-        condTotal = condLeft.Or(condRight);
-        if (faultType != 0) {
-            EventStore::Cond faultTypeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
-            condTotal = condLeft.Or(condRight).And(faultTypeCond);
-        }
+    if (faultType < FaultLogType::ALL || faultType > FaultLogType::RUST_PANIC) {
+        HIVIEW_LOGE("Unsupported fault type, please check it!");
+        return queryResult;
     }
-    (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
-    if (id != 0) {
-        query->And("MODULE", EventStore::Op::EQ, module);
-    }
-    EventStore::ResultSet resultSet = query->Execute(maxNum);
-    while (resultSet.HasNext()) {
-        auto it = resultSet.Next();
-        FaultLogInfo info;
-        if (!ParseFaultLogInfoFromJson(it->rawData_, info)) {
-            HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
-            continue;
+    EventStore::Cond hiviewUidCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
+    EventStore::Cond uidUpperCond = hiviewUidCond.And("UID", EventStore::Op::EQ, id);
+    EventStore::Cond uidLowerCond("uid_", EventStore::Op::EQ, id);
+    auto queries = CreateQueries(faultType, uidUpperCond, uidLowerCond);
+    for (auto query : queries) {
+        if (id != 0) {
+            query->And("MODULE", EventStore::Op::EQ, module);
         }
-        queryResult.push_back(info);
+        EventStore::ResultSet resultSet = query->Execute(maxNum);
+        while (resultSet.HasNext()) {
+            auto it = resultSet.Next();
+            FaultLogInfo info;
+            if (!ParseFaultLogInfoFromJson(it->rawData_, info)) {
+                HIVIEW_LOGI("Failed to parse FaultLogInfo from queryResult.");
+                continue;
+            }
+            queryResult.push_back(info);
+            if (queryResult.size() == maxNum) {
+                return queryResult;
+            }
+        }
     }
     return queryResult;
 }
@@ -146,32 +161,24 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (faultType < FaultLogType::ALL || faultType > FaultLogType::RUST_PANIC) {
+        HIVIEW_LOGE("Unsupported fault type, please check it!");
+        return false;
+    }
     std::string faultName = GetFaultNameByType(faultType, false);
     auto query = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
-    EventStore::Cond pidUpperCond("PID", EventStore::Op::EQ, pid);
+    EventStore::Cond hiviewUidCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
+    EventStore::Cond pidUpperCond = hiviewUidCond.And("PID", EventStore::Op::EQ, pid).
+        And("UID", EventStore::Op::EQ, uid);
     EventStore::Cond pidLowerCond("pid_", EventStore::Op::EQ, pid);
-    EventStore::Cond uidUpperCond("UID", EventStore::Op::EQ, uid);
-    EventStore::Cond uidLowerCond("uid_", EventStore::Op::EQ, uid);
-    EventStore::Cond hiviewCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
-    EventStore::Cond condLeft = hiviewCond.And(pidUpperCond).And(uidUpperCond);
-    EventStore::Cond condRight = pidLowerCond.And(uidLowerCond);
-    EventStore::Cond nameCond(EventStore::EventCol::NAME, EventStore::Op::EQ, faultName);
-    EventStore::Cond condTotal;
-    if (faultType == FaultLogType::CPP_CRASH ||
-        faultType == FaultLogType::APP_FREEZE ||
-        faultType == FaultLogType::RUST_PANIC) {
-        EventStore::Cond domainCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::RELIABILITY);
-        condTotal = domainCond.And(nameCond).And(condLeft);
-    } else if (faultType == FaultLogType::JS_CRASH) {
-        EventStore::Cond domainOneCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::ACE);
-        EventStore::Cond domainTwoCond(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, HiSysEvent::Domain::AAFWK);
-        condTotal = domainOneCond.And(nameCond).And(condRight).Or(domainTwoCond.And(nameCond).And(condRight));
-    } else {
-        EventStore::Cond faultTypeCond("FAULT_TYPE", EventStore::Op::EQ, faultType);
-        condTotal = condLeft.Or(condRight).And(faultTypeCond);
+    pidLowerCond = pidLowerCond.And("uid_", EventStore::Op::EQ, uid);
+    auto queries = CreateQueries(faultType, pidUpperCond, pidLowerCond);
+    for (auto query : queries) {
+        if (query->Execute(1).HasNext()) {
+            return true;
+        }
     }
-    (*query).Select(QUERY_ITEMS).Where(condTotal).Order("time_", false);
-    return query->Execute(1).HasNext();
+    return false;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
