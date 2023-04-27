@@ -128,9 +128,9 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest001, testing::ext:
     const int loopTimes = 10;
     for (int i = 0; i < loopTimes; i++) {
         AddFaultLog(now + i, FaultLogType::CPP_CRASH, module, "faultloggertestsummary6");
-        usleep(100000); // 0.1 s
+        sleep(1); // 1 s
     }
-    sleep(5);
+    sleep(1);
 
     /**
      * @tc.steps: step2. query the log by QuerySelfFaultLog interfaces
