@@ -230,37 +230,14 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
 
 bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
 {
-    auto eventQuery = EventStore::SysEventDao::BuildQuery(event->what_);
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet set = (*eventQuery).Select(selections)
-        .Where(EventStore::EventCol::TS, EventStore::Op::EQ, static_cast<int64_t>(event->happenTime_))
-        .And(EventStore::EventCol::DOMAIN, EventStore::Op::EQ, event->domain_)
-        .And(EventStore::EventCol::NAME, EventStore::Op::EQ, event->eventName_)
-        .Execute();
-    if (set.GetErrCode() != 0) {
-        HIVIEW_LOGE("failed to get db, error:%{public}d.", set.GetErrCode());
-        return false;
+    if (logFile == "nolog") {
+        HIVIEW_LOGI("set info_ with nolog into db.");
+        event->SetEventValue(EventStore::EventCol::INFO, "nolog", false);
+    } else {
+        auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
+        event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
     }
-    if (set.HasNext()) {
-        auto record = set.Next();
-        if (record->GetSeq() == event->GetSeq()) {
-            HIVIEW_LOGI("Seq match success.");
-            if (logFile == "nolog") {
-                HIVIEW_LOGI("set info_ with nolog into db.");
-                event->SetEventValue(EventStore::EventCol::INFO, "nolog", false);
-            } else {
-                auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
-                event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
-            }
-
-            auto retCode = EventStore::SysEventDao::Update(event, false);
-            if (retCode == 0) {
-                return true;
-            }
-        }
-    }
-    HIVIEW_LOGE("eventLog LogPath update to DB failed!");
-    return false;
+    return true;
 }
 
 void EventLogger::OnLoad()

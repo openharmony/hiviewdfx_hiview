@@ -81,9 +81,9 @@
                         "SysEventStore"
                     ],
                     "EventloggerPipeline": [
-                        "SysEventStore",
                         "EventLogger",
-                        "SysEventDispatcher"
+                        "SysEventDispatcher",
+                        "SysEventStore"
                     ],
                     "faultloggerPipeline": [
                         "Faultlogger",
