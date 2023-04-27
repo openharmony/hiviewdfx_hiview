@@ -35,6 +35,7 @@
                 "bundle_framework",
                 "c_utils",
                 "device_usage_statistics",
+                "hidumper",
                 "hilog_native",
                 "hisysevent_native",
                 "init",

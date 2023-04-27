@@ -105,6 +105,13 @@ ohos_executable("hiview") {
   sources = [ "main.cpp" ]
 
   deps += plugin_static_deps
+
+  external_deps = [
+    "hidumper:hidumperservice_cpu_source",
+    "hisysevent_native:libhisysevent",
+    "hisysevent_native:libhisyseventmanager",
+  ]
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
