@@ -231,7 +231,7 @@ static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
     size_t removeEndPos = info.summary.find("Name:");
     if (removeStartPos != std::string::npos && removeEndPos != std::string::npos) {
         auto iterator = info.summary.begin() + removeEndPos;
-        while (*iterator != '\n') {
+        while (iterator != info.summary.end() && *iterator != '\n') {
             if (isdigit(*iterator)) {
                 iterator = info.summary.erase(iterator);
             } else {
