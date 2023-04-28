@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,7 +41,6 @@ public:
     static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& domain, const std::vector<std::string>& names);
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
     static int Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit = 100);
-    static int Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange = true);
     static int BackupDB(StoreType type);
     static int CloseDB(StoreType type);
     static int DeleteDB(StoreType type);
