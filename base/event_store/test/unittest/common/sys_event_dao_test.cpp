@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -252,50 +252,6 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_005, testing::ext::TestSize.Level3)
         count++;
     }
     ASSERT_TRUE(count == 0);
-}
-
-/**
- * @tc.name: TestEventDaoUpdate_006
- * @tc.desc: test update sql
- * @tc.type: FUNC
- * @tc.require: AR000FT2Q3
- * @tc.author: zhouhaifeng
- */
-HWTEST_F(SysEventDaoTest, TestEventDaoUpdate_006, testing::ext::TestSize.Level3)
-{
-    /**
-     * @tc.steps: step1. create pipeline event and set event id
-     * @tc.steps: step2. invoke OnEvent func
-     * @tc.expected: all ASSERT_TRUE work through.
-     */
-    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_006","type_":3,"tz_":8,"time_":162027129100,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
-        "keyChar":97})~";
-    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-
-    int retCode = EventStore::SysEventDao::Insert(sysEvent);
-    ASSERT_TRUE(retCode == 0);
-
-    sysEvent->SetEventValue("info_", "update");
-    retCode = EventStore::SysEventDao::Update(sysEvent);
-    ASSERT_TRUE(retCode == 0);
-
-    auto sysEventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::SECURITY);
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet resultSet = (*sysEventQuery)
-        .Select(selections)
-        .Where(EventStore::EventCol::NAME, EventStore::Op::EQ, "SysEventDaoTest_006")
-        .Execute();
-    int count = 0;
-    while (resultSet.HasNext()) {
-        count++;
-        EventStore::ResultSet::RecordIter it = resultSet.Next();
-        ASSERT_TRUE(it->GetSeq() == sysEvent->GetSeq());
-        std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
-        std::string info = it->GetEventValue("info_");
-        ASSERT_TRUE(info == "update");
-    }
-    ASSERT_TRUE(count == 1);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -83,31 +83,6 @@ int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)
         return ERR_FAILED_DB_OPERATION;
     }
     sysEvent->SetSeq(entry.id);
-    return 0;
-}
-
-int SysEventDao::Update(std::shared_ptr<SysEvent> sysEvent, bool isNotifyChange)
-{
-    std::string dbFile = GetDataFile(static_cast<StoreType>(sysEvent->what_));
-    if (dbFile.empty()) {
-        HIVIEW_LOGE("failed to get db file by eventType=%{public}d", sysEvent->what_);
-        return ERR_INVALID_DB_FILE;
-    }
-
-    HIVIEW_LOGD("update db file %{public}s", dbFile.c_str());
-    Entry entry;
-    entry.id = sysEvent->GetSeq();
-    entry.value = sysEvent->AsJsonStr();
-    HIVIEW_LOGD("update sys event content: %{public}s", entry.value.c_str());
-    auto docStore = StoreMgrProxy::GetInstance().GetDocStore(dbFile);
-    if (docStore->Merge(entry) != 0) {
-        HIVIEW_LOGE("update error for event %{public}s", sysEvent->eventName_.c_str());
-        return ERR_FAILED_DB_OPERATION;
-    }
-
-    if (isNotifyChange) {
-        HiviewGlobal::GetInstance()->PostUnorderedEvent(sysEvent);
-    }
     return 0;
 }
 
