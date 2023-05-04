@@ -48,7 +48,7 @@ struct HiSysEventHeader {
 
     /* Event name */
     char name[MAX_EVENT_NAME_LENGTH + 1];
-    
+
     /* Event timestamp */
     uint64_t timestamp;
 

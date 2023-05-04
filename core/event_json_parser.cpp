@@ -50,7 +50,7 @@ const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
 
-std::string GenerateHash(const std::string& info)
+uint64_t GenerateHash(const std::string& info)
 {
     uint64_t ret {BASIS};
     const char* p = info.c_str();
@@ -63,13 +63,7 @@ std::string GenerateHash(const std::string& info)
         ret *= PRIME;
         i++;
     }
-    size_t hashRetLenLimit = 20; // max number of digits for uint64_t type
-    std::string retStr = std::to_string(ret);
-    size_t retLen = retStr.size();
-    if (retLen < hashRetLenLimit) {
-        retStr.append(hashRetLenLimit - retLen, '0'); // fill suffix digits with '0'
-    }
-    return retStr;
+    return ret;
 }
 
 std::string GetConfiguredTestType(const std::string& configuredType)
@@ -94,7 +88,7 @@ void ParameterWatchCallback(const char* key, const char* value, void* context)
 
 DEFINE_LOG_TAG("Event-JsonParser");
 
-bool DuplicateIdFilter::IsDuplicateEvent(const std::string& sysEventId)
+bool DuplicateIdFilter::IsDuplicateEvent(const uint64_t sysEventId)
 {
     for (auto iter = sysEventIds.begin(); iter != sysEventIds.end(); iter++) {
         if (*iter == sysEventId) {
@@ -182,7 +176,7 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
     return true;
 }
 
-void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const std::string& sysEventId) const
+void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const uint64_t sysEventId) const
 {
     if (event == nullptr) {
         return;
