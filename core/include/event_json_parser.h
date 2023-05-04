@@ -40,10 +40,10 @@ using FILTER_SIZE_TYPE = std::list<std::string>::size_type;
 
 class DuplicateIdFilter {
 public:
-    bool IsDuplicateEvent(const std::string& sysEventId);
+    bool IsDuplicateEvent(const uint64_t sysEventId);
 
 private:
-    std::list<std::string> sysEventIds;
+    std::list<uint64_t> sysEventIds;
 };
 
 class EventJsonParser {
@@ -58,7 +58,7 @@ public:
     bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
 
 private:
-    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const std::string& sysEventId) const;
+    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event, uint64_t sysEventId) const;
     bool CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;
     bool CheckEventValidity(std::shared_ptr<SysEvent> event) const;
     bool CheckTypeValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;

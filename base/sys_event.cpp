@@ -81,6 +81,11 @@ void SysEvent::InitialMember()
     auto header = rawDataBuilder_.GetHeader();
     what_ = static_cast<uint16_t>(rawDataBuilder_.GetEventType());
     happenTime_ = header.timestamp;
+    if (happenTime_ == 0) {
+        auto currentTimeStamp = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
+        rawDataBuilder_.AppendTimeStamp(currentTimeStamp);
+        happenTime_ = currentTimeStamp;
+    }
     auto seqParam = rawDataBuilder_.GetValue("seq_");
     if (seqParam != nullptr) {
         seqParam->AsInt64(eventSeq_);

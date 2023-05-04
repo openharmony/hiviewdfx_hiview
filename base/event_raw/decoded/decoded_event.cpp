@@ -27,6 +27,18 @@ namespace HiviewDFX {
 namespace EventRaw {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DecodedEvent" };
+
+std::string TransUInt64ToFixedLengthStr(uint64_t src)
+{
+    const size_t maxIdLen = 20;
+    std::string uint64Str = std::to_string(src);
+    if (uint64Str.size() >= maxIdLen) {
+        return uint64Str;
+    }
+    std::string dest(maxIdLen, '0');
+    dest.replace(maxIdLen - uint64Str.size(), uint64Str.size(), uint64Str);
+    return dest;
+}
 }
 
 DecodedEvent::DecodedEvent(uint8_t* src)
@@ -85,7 +97,7 @@ void DecodedEvent::AppendBaseInfo(std::stringstream& ss)
     AppendValue(ss, BASE_INFO_KEY_PID, header_.pid);
     AppendValue(ss, BASE_INFO_KEY_TID, header_.tid);
     AppendValue(ss, BASE_INFO_KEY_UID, header_.uid);
-    AppendValue(ss, BASE_INFO_KEY_ID, std::to_string(header_.id));
+    AppendValue(ss, BASE_INFO_KEY_ID, TransUInt64ToFixedLengthStr(header_.id));
     if (header_.isTraceOpened == 1) {
         AppendValue(ss, BASE_INFO_KEY_TRACE_FLAG, traceInfo_.traceFlag);
         AppendValue(ss, BASE_INFO_KEY_TRACE_ID, traceInfo_.traceId);
