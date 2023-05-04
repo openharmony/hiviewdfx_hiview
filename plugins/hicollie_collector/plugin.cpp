@@ -86,7 +86,7 @@ std::string HiCollieCollector::SelectEventFromDB(
 {
     std::string ret;
 
-    auto eventQuery = EventStore::SysEventDao::BuildQuery("FRAMEWORK", {STRINGID_SERVICE_BLOCK});
+    auto eventQuery = EventStore::SysEventDao::BuildQuery("FRAMEWORK", {"SERVICE_WARNING"});
     std::vector<std::string> selections { EventStore::EventCol::TS };
     (*eventQuery).Select(selections)
         .And(EventStore::EventCol::PID, EventStore::Op::EQ, pid)

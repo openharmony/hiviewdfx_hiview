@@ -29,7 +29,8 @@ class DBHelper {
 public:
     explicit DBHelper(std::shared_ptr<FreezeCommon> fc) : freezeCommon_(fc) {};
     ~DBHelper() {};
-    void SelectEventFromDB(bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list);
+    void SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
+        const std::string& watchPackage, const FreezeResult& result);
 private:
     std::shared_ptr<FreezeCommon> freezeCommon_;
 };

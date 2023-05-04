@@ -49,8 +49,6 @@ private:
 
     bool ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
-    void MatchEvent(const WatchPoint& watchPoint,
-        const std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, const FreezeResult& result) const;
     bool JudgmentResult(const WatchPoint& watchPoint,
         const std::vector<WatchPoint>& list, const std::vector<FreezeResult>& result) const;
     unsigned long startTime_;

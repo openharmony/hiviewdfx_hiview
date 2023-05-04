@@ -41,28 +41,6 @@ bool FreezeResolver::Init()
     return vendor_->Init();
 }
 
-void FreezeResolver::MatchEvent(const WatchPoint& watchPoint,
-    const std::list<WatchPoint>& wpList, std::vector<WatchPoint>& list, const FreezeResult& result) const
-{
-    std::string domain = watchPoint.GetDomain();
-    std::string stringId = watchPoint.GetStringId();
-    std::string package = watchPoint.GetPackageName();
-    for (auto &item : wpList) {
-        if ((result.GetDomain() == item.GetDomain()) && (result.GetStringId() == item.GetStringId())) {
-            if (result.GetSamePackage() == "true" && package != item.GetPackageName()) {
-                HIVIEW_LOGE("failed to match the same package,"
-                    " domain:%{public}s stringid:%{public}s pacakgeName:%{public}s"
-                    " and domain:%{public}s stringid:%{public}s pacakgeName:%{public}s.",
-                    domain.c_str(), stringId.c_str(), package.c_str(),
-                    item.GetDomain().c_str(), item.GetStringId().c_str(), item.GetPackageName().c_str());
-                continue;
-            }
-            list.push_back(item); // take watchpoint back
-            break;
-        }
-    }
-}
-
 bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
 {
@@ -75,23 +53,21 @@ bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
     unsigned long long timestamp = watchPoint.GetTimestamp();
     for (auto& i : result) {
         int window = i.GetWindow();
-        std::list<WatchPoint> wpList;
         if (window == 0) {
             list.push_back(watchPoint);
         } else if (window > 0) {
             unsigned long long start = timestamp;
             unsigned long long end = timestamp + (window * MILLISECOND);
             if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(false, start, end, wpList);
+                dBHelper_->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), i);
             }
         } else {
             unsigned long long start = timestamp + (window * MILLISECOND);
             unsigned long long end = timestamp;
             if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(false, start, end, wpList);
+                dBHelper_->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), i);
             }
         }
-        MatchEvent(watchPoint, wpList, list, i);
     }
 
     HIVIEW_LOGI("list size %{public}zu", list.size());
