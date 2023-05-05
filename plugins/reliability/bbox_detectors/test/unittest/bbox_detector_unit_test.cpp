@@ -96,8 +96,8 @@ HWTEST_F(BBoxDetectorUnitTest, BBoxDetectorUnitTest002, TestSize.Level1)
     eventInfos.insert(std::pair("Eventid", "901000002"));
     Tbox::FilterTrace(eventInfos);
 
-    EXPECT_STREQ(eventInfos["FIRST_FRAME"].c_str(), "vfs_write+0x184/0x380");
-    EXPECT_STREQ(eventInfos["SECOND_FRAME"].c_str(), "ksys_write+0x74/0xc8");
+    EXPECT_STREQ(eventInfos["FIRST_FRAME"].c_str(), "sysrq_handle_term+0x0/0x94");
+    EXPECT_STREQ(eventInfos["SECOND_FRAME"].c_str(), "__handle_sysrq+0x15c/0x184");
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
