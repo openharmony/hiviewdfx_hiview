@@ -24,8 +24,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
-void DBHelper::SelectEventFromDB(
-    bool all, unsigned long long start, unsigned long long end, std::list<WatchPoint>& list)
+void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
+    const std::string& watchPackage, const FreezeResult& result)
 {
     if (freezeCommon_ == nullptr) {
         return;
@@ -34,15 +34,11 @@ void DBHelper::SelectEventFromDB(
         return;
     }
 
-    auto eventQuery = EventStore::SysEventDao::BuildQuery(EventStore::StoreType::FAULT);
+    auto eventQuery = EventStore::SysEventDao::BuildQuery(result.GetDomain(), {result.GetStringId()});
     std::vector<std::string> selections { EventStore::EventCol::TS };
     (*eventQuery).Select(selections)
         .Where(EventStore::EventCol::TS, EventStore::Op::GE, static_cast<int64_t>(start))
         .And(EventStore::EventCol::TS, EventStore::Op::LE, static_cast<int64_t>(end));
-    if (all == false) { // with or without resolved events
-        (*eventQuery).And(EventStore::Cond(EventStore::EventCol::INFO, EventStore::Op::NSW, "isResolved"));
-        //    .Or(EventStore::Cond(EventStore::EventCol::INFO, EventStore::Op::NU)));
-    }
 
     EventStore::ResultSet set = eventQuery->Execute();
     if (set.GetErrCode() != 0) {
@@ -53,9 +49,10 @@ void DBHelper::SelectEventFromDB(
     while (set.HasNext()) {
         auto record = set.Next();
 
-        std::string domain = record->GetEventValue(EventStore::EventCol::DOMAIN);
-        std::string stringId = record->GetEventValue(EventStore::EventCol::NAME);
-        if (freezeCommon_->IsFreezeEvent(domain, stringId) == false) {
+        std::string packageName = record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
+        if (result.GetSamePackage() == "true" && watchPackage != packageName) {
+            HIVIEW_LOGE("failed to match the same package: %{public}s and  %{public}s",
+                watchPackage.c_str(), packageName.c_str());
             continue;
         }
 
@@ -67,13 +64,13 @@ void DBHelper::SelectEventFromDB(
 
         WatchPoint watchPoint = WatchPoint::Builder()
             .InitSeq(record->GetSeq())
-            .InitDomain(domain)
-            .InitStringId(stringId)
+            .InitDomain(result.GetDomain())
+            .InitStringId(result.GetStringId())
             .InitTimestamp(record->happenTime_)
             .InitPid(pid)
             .InitUid(uid)
             .InitTid(tid)
-            .InitPackageName(record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME))
+            .InitPackageName(packageName)
             .InitProcessName(record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME))
             .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeCommon::EVENT_MSG), "\\n", "\n"))
             .Build();
@@ -88,7 +85,6 @@ void DBHelper::SelectEventFromDB(
         list.push_back(watchPoint);
     }
 
-    list.sort();
     HIVIEW_LOGI("select event from db, size =%{public}zu.", list.size());
 }
 } // namespace HiviewDFX
