@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -45,6 +46,7 @@ private:
     uint8_t* data_ = nullptr;
     size_t len_ = 0;
     size_t capacity_ = 0;
+    mutable std::mutex mutex_;
 };
 } // namespace EventRaw
 } // namespace HiviewDFX

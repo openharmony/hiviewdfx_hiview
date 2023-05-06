@@ -207,7 +207,7 @@ std::string DecodedEvent::AsJsonStr()
         jsonStream.seekp(-1, std::ios_base::end);
     }
     jsonStream << "}";
-    HiLog::Debug(LABEL, "Write event: %{public}s.", jsonStream.str().c_str());
+    HiLog::Debug(LABEL, "Decoded event: %{public}s.", jsonStream.str().c_str());
     return jsonStream.str();
 }
 
