@@ -69,21 +69,21 @@ std::shared_ptr<RawData> RawDataBuilder::Build()
     rawData_.Reset();
     if (!rawData_.Append(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t))) {
         HiLog::Error(LABEL, "Block size copy failed.");
-        std::make_shared<RawData>(rawData_);
+        return std::make_shared<RawData>(rawData_);
     }
     if (!BuildHeader()) {
         HiLog::Error(LABEL, "Header of sysevent build failed.");
-        std::make_shared<RawData>(rawData_);
+        return std::make_shared<RawData>(rawData_);
     }
     // append parameter count
     int32_t paramCnt = static_cast<int32_t>(allParams_.size());
     if (!rawData_.Append(reinterpret_cast<uint8_t*>(&paramCnt), sizeof(int32_t))) {
         HiLog::Error(LABEL, "Parameter count copy failed.");
-        std::make_shared<RawData>(rawData_);
+        return std::make_shared<RawData>(rawData_);
     }
     if (!BuildCustomizedParams()) {
         HiLog::Error(LABEL, "Customized paramters of sys event build failed.");
-        std::make_shared<RawData>(rawData_);
+        return std::make_shared<RawData>(rawData_);
     }
     // update block size
     blockSize = static_cast<int32_t>(rawData_.GetDataLength());

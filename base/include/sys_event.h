@@ -62,8 +62,11 @@ public:
             auto param = rawDataBuilder_.GetValue(key);
             std::string paramValue;
             if (appendValue && (param != nullptr) && param->AsString(paramValue)) {
+                paramValue = UnescapeJsonStringValue(paramValue);
                 value.append(paramValue);
+                value = paramValue;
             }
+            value = EscapeJsonStringValue(value);
         }
         rawDataBuilder_.AppendValue(key, value);
     }
@@ -101,6 +104,8 @@ private:
     void InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
         EventRaw::RawDataBuilder& builder);
     std::shared_ptr<EventRaw::RawData> TansJsonStrToRawData(const std::string& jsonStr);
+    std::string EscapeJsonStringValue(const std::string& src);
+    std::string UnescapeJsonStringValue(const std::string& src);
 
 private:
     int64_t seq_;
@@ -128,11 +133,25 @@ public:
     template<typename T>
     void SetKeyValue(const std::string& key, T value)
     {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
+            std::vector<std::string> transVal;
+            for (auto item : value) {
+                transVal.emplace_back(EscapeJsonStringValue(item));
+            }
+            rawDataBuilder_.AppendValue(key, transVal);
+            return;
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+            value = EscapeJsonStringValue(value);
+        }
         rawDataBuilder_.AppendValue(key, value);
     }
 
 public:
     std::shared_ptr<EventRaw::RawData> GetRawData();
+
+private:
+    std::string EscapeJsonStringValue(const std::string& src);
 
 private:
     EventRaw::RawDataBuilder rawDataBuilder_;

@@ -301,6 +301,16 @@ uint8_t* SysEvent::AsRawData()
     return nullptr;
 }
 
+std::string SysEvent::EscapeJsonStringValue(const std::string& src)
+{
+    return StringUtil::EscapeJsonStringValue(src);
+}
+
+std::string SysEvent::UnescapeJsonStringValue(const std::string& src)
+{
+    return StringUtil::UnescapeJsonStringValue(src);
+}
+
 SysEventCreator::SysEventCreator(const std::string& domain, const std::string& eventName,
     SysEventCreator::EventType type)
 {
@@ -312,6 +322,11 @@ SysEventCreator::SysEventCreator(const std::string& domain, const std::string& e
 std::shared_ptr<EventRaw::RawData> SysEventCreator::GetRawData()
 {
     return rawDataBuilder_.Build();
+}
+
+std::string SysEventCreator::EscapeJsonStringValue(const std::string& src)
+{
+    return StringUtil::EscapeJsonStringValue(src);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
