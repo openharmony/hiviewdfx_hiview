@@ -35,7 +35,7 @@ public:
 
 private:
     static constexpr int CHAR_RANGE = 256;
-    static constexpr int STATUS_NUM = 11;
+    static constexpr int STATUS_NUM = 13;
 
     static constexpr int STATUS_NONE = 0;
     static constexpr int STATUS_RUN = 1;
@@ -48,6 +48,8 @@ private:
     static constexpr int STATUS_STRING_ITEM_PARSE = 8;
     static constexpr int STATUS_DOUBLE_ITEM_PARSE = 9;
     static constexpr int STATUS_INT_ITEM_PARSE = 10;
+    static constexpr int STATUS_ESCAPE_CHAR_PARSE = 11;
+    static constexpr int STATUS_ESCAPE_CHAR_ITEM_PARSE = 12;
 
 private:
     void HandleStatusNone(std::string& key, std::string& value, std::vector<std::string>& values, int charactor);
@@ -85,6 +87,8 @@ private:
     void InitStringItemParseStatus();
     void InitDoubleItemParseStatus();
     void InitIntItemParseStatus();
+    void InitEscapeCharParseStatus();
+    void InitEscapeCharItemParseStatus();
 
 private:
     std::string jsonStr_;

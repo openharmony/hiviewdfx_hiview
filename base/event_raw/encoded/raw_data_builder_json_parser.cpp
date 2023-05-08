@@ -39,6 +39,7 @@ constexpr int RIGHT_BRACE_CHAR = static_cast<int>('}');
 constexpr int LEFT_BRACKET_CHAR = static_cast<int>('[');
 constexpr int RIGHT_BRACKET_CHAR = static_cast<int>(']');
 constexpr int MINUS_CHAR = static_cast<int>('-');
+constexpr int ESCAPE_CHAR = static_cast<int>('\\');
 
 template<typename T>
 static void TransStrToType(const std::string& str, T& val)
@@ -63,6 +64,8 @@ RawDataBuilderJsonParser::RawDataBuilderJsonParser(const std::string& jsonStr)
     InitStringItemParseStatus();
     InitDoubleItemParseStatus();
     InitIntItemParseStatus();
+    InitEscapeCharParseStatus();
+    InitEscapeCharItemParseStatus();
 }
 
 void RawDataBuilderJsonParser::InitNoneStatus()
@@ -111,6 +114,7 @@ void RawDataBuilderJsonParser::InitStringParseStatus()
         statusTabs_[STATUS_STRING_PARSE][i] = STATUS_STRING_PARSE;
     }
     statusTabs_[STATUS_STRING_PARSE][DOUBLE_QUOTA_CHAR] = STATUS_RUN;
+    statusTabs_[STATUS_STRING_PARSE][ESCAPE_CHAR] = STATUS_ESCAPE_CHAR_PARSE;
 }
 
 void RawDataBuilderJsonParser::InitDoubleParseStatus()
@@ -160,6 +164,7 @@ void RawDataBuilderJsonParser::InitStringItemParseStatus()
     }
     statusTabs_[STATUS_STRING_ITEM_PARSE][DOUBLE_QUOTA_CHAR] = STATUS_ARRAY_PARSE;
     statusTabs_[STATUS_STRING_ITEM_PARSE][COMMA_CHAR] = STATUS_ARRAY_PARSE;
+    statusTabs_[STATUS_STRING_ITEM_PARSE][ESCAPE_CHAR] = STATUS_ESCAPE_CHAR_ITEM_PARSE;
 }
 
 void RawDataBuilderJsonParser::InitDoubleItemParseStatus()
@@ -187,6 +192,22 @@ void RawDataBuilderJsonParser::InitIntItemParseStatus()
     statusTabs_[STATUS_INT_ITEM_PARSE][COMMA_CHAR] = STATUS_ARRAY_PARSE;
     statusTabs_[STATUS_INT_ITEM_PARSE][RIGHT_BRACKET_CHAR] = STATUS_RUN;
     statusTabs_[STATUS_INT_ITEM_PARSE][POINT_CHAR] = STATUS_DOUBLE_ITEM_PARSE;
+}
+
+void RawDataBuilderJsonParser::InitEscapeCharParseStatus()
+{
+    for (int i = 0; i < CHAR_RANGE; ++i) {
+        statusTabs_[STATUS_ESCAPE_CHAR_PARSE][i] = STATUS_STRING_PARSE;
+    }
+    statusTabs_[STATUS_ESCAPE_CHAR_PARSE][ESCAPE_CHAR] = STATUS_ESCAPE_CHAR_PARSE;
+}
+
+void RawDataBuilderJsonParser::InitEscapeCharItemParseStatus()
+{
+    for (int i = 0; i < CHAR_RANGE; ++i) {
+        statusTabs_[STATUS_ESCAPE_CHAR_ITEM_PARSE][i] = STATUS_STRING_ITEM_PARSE;
+    }
+    statusTabs_[STATUS_ESCAPE_CHAR_ITEM_PARSE][ESCAPE_CHAR] = STATUS_ESCAPE_CHAR_ITEM_PARSE;
 }
 
 void RawDataBuilderJsonParser::HandleStatusNone(std::string& key, std::string& value,
@@ -264,7 +285,7 @@ void RawDataBuilderJsonParser::HandleStatusStringParse(std::string& key, std::st
 {
     HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
         "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
-    if (lastStatus_ != STATUS_STRING_PARSE) {
+    if (lastStatus_ != STATUS_STRING_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_PARSE) {
         value.clear();
         return;
     }
@@ -277,7 +298,7 @@ void RawDataBuilderJsonParser::HandleStatusStringItemParse(std::string& key, std
 {
     HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
         "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
-    if (lastStatus_ != STATUS_STRING_ITEM_PARSE) {
+    if (lastStatus_ != STATUS_STRING_ITEM_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_ITEM_PARSE) {
         value.clear();
         return;
     }
@@ -304,10 +325,10 @@ void RawDataBuilderJsonParser::BuilderAppendStringValue(const std::string& key, 
 
 void RawDataBuilderJsonParser::BuilderAppendIntValue(const std::string& key, const std::string& value)
 {
-    if (builder_ == nullptr) {
+    if (builder_ == nullptr || value.empty()) {
         return;
     }
-    if (value.find(std::to_string(MINUS_CHAR)) != std::string::npos) {
+    if (value.find("-") != std::string::npos) {
         int64_t i64Value = 0;
         TransStrToType(value.substr(1), i64Value);
         HiLog::Debug(LABEL, "key is %{public}s, value is %{public}" PRId64 ".", key.c_str(), -i64Value);
@@ -345,13 +366,21 @@ void RawDataBuilderJsonParser::BuilderAppendIntArrayValue(const std::string& key
         return;
     }
     if (any_of(values.begin(), values.end(), [] (auto& item) {
-        return item.find(std::to_string(MINUS_CHAR)) != std::string::npos;
+        return !item.empty() && item.find("-") != std::string::npos;
     })) {
         std::vector<int64_t> i64Values;
         int64_t i64Value = 0;
         for (auto value : values) {
-            TransStrToType(value.substr(1), i64Value);
-            i64Values.emplace_back(-i64Value);
+            if (value.empty()) {
+                continue;
+            }
+            if (value.find("-") != std::string::npos) {
+                TransStrToType(value.substr(1), i64Value);
+                i64Values.emplace_back(-i64Value);
+                continue;
+            }
+            TransStrToType(value, i64Value);
+            i64Values.emplace_back(i64Value);
         }
         builder_->AppendValue(key, i64Values);
         return;
@@ -444,6 +473,10 @@ std::shared_ptr<RawDataBuilder> RawDataBuilderJsonParser::Parse()
         {STATUS_DOUBLE_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
         {STATUS_INT_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
+        {STATUS_ESCAPE_CHAR_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
+        {STATUS_ESCAPE_CHAR_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
     };
     std::string key;

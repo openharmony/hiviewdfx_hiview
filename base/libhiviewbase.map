@@ -270,6 +270,9 @@
         "OHOS::HiviewDFX::SysEvent::AsJsonStr()";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>)";
         "OHOS::HiviewDFX::SysEvent::GetEventType()";
+        "OHOS::HiviewDFX::SysEvent::UnescapeJsonStringValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SysEvent::EscapeJsonStringValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SysEventCreator::EscapeJsonStringValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;
