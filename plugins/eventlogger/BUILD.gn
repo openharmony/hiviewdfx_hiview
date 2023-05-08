@@ -25,11 +25,7 @@ ohos_source_set("eventlogger") {
   part_name = "hiview"
   public_configs = [ ":event_logger_config" ]
 
-  sources = [
-    "event_log_action.cpp",
-    "event_logger.cpp",
-    "log_action.cpp",
-  ]
+  sources = [ "event_logger.cpp" ]
 
   deps = [
     "$hiview_adapter/system_service:system_service",
@@ -38,6 +34,11 @@ ohos_source_set("eventlogger") {
     "config:eventlogger_config",
     "log_catcher:log_catcher",
     "//third_party/libxml2:xml2",
+  ]
+
+  external_deps = [
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
   ]
 }
 

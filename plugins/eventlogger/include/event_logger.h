@@ -71,15 +71,22 @@ private:
     int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
+    std::unordered_set<std::string> hitraceSet_;
+    std::mutex hitraceSetMutex_;
     int const maxEventPoolCount = 5;
     std::unique_ptr<EventThreadPool> eventPool_;
     std::mutex intervalMutex_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
+    int Getfile(std::shared_ptr<SysEvent> event, std::string& logFile);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
+    bool HitraceCatcher(int64_t& beginTime, const std::string& hitraceTime,
+        const std::string& fullTracePath, std::shared_ptr<SysEvent> event);
+    std::string GetHitraceName(int64_t& beginTime, std::string& hitraceTime);
+    bool DetectionHiTraceMap(const std::string& name);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

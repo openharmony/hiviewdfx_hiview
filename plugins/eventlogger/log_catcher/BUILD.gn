@@ -34,7 +34,6 @@ ohos_source_set("log_catcher") {
     "dmesg_catcher.cpp",
     "event_log_catcher.cpp",
     "event_log_task.cpp",
-    "hitrace_catcher.cpp",
     "open_stacktrace_catcher.cpp",
     "peer_binder_catcher.cpp",
     "shell_catcher.cpp",
@@ -47,9 +46,5 @@ ohos_source_set("log_catcher") {
     "//base/hiviewdfx/hidumper/frameworks/native:hidumperclient",
   ]
 
-  external_deps = [
-    "hiperf:hiperf_client",
-    "ipc:ipc_single",
-    "samgr:samgr_proxy",
-  ]
+  external_deps = [ "hiperf:hiperf_client" ]
 }

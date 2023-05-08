@@ -29,7 +29,6 @@
 #include "command_catcher.h"
 #include "dmesg_catcher.h"
 #include "shell_catcher.h"
-#include "hitrace_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -54,7 +53,6 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq",
@@ -288,14 +286,6 @@ void EventLogTask::PMSUsageCapture()
     cmdCatcher->AddCmd(cmd);
     std::vector<std::string> cmd1 = {"hidumper", "-s", "DisplayPowerManagerService"};
     cmdCatcher->AddCmd(cmd1);
-}
-
-void EventLogTask::HitraceCapture()
-{
-    auto capture = std::make_shared<HitraceCatcher>();
-    capture->Initialize("", 0, 0);
-    capture->Init(event_);
-    tasks_.push_back(capture);
 }
 
 void EventLogTask::HilogCapture()
