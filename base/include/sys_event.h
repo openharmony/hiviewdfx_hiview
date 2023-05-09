@@ -63,7 +63,7 @@ public:
             std::string paramValue;
             if (appendValue && (param != nullptr) && param->AsString(paramValue)) {
                 paramValue = UnescapeJsonStringValue(paramValue);
-                value.append(paramValue);
+                paramValue.append(value);
                 value = paramValue;
             }
             value = EscapeJsonStringValue(value);
