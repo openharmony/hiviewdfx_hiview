@@ -164,7 +164,6 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest001, testing::ext:
             }
         }
     }
-    sleep(5);
     ASSERT_GE(currentCount, 0);
     printf("QuerySelfFaultLog count:%d", currentCount);
 }

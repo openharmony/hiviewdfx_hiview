@@ -84,25 +84,28 @@ HWTEST_F(FaultloggerClientUnittest, AddFaultLogTest001, testing::ext::TestSize.L
      */
     auto now = time(nullptr);
     const int32_t loopCount = 10;
-    std::atomic<int> counter{0};
-    auto task = [](int32_t now, std::atomic<int>& counter) {
+    std::vector<int32_t> timeStamps;
+    int32_t counter = 0;
+    auto task = [](int32_t now) {
         printf("AddFaultLog %d\n", now);
         auto info = CreateFaultLogInfo(now, getuid(), FaultLogType::CPP_CRASH, "faultlogtest1");
         AddFaultLog(info);
-        sleep(5); // maybe 5 seconds is enough for process all AddLog request
-        if (CheckLogFileExist(now, getuid(), "cppcrash", "faultlogtest1")) {
-            counter++;
-        }
     };
     printf("start AddFaultLog\n");
     sleep(1);
     for (int32_t i = 0; i < loopCount; i++) {
         now = now + 1;
-        task(now, std::ref(counter));
+        timeStamps.push_back(now);
+        task(now);
+        sleep(1);
     }
-
+    for (auto timeStamp : timeStamps) {
+        if (CheckLogFileExist(timeStamp, getuid(), "cppcrash", "faultlogtest1")) {
+            counter++;
+        }
+    }
     ASSERT_GT(counter, 0);
-    printf("Add %d logs.\n", counter.load());
+    printf("Add %d logs.\n", counter);
 }
 
 /**
