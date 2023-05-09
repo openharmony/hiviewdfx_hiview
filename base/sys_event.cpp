@@ -218,8 +218,11 @@ void SysEvent::InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<Even
 
 std::shared_ptr<EventRaw::RawData> SysEvent::TansJsonStrToRawData(const std::string& jsonStr)
 {
-    EventRaw::RawDataBuilderJsonParser parser(jsonStr);
-    auto rawDataBuilder = parser.Parse();
+    auto parser = std::make_unique<EventRaw::RawDataBuilderJsonParser>(jsonStr);
+    if (parser == nullptr) {
+        return nullptr;
+    }
+    auto rawDataBuilder = parser->Parse();
     if (rawDataBuilder == nullptr) {
         return nullptr;
     }
