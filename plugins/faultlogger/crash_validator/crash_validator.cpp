@@ -194,8 +194,13 @@ void CrashValidator::HandleProcessExitEvent(SysEvent& sysEvent)
     crashEvent.uid = sysEvent.GetEventIntValue(KEY_UID);
     crashEvent.name = sysEvent.GetEventValue(KEY_NAME);
     int status = static_cast<int>(sysEvent.GetEventIntValue(KEY_STATUS));
-    if (!WIFSIGNALED(status)) {
+    if (!WIFSIGNALED(status) && !WIFEXITED(status)) {
         return;
+    }
+    int exitSigno = WTERMSIG(status);
+    // crash in pid namespace exit signo is zero, instead of use exit status code.
+    if (exitSigno == 0) {
+        exitSigno = WEXITSTATUS(status);
     }
 
     int interestedSignalList[] = {
@@ -203,7 +208,7 @@ void CrashValidator::HandleProcessExitEvent(SysEvent& sysEvent)
         SIGSEGV, SIGSTKFLT, SIGSYS, SIGTRAP };
     bool shouldGenerateCppCrash = false;
     for (size_t i = 0; i < sizeof(interestedSignalList) / sizeof(interestedSignalList[0]); i++) {
-        if (interestedSignalList[i] == WTERMSIG(status)) {
+        if (interestedSignalList[i] == exitSigno) {
             shouldGenerateCppCrash = true;
             break;
         }
