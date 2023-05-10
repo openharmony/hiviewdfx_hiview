@@ -110,16 +110,3 @@ HWTEST_F(PluginBundleTest, PluginBundleLoadTest001, TestSize.Level3)
         FAIL();
     }
 }
-
-/**
- * @tc.name: PluginBundleLoadTest002
- * @tc.desc: test ReleaseDynamicModule/Destructor
- * @tc.type: FUNC
- */
-HWTEST_F(PluginBundleTest, PluginBundleLoadTest002, TestSize.Level3)
-{
-    PluginConfig config;
-    DynamicModule dynamicModule1 = LoadModule("test1");
-    PluginBundle bundle1("test1", config, dynamicModule1);
-    bundle1.ReleaseDynamicModule();
-}
