@@ -381,10 +381,9 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest004, TestSize.Level3)
 HWTEST_F(FreezeDetectorTest, FreezeRuleTest001, TestSize.Level3)
 {
     auto freezeRuleCluster = std::make_shared<FreezeRuleCluster>();
-    if (!freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml")) {
-        printf("failed to parse rule file.");
-        FAIL();
-    }
+
+    bool freezeRuleFlag = freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml");
+    ASSERT_TRUE(freezeRuleFlag);
 
     std::map<std::string, std::pair<std::string, bool>> appPairs =
         freezeRuleCluster->GetApplicationPairs();
@@ -433,10 +432,9 @@ HWTEST_F(FreezeDetectorTest, FreezeRuleTest001, TestSize.Level3)
 HWTEST_F(FreezeDetectorTest, FreezeRuleTest002, TestSize.Level3)
 {
     auto freezeRuleCluster = std::make_shared<FreezeRuleCluster>();
-    if (!freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml")) {
-        printf("failed to parse rule file.");
-        FAIL();
-    }
+
+    bool freezeRuleFlag = freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml");
+    ASSERT_TRUE(freezeRuleFlag);
 
     std::map<std::string, std::pair<std::string, bool>> systemPairs =
         freezeRuleCluster->GetSystemPairs();

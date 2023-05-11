@@ -78,19 +78,18 @@ HWTEST_F(HiviewSATest, CommonTest002, testing::ext::TestSize.Level3)
     printf("system(\"hidumper -s 1201\") \r\n");
     char buffer[256];
     FILE* fp = popen("hidumper -s 1201", "r");
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        printf("%s", buffer);
-        pclose(fp);
-        std::string str(buffer);
-        if (str.find("Error") != std::string::npos) {
-            printf("hidumper -s 1201 fail!\r\n");
-            FAIL();
-        }
-    } else {
-        printf("popen fail!\r\n");
+
+    ASSERT_NE(fp, nullptr);
+    fgets(buffer, sizeof(buffer), fp);
+    printf("%s", buffer);
+    pclose(fp);
+    std::string str(buffer);
+    if (str.find("Error") != std::string::npos) {
+        printf("hidumper -s 1201 fail!\r\n");
         FAIL();
     }
+
+
 }
 }
 }
