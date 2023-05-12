@@ -20,7 +20,7 @@
 #include <string>
 
 #include "base_def.h"
-#include "doc_query.h"
+#include "sys_event_query.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -29,7 +29,7 @@ class EventDocReader {
 public:
     EventDocReader(const std::string& path): docPath_(path) {}
     virtual ~EventDocReader() {}
-    virtual int Read(const DocQuery& query, std::vector<Entry>& entries, int& limit) = 0;
+    virtual int Read(const DocQuery& query, EntryQueue& entries, int& num) = 0;
 
 protected:
     std::string docPath_;

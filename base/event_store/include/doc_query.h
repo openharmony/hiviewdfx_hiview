@@ -19,6 +19,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace EventRaw {
+class DecodedEvent;
+} // EventRaw
 namespace EventStore {
 class Cond;
 class FieldValue;
@@ -26,9 +29,9 @@ class FieldValue;
 class DocQuery {
 public:
     std::pair<std::string, bool> GetOrderField();
-    void SetOrderField(const std::string &col, bool isAsc);
     void And(const Cond& cond);
-    bool IsContain(uint8_t* content, uint32_t contentSize) const;
+    bool IsContainExtraConds(EventRaw::DecodedEvent& decodedEvent) const;
+    bool IsContainInnerConds(uint8_t* content) const;
     std::string ToString() const;
 
 private:
@@ -43,13 +46,10 @@ private:
     };
     using InnerFieldStruct = struct InnerFieldStruct;
 
-    bool IsContainExtraConds(uint8_t* content, uint32_t contentSize) const;
-    bool IsContainInnerConds(uint8_t* content) const;
     bool IsContainInnerCond(const InnerFieldStruct& innerField, const Cond& cond) const;
     bool IsContainCond(const Cond& cond, const FieldValue& value) const;
     bool IsInnerCond(const Cond& cond) const;
 
-    std::pair<std::string, bool> orderField_;
     std::vector<Cond> innerConds_;
     std::vector<Cond> extraConds_;
 }; // DocQuery

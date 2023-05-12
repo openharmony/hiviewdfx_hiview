@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,12 +21,14 @@
 #endif // DllExport
 
 #include <functional>
+#include <queue>
 #include <memory>
 #include <string>
 #include <variant>
 #include <vector>
 
 #include "base_def.h"
+#include "doc_query.h"
 #include "sys_event.h"
 
 namespace OHOS {
@@ -39,11 +41,14 @@ using DbQueryTag = struct {
 };
 using DbQueryCallback = std::function<void(DbQueryStatus)>;
 using QueryProcessInfo = std::pair<pid_t, std::string>; // first: pid of process, second: process name
+
+using CompareFunc = bool(*)(const Entry&, const Entry&);
+using EntryQueue = std::priority_queue<Entry, std::vector<Entry>, CompareFunc>;
+
 constexpr pid_t INNER_PROCESS_ID = -1;
 
 enum Op { NONE = 0, EQ = 1, NE, LT, LE, GT, GE, SW, NSW };
 
-class DocQuery;
 class SysEventDao;
 class SysEventDatabase;
 
@@ -60,6 +65,7 @@ public:
     static std::string INFO;
     static std::string LEVEL;
     static std::string SEQ;
+    static std::string TAG;
 };
 
 class FieldValue {
@@ -82,7 +88,6 @@ public:
     bool IsStartWith(const FieldValue& fieldValue) const;
     bool IsNotStartWith(const FieldValue& fieldValue) const;
 
-private:
     bool IsInteger() const;
     bool IsDouble() const;
     bool IsString() const;
@@ -108,6 +113,8 @@ public:
         return *this;
     }
     Cond &And(const Cond &cond);
+
+    std::string ToString() const;
 
 private:
     friend class DocQuery;
@@ -193,17 +200,18 @@ public:
         QueryProcessInfo callerInfo = std::make_pair(INNER_PROCESS_ID, ""),
         DbQueryCallback queryCallback = nullptr);
 
+    std::string ToString() const;
+
     friend class SysEventDao;
     friend class SysEventDatabase;
 
 protected:
     SysEventQuery();
     SysEventQuery(const std::string& domain, const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
-    std::string ToString() const;
 
 private:
-    ResultSet ExecuteSQL(int limit);
     void BuildDocQuery(DocQuery &docQuery) const;
+    CompareFunc CreateCompareFunc() const;
 
     int limit_;
     std::pair<std::string, bool> orderCol_;

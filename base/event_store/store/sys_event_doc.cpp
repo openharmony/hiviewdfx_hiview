@@ -14,7 +14,7 @@
  */
 #include "sys_event_doc.h"
 
-#include <errno.h>
+#include <cerrno>
 
 #include "base_def.h"
 #include "event_store_config.h"
@@ -72,12 +72,7 @@ int SysEventDoc::Insert(const std::shared_ptr<SysEvent>& sysEvent)
     return ret;
 }
 
-int SysEventDoc::Delete()
-{
-    return 0;
-}
-
-int SysEventDoc::Query(const DocQuery& query, std::vector<Entry>& entries, int& limit)
+int SysEventDoc::Query(const DocQuery& query, EntryQueue& entries, int& num)
 {
     auto ret = DOC_STORE_SUCCESS;
     if (reader_ == nullptr) {
@@ -85,7 +80,7 @@ int SysEventDoc::Query(const DocQuery& query, std::vector<Entry>& entries, int& 
             return ret;
         }
     }
-    return reader_->Read(query, entries, limit);
+    return reader_->Read(query, entries, num);
 }
 
 int SysEventDoc::InitWriter(const std::shared_ptr<SysEvent>& sysEvent)
@@ -107,7 +102,7 @@ int SysEventDoc::InitReader()
 {
     if (curFile_.empty() || !FileUtil::FileExists(curFile_)) {
         HIVIEW_LOGE("failed to init reader from file=%{public}s", curFile_.c_str());
-        return DOC_STORE_ERROR_IO;;
+        return DOC_STORE_ERROR_IO;
     }
     reader_ = std::make_shared<SysEventDocReader>(curFile_);
     return DOC_STORE_SUCCESS;
@@ -151,10 +146,8 @@ std::string SysEventDoc::GetCurFile(const std::string& dir)
 {
     std::vector<std::string> files;
     FileUtil::GetDirFiles(dir, files);
-    HIVIEW_LOGI("liangyujian get curFiles size=%{public}zu", files.size());
     std::string curFile;
     for (auto& file : files) {
-        HIVIEW_LOGI("liangyujian file=%{public}s, filter=%{public}s", file.c_str(), (name_ + FILE_NAME_SEPARATOR).c_str());
         if (file.find(name_ + FILE_NAME_SEPARATOR) == std::string::npos) {
             continue;
         }
@@ -162,7 +155,6 @@ std::string SysEventDoc::GetCurFile(const std::string& dir)
             curFile = file;
         }
     }
-    HIVIEW_LOGI("liangyujian get File=%{public}s", curFile.c_str());
     return curFile;
 }
 
@@ -177,8 +169,8 @@ int SysEventDoc::CreateCurFile(const std::string& dir, const std::shared_ptr<Sys
     std::string filePath = dir + FILE_SEPARATOR;
     filePath.append(name_).append(FILE_NAME_SEPARATOR).append(std::to_string(type_)).append(FILE_NAME_SEPARATOR)
         .append(level_).append(FILE_NAME_SEPARATOR).append(std::to_string(seq)).append(FILE_EXT);
-    if (auto ret = FileUtil::CreateFile(filePath, FileUtil::FILE_PERM_660); ret != 0) {
-        HIVIEW_LOGE("failed to create file=%{public}s", filePath.c_str());
+    if (FileUtil::CreateFile(filePath, FileUtil::FILE_PERM_660) != 0 && !FileUtil::FileExists(filePath)) {
+        HIVIEW_LOGE("failed to create file=%{public}s, errno=%{public}d", filePath.c_str(), errno);
         return DOC_STORE_ERROR_IO;
     }
     curFile_ = filePath;

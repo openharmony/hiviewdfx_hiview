@@ -276,8 +276,10 @@
         "OHOS::HiviewDFX::SysEvent::SetLevel(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::SetTag(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::SetEventSeq(long long)";
+        "OHOS::HiviewDFX::SysEvent::SetEventSeq(long)";
         "OHOS::HiviewDFX::SysEvent::GetTag() const";
         "OHOS::HiviewDFX::SysEvent::GetLevel() const";
+        "OHOS::HiviewDFX::SysEvent::AsRawData()";
     };
   local:
     *;

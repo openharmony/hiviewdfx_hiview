@@ -14,11 +14,9 @@
  */
 #include "sys_event_query.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "doc_query.h"
 #include "sys_event_database.h"
@@ -26,6 +24,28 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+namespace {
+bool CompareSeqFuncLess(const Entry& entryA, const Entry& entryB)
+{
+    return entryA.id < entryB.id;
+}
+
+bool CompareSeqFuncGreater(const Entry& entryA, const Entry& entryB)
+{
+    return entryA.id > entryB.id;
+}
+
+bool CompareTimestampFuncLess(const Entry& entryA, const Entry& entryB)
+{
+    return entryA.ts < entryB.ts;
+}
+
+bool CompareTimestampFuncGreater(const Entry& entryA, const Entry& entryB)
+{
+    return entryA.ts > entryB.ts;
+}
+}
+
 std::string EventCol::DOMAIN = "domain_";
 std::string EventCol::NAME = "name_";
 std::string EventCol::TYPE = "type_";
@@ -37,6 +57,7 @@ std::string EventCol::UID = "uid_";
 std::string EventCol::INFO = "info_";
 std::string EventCol::LEVEL = "level_";
 std::string EventCol::SEQ = "seq_";
+std::string EventCol::TAG = "tag_";
 
 bool FieldValue::IsInteger() const
 {
@@ -200,8 +221,7 @@ Cond &Cond::And(const Cond &cond)
 
 bool Cond::IsSimpleCond(const Cond &cond)
 {
-    return (!cond.col_.empty() && cond.andConds_.size() == 0)
-        || (cond.col_.empty() && cond.andConds_.size() == 1); // 1 means simple condition
+    return !cond.col_.empty() && cond.andConds_.empty();
 }
 
 void Cond::Traval(DocQuery &docQuery, const Cond &cond)
@@ -210,14 +230,61 @@ void Cond::Traval(DocQuery &docQuery, const Cond &cond)
         docQuery.And(cond);
     }
     if (!cond.andConds_.empty()) {
-        for (auto it = cond.andConds_.begin(); it != cond.andConds_.end(); it++) {
-            if (IsSimpleCond(*it)) {
-                docQuery.And(*it);
+        for (auto& andCond : cond.andConds_) {
+            if (IsSimpleCond(andCond)) {
+                docQuery.And(andCond);
             } else {
-                Traval(docQuery, *it);
+                Traval(docQuery, andCond);
             }
         }
     }
+}
+
+std::string Cond::ToString() const
+{
+    std::string output;
+    output.append(col_);
+
+    switch (op_) {
+        case EQ:
+            output.append(" == ");
+            break;
+        case NE:
+            output.append(" != ");
+            break;
+        case GT:
+            output.append(" > ");
+            break;
+        case GE:
+            output.append(" >= ");
+            break;
+        case LT:
+            output.append(" < ");
+            break;
+        case LE:
+            output.append(" <= ");
+            break;
+        case SW:
+            output.append(" SW ");
+            break;
+        case NSW:
+            output.append(" NSW ");
+            break;
+        default:
+            return "INVALID COND";
+    }
+
+    if (fieldValue_.IsInteger()) {
+        output.append(std::to_string(fieldValue_.GetInteger()));
+    } else if (fieldValue_.IsDouble()) {
+        output.append(std::to_string(fieldValue_.GetDouble()));
+    } else if (fieldValue_.IsString()) {
+        output.append(fieldValue_.GetString());
+    } else {
+        return "INVALID COND";
+    }
+
+    return output;
 }
 
 ResultSet::ResultSet(): iter_(eventRecords_.begin()), code_(0), has_(false)
@@ -313,21 +380,32 @@ SysEventQuery &SysEventQuery::Order(const std::string &col, bool isAsc)
 void SysEventQuery::BuildDocQuery(DocQuery &docQuery) const
 {
     Cond::Traval(docQuery, cond_);
-    if (!orderCol_.first.empty()) {
-        // docQuery.Order(orderCol_.first, orderCol_.second); liangyujian
+}
+
+CompareFunc SysEventQuery::CreateCompareFunc() const
+{
+    if (orderCol_.first == EventCol::TS) {
+        if (orderCol_.second) {
+            return &CompareTimestampFuncGreater;
+        } else {
+            return &CompareTimestampFuncLess;
+        }
+    } else {
+        if (orderCol_.second) {
+            return &CompareSeqFuncGreater;
+        } else {
+            return &CompareSeqFuncLess;
+        }
     }
 }
 
 ResultSet SysEventQuery::Execute(int limit, DbQueryTag tag, QueryProcessInfo callerInfo,
     DbQueryCallback queryCallback)
 {
-    return ExecuteSQL(limit);
-}
-
-ResultSet SysEventQuery::ExecuteSQL(int limit)
-{
     limit_ = limit;
-    std::vector<Entry> entries;
+
+    // sort query return events
+    EntryQueue entries(CreateCompareFunc());
     int retCode = SysEventDatabase::GetInstance().Query(*this, entries);
     ResultSet resultSet;
     if (retCode != DOC_STORE_SUCCESS) {
@@ -338,10 +416,19 @@ ResultSet SysEventQuery::ExecuteSQL(int limit)
         resultSet.Set(DOC_STORE_SUCCESS, false);
         return resultSet;
     }
-    for (auto it = entries.begin(); it != entries.end(); it++) {
-        SysEvent sysEvent("", nullptr, it->value);
-        sysEvent.SetSeq(it->id);
+
+    // for an internal query, the number of returned query results need to be limit
+    int resultNum = static_cast<int>(entries.size());
+    if (resultNum > limit && tag.isInnerQuery) {
+        resultNum = limit;
+    }
+    while (!entries.empty() && resultNum >= 0) {
+        auto& entry = entries.top();
+        SysEvent sysEvent("", nullptr, entry.value);
+        sysEvent.SetSeq(entry.id);
         resultSet.eventRecords_.emplace_back(sysEvent);
+        entries.pop();
+        resultNum--;
     }
     resultSet.Set(DOC_STORE_SUCCESS, true);
     return resultSet;
@@ -349,7 +436,19 @@ ResultSet SysEventQuery::ExecuteSQL(int limit)
 
 std::string SysEventQuery::ToString() const
 {
-    return ""; //liangyujian
+    std::string output;
+    output.append("domain=[").append(queryArg_.domain).append("], names=[");
+    for (auto& name : queryArg_.names) {
+        output.append(name);
+        if (&name != &queryArg_.names.back()) {
+            output.append(",");
+        }
+    }
+    output.append("], type=[").append(std::to_string(queryArg_.type)).append("], condition=[");
+    DocQuery docQuery;
+    BuildDocQuery(docQuery);
+    output.append(docQuery.ToString()).append("]");
+    return output;
 }
 } // EventStore
 } // namespace HiviewDFX

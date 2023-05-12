@@ -34,8 +34,7 @@ public:
     ~SysEventDoc();
 
     int Insert(const std::shared_ptr<SysEvent>& sysEvent);
-    int Query(const DocQuery& query, std::vector<Entry>& entries, int& limit);
-    int Delete();
+    int Query(const DocQuery& query, EntryQueue& entries, int& num);
 
 private:
     int InitWriter(const std::shared_ptr<SysEvent>& sysEvent);

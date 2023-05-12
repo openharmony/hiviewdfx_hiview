@@ -43,7 +43,8 @@ public:
         const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
 
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
-    static int Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit = 100);
+
+    static void Clear();
 }; // SysEventDao
 } // EventStore
 } // namespace HiviewDFX

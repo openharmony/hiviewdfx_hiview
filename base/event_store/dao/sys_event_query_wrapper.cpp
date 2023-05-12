@@ -127,8 +127,8 @@ ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessI
 
 bool SysEventQueryWrapper::IsConditionCntValid(const DbQueryTag& tag)
 {
-    int conditionCntLimit = 8;
-    if (tag.isInnerQuery && GetSubStrCount(this->ToString(), "domain_=") > conditionCntLimit) {
+    const int conditionCntLimit = 7;
+    if (tag.isInnerQuery && GetSubStrCount(this->ToString(), " and ") > conditionCntLimit) {
         QueryStatusLogUtil::LogTooManyQueryRules(this->ToString());
         return false;
     }

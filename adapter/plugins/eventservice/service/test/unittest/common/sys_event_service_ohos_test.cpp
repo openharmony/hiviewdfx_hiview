@@ -634,46 +634,28 @@ HWTEST_F(SysEventServiceOhosTest, ConditionParserTest01, testing::ext::TestSize.
         "value":"SysEventService"}]}})~";
     auto ret = parser.ParseCondition(condStr, cond);
     ASSERT_TRUE(ret);
-    ret = parser.ParseCondition(condStr, cond);
-    ASSERT_TRUE(ret);
-    std::string condStr1 = R"~({"version":"V1","condition":{"or":[{"param":"NAME","op":"=",
-        "value":"SysEventService"},{"param":"NAME","op":"=","value":"SysEventSource"}]}})~";
-    ret = parser.ParseCondition(condStr1, cond);
-    ASSERT_TRUE(ret);
-    ret = parser.ParseCondition(condStr1, cond);
-    ASSERT_TRUE(ret);
     std::string condStr2 = R"~({"version":"V1","condition":{"and":[{"param":"NAME","op":"=",
         "value":"SysEventService"},{"param":"uid_","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condStr2, cond);
     ASSERT_TRUE(ret);
-    ret = parser.ParseCondition(condStr2, cond);
-    ASSERT_TRUE(ret);
+
     std::string condStr3 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op":">","value":0},
-        {"param":"uid_","op":"=","value":1201}],"or":[{"param":"NAME","op":"=","value":"SysEventService"},
-        {"param":"NAME","op":"=","value":"SysEventSource"}]}})~";
+        {"param":"uid_","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condStr3, cond);
     ASSERT_TRUE(ret);
-    ret = parser.ParseCondition(condStr3, cond);
-    ASSERT_TRUE(ret);
+
     std::string condStr4 = R"~({"version":"V1","condition":{"and":[{"param1":"type_","op":">","value":0},
-        {"param2":"uid_","op":"=","value":1201}],"or":[{"param4":"NAME","op":"=","value":"SysEventService"},
-        {"param3":"NAME","op":"=","value":"SysEventSource"}]}})~";
+        {"param2":"uid_","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condStr4, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condStr4, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condSt5 = R"~({"version":"V1","condition":{"and":[{"param":"","op":">","value":0},
-        {"param":"","op":"=","value":1201}],"or":[{"param":"","op":"=","value":"SysEventService"},
-        {"param":"","op":"=","value":"SysEventSource"}]}})~";
+        {"param":"","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condSt5, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condSt5, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condSt6 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op1":">","value":0},
-        {"param":"uid_","op2":"=","value":1201}],"or":[{"param":"NAME","op3":"=","value":"SysEventService"},
-        {"param":"NAME","op4":"=","value":"SysEventSource"}]}})~";
-    ret = parser.ParseCondition(condSt6, cond);
-    ASSERT_TRUE(!ret);
+        {"param":"uid_","op2":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condSt6, cond);
     ASSERT_TRUE(!ret);
 }
@@ -689,36 +671,26 @@ HWTEST_F(SysEventServiceOhosTest, ConditionParserTest02, testing::ext::TestSize.
     OHOS::HiviewDFX::ConditionParser parser;
     EventStore::Cond cond;
     std::string condSt7 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op":">","value11":0},
-        {"param":"uid_","op":"=","value2":1201}],"or":[{"param":"NAME","op":"=","value3":"SysEventService"},
-        {"param":"NAME","op":"=","value3":"SysEventSource"}]}})~";
+        {"param":"uid_","op":"=","value2":1201}]}})~";
     auto ret = parser.ParseCondition(condSt7, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condSt7, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condStr8 = R"~({"version":"V1","condition":{"and":[{"param":"type_","op":">","value":[]},
-        {"param":"uid_","op":"=","value":[]}],"or":[{"param":"NAME","op":"=","value":[]},
-        {"param":"NAME","op":"=","value":[]}]}})~";
+        {"param":"uid_","op":"=","value":[]}]}})~";
     ret = parser.ParseCondition(condStr8, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condStr8, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condStr9 = R"~({"version":"V1","condition1":{"and":[{"param":"type_","op":">","value":0},
-        {"param":"uid_","op":"=","value":1201}],"or":[{"param":"NAME","op":"=","value":"SysEventService"},
-        {"param":"NAME","op":"=","value":"SysEventSource"}]}})~";
+        {"param":"uid_","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condStr9, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condStr9, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condStr10 = R"~({"version":"V1","condition":1})~";
     ret = parser.ParseCondition(condStr10, cond);
     ASSERT_TRUE(!ret);
-    ret = parser.ParseCondition(condStr10, cond);
-    ASSERT_TRUE(!ret);
+
     std::string condStr11 = R"~({"version":"V2","condition":{"and":[{"param1":"type_","op":">","value":0},
-        {"param2":"uid_","op":"=","value":1201}],"or":[{"param4":"NAME","op":"=","value":"SysEventService"},
-        {"param3":"NAME","op":"=","value":"SysEventSource"}]}})~";
-    ret = parser.ParseCondition(condStr11, cond);
-    ASSERT_TRUE(!ret);
+        {"param2":"uid_","op":"=","value":1201}]}})~";
     ret = parser.ParseCondition(condStr11, cond);
     ASSERT_TRUE(!ret);
 }
@@ -737,10 +709,6 @@ HWTEST_F(SysEventServiceOhosTest, QueryWrapperTest01, testing::ext::TestSize.Lev
     auto queryWrapperBuilder1 = std::make_shared<EventQueryWrapperBuilder>(queryArgument1);
     QueryArgument queryArgument2(-1, -1, 10, 1, 20);
     auto queryWrapperBuilder2 = std::make_shared<EventQueryWrapperBuilder>(queryArgument2);
-    for (auto eventType : EVENT_TYPES) {
-        queryWrapperBuilder1->Append(eventType);
-        queryWrapperBuilder2->Append(eventType);
-    }
     auto queryWrapper1 = queryWrapperBuilder1->Build();
     ASSERT_TRUE(queryWrapper1 != nullptr);
     auto queryWrapper2 = queryWrapperBuilder2->Build();

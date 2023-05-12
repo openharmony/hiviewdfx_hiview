@@ -16,6 +16,7 @@
 #ifndef HIVIEW_BASE_EVENT_STORE_SYS_EVENT_DATABASE_H
 #define HIVIEW_BASE_EVENT_STORE_SYS_EVENT_DATABASE_H
 
+#include <queue>
 #include <memory>
 #include <shared_mutex>
 #include <string>
@@ -34,17 +35,30 @@ public:
     SysEventDatabase();
     ~SysEventDatabase() {}
     int Insert(const std::shared_ptr<SysEvent>& sysEvent);
-    int Delete(const std::string& domain, const std::string& name);
-    int Query(const SysEventQuery& query, std::vector<Entry>& entries);
+    void Clear();
+    int Query(SysEventQuery& query, EntryQueue& entries);
     std::string GetDatabaseDir();
 
 private:
-    void GetQueryFiles(const SysEventQueryArg& queryArg, std::vector<std::string>& queryFiles);
+    using FileQueue = std::priority_queue<std::string, std::vector<std::string>,
+        bool(*)(const std::string&, const std::string&)>;
+    // <eventType, <maxSize, maxFileNum>>
+    using EventQuotaMap = std::unordered_map<int, std::pair<uint64_t, uint32_t>>;
+    // <eventType, <totalFileSize, fileQueue that is normal, fileQueue that is over limit>>
+    using ClearFilesMap = std::unordered_map<int, std::tuple<uint64_t, FileQueue, FileQueue>>;
+
+    void InitQuotaMap();
+    void UpdateClearMap();
+    void ClearCache();
+    uint32_t GetMaxFileNum(int type);
+    uint64_t GetMaxSize(int type);
+    void GetQueryFiles(const SysEventQueryArg& queryArg, FileQueue& queryFiles);
     void GetQueryDirsByDomain(const std::string& domain, std::vector<std::string>& queryDirs);
     bool IsContainQueryArg(const std::string file, const SysEventQueryArg& queryArg);
-    int QueryByFiles(const SysEventQuery& query, std::vector<Entry>& entries,
-        const std::vector<std::string>& queryFiles);
+    int QueryByFiles(SysEventQuery& query, EntryQueue& entries, FileQueue& queryFiles);
 
+    EventQuotaMap quotaMap_;
+    ClearFilesMap clearMap_;
     std::unique_ptr<SysEventDocLruCache> lruCache_;
     mutable std::shared_mutex mutex_;
 }; // SysEventDatabase

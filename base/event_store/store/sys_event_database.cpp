@@ -14,6 +14,9 @@
  */
 #include "sys_event_database.h"
 
+#include <unordered_map>
+
+#include "event_store_config.h"
 #include "file_util.h"
 #include "hiview_global.h"
 #include "logger.h"
@@ -25,8 +28,35 @@ namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDatabase");
 namespace {
-constexpr size_t DEFAULT_CAPACITY = 20;
+constexpr size_t DEFAULT_CAPACITY = 30;
 const char FILE_DELIMIT_STR[] = "/";
+const char FILE_NAME_DELIMIT_STR[] = "-";
+constexpr size_t INDEX_FILE_SIZE = 0;
+constexpr size_t INDEX_NORMAL_QUEUE = 1;
+constexpr size_t INDEX_LIMIT_QUEUE = 2;
+
+int64_t GetFileSeq(const std::string& file)
+{
+    return std::stoll(file.substr(file.rfind(FILE_NAME_DELIMIT_STR) + 1)); // 1 next char
+}
+
+std::string GetFileDomain(const std::string& file)
+{
+    std::vector<std::string> dirNames;
+    StringUtil::SplitStr(file, "/", dirNames);
+    constexpr size_t domainOffset = 2;
+    return dirNames.size() < domainOffset ? "" : dirNames[dirNames.size() - domainOffset];
+}
+
+bool CompareFileLessFunc(const std::string& fileA, const std::string& fileB)
+{
+    return GetFileSeq(fileA) < GetFileSeq(fileB);
+}
+
+bool CompareFileGreaterFunc(const std::string& fileA, const std::string& fileB)
+{
+    return GetFileSeq(fileA) > GetFileSeq(fileB);
+}
 }
 
 SysEventDatabase::SysEventDatabase()
@@ -65,35 +95,66 @@ int SysEventDatabase::Insert(const std::shared_ptr<SysEvent>& event)
     auto keyOfCache = std::pair<std::string, std::string>(event->domain_, event->eventName_);
     if (lruCache_->Contain(keyOfCache)) {
         sysEventDoc = lruCache_->Get(keyOfCache);
-        HIVIEW_LOGI("liangyujian get sysEventDoc from cache");
     } else {
         sysEventDoc = std::make_shared<SysEventDoc>(event->domain_, event->eventName_);
         lruCache_->Add(keyOfCache, sysEventDoc);
-        HIVIEW_LOGI("liangyujian get sysEventDoc from create");
     }
     return sysEventDoc->Insert(event);
 }
 
-int SysEventDatabase::Delete(const std::string& domain, const std::string& name)
+void SysEventDatabase::Clear()
 {
+    if (quotaMap_.empty()) {
+        // init the quota for clearing each type of events
+        InitQuotaMap();
+    }
+
     std::unique_lock<std::shared_mutex> lock(mutex_);
-    auto keyOfCache = std::pair<std::string, std::string>(domain, name);
-    if (!lruCache_->Contain(keyOfCache)) {
-        return DOC_STORE_SUCCESS;
+    UpdateClearMap();
+    if (!clearMap_.empty()) {
+        ClearCache(); // need to close the open files before clear
     }
-    auto sysEventDoc = lruCache_->Get(keyOfCache);
-    if (!lruCache_->Remove(keyOfCache)) {
-        HIVIEW_LOGE("failed to remove doc from cache, domain=%{public}s, name=%{public}s",
-             domain.c_str(), name.c_str());
-        return DOC_STORE_ERROR_INVALID;
+    for (auto it = clearMap_.begin(); it != clearMap_.end(); ++it) {
+        const double delPct = 0.1;
+        uint64_t maxSize = GetMaxSize(it->first);
+        uint64_t totalFileSize = std::get<INDEX_FILE_SIZE>(it->second);
+        if (totalFileSize < (maxSize + maxSize * delPct)) {
+            HIVIEW_LOGI("do not clear type=%{public}d, curSize=%{public}" PRIu64 ", maxSize=%{public}" PRIu64,
+                it->first, totalFileSize, maxSize);
+            continue;
+        }
+
+        auto& normalQueue = std::get<INDEX_NORMAL_QUEUE>(it->second);
+        auto& limitQueue = std::get<INDEX_LIMIT_QUEUE>(it->second);
+        while (totalFileSize >= maxSize) {
+            std::string delFile;
+            if (!limitQueue.empty()) {
+                delFile = limitQueue.top();
+                limitQueue.pop();
+            } else if (!normalQueue.empty()) {
+                delFile = normalQueue.top();
+                normalQueue.pop();
+            } else {
+                break;
+            }
+
+            auto fileSize = FileUtil::GetFileSize(delFile);
+            if (!FileUtil::RemoveFile(delFile)) {
+                HIVIEW_LOGI("failed to remove file=%{public}s", delFile.c_str());
+                continue;
+            }
+            HIVIEW_LOGI("success to remove file=%{public}s", delFile.c_str());
+            totalFileSize = totalFileSize >= fileSize ? (totalFileSize - fileSize) : 0;
+        }
+        HIVIEW_LOGI("end to clear type=%{public}d, curSize=%{public}" PRIu64 ", maxSize=%{public}" PRIu64,
+            it->first, totalFileSize, maxSize);
     }
-    return sysEventDoc->Delete();
 }
 
-int SysEventDatabase::Query(const SysEventQuery& sysEventQuery, std::vector<Entry>& entries)
+int SysEventDatabase::Query(SysEventQuery& sysEventQuery, EntryQueue& entries)
 {
     std::shared_lock<std::shared_mutex> lock(mutex_);
-    std::vector<std::string> queryFiles;
+    FileQueue queryFiles(CompareFileLessFunc);
     const auto& queryArg = sysEventQuery.queryArg_;
     GetQueryFiles(queryArg, queryFiles);
     HIVIEW_LOGD("get the file list, size=%{public}zu", queryFiles.size());
@@ -105,11 +166,86 @@ int SysEventDatabase::Query(const SysEventQuery& sysEventQuery, std::vector<Entr
     return QueryByFiles(sysEventQuery, entries, queryFiles);
 }
 
-void SysEventDatabase::GetQueryFiles(const SysEventQueryArg& queryArg, std::vector<std::string>& queryFiles)
+void SysEventDatabase::InitQuotaMap()
+{
+    const int eventTypes[] = { 1, 2, 3, 4 }; // for fault, statistic, security and behavior event
+    for (auto eventType : eventTypes) {
+        auto maxSize = EventStoreConfig::GetInstance().GetMaxSize(eventType) * NUM_OF_BYTES_IN_MB;
+        auto maxFileNum = EventStoreConfig::GetInstance().GetMaxFileNum(eventType);
+        quotaMap_.insert({eventType, {maxSize, maxFileNum}});
+    }
+}
+
+void SysEventDatabase::UpdateClearMap()
+{
+    // clear the map
+    clearMap_.clear();
+
+    // get all event files
+    FileQueue files(CompareFileLessFunc);
+    GetQueryFiles(SysEventQueryArg(), files);
+
+    // build clear map
+    std::unordered_map<std::string, uint32_t> nameLimitMap;
+    while (!files.empty()) {
+        std::string file = files.top();
+        files.pop();
+        std::string fileName = file.substr(file.rfind("/") + 1); // 1 for skipping '/'
+        std::vector<std::string> splitNames;
+        StringUtil::SplitStr(file, "-", splitNames);
+        if (splitNames.size() != FILE_NAME_SPLIT_SIZE) {
+            HIVIEW_LOGI("invalid clear file=%{public}s", file.c_str());
+            continue;
+        }
+
+        std::string name = splitNames[EVENT_NAME_INDEX];
+        std::string domainNameStr = GetFileDomain(file) + name;
+        nameLimitMap[domainNameStr]++;
+        int type = std::stoi(splitNames[EVENT_TYPE_INDEX]);
+        uint64_t fileSize = FileUtil::GetFileSize(file);
+        if (clearMap_.find(type) == clearMap_.end()) {
+            FileQueue fileQueue(CompareFileGreaterFunc);
+            fileQueue.emplace(file);
+            clearMap_.insert({type, std::make_tuple(fileSize, fileQueue, FileQueue(CompareFileGreaterFunc))});
+            continue;
+        }
+
+        auto& clearTuple = clearMap_.at(type);
+        std::get<INDEX_FILE_SIZE>(clearTuple) += fileSize;
+        if (nameLimitMap[domainNameStr] > GetMaxFileNum(type)) {
+            std::get<INDEX_LIMIT_QUEUE>(clearTuple).emplace(file);
+        } else {
+            std::get<INDEX_NORMAL_QUEUE>(clearTuple).emplace(file);
+        }
+    }
+}
+
+void SysEventDatabase::ClearCache()
+{
+    HIVIEW_LOGI("start to clear lru cache");
+    lruCache_->Clear();
+}
+
+uint32_t SysEventDatabase::GetMaxFileNum(int type)
+{
+    if (quotaMap_.empty() || quotaMap_.find(type) == quotaMap_.end()) {
+        return 0;
+    }
+    return quotaMap_.at(type).second;
+}
+
+uint64_t SysEventDatabase::GetMaxSize(int type)
+{
+    if (quotaMap_.empty() || quotaMap_.find(type) == quotaMap_.end()) {
+        return 0;
+    }
+    return quotaMap_.at(type).first;
+}
+
+void SysEventDatabase::GetQueryFiles(const SysEventQueryArg& queryArg, FileQueue& queryFiles)
 {
     std::vector<std::string> queryDirs;
     GetQueryDirsByDomain(queryArg.domain, queryDirs);
-    HIVIEW_LOGD("liangyujian get the dir size=%{public}zu", queryDirs.size());
     if (queryDirs.empty()) {
         return;
     }
@@ -118,9 +254,9 @@ void SysEventDatabase::GetQueryFiles(const SysEventQueryArg& queryArg, std::vect
         std::vector<std::string> files;
         FileUtil::GetDirFiles(queryDir, files);
         for (auto& file : files) {
-            HIVIEW_LOGD("liangyujian get the file=%{public}s", file.c_str());
             if (IsContainQueryArg(file, queryArg)) {
-                queryFiles.push_back(file);
+                queryFiles.emplace(file);
+                HIVIEW_LOGD("add query file=%{public}s", file.c_str());
             }
         }
     }
@@ -145,7 +281,7 @@ bool SysEventDatabase::IsContainQueryArg(const std::string file, const SysEventQ
     }
     std::string fileName = file.substr(file.rfind(FILE_DELIMIT_STR) + 1); // 1 for next char
     std::vector<std::string> splitStrs;
-    StringUtil::SplitStr(fileName, "-", splitStrs);
+    StringUtil::SplitStr(fileName, FILE_NAME_DELIMIT_STR, splitStrs);
     if (splitStrs.size() < FILE_NAME_SPLIT_SIZE) {
         HIVIEW_LOGE("invalid file name, file=%{public}s", fileName.c_str());
         return false;
@@ -154,40 +290,36 @@ bool SysEventDatabase::IsContainQueryArg(const std::string file, const SysEventQ
         [&splitStrs] (auto& item) {
             return item == splitStrs[EVENT_NAME_INDEX];
         })) {
-        HIVIEW_LOGD("liangyujian failed 1");
         return false;
     }
-    if (queryArg.type != 0 && StringUtil::ToString(queryArg.type) != splitStrs[EVENT_TYPE_INDEX]) {
-        HIVIEW_LOGD("liangyujian failed 2");
+    if (queryArg.type != 0 && splitStrs[EVENT_TYPE_INDEX] != StringUtil::ToString(queryArg.type)) {
         return false;
     }
-    if (queryArg.toSeq != INVALID_VALUE_INT && queryArg.toSeq > std::stoll(splitStrs[EVENT_SEQ_INDEX])) {
-        HIVIEW_LOGD("liangyujian failed 3");
+    if (queryArg.toSeq != INVALID_VALUE_INT && std::stoll(splitStrs[EVENT_SEQ_INDEX]) >= queryArg.toSeq) {
         return false;
     }
-    HIVIEW_LOGD("liangyujian success");
     return true;
 }
 
-int SysEventDatabase::QueryByFiles(const SysEventQuery& sysEventQuery, std::vector<Entry>& entries,
-    const std::vector<std::string>& queryFiles)
+int SysEventDatabase::QueryByFiles(SysEventQuery& sysEventQuery, EntryQueue& entries, FileQueue& queryFiles)
 {
-    HIVIEW_LOGI("liangyujian query files start");
     DocQuery docQuery;
     sysEventQuery.BuildDocQuery(docQuery);
-    int limit = sysEventQuery.limit_;
-    for (auto& file : queryFiles) {
-        if (limit <= 0) {
+    int totalNum = 0;
+    while (!queryFiles.empty()) {
+        std::string file = queryFiles.top();
+        queryFiles.pop();
+        auto sysEventDoc = std::make_shared<SysEventDoc>(file);
+        if (auto res = sysEventDoc->Query(docQuery, entries, totalNum); res != DOC_STORE_SUCCESS) {
+            HIVIEW_LOGE("failed to query event from doc, file=%{public}s, res=%{public}d", file.c_str(), res);
+            continue;
+        }
+        if (totalNum >= sysEventQuery.limit_) {
+            sysEventQuery.queryArg_.toSeq = GetFileSeq(file);
             break;
         }
-        auto sysEventDoc = std::make_shared<SysEventDoc>(file);
-        if (auto res = sysEventDoc->Query(docQuery, entries, limit); res != DOC_STORE_SUCCESS) {
-            HIVIEW_LOGE("failed to query event from doc, file=%{public}s", file.c_str());
-            return res;
-        }
-        HIVIEW_LOGI("liangyujian query file end, file=%{public}s, limit=%{public}d", file.c_str(), limit);
     }
-    HIVIEW_LOGI("liangyujian query files end");
+    HIVIEW_LOGI("query end, limit=%{public}d, totalNum=%{public}d", sysEventQuery.limit_, totalNum);
     return DOC_STORE_SUCCESS;
 }
 } // EventStore

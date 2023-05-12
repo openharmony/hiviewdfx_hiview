@@ -402,9 +402,7 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
     }
     queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
     auto queryRetCode = IPC_CALL_SUCCEED;
-    HiLog::Warn(LABEL, "liangyujian query start.");
     queryWrapper->Query(callback, queryRetCode);
-    HiLog::Warn(LABEL, "liangyujian query end.");
     return queryRetCode;
 }
 

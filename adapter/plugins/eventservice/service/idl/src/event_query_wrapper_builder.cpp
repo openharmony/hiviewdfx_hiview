@@ -29,13 +29,11 @@ namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventQueryBuilder" };
 constexpr char LOGIC_AND_COND[] = "and";
-constexpr char LOGIC_OR_COND[] = "or";
 constexpr int64_t INVALID_SEQ = -1;
 constexpr int64_t TRANS_DEFAULT_CNT = 0;
 constexpr int32_t IGNORED_DEFAULT_CNT = 0;
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
-const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 
 EventStore::QueryProcessInfo GetCallingProcessInfo()
 {
@@ -127,11 +125,6 @@ bool ConditionParser::ParseLogicCondition(const Json::Value& root, const std::st
     return true;
 }
 
-bool ConditionParser::ParseOrCondition(const Json::Value& root, EventStore::Cond& condition)
-{
-    return ParseLogicCondition(root, LOGIC_OR_COND, condition);
-}
-
 bool ConditionParser::ParseAndCondition(const Json::Value& root, EventStore::Cond& condition)
 {
     return ParseLogicCondition(root, LOGIC_AND_COND, condition);
@@ -144,9 +137,6 @@ bool ConditionParser::ParseQueryConditionJson(const Json::Value& root, EventStor
         return false;
     }
     bool res = false;
-    if (ParseOrCondition(root[condKey], condition)) {
-        res = true;
-    }
     if (ParseAndCondition(root[condKey], condition)) {
         res = true;
     }
@@ -194,7 +184,7 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
         callback->OnComplete(queryResult, totalEventCnt, maxSeq);
         return;
     }
-    if (!queryRules.empty() && !NeedStartNextQuery()) { // keep current query
+    if (NeedStartNextQuery()) {
         Query(callback, queryResult);
         return;
     }
@@ -206,10 +196,6 @@ void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCall
 {
     if (eventQueryCallback == nullptr) {
         queryResult = ERR_LISTENER_NOT_EXIST;
-        return;
-    }
-    if (queryRules.empty()) {
-        HandleCurrentQueryDone(eventQueryCallback, queryResult);
         return;
     }
     BuildQuery();
@@ -238,9 +224,8 @@ void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCall
     TransportSysEvent(resultSet, eventQueryCallback, details);
     transportedEventCnt = details.first;
     totalEventCnt += transportedEventCnt;
-    ignoredEventCnt += details.second;
+    ignoredEventCnt = details.second;
     SetIsFirstPartialQuery(false);
-    argument.maxEvents -= transportedEventCnt;
     HandleCurrentQueryDone(eventQueryCallback, queryResult);
 }
 
@@ -251,7 +236,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
     std::vector<int64_t> seqs;
     OHOS::HiviewDFX::EventStore::ResultSet::RecordIter iter;
     int32_t transTotalJsonSize = 0;
-    while (result.HasNext()) {
+    while (result.HasNext() && argument.maxEvents > 0) {
         iter = result.Next();
         auto eventJsonStr = iter->AsJsonStr();
         if (eventJsonStr.empty()) {
@@ -263,7 +248,8 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             details.second++;
             continue;
         }
-        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF) {
+        // the number of returned events may be greater than the limit
+        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF || events.size() >= queryLimit) {
             callback->OnQuery(events, seqs);
             events.clear();
             seqs.clear();
@@ -273,8 +259,9 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
         seqs.push_back(iter->GetSeq());
         details.first++;
         transTotalJsonSize += eventJsonSize;
-        SyncQueryArgument(iter);
+        argument.maxEvents--;
     }
+
     if (!events.empty()) {
         callback->OnQuery(events, seqs);
     }
@@ -343,8 +330,26 @@ void BaseEventQueryWrapper::SetEventTotalCount(int64_t totalCount)
     totalEventCnt = totalCount;
 }
 
+bool BaseEventQueryWrapper::NeedStartNextQuery()
+{
+    int64_t queryEventCnt = transportedEventCnt + ignoredEventCnt;
+    if (queryEventCnt >= queryLimit) {
+        return true;
+    }
+
+    // try to build query with next query rule
+    if (!queryRules.empty()) {
+        queryRules.erase(queryRules.begin());
+    }
+    query = nullptr;
+    return !queryRules.empty();
+}
+
 void TimeStampEventQueryWrapper::BuildQuery()
 {
+    if (query != nullptr) {
+        return;
+    }
     argument.beginTime = argument.beginTime < 0 ? 0 : argument.beginTime;
     argument.endTime = argument.endTime < 0 ? std::numeric_limits<int64_t>::max() : argument.endTime;
     argument.maxEvents = argument.maxEvents < 0 ? std::numeric_limits<int32_t>::max() : argument.maxEvents;
@@ -353,27 +358,16 @@ void TimeStampEventQueryWrapper::BuildQuery()
     whereCond.And(EventStore::EventCol::TS, EventStore::Op::GE, argument.beginTime)
         .And(EventStore::EventCol::TS, EventStore::Op::LT, argument.endTime);
     auto queryRule = queryRules.front();
-    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList, queryRule.eventType, INVALID_SEQ);
+    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
+        queryRule.eventType, INVALID_SEQ);
     query->Where(whereCond);
     BuildConditon(queryRule.condition);
     Order();
-    queryRules.erase(queryRules.begin());
-}
-
-void TimeStampEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::RecordIter iter)
-{
-    argument.beginTime = static_cast<int64_t>(iter->happenTime_);
 }
 
 void TimeStampEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
 {
     this->maxSeq = maxSeq;
-}
-
-bool TimeStampEventQueryWrapper::NeedStartNextQuery()
-{
-    argument.beginTime++;
-    return (transportedEventCnt + ignoredEventCnt) < queryLimit;
 }
 
 void TimeStampEventQueryWrapper::Order()
@@ -386,22 +380,20 @@ void TimeStampEventQueryWrapper::Order()
 
 void SeqEventQueryWrapper::BuildQuery()
 {
+    if (query != nullptr) {
+        return;
+    }
     auto offset = static_cast<int32_t>(argument.toSeq - argument.fromSeq);
     queryLimit = offset < MAX_QUERY_EVENTS ? offset : MAX_QUERY_EVENTS;
     EventStore::Cond whereCond;
     whereCond.And(EventStore::EventCol::SEQ, EventStore::Op::GE, argument.fromSeq)
             .And(EventStore::EventCol::SEQ, EventStore::Op::LT, argument.toSeq);
     auto queryRule = queryRules.front();
-    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList, queryRule.eventType, argument.toSeq);
+    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
+        queryRule.eventType, argument.toSeq);
     query->Where(whereCond);
     BuildConditon(queryRule.condition);
     Order();
-    queryRules.erase(queryRules.begin());
-}
-
-void SeqEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::RecordIter iter)
-{
-    argument.fromSeq = iter->GetEventSeq();
 }
 
 void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
@@ -410,12 +402,6 @@ void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
     HiLog::Debug(LABEL, "argument.toSeq is %{public}" PRId64 ", maxSeq is %{public}" PRId64 ".",
         argument.toSeq, maxSeq);
     argument.toSeq = std::min(argument.toSeq, maxSeq);
-}
-
-bool SeqEventQueryWrapper::NeedStartNextQuery()
-{
-    argument.fromSeq++;
-    return (transportedEventCnt + ignoredEventCnt) < queryLimit;
 }
 
 void SeqEventQueryWrapper::Order()

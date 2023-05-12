@@ -63,8 +63,12 @@ bool SysEventDocLruCache::Remove(const LruCacheKey& key)
     }
     lruList_.erase(iterCache->second.first);
     lruCache_.erase(iterCache);
-    HIVIEW_LOGI("remove sysEventDoc domain=%{public}s, name=%{public}s", key.first.c_str(), key.second.c_str());
     return true;
+}
+
+void SysEventDocLruCache::Clear()
+{
+    lruCache_.clear();
 }
 } // EventStore
 } // HiviewDFX

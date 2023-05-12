@@ -38,7 +38,6 @@ private:
         const std::string& logic);
     bool ParseJsonString(const Json::Value& root, const std::string& key, std::string& value);
     bool ParseLogicCondition(const Json::Value& root, const std::string& logic, EventStore::Cond& condition);
-    bool ParseOrCondition(const Json::Value& root, EventStore::Cond& condition);
     bool ParseAndCondition(const Json::Value& root, EventStore::Cond& condition);
     bool ParseQueryConditionJson(const Json::Value& root, EventStore::Cond& condition);
     bool ParseQueryCondition(const std::string& condStr, EventStore::Cond& condition);
@@ -69,10 +68,9 @@ public:
     void SetEventTotalCount(int64_t totalCount);
     bool IsValid() const;
     bool IsQueryComplete() const;
+    bool NeedStartNextQuery();
 
 protected:
-    virtual bool NeedStartNextQuery() = 0;
-    virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter) = 0;
     virtual void BuildQuery() = 0;
     virtual void Order() = 0;
     void BuildConditon(const std::string& condition);
@@ -100,10 +98,6 @@ class TimeStampEventQueryWrapper final : public BaseEventQueryWrapper {
 public:
     TimeStampEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query)
         : BaseEventQueryWrapper(query) {}
-
-public:
-    virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter);
-    virtual bool NeedStartNextQuery();
     virtual void SetMaxSequence(int64_t maxSeq);
 
 private:
@@ -115,10 +109,6 @@ class SeqEventQueryWrapper final : public BaseEventQueryWrapper {
 public:
     SeqEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query)
         : BaseEventQueryWrapper(query) {}
-
-public:
-    virtual void SyncQueryArgument(const EventStore::ResultSet::RecordIter iter);
-    virtual bool NeedStartNextQuery();
     virtual void SetMaxSequence(int64_t maxSeq);
 
 private:

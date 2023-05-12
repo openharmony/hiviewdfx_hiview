@@ -39,10 +39,11 @@ public:
     LruCacheValue Get(const LruCacheKey& key);
     bool Add(const LruCacheKey& key, const LruCacheValue& value);
     bool Remove(const LruCacheKey& key);
+    void Clear();
 
 private:
     typedef std::pair<std::list<LruCacheKey>::iterator, LruCacheValue> LruCacheValuePair;
-    struct LruCacheKeyHashfunc{
+    struct LruCacheKeyHashfunc {
         size_t operator() (const std::pair<std::string, std::string>& keyPair) const
         {
             return std::hash<std::string>()(keyPair.first) ^ std::hash<std::string>()(keyPair.second);

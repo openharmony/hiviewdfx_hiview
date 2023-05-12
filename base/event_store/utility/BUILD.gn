@@ -10,8 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import("//build/ohos.gni")
 import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
 
 config("event_store_utility_config") {
   visibility = [ "*:*" ]
@@ -38,14 +38,17 @@ ohos_source_set("event_store_utility_source") {
   ]
 
   deps = [
-    "//third_party/jsoncpp:jsoncpp",
     "../config:event_store_config_source",
+    "//third_party/jsoncpp:jsoncpp",
   ]
 
-  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_encode" ]
+  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_decode" ]
 
   external_deps = [
     "c_utils:utils",
     "hilog_native:libhilog",
   ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 }

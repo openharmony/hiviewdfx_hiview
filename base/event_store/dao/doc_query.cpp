@@ -16,7 +16,7 @@
 
 #include <unordered_set>
 
-// #include "json/json.h"
+#include "decoded/decoded_event.h"
 #include "logger.h"
 #include "sys_event_query.h"
 
@@ -24,33 +24,14 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-DocQuery");
-namespace {
-// bool ParseJsonString(const std::string& eventJson, Json::Value& root)
-// {
-//     Json::CharReaderBuilder jsonRBuilder;
-//     Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
-//     std::unique_ptr<Json::CharReader> const reader(jsonRBuilder.newCharReader());
-//     JSONCPP_STRING errs;
-//     if (!reader->parse(eventJson.data(), eventJson.data() + eventJson.size(), &root, &errs)) {
-//         HIVIEW_LOGE("failed to parse eventJson: %{public}s.", eventJson.c_str());
-//         return false;
-//     }
-//     return true;
-// }
-}
-
-std::pair<std::string, bool> DocQuery::GetOrderField()
-{
-    return orderField_;
-}
-
-void DocQuery::SetOrderField(const std::string& col, bool isAsc)
-{
-    orderField_ = std::make_pair<>(col, isAsc);
-}
+using EventRaw::DecodedEvent;
 
 void DocQuery::And(const Cond& cond)
 {
+    if (cond.col_ == EventCol::DOMAIN || cond.col_ == EventCol::NAME) {
+        HIVIEW_LOGI("invalid condition, cond.col=%{public}s", cond.col_.c_str());
+        return;
+    }
     if (IsInnerCond(cond)) {
         innerConds_.push_back(cond);
         return;
@@ -114,37 +95,56 @@ bool DocQuery::IsContainInnerCond(const InnerFieldStruct& innerField, const Cond
 
 bool DocQuery::IsContainInnerConds(uint8_t* content) const
 {
-    HIVIEW_LOGI("liangyujian start 1");
     if (innerConds_.empty()) {
         return true;
     }
     InnerFieldStruct innerField = *(reinterpret_cast<InnerFieldStruct*>(content + BLOCK_SIZE));
-    // HIVIEW_LOGI("liangyujian innerField.seq=%{public}lld", innerField.seq);
-    // HIVIEW_LOGI("liangyujian innerField.ts=%{public}llu", innerField.ts);
-    // HIVIEW_LOGI("liangyujian innerField.tz=%{public}u", innerField.tz);
-    // HIVIEW_LOGI("liangyujian innerField.uid=%{public}u", innerField.uid);
-    // HIVIEW_LOGI("liangyujian innerField.pid=%{public}u", innerField.pid);
-    // HIVIEW_LOGI("liangyujian innerField.tid=%{public}u", innerField.tid);
-    HIVIEW_LOGI("liangyujian innerConds_.size=%{public}zu", innerConds_.size());
     return std::all_of(innerConds_.begin(), innerConds_.end(), [this, &innerField] (auto& cond) {
         return IsContainInnerCond(innerField, cond);
     });
 }
 
-bool DocQuery::IsContainExtraConds(uint8_t* content, uint32_t contentSize) const
+bool DocQuery::IsContainExtraConds(EventRaw::DecodedEvent& decodedEvent) const
 {
-    // liangyujian
-    return true;
-}
-
-bool DocQuery::IsContain(uint8_t* content, uint32_t contentSize) const
-{
-    return IsContainInnerConds(content) && IsContainExtraConds(content, contentSize);
+    return std::all_of(extraConds_.begin(), extraConds_.end(), [this, &decodedEvent] (auto& cond) {
+        const auto& extraParams = decodedEvent.GetAllCustomizedValues();
+        for (auto& param : extraParams) {
+            if (cond.col_ != param->GetKey()) {
+                continue;
+            }
+            FieldValue paramValue;
+            if (int64_t intValue = 0; param->AsInt64(intValue)) {
+                paramValue = intValue;
+            } else if (double dValue = 0; param->AsDouble(dValue)) {
+                paramValue = dValue;
+            } else if (std::string sValue; param->AsString(sValue)) {
+                paramValue = sValue;
+            } else {
+                return false;
+            }
+            return IsContainCond(cond, paramValue);
+        }
+        return false;
+    });
 }
 
 std::string DocQuery::ToString() const
 {
-    return "liangyujian";
+    std::string output;
+    const std::string connStr = " and ";
+    for (auto& cond : innerConds_) {
+        output.append(cond.ToString());
+        if (&cond != &innerConds_.back()) {
+            output.append(connStr);
+        }
+    }
+    for (auto& cond : extraConds_) {
+        output.append(connStr).append(cond.ToString());
+        if (&cond != &extraConds_.back()) {
+            output.append(connStr);
+        }
+    }
+    return output;
 }
 }; // DocQuery
 } // HiviewDFX

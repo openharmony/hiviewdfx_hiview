@@ -22,8 +22,6 @@
 #include "file_util.h"
 #include "logger.h"
 #include "sys_event_dao.h"
-#include "sys_event_db_cleaner.h"
-#include "sys_event.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -34,7 +32,7 @@ DEFINE_LOG_TAG("HiView-SysEventDbMgr");
 void SysEventDbMgr::SaveToStore(std::shared_ptr<SysEvent> event) const
 {
     SysEventDao::Insert(event);
-    HIVIEW_LOGD("save sys event %{public}" PRId64 ", %{public}s", event->GetSeq(), event->eventName_.c_str());
+    HIVIEW_LOGD("save sys event %{public}" PRId64 ", %{public}s", event->GetEventSeq(), event->eventName_.c_str());
 }
 
 void SysEventDbMgr::StartCheckStoreTask(std::shared_ptr<EventLoop> looper)
@@ -52,7 +50,7 @@ void SysEventDbMgr::StartCheckStoreTask(std::shared_ptr<EventLoop> looper)
 void SysEventDbMgr::CheckStore()
 {
     HIVIEW_LOGI("start to check store");
-    SysEventDbCleaner::TryToClean();
+    SysEventDao::Clear();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
