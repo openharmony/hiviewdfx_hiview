@@ -24,6 +24,10 @@
 #include <unistd.h>
 #include <mutex>
 
+#include "ipc_skeleton.h"
+#include "iservice_registry.h"
+#include "system_ability.h"
+
 #include "common_utils.h"
 #include "event_source.h"
 #include "file_util.h"
@@ -34,11 +38,33 @@
 #include "sys_event_dao.h"
 #include "time_util.h"
 
-#include "event_log_action.h"
+#include "event_log_task.h"
 #include "event_logger_config.h"
 #include "freeze_common.h"
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+constexpr int XPEREF_SYS_TRACE_SERVICE_ABILITY_ID = 1208;
+constexpr int64_t EXTRACE_TIME = 12;
+
+class IHitraceService : public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.PerformanceDFX.IHierviceAbility");
+    enum {
+        TRANS_ID_PING_ABILITY = 1,
+    };
+
+    virtual int32_t DumpHitrace(const std::string &fullTracePath, int64_t beginTime) = 0;
+};
+
+int64_t GetSystemBootTime()
+{
+    struct timespec bts = {0, 0};
+    clock_gettime(CLOCK_BOOTTIME, &bts);
+    return static_cast<int64_t>(((static_cast<int64_t>(bts.tv_sec)) * TimeUtil::SEC_TO_NANOSEC + bts.tv_nsec)
+                                / TimeUtil::SEC_TO_NANOSEC);
+}
+}
 REGISTER(EventLogger);
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger");
 bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
@@ -99,11 +125,26 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
             return;
         }
         this->StartLogCollect(sysEvent);
-        sysEvent->ResetPendingStatus();
-        sysEvent->OnContinue();
     };
     eventPool_->AddTask(task, "eventlogger");
     return true;
+}
+
+int EventLogger::Getfile(std::shared_ptr<SysEvent> event, std::string& logFile)
+{
+    std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
+    uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
+    int32_t pid = static_cast<int32_t>(event->GetEventIntValue("PID"));
+    pid = pid ? pid : event->GetPid();
+    logFile = idStr + "-" + std::to_string(pid) + "-"
+                          + TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S") + ".log";
+    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
+        UpdateDB(event, logFile);
+        return -1;
+    }
+
+    return logStore_->CreateLogFile(logFile);
 }
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
@@ -111,23 +152,29 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     if (!JudgmentRateLimiting(event)) {
         return;
     }
-
-    std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
-    uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
-    int32_t pid = static_cast<int32_t>(event->GetEventIntValue("PID"));
-    pid = pid ? pid : event->GetPid();
-    std::string logFile = idStr + "-" + std::to_string(pid) + "-"
-                          + TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S") + ".log";
-    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
-        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
-        UpdateDB(event, logFile);
-        return;
-    }
-
-    int fd = logStore_->CreateLogFile(logFile);
+    std::string logFile;
+    int fd = Getfile(event, logFile);
     if (fd < 0) {
         HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
         return;
+    }
+
+    std::string hitraceFile = "";
+    std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, event);
+    std::string cmdStr = event->GetValue("eventLog_action");
+    std::vector<std::string> cmdList;
+    StringUtil::SplitStr(cmdStr, ",", cmdList);
+    for (const std::string& cmd : cmdList) {
+        if (cmd == "tr") {
+            int64_t beginTime = 0;
+            std::string hitraceTime = "";
+            hitraceFile = GetHitraceName(beginTime, hitraceTime);
+            if (!hitraceFile.empty() && !HitraceCatcher(beginTime, hitraceTime, hitraceFile, event)) {
+                hitraceFile = "";
+            }
+        } else {
+            logTask->AddLog(cmd);
+        }
     }
 
     auto start = TimeUtil::GetMilliseconds();
@@ -136,14 +183,104 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     startTimeStr += ":" + std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
     FileUtil::SaveStringToFd(fd, "start time: " + startTimeStr + "\n");
     WriteCommonHead(fd, event);
-    auto eventLogAction = std::make_unique<EventLogAction>(fd, event);
-    eventLogAction->Init();
-    eventLogAction->CaptureAction();
+    auto ret = logTask->StartCompose();
+    if (ret != EventLogTask::TASK_SUCCESS) {
+        HIVIEW_LOGE("capture fail %{public}d", ret);
+    }
     auto end = TimeUtil::GetMilliseconds();
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
     UpdateDB(event, logFile);
+    if (!hitraceFile.empty() && !DetectionHiTraceMap(hitraceFile)) {
+        return;
+    }
+    event->ResetPendingStatus();
+    event->OnContinue();
+}
+
+std::string EventLogger::GetHitraceName(int64_t& beginTime, std::string& hitraceTime)
+{
+    int64_t currentTime = GetSystemBootTime();
+    beginTime = currentTime - EXTRACE_TIME;
+    auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+    const unsigned int bufSize25 = 25;
+    char hitraceTimeBuf[bufSize25] = {0};
+    int ret = snprintf_s(hitraceTimeBuf, bufSize25, bufSize25 - 1, "%s-%08lld",
+                         TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S").c_str(),
+                         currentTime);
+    if (ret < 0) {
+        HIVIEW_LOGE("hitraceTime snprintf_s error %{public}d!", ret);
+        return "";
+    }
+    hitraceTime = hitraceTimeBuf;
+    std::string fullTracePath = LOGGER_EVENT_LOG_PATH + "/hitrace-" + hitraceTime + ".sys";
+
+    return fullTracePath;
+}
+
+bool EventLogger::HitraceCatcher(int64_t& beginTime,
+                                 const std::string& hitraceTime,
+                                 const std::string& fullTracePath,
+                                 std::shared_ptr<SysEvent> event)
+{
+    if (FileUtil::FileExists(fullTracePath)) {
+        HIVIEW_LOGW("fullTracePath: %{public}s is existed, direct use.", fullTracePath.c_str());
+        if (event != nullptr) {
+            event->SetEventValue("HITRACE_TIME", hitraceTime);
+        }
+        return false;
+    }
+
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        HIVIEW_LOGE("Get SystemAbilityManager failed!");
+        return false;
+    }
+
+    OHOS::sptr<OHOS::IRemoteObject> remoteObject = samgr->GetSystemAbility(XPEREF_SYS_TRACE_SERVICE_ABILITY_ID);
+    if (remoteObject == nullptr) {
+        HIVIEW_LOGE("Get xperf -Trace Manager failed!");
+        return false;
+    }
+
+    auto iHitraceService = iface_cast<IHitraceService>(remoteObject);
+    if (iHitraceService == nullptr) {
+        HIVIEW_LOGE("Get IHitraceService failed!");
+        return false;
+    }
+
+    auto task = [this, event, beginTime, hitraceTime, fullTracePath, iHitraceService]() {
+        HIVIEW_LOGI("start dumpHitrace beginTime:%{public}lld, Path:%{public}s", beginTime, fullTracePath.c_str());
+        int ret = iHitraceService->DumpHitrace(fullTracePath, beginTime);
+        if (ret != 0) {
+            HIVIEW_LOGE("Get iHitraceService DumpHitrace failed : %{public}d!", ret);
+        } else {
+            if (event != nullptr) {
+                event->SetEventValue("HITRACE_TIME", hitraceTime);
+            }
+        }
+        HIVIEW_LOGI("end dumpHitrace");
+
+        if (this->DetectionHiTraceMap(fullTracePath)) {
+            event->ResetPendingStatus();
+            event->OnContinue();
+        }
+    };
+    eventPool_->AddTask(task, "eventlogger_hitrace");
+    return true;
+}
+
+bool EventLogger::DetectionHiTraceMap(const std::string& name)
+{
+    std::unique_lock<std::mutex> lck(hitraceSetMutex_);
+    if (hitraceSet_.find(name) == hitraceSet_.end()) {
+        hitraceSet_.insert(name);
+        return false;
+    }
+
+    hitraceSet_.erase(name);
+    return true;
 }
 
 bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
