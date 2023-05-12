@@ -179,7 +179,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             continue;
         }
         bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_,
-            event->tag_, event->eventType_);
+            event->GetTag(), event->eventType_);
         HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
             isMatched ? "success" : "fail");
         if (isMatched) {
@@ -337,9 +337,7 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
     auto callingUid = IPCSkeleton::GetCallingUid();
     if (rules.empty() && (callingUid == HID_SHELL || callingUid == HID_ROOT ||
         callingUid == HID_OHOS)) {
-        for (auto eventType : EVENT_TYPES) {
-            builder->Append(eventType);
-        }
+        builder->Append("", "", 0, "");
         return true;
     }
     return !any_of(rules.cbegin(), rules.cend(), [this, callingUid, &builder] (auto& rule) {
@@ -362,17 +360,8 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
                     eventType != rule.eventType)) {
                     return false;
                 }
-                if (eventType != INVALID_EVENT_TYPE && rule.eventType == INVALID_EVENT_TYPE) {
-                    builder->Append(rule.domain, eventName, eventType, rule.condition);
-                    return false;
-                }
-                if (rule.eventType != INVALID_EVENT_TYPE) {
-                    builder->Append(rule.domain, eventName, rule.eventType, rule.condition);
-                    return false;
-                }
-                for (auto type : EVENT_TYPES) {
-                    builder->Append(rule.domain, eventName, type, rule.condition);
-                }
+                eventType = eventType == INVALID_EVENT_TYPE ? rule.eventType : eventType;
+                builder->Append(rule.domain, eventName, eventType, rule.condition);
                 return false;
             });
     });
@@ -413,7 +402,9 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
     }
     queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
     auto queryRetCode = IPC_CALL_SUCCEED;
+    HiLog::Warn(LABEL, "liangyujian query start.");
     queryWrapper->Query(callback, queryRetCode);
+    HiLog::Warn(LABEL, "liangyujian query end.");
     return queryRetCode;
 }
 

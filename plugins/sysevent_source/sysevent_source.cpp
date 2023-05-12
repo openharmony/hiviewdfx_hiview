@@ -130,7 +130,7 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
-    sysEvent->tag_ = sysEventParser_->GetTagByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
+    sysEvent->SetTag(sysEventParser_->GetTagByDomainAndName(sysEvent->domain_, sysEvent->eventName_));
     sysEvent->eventType_ = sysEventParser_->GetTypeByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
     sysEvent->preserve_ = sysEventParser_->GetPreserveByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
     sysEventStat_->AccumulateEvent();

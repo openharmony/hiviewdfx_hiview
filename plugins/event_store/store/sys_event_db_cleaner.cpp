@@ -23,7 +23,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-SysEventDbCleaner");
+// DEFINE_LOG_TAG("HiView-SysEventDbCleaner");
 using EventStore::EventCol;
 using EventStore::SysEventDao;
 using EventStore::StoreType;
@@ -34,8 +34,8 @@ const std::map<StoreType, std::pair<int, int>> CLEAN_CONFIG_MAP = {
     { StoreType::STATISTIC, { 200000, 30 * 24 } },  // statistic event, maxNum: 200k, maxTime: 30 days
     { StoreType::SECURITY, { 30000, 90 * 24} },     // security event, maxNum: 30k, maxTime: 90 days
 };
-const int64_t MILLISECS_PER_HOUR = TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
-const int64_t DELETE_LIMIT = 10000;
+// const int64_t MILLISECS_PER_HOUR = TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC;
+// const int64_t DELETE_LIMIT = 10000;
 }
 
 void SysEventDbCleaner::TryToClean()
@@ -47,60 +47,61 @@ void SysEventDbCleaner::TryToClean()
 
 void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& config)
 {
-    int curNum = SysEventDao::GetNum(type);
-    HIVIEW_LOGI("try to clean db: type=%{public}d, curNum=%{public}d, maxNum=%{public}d, maxTime=%{public}d",
-        type, curNum, config.first, config.second);
+    // int curNum = SysEventDao::GetNum(type);
+    // HIVIEW_LOGI("try to clean db: type=%{public}d, curNum=%{public}d, maxNum=%{public}d, maxTime=%{public}d",
+    //     type, curNum, config.first, config.second);
 
-    // delete events if the num of events exceeds 10%
-    const double delPct = 0.1;
-    if (curNum <= (config.first + config.first * delPct)) {
-        return;
-    }
+    // // delete events if the num of events exceeds 10%
+    // const double delPct = 0.1;
+    // if (curNum <= (config.first + config.first * delPct)) {
+    //     return;
+    // }
 
-    int64_t delEndTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
-    int saveHour = config.second;
-    int64_t delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
-    bool isDeleteLess = false;
-    while (curNum > config.first && delTime <= delEndTime) {
-        auto delNum = CleanDbByTime(type, delTime);
-        if (delNum < 0) { // db is corrupt
-            HIVIEW_LOGW("failed to clean db, err=%{public}d", delNum);
-            DeleteDb(type);
-            return;
-        }
-        curNum = SysEventDao::GetNum(type);
-        if (curNum < 0) {
-            HIVIEW_LOGW("failed to get num from db, err=%{public}d", curNum);
-            DeleteDb(type);
-            return;
-        }
-        if (delNum < DELETE_LIMIT) { // change to the next time interval
-            saveHour -= isDeleteLess ? 1 : (config.second * delPct); // change from 10% to 1h
-            const int delBdyHour = 24;
-            if (saveHour < delBdyHour && !isDeleteLess) {
-                saveHour = delBdyHour;
-                isDeleteLess = true;
-            }
-            delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
-        }
-        HIVIEW_LOGD("cleaning db: curNum=%{public}d, delTime=%{public}" PRId64 ", delEndTime=%{public}" PRId64,
-            curNum, delTime, delEndTime);
-    }
-    HIVIEW_LOGI("end to clean db, curNum=%{public}d", curNum);
+    // int64_t delEndTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
+    // int saveHour = config.second;
+    // int64_t delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+    // bool isDeleteLess = false;
+    // while (curNum > config.first && delTime <= delEndTime) {
+    //     auto delNum = CleanDbByTime(type, delTime);
+    //     if (delNum < 0) { // db is corrupt
+    //         HIVIEW_LOGW("failed to clean db, err=%{public}d", delNum);
+    //         DeleteDb(type);
+    //         return;
+    //     }
+    //     curNum = SysEventDao::GetNum(type);
+    //     if (curNum < 0) {
+    //         HIVIEW_LOGW("failed to get num from db, err=%{public}d", curNum);
+    //         DeleteDb(type);
+    //         return;
+    //     }
+    //     if (delNum < DELETE_LIMIT) { // change to the next time interval
+    //         saveHour -= isDeleteLess ? 1 : (config.second * delPct); // change from 10% to 1h
+    //         const int delBdyHour = 24;
+    //         if (saveHour < delBdyHour && !isDeleteLess) {
+    //             saveHour = delBdyHour;
+    //             isDeleteLess = true;
+    //         }
+    //         delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+    //     }
+    //     HIVIEW_LOGD("cleaning db: curNum=%{public}d, delTime=%{public}" PRId64 ", delEndTime=%{public}" PRId64,
+    //         curNum, delTime, delEndTime);
+    // }
+    // HIVIEW_LOGI("end to clean db, curNum=%{public}d", curNum);
 }
 
 int SysEventDbCleaner::CleanDbByTime(StoreType type, int64_t time)
 {
-    auto sysEventQuery = SysEventDao::BuildQuery(type);
-    sysEventQuery->Where(EventCol::TS, EventStore::Op::LE, time);
-    return SysEventDao::Delete(sysEventQuery, DELETE_LIMIT);
+    // auto sysEventQuery = SysEventDao::BuildQuery(type);
+    // sysEventQuery->Where(EventCol::TS, EventStore::Op::LE, time);
+    // return SysEventDao::Delete(sysEventQuery, DELETE_LIMIT);
+    return 0;
 }
 
 void SysEventDbCleaner::DeleteDb(StoreType type)
 {
-    if (SysEventDao::DeleteDB(type) != 0) {
-        HIVIEW_LOGE("failed to delete db file, type=%{public}d", type);
-    }
+    // if (SysEventDao::DeleteDB(type) != 0) {
+    //     HIVIEW_LOGE("failed to delete db file, type=%{public}d", type);
+    // }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

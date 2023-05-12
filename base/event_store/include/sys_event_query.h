@@ -23,14 +23,14 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
-#include <map>
 
+#include "base_def.h"
 #include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class DataQuery;
 namespace EventStore {
 enum DbQueryStatus { SUCCEED = 0, CONCURRENT, OVER_TIME, OVER_LIMIT, TOO_FREQENTLY };
 using DbQueryTag = struct {
@@ -40,7 +40,12 @@ using DbQueryTag = struct {
 using DbQueryCallback = std::function<void(DbQueryStatus)>;
 using QueryProcessInfo = std::pair<pid_t, std::string>; // first: pid of process, second: process name
 constexpr pid_t INNER_PROCESS_ID = -1;
+
 enum Op { NONE = 0, EQ = 1, NE, LT, LE, GT, GE, SW, NSW };
+
+class DocQuery;
+class SysEventDao;
+class SysEventDatabase;
 
 class EventCol {
 public:
@@ -52,95 +57,69 @@ public:
     static std::string PID;
     static std::string TID;
     static std::string UID;
-    static std::string TRACE_ID;
-    static std::string TRACE_FLAG;
-    static std::string SPAN_ID;
-    static std::string PARENT_SPAN_ID;
     static std::string INFO;
+    static std::string LEVEL;
+    static std::string SEQ;
 };
 
 class FieldValue {
 public:
-    enum ValueType { NONE = 0, INTEGER = 1, FLOAT = 2, DOUBLE = 3, STRING = 4 };
-    FieldValue(int value): valueType_(INTEGER), iValue_(value), fValue_(0), dValue_(0) {}
-    FieldValue(int64_t value): valueType_(INTEGER), iValue_(value), fValue_(0), dValue_(0) {}
-    FieldValue(float value): valueType_(FLOAT), iValue_(0), fValue_(value), dValue_(0) {}
-    FieldValue(double value): valueType_(DOUBLE), iValue_(0), fValue_(0), dValue_(value) {}
-    FieldValue(const std::string &value): valueType_(STRING), iValue_(0), fValue_(0), dValue_(0), sValue_(value) {}
-    ~FieldValue() {};
+    enum ValueType { INTEGER = 0, DOUBLE = 1, STRING = 2 };
 
-    bool IsInteger();
-    bool IsFloat();
-    bool IsDouble();
-    bool IsString();
-    int64_t GetInteger();
-    float GetFloat();
-    double GetDouble();
-    const std::string GetString();
+    FieldValue(): value_(0) {}
+    FieldValue(int32_t value): value_(static_cast<int64_t>(value)) {}
+    FieldValue(int64_t value): value_(value) {}
+    FieldValue(double value): value_(value) {}
+    FieldValue(const std::string &value): value_(value) {}
+    ~FieldValue() {}
+
+    bool operator==(const FieldValue& fieldValue) const;
+    bool operator!=(const FieldValue& fieldValue) const;
+    bool operator<(const FieldValue& fieldValue) const;
+    bool operator<=(const FieldValue& fieldValue) const;
+    bool operator>(const FieldValue& fieldValue) const;
+    bool operator>=(const FieldValue& fieldValue) const;
+    bool IsStartWith(const FieldValue& fieldValue) const;
+    bool IsNotStartWith(const FieldValue& fieldValue) const;
+
 private:
-    ValueType valueType_;
-    int64_t iValue_;
-    float fValue_;
-    double dValue_;
-    std::string sValue_;
+    bool IsInteger() const;
+    bool IsDouble() const;
+    bool IsString() const;
+    int64_t GetInteger() const;
+    double GetDouble() const;
+    std::string GetString() const;
+
+    std::variant<int64_t, double, std::string> value_;
 };
 
 class DllExport Cond {
 public:
-    Cond(): op_(NONE), fieldValue_(0) {};
-    Cond(const std::string &col, Op op, int8_t value);
-    Cond(const std::string &col, Op op, int16_t value);
-    Cond(const std::string &col, Op op, int32_t value);
-    Cond(const std::string &col, Op op, int64_t value);
-    Cond(const std::string &col, Op op, float value);
-    Cond(const std::string &col, Op op, double value);
-    Cond(const std::string &col, Op op, const std::string &value);
-    Cond(const std::string &col, Op op, const std::vector<int8_t> &ints);
-    Cond(const std::string &col, Op op, const std::vector<int16_t> &ints);
-    Cond(const std::string &col, Op op, const std::vector<int32_t> &ints);
-    Cond(const std::string &col, Op op, const std::vector<int64_t> &longs);
-    Cond(const std::string &col, Op op, const std::vector<float> &floats);
-    Cond(const std::string &col, Op op, const std::vector<double> &doubles);
-    Cond(const std::string &col, Op op, const std::vector<std::string> &strings);
-    ~Cond();
-    Cond &And(const std::string &col, Op op, const int8_t value);
-    Cond &And(const std::string &col, Op op, const int16_t value);
-    Cond &And(const std::string &col, Op op, const int32_t value);
-    Cond &And(const std::string &col, Op op, const int64_t value);
-    Cond &And(const std::string &col, Op op, const float value);
-    Cond &And(const std::string &col, Op op, const double value);
-    Cond &And(const std::string &col, Op op, const std::string &value);
+    Cond(): op_(NONE), fieldValue_(0) {}
+    ~Cond() {}
+
+    template <typename T>
+    Cond(const std::string &col, Op op, const T &value): col_(col), op_(op), fieldValue_(value) {}
+
+    template <typename T>
+    Cond &And(const std::string &col, Op op, const T &value)
+    {
+        andConds_.emplace_back(Cond(col, op, value));
+        return *this;
+    }
     Cond &And(const Cond &cond);
-    Cond &Or(const std::string &col, Op op, const int8_t value);
-    Cond &Or(const std::string &col, Op op, const int16_t value);
-    Cond &Or(const std::string &col, Op op, const int32_t value);
-    Cond &Or(const std::string &col, Op op, const int64_t value);
-    Cond &Or(const std::string &col, Op op, const float value);
-    Cond &Or(const std::string &col, Op op, const double value);
-    Cond &Or(const std::string &col, Op op, const std::string &value);
-    Cond &Or(const Cond &cond);
-private:
-    friend class SysEventQuery;
 
 private:
-    static bool IsSimpleCond(Cond &cond);
-    static void Traval(DataQuery &dataQuery, Cond &cond);
-    static void GetCond(DataQuery &dataQuery, Cond &cond);
-    static void GetCondEqualValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondNotEqualValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondLessThanValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondLessEqualValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondGreatThanValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondGreatEqualValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondStartWithValue(DataQuery &dataQuery, Cond &cond);
-    static void GetCondNoStartWithValue(DataQuery &dataQuery, Cond &cond);
+    friend class DocQuery;
+    friend class SysEventQuery;
+    static bool IsSimpleCond(const Cond &cond);
+    static void Traval(DocQuery &docQuery, const Cond &cond);
 
 private:
     std::string col_;
     Op op_;
     FieldValue fieldValue_;
     std::vector<Cond> andConds_;
-    std::vector<Cond> orConds_;
 };  // Cond
 
 class DllExport ResultSet {
@@ -166,70 +145,70 @@ private:
     bool has_;
 };  // ResultSet
 
-using SysEventCallBack = std::function<int(SysEvent &sysEvent)>;
+/* Query parameters for filtering file names */
+struct SysEventQueryArg {
+    std::string domain;
+    std::vector<std::string> names;
+    uint32_t type;
+    int64_t toSeq;
+
+    SysEventQueryArg() : SysEventQueryArg("", {}, 0, INVALID_VALUE_INT) {}
+    SysEventQueryArg(const std::string& domain, const std::vector<std::string>& names,
+        uint32_t type, int64_t toSeq)
+    {
+        this->domain = domain;
+        this->names.assign(names.begin(), names.end());
+        this->type = type;
+        this->toSeq = toSeq;
+    }
+    ~SysEventQueryArg() {}
+};
+
 class DllExport SysEventQuery {
 public:
-    SysEventQuery &Select();
-    SysEventQuery &Select(const std::vector<std::string> &eventCols);
-    SysEventQuery &Where(const std::string &col, Op op, const int8_t value);
-    SysEventQuery &Where(const std::string &col, Op op, const int16_t value);
-    SysEventQuery &Where(const std::string &col, Op op, const int32_t value);
-    SysEventQuery &Where(const std::string &col, Op op, const int64_t value);
-    SysEventQuery &Where(const std::string &col, Op op, const float value);
-    SysEventQuery &Where(const std::string &col, Op op, const double value);
-    SysEventQuery &Where(const std::string &col, Op op, const std::string &value);
-    SysEventQuery &Where(const Cond &cond);
-    SysEventQuery &And(const std::string &col, Op op, const int8_t value);
-    SysEventQuery &And(const std::string &col, Op op, const int16_t value);
-    SysEventQuery &And(const std::string &col, Op op, const int32_t value);
-    SysEventQuery &And(const std::string &col, Op op, const int64_t value);
-    SysEventQuery &And(const std::string &col, Op op, const float value);
-    SysEventQuery &And(const std::string &col, Op op, const double value);
-    SysEventQuery &And(const std::string &col, Op op, const std::string &value);
-    SysEventQuery &And(const Cond &cond);
-    SysEventQuery &And(const std::vector<Cond> &conds);
-    SysEventQuery &Or(const std::string &col, Op op, const int8_t value);
-    SysEventQuery &Or(const std::string &col, Op op, const int16_t value);
-    SysEventQuery &Or(const std::string &col, Op op, const int32_t value);
-    SysEventQuery &Or(const std::string &col, Op op, const int64_t value);
-    SysEventQuery &Or(const std::string &col, Op op, const float value);
-    SysEventQuery &Or(const std::string &col, Op op, const double value);
-    SysEventQuery &Or(const std::string &col, Op op, const std::string &value);
-    SysEventQuery &Or(const Cond &cond);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<int8_t> &ints);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<int16_t> &ints);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<int32_t> &ints);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<int64_t> &longs);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<float> &floats);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<double> &floats);
-    SysEventQuery &Or(const std::string &col, Op op, const std::vector<std::string> &strings);
-    SysEventQuery &Or(const std::vector<Cond> &conds);
-    SysEventQuery &Order(const std::string &col, bool isAsc = true);
-    int ExecuteWithCallback(SysEventCallBack callback, int limit = 100);
+    SysEventQuery(const std::string& domain, const std::vector<std::string>& names);
+    virtual ~SysEventQuery() {}
 
-public:
+    SysEventQuery &Select(const std::vector<std::string> &eventCols);
+
+    template <typename T>
+    SysEventQuery &Where(const std::string &col, Op op, const T &value)
+    {
+        cond_.And(col, op, value);
+        return *this;
+    }
+    SysEventQuery &Where(const Cond &cond);
+
+    template <typename T>
+    SysEventQuery &And(const std::string &col, Op op, const T &value)
+    {
+        cond_.And(col, op, value);
+        return *this;
+    }
+    SysEventQuery &And(const Cond &cond);
+
+    SysEventQuery &Order(const std::string &col, bool isAsc = true);
+
     virtual ResultSet Execute(int limit = 100, DbQueryTag tag = { true, true },
         QueryProcessInfo callerInfo = std::make_pair(INNER_PROCESS_ID, ""),
         DbQueryCallback queryCallback = nullptr);
-    virtual ~SysEventQuery();
 
-protected:
     friend class SysEventDao;
-    SysEventQuery(const std::string &dbFile);
+    friend class SysEventDatabase;
 
 protected:
-    std::string GetDbFile();
-    void GetDataQuery(DataQuery &dataQuery);
-    void BuildDataQuery(DataQuery &dataQuery, int limit);
+    SysEventQuery();
+    SysEventQuery(const std::string& domain, const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
+    std::string ToString() const;
 
 private:
     ResultSet ExecuteSQL(int limit);
+    void BuildDocQuery(DocQuery &docQuery) const;
 
-private:
-    std::string dbFile_;
-    std::vector<std::string> eventCols_;
-    std::vector<std::pair<std::string, bool>> orderCols_;
+    int limit_;
+    std::pair<std::string, bool> orderCol_;
     Cond cond_;
+    SysEventQueryArg queryArg_;
 }; // SysEventQuery
 } // EventStore
 } // namespace HiviewDFX

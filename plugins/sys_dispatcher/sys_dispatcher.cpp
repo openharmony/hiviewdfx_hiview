@@ -44,7 +44,7 @@ void SysEventDispatcher::OnUnload()
 void SysEventDispatcher::DispatchEvent(std::shared_ptr<SysEvent>& sysEvent)
 {
     auto dispatchList = GetHiviewContext()->GetDisPatcherInfo(sysEvent->eventType_, sysEvent->eventName_,
-        sysEvent->tag_, sysEvent->domain_);
+        sysEvent->GetTag(), sysEvent->domain_);
     for (auto& dispatcher : dispatchList) {
         auto ptr = dispatcher.lock();
         if (ptr != nullptr) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 
 #include "sys_event_query_wrapper.h"
 
-#include "data_query.h"
+#include "doc_query.h"
 #include "running_status_logger.h"
 
 namespace OHOS {
@@ -94,30 +94,28 @@ void QueryStatusLogUtil::Logging(const std::string& detail)
     RunningStatusLogger::GetInstance().Log(info);
 }
 
-ConcurrentQueries SysEventQueryWrapper::concurrentQueries_;
+ConcurrentQueries SysEventQueryWrapper::concurrentQueries_ = { DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT };
 LastQueries SysEventQueryWrapper::lastQueries_;
 std::mutex SysEventQueryWrapper::lastQueriesMutex_;
 std::mutex SysEventQueryWrapper::concurrentQueriesMutex_;
 ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessInfo callerInfo,
     DbQueryCallback queryCallback)
 {
-    DataQuery dataQuery;
-    SysEventQuery::BuildDataQuery(dataQuery, limit);
     ResultSet resultSet;
     int queryErrorCode = -1;
-    (void)IsConditionCntValid(dataQuery, tag);
-    if (!IsQueryCntLimitValid(dataQuery, tag, limit, queryCallback) ||
-        !IsConcurrentQueryCntValid(GetDbFile(), tag, queryCallback) ||
-        !IsQueryFrequenceValid(dataQuery, tag, GetDbFile(), callerInfo, queryCallback)) {
+    (void)IsConditionCntValid(tag);
+    if (!IsQueryCntLimitValid(tag, limit, queryCallback) ||
+        !IsConcurrentQueryCntValid(tag, queryCallback) ||
+        !IsQueryFrequenceValid(tag, callerInfo, queryCallback)) {
         resultSet.Set(queryErrorCode, false);
         return resultSet;
     }
     time_t beforeExecute = GetCurTime();
-    IncreaseConcurrentCnt(GetDbFile(), tag);
+    IncreaseConcurrentCnt(tag);
     resultSet = SysEventQuery::Execute(limit, tag, callerInfo, queryCallback);
-    DecreaseConcurrentCnt(GetDbFile(), tag);
+    DecreaseConcurrentCnt(tag);
     time_t afterExecute = GetCurTime();
-    if (!IsQueryCostTimeValid(dataQuery, tag, beforeExecute, afterExecute, queryCallback)) {
+    if (!IsQueryCostTimeValid(tag, beforeExecute, afterExecute, queryCallback)) {
         resultSet.Set(queryErrorCode, false);
         return resultSet;
     }
@@ -127,22 +125,22 @@ ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessI
     return resultSet;
 }
 
-bool SysEventQueryWrapper::IsConditionCntValid(const DataQuery& query, const DbQueryTag& tag)
+bool SysEventQueryWrapper::IsConditionCntValid(const DbQueryTag& tag)
 {
     int conditionCntLimit = 8;
-    if (tag.isInnerQuery && GetSubStrCount(query.ToString(), "domain_=") > conditionCntLimit) {
-        QueryStatusLogUtil::LogTooManyQueryRules(query.ToString());
+    if (tag.isInnerQuery && GetSubStrCount(this->ToString(), "domain_=") > conditionCntLimit) {
+        QueryStatusLogUtil::LogTooManyQueryRules(this->ToString());
         return false;
     }
     return true;
 }
 
-bool SysEventQueryWrapper::IsQueryCntLimitValid(const DataQuery& query, const DbQueryTag& tag, const int limit,
+bool SysEventQueryWrapper::IsQueryCntLimitValid(const DbQueryTag& tag, const int limit,
     const DbQueryCallback& callback)
 {
     int queryLimit = tag.isInnerQuery ? 50 : 1000;
     if (limit > queryLimit) {
-        QueryStatusLogUtil::LogQueryCountOverLimit(limit, query.ToString(), tag.isInnerQuery);
+        QueryStatusLogUtil::LogQueryCountOverLimit(limit, this->ToString(), tag.isInnerQuery);
         if (callback != nullptr) {
             callback(DbQueryStatus::OVER_LIMIT);
         }
@@ -151,7 +149,7 @@ bool SysEventQueryWrapper::IsQueryCntLimitValid(const DataQuery& query, const Db
     return true;
 }
 
-bool SysEventQueryWrapper::IsQueryCostTimeValid(const DataQuery& query, const DbQueryTag& tag, const time_t before,
+bool SysEventQueryWrapper::IsQueryCostTimeValid(const DbQueryTag& tag, const time_t before,
     const time_t after, const DbQueryCallback& callback)
 {
     time_t maxQueryTime = 20;
@@ -159,36 +157,30 @@ bool SysEventQueryWrapper::IsQueryCostTimeValid(const DataQuery& query, const Db
     if (duration < maxQueryTime) {
         return true;
     }
-    QueryStatusLogUtil::LogQueryOverTime(duration, query.ToString(), tag.isInnerQuery);
+    QueryStatusLogUtil::LogQueryOverTime(duration, this->ToString(), tag.isInnerQuery);
     if (callback != nullptr) {
         callback(DbQueryStatus::OVER_TIME);
     }
     return tag.isInnerQuery;
 }
 
-bool SysEventQueryWrapper::IsConcurrentQueryCntValid(const std::string& dbFile, const DbQueryTag& tag,
-    const DbQueryCallback& callback)
+bool SysEventQueryWrapper::IsConcurrentQueryCntValid(const DbQueryTag& tag, const DbQueryCallback& callback)
 {
     std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
-    auto iter = concurrentQueries_.find(dbFile);
-    if (iter != concurrentQueries_.end()) {
-        auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
-        int conCurrentQueryCntLimit = 4;
-        if (concurrentQueryCnt < conCurrentQueryCntLimit) {
-            return true;
-        }
-        QueryStatusLogUtil::LogTooManyConcurrentQueries(conCurrentQueryCntLimit, tag.isInnerQuery);
-        if (callback != nullptr) {
-            callback(DbQueryStatus::CONCURRENT);
-        }
-        return tag.isInnerQuery;
+    auto& concurrentQueryCnt = tag.isInnerQuery ? concurrentQueries_.first : concurrentQueries_.second;
+    int conCurrentQueryCntLimit = 4;
+    if (concurrentQueryCnt < conCurrentQueryCntLimit) {
+        return true;
     }
-    concurrentQueries_[dbFile] = { DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT };
-    return true;
+    QueryStatusLogUtil::LogTooManyConcurrentQueries(conCurrentQueryCntLimit, tag.isInnerQuery);
+    if (callback != nullptr) {
+        callback(DbQueryStatus::CONCURRENT);
+    }
+    return tag.isInnerQuery;
 }
 
-bool SysEventQueryWrapper::IsQueryFrequenceValid(const DataQuery& query, const DbQueryTag& tag,
-    const std::string& dbFile, const QueryProcessInfo& processInfo, const DbQueryCallback& callback)
+bool SysEventQueryWrapper::IsQueryFrequenceValid(const DbQueryTag& tag, const QueryProcessInfo& processInfo,
+    const DbQueryCallback& callback)
 {
     std::lock_guard<std::mutex> lock(lastQueriesMutex_);
     if (!tag.needFrequenceCheck) {
@@ -196,49 +188,36 @@ bool SysEventQueryWrapper::IsQueryFrequenceValid(const DataQuery& query, const D
     }
     time_t current;
     (void)time(&current);
-    auto execIter = lastQueries_.find(dbFile);
     auto queryProcessId = processInfo.first;
-    if (execIter == lastQueries_.end()) {
-        lastQueries_[dbFile].insert(std::make_pair(queryProcessId, current));
-        return true;
-    }
-    auto processIter = execIter->second.find(queryProcessId);
-    if (processIter == execIter->second.end()) {
-        execIter->second[queryProcessId] = current;
+    auto processIter = lastQueries_.find(queryProcessId);
+    if (processIter == lastQueries_.end()) {
+        lastQueries_[queryProcessId] = current;
         return true;
     }
     time_t queryFrequent = 1;
     if (abs(current - processIter->second) > queryFrequent) {
-        execIter->second[queryProcessId] = current;
+        lastQueries_[queryProcessId] = current;
         return true;
     }
-    QueryStatusLogUtil::LogQueryTooFrequently(query.ToString(), processInfo.second, tag.isInnerQuery);
+    QueryStatusLogUtil::LogQueryTooFrequently(this->ToString(), processInfo.second, tag.isInnerQuery);
     if (callback != nullptr) {
         callback(DbQueryStatus::TOO_FREQENTLY);
     }
     return tag.isInnerQuery;
 }
 
-void SysEventQueryWrapper::IncreaseConcurrentCnt(const std::string& dbFile, const DbQueryTag& tag)
+void SysEventQueryWrapper::IncreaseConcurrentCnt(const DbQueryTag& tag)
 {
     std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
-    auto iter = concurrentQueries_.find(dbFile);
-    if (iter != concurrentQueries_.end()) {
-        auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
-        concurrentQueryCnt++;
-        return;
-    }
-    concurrentQueries_[dbFile] = std::make_pair(DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT);
+    auto& concurrentQueryCnt = tag.isInnerQuery ? concurrentQueries_.first : concurrentQueries_.second;
+    concurrentQueryCnt++;
 }
 
-void SysEventQueryWrapper::DecreaseConcurrentCnt(const std::string& dbFile, const DbQueryTag& tag)
+void SysEventQueryWrapper::DecreaseConcurrentCnt(const DbQueryTag& tag)
 {
     std::lock_guard<std::mutex> lock(concurrentQueriesMutex_);
-    auto iter = concurrentQueries_.find(dbFile);
-    if (iter != concurrentQueries_.end()) {
-        auto& concurrentQueryCnt = tag.isInnerQuery ? iter->second.first : iter->second.second;
-        concurrentQueryCnt--;
-    }
+    auto& concurrentQueryCnt = tag.isInnerQuery ? concurrentQueries_.first : concurrentQueries_.second;
+    concurrentQueryCnt--;
 }
 } // namespace EventStore
 } // namespace HiviewDFX

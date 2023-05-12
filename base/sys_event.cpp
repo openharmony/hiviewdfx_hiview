@@ -229,6 +229,26 @@ std::shared_ptr<EventRaw::RawData> SysEvent::TansJsonStrToRawData(const std::str
     return rawDataBuilder->Build();
 }
 
+void SysEvent::SetTag(const std::string& tag)
+{
+    tag_ = tag;
+}
+
+std::string SysEvent::GetTag() const
+{
+    return tag_;
+}
+
+void SysEvent::SetLevel(const std::string& level)
+{
+    level_ = level;
+}
+
+std::string SysEvent::GetLevel() const
+{
+    return level_;
+}
+
 void SysEvent::SetSeq(int64_t seq)
 {
     seq_ = seq;
@@ -238,6 +258,12 @@ int64_t SysEvent::GetSeq() const
 {
     return seq_;
 }
+
+void SysEvent::SetEventSeq(int64_t eventSeq)
+{
+    eventSeq_ = eventSeq;
+}
+
 
 int64_t SysEvent::GetEventSeq() const
 {

@@ -41,12 +41,17 @@ public:
     ~SysEvent();
 
 public:
+    void SetTag(const std::string& tag);
+    std::string GetTag() const;
+    void SetLevel(const std::string& level);
+    std::string GetLevel() const;
     int32_t GetPid() const;
     int32_t GetTid() const;
     int32_t GetUid() const;
     int16_t GetTz() const;
     void SetSeq(int64_t seq);
     int64_t GetSeq() const;
+    void SetEventSeq(int64_t eventSeq);
     int64_t GetEventSeq() const;
     std::string GetEventValue(const std::string& key);
     uint64_t GetEventIntValue(const std::string& key);
@@ -88,7 +93,6 @@ public:
     }
 
 public:
-    std::string tag_;
     int eventType_;
     bool preserve_;
 
@@ -114,6 +118,8 @@ private:
     int32_t uid_;
     int16_t tz_;
     int64_t eventSeq_ = 0;
+    std::string tag_;
+    std::string level_;
     EventRaw::RawDataBuilder rawDataBuilder_;
 };
 
