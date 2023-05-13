@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,13 +15,9 @@
 #ifndef HIVIEW_SERVICE_ABILITY_STUB_H
 #define HIVIEW_SERVICE_ABILITY_STUB_H
 
-#include <string>
-#include <mutex>
-#include "logger.h"
+#include "ihiview_service_ability.h"
 #include "iremote_stub.h"
 #include "message_parcel.h"
-#include "nocopyable.h"
-#include "ihiview_service_ability.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -30,6 +26,14 @@ public:
     HiviewServiceAbilityStub() {};
     virtual ~HiviewServiceAbilityStub() {};
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
+
+private:
+    int32_t HandleListRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleCopyRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleMoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleRemoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleCopyOrMoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option, bool isMove);
+    bool IsPermissionGranted(uint32_t code);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

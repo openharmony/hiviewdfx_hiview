@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,12 +19,13 @@
 #include <string>
 #include <memory>
 
-#include "logger.h"
-#include "system_ability.h"
+#include "hiview_file_info.h"
+#include "hiview_service.h"
 #include "hiview_service_ability_stub.h"
 #include "ihiview_service_ability.h"
-#include "hiview_service.h"
+#include "logger.h"
 #include "singleton.h"
+#include "system_ability.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -39,10 +40,19 @@ public:
     static void StartService(HiviewService *service);
     static void StartServiceAbility(int sleepS);
     static HiviewService* GetOrSetHiviewService(HiviewService *service = nullptr);
+
+    int32_t List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos) override;
+    int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest) override;
+    int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest) override;
+    int32_t Remove(const std::string& logType, const std::string& logName) override;
 protected:
     void OnDump() override;
     void OnStart() override;
     void OnStop() override;
+private:
+    void GetFileInfoUnderDir(const std::string& dirPath, std::vector<HiviewFileInfo>& fileInfos);
+    int32_t CopyOrMoveFile(
+        const std::string& logType, const std::string& logName, const std::string& dest, bool isMove);
 };
 
 class HiviewServiceAbilityDeathRecipient : public IRemoteObject::DeathRecipient {

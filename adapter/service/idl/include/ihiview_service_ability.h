@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +17,8 @@
 #define IHIVIEW_SERVICE_ABILITY_H
 
 #include <string>
-#include <mutex>
-#include "logger.h"
+
+#include "hiview_file_info.h"
 #include "iremote_broker.h"
 
 namespace OHOS {
@@ -27,6 +27,18 @@ class IHiviewServiceAbility : public IRemoteBroker {
 public:
     IHiviewServiceAbility() = default;
     ~IHiviewServiceAbility() = default;
+
+    virtual int32_t List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos) = 0;
+    virtual int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
+    virtual int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
+    virtual int32_t Remove(const std::string& logType, const std::string& logName) = 0;
+
+    enum {
+        HIVIEW_SERVICE_ID_LIST = 1001,
+        HIVIEW_SERVICE_ID_COPY = 1002,
+        HIVIEW_SERVICE_ID_MOVE = 1003,
+        HIVIEW_SERVICE_ID_REMOVE = 1004
+    };
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.HiviewDFX.IHiviewServiceAbility");
