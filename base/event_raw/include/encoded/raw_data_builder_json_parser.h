@@ -52,20 +52,15 @@ private:
     static constexpr int STATUS_ESCAPE_CHAR_ITEM_PARSE = 12;
 
 private:
-    void HandleStatusNone(std::string& key, std::string& value, std::vector<std::string>& values, int charactor);
-    void HandleStatusKeyParse(std::string& key, std::string& value, std::vector<std::string>& values, int charactor);
-    void HandleStatusRun(std::string& key, std::string& value, std::vector<std::string>& values, int charactor);
-    void HandleStatusValueParse(std::string& key, std::string& value, std::vector<std::string>& values,
-        int charactor);
-    void HandleStatusArrayParse(std::string& key, std::string& value, std::vector<std::string>& values,
-        int charactor);
-    void HandleStatusStringParse(std::string& key, std::string& value, std::vector<std::string>& values,
-        int charactor);
-    void HandleStatusStringItemParse(std::string& key, std::string& value, std::vector<std::string>& values,
-        int charactor);
-    void HandleStatusValueAppend(std::string& key, std::string& value, std::vector<std::string>& values,
-        int charactor);
-    void AppendValueToBuilder(std::string& key, std::string& value, std::vector<std::string>& values);
+    void HandleStatusNone();
+    void HandleStatusKeyParse();
+    void HandleStatusRun();
+    void HandleStatusValueParse();
+    void HandleStatusArrayParse();
+    void HandleStatusStringParse();
+    void HandleStatusStringItemParse();
+    void HandleStatusValueAppend();
+    void AppendValueToBuilder();
     
 private:
     void BuilderAppendStringValue(const std::string& key, const std::string& value);
@@ -99,6 +94,10 @@ private:
     int status_ = STATUS_NONE;
     int lastStatus_ = STATUS_NONE;
     int lastValueParseStatus_ = STATUS_NONE;
+    std::string key_;
+    std::string value_;
+    std::vector<std::string> values_;
+    int charactor_;
 };
 } // namespace EventRaw
 } // namespace HiviewDFX

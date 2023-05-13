@@ -210,108 +210,84 @@ void RawDataBuilderJsonParser::InitEscapeCharItemParseStatus()
     statusTabs_[STATUS_ESCAPE_CHAR_ITEM_PARSE][ESCAPE_CHAR] = STATUS_ESCAPE_CHAR_ITEM_PARSE;
 }
 
-void RawDataBuilderJsonParser::HandleStatusNone(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusNone()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
-    AppendValueToBuilder(key, value, values);
+    AppendValueToBuilder();
 }
 
-void RawDataBuilderJsonParser::HandleStatusKeyParse(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusKeyParse()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
     if (lastStatus_ == STATUS_KEY_PARSE) {
-        key.append(1, charactor);
+        key_.append(1, charactor_);
         return;
     }
-    AppendValueToBuilder(key, value, values);
-    key.clear();
+    AppendValueToBuilder();
+    key_.clear();
 }
 
-void RawDataBuilderJsonParser::HandleStatusRun(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusRun()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
     if (lastStatus_ == STATUS_STRING_ITEM_PARSE ||
         lastStatus_ == STATUS_DOUBLE_ITEM_PARSE ||
         lastStatus_ == STATUS_INT_ITEM_PARSE) {
-        values.emplace_back(value);
-        value.clear();
+        values_.emplace_back(value_);
+        value_.clear();
     }
     if (lastStatus_ == STATUS_STRING_PARSE) { // special for parsing empty string value
         lastValueParseStatus_ = lastStatus_;
     }
 }
 
-void RawDataBuilderJsonParser::HandleStatusValueParse(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusValueParse()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
-    value.clear();
+    value_.clear();
     if (lastStatus_ == STATUS_RUN) {
-        values.clear();
+        values_.clear();
     }
     if (lastStatus_ == STATUS_STRING_ITEM_PARSE ||
         lastStatus_ == STATUS_DOUBLE_ITEM_PARSE ||
         lastStatus_ == STATUS_INT_ITEM_PARSE) {
-        values.emplace_back(value);
-        value.clear();
+        values_.emplace_back(value_);
+        value_.clear();
     }
 }
 
-void RawDataBuilderJsonParser::HandleStatusArrayParse(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusArrayParse()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
     if (lastStatus_ == STATUS_RUN) {
-        values.clear();
+        values_.clear();
     }
     if (lastStatus_ == STATUS_STRING_ITEM_PARSE ||
         lastStatus_ == STATUS_DOUBLE_ITEM_PARSE ||
         lastStatus_ == STATUS_INT_ITEM_PARSE) {
-        values.emplace_back(value);
-        value.clear();
+        values_.emplace_back(value_);
+        value_.clear();
     }
 }
 
-void RawDataBuilderJsonParser::HandleStatusStringParse(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusStringParse()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
     if (lastStatus_ != STATUS_STRING_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_PARSE) {
-        value.clear();
+        value_.clear();
         return;
     }
-    value.append(1, charactor);
+    value_.append(1, charactor_);
     lastValueParseStatus_ = status_;
 }
 
-void RawDataBuilderJsonParser::HandleStatusStringItemParse(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusStringItemParse()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
     if (lastStatus_ != STATUS_STRING_ITEM_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_ITEM_PARSE) {
-        value.clear();
+        value_.clear();
         return;
     }
-    value.append(1, charactor);
+    value_.append(1, charactor_);
     lastValueParseStatus_ = status_;
 }
 
-void RawDataBuilderJsonParser::HandleStatusValueAppend(std::string& key, std::string& value,
-    std::vector<std::string>& values, int charactor)
+void RawDataBuilderJsonParser::HandleStatusValueAppend()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, count of value array is %{public}zu, "
-        "charactor is %{public}d.", key.c_str(), value.c_str(), values.size(), charactor);
-    value.append(1, charactor);
+    value_.append(1, charactor_);
     lastValueParseStatus_ = status_;
 }
 
@@ -409,12 +385,9 @@ void RawDataBuilderJsonParser::BuilderAppendFloatingArrayValue(const std::string
     builder_->AppendValue(key, dlValues);
 }
 
-void RawDataBuilderJsonParser::AppendValueToBuilder(std::string& key, std::string& value,
-    std::vector<std::string>& values)
+void RawDataBuilderJsonParser::AppendValueToBuilder()
 {
-    HiLog::Debug(LABEL, "key is %{public}s, value is %{public}s, last parse status is %{public}d.",
-        key.c_str(), value.c_str(), lastValueParseStatus_);
-    if (key.empty()) { // ignore any Key-Value with empty key directly
+    if (key_.empty()) { // ignore any Key-Value with empty key directly
         return;
     }
     std::unordered_map<int, std::function<void(const std::string&, const std::string&)>> valueAppendFuncs = {
@@ -427,7 +400,7 @@ void RawDataBuilderJsonParser::AppendValueToBuilder(std::string& key, std::strin
     };
     auto valueIter = valueAppendFuncs.find(lastValueParseStatus_);
     if (valueIter != valueAppendFuncs.end()) {
-        valueIter->second(key, value);
+        valueIter->second(key_, value_);
         return;
     }
     std::unordered_map<int,
@@ -441,7 +414,7 @@ void RawDataBuilderJsonParser::AppendValueToBuilder(std::string& key, std::strin
     };
     auto arrayValueIter = arrayValueAppendFuncs.find(lastValueParseStatus_);
     if (arrayValueIter != arrayValueAppendFuncs.end()) {
-        arrayValueIter->second(key, values);
+        arrayValueIter->second(key_, values_);
     }
 }
 
@@ -451,42 +424,27 @@ std::shared_ptr<RawDataBuilder> RawDataBuilderJsonParser::Parse()
         return builder_;
     }
     std::unordered_map<int,
-        std::function<void(std::string&, std::string&, std::vector<std::string>&, int)>> handleFuncs = {
-        {STATUS_NONE, std::bind(&RawDataBuilderJsonParser::HandleStatusNone, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_KEY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusKeyParse, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_RUN, std::bind(&RawDataBuilderJsonParser::HandleStatusRun, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_VALUE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueParse, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_ARRAY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusArrayParse, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_STRING_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringParse, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_DOUBLE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_INT_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_STRING_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringItemParse, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_DOUBLE_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_INT_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_ESCAPE_CHAR_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
-        {STATUS_ESCAPE_CHAR_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)},
+        std::function<void()>> handleFuncs = {
+        {STATUS_NONE, std::bind(&RawDataBuilderJsonParser::HandleStatusNone, this)},
+        {STATUS_KEY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusKeyParse, this)},
+        {STATUS_RUN, std::bind(&RawDataBuilderJsonParser::HandleStatusRun, this)},
+        {STATUS_VALUE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueParse, this)},
+        {STATUS_ARRAY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusArrayParse, this)},
+        {STATUS_STRING_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringParse, this)},
+        {STATUS_DOUBLE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
+        {STATUS_INT_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
+        {STATUS_STRING_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringItemParse, this)},
+        {STATUS_DOUBLE_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
+        {STATUS_INT_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
+        {STATUS_ESCAPE_CHAR_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
+        {STATUS_ESCAPE_CHAR_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
     };
-    std::string key;
-    std::string value;
-    std::vector<std::string> values;
     for (auto c : jsonStr_) {
-        status_ = statusTabs_[status_][static_cast<int>(c)];
+        charactor_ = static_cast<int>(c);
+        status_ = statusTabs_[status_][charactor_];
         auto iter = handleFuncs.find(status_);
         if (iter != handleFuncs.end()) {
-            iter->second(key, value, values, static_cast<int>(c));
+            iter->second();
         }
         lastStatus_ = status_;
     }

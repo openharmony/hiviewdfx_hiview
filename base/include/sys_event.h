@@ -85,6 +85,7 @@ public:
             eventHash = id;
         }
         rawDataBuilder_.AppendId(eventHash);
+        rawData_ = rawDataBuilder_.Build(); // update
     }
 
 public:

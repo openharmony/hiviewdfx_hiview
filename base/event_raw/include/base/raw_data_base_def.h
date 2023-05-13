@@ -42,6 +42,7 @@ constexpr char BASE_INFO_KEY_SPAN_ID[] = "spanid_";
 constexpr char BASE_INFO_KEY_PARENT_SPAN_ID[] = "pspanid_";
 constexpr char BASE_INFO_KEY_TRACE_FLAG[] = "trace_flag_";
 
+#pragma pack(1)
 struct HiSysEventHeader {
     /* Event domain */
     char domain[MAX_DOMAIN_LENGTH + 1];
@@ -98,6 +99,7 @@ struct ParamValueType {
     /* Byte count of parameter value */
     uint8_t valueByteCnt : 3;
 };
+#pragma pack()
 
 enum ValueType: uint8_t {
     // Unknown value
