@@ -93,6 +93,27 @@ void GetDirFiles(const std::string& path, std::vector<std::string>& files)
     return OHOS::GetDirFiles(path, files);
 }
 
+void GetDirDirs(const std::string& path, std::vector<std::string>& dirs)
+{
+    DIR* dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        return;
+    }
+
+    while (true) {
+        struct dirent *ptr = readdir(dir);
+        if (ptr == nullptr) {
+            break;
+        }
+        if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0) {
+            continue;
+        } else if (ptr->d_type == DT_DIR) {
+            dirs.push_back(IncludeTrailingPathDelimiter(path) + string(ptr->d_name));
+        }
+    }
+    closedir(dir);
+}
+
 bool ForceCreateDirectory(const std::string& path)
 {
     return OHOS::ForceCreateDirectory(path);

@@ -37,14 +37,11 @@ constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
 constexpr int INVALID_EVENT_TYPE = 0;
 constexpr char BASE[] = "__BASE";
 constexpr char LEVEL[] = "level";
-constexpr char LEVEL_[] = "level_";
 constexpr char TAG[] = "tag";
-constexpr char TAG_[] = "tag_";
 constexpr char TYPE[] = "type";
 constexpr char PRESERVE[] = "preserve";
 constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
-constexpr char SEQ_[] = "seq_";
 constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
 const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
@@ -194,7 +191,7 @@ void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const
     }
 
     // add seq to sys event and then persist it into local file
-    event->SetEventValue(SEQ_, static_cast<uint64_t>(curSeq));
+    event->SetEventSeq(curSeq);
 }
 
 bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
@@ -203,10 +200,10 @@ bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::share
         return false;
     }
     if (!baseInfo.level.empty()) {
-        event->SetEventValue(LEVEL_, baseInfo.level);
+        event->SetLevel(baseInfo.level);
     }
     if (!baseInfo.tag.empty()) {
-        event->SetEventValue(TAG_, baseInfo.tag);
+        event->SetTag(baseInfo.tag);
     }
     return true;
 }

@@ -35,20 +35,16 @@ enum class StoreType {
 
 class SysEventDao {
 public:
-    static std::shared_ptr<SysEventQuery> BuildQuery(StoreType type);
-    static std::shared_ptr<SysEventQuery> BuildQuery(uint16_t eventType);
-    static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& dbFile);
+    /* for internal query */
     static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& domain, const std::vector<std::string>& names);
+
+    /* for external query */
+    static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& domain,
+        const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
+
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
-    static int Delete(std::shared_ptr<SysEventQuery> sysEventQuery, int limit = 100);
-    static int BackupDB(StoreType type);
-    static int CloseDB(StoreType type);
-    static int DeleteDB(StoreType type);
-    static int GetNum(StoreType type);
-    static std::string GetDataDir();
-    static std::string GetDataFile(StoreType type);
-    static void GetDataFiles(std::vector<std::string>& dbFiles);
-    static std::string GetBakFile(StoreType type);
+
+    static void Clear();
 }; // SysEventDao
 } // EventStore
 } // namespace HiviewDFX

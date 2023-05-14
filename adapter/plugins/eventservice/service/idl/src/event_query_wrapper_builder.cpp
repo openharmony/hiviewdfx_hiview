@@ -28,17 +28,12 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventQueryBuilder" };
-constexpr char DOMAIN_[] = "domain_";
-constexpr char NAME_[] = "name_";
-constexpr char SEQ_[] = "seq_";
 constexpr char LOGIC_AND_COND[] = "and";
-constexpr char LOGIC_OR_COND[] = "or";
 constexpr int64_t INVALID_SEQ = -1;
 constexpr int64_t TRANS_DEFAULT_CNT = 0;
 constexpr int32_t IGNORED_DEFAULT_CNT = 0;
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
-const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 
 EventStore::QueryProcessInfo GetCallingProcessInfo()
 {
@@ -88,9 +83,7 @@ EventStore::Op ConditionParser::GetOpEnum(const std::string& op)
 void ConditionParser::SpliceConditionByLogic(EventStore::Cond& condition, const EventStore::Cond& subCond,
     const std::string& logic)
 {
-    if (logic == LOGIC_OR_COND) {
-        condition.Or(subCond);
-    } else {
+    if (logic == LOGIC_AND_COND) {
         condition.And(subCond);
     }
 }
@@ -132,11 +125,6 @@ bool ConditionParser::ParseLogicCondition(const Json::Value& root, const std::st
     return true;
 }
 
-bool ConditionParser::ParseOrCondition(const Json::Value& root, EventStore::Cond& condition)
-{
-    return ParseLogicCondition(root, LOGIC_OR_COND, condition);
-}
-
 bool ConditionParser::ParseAndCondition(const Json::Value& root, EventStore::Cond& condition)
 {
     return ParseLogicCondition(root, LOGIC_AND_COND, condition);
@@ -149,9 +137,6 @@ bool ConditionParser::ParseQueryConditionJson(const Json::Value& root, EventStor
         return false;
     }
     bool res = false;
-    if (ParseOrCondition(root[condKey], condition)) {
-        res = true;
-    }
     if (ParseAndCondition(root[condKey], condition)) {
         res = true;
     }
@@ -199,14 +184,8 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
         callback->OnComplete(queryResult, totalEventCnt, maxSeq);
         return;
     }
-    if (query != nullptr && !NeedStartNextQuery()) { // keep current query
+    if (NeedStartNextQuery()) {
         Query(callback, queryResult);
-        return;
-    }
-    if (HasNext()) { // start next query
-        Next()->SetMaxSequence(maxSeq);
-        Next()->SetEventTotalCount(totalEventCnt);
-        Next()->Query(callback, queryResult);
         return;
     }
     callback->OnComplete(queryResult, totalEventCnt, maxSeq);
@@ -219,20 +198,10 @@ void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCall
         queryResult = ERR_LISTENER_NOT_EXIST;
         return;
     }
-    if (query == nullptr) {
-        HiLog::Debug(LABEL, "current query is null.");
-        HandleCurrentQueryDone(eventQueryCallback, queryResult);
-        return;
-    }
-    BuildQuery(query);
-    EventStore::Cond domainNameConds;
-    if (BuildConditonByDomainNameExtraInfo(domainNameConds)) {
-        query->And(domainNameConds);
-    }
-    Order();
-    HiLog::Debug(LABEL, "eventType[%{public}u] execute query: beginTime=%{public}" PRId64
+    BuildQuery();
+    HiLog::Debug(LABEL, "execute query: beginTime=%{public}" PRId64
         ", endTime=%{public}" PRId64 ", maxEvents=%{public}d, fromSeq=%{public}" PRId64
-        ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", eventType, argument.beginTime, argument.endTime,
+        ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", argument.beginTime, argument.endTime,
         argument.maxEvents, argument.fromSeq, argument.toSeq, queryLimit);
     if (isFirstPartialQuery) {
         HiLog::Debug(LABEL, "current query is first partial query.");
@@ -255,12 +224,8 @@ void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCall
     TransportSysEvent(resultSet, eventQueryCallback, details);
     transportedEventCnt = details.first;
     totalEventCnt += transportedEventCnt;
-    ignoredEventCnt += details.second;
+    ignoredEventCnt = details.second;
     SetIsFirstPartialQuery(false);
-    if (HasNext()) {
-        Next()->SetIsFirstPartialQuery(false);
-    }
-    argument.maxEvents -= transportedEventCnt;
     HandleCurrentQueryDone(eventQueryCallback, queryResult);
 }
 
@@ -271,7 +236,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
     std::vector<int64_t> seqs;
     OHOS::HiviewDFX::EventStore::ResultSet::RecordIter iter;
     int32_t transTotalJsonSize = 0;
-    while (result.HasNext()) {
+    while (result.HasNext() && argument.maxEvents > 0) {
         iter = result.Next();
         auto eventJsonStr = iter->AsJsonStr();
         if (eventJsonStr.empty()) {
@@ -283,7 +248,8 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             details.second++;
             continue;
         }
-        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF) {
+        // the number of returned events may be greater than the limit
+        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF || events.size() >= queryLimit) {
             callback->OnQuery(events, seqs);
             events.clear();
             seqs.clear();
@@ -293,67 +259,32 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
         seqs.push_back(iter->GetSeq());
         details.first++;
         transTotalJsonSize += eventJsonSize;
-        SyncQueryArgument(iter);
+        argument.maxEvents--;
     }
+
     if (!events.empty()) {
         callback->OnQuery(events, seqs);
     }
 }
 
-bool BaseEventQueryWrapper::BuildConditonByDomainNameExtraInfo(EventStore::Cond& domainNameConds)
+void BaseEventQueryWrapper::BuildConditon(const std::string& condition)
 {
-    auto hasDomainNameCond = false;
-    for_each(domainNameExtraInfos.cbegin(), domainNameExtraInfos.cend(),
-        [this, &hasDomainNameCond, &domainNameConds] (const auto& item) {
-            if (this->HasDomainNameExtraConditon(domainNameConds, item)) {
-                hasDomainNameCond = true;
-            }
-        });
-    return hasDomainNameCond;
-}
-
-bool BaseEventQueryWrapper::HasDomainNameExtraConditon(EventStore::Cond& domainNameConds,
-    const DomainNameExtraInfoMap::value_type& domainNameExtraInfo)
-{
-    auto isDomainCondsEmpty = true;
-    auto isNameCondsEmpty = true;
-    EventStore::Cond domainConds;
-    if (!domainNameExtraInfo.first.empty()) {
-        isDomainCondsEmpty = false;
-        domainConds = EventStore::Cond(DOMAIN_, EventStore::Op::EQ, domainNameExtraInfo.first);
+    if (condition.empty()) {
+        return;
     }
-    EventStore::Cond nameConds;
-    for_each(domainNameExtraInfo.second.cbegin(), domainNameExtraInfo.second.cend(),
-        [this, &nameConds, &isNameCondsEmpty] (const auto& item) {
-            if (item.first.empty() && item.second.empty()) {
-                return;
-            }
-            EventStore::Cond nameCond(NAME_, EventStore::Op::EQ, item.first);
-            EventStore::Cond extraCond;
-            if (!item.second.empty() &&
-                (this->parser).ParseCondition(item.second, extraCond)) {
-                nameCond.And(extraCond);
-            }
-            nameConds.Or(nameCond);
-            isNameCondsEmpty = false;
-        });
-    if (isDomainCondsEmpty && isNameCondsEmpty) {
-        return false;
+    EventStore::Cond extraCond;
+    if (this->parser.ParseCondition(condition, extraCond)) {
+        query->And(extraCond);
+    } else {
+        HiLog::Info(LABEL, "invalid query condition=%{public}s", condition.c_str());
     }
-    if (!isDomainCondsEmpty && !isNameCondsEmpty) {
-        domainConds.And(nameConds);
-    } else if (isDomainCondsEmpty) {
-        domainConds = nameConds;
-    }
-    domainNameConds.Or(domainConds);
-    return true;
 }
 
 void BaseEventQueryWrapper::SetQueryArgument(QueryArgument argument)
 {
-    HiLog::Debug(LABEL, "eventType[%{public}u] set argument: beginTime=%{public} " PRId64
+    HiLog::Debug(LABEL, "set argument: beginTime=%{public} " PRId64
         ", endTime=%{public} " PRId64 ", maxEvents=%{public}d, fromSeq=%{public} " PRId64
-        ", toSeq=%{public} " PRId64 ".", eventType, argument.beginTime, argument.endTime,
+        ", toSeq=%{public} " PRId64 ".", argument.beginTime, argument.endTime,
         argument.maxEvents, argument.fromSeq, argument.toSeq);
     this->argument = argument;
 }
@@ -368,9 +299,9 @@ void BaseEventQueryWrapper::SetIsFirstPartialQuery(bool isFirstPartialQuery)
     this->isFirstPartialQuery = isFirstPartialQuery;
 }
 
-DomainNameExtraInfoMap& BaseEventQueryWrapper::GetDomainNameExtraInfoMap()
+std::vector<SysEventQueryRule>& BaseEventQueryWrapper::GetSysEventQueryRules()
 {
-    return domainNameExtraInfos;
+    return queryRules;
 }
 
 int64_t BaseEventQueryWrapper::GetMaxSequence() const
@@ -385,32 +316,7 @@ int64_t BaseEventQueryWrapper::GetEventTotalCount() const
 
 bool BaseEventQueryWrapper::IsValid() const
 {
-    return query != nullptr;
-}
-
-void BaseEventQueryWrapper::SetSysEventQuery(std::shared_ptr<EventStore::SysEventQuery> query)
-{
-    this->query = query;
-}
-
-void BaseEventQueryWrapper::SetNext(std::shared_ptr<BaseEventQueryWrapper> next)
-{
-    this->next = next;
-}
-
-bool BaseEventQueryWrapper::HasNext() const
-{
-    return next != nullptr;
-}
-
-std::shared_ptr<BaseEventQueryWrapper> BaseEventQueryWrapper::Next() const
-{
-    return next;
-}
-
-uint32_t BaseEventQueryWrapper::GetEventType() const
-{
-    return eventType;
+    return !queryRules.empty();
 }
 
 bool BaseEventQueryWrapper::IsQueryComplete() const
@@ -420,14 +326,28 @@ bool BaseEventQueryWrapper::IsQueryComplete() const
 
 void BaseEventQueryWrapper::SetEventTotalCount(int64_t totalCount)
 {
-    HiLog::Debug(LABEL, "eventType[%{public}u] SetEventTotalCount: %{public}" PRId64 ".", eventType, totalCount);
+    HiLog::Debug(LABEL, "SetEventTotalCount: %{public}" PRId64 ".", totalCount);
     totalEventCnt = totalCount;
 }
 
-void TimeStampEventQueryWrapper::BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query)
+bool BaseEventQueryWrapper::NeedStartNextQuery()
 {
-    if (query == nullptr) {
-        HiLog::Debug(LABEL, "query is null");
+    int64_t queryEventCnt = transportedEventCnt + ignoredEventCnt;
+    if (queryEventCnt >= queryLimit) {
+        return true;
+    }
+
+    // try to build query with next query rule
+    if (!queryRules.empty()) {
+        queryRules.erase(queryRules.begin());
+    }
+    query = nullptr;
+    return !queryRules.empty();
+}
+
+void TimeStampEventQueryWrapper::BuildQuery()
+{
+    if (query != nullptr) {
         return;
     }
     argument.beginTime = argument.beginTime < 0 ? 0 : argument.beginTime;
@@ -437,31 +357,17 @@ void TimeStampEventQueryWrapper::BuildQuery(std::shared_ptr<EventStore::SysEvent
     EventStore::Cond whereCond;
     whereCond.And(EventStore::EventCol::TS, EventStore::Op::GE, argument.beginTime)
         .And(EventStore::EventCol::TS, EventStore::Op::LT, argument.endTime);
+    auto queryRule = queryRules.front();
+    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
+        queryRule.eventType, INVALID_SEQ);
     query->Where(whereCond);
-}
-
-void TimeStampEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::RecordIter iter)
-{
-    argument.beginTime = static_cast<int64_t>(iter->happenTime_);
+    BuildConditon(queryRule.condition);
+    Order();
 }
 
 void TimeStampEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
 {
     this->maxSeq = maxSeq;
-}
-
-bool TimeStampEventQueryWrapper::NeedStartNextQuery()
-{
-    argument.beginTime++;
-    if (((transportedEventCnt + ignoredEventCnt) < queryLimit || argument.beginTime >= argument.endTime)) {
-        if (HasNext()) {
-            argument.beginTime = Next()->GetQueryArgument().beginTime;
-            argument.endTime = Next()->GetQueryArgument().endTime;
-            Next()->SetQueryArgument(argument);
-        }
-        return true;
-    }
-    return false;
 }
 
 void TimeStampEventQueryWrapper::Order()
@@ -472,23 +378,22 @@ void TimeStampEventQueryWrapper::Order()
     query->Order(EventStore::EventCol::TS, true);
 }
 
-void SeqEventQueryWrapper::BuildQuery(std::shared_ptr<EventStore::SysEventQuery> query)
+void SeqEventQueryWrapper::BuildQuery()
 {
-    if (query == nullptr) {
-        HiLog::Debug(LABEL, "query is null");
+    if (query != nullptr) {
         return;
     }
     auto offset = static_cast<int32_t>(argument.toSeq - argument.fromSeq);
     queryLimit = offset < MAX_QUERY_EVENTS ? offset : MAX_QUERY_EVENTS;
     EventStore::Cond whereCond;
-    whereCond.And(SEQ_, EventStore::Op::GE, argument.fromSeq)
-            .And(SEQ_, EventStore::Op::LT, argument.toSeq);
+    whereCond.And(EventStore::EventCol::SEQ, EventStore::Op::GE, argument.fromSeq)
+            .And(EventStore::EventCol::SEQ, EventStore::Op::LT, argument.toSeq);
+    auto queryRule = queryRules.front();
+    query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
+        queryRule.eventType, argument.toSeq);
     query->Where(whereCond);
-}
-
-void SeqEventQueryWrapper::SyncQueryArgument(const EventStore::ResultSet::RecordIter iter)
-{
-    argument.fromSeq = iter->GetEventSeq();
+    BuildConditon(queryRule.condition);
+    Order();
 }
 
 void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
@@ -499,95 +404,44 @@ void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
     argument.toSeq = std::min(argument.toSeq, maxSeq);
 }
 
-bool SeqEventQueryWrapper::NeedStartNextQuery()
-{
-    argument.fromSeq++;
-    if (((transportedEventCnt + ignoredEventCnt) < queryLimit || argument.fromSeq >= argument.toSeq)) {
-        if (HasNext()) {
-            argument.fromSeq = Next()->GetQueryArgument().fromSeq;
-            argument.toSeq = Next()->GetQueryArgument().toSeq;
-            Next()->SetQueryArgument(argument);
-        }
-        return true;
-    }
-    return false;
-}
-
 void SeqEventQueryWrapper::Order()
 {
     if (query == nullptr) {
         return;
     }
-    query->Order(SEQ_, true);
-}
-
-EventQueryWrapperBuilder& EventQueryWrapperBuilder::Append(uint32_t eventType)
-{
-    HiLog::Debug(LABEL, "append eventType: %{public}u.", eventType);
-    auto queryWrapper = Find(eventType);
-    if (queryWrapper != nullptr && !queryWrapper->IsValid()) {
-        queryWrapper->SetSysEventQuery(
-            EventStore::SysEventDao::BuildQuery(static_cast<EventStore::StoreType>(eventType)));
-    }
-    return *shared_from_this();
+    query->Order(EventStore::EventCol::SEQ, true);
 }
 
 EventQueryWrapperBuilder& EventQueryWrapperBuilder::Append(const std::string& domain, const std::string& eventName,
     uint32_t eventType, const std::string& extraInfo)
 {
-    HiLog::Debug(LABEL, "builder append domain=%{public}s, event name=%{public}s, event type=%{public}u,"
-        "extra condition=%{public}s.", domain.c_str(), eventName.c_str(), eventType, extraInfo.c_str());
-    auto queryWrapper = Find(eventType);
-    if (queryWrapper == nullptr) {
-        return *shared_from_this();
+    HiLog::Debug(LABEL, "builder append domain=%{public}s, name=%{public}s, type=%{public}u, condition=%{public}s.",
+        domain.c_str(), eventName.c_str(), eventType, extraInfo.c_str());
+    auto& queryRules = this->queryWrapper->GetSysEventQueryRules();
+    for (auto& rule : queryRules) {
+        // if the query rules are the same group, combine them
+        if (rule.domain == domain && eventType == rule.eventType && extraInfo == rule.condition) {
+            auto& eventList = rule.eventList;
+            if (eventName.empty()) {
+                eventList.clear();
+            } else {
+                eventList.push_back(eventName);
+            }
+            return *shared_from_this();
+        }
     }
-    if (!queryWrapper->IsValid()) {
-        queryWrapper->SetSysEventQuery(
-            EventStore::SysEventDao::BuildQuery(static_cast<EventStore::StoreType>(eventType)));
+    // otherwise, create a new query rule
+    std::vector<std::string> eventList;
+    if (!eventName.empty()) {
+        eventList.push_back(eventName);
     }
-    auto eventNameWithExtraInfo = std::make_pair(eventName, extraInfo);
-    auto& domainNameExtraInfos = queryWrapper->GetDomainNameExtraInfoMap();
-    if (domainNameExtraInfos.empty()) {
-        domainNameExtraInfos[domain] = { eventNameWithExtraInfo };
-        return *shared_from_this();
-    }
-    auto domainNameExtraInfosIter = domainNameExtraInfos.find(domain);
-    if (domainNameExtraInfosIter == domainNameExtraInfos.end()) {
-        domainNameExtraInfos[domain] = { eventNameWithExtraInfo };
-        return *shared_from_this();
-    }
-    auto& nameExtraInfos = domainNameExtraInfosIter->second;
-    if (any_of(nameExtraInfos.begin(), nameExtraInfos.end(), [] (auto& nameExtraInfo) {
-        return nameExtraInfo.first.empty() && nameExtraInfo.second.empty();
-    })) {
-        return *shared_from_this();
-    }
-    if (eventName.empty() && extraInfo.empty()) {
-        nameExtraInfos.clear();
-        nameExtraInfos.emplace(eventName, extraInfo);
-        return *shared_from_this();
-    }
-    if (nameExtraInfos.find(eventName) == nameExtraInfos.end()) {
-        nameExtraInfos.emplace(eventName, extraInfo);
-        return *shared_from_this();
-    }
-    nameExtraInfos[eventName] = extraInfo;
+    queryRules.push_back(SysEventQueryRule(domain, eventList, RuleType::WHOLE_WORD, eventType, extraInfo));
     return *shared_from_this();
 }
 
 bool EventQueryWrapperBuilder::IsValid() const
 {
-    auto queryWrapper = Build();
-    if (queryWrapper == nullptr) {
-        return false;
-    }
-    while (queryWrapper != nullptr) {
-        if (queryWrapper->IsValid()) {
-            return true;
-        }
-        queryWrapper = queryWrapper->Next();
-    }
-    return false;
+    return queryWrapper->IsValid();
 }
 
 std::shared_ptr<BaseEventQueryWrapper> EventQueryWrapperBuilder::Build() const
@@ -596,47 +450,22 @@ std::shared_ptr<BaseEventQueryWrapper> EventQueryWrapperBuilder::Build() const
 }
 
 std::shared_ptr<BaseEventQueryWrapper> EventQueryWrapperBuilder::CreateQueryWrapperByArgument(
-    const QueryArgument& argument, uint32_t eventType, std::shared_ptr<EventStore::SysEventQuery> query)
+    const QueryArgument& argument, std::shared_ptr<EventStore::SysEventQuery> query)
 {
     if (argument.fromSeq != INVALID_SEQ && argument.toSeq != INVALID_SEQ && argument.fromSeq < argument.toSeq) {
-        return std::make_shared<SeqEventQueryWrapper>(eventType, query);
+        return std::make_shared<SeqEventQueryWrapper>(query);
     }
-    return std::make_shared<TimeStampEventQueryWrapper>(eventType, query);
+    return std::make_shared<TimeStampEventQueryWrapper>(query);
 }
 
-void EventQueryWrapperBuilder::InitQueryWrappers(const QueryArgument& argument)
+void EventQueryWrapperBuilder::InitQueryWrapper(const QueryArgument& argument)
 {
     HiLog::Debug(LABEL, "init link list of query wrapper with argument: beginTime=%{public} " PRId64
         ", endTime=%{public} " PRId64 ", maxEvents=%{public}d, fromSeq=%{public} " PRId64
         ", toSeq=%{public} " PRId64 ".", argument.beginTime, argument.endTime,
         argument.maxEvents, argument.fromSeq, argument.toSeq);
-    std::shared_ptr<BaseEventQueryWrapper> queryWrapper = nullptr;
-    for (auto& eventType : EVENT_TYPES) {
-        if (queryWrapper == nullptr) {
-            queryWrapper = CreateQueryWrapperByArgument(argument, eventType, nullptr);
-            queryWrapper->SetQueryArgument(argument);
-            this->queryWrapper = queryWrapper;
-            continue;
-        }
-        queryWrapper->SetNext(CreateQueryWrapperByArgument(argument, eventType, nullptr));
-        queryWrapper = queryWrapper->Next();
-        queryWrapper->SetQueryArgument(argument);
-    }
-}
-
-std::shared_ptr<BaseEventQueryWrapper> EventQueryWrapperBuilder::Find(uint32_t eventType)
-{
-    auto queryWrapper = Build();
-    if (eventType == 0) {
-        return queryWrapper;
-    }
-    while (queryWrapper != nullptr && queryWrapper->GetEventType() != eventType) {
-        queryWrapper = queryWrapper->Next();
-    }
-    if (queryWrapper != nullptr && queryWrapper->GetEventType() == eventType) {
-        return queryWrapper;
-    }
-    return nullptr;
+    this->queryWrapper = CreateQueryWrapperByArgument(argument, nullptr);
+    this->queryWrapper->SetQueryArgument(argument);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

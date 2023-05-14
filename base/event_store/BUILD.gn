@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -21,7 +21,6 @@ config("event_store_config") {
     "//third_party/bounds_checking_function/include",
     "//commonlibrary/c_utils/base/include",
     "include",
-    "$hiview_adapter/dbstore/include",
     "$hiview_adapter/utility/include",
     "$hiview_base/log/include",
     "$hiview_base/include",
@@ -31,7 +30,17 @@ config("event_store_config") {
 }
 
 config("event_store_private_config") {
-  include_dirs = [ "." ]
+  include_dirs = [
+    "include",
+    "store/include",
+  ]
+}
+
+ohos_prebuilt_etc("event_store_config.cfg") {
+  source = "config/event_store_config.config"
+  relative_install_dir = "hiview"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 }
 
 ohos_source_set("event_store_source") {
@@ -41,18 +50,26 @@ ohos_source_set("event_store_source") {
   configs = [ ":event_store_private_config" ]
 
   sources = [
-    "store_mgr_proxy.cpp",
-    "sys_event_dao.cpp",
-    "sys_event_query.cpp",
-    "sys_event_query_wrapper.cpp",
+    "dao/doc_query.cpp",
+    "dao/sys_event_dao.cpp",
+    "dao/sys_event_query.cpp",
+    "dao/sys_event_query_wrapper.cpp",
+    "store/sys_event_database.cpp",
+    "store/sys_event_doc.cpp",
+    "store/sys_event_doc_lru_cache.cpp",
   ]
 
   deps = [
-    "$hiview_base/event_raw:hiview_event_raw_decode",
-    "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_base/running_status_logger:running_status_logger_source",
+    "config:event_store_config_source",
+    "utility:event_store_utility_source",
     "//third_party/jsoncpp:jsoncpp",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_decode" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog_native:libhilog",
+  ]
 }
