@@ -53,6 +53,7 @@
 #include "sys_event_service_proxy.h"
 #include "sys_event_service_stub.h"
 #include "sys_dispatcher.h"
+#include "time_util.h"
 
 using namespace std;
 
@@ -64,6 +65,9 @@ constexpr int32_t ASH_MEM_SIZE = 1024 * 2; // 2K
 constexpr int SYS_EVENT_SERVICE_ID = 1203;
 constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
+constexpr const char* BUNDLE_INSTALL = "BUNDLE_INSTALL";
+constexpr const char* ABILITY_ONBACKGROUND = "ABILITY_ONBACKGROUND";
+constexpr int TIME_STAMP_LENGTH = 13;
 
 sptr<Ashmem> GetAshmem()
 {
@@ -134,13 +138,31 @@ public:
         return 0;
     }
 
+    int64_t AddSubscriber(const std::vector<std::string> &events)
+    {
+        return TimeUtil::GetMilliseconds();
+    }
+
+    int32_t RemoveSubscriber()
+    {
+        return 0;
+    }
+
+    int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules)
+    {
+        return TimeUtil::GetMilliseconds();
+    }
+
 public:
     enum Code {
         DEFAULT = -1,
         ADD_SYS_EVENT_LISTENER = 0,
         REMOVE_SYS_EVENT_LISTENER,
         QUERY_SYS_EVENT,
-        SET_DEBUG_MODE
+        SET_DEBUG_MODE,
+        ADD_SYS_EVENT_SUBSCRIBER,
+        REMOVE_SYS_EVENT_SUBSCRIBER,
+        EXPORT_SYS_EVENT
     };
 };
 
@@ -178,6 +200,14 @@ static vector<SysEventRule> GetTestRules(int type, const string &domain, const s
     vector<SysEventRule> rules;
     rules.push_back(GetTestRule(type, domain, eventName));
     return rules;
+}
+
+static vector<std::string> GetSubscriptionEvents()
+{
+    vector<std::string> events;
+    events.push_back(BUNDLE_INSTALL);
+    events.push_back(ABILITY_ONBACKGROUND);
+    return events;
 }
 
 /**
@@ -282,6 +312,126 @@ HWTEST_F(SysEventServiceOhosTest, RemoveListenerTest001, testing::ext::TestSize.
                 printf("remove listener result is %d.\n", ret);
             } else {
                 printf("add listener fail.\n");
+                ASSERT_TRUE(false);
+            }
+        } else {
+            printf("check sys event service failed.\n");
+            ASSERT_TRUE(false);
+        }
+    }
+}
+
+/**
+ * @tc.name: AddSubscriberTest001
+ * @tc.desc: Check AddSubscriber Function.
+ * @tc.type: FUNC
+ * @tc.require: SR000I1G42
+ */
+HWTEST_F(SysEventServiceOhosTest, AddSubscriberTest001, testing::ext::TestSize.Level3)
+{
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    vector<std::string> events = GetSubscriptionEvents();
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        printf("SystemAbilityManager is nullptr.\n");
+        ASSERT_TRUE(false);
+    } else {
+        sptr<IRemoteObject> stub = sam->CheckSystemAbility(SYS_EVENT_SERVICE_ID);
+        if (stub != nullptr) {
+            printf("check sys event service success.\n");
+            auto proxy = new SysEventServiceProxy(stub);
+            auto ret = proxy->AddSubscriber(events);
+            if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
+                sleep(1);
+                ret = proxy->AddSubscriber(events);
+                printf("add subscriber result is %lld.\n", ret);
+            } else {
+                printf("add subscriber fail.\n");
+                ASSERT_TRUE(false);
+            }
+        } else {
+            printf("check sys event service failed.\n");
+            ASSERT_TRUE(false);
+        }
+    }
+}
+
+/**
+ * @tc.name: RemoveSubscriberTest001
+ * @tc.desc: Check RemoveSubscriber Function.
+ * @tc.type: FUNC
+ * @tc.require: SR000I1G42
+ */
+HWTEST_F(SysEventServiceOhosTest, RemoveSubscriberTest001, testing::ext::TestSize.Level3)
+{
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    vector<std::string> events = GetSubscriptionEvents();
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        printf("SystemAbilityManager is nullptr.\n");
+        ASSERT_TRUE(false);
+    } else {
+        sptr<IRemoteObject> stub = sam->CheckSystemAbility(SYS_EVENT_SERVICE_ID);
+        if (stub != nullptr) {
+            printf("check sys event service success.\n");
+            auto proxy = new SysEventServiceProxy(stub);
+            auto ret = proxy->AddSubscriber(events);
+            if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
+                sleep(1);
+                ret = proxy->RemoveSubscriber();
+                printf("remove subscriber result is %lld.\n", ret);
+            } else {
+                printf("add subscriber fail.\n");
+                ASSERT_TRUE(false);
+            }
+        } else {
+            printf("check sys event service failed.\n");
+            ASSERT_TRUE(false);
+        }
+    }
+}
+
+/**
+ * @tc.name: ExportTest001
+ * @tc.desc: Check Export Function.
+ * @tc.type: FUNC
+ * @tc.require: SR000I1G43
+ */
+HWTEST_F(SysEventServiceOhosTest, ExportTest001, testing::ext::TestSize.Level3)
+{
+    auto service = SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        return;
+    }
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        printf("SystemAbilityManager is nullptr.\n");
+        ASSERT_TRUE(false);
+    } else {
+        sptr<IRemoteObject> stub = sam->CheckSystemAbility(SYS_EVENT_SERVICE_ID);
+        if (stub != nullptr) {
+            printf("check sys event service success.\n");
+            auto proxy = new SysEventServiceProxy(stub);
+
+            long long defaultTimeStap = -1;
+            OHOS::HiviewDFX::QueryArgument argument(defaultTimeStap, defaultTimeStap, 10);
+            std::vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules;
+            std::vector<std::string> eventNames { "BUNDLE_INSTALL" };
+            OHOS::HiviewDFX::SysEventQueryRule queryRule("BUNDLE_MANAGER", eventNames);
+            queryRules.emplace_back(queryRule);
+            auto ret = proxy->Export(argument, queryRules);
+            if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
+                printf("export result is %lld.\n", ret);
+            } else if (ret == ERR_EXPORT_FREQUENCY_OVER_LIMIT) {
+                printf("export limit, result is %lld.\n", ret);
+            } else {
+                printf("export fail.\n");
                 ASSERT_TRUE(false);
             }
         } else {
@@ -473,12 +623,12 @@ HWTEST_F(SysEventServiceOhosTest, TestSysEventCallback, testing::ext::TestSize.L
 }
 
 /**
- * @tc.name: TestSysEventService
+ * @tc.name: TestSysEventService001
  * @tc.desc: SysEventServiceProxy/Stub test
  * @tc.type: FUNC
  * @tc.require: issueI62WJT
  */
-HWTEST_F(SysEventServiceOhosTest, TestSysEventService, testing::ext::TestSize.Level1)
+HWTEST_F(SysEventServiceOhosTest, TestSysEventService001, testing::ext::TestSize.Level1)
 {
     SysEventServiceStub* sysEventService = new(std::nothrow) TestSysEventServiceStub();
     MessageParcel data, reply;
@@ -516,6 +666,46 @@ HWTEST_F(SysEventServiceOhosTest, TestSysEventService, testing::ext::TestSize.Le
     queryRules.emplace_back(queryRule);
     ret = sysEventServiceProxy.Query(argument, queryRules, querier);
     ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
+}
+
+/**
+ * @tc.name: TestSysEventService002
+ * @tc.desc: SysEventServiceProxy/Stub test
+ * @tc.type: FUNC
+ * @tc.require: SR000I1G42
+ */
+HWTEST_F(SysEventServiceOhosTest, TestSysEventService002, testing::ext::TestSize.Level1)
+{
+    SysEventServiceStub* sysEventService = new(std::nothrow) TestSysEventServiceStub();
+    MessageParcel data, reply;
+    MessageOption option;
+    sysEventService->OnRemoteRequest(TestSysEventServiceStub::Code::ADD_SYS_EVENT_SUBSCRIBER, data, reply, option);
+    ASSERT_TRUE(true);
+    sysEventService->OnRemoteRequest(TestSysEventServiceStub::Code::REMOVE_SYS_EVENT_SUBSCRIBER, data, reply, option);
+    ASSERT_TRUE(true);
+    sysEventService->OnRemoteRequest(TestSysEventServiceStub::Code::EXPORT_SYS_EVENT, data, reply, option);
+    ASSERT_TRUE(true);
+    const sptr<IRemoteObject>& impl(sysEventService);
+    SysEventServiceProxy sysEventServiceProxy(impl);
+    OHOS::HiviewDFX::SysEventRule sysEventRule("DOMAIN", "EVENT_NAME", "TAG", OHOS::HiviewDFX::RuleType::WHOLE_WORD);
+    std::vector<OHOS::HiviewDFX::SysEventRule> sysRules;
+    sysRules.emplace_back(sysEventRule);
+    long long defaultTimeStap = -1;
+    int queryCount = 10;
+    OHOS::HiviewDFX::QueryArgument argument(defaultTimeStap, defaultTimeStap, queryCount);
+    std::vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules;
+    std::vector<std::string> eventNames { "EVENT_NAME1", "EVENT_NAME2" };
+    OHOS::HiviewDFX::SysEventQueryRule queryRule("DOMAIN", eventNames);
+    queryRules.emplace_back(queryRule);
+    vector<std::string> events;
+    events.push_back(BUNDLE_INSTALL);
+    events.push_back(ABILITY_ONBACKGROUND);
+    auto ret = sysEventServiceProxy.AddSubscriber(events);
+    ASSERT_TRUE(std::to_string(ret).length() == TIME_STAMP_LENGTH);
+    ret = sysEventServiceProxy.RemoveSubscriber();
+    ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
+    ret = sysEventServiceProxy.Export(argument, queryRules);
+    ASSERT_TRUE(std::to_string(ret).length() == TIME_STAMP_LENGTH);
 }
 
 /**

@@ -35,12 +35,17 @@ public:
     virtual int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
         const sptr<IQuerySysEventCallback>& callback) = 0;
     virtual int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) = 0;
-
+    virtual int64_t AddSubscriber(const std::vector<std::string> &events) = 0;
+    virtual int32_t RemoveSubscriber() = 0;
+    virtual int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules) = 0;
     enum {
         ADD_SYS_EVENT_LISTENER = 0,
         REMOVE_SYS_EVENT_LISTENER,
         QUERY_SYS_EVENT,
-        SET_DEBUG_MODE
+        SET_DEBUG_MODE,
+        ADD_SYS_EVENT_SUBSCRIBER,
+        REMOVE_SYS_EVENT_SUBSCRIBER,
+        EXPORT_SYS_EVENT
     };
 
 public:

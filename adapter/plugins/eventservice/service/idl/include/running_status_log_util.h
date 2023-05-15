@@ -28,7 +28,7 @@ public:
     static void LogTooManyWatchRules(const std::vector<SysEventRule>& rules);
     static void LogTooManyWatchers(const int limit);
     static void LogTooManyQueryRules(const std::vector<SysEventQueryRule>& rules);
-
+    static void LogTooManyEvents(const int limit);
 private:
     static void LogDetail(const std::string& detail);
 };

@@ -19,10 +19,14 @@
 #include <cinttypes>
 
 #include "common_utils.h"
+#include "data_publisher.h"
 #include "hilog/log.h"
+#include "hiview_event_common.h"
 #include "ipc_skeleton.h"
 #include "ret_code.h"
 #include "string_ex.h"
+
+using namespace OHOS::HiviewDFX::BaseEventSpace;
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -174,7 +178,7 @@ bool ConditionParser::ParseQueryCondition(const std::string& condStr, EventStore
     return true;
 }
 
-void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback,
+void BaseEventQueryWrapper::HandleCurrentQueryDone(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback,
     int32_t& queryResult)
 {
     if (callback == nullptr) {
@@ -191,7 +195,8 @@ void BaseEventQueryWrapper::HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::I
     callback->OnComplete(queryResult, totalEventCnt, maxSeq);
 }
 
-void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> eventQueryCallback,
+
+void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& eventQueryCallback,
     int32_t& queryResult)
 {
     if (eventQueryCallback == nullptr) {
@@ -230,7 +235,7 @@ void BaseEventQueryWrapper::Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCall
 }
 
 void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
-    const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback, std::pair<int64_t, int32_t>& details)
+    const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, std::pair<int64_t, int32_t>& details)
 {
     std::vector<std::u16string> events;
     std::vector<int64_t> seqs;

@@ -34,7 +34,7 @@ constexpr int SECONDS_PER_HOUR = 3600; // 60 * 60
 constexpr int SECONDS_PER_DAY = 86400; // 60 * 60 * 24
 constexpr uint64_t MILLISECS_PER_DAY = 60 * 60 * 24 * 1000;
 constexpr int MAX_TIME_BUFF = 64; // 64 : for example 2021-05-27-01-01-01
-
+constexpr int MAX_BUFFER_SIZE = 80;
 class TimeCalculator {
 public:
     TimeCalculator(std::shared_ptr<uint64_t>& timePtr);
@@ -57,6 +57,7 @@ std::string TimestampFormatToDate(time_t timeStamp, const std::string& format);
 std::string GetTimeZone();
 int64_t Get0ClockStampMs();
 uint64_t GetSteadyClockTimeMs();
+std::string FormatTime(const int64_t timestamp, const std::string &format);
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

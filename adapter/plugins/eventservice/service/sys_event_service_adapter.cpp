@@ -15,6 +15,7 @@
 
 #include "sys_event_service_adapter.h"
 
+#include "event_loop.h"
 #include "logger.h"
 
 namespace OHOS {
@@ -72,5 +73,16 @@ void SysEventServiceAdapter::BindGetTypeFunc(const GetTypeByDomainNameFunc& getT
     }
     service->BindGetTypeFunc(getTypeFunc);
 }
+
+void SysEventServiceAdapter::SetWorkLoop(std::shared_ptr<EventLoop> looper)
+{
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SetWorkLoop SysEventServiceOhos service is null.");
+        return;
+    }
+    service->SetWorkLoop(looper);
+}
+
 }  // namespace HiviewDFX
 }  // namespace OHOS

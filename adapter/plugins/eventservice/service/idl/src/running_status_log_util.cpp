@@ -75,6 +75,13 @@ void RunningStatusLogUtil::LogTooManyWatchers(const int limit)
     LogDetail(info);
 }
 
+void RunningStatusLogUtil::LogTooManyEvents(const int limit)
+{
+    std::string info{"TOOMANYEVENTS COUNT > "};
+    info.append(std::to_string(limit));
+    LogDetail(info);
+}
+
 void RunningStatusLogUtil::LogDetail(const std::string& detail)
 {
     std::string info = RunningStatusLogger::GetInstance().FormatTimeStamp();

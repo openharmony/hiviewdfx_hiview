@@ -21,8 +21,10 @@
 #include <vector>
 #include <unordered_map>
 
+#include "data_publisher.h"
 #include "event.h"
 #include "event_query_wrapper_builder.h"
+#include "iquery_base_callback.h"
 #include "iquery_sys_event_callback.h"
 #include "isys_event_callback.h"
 #include "query_argument.h"
@@ -61,7 +63,8 @@ class SysEventServiceOhos : public SystemAbility,
     DECLARE_SYSTEM_ABILITY(SysEventServiceOhos);
 public:
     DISALLOW_COPY_AND_MOVE(SysEventServiceOhos);
-    SysEventServiceOhos() : deathRecipient_(new CallbackDeathRecipient()), isDebugMode_(false) {};
+    SysEventServiceOhos()
+        : deathRecipient_(new CallbackDeathRecipient()), isDebugMode_(false), dataPublisher_(new DataPublisher()){};
     virtual ~SysEventServiceOhos() = default;
 
     static sptr<SysEventServiceOhos> GetInstance();
@@ -80,7 +83,10 @@ public:
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
     int32_t Dump(int32_t fd, const std::vector<std::u16string> &args) override;
-
+    int64_t AddSubscriber(const std::vector<std::string> &events) override;
+    int32_t RemoveSubscriber() override;
+    int64_t Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules) override;
+    void SetWorkLoop(std::shared_ptr<EventLoop> looper);
 private:
     bool HasAccessPermission() const;
     bool BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder, const SysEventQueryRuleGroupOhos& rules);
@@ -97,6 +103,7 @@ private:
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
     std::atomic<int64_t> curSeq = 0;
+    std::shared_ptr<DataPublisher> dataPublisher_;
 
 private:
     static sptr<SysEventServiceOhos> instance;

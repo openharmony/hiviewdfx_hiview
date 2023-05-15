@@ -124,6 +124,16 @@ TimeCalculator::~TimeCalculator()
         *(this->time_) += this->endTime_ - this->startTime_;
     }
 }
+
+std::string FormatTime(const int64_t timestamp, const std::string &format)
+{
+    std::time_t tt = static_cast<std::time_t>(timestamp / SEC_TO_MILLISEC);
+    std::tm t = *std::localtime(&tt);
+    char buffer[MAX_BUFFER_SIZE] = {0};
+    std::strftime(buffer, sizeof(buffer), format.c_str(), &t);
+    return std::string(buffer);
+}
+
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

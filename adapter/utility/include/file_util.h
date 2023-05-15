@@ -54,6 +54,8 @@ constexpr mode_t FILE_PERM_755 = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
 constexpr mode_t FILE_PERM_775 = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 constexpr mode_t FILE_PERM_770 = S_IRWXU | S_IRWXG;
 constexpr mode_t FILE_PERM_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+constexpr mode_t FILE_PERM_666 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+
 // file_ex.h
 bool LoadStringFromFile(const std::string& filePath, std::string& content);
 bool LoadStringFromFd(int fd, std::string& content);

@@ -28,12 +28,21 @@ ohos_source_set("sys_event_service_ohos_common") {
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
     "//third_party/jsoncpp/include",
+    "$hiview_base/include",
+    "$hiview_base/event_report/include",
     "$hiview_base/event_store/include",
     "$hiview_base/running_status_logger/include",
+    "//foundation/distributeddatamgr/relational_store/interfaces/inner_api/rdb/include",
+    "//commonlibrary/c_utils/base/include/",
   ]
 
   sources = [
     "src/ash_mem_utils.cpp",
+    "src/data_publisher.cpp",
+    "src/data_publisher_sys_event_callback.cpp",
+    "src/data_share_dao.cpp",
+    "src/data_share_store.cpp",
+    "src/data_share_util.cpp",
     "src/event_query_wrapper_builder.cpp",
     "src/query_argument.cpp",
     "src/query_sys_event_callback_proxy.cpp",
@@ -58,9 +67,12 @@ ohos_source_set("sys_event_service_ohos_common") {
   ]
 
   external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_single",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -84,6 +96,7 @@ ohos_source_set("sys_event_service_ohos") {
 
   deps = [
     ":sys_event_service_ohos_common",
+    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
     "$hiview_base/running_status_logger:running_status_logger_source",
@@ -91,9 +104,12 @@ ohos_source_set("sys_event_service_ohos") {
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog_native:libhilog",
     "ipc:ipc_single",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

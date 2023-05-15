@@ -16,6 +16,7 @@
 #ifndef HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
 #define HIVIEWDFX_SYS_EVENT_SERVICE_ADAPTER_H
 
+#include "event_loop.h"
 #include "sys_event.h"
 #include "sys_event_service_ohos.h"
 
@@ -25,6 +26,7 @@ class SysEventServiceAdapter {
 public:
     static void StartService(SysEventServiceBase* service, OHOS::HiviewDFX::NotifySysEvent notify);
     static void OnSysEvent(std::shared_ptr<SysEvent>& event);
+    static void SetWorkLoop(std::shared_ptr<EventLoop> looper);
     static void UpdateEventSeq(int64_t seq);
     static void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     static void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
