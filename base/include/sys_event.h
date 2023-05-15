@@ -32,6 +32,24 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace EventStore {
+class EventCol {
+public:
+    static std::string DOMAIN;
+    static std::string NAME;
+    static std::string TYPE;
+    static std::string TS;
+    static std::string TZ;
+    static std::string PID;
+    static std::string TID;
+    static std::string UID;
+    static std::string INFO;
+    static std::string LEVEL;
+    static std::string SEQ;
+    static std::string TAG;
+};
+}
+
 class SysEventCreator;
 class SysEvent : public PipelineEvent {
 public:
@@ -118,7 +136,7 @@ private:
     int32_t tid_;
     int32_t uid_;
     int16_t tz_;
-    int64_t eventSeq_ = 0;
+    int64_t eventSeq_;
     std::string tag_;
     std::string level_;
     EventRaw::RawDataBuilder rawDataBuilder_;

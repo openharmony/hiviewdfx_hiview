@@ -268,8 +268,10 @@ HWTEST_F(FaultloggerUnittest, GetFaultInfoListTest001, testing::ext::TestSize.Le
     "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
     "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
     "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
-    "17165544771317691984","info_":"","seq_":447})~";
+    "17165544771317691984","info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    sysEvent->SetLevel("MINOR");
+    sysEvent->SetEventSeq(447); // 447: test seq
     EventStore::SysEventDao::Insert(sysEvent);
     FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     std::list<FaultLogInfo> infoList = faultLogDb->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
@@ -381,8 +383,10 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Lev
     "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
     "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
     "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
-    "17165544771317691984","info_":"","seq_":447})~";
+    "17165544771317691984","info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    sysEvent->SetLevel("MINOR");
+    sysEvent->SetEventSeq(448); // 448: test seq
     EventStore::SysEventDao::Insert(sysEvent);
 
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);

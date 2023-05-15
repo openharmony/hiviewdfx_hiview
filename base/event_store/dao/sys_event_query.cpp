@@ -46,19 +46,6 @@ bool CompareTimestampFuncGreater(const Entry& entryA, const Entry& entryB)
 }
 }
 
-std::string EventCol::DOMAIN = "domain_";
-std::string EventCol::NAME = "name_";
-std::string EventCol::TYPE = "type_";
-std::string EventCol::TS = "time_";
-std::string EventCol::TZ = "tz_";
-std::string EventCol::PID = "pid_";
-std::string EventCol::TID = "tid_";
-std::string EventCol::UID = "uid_";
-std::string EventCol::INFO = "info_";
-std::string EventCol::LEVEL = "level_";
-std::string EventCol::SEQ = "seq_";
-std::string EventCol::TAG = "tag_";
-
 bool FieldValue::IsInteger() const
 {
     return (value_.index() == INTEGER);

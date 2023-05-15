@@ -28,6 +28,41 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace EventStore {
+std::string EventCol::DOMAIN = "domain_";
+std::string EventCol::NAME = "name_";
+std::string EventCol::TYPE = "type_";
+std::string EventCol::TS = "time_";
+std::string EventCol::TZ = "tz_";
+std::string EventCol::PID = "pid_";
+std::string EventCol::TID = "tid_";
+std::string EventCol::UID = "uid_";
+std::string EventCol::INFO = "info_";
+std::string EventCol::LEVEL = "level_";
+std::string EventCol::SEQ = "seq_";
+std::string EventCol::TAG = "tag_";
+}
+namespace {
+template<typename T>
+void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
+{
+    if (eventJson.empty()) {
+        return;
+    }
+    std::string findKey = "\"" + key + "\":";
+    if (eventJson.find(findKey) != std::string::npos) {
+        return;
+    }
+    std::string appendStr;
+    appendStr.append(",\"").append(key).append("\":");
+    if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+        appendStr.append("\"").append(val).append("\"");
+    } else {
+        appendStr.append(std::to_string(val));
+    }
+    eventJson.insert(eventJson.size() - 1, appendStr); // 1 for '}'
+}
+}
 using EventRaw::UnsignedVarintEncodedParam;
 using EventRaw::SignedVarintEncodedParam;
 using EventRaw::FloatingNumberEncodedParam;
@@ -41,7 +76,8 @@ std::atomic<int64_t> SysEvent::totalSize_(0);
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
     std::shared_ptr<EventRaw::RawData> rawData)
-    : PipelineEvent(sender, handler), seq_(0), pid_(0), tid_(0), uid_(0), tz_(0)
+    : PipelineEvent(sender, handler), eventType_(0), preserve_(true), seq_(0), pid_(0),
+    tid_(0), uid_(0), tz_(0), eventSeq_(-1)
 {
     messageType_ = Event::MessageType::SYS_EVENT;
     if (rawData == nullptr) {
@@ -79,7 +115,8 @@ void SysEvent::InitialMember()
     domain_ = rawDataBuilder_.GetDomain();
     eventName_ = rawDataBuilder_.GetName();
     auto header = rawDataBuilder_.GetHeader();
-    what_ = static_cast<uint16_t>(rawDataBuilder_.GetEventType());
+    eventType_ = rawDataBuilder_.GetEventType();
+    what_ = static_cast<uint16_t>(eventType_);
     happenTime_ = header.timestamp;
     if (happenTime_ == 0) {
         auto currentTimeStamp = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
@@ -264,7 +301,6 @@ void SysEvent::SetEventSeq(int64_t eventSeq)
     eventSeq_ = eventSeq;
 }
 
-
 int64_t SysEvent::GetEventSeq() const
 {
     return eventSeq_;
@@ -306,7 +342,7 @@ uint64_t SysEvent::GetEventIntValue(const std::string& key)
 
 int SysEvent::GetEventType()
 {
-    return rawDataBuilder_.GetEventType();
+    return eventType_;
 }
 
 std::string SysEvent::AsJsonStr()
@@ -317,7 +353,18 @@ std::string SysEvent::AsJsonStr()
     }
     rawData_ = rawData;
     EventRaw::DecodedEvent event(rawData_->GetData());
-    return event.AsJsonStr();
+
+    std::string jsonStr = event.AsJsonStr();
+    if (!tag_.empty()) {
+        AppendJsonValue(jsonStr, EventStore::EventCol::TAG, tag_);
+    }
+    if (!level_.empty()) {
+        AppendJsonValue(jsonStr, EventStore::EventCol::LEVEL, level_);
+    }
+    if (eventSeq_ >= 0) {
+        AppendJsonValue(jsonStr, EventStore::EventCol::SEQ, eventSeq_);
+    }
+    return jsonStr;
 }
 
 uint8_t* SysEvent::AsRawData()

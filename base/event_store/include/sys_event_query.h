@@ -52,27 +52,11 @@ enum Op { NONE = 0, EQ = 1, NE, LT, LE, GT, GE, SW, NSW };
 class SysEventDao;
 class SysEventDatabase;
 
-class EventCol {
-public:
-    static std::string DOMAIN;
-    static std::string NAME;
-    static std::string TYPE;
-    static std::string TS;
-    static std::string TZ;
-    static std::string PID;
-    static std::string TID;
-    static std::string UID;
-    static std::string INFO;
-    static std::string LEVEL;
-    static std::string SEQ;
-    static std::string TAG;
-};
-
 class FieldValue {
 public:
     enum ValueType { INTEGER = 0, DOUBLE = 1, STRING = 2 };
 
-    FieldValue(): value_(0) {}
+    FieldValue(): value_(static_cast<int64_t>(0)) {}
     FieldValue(int32_t value): value_(static_cast<int64_t>(value)) {}
     FieldValue(int64_t value): value_(value) {}
     FieldValue(double value): value_(value) {}
