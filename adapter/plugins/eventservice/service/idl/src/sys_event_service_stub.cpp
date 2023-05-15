@@ -116,6 +116,57 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
     return ERR_OK;
 }
 
+int32_t SysEventServiceStub::HandleAddSubscriber(MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    std::vector<std::string> events;
+    auto ret = data.ReadStringVector(&events);
+    if (!ret) {
+        HiLog::Error(LABEL, "read events failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    ret = reply.WriteInt64(AddSubscriber(events));
+    if (!ret) {
+        HiLog::Error(LABEL, "write return-value of AddSubscriber failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    return ERR_OK;
+}
+
+int32_t SysEventServiceStub::HandleRemoveSubscriber(
+    MessageParcel &data, MessageParcel &reply, MessageOption &option)
+{
+    auto ret = reply.WriteInt32(RemoveSubscriber());
+    if (!ret) {
+        HiLog::Error(LABEL, "write return-value of RemoveSubscriber failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    return ERR_OK;
+}
+
+int32_t SysEventServiceStub::HandleExportEvent(MessageParcel& data,
+    MessageParcel& reply, MessageOption& option)
+{
+    QueryArgument *queryArgument = data.ReadParcelable<QueryArgument>();
+    if (queryArgument == nullptr) {
+        HiLog::Error(LABEL, "parcel read export arguments failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    std::vector<SysEventQueryRule> queryRules;
+    auto ret = ReadVectorFromParcel(data, queryRules);
+    if (!ret) {
+        HiLog::Error(LABEL, "parcel read export rules failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    ret = reply.WriteInt64(Export(*queryArgument, queryRules));
+    delete queryArgument;
+    if (!ret) {
+        HiLog::Error(LABEL, "parcel write return-value of ExportSysEvent failed.");
+        return ERR_FLATTEN_OBJECT;
+    }
+    return ERR_OK;
+}
+
 int32_t SysEventServiceStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
@@ -140,6 +191,15 @@ int32_t SysEventServiceStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
         }
         case SET_DEBUG_MODE: {
             return HandleSetDebugMode(data, reply, option);
+        }
+        case ADD_SYS_EVENT_SUBSCRIBER: {
+            return HandleAddSubscriber(data, reply, option);
+        }
+        case REMOVE_SYS_EVENT_SUBSCRIBER: {
+            return HandleRemoveSubscriber(data, reply, option);
+        }
+        case EXPORT_SYS_EVENT: {
+            return HandleExportEvent(data, reply, option);
         }
         default:
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);

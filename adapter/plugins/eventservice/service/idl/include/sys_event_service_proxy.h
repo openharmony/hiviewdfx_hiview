@@ -16,6 +16,8 @@
 #ifndef OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_PROXY_H
 #define OHOS_HIVIEWDFX_SYS_EVENT_SERVICE_PROXY_H
 
+#include <string>
+
 #include "iremote_proxy.h"
 #include "isys_event_service.h"
 #include "query_argument.h"
@@ -34,6 +36,9 @@ public:
     int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
         const sptr<IQuerySysEventCallback>& callback);
     int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode);
+    int64_t AddSubscriber(const std::vector<std::string> &events);
+    int32_t RemoveSubscriber();
+    int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules);
 
 private:
     static inline BrokerDelegator<SysEventServiceProxy> delegator_;

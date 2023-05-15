@@ -33,6 +33,7 @@ void SysEventDispatcher::OnLoad()
         this->GetHiviewContext()->PostUnorderedEvent(shared_from_this(), event);
     };
     SysEventServiceAdapter::StartService(this, notifyFunc);
+    SysEventServiceAdapter::SetWorkLoop(this->GetHiviewContext()->GetSharedWorkLoop());
     HIVIEW_LOGI("OnLoad.");
 }
 

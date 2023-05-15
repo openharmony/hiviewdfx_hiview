@@ -20,6 +20,7 @@
 #include <set>
 
 #include "accesstoken_kit.h"
+#include "data_publisher.h"
 #include "event_query_wrapper_builder.h"
 #include "hilog/log.h"
 #include "if_system_ability_manager.h"
@@ -29,6 +30,7 @@
 #include "running_status_log_util.h"
 #include "string_ex.h"
 #include "system_ability_definition.h"
+#include "time_util.h"
 
 using namespace std;
 using namespace OHOS::HiviewDFX::EventStore;
@@ -114,6 +116,16 @@ int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules,
     return IPC_CALL_SUCCEED;
 }
 
+int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& events)
+{
+    size_t maxEventNum = 30;  // count of total events is limited to 30.
+    if (events.size() >= maxEventNum) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyEvents(maxEventNum);
+        return ERR_TOO_MANY_EVENTS;
+    }
+    return IPC_CALL_SUCCEED;
+}
+
 int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
 {
     size_t queryRuleCntLimit = 10; // count of query rule for each querier is limited to 10.
@@ -187,6 +199,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
                 static_cast<int>(event->what_), Str8ToStr16(event->AsJsonStr()));
         }
     }
+    dataPublisher_->OnSysEvent(event);
 }
 
 void SysEventServiceOhos::UpdateEventSeq(int64_t seq)
@@ -463,5 +476,84 @@ void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
     }
     service->OnRemoteDied(remote);
 }
+
+int64_t SysEventServiceOhos::AddSubscriber(const std::vector<std::string> &events)
+{
+    if (!HasAccessPermission()) {
+        return ERR_NO_PERMISSION;
+    }
+    auto checkRet = CheckEventSubscriberAddingValidity(events);
+    if (checkRet != IPC_CALL_SUCCEED) {
+        return checkRet;
+    }
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    lock_guard<mutex> lock(mutex_);
+    auto ret = dataPublisher_->AddSubscriber(uid, events);
+    if (ret != IPC_CALL_SUCCEED) {
+        return ret;
+    }
+    return TimeUtil::GetMilliseconds();
+}
+
+int32_t SysEventServiceOhos::RemoveSubscriber()
+{
+    if (!HasAccessPermission()) {
+        return ERR_NO_PERMISSION;
+    }
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    lock_guard<mutex> lock(mutex_);
+    auto ret = dataPublisher_->RemoveSubscriber(uid);
+    if (ret != IPC_CALL_SUCCEED) {
+        return ret;
+    }
+    return IPC_CALL_SUCCEED;
+}
+
+int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules)
+{
+    if (!HasAccessPermission()) {
+        return ERR_NO_PERMISSION;
+    }
+    auto checkRet = CheckEventQueryingValidity(rules);
+    if (checkRet != IPC_CALL_SUCCEED) {
+        return checkRet;
+    }
+    int64_t now = TimeUtil::GetMilliseconds();
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto timestamp = dataPublisher_->GetTimeStampByUid(uid);
+    if (now - timestamp < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
+        HiLog::Debug(LABEL, "forbid export, time frequency limit < 1 h.");
+        return ERR_EXPORT_FREQUENCY_OVER_LIMIT;
+    }
+
+    auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
+    auto buildRet = BuildEventQuery(queryWrapperBuilder, rules);
+    if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
+        HiLog::Warn(LABEL, "invalid query rule, exit sys event exporting.");
+        return ERR_QUERY_RULE_INVALID;
+    }
+    if (queryArgument.maxEvents == 0) {
+        HiLog::Warn(LABEL, "export count is 0, export complete directly.");
+        return IPC_CALL_SUCCEED;
+    }
+    auto queryWrapper = queryWrapperBuilder->Build();
+    if (queryWrapper == nullptr) {
+        HiLog::Warn(LABEL, "export wrapper build failed.");
+        return ERR_QUERY_RULE_INVALID;
+    }
+    queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
+    dataPublisher_->AddExportTask(queryWrapper, now, uid);
+    return now;
+}
+
+void SysEventServiceOhos::SetWorkLoop(std::shared_ptr<EventLoop> looper)
+{
+    if (looper == nullptr) {
+        HiLog::Warn(LABEL, "SetWorkLoop failed, looper is null.");
+        return;
+    }
+    dataPublisher_->SetWorkLoop(looper);
+}
+
 }  // namespace HiviewDFX
 }  // namespace OHOS

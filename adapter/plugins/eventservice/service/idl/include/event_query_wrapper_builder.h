@@ -18,7 +18,8 @@
 
 #include <unordered_map>
 
-#include "iquery_sys_event_callback.h"
+#include "data_share_common.h"
+#include "iquery_base_callback.h"
 #include "json/json.h"
 #include "query_argument.h"
 #include "sys_event_dao.h"
@@ -27,6 +28,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+
 using ExtraInfoConditionMap = std::unordered_map<std::string, EventStore::Cond>;
 
 class ConditionParser {
@@ -53,7 +55,7 @@ public:
     virtual ~BaseEventQueryWrapper() {}
 
 public:
-    void Query(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> eventQueryCallback, int32_t& queryResult);
+    void Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& eventQueryCallback, int32_t& queryResult);
     void SetQueryArgument(QueryArgument argument);
     void SetIsFirstPartialQuery(bool isFirstPartialQuery);
     void SetSysEventQuery(std::shared_ptr<EventStore::SysEventQuery> query);
@@ -63,7 +65,7 @@ public:
     int64_t GetMaxSequence() const;
     int64_t GetEventTotalCount() const;
     void TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
-        const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback, std::pair<int64_t, int32_t>& details);
+        const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, std::pair<int64_t, int32_t>& details);
     virtual void SetMaxSequence(int64_t maxSeq) = 0;
     void SetEventTotalCount(int64_t totalCount);
     bool IsValid() const;
@@ -90,7 +92,7 @@ private:
     ConditionParser parser;
 
 private:
-    void HandleCurrentQueryDone(OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback> callback,
+    void HandleCurrentQueryDone(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback,
         int32_t& queryResult);
 };
 
