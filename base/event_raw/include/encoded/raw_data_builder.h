@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <unordered_map>
 #include <functional>
@@ -171,8 +172,22 @@ private:
     }
 
     template<typename T>
+    void TransHexStrToNum(const std::string& hexStr, T& num)
+    {
+        std::stringstream ss;
+        ss << std::hex << hexStr;
+        ss >> num >> std::dec;
+    }
+
+    template<typename T>
     RawDataBuilder& UpdateTraceId(const T val)
     {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
+                    std::is_same_v<std::decay_t<T>, const char*>) {
+            uint64_t traceId = 0;
+            TransHexStrToNum(val, traceId);
+            return AppendTraceId(traceId);
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
             std::is_same_v<std::decay_t<T>, std::uint16_t> ||
             std::is_same_v<std::decay_t<T>, std::uint32_t> ||
@@ -185,6 +200,12 @@ private:
     template<typename T>
     RawDataBuilder& UpdateSpanId(const T val)
     {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
+                    std::is_same_v<std::decay_t<T>, const char*>) {
+            uint32_t spanId = 0;
+            TransHexStrToNum(val, spanId);
+            return AppendSpanId(spanId);
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
             std::is_same_v<std::decay_t<T>, std::uint16_t> ||
             std::is_same_v<std::decay_t<T>, std::uint32_t> ||
@@ -197,6 +218,12 @@ private:
     template<typename T>
     RawDataBuilder& UpdatePSpanId(const T val)
     {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
+                    std::is_same_v<std::decay_t<T>, const char*>) {
+            uint32_t pSpanId = 0;
+            TransHexStrToNum(val, pSpanId);
+            return AppendPSpanId(pSpanId);
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
             std::is_same_v<std::decay_t<T>, std::uint16_t> ||
             std::is_same_v<std::decay_t<T>, std::uint32_t> ||

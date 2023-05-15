@@ -423,8 +423,7 @@ std::shared_ptr<RawDataBuilder> RawDataBuilderJsonParser::Parse()
     if (jsonStr_.empty()) {
         return builder_;
     }
-    std::unordered_map<int,
-        std::function<void()>> handleFuncs = {
+    std::unordered_map<int, std::function<void()>> handleFuncs = {
         {STATUS_NONE, std::bind(&RawDataBuilderJsonParser::HandleStatusNone, this)},
         {STATUS_KEY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusKeyParse, this)},
         {STATUS_RUN, std::bind(&RawDataBuilderJsonParser::HandleStatusRun, this)},
