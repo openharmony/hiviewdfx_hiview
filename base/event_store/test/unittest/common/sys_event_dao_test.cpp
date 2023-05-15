@@ -28,6 +28,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+const char TEST_LEVEL[] = "MINOR";
+}
 void SysEventDaoTest::SetUpTestCase()
 {
     OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
@@ -76,6 +79,8 @@ HWTEST_F(SysEventDaoTest, TestSysEventDaoInsert_001, testing::ext::TestSize.Leve
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    sysEvent->SetLevel(TEST_LEVEL);
+    sysEvent->SetEventSeq(0);
     int retCode = EventStore::SysEventDao::Insert(sysEvent);
     ASSERT_TRUE(retCode == 0);
 }
@@ -105,6 +110,8 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
+    sysEvent1->SetLevel(TEST_LEVEL);
+    sysEvent1->SetEventSeq(1); // 1: test seq
     int retCode1 = EventStore::SysEventDao::Insert(sysEvent1);
     ASSERT_TRUE(retCode1 == 0);
 
@@ -119,6 +126,8 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
         "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
     auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr2);
+    sysEvent2->SetLevel(TEST_LEVEL);
+    sysEvent2->SetEventSeq(3); // 3: test seq
     int retCode2 = EventStore::SysEventDao::Insert(sysEvent2);
     ASSERT_TRUE(retCode2 == 0);
 
@@ -130,7 +139,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
     while (resultSet.HasNext()) {
         count++;
         EventStore::ResultSet::RecordIter it = resultSet.Next();
-        ASSERT_TRUE(it->GetSeq() == sysEvent1->GetSeq());
+        ASSERT_TRUE(it->GetSeq() == sysEvent1->GetEventSeq());
         std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
     }
     ASSERT_TRUE(count == 1);

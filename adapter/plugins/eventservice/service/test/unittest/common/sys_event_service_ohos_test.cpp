@@ -904,6 +904,13 @@ HWTEST_F(SysEventServiceOhosTest, QueryWrapperTest01, testing::ext::TestSize.Lev
     auto queryWrapper2 = queryWrapperBuilder2->Build();
     ASSERT_TRUE(queryWrapper2 != nullptr);
 
+    ASSERT_FALSE(queryWrapperBuilder1->IsValid());
+    ASSERT_FALSE(queryWrapperBuilder2->IsValid());
+    queryWrapperBuilder1->Append("DOMAIN1", "EVENTNAME1", 0, "");
+    queryWrapperBuilder2->Append("DOMAIN2", "EVENTNAME2", 0, "");
+    ASSERT_TRUE(queryWrapperBuilder1->IsValid());
+    ASSERT_TRUE(queryWrapperBuilder2->IsValid());
+
     const sptr<QuerySysEventCallbackStub>& querier(new(std::nothrow) TestQuerySysEventCallbackStub);
     auto queryRetCode = IPC_CALL_SUCCEED;
     sleep(2);

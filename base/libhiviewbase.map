@@ -280,6 +280,18 @@
         "OHOS::HiviewDFX::SysEvent::GetTag() const";
         "OHOS::HiviewDFX::SysEvent::GetLevel() const";
         "OHOS::HiviewDFX::SysEvent::AsRawData()";
+        "OHOS::HiviewDFX::EventStore::EventCol::DOMAIN";
+        "OHOS::HiviewDFX::EventStore::EventCol::NAME";
+        "OHOS::HiviewDFX::EventStore::EventCol::TYPE";
+        "OHOS::HiviewDFX::EventStore::EventCol::TZ";
+        "OHOS::HiviewDFX::EventStore::EventCol::TS";
+        "OHOS::HiviewDFX::EventStore::EventCol::TID";
+        "OHOS::HiviewDFX::EventStore::EventCol::PID";
+        "OHOS::HiviewDFX::EventStore::EventCol::UID";
+        "OHOS::HiviewDFX::EventStore::EventCol::INFO";
+        "OHOS::HiviewDFX::EventStore::EventCol::LEVEL";
+        "OHOS::HiviewDFX::EventStore::EventCol::SEQ";
+        "OHOS::HiviewDFX::EventStore::EventCol::TAG";
     };
   local:
     *;

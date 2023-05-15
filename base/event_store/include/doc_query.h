@@ -35,6 +35,7 @@ public:
     std::string ToString() const;
 
 private:
+#pragma pack(1)
     /* for internal field query */
     struct InnerFieldStruct {
         int64_t seq;
@@ -45,6 +46,7 @@ private:
         uint32_t tid;
     };
     using InnerFieldStruct = struct InnerFieldStruct;
+#pragma pack()
 
     bool IsContainInnerCond(const InnerFieldStruct& innerField, const Cond& cond) const;
     bool IsContainCond(const Cond& cond, const FieldValue& value) const;
