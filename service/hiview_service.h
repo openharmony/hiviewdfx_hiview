@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,12 +14,14 @@
  */
 #ifndef HIVIEW_PLATFORM_MANAGEMENT_INFO_EXPORT_SERVICE_H
 #define HIVIEW_PLATFORM_MANAGEMENT_INFO_EXPORT_SERVICE_H
+
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "audit_log_parser.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class HiviewService {
@@ -29,6 +31,10 @@ public:
     void StartService();
     // Dump interface
     void DumpRequestDispatcher(int fd, const std::vector<std::string>& cmds);
+
+    int32_t Copy(const std::string& srcFilePath, const std::string& destFilePath);
+    int32_t Move(const std::string& srcFilePath, const std::string& destFilePath);
+    int32_t Remove(const std::string& filePath);
 private:
     void DumpDetailedInfo(int fd);
     void DumpPluginInfo(int fd, const std::vector<std::string>& cmds) const;
@@ -41,6 +47,8 @@ private:
 
     void DumpPipelineUsageInfo(int fd) const;
     void DumpPipelineUsageInfo(int fd, const std::string& pipelineName) const;
+
+    int CopyFile(const std::string& srcFilePath, const std::string& destFilePath);
 
     void PrintUsage(int fd) const;
     std::unique_ptr<AuditLogParser> parser_;

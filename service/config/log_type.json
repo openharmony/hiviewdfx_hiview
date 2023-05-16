@@ -1,0 +1,15 @@
+{
+    "HILOG": {
+        "READONLY": true,
+        "LOGPATH": "/data/log/hilog/"
+    },
+    "FAULTLOG": {
+        "LOGPATH": "/data/log/logpack/faultlog/"
+    },
+    "BETACLUB": {
+        "LOGPATH": "/data/log/logpack/betaclub/"
+    },
+    "REMOTELOG": {
+        "LOGPATH": "/data/log/logpack/remotelog/"
+    }
+}

@@ -55,7 +55,8 @@
         "build": {
             "sub_component": [
                 "//base/hiviewdfx/hiview:hiview_package",
-                "//base/hiviewdfx/hiview/plugins/faultlogger/interfaces/js/napi:faultlogger_napi"
+                "//base/hiviewdfx/hiview/plugins/faultlogger/interfaces/js/napi:faultlogger_napi",
+                "//base/hiviewdfx/hiview/interfaces/js/napi:loglibrary_napi"
             ],
             "inner_kits": [
                 {

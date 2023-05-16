@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,21 +14,23 @@
  */
 #include "hiview_service.h"
 
-#include <memory>
-#include <vector>
-#include <string>
 #include <cinttypes>
 #include <cstdio>
+#include <fcntl.h>
+#include <sys/sendfile.h>
+#include <sys/stat.h>
 
-#include "logger.h"
-#include "hiview_service_adapter.h"
+#include "file_util.h"
 #include "hiview_platform.h"
+#include "hiview_service_adapter.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-Service");
 namespace {
 constexpr int MIN_SUPPORT_CMD_SIZE = 1;
+constexpr int32_t ERR_DEFAULT = -1;
 }
 void HiviewService::StartService()
 {
@@ -210,6 +212,74 @@ void HiviewService::PrintUsage(int fd) const
     dprintf(fd, "Hiview Plugin Platform dump options:\n");
     dprintf(fd, "hidumper hiviewdfx [-d(etail)]\n");
     dprintf(fd, "    [-p(lugin) pluginName]\n");
+}
+
+int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::string& destFilePath)
+{
+    HIVIEW_LOGI("start");
+    int srcFd = open(srcFilePath.c_str(), O_RDONLY);
+    if (srcFd == -1) {
+        HIVIEW_LOGE("failed to open source file, src=%{public}s", srcFilePath.c_str());
+        return ERR_DEFAULT;
+    }
+    struct stat st{};
+    if (fstat(srcFd, &st) == -1) {
+        HIVIEW_LOGE("failed to stat file.");
+        close(srcFd);
+        return ERR_DEFAULT;
+    }
+    int destFd = open(destFilePath.c_str(), O_WRONLY | O_CREAT, S_IWUSR);
+    if (destFd == -1) {
+        HIVIEW_LOGE("failed to open destination file, des=%{public}s", destFilePath.c_str());
+        close(srcFd);
+        return ERR_DEFAULT;
+    }
+    off_t offset = 0;
+    ssize_t ret = sendfile(destFd, srcFd, &offset, st.st_size);
+    if (ret < 0) {
+        HIVIEW_LOGE("failed to sendfile");
+        close(srcFd);
+        close(destFd);
+        return ERR_DEFAULT;
+    }
+    close(srcFd);
+    close(destFd);
+    if (chmod(destFilePath.c_str(), S_IRUSR | S_IWUSR | S_IROTH)) {
+        HIVIEW_LOGI("Failed to chmod file.");
+    }
+    HIVIEW_LOGI("end");
+    return 0;
+}
+
+int32_t HiviewService::Copy(const std::string& srcFilePath, const std::string& destFilePath)
+{
+    HIVIEW_LOGI("copy file");
+    return CopyFile(srcFilePath, destFilePath);
+}
+
+int32_t HiviewService::Move(const std::string& srcFilePath, const std::string& destFilePath)
+{
+    HIVIEW_LOGI("move file");
+    int copyResult = CopyFile(srcFilePath, destFilePath);
+    if (copyResult != 0) {
+        HIVIEW_LOGW("copy file failed, result: %{public}d", copyResult);
+        return copyResult;
+    }
+    bool result = FileUtil::RemoveFile(srcFilePath);
+    HIVIEW_LOGI("move file, delete src result: %{public}d", result);
+    if (!result) {
+        bool destResult = FileUtil::RemoveFile(destFilePath);
+        HIVIEW_LOGI("move file, delete dest result: %{public}d", destResult);
+        return ERR_DEFAULT;
+    }
+    return 0;
+}
+
+int32_t HiviewService::Remove(const std::string& filePath)
+{
+    bool result = FileUtil::RemoveFile(filePath);
+    HIVIEW_LOGI("remove file, result:%{public}d", result);
+    return 0;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

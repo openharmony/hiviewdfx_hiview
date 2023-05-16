@@ -26,6 +26,13 @@ ohos_prebuilt_etc("hiview.cfg") {
   subsystem_name = "hiviewdfx"
 }
 
+ohos_prebuilt_etc("log_type.json") {
+  source = "config/log_type.json"
+  relative_install_dir = "hiview"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
 ohos_source_set("hiview_service") {
   part_name = "hiview"
   public_configs = [ ":hiview_service_config" ]
@@ -34,6 +41,7 @@ ohos_source_set("hiview_service") {
 
   deps = [
     ":hiview.cfg",
+    ":log_type.json",
     "$hiview_adapter/service:hiview_service_adapter",
     "$hiview_base:hiviewbase",
     "$hiview_core:hiview_core",
