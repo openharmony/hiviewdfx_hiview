@@ -347,7 +347,7 @@ HWTEST_F(SysEventServiceOhosTest, AddSubscriberTest001, testing::ext::TestSize.L
             if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
                 sleep(1);
                 ret = proxy->AddSubscriber(events);
-                printf("add subscriber result is %lld.\n", ret);
+                printf("add subscriber result success");
             } else {
                 printf("add subscriber fail.\n");
                 ASSERT_TRUE(false);
@@ -385,7 +385,7 @@ HWTEST_F(SysEventServiceOhosTest, RemoveSubscriberTest001, testing::ext::TestSiz
             if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
                 sleep(1);
                 ret = proxy->RemoveSubscriber();
-                printf("remove subscriber result is %lld.\n", ret);
+                printf("remove subscriber result success");
             } else {
                 printf("add subscriber fail.\n");
                 ASSERT_TRUE(false);
@@ -427,9 +427,9 @@ HWTEST_F(SysEventServiceOhosTest, ExportTest001, testing::ext::TestSize.Level3)
             queryRules.emplace_back(queryRule);
             auto ret = proxy->Export(argument, queryRules);
             if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
-                printf("export result is %lld.\n", ret);
+                printf("export result success");
             } else if (ret == ERR_EXPORT_FREQUENCY_OVER_LIMIT) {
-                printf("export limit, result is %lld.\n", ret);
+                printf("export limit");
             } else {
                 printf("export fail.\n");
                 ASSERT_TRUE(false);
