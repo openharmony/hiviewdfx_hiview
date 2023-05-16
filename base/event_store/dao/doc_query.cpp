@@ -115,6 +115,8 @@ bool DocQuery::IsContainExtraConds(EventRaw::DecodedEvent& decodedEvent) const
             FieldValue paramValue;
             if (int64_t intValue = 0; param->AsInt64(intValue)) {
                 paramValue = intValue;
+            } else if (uint64_t uintValue = 0; param->AsUint64(uintValue)) {
+                paramValue = static_cast<int64_t>(uintValue);
             } else if (double dValue = 0; param->AsDouble(dValue)) {
                 paramValue = dValue;
             } else if (std::string sValue; param->AsString(sValue)) {
