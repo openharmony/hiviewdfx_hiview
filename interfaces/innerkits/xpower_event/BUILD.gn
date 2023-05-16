@@ -44,6 +44,7 @@ ohos_shared_library("libxpower_event_js") {
     "napi:ace_napi",
   ]
 
+  innerapi_tags = [ "platformsdk" ]
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
