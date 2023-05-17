@@ -136,7 +136,7 @@ public:
     virtual bool AsUint64Vec(std::vector<uint64_t>& dest) override
     {
         for (auto item : vals_) {
-            vals_.emplace_back(static_cast<uint64_t>(item));
+            dest.emplace_back(static_cast<uint64_t>(item));
         }
         return true;
     }
@@ -227,7 +227,7 @@ public:
     virtual bool AsInt64Vec(std::vector<int64_t>& dest) override
     {
         for (auto item : vals_) {
-            vals_.emplace_back(static_cast<int64_t>(item));
+            dest.emplace_back(static_cast<int64_t>(item));
         }
         return true;
     }
@@ -328,7 +328,7 @@ public:
     virtual bool AsDoubleVec(std::vector<double>& dest) override
     {
         for (auto item : vals_) {
-            vals_.emplace_back(static_cast<double>(item));
+            dest.emplace_back(static_cast<double>(item));
         }
         return true;
     }
