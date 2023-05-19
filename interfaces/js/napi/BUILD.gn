@@ -26,6 +26,7 @@ ohos_shared_library("loglibrary_napi") {
   deps = [ "$hiview_adapter/service/idl:hiview_service_impl_for_js" ]
 
   external_deps = [
+    "access_token:libtokenid_sdk",
     "hilog_native:libhilog",
     "napi:ace_napi",
   ]
