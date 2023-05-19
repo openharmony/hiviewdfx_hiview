@@ -23,7 +23,6 @@
 #include "logger.h"
 #include "string_util.h"
 
-#include "hiperf_client.h"
 #include "open_stacktrace_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -220,10 +219,11 @@ void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set
         }
     }
     opt.SetSelectPids(selectPids);
-    HiperfClient::Client client(EVENT_LOG_PATH);
-    client.Start(opt);
-    sleep(collectTime);
-    client.Stop();
+
+    if (perfClient_ == nullptr) {
+        perfClient_ = std::make_unique<HiperfClient::Client>(EVENT_LOG_PATH);
+    }
+    perfClient_->Start(opt);
 }
 
 void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)

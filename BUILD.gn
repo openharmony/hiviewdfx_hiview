@@ -114,7 +114,6 @@ group("hiview_package") {
   deps = [
     ":hiview",
     ":plugin_config",
-    "plugins/faultlogger/crash_validator:crashvalidator",
   ]
 
   if (enable_hiview_usage_event_report_build) {
