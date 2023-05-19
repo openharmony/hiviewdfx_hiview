@@ -17,6 +17,8 @@
 
 #include "hilog/log.h"
 #include "hiview_napi_err_code.h"
+#include "ipc_skeleton.h"
+#include "tokenid_kit.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -79,7 +81,7 @@ std::pair<int32_t, std::string> HiviewNapiUtil::GetErrorDetailByRet(napi_env env
         {HiviewNapiErrCode::ERR_INNER_READ_ONLY,
             {HiviewNapiErrCode::ERR_PARAM_CHECK, "Parameter error. The specified logType is read-only."}},
         {HiviewNapiErrCode::ERR_SOURCE_FILE_NOT_EXIST,
-            {HiviewNapiErrCode::ERR_SOURCE_FILE_NOT_EXIST, "The specified file does not exist."}}
+            {HiviewNapiErrCode::ERR_SOURCE_FILE_NOT_EXIST, "Source file does not exists."}}
     };
     return errMap.find(retCode) == errMap.end() ?
         std::make_pair(HiviewNapiErrCode::ERR_DEFAULT, "Environment is abnormal.") : errMap.at(retCode);
@@ -178,6 +180,18 @@ void HiviewNapiUtil::ThrowError(napi_env env, const int32_t code, const std::str
     if (napi_throw_error(env, std::to_string(code).c_str(), msg.c_str()) != napi_ok) {
         HiLog::Error(LABEL, "failed to throw error, code=%{public}d, msg=%{public}s", code, msg.c_str());
     }
+}
+
+void HiviewNapiUtil::ThrowSystemAppPermissionError(napi_env env)
+{
+    ThrowError(env, HiviewNapiErrCode::ERR_NON_SYS_APP_PERMISSION,
+        "Permission denied, non-system app called system api.");
+}
+
+bool HiviewNapiUtil::IsSystemAppCall()
+{
+    uint64_t tokenId = IPCSkeleton::GetCallingFullTokenID();
+    return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(tokenId);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

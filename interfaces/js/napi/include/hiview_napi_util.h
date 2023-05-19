@@ -35,8 +35,10 @@ public:
     static void ThrowParamTypeError(napi_env env, const std::string& paramName, const std::string& paramType);
     static void ThrowParamContentError(napi_env env, const std::string& paramName);
     static void ThrowErrorByCode(napi_env env, int32_t errCode);
+    static void ThrowSystemAppPermissionError(napi_env env);
     static bool CheckDirPath(const std::string& path);
     static void CreateErrorByRet(napi_env env, const int32_t retCode, napi_value& ret);
+    static bool IsSystemAppCall();
 
 private:
     HiviewNapiUtil() = default;
