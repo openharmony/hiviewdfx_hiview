@@ -37,7 +37,8 @@ constexpr int64_t INVALID_SEQ = -1;
 constexpr int64_t TRANS_DEFAULT_CNT = 0;
 constexpr int32_t IGNORED_DEFAULT_CNT = 0;
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
-constexpr int MAX_TRANS_BUF = 1024 * 768;  // Maximum transmission 768K at one time
+constexpr int MAX_TRANS_BUF = 1024 * 770;  // Max transmission at one time: 384KB * 2 + 2KB for extra fields
+constexpr size_t U16_CHAR_SIZE = sizeof(char16_t);
 
 EventStore::QueryProcessInfo GetCallingProcessInfo()
 {
@@ -248,7 +249,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             continue;
         }
         std::u16string curJson = Str8ToStr16(eventJsonStr);
-        int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * sizeof(std::u16string));
+        int32_t eventJsonSize = static_cast<int32_t>((curJson.size() + 1) * U16_CHAR_SIZE); // 1 for '\0'
         if (eventJsonSize > MAX_TRANS_BUF) { // too large events, drop
             details.second++;
             continue;
