@@ -22,11 +22,13 @@
 #include "doc_db.h"
 #include "doc_store.h"
 #include "ejdb2.h"
+#include "file_util.h"
 #include "hilog/log.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DOCDB"};
+static constexpr char DB_WAL[] = "-wal";
 static iwkv_openflags GetEjdbFlag(const Option& option)
 {
     switch (option.flag) {
@@ -54,6 +56,12 @@ std::shared_ptr<DocStore> StoreManager::GetDocStore(const Option& option)
         HiLog::Error(LABEL, "can not open doc store");
     } else {
         HiLog::Info(LABEL, "open doc store");
+    }
+    if (!FileUtil::ChangeMode(option.db, FileUtil::FILE_PERM_660)) {
+        HiLog::Warn(LABEL, "failed to modify the mode of db");
+    }
+    if (!FileUtil::ChangeMode(option.db + DB_WAL, FileUtil::FILE_PERM_660)) {
+        HiLog::Warn(LABEL, "failed to modify the mode of db-wal");
     }
     stores_[option.db] = docStore;
     return docStore;
@@ -129,7 +137,7 @@ int StoreManager::DeleteDocStore(const Option& option)
         return -1;
     }
 
-    const std::string walDbFile = option.db + "-wal";
+    const std::string walDbFile = option.db + DB_WAL;
     HiLog::Debug(LABEL, "delete ejdb wal file %{public}s", walDbFile.c_str());
     retCode = std::remove(walDbFile.c_str());
     if (retCode != 0) {
