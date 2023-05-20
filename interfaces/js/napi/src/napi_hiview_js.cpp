@@ -30,8 +30,12 @@ constexpr size_t LOG_NAME_INDEX = 1;
 constexpr size_t DEST_DIR_INDEX = 2;
 }
 
-static napi_value ListSync(napi_env env, napi_callback_info info)
+static napi_value List(napi_env env, napi_callback_info info)
 {
+    if (!HiviewNapiUtil::IsSystemAppCall()) {
+        HiviewNapiUtil::ThrowSystemAppPermissionError(env);
+        return nullptr;
+    }
     constexpr size_t listParamNum = 1;
     size_t paramNum = listParamNum;
     napi_value params[listParamNum] = { 0 };
@@ -104,16 +108,28 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
 
 static napi_value Copy(napi_env env, napi_callback_info info)
 {
+    if (!HiviewNapiUtil::IsSystemAppCall()) {
+        HiviewNapiUtil::ThrowSystemAppPermissionError(env);
+        return nullptr;
+    }
     return CopyOrMoveFile(env, info, false);
 }
 
 static napi_value Move(napi_env env, napi_callback_info info)
 {
+    if (!HiviewNapiUtil::IsSystemAppCall()) {
+        HiviewNapiUtil::ThrowSystemAppPermissionError(env);
+        return nullptr;
+    }
     return CopyOrMoveFile(env, info, true);
 }
 
-static napi_value RemoveSync(napi_env env, napi_callback_info info)
+static napi_value Remove(napi_env env, napi_callback_info info)
 {
+    if (!HiviewNapiUtil::IsSystemAppCall()) {
+        HiviewNapiUtil::ThrowSystemAppPermissionError(env);
+        return nullptr;
+    }
     constexpr size_t removeParamNum = 2;
     size_t paramNum = removeParamNum;
     napi_value params[removeParamNum] = { 0 };
@@ -143,10 +159,10 @@ EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
-        DECLARE_NAPI_FUNCTION("listSync", ListSync),
+        DECLARE_NAPI_FUNCTION("list", List),
         DECLARE_NAPI_FUNCTION("copy", Copy),
         DECLARE_NAPI_FUNCTION("move", Move),
-        DECLARE_NAPI_FUNCTION("removeSync", RemoveSync)
+        DECLARE_NAPI_FUNCTION("remove", Remove)
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(napi_property_descriptor), desc));
     return exports;
