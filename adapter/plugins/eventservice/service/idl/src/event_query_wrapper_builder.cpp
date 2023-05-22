@@ -179,24 +179,6 @@ bool ConditionParser::ParseQueryCondition(const std::string& condStr, EventStore
     return true;
 }
 
-void BaseEventQueryWrapper::HandleCurrentQueryDone(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback,
-    int32_t& queryResult)
-{
-    if (callback == nullptr) {
-        return;
-    }
-    if (IsQueryComplete()) { // all queries have finished, call OnComplete directly
-        callback->OnComplete(queryResult, totalEventCnt, maxSeq);
-        return;
-    }
-    if (NeedStartNextQuery()) {
-        Query(callback, queryResult);
-        return;
-    }
-    callback->OnComplete(queryResult, totalEventCnt, maxSeq);
-}
-
-
 void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& eventQueryCallback,
     int32_t& queryResult)
 {
@@ -204,35 +186,35 @@ void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCa
         queryResult = ERR_LISTENER_NOT_EXIST;
         return;
     }
-    BuildQuery();
-    HiLog::Debug(LABEL, "execute query: beginTime=%{public}" PRId64
-        ", endTime=%{public}" PRId64 ", maxEvents=%{public}d, fromSeq=%{public}" PRId64
-        ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", argument.beginTime, argument.endTime,
-        argument.maxEvents, argument.fromSeq, argument.toSeq, queryLimit);
-    if (isFirstPartialQuery) {
-        HiLog::Debug(LABEL, "current query is first partial query.");
+
+    while (!IsQueryComplete() && NeedStartNextQuery()) {
+        BuildQuery();
+        HiLog::Debug(LABEL, "execute query: beginTime=%{public}" PRId64
+            ", endTime=%{public}" PRId64 ", maxEvents=%{public}d, fromSeq=%{public}" PRId64
+            ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", argument.beginTime, argument.endTime,
+            argument.maxEvents, argument.fromSeq, argument.toSeq, queryLimit);
+        auto resultSet = query->Execute(queryLimit, { false, isFirstPartialQuery }, GetCallingProcessInfo(),
+            [&queryResult] (EventStore::DbQueryStatus status) {
+                std::unordered_map<EventStore::DbQueryStatus, int32_t> statusToCode {
+                    { EventStore::DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
+                    { EventStore::DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
+                    { EventStore::DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
+                    { EventStore::DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
+                };
+                queryResult = statusToCode[status];
+            });
+        if (queryResult != IPC_CALL_SUCCEED) {
+            eventQueryCallback->OnComplete(queryResult, totalEventCnt, maxSeq);
+            return;
+        }
+        auto details = std::make_pair(TRANS_DEFAULT_CNT, IGNORED_DEFAULT_CNT);
+        TransportSysEvent(resultSet, eventQueryCallback, details);
+        transportedEventCnt = details.first;
+        totalEventCnt += transportedEventCnt;
+        ignoredEventCnt = details.second;
+        SetIsFirstPartialQuery(false);
     }
-    auto resultSet = query->Execute(queryLimit, { false, isFirstPartialQuery }, GetCallingProcessInfo(),
-        [&queryResult] (EventStore::DbQueryStatus status) {
-            std::unordered_map<EventStore::DbQueryStatus, int32_t> statusToCode {
-                { EventStore::DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
-                { EventStore::DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
-                { EventStore::DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
-                { EventStore::DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
-            };
-            queryResult = statusToCode[status];
-        });
-    if (queryResult != IPC_CALL_SUCCEED) {
-        eventQueryCallback->OnComplete(queryResult, totalEventCnt, maxSeq);
-        return;
-    }
-    auto details = std::make_pair(TRANS_DEFAULT_CNT, IGNORED_DEFAULT_CNT);
-    TransportSysEvent(resultSet, eventQueryCallback, details);
-    transportedEventCnt = details.first;
-    totalEventCnt += transportedEventCnt;
-    ignoredEventCnt = details.second;
-    SetIsFirstPartialQuery(false);
-    HandleCurrentQueryDone(eventQueryCallback, queryResult);
+    eventQueryCallback->OnComplete(queryResult, totalEventCnt, maxSeq);
 }
 
 void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
@@ -338,8 +320,14 @@ void BaseEventQueryWrapper::SetEventTotalCount(int64_t totalCount)
 
 bool BaseEventQueryWrapper::NeedStartNextQuery()
 {
+    // first query
+    if (isFirstPartialQuery) {
+        return !queryRules.empty();
+    }
+
+    // continue query execution based on previous query rule
     int64_t queryEventCnt = transportedEventCnt + ignoredEventCnt;
-    if (queryEventCnt >= queryLimit) {
+    if (queryEventCnt > 0 && queryEventCnt >= queryLimit) {
         return true;
     }
 
@@ -389,7 +377,7 @@ void SeqEventQueryWrapper::BuildQuery()
     if (query != nullptr) {
         return;
     }
-    auto offset = static_cast<int32_t>(argument.toSeq - argument.fromSeq);
+    auto offset = argument.toSeq > argument.fromSeq ? (argument.toSeq - argument.fromSeq) : 0;
     queryLimit = offset < MAX_QUERY_EVENTS ? offset : MAX_QUERY_EVENTS;
     EventStore::Cond whereCond;
     whereCond.And(EventStore::EventCol::SEQ, EventStore::Op::GE, argument.fromSeq)
