@@ -150,14 +150,14 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest003, TestSize.Level1)
 HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest004, TestSize.Level1)
 {
     /**
-     * @tc.steps: step1. construct CPP_CRASH SysEvent
+     * @tc.steps: step1. construct PANIC SysEvent
      * @tc.steps: step2. construct BBOXDetectorPlugin
      * @tc.steps: step3. OnEvent
-     * @tc.steps: step4. check result should return false
+     * @tc.steps: step4. check result should return true
      */
-    SysEventCreator sysEventCreator("KERNEL_VENDOR", "CPP_CRASH", SysEventCreator::FAULT);
+    SysEventCreator sysEventCreator("KERNEL_VENDOR", "PANIC", SysEventCreator::FAULT);
     sysEventCreator.SetKeyValue("SUMMARY", "bootup_keypoint:97");
-    sysEventCreator.SetKeyValue("name_", "CPP_CRASH");
+    sysEventCreator.SetKeyValue("name_", "PANIC");
     sysEventCreator.SetKeyValue("HAPPEN_TIME", "443990995");
     sysEventCreator.SetKeyValue("LOG_PATH", "/data/hisi_logs/");
     sysEventCreator.SetKeyValue("SUB_LOG_PATH", "19700106031950-00001111");
@@ -167,7 +167,7 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest004, TestSize.Level1)
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
     shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
     testPlugin->OnLoad();
-    ASSERT_EQ(testPlugin->OnEvent(event), false);
+    ASSERT_EQ(testPlugin->OnEvent(event), true);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

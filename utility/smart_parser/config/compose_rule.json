@@ -49,5 +49,11 @@
             "F1NAME": "BasicParam.v_f1",
             "END_STACK": "MainCallTrace.v_trace"
         }
+    },
+    "RUST_PANIC": {
+        "04_RUST_PANIC_00":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
     }
 }
