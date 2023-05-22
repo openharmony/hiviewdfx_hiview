@@ -90,10 +90,6 @@ protected:
 private:
     bool isFirstPartialQuery = true;
     ConditionParser parser;
-
-private:
-    void HandleCurrentQueryDone(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback,
-        int32_t& queryResult);
 };
 
 class TimeStampEventQueryWrapper final : public BaseEventQueryWrapper {
