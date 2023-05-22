@@ -96,7 +96,7 @@
     },
     "Rule8":{
         "DirOrFile":"/data/log/faultlog/faultlogger/",
-        "Subcatalog":"rustpanic-rustpanic_maker-\\d+-\\d+",
+        "Subcatalog":"rustpanic-.*-\\d+-\\d+",
         "featureId":"04_RUST_PANIC_00",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
