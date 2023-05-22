@@ -27,6 +27,8 @@
             <option name="push" value="SmartParserTest004/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest004" src="res"/>
             <option name="push" value="SmartParserTest005/dmesg-ramoops-0 -> /data/test/test_data/SmartParser/SmartParserTest005" src="res"/>
             <option name="push" value="SmartParserTest005/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest005" src="res"/>
+            <option name="push" value="SmartParserTest006/rustpanic-rustpanic_maker-0-20230419222113 -> /data/test/test_data/SmartParser/SmartParserTest006" src="res"/>
+            <option name="push" value="SmartParserTest006/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest006" src="res"/>
         </preparer>
     </target>
 </configuration>

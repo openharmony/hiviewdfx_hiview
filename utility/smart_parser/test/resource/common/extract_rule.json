@@ -93,5 +93,14 @@
             {"namespace":"BasicParam", "depend":"BasicParam.v_fiq","matchKey":"PC is at ", "v_f1":"PC is at ([^\\+ ]+.*)", "v_pname":"cpu[0-9],(.*?)[,:\\]]"},
             {"namespace":"MainCallTrace", "depend":"BasicParam.v_fiq", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
         ]
+    },
+    "Rule8":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"rustpanic-rustpanic_maker-\\d+-\\d+",
+        "featureId":"04_RUST_PANIC_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"Thread name:", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
+        ]
     }
 }
