@@ -308,6 +308,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest008, TestSize.Level1)
      * @tc.steps: step2. smart parser process crash fault log
      */
     auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "RUST_PANIC");
+    ASSERT_EQ(!eventInfos.empty(), true);
 
     std::vector<std::string> trace;
     StringUtil::SplitStr(eventInfos["END_STACK"], LogUtil::SPLIT_PATTERN, trace, false, false);

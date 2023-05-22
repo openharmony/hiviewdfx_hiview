@@ -99,7 +99,7 @@
         "Subcatalog":"rustpanic-.*-\\d+-\\d+",
         "featureId":"04_RUST_PANIC_00",
         "rules":[
-            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_pname":"Module name:(.*)"},
             {"namespace":"MainCallTrace", "matchKey":"Thread name:", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
     }
