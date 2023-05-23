@@ -54,7 +54,8 @@ HWTEST_F(SysEventTest, TestSendBaseType001, testing::ext::TestSize.Level3)
     SysEventCreator sysEventCreator("DEMO", "EVENT_NAME", SysEventCreator::FAULT);
     sysEventCreator.SetKeyValue("KEY", 1);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    std::regex expValue(R"~(\{"domain_":"DEMO","name_":"EVENT_NAME","type_":1,"time_":\d+,"tz_":"[\+\-]\d+","pid_":\d+,"tid_":\d+,"uid_":\d+,"id_":\d+,"KEY":1\})~");
+    std::regex expValue(R"~(\{"domain_":"DEMO","name_":"EVENT_NAME","type_":1,"time_":\d+,"tz_":"[\+\-]\d+",)~"
+        R"~("pid_":\d+,"tid_":\d+,"uid_":\d+,"id_":"\d+","KEY":1\})~");
     std::cout << "size=" << sysEvent->AsJsonStr().size() << ", jsonStr:" << sysEvent->AsJsonStr() << std::endl;
     std::smatch baseMatch;
     auto eventJsonStr = sysEvent->AsJsonStr();
@@ -78,7 +79,8 @@ HWTEST_F(SysEventTest, TestSendIntVectorType002, testing::ext::TestSize.Level3)
     std::vector<int> values = {1, 2, 3};
     sysEventCreator.SetKeyValue("KEY", values);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    std::regex expValue(R"~(\{"domain_":"DEMO","name_":"EVENT_NAME","type_":1,"time_":\d+,"tz_":"[\+\-]\d+","pid_":\d+,"tid_":\d+,"uid_":\d+,"id_":\d+,"KEY":\[1,2,3\]\})~");
+    std::regex expValue(R"~(\{"domain_":"DEMO","name_":"EVENT_NAME","type_":1,"time_":\d+,"tz_":"[\+\-]\d+",)~"
+        R"~("pid_":\d+,"tid_":\d+,"uid_":\d+,"id_":"\d+","KEY":\[1,2,3\]\})~");
     std::cout << "size=" << sysEvent->AsJsonStr().size() << ", jsonStr:" << sysEvent->AsJsonStr() << std::endl;
     std::smatch baseMatch;
     auto eventJsonStr = sysEvent->AsJsonStr();
