@@ -33,8 +33,10 @@ ohos_source_set("faultlogger") {
 
 group("fuzztest") {
   testonly = true
-  deps =
-      [ "test/common/hiviewdfxfaultlogger_fuzzer:HiviewdfxFaultloggerFuzzTest" ]
+  deps = [
+    "test/common/fuzztest/faultloggerclient_fuzzer:fuzztest",
+    "test/common/fuzztest/faultloggerservice_fuzzer:fuzztest",
+  ]
 }
 
 group("unittest") {
