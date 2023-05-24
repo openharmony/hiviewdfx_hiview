@@ -262,10 +262,7 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
         }
         HIVIEW_LOGI("end dumpHitrace");
 
-        if (this->DetectionHiTraceMap(fullTracePath)) {
-            event->ResetPendingStatus();
-            event->OnContinue();
-        }
+        DetectionHiTraceMap(fullTracePath);
     };
     eventPool_->AddTask(task, "eventlogger_hitrace");
     return true;
