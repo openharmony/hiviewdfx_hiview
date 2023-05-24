@@ -297,7 +297,8 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest008, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest006/rustpanic-rustpanic_maker-0-20230419222113";
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+                            "/SmartParserTest006/rustpanic-rustpanic_maker-0-20230419222113";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest006/trace.txt";
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
     ASSERT_EQ(FileUtil::FileExists(traceFile), true);
