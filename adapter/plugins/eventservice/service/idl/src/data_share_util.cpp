@@ -43,7 +43,7 @@ std::string DataShareUtil::GetSandBoxPathByUid(int32_t uid)
         .append(std::to_string(userId))
         .append("/base/")
         .append(bundleName)
-        .append("/cache/hiview");
+        .append("/cache/hiview/event");
     return path;
 }
 

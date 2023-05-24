@@ -65,8 +65,6 @@ constexpr int32_t ASH_MEM_SIZE = 1024 * 2; // 2K
 constexpr int SYS_EVENT_SERVICE_ID = 1203;
 constexpr char TEST_LOG_DIR[] = "/data/log/hiview/sys_event_test";
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
-constexpr const char* BUNDLE_INSTALL = "BUNDLE_INSTALL";
-constexpr const char* ABILITY_ONBACKGROUND = "ABILITY_ONBACKGROUND";
 constexpr int TIME_STAMP_LENGTH = 13;
 
 sptr<Ashmem> GetAshmem()
@@ -138,7 +136,7 @@ public:
         return 0;
     }
 
-    int64_t AddSubscriber(const std::vector<std::string> &events)
+    int64_t AddSubscriber(const std::vector<SysEventQueryRule> &rules)
     {
         return TimeUtil::GetMilliseconds();
     }
@@ -202,12 +200,13 @@ static vector<SysEventRule> GetTestRules(int type, const string &domain, const s
     return rules;
 }
 
-static vector<std::string> GetSubscriptionEvents()
+static vector<OHOS::HiviewDFX::SysEventQueryRule> GetSubscriptionQueryRule()
 {
-    vector<std::string> events;
-    events.push_back(BUNDLE_INSTALL);
-    events.push_back(ABILITY_ONBACKGROUND);
-    return events;
+    std::vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules;
+    std::vector<std::string> eventNames { "EVENT_NAME1", "EVENT_NAME2" };
+    OHOS::HiviewDFX::SysEventQueryRule queryRule("DOMAIN", eventNames);
+    queryRules.emplace_back(queryRule);
+    return queryRules;
 }
 
 /**
@@ -333,7 +332,7 @@ HWTEST_F(SysEventServiceOhosTest, AddSubscriberTest001, testing::ext::TestSize.L
     if (service == nullptr) {
         return;
     }
-    vector<std::string> events = GetSubscriptionEvents();
+    vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules = GetSubscriptionQueryRule();
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         printf("SystemAbilityManager is nullptr.\n");
@@ -343,10 +342,10 @@ HWTEST_F(SysEventServiceOhosTest, AddSubscriberTest001, testing::ext::TestSize.L
         if (stub != nullptr) {
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
-            auto ret = proxy->AddSubscriber(events);
+            auto ret = proxy->AddSubscriber(queryRules);
             if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
                 sleep(1);
-                ret = proxy->AddSubscriber(events);
+                ret = proxy->AddSubscriber(queryRules);
                 printf("add subscriber result success");
             } else {
                 printf("add subscriber fail.\n");
@@ -371,7 +370,7 @@ HWTEST_F(SysEventServiceOhosTest, RemoveSubscriberTest001, testing::ext::TestSiz
     if (service == nullptr) {
         return;
     }
-    vector<std::string> events = GetSubscriptionEvents();
+    vector<OHOS::HiviewDFX::SysEventQueryRule> queryRules = GetSubscriptionQueryRule();
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         printf("SystemAbilityManager is nullptr.\n");
@@ -381,7 +380,7 @@ HWTEST_F(SysEventServiceOhosTest, RemoveSubscriberTest001, testing::ext::TestSiz
         if (stub != nullptr) {
             printf("check sys event service success.\n");
             auto proxy = new SysEventServiceProxy(stub);
-            auto ret = proxy->AddSubscriber(events);
+            auto ret = proxy->AddSubscriber(queryRules);
             if (std::to_string(ret).length() == TIME_STAMP_LENGTH) {
                 sleep(1);
                 ret = proxy->RemoveSubscriber();
@@ -697,10 +696,7 @@ HWTEST_F(SysEventServiceOhosTest, TestSysEventService002, testing::ext::TestSize
     std::vector<std::string> eventNames { "EVENT_NAME1", "EVENT_NAME2" };
     OHOS::HiviewDFX::SysEventQueryRule queryRule("DOMAIN", eventNames);
     queryRules.emplace_back(queryRule);
-    vector<std::string> events;
-    events.push_back(BUNDLE_INSTALL);
-    events.push_back(ABILITY_ONBACKGROUND);
-    auto ret = sysEventServiceProxy.AddSubscriber(events);
+    auto ret = sysEventServiceProxy.AddSubscriber(queryRules);
     ASSERT_TRUE(std::to_string(ret).length() == TIME_STAMP_LENGTH);
     ret = sysEventServiceProxy.RemoveSubscriber();
     ASSERT_TRUE(ret == IPC_CALL_SUCCEED);
