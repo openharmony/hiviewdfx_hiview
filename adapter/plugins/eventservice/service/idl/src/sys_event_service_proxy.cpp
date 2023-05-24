@@ -190,7 +190,7 @@ int32_t SysEventServiceProxy::SetDebugMode(const sptr<ISysEventCallback>& callba
 }
 
 
-int64_t SysEventServiceProxy::AddSubscriber(const std::vector<std::string> &events)
+int64_t SysEventServiceProxy::AddSubscriber(const std::vector<SysEventQueryRule> &rules)
 {
     auto remote = Remote();
     if (remote == nullptr) {
@@ -202,10 +202,10 @@ int64_t SysEventServiceProxy::AddSubscriber(const std::vector<std::string> &even
         HiLog::Error(LABEL, "write descriptor failed.");
         return ERR_CAN_NOT_WRITE_DESCRIPTOR;
     }
-    auto ret = data.WriteStringVector(events);
+    bool ret = WriteVectorToParcel(data, rules);
     if (!ret) {
-        HiLog::Error(LABEL, "write events failed.");
-        return ERR_CAN_NOT_WRITE_EVENTS;
+        HiLog::Error(LABEL, "parcel write rules failed.");
+        return ERR_CAN_NOT_WRITE_PARCEL;
     }
     MessageParcel reply;
     MessageOption option;

@@ -45,9 +45,8 @@ static constexpr int32_t ERR_QUERY_OVER_TIME = -29;
 static constexpr int32_t ERR_QUERY_OVER_LIMIT = -30;
 static constexpr int32_t ERR_QUERY_TOO_FREQUENTLY = -31;
 
-static constexpr int32_t ERR_CAN_NOT_WRITE_EVENTS = -32;
-static constexpr int32_t ERR_TOO_MANY_EVENTS = -33;
-static constexpr int32_t ERR_EXPORT_FREQUENCY_OVER_LIMIT = -34;
+static constexpr int32_t ERR_TOO_MANY_EVENTS = -32;
+static constexpr int32_t ERR_EXPORT_FREQUENCY_OVER_LIMIT = -33;
 } // namespace HiviewDFX
 } // namespace OHOS
 

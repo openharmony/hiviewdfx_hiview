@@ -477,11 +477,13 @@ void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
     service->OnRemoteDied(remote);
 }
 
-int64_t SysEventServiceOhos::AddSubscriber(const std::vector<std::string> &events)
+int64_t SysEventServiceOhos::AddSubscriber(const SysEventQueryRuleGroupOhos &rules)
 {
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
     }
+    std::vector<std::string> events;
+    MergeEventList(rules, events);
     auto checkRet = CheckEventSubscriberAddingValidity(events);
     if (checkRet != IPC_CALL_SUCCEED) {
         return checkRet;
@@ -493,6 +495,17 @@ int64_t SysEventServiceOhos::AddSubscriber(const std::vector<std::string> &event
         return ret;
     }
     return TimeUtil::GetMilliseconds();
+}
+
+void SysEventServiceOhos::MergeEventList(const std::vector<SysEventQueryRule>& rules,
+    std::vector<std::string>& events) const
+{
+    for_each(rules.cbegin(), rules.cend(), [&](const SysEventQueryRule &rule) {
+        auto eventList = rule.eventList;
+        for_each(eventList.cbegin(), eventList.cend(), [&](const std::string &event) {
+            events.push_back(event);
+        });
+    });
 }
 
 int32_t SysEventServiceOhos::RemoveSubscriber()

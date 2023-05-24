@@ -119,13 +119,13 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
 int32_t SysEventServiceStub::HandleAddSubscriber(MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    std::vector<std::string> events;
-    auto ret = data.ReadStringVector(&events);
+    std::vector<SysEventQueryRule> queryRules;
+    auto ret = ReadVectorFromParcel(data, queryRules);
     if (!ret) {
-        HiLog::Error(LABEL, "read events failed.");
+        HiLog::Error(LABEL, "parcel read export rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
-    ret = reply.WriteInt64(AddSubscriber(events));
+    ret = reply.WriteInt64(AddSubscriber(queryRules));
     if (!ret) {
         HiLog::Error(LABEL, "write return-value of AddSubscriber failed.");
         return ERR_FLATTEN_OBJECT;

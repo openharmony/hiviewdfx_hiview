@@ -35,7 +35,7 @@ public:
     virtual int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
         const sptr<IQuerySysEventCallback>& callback) = 0;
     virtual int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode) = 0;
-    virtual int64_t AddSubscriber(const std::vector<std::string> &events) = 0;
+    virtual int64_t AddSubscriber(const std::vector<SysEventQueryRule> &rules) = 0;
     virtual int32_t RemoveSubscriber() = 0;
     virtual int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules) = 0;
     enum {
