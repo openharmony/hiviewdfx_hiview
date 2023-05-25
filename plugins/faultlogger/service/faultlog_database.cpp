@@ -150,7 +150,7 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
                 continue;
             }
             queryResult.push_back(info);
-            if (queryResult.size() == maxNum) {
+            if (queryResult.size() == static_cast<size_t>(maxNum)) {
                 return queryResult;
             }
         }
