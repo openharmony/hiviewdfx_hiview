@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -514,6 +514,39 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     list = serviceOhos.QuerySelfFaultLog(8, 10);
     ASSERT_EQ(list, nullptr);
 
+    serviceOhos.Destroy();
+}
+
+/**
+ * @tc.name: FaultloggerServiceOhos.Dump
+ * @tc.desc: Test calling FaultloggerServiceOhos.Dump Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+
+    auto service = CreateFaultloggerInstance();
+    FaultloggerServiceOhos serviceOhos;
+    FaultloggerServiceOhos::StartService(service.get());
+    ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
+    auto fd = open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770);
+    if (fd < 0) {
+        printf("Fail to create test result file.\n");
+        return;
+    }
+    std::vector<std::u16string>args;
+    args.push_back(u"Faultlogger");
+    args.push_back(u"-l");
+    serviceOhos.Dump(fd, args);
+    close(fd);
+    fd = -1;
+    std::string result;
+    if (FileUtil::LoadStringFromFile("/data/test/testFile2", result)) {
+        ASSERT_GT(result.length(), 0ul);
+    } else {
+        FAIL();
+    }
     serviceOhos.Destroy();
 }
 } // namespace HiviewDFX

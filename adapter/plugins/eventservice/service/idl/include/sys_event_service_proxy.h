@@ -36,7 +36,7 @@ public:
     int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
         const sptr<IQuerySysEventCallback>& callback);
     int32_t SetDebugMode(const sptr<ISysEventCallback>& callback, bool mode);
-    int64_t AddSubscriber(const std::vector<std::string> &events);
+    int64_t AddSubscriber(const std::vector<SysEventQueryRule> &rules);
     int32_t RemoveSubscriber();
     int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules);
 

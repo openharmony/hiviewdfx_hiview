@@ -83,15 +83,17 @@ public:
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
     int32_t Dump(int32_t fd, const std::vector<std::u16string> &args) override;
-    int64_t AddSubscriber(const std::vector<std::string> &events) override;
+    int64_t AddSubscriber(const SysEventQueryRuleGroupOhos &rules) override;
     int32_t RemoveSubscriber() override;
     int64_t Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules) override;
     void SetWorkLoop(std::shared_ptr<EventLoop> looper);
+
 private:
     bool HasAccessPermission() const;
     bool BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder, const SysEventQueryRuleGroupOhos& rules);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
+    void MergeEventList(const std::vector<SysEventQueryRule>& rules, std::vector<std::string>& events) const;
 
 private:
     std::mutex mutex_;

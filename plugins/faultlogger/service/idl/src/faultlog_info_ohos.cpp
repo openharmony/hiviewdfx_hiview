@@ -57,7 +57,7 @@ bool FaultLogInfoOhos::Marshalling(Parcel& parcel) const
         return false;
     }
 
-    for (const auto [key, value] : sectionMaps) {
+    for (const auto& [key, value] : sectionMaps) {
         if (!parcel.WriteString(key)) {
             return false;
         }

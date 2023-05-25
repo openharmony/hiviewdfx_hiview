@@ -22,6 +22,7 @@
 #include "sys_event.h"
 
 #include "event_log_catcher.h"
+#include "hiperf_client.h"
 namespace OHOS {
 namespace HiviewDFX {
 class PeerBinderCatcher : public EventLogCatcher {
@@ -34,6 +35,7 @@ public:
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
     static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/proc/transaction_proc";
+
 private:
     struct BinderInfo {
         int client;
@@ -49,7 +51,7 @@ private:
     int layer_ = 0;
     std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
-
+    std::unique_ptr<Developtools::HiPerf::HiperfClient::Client> perfClient_ = nullptr;
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin, int fd) const;
     void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::set<int>& pids, int pid) const;

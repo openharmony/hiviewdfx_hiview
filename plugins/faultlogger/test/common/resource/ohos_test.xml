@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) 2021 Huawei Device Co., Ltd.
+<!-- Copyright (c) 2021-2023 Huawei Device Co., Ltd.
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
@@ -14,6 +14,12 @@
 -->
 <configuration ver="2.0">
     <target name="FaultloggerUnittest">
+        <preparer>
+            <option name="push" value="faultlogger/plugin_config -> /data/test/test_faultlogger_data/" src="res"/>
+            <option name="push" value="faultlogger/hiview_platform_config -> /data/test/test_faultlogger_data/" src="res"/>
+        </preparer>
+    </target>
+    <target name="FaultloggerServiceFuzzTest">
         <preparer>
             <option name="push" value="faultlogger/plugin_config -> /data/test/test_faultlogger_data/" src="res"/>
             <option name="push" value="faultlogger/hiview_platform_config -> /data/test/test_faultlogger_data/" src="res"/>
