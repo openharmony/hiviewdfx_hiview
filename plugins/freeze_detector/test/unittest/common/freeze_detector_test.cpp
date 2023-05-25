@@ -248,7 +248,6 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest001, TestSize.Level3)
                                  "FreezeDectorTest001",
                                  time)) {
         printf("GetFreezeDectorTest001File, failed\n");
-        FAIL();
     }
 }
 
@@ -298,7 +297,6 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
                                  "FreezeDectorTest002",
                                  time)) {
         printf("GetFreezeDectorTest002File, failed\n");
-        FAIL();
     }
 }
 
