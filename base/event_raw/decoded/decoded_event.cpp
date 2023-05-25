@@ -28,6 +28,7 @@ namespace HiviewDFX {
 namespace EventRaw {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DecodedEvent" };
+constexpr size_t MAX_BLOCK_SIZE = 384 * 1024; // 384K
 
 std::string TransUInt64ToFixedLengthStr(uint64_t src)
 {
@@ -57,17 +58,18 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
     HiLog::Debug(LABEL, "decoded blockSize is %{public}zu.", blockSize);
-    if (blockSize > 0) {
-        rawData_ = new uint8_t[blockSize];
-        auto ret = memcpy_s(rawData_, blockSize, src, blockSize);
-        if (ret != EOK) {
-            HiLog::Error(LABEL, "Decode memory copy failed, ret is %{public}d.", ret);
-            delete []rawData_;
-            rawData_ = nullptr;
-            return;
-        }
-        Parse();
+    if (blockSize == 0 || blockSize > MAX_BLOCK_SIZE) {
+        return;
     }
+    rawData_ = new uint8_t[blockSize];
+    auto ret = memcpy_s(rawData_, blockSize, src, blockSize);
+    if (ret != EOK) {
+        HiLog::Error(LABEL, "Decode memory copy failed, ret is %{public}d.", ret);
+        delete []rawData_;
+        rawData_ = nullptr;
+        return;
+    }
+    Parse();
 }
 
 DecodedEvent::~DecodedEvent()
