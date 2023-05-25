@@ -282,5 +282,42 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest007, TestSize.Level1)
     eventInfos = SmartParser::Analysis("test", "test", "test");
     ASSERT_EQ(eventInfos.empty(), true);
 }
+
+/**
+ * @tc.name: SmartParserTest008
+ * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ *           1. fault log should can be read;
+ *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest008, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+                            "/SmartParserTest006/rustpanic-rustpanic_maker-0-20230419222113";
+    std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest006/trace.txt";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+    ASSERT_EQ(FileUtil::FileExists(traceFile), true);
+    std::stringstream buff;
+    LogUtil::ReadFileBuff(traceFile, buff);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "RUST_PANIC");
+    ASSERT_EQ(!eventInfos.empty(), true);
+
+    std::vector<std::string> trace;
+    StringUtil::SplitStr(eventInfos["END_STACK"], LogUtil::SPLIT_PATTERN, trace, false, false);
+    std::string line;
+    size_t num = 0;
+    while (getline(buff, line) && num < trace.size()) {
+        EXPECT_STREQ(trace[num++].c_str(), line.c_str());
+    }
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
