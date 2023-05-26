@@ -169,7 +169,10 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
             int64_t beginTime = 0;
             std::string hitraceTime = "";
             hitraceFile = GetHitraceName(beginTime, hitraceTime);
-            if (!hitraceFile.empty() && !HitraceCatcher(beginTime, hitraceTime, hitraceFile, event)) {
+            if (hitraceFile.empty()) {
+                continue;
+            }
+            if (!HitraceCatcher(beginTime, hitraceTime, hitraceFile, event)) {
                 hitraceFile = "";
             }
         } else {
@@ -195,6 +198,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     if (!hitraceFile.empty() && !DetectionHiTraceMap(hitraceFile)) {
         return;
     }
+    std::unique_lock<std::mutex> lck(finishMutex_);
     event->ResetPendingStatus();
     event->OnContinue();
 }
@@ -262,7 +266,11 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
         }
         HIVIEW_LOGI("end dumpHitrace");
 
-        DetectionHiTraceMap(fullTracePath);
+        if (this->DetectionHiTraceMap(fullTracePath)) {
+            std::unique_lock<std::mutex> lck(finishMutex_);
+            event->ResetPendingStatus();
+            event->OnContinue();
+        }
     };
     eventPool_->AddTask(task, "eventlogger_hitrace");
     return true;

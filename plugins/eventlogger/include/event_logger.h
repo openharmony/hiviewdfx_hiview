@@ -76,6 +76,7 @@ private:
     int const maxEventPoolCount = 5;
     std::unique_ptr<EventThreadPool> eventPool_;
     std::mutex intervalMutex_;
+    std::mutex finishMutex_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     int Getfile(std::shared_ptr<SysEvent> event, std::string& logFile);
