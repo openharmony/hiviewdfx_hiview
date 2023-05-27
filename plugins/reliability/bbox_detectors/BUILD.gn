@@ -24,6 +24,8 @@ config("bbox_detector_config") {
 }
 
 ohos_source_set("bbox_detector") {
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
   sources = [ "bbox_detector_plugin.cpp" ]
 
   configs = [ ":bbox_detector_config" ]
