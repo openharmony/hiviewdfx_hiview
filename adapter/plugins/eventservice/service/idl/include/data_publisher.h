@@ -13,25 +13,20 @@
  * limitations under the License.
  */
 
+#ifndef OHOS_HIVIEWDFX_DATA_PUBLISHER_H
+#define OHOS_HIVIEWDFX_DATA_PUBLISHER_H
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "json/json.h"
-
-#include "data_share_common.h"
 #include "data_share_dao.h"
 #include "event_loop.h"
 #include "event_query_wrapper_builder.h"
-#include "event_thread_pool.h"
-#include "logger.h"
 #include "sys_event.h"
 #include "sys_event_query.h"
 #include "sys_event_query_wrapper.h"
-
-#ifndef OHOS_HIVIEWDFX_DATA_PUBLISHER_H
-#define OHOS_HIVIEWDFX_DATA_PUBLISHER_H
 
 namespace OHOS {
 namespace HiviewDFX {

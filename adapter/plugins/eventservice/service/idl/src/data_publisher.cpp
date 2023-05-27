@@ -30,6 +30,7 @@
 #include "json/json.h"
 
 #include "data_publisher_sys_event_callback.h"
+#include "data_share_common.h"
 #include "data_share_dao.h"
 #include "data_share_store.h"
 #include "data_share_util.h"
@@ -37,6 +38,7 @@
 #include "file_util.h"
 #include "hiview_event_common.h"
 #include "iquery_base_callback.h"
+#include "logger.h"
 #include "ret_code.h"
 #include "string_util.h"
 #include "sys_event_query.h"
@@ -90,7 +92,11 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
     auto ret = dataShareDao_->GetEventListByUid(uid, events);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to get events by uid");
-        return ret;
+        return ERR_REMOVE_SUBSCRIBE;
+    }
+    if (events.empty()) {
+        HiLog::Error(LABEL, "events list is empty");
+        return ERR_REMOVE_SUBSCRIBE;
     }
     std::vector<std::string> eventList;
     StringUtil::SplitStr(events, ";", eventList);
@@ -100,7 +106,7 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
     ret = dataShareDao_->DeleteSubscriberInfo(uid);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to delete subscriberInfo");
-        return ret;
+        return ERR_REMOVE_SUBSCRIBE;
     }
     return IPC_CALL_SUCCEED;
 }
