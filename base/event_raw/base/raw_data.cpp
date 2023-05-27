@@ -30,7 +30,7 @@ constexpr size_t EXPAND_BUF_SIZE = 512;
 
 RawData::RawData()
 {
-    data_ = new uint8_t[EXPAND_BUF_SIZE];
+    data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
     capacity_ = EXPAND_BUF_SIZE;
     len_ = 0;
 }
@@ -38,12 +38,15 @@ RawData::RawData()
 RawData::RawData(uint8_t* data, size_t dataLen)
 {
     if (data == nullptr || dataLen == 0) {
-        data_ = new uint8_t[EXPAND_BUF_SIZE];
+        data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
         capacity_ = EXPAND_BUF_SIZE;
         len_ = 0;
         return;
     }
-    data_ = new uint8_t[dataLen];
+    data_ = new(std::nothrow) uint8_t[dataLen];
+    if (data_ == nullptr) {
+        return;
+    }
     auto ret = memcpy_s(data_, dataLen, data, dataLen);
     if (ret != EOK) {
         HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
@@ -59,7 +62,10 @@ RawData::RawData(const RawData& data)
     if (dataLen == 0) {
         return;
     }
-    data_ = new uint8_t[dataLen];
+    data_ = new(std::nothrow) uint8_t[dataLen];
+    if (data_ == nullptr) {
+        return;
+    }
     auto ret = memcpy_s(data_, dataLen, data.GetData(), dataLen);
     if (ret != EOK) {
         HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
@@ -78,14 +84,18 @@ RawData& RawData::operator=(const RawData& data)
     if (dataLen == 0) {
         return *this;
     }
-    uint8_t* tmpData = new uint8_t[dataLen];
+    uint8_t* tmpData = new(std::nothrow) uint8_t[dataLen];
+    if (tmpData == nullptr) {
+        return *this;
+    }
     auto ret = memcpy_s(tmpData, dataLen, data.GetData(), dataLen);
     if (ret != EOK) {
         HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
+        delete[] tmpData;
         return *this;
     }
     if (data_ != nullptr) {
-        delete []data_;
+        delete[] data_;
     }
     data_ = tmpData;
     capacity_ = dataLen;
@@ -96,7 +106,7 @@ RawData& RawData::operator=(const RawData& data)
 RawData::~RawData()
 {
     if (data_ != nullptr) {
-        delete []data_;
+        delete[] data_;
         data_ = nullptr;
     }
 }
@@ -105,10 +115,10 @@ void RawData::Reset()
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (data_ != nullptr) {
-        delete []data_;
+        delete[] data_;
         data_ = nullptr;
     }
-    data_ = new uint8_t[EXPAND_BUF_SIZE];
+    data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
     capacity_ = EXPAND_BUF_SIZE;
     len_ = 0;
 }
@@ -137,19 +147,22 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
     auto ret = EOK;
     if ((pos + len) > capacity_) {
         size_t expandedSize = (len > EXPAND_BUF_SIZE) ? len : EXPAND_BUF_SIZE;
-        uint8_t* resizeData = new uint8_t[capacity_ + expandedSize];
-        ret = memcpy_s(resizeData, len_, data_, len_);
+        uint8_t* resizedData = new(std::nothrow) uint8_t[capacity_ + expandedSize];
+        if (resizedData == nullptr) {
+            return false;
+        }
+        ret = memcpy_s(resizedData, len_, data_, len_);
         if (ret != EOK) {
             HiLog::Error(LABEL, "Failed to expand capacity of raw data, ret is %{public}d.", ret);
-            delete []resizeData;
+            delete[] resizedData;
             return false;
         }
         capacity_ += expandedSize;
         HiLog::Debug(LABEL, "Capacity of data is resized to %{public}zu.", capacity_);
         if (data_ != nullptr) {
-            delete []data_;
+            delete[] data_;
         }
-        data_ = resizeData;
+        data_ = resizedData;
     }
     // append new data
     ret = memcpy_s(data_ + pos, len, data, len);
