@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,7 @@ namespace HiviewDFX {
 constexpr int32_t UID_SHELL = 2000;
 constexpr int32_t UID_ROOT = 0;
 constexpr int32_t UID_HIDUMPER = 1212;
+constexpr int32_t UID_HIVIEW = 1201;
 void FaultloggerServiceOhos::ClearQueryStub(int32_t uid)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -52,6 +53,14 @@ int32_t FaultloggerServiceOhos::Dump(int32_t fd, const std::vector<std::u16strin
     }
 
     std::vector<std::string> cmdList;
+    for (auto arg : args) {
+        for (auto c : arg) {
+            if (!isalnum(c) && c != '-' && c != ' ') {
+                dprintf(fd, "string arg contain invalid char:%c.\n", c);
+                return -1;
+            }
+        }
+    }
     std::transform(args.begin(), args.end(), std::back_inserter(cmdList), [](const std::u16string &arg) {
         std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
         return converter.to_bytes(arg);
@@ -114,7 +123,9 @@ void FaultloggerServiceOhos::AddFaultLog(const FaultLogInfoOhos& info)
     outInfo.module = info.module;
     outInfo.reason = info.reason;
     outInfo.summary = info.summary;
-    outInfo.logPath = info.logPath;
+    if (uid == UID_HIVIEW) {
+        outInfo.logPath = info.logPath;
+    }
     outInfo.sectionMap = info.sectionMaps;
     service->AddFaultLog(outInfo);
 }
