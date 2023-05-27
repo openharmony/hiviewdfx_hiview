@@ -43,7 +43,7 @@ int64_t GetFileSeq(const std::string& file)
 std::string GetFileDomain(const std::string& file)
 {
     std::vector<std::string> dirNames;
-    StringUtil::SplitStr(file, "/", dirNames);
+    StringUtil::SplitStr(file, FILE_DELIMIT_STR, dirNames);
     constexpr size_t domainOffset = 2;
     return dirNames.size() < domainOffset ? "" : dirNames[dirNames.size() - domainOffset];
 }
@@ -190,9 +190,9 @@ void SysEventDatabase::UpdateClearMap()
     while (!files.empty()) {
         std::string file = files.top();
         files.pop();
-        std::string fileName = file.substr(file.rfind("/") + 1); // 1 for skipping '/'
+        std::string fileName = file.substr(file.rfind(FILE_DELIMIT_STR) + 1); // 1 for skipping '/'
         std::vector<std::string> splitNames;
-        StringUtil::SplitStr(file, "-", splitNames);
+        StringUtil::SplitStr(fileName, "-", splitNames);
         if (splitNames.size() != FILE_NAME_SPLIT_SIZE) {
             HIVIEW_LOGI("invalid clear file=%{public}s", file.c_str());
             continue;
