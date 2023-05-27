@@ -61,12 +61,14 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     if (blockSize == 0 || blockSize > MAX_BLOCK_SIZE) {
         return;
     }
-    rawData_ = new uint8_t[blockSize];
+    rawData_ = new(std::nothrow) uint8_t[blockSize];
+    if (rawData_ == nullptr) {
+        return;
+    }
     auto ret = memcpy_s(rawData_, blockSize, src, blockSize);
     if (ret != EOK) {
         HiLog::Error(LABEL, "Decode memory copy failed, ret is %{public}d.", ret);
-        delete []rawData_;
-        rawData_ = nullptr;
+        delete[] rawData_;
         return;
     }
     Parse();
@@ -75,31 +77,37 @@ DecodedEvent::DecodedEvent(uint8_t* src)
 DecodedEvent::~DecodedEvent()
 {
     if (rawData_ != nullptr) {
-        delete []rawData_;
+        delete[] rawData_;
         rawData_ = nullptr;
     }
 }
 
 void DecodedEvent::AppendBaseInfo(std::stringstream& ss)
 {
-    char* domain = new char[MAX_DOMAIN_LENGTH + 1];
+    char* domain = new(std::nothrow) char[MAX_DOMAIN_LENGTH + 1];
+    if (domain == nullptr) {
+        return;
+    }
     if (memcpy_s(domain, MAX_DOMAIN_LENGTH, header_.domain, MAX_DOMAIN_LENGTH) != EOK) {
-        delete []domain;
+        delete[] domain;
         return;
     }
     domain[MAX_DOMAIN_LENGTH] = '\0';
     auto eventDomain = std::string(domain);
     AppendValue(ss, BASE_INFO_KEY_DOMAIN, eventDomain);
-    delete []domain;
-    char* name = new char[MAX_EVENT_NAME_LENGTH + 1];
+    delete[] domain;
+    char* name = new(std::nothrow) char[MAX_EVENT_NAME_LENGTH + 1];
+    if (name == nullptr) {
+        return;
+    }
     if (memcpy_s(name, MAX_EVENT_NAME_LENGTH, header_.name, MAX_EVENT_NAME_LENGTH) != EOK) {
-        delete []name;
+        delete[] name;
         return;
     }
     name[MAX_EVENT_NAME_LENGTH] = '\0';
     auto eventName = std::string(name);
     AppendValue(ss, BASE_INFO_KEY_NAME, eventName);
-    delete []name;
+    delete[] name;
     AppendValue(ss, BASE_INFO_KEY_TYPE, (static_cast<int>(header_.type) + 1)); // header_.type is only 2 bits which has
                                                                           // been subtracted 1 before wrote.
     AppendValue(ss, BASE_INFO_KEY_TIME_STAMP, header_.timestamp);

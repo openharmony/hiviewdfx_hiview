@@ -237,7 +237,8 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             continue;
         }
         // the number of returned events may be greater than the limit
-        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF || events.size() >= queryLimit) {
+        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF || events.size() >=
+            static_cast<size_t>(queryLimit)) {
             callback->OnQuery(events, seqs);
             events.clear();
             seqs.clear();
@@ -412,8 +413,8 @@ EventQueryWrapperBuilder& EventQueryWrapperBuilder::Append(const std::string& do
     HiLog::Debug(LABEL, "builder append domain=%{public}s, name=%{public}s, type=%{public}u, condition=%{public}s.",
         domain.c_str(), eventName.c_str(), eventType, extraInfo.c_str());
     auto& queryRules = this->queryWrapper->GetSysEventQueryRules();
-    for (auto& rule : queryRules) {
-        // if the query rules are the same group, combine them
+    // if the query rules are the same group, combine them
+    if (any_of(queryRules.begin(), queryRules.end(), [&domain, &eventName, &eventType, &extraInfo] (auto& rule) {
         if (rule.domain == domain && eventType == rule.eventType && extraInfo == rule.condition) {
             auto& eventList = rule.eventList;
             if (eventName.empty()) {
@@ -421,8 +422,11 @@ EventQueryWrapperBuilder& EventQueryWrapperBuilder::Append(const std::string& do
             } else {
                 eventList.push_back(eventName);
             }
-            return *shared_from_this();
+            return true;
         }
+        return false;
+    })) {
+        return *shared_from_this();
     }
     // otherwise, create a new query rule
     std::vector<std::string> eventList;

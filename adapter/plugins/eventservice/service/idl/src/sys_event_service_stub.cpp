@@ -147,7 +147,7 @@ int32_t SysEventServiceStub::HandleRemoveSubscriber(
 int32_t SysEventServiceStub::HandleExportEvent(MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
-    QueryArgument *queryArgument = data.ReadParcelable<QueryArgument>();
+    std::unique_ptr<QueryArgument> queryArgument(data.ReadParcelable<QueryArgument>());
     if (queryArgument == nullptr) {
         HiLog::Error(LABEL, "parcel read export arguments failed.");
         return ERR_FLATTEN_OBJECT;
@@ -159,7 +159,6 @@ int32_t SysEventServiceStub::HandleExportEvent(MessageParcel& data,
         return ERR_FLATTEN_OBJECT;
     }
     ret = reply.WriteInt64(Export(*queryArgument, queryRules));
-    delete queryArgument;
     if (!ret) {
         HiLog::Error(LABEL, "parcel write return-value of ExportSysEvent failed.");
         return ERR_FLATTEN_OBJECT;

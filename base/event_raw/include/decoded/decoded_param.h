@@ -69,7 +69,7 @@ public:
     virtual bool AsUint64(uint64_t& dest) override;
 
 private:
-    uint64_t val_;
+    uint64_t val_ = 0;
 };
 
 class UnsignedVarintDecodedArrayParam : public DecodedParam {
@@ -95,7 +95,7 @@ public:
     virtual bool AsInt64(int64_t& dest) override;
 
 private:
-    int64_t val_;
+    int64_t val_ = 0;
 };
 
 class SignedVarintDecodedArrayParam : public DecodedParam {
@@ -121,7 +121,7 @@ public:
     virtual bool AsDouble(double& dest) override;
 
 private:
-    double val_;
+    double val_ = 0.0;
 };
 
 class FloatingNumberDecodedArrayParam : public DecodedParam {

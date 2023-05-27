@@ -128,9 +128,9 @@ void SysEvent::InitialMember()
         seqParam->AsInt64(eventSeq_);
     }
     tz_ = static_cast<int16_t>(header.timeZone);
-    pid_ = header.pid;
-    tid_ = header.tid;
-    uid_ = header.uid;
+    pid_ = static_cast<int32_t>(header.pid);
+    tid_ = static_cast<int32_t>(header.tid);
+    uid_ = static_cast<int32_t>(header.uid);
     if (header.isTraceOpened == 1) {
         auto traceInfo = rawDataBuilder_.GetTraceInfo();
         traceId_ = StringUtil::ToString(traceInfo.traceId);
