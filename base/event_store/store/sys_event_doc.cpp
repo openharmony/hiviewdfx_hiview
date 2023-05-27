@@ -35,10 +35,10 @@ const char FILE_EXT[] = ".db";
 }
 
 SysEventDoc::SysEventDoc(const std::string& domain, const std::string& name)
-    : writer_(nullptr), reader_(nullptr), domain_(domain), name_(name)
+    : writer_(nullptr), reader_(nullptr), domain_(domain), name_(name), type_(0)
 {}
 
-SysEventDoc::SysEventDoc(const std::string& file) : writer_(nullptr), reader_(nullptr), curFile_(file)
+SysEventDoc::SysEventDoc(const std::string& file) : writer_(nullptr), reader_(nullptr), type_(0), curFile_(file)
 {}
 
 SysEventDoc::~SysEventDoc()
