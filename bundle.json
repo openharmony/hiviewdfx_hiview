@@ -49,7 +49,8 @@
                 "iowow",
                 "jsoncpp",
                 "libxml2",
-                "sqlite"
+                "sqlite",
+                "openssl"
             ]
         },
         "build": {
