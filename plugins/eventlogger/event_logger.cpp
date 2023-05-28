@@ -55,6 +55,7 @@ public:
     };
 
     virtual int32_t DumpHitrace(const std::string &fullTracePath, int64_t beginTime) = 0;
+    virtual std::string DumpTraceToDir() = 0;
 };
 
 int64_t GetSystemBootTime()
@@ -255,16 +256,23 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
     }
 
     auto task = [this, event, beginTime, hitraceTime, fullTracePath, iHitraceService]() {
-        HIVIEW_LOGI("start dumpHitrace beginTime:%{public}lld, Path:%{public}s", beginTime, fullTracePath.c_str());
-        int ret = iHitraceService->DumpHitrace(fullTracePath, beginTime);
-        if (ret != 0) {
-            HIVIEW_LOGE("Get iHitraceService DumpHitrace failed : %{public}d!", ret);
+        std::string returnDir = iHitraceService->DumpTraceToDir();
+        HIVIEW_LOGI("Get trace path: %{public}s", returnDir.c_str());
+        size_t pos = returnDir.rfind('/');
+        if (pos == std::string::npos) {
+            HIVIEW_LOGI("DumpTraceToDir failed.");
+        }
+
+        std::string dirName = returnDir.substr(pos + 1);
+        if (returnDir.size() == 0) {
+            HIVIEW_LOGE("Get iHitraceService DumpTraceToDir failed");
         } else {
             if (event != nullptr) {
-                event->SetEventValue("HITRACE_TIME", hitraceTime);
+                HIVIEW_LOGI("SetEventValue: %{public}s", dirName.c_str());
+                event->SetEventValue("HITRACE_TIME", dirName);
             }
         }
-        HIVIEW_LOGI("end dumpHitrace");
+        HIVIEW_LOGI("end DumpTraceToDir");
 
         if (this->DetectionHiTraceMap(fullTracePath)) {
             std::unique_lock<std::mutex> lck(finishMutex_);
