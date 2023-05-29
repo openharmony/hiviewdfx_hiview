@@ -30,10 +30,6 @@ public:
     int Catch(int fd) override;
 private:
     std::string catcherCmd;
-    enum CATCHER_TYPE {
-        CATCHER_HILOG,
-        CATCHER_HITRACE
-    } catcherType;
 
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);

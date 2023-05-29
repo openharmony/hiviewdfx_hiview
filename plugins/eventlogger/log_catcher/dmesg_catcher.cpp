@@ -33,7 +33,7 @@ DEFINE_LOG_LABEL(0xD002D01, "EventLogger-DmesgCatcher");
 namespace {
     constexpr int SYSLOG_ACTION_READ_ALL = 3;
     constexpr int SYSLOG_ACTION_SIZE_BUFFER = 10;
-    constexpr mode_t DEFAULT_LOG_FILE_MODE = 0664;
+    constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
 }
 DmesgCatcher::DmesgCatcher() : EventLogCatcher()
 {
@@ -106,10 +106,14 @@ std::string DmesgCatcher::DmesgSaveTofile()
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", fullPath.c_str());
         return fullPath;
     }
-
-    auto fd = open(fullPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
+    std::string realPath;
+    if (!FileUtil::PathToRealPath(fullPath,realPath)) {
+        HIVIEW_LOGI("Fail to verify realpath %s.", fullPath.c_str());
+        return "";
+    }
+    auto fd = open(realPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     if (fd < 0) {
-        HIVIEW_LOGI("Fail to create %s.", fullPath.c_str());
+        HIVIEW_LOGI("Fail to create %s.", realPath.c_str());
         return "";
     }
     bool dumpRet = DumpDmesgLog(fd);
@@ -121,7 +125,7 @@ std::string DmesgCatcher::DmesgSaveTofile()
     if (event_ != nullptr) {
         event_->SetEventValue("SYSRQ_TIME", sysrqTime);
     }
-    return fullPath;
+    return realPath;
 }
 
 int DmesgCatcher::Catch(int fd)

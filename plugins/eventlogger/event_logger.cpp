@@ -124,6 +124,9 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
                 sysEvent->eventName_.c_str(), pid, errno, strerror(errno));
             return;
         }
+        if (!JudgmentRateLimiting(sysEvent)) {
+            return;
+        }
         this->StartLogCollect(sysEvent);
     };
     eventPool_->AddTask(task, "eventlogger");
@@ -149,9 +152,6 @@ int EventLogger::Getfile(std::shared_ptr<SysEvent> event, std::string& logFile)
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
-    if (!JudgmentRateLimiting(event)) {
-        return;
-    }
     std::string logFile;
     int fd = Getfile(event, logFile);
     if (fd < 0) {

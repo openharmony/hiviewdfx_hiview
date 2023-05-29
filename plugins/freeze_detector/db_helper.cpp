@@ -77,9 +77,9 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
 
         std::string info = record->GetEventValue(EventStore::EventCol::INFO);
         std::regex reg("logPath:([^,]+)");
-        std::smatch result;
-        if (std::regex_search(info, result, reg)) {
-            watchPoint.SetLogPath(result[1].str());
+        std::smatch smatchResult;
+        if (std::regex_search(info, smatchResult, reg)) {
+            watchPoint.SetLogPath(smatchResult[1].str());
         }
 
         list.push_back(watchPoint);
