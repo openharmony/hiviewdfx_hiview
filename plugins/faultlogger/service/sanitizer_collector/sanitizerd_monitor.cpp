@@ -65,7 +65,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
             if (event->mask & NOTIFY_MASK) {
                 *sfilename = filename;
 
-                if (event->wd == g_asanWd) {
+                if (event->wd == gAsanWd) {
                     strSanLogPath = std::string(ASAN_LOG_PATH);
                     type = ASAN_LOG_RPT;
                 }
@@ -75,8 +75,8 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
                 std::string fullPath = strSanLogPath + "/" + strFileName;
 
                 HIVIEW_LOGI("recv filename is:[%{public}s]\n", fullPath.c_str());
-                if (g_callback != nullptr) {
-                    g_callback(type, strFileName);
+                if (gCallback != nullptr) {
+                    gCallback(type, strFileName);
                 }
             }
         }
@@ -90,44 +90,44 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
 int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
 {
     const std::string asanLogPath = std::string(ASAN_LOG_PATH);
-    g_nfds = 1;
-    g_ufds = reinterpret_cast<pollfd*>(calloc(1, sizeof(g_ufds[0])));
-    g_ufds[0].fd = inotify_init();
-    if (g_ufds[0].fd < 0) {
-        HIVIEW_LOGI("inotify_init failed: %{public}d-%{public}s.", g_ufds[0].fd, strerror(errno));
+    gNfds = 1;
+    gUfds = reinterpret_cast<pollfd*>(calloc(1, sizeof(gUfds[0])));
+    gUfds[0].fd = inotify_init();
+    if (gUfds[0].fd < 0) {
+        HIVIEW_LOGI("inotify_init failed: %{public}d-%{public}s.", gUfds[0].fd, strerror(errno));
         Uninit();
         return 1;
     }
 
-    g_ufds[0].events = POLLIN;
-    g_asanWd = inotify_add_watch(g_ufds[0].fd, asanLogPath.c_str(), NOTIFY_MASK);
-    if (g_asanWd < 0) {
-        HIVIEW_LOGI("add watch %{public}s failed: %{public}d-%{public}s.", asanLogPath.c_str(), g_ufds[0].fd,
+    gUfds[0].events = POLLIN;
+    gAsanWd = inotify_add_watch(gUfds[0].fd, asanLogPath.c_str(), NOTIFY_MASK);
+    if (gAsanWd < 0) {
+        HIVIEW_LOGI("add watch %{public}s failed: %{public}d-%{public}s.", asanLogPath.c_str(), gUfds[0].fd,
             strerror(errno));
         Uninit();
         return 1;
     } else {
-        HIVIEW_LOGI("add watch %{public}s successfully: %{public}d.", asanLogPath.c_str(), g_ufds[0].fd);
+        HIVIEW_LOGI("add watch %{public}s successfully: %{public}d.", asanLogPath.c_str(), gUfds[0].fd);
     }
 
-    g_callback = pcb;
+    gCallback = pcb;
     return 0;
 }
 
 void SanitizerdMonitor::Uninit()
 {
-    for (int i = 0; i < g_nfds; i++) {
-        if (g_ufds[i].fd >= 0) {
-            close(g_ufds[i].fd);
+    for (int i = 0; i < gNfds; i++) {
+        if (gUfds[i].fd >= 0) {
+            close(gUfds[i].fd);
         }
     }
 
-    if (g_ufds != nullptr) {
-        free(g_ufds);
-        g_ufds = nullptr;
+    if (gUfds != nullptr) {
+        free(gUfds);
+        gUfds = nullptr;
     }
-    g_nfds = 0;
-    g_asanWd = -1;
+    gNfds = 0;
+    gAsanWd = -1;
 }
 
 int SanitizerdMonitor::RunMonitor(std::string *filename, int timeout)
@@ -135,13 +135,13 @@ int SanitizerdMonitor::RunMonitor(std::string *filename, int timeout)
     int pollres;
 
     while (true) {
-        pollres = poll(g_ufds, g_nfds, timeout);
+        pollres = poll(gUfds, gNfds, timeout);
         if (pollres == 0) {
             return 1;
         }
 
-        if (g_ufds[0].revents & POLLIN) {
-            ReadNotify(filename, g_ufds[0].fd);
+        if (gUfds[0].revents & POLLIN) {
+            ReadNotify(filename, gUfds[0].fd);
         }
     }
     return 0;

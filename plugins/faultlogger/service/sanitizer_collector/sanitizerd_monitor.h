@@ -33,10 +33,10 @@ public:
 
 private:
     int ReadNotify(std::string *sfilename, int nfd);
-    struct pollfd* g_ufds = nullptr;
-    int g_nfds = 0;
-    SANITIZERD_NOTIFY_CALLBACK g_callback = nullptr;
-    int g_asanWd = -1;
+    struct pollfd* gUfds = nullptr;
+    int gNfds = 0;
+    SANITIZERD_NOTIFY_CALLBACK gCallback = nullptr;
+    int gAsanWd = -1;
 };
 }
 }
