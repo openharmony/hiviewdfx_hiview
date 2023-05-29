@@ -207,7 +207,7 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
     in_.read(reinterpret_cast<char*>(*content), contentSize);
     if (!IsValidContent(*content, contentSize)) {
         HIVIEW_LOGE("failed to read the content, file=%{public}s", docPath_.c_str());
-        delete[] content;
+        delete[] *content;
         return DOC_STORE_ERROR_INVALID;
     }
     return DOC_STORE_SUCCESS;
