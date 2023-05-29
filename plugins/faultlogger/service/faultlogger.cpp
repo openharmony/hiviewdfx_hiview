@@ -54,7 +54,6 @@
 #include "bundle_mgr_client.h"
 
 #include "securec.h"
-#include "sanitizerd_log.h"
 #include "asan_collector.h"
 #include "sanitizerd_collector.h"
 #include "sanitizerd_monitor.h"
