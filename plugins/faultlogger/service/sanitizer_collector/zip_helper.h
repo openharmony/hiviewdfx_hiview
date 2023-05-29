@@ -43,7 +43,7 @@ constexpr char ROOT_FAULTLOG_LOG_PATH[] = "/data/log/faultlog/";
 const std::string DEVICE_OHOS_VERSION_PARAM = "hw_sc.build.os.version";
 const std::string EMPTY_PARAM = "";
 
-bool IsLinkFile(const std::string& filename);
+bool IsLinkFile(const std::string& sfilename);
 bool GetRealPath(const std::string& fn, std::string& out);
 bool ReadNormalFileToString(const std::string& path, std::string& content);
 bool ReadFileToString(const std::string& path, std::string& out);

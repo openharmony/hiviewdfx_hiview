@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-constexpr static char ASAN_LOG_PATH[] = "/dev/asanlog";
+static constexpr char ASAN_LOG_PATH[] = "/dev/asanlog";
 
 static constexpr OHOS::HiviewDFX::HiLogLabel SANITIZERD_LABEL = {LOG_CORE, 0xD002D12, "Sanitizer"};
 
