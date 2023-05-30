@@ -21,7 +21,6 @@ config("running_status_logger_config") {
     "include",
     "$hiview_adapter/dbstore/include",
     "$hiview_adapter/utility/include",
-    "$hiview_adapter/utility/include/extra",
     "$hiview_base/log/include",
     "$hiview_base/include",
     "$hiview_base/running_status_logger/include",
