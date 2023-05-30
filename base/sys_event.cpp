@@ -333,11 +333,16 @@ std::string SysEvent::GetEventValue(const std::string& key)
     return dest;
 }
 
-uint64_t SysEvent::GetEventIntValue(const std::string& key)
+int64_t SysEvent::GetEventIntValue(const std::string& key)
 {
-    uint64_t dest;
-    rawDataBuilder_.ParseValueByKey(key, dest);
-    return dest;
+    int64_t intDest = 0; // default value is 0
+    auto ret = rawDataBuilder_.ParseValueByKey(key, intDest);
+    if (!ret) {
+        uint64_t uIntDest = 0; // default value is 0
+        rawDataBuilder_.ParseValueByKey(key, uIntDest);
+        return static_cast<int64_t>(uIntDest);
+    }
+    return intDest;
 }
 
 int SysEvent::GetEventType()
