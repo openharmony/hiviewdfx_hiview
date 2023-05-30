@@ -85,17 +85,17 @@ declare namespace FaultLogger {
    * @param callback faultlog information data callback function
    * @throws {error} if the param is invalid or service is broken
    */
-   function query(faultType: FaultType, callback: AsyncCallback<Array<FaultLogInfo>>) : void;
+  function query(faultType: FaultType, callback: AsyncCallback<Array<FaultLogInfo>>) : void;
 
-   /**
-    * Query the result of the current application FaultLog in return promise mode.
-    * @since 9
-    * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
-    * @param faultType fault type to query
-    * @throws {error} if the param is invalid or service is broken
-    * @return return faultlog information data by promise
-    */
-   function query(faultType: FaultType) : Promise<Array<FaultLogInfo>>;
+  /**
+   * Query the result of the current application FaultLog in return promise mode.
+   * @since 9
+   * @syscap SystemCapability.HiviewDFX.Hiview.FaultLogger
+   * @param faultType fault type to query
+   * @throws {error} if the param is invalid or service is broken
+   * @return return faultlog information data by promise
+  */
+  function query(faultType: FaultType) : Promise<Array<FaultLogInfo>>;
 
   /**
    * FaultLog information data structure

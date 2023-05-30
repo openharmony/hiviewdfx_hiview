@@ -74,7 +74,10 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
     std::lock_guard<std::mutex> lock(mutex_);
     std::map<std::string, std::string> eventInfos;
     AnalysisFaultlog(info, eventInfos);
-    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, GetFaultNameByType(info.faultLogType, false), HiSysEvent::EventType::FAULT,
+    HiSysEventWrite(
+        HiSysEvent::Domain::RELIABILITY,
+        GetFaultNameByType(info.faultLogType, false),
+        HiSysEvent::EventType::FAULT,
         "FAULT_TYPE", std::to_string(info.faultLogType),
         "PID", info.pid,
         "UID", info.id,

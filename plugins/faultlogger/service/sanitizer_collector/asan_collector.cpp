@@ -91,7 +91,7 @@ void AsanCollector::ProcessStackTrace(
         "    #(\\d+) " + std::string(XDIGIT_REGEX) +       // Matches "0x7215208f97"
         "([\\s\\?(]+)" +                                     // Matches " ? ("
         "([^\\+ )]+\\+" + std::string(XDIGIT_REGEX) + ")";   // Matches until delimiter reached
-    static const std::regex stackEntryRe(stackEntry);
+    static const std::regex STACK_ENTRY_RE(stackEntry);
     std::match_results<std::string::iterator> stack_entry_captured;
 
     std::string hashable;
@@ -100,14 +100,14 @@ void AsanCollector::ProcessStackTrace(
     *hash = 0;
     // Stacktrace end until "is located" is reached.
     std::string stackEnd = " is located";
-    static const std::regex stackEndRe(stackEnd);
+    static const std::regex STACK_END_RE(stackEnd);
     std::match_results<std::string::iterator> stack_end_captured;
 
     for (auto str_line: str_lines) {
         std::string frm_no;
         std::string xdigit;
         std::string function_name;
-        if (std::regex_search(str_line.begin(), str_line.end(), stack_entry_captured, stackEntryRe)) {
+        if (std::regex_search(str_line.begin(), str_line.end(), stack_entry_captured, STACK_ENTRY_RE)) {
             frm_no = stack_entry_captured[1].str();
             xdigit = stack_entry_captured[2].str();
             function_name = stack_entry_captured[3].str();
@@ -134,7 +134,7 @@ void AsanCollector::ProcessStackTrace(
                     }
                 }
             }
-        } else if (std::regex_search(str_line.begin(), str_line.end(), stack_end_captured, stackEndRe)) {
+        } else if (std::regex_search(str_line.begin(), str_line.end(), stack_end_captured, STACK_END_RE)) {
             if (printDiagnostics) {
                 SANITIZERD_LOGI("end of stack matched reline:(%{public}s)\n", str_line.c_str());
             }
@@ -202,9 +202,9 @@ std::string AsanCollector::GetTopStackWithoutCommonLib(const std::string& descri
     "  #[\\d+] " + std::string(XDIGIT_REGEX) +
     "[\\s\\?(]+" +
     "[^\\+ ]+/(\\w+)(.z)?.so\\+" + std::string(XDIGIT_REGEX);
-    static const std::regex stackRe(stackRecord);
+    static const std::regex STACK_RECORD(stackRecord);
 
-    while (std::regex_search(record, stackCaptured, stackRe)) {
+    while (std::regex_search(record, stackCaptured, STACK_RECORD)) {
         if (topstack.size() == 0) {
             topstack = stackCaptured[1].str();
         }
@@ -274,8 +274,8 @@ bool AsanCollector::ReadRecordToString(std::string& fullFile, const std::string&
         curr_.uid = static_cast<int32_t>(st.st_uid);
     }
 
-    static const std::regex recordRe(ASAN_RECORD_REGEX);
-    while (std::regex_search(record, captured, recordRe)) {
+    static const std::regex RECORD_RE(ASAN_RECORD_REGEX);
+    while (std::regex_search(record, captured, RECORD_RE)) {
         std::string signature;
 
         curr_.description = captured[DESCRIPTION_FIELD].str();
