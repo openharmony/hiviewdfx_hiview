@@ -28,5 +28,8 @@ group("moduletest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [ "faultlogger:fuzztest" ]
+  deps += [
+    "faultlogger:fuzztest",
+    "sysevent_source:fuzztest",
+  ]
 }
