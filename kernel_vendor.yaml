@@ -408,3 +408,8 @@ LOWMEM:
   FIRST_FRAME: {type: STRING, desc: first stack info}
   SECOND_FRAME: {type: STRING, desc: second stack info}
   LAST_FRAME: {type: STRING, desc: last stack info}
+
+XPOWER_KERNEL_MESSAGE:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: kernel message}
+  TAG: {type: STRING, desc: tag of the message}
+  MESSAGE: {type: STRING, desc: kernel event}
