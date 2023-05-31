@@ -42,7 +42,8 @@
                 "os_account",
                 "safwk",
                 "samgr",
-                "time_service"
+                "time_service",
+                "napi"
             ],
             "third_party": [
                 "ejdb",
@@ -50,7 +51,9 @@
                 "jsoncpp",
                 "libxml2",
                 "sqlite",
-                "openssl"
+                "openssl",
+                "bounds_checking_function",
+                "zlib"
             ]
         },
         "build": {
