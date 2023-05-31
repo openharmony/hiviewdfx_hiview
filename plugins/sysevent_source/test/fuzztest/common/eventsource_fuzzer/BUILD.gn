@@ -15,10 +15,9 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 
 ohos_fuzztest("EventSourceFuzzTest") {
-  module_out_path = "hiview/eventservice"
+  module_out_path = "hiview/sysevent_source"
 
-  fuzz_config_file =
-      "$hiview_plugin/eventservice/test/fuzztest/common/eventsource_fuzzer"
+  fuzz_config_file = "../eventsource_fuzzer"
 
   include_dirs = [ "eventsource_fuzzer.h" ]
 
@@ -31,5 +30,9 @@ ohos_fuzztest("EventSourceFuzzTest") {
 
   sources = [ "eventsource_fuzzer.cpp" ]
 
-  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_core:hiview_core",
+    "$hiview_plugin/sysevent_source:sysevent_source",
+  ]
 }
