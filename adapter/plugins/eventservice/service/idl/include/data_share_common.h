@@ -27,6 +27,7 @@ constexpr const char* FILE_SUFFIX = ".evt";
 constexpr const char* DOMAIN_PATH = "/Domain-";
 constexpr const char* PATH_DIR = "/data/log/hiview/system_event_db/events/";
 constexpr const char* TEMP_SRC_DIR = "/data/log/hiview/system_event_db/events/eventTemp.evt";
+constexpr const char* TEMP_EXPORT_SRC_DIR = "/data/log/hiview/system_event_db/events/eventExportTemp.evt";
 constexpr const char* DATABASE_DIR = "/data/log/hiview/system_event_db/subscribers/";
 
 constexpr const char* SUCCESS_CODE = "000";
