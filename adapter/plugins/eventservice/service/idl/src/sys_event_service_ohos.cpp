@@ -531,10 +531,10 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
     if (checkRet != IPC_CALL_SUCCEED) {
         return checkRet;
     }
-    int64_t now = TimeUtil::GetMilliseconds();
     int32_t uid = IPCSkeleton::GetCallingUid();
     auto timestamp = dataPublisher_->GetTimeStampByUid(uid);
-    if (now - timestamp < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
+    int64_t currentTime = TimeUtil::GetMilliseconds();
+    if (currentTime - timestamp < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
         HiLog::Debug(LABEL, "forbid export, time frequency limit < 1 h.");
         return ERR_EXPORT_FREQUENCY_OVER_LIMIT;
     }
@@ -547,7 +547,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
     }
     if (queryArgument.maxEvents == 0) {
         HiLog::Warn(LABEL, "export count is 0, export complete directly.");
-        return IPC_CALL_SUCCEED;
+        return currentTime;
     }
     auto queryWrapper = queryWrapperBuilder->Build();
     if (queryWrapper == nullptr) {
@@ -555,8 +555,8 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
         return ERR_QUERY_RULE_INVALID;
     }
     queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
-    dataPublisher_->AddExportTask(queryWrapper, now, uid);
-    return now;
+    dataPublisher_->AddExportTask(queryWrapper, currentTime, uid);
+    return currentTime;
 }
 
 void SysEventServiceOhos::SetWorkLoop(std::shared_ptr<EventLoop> looper)
