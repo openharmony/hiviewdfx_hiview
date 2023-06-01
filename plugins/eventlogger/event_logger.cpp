@@ -49,9 +49,10 @@ constexpr int64_t EXTRACE_TIME = 12;
 
 class IHitraceService : public IRemoteBroker {
 public:
-    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.PerformanceDFX.IHierviceAbility");
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.PerformanceDFX.IHiServiceAbility");
     enum {
         TRANS_ID_PING_ABILITY = 1,
+        DUMP_TRACE_TO_DIR = 2,
     };
 
     virtual int32_t DumpHitrace(const std::string &fullTracePath, int64_t beginTime) = 0;
