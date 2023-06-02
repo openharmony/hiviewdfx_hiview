@@ -14,8 +14,15 @@
  */
 #include "peer_binder_catcher.h"
 
-#include <securec.h>
+#include <ctime>
+#include <cstdio>
+#include <cstdlib>
+
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <securec.h>
 
 #include "common_utils.h"
 #include "file_util.h"
@@ -34,10 +41,11 @@ PeerBinderCatcher::PeerBinderCatcher() : EventLogCatcher()
     name_ = "PeerBinderCatcher";
 }
 
-bool PeerBinderCatcher::Initialize(const std::string& strParam1, int pid, int layer)
+bool PeerBinderCatcher::Initialize(const std::string& perfCmd, int layer, int pid)
 {
     pid_ = pid;
     layer_ = layer;
+    perfCmd_ = perfCmd;
     char buf[BUF_SIZE_512] = {0};
     int ret = snprintf_s(buf, BUF_SIZE_512, BUF_SIZE_512 - 1,
         "PeerBinderCatcher -- pid==%d layer_ == %d\n", pid_, layer_);
@@ -211,14 +219,18 @@ void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set
     opt.SetFrequency(1000); // 1000 : 1kHz
     opt.SetCallGraph("fp");
     opt.SetOffCPU(true);
-    std::vector<pid_t> selectPids;
-    selectPids.push_back(pid_);
-    for (const auto& pid : pids) {
-        if (pid > 0) {
-            selectPids.push_back(pid);
+    if (perfCmd_.find("a") == std::string::npos) {
+        std::vector<pid_t> selectPids;
+        selectPids.push_back(pid_);
+        for (const auto& pid : pids) {
+            if (pid > 0) {
+                selectPids.push_back(pid);
+            }
         }
+        opt.SetSelectPids(selectPids);
+    } else {
+        opt.SetTargetSystemWide(true);
     }
-    opt.SetSelectPids(selectPids);
 
     if (perfClient_ == nullptr) {
         perfClient_ = std::make_unique<HiperfClient::Client>(EVENT_LOG_PATH);
@@ -229,11 +241,27 @@ void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set
 void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
 {
 #if defined(__aarch64__)
+    if (perfCmd_.empty()) {
+        HIVIEW_LOGI("BinderPeer perf is not configured.");
+        return;
+    }
+
+    static std::mutex lock;
+    std::unique_lock<std::mutex> mlock(lock);
     std::string fileName = "hiperf-" + std::to_string(pid_) + ".data";
     std::string fullPath = std::string(EVENT_LOG_PATH) + "/" + fileName;
     if (access(fullPath.c_str(), F_OK) == 0) {
-        // already exist
-        return;
+        struct stat statBuf;
+        auto now = time(nullptr);
+        if (stat(fullPath.c_str(), &statBuf) == -1) {
+            HIVIEW_LOGI("Failed to stat file, error:%{public}d.", errno);
+            FileUtil::RemoveFile(fullPath);
+        } else if (now - statBuf.st_mtime < PERF_LOG_EXPIRE_TIME) {
+            HIVIEW_LOGI("Target log has exist, reuse it.");
+            return;
+        } else {
+            FileUtil::RemoveFile(fullPath);
+        }
     }
 
     pid_t child = fork();

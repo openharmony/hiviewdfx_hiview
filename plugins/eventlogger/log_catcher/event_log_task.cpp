@@ -233,21 +233,17 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmd, ":", cmdList, true);
-    if (cmdList.front() != "pb") {
+    if (cmdList.size() != PeerBinderCatcher::BP_CMD_SZ || cmdList.front() != "pb") {
         return false;
     }
 
-    int layer = 0;
     int pid = event_->GetEventIntValue("PID");
     pid = pid ? pid : event_->GetPid();
-    StringUtil::StrToInt(cmdList.back(), layer);
-    HIVIEW_LOGI("pid:%{public}d, value:%{public}d ", pid, layer);
-
     auto capture = std::make_shared<PeerBinderCatcher>();
-    capture->Initialize("", pid, layer);
+    capture->Initialize(cmdList[PeerBinderCatcher::BP_CMD_PERF_TYPE_INDEX],
+        StringUtil::StrToInt(cmdList[PeerBinderCatcher::BP_CMD_LAYER_INDEX]), pid);
     capture->Init(event_, "");
     tasks_.push_back(capture);
-
     return true;
 }
 
