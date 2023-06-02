@@ -76,8 +76,8 @@ void DataPublisherSysEventCallback::HandleEventFile(const std::string &srcPath, 
     if (res == -1) {
         HiLog::Error(LABEL, "failed to move file to desPath.");
     }
-    if (!FileUtil::SaveStringToFile(srcPath, "", true)) {
-        HiLog::Error(LABEL, "failed to truncate file");
+    if (!FileUtil::RemoveFile(srcPath)) {
+        HiLog::Error(LABEL, "failed to remove resourceFile.");
     }
     if (chmod(desPath.c_str(), FileUtil::FILE_PERM_666)) {
         HiLog::Error(LABEL, "Failed to chmod socket.");

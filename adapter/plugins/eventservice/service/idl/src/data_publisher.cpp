@@ -236,8 +236,8 @@ void DataPublisher::AddExportTask(std::shared_ptr<BaseEventQueryWrapper> queryWr
     }
     std::string timeStr = std::to_string(timestamp);
     std::string srcPath = TEMP_EXPORT_SRC_DIR;
-    if (!FileUtil::SaveStringToFile(srcPath, "", true)) {
-        HiLog::Error(LABEL, "failed to truncate file");
+    if (!FileUtil::RemoveFile(srcPath)) {
+        HiLog::Error(LABEL, "failed to remove resourceFile.");
     }
     std::string desPath = OHOS::HiviewDFX::DataShareUtil::GetSandBoxPathByUid(uid);
     desPath.append(DOMAIN_PATH);
