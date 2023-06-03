@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 #include "log_analyzer.h"
+
+#include <securec.h>
 
 #include "common_utils.h"
 #include "faultlog_util.h"
@@ -49,9 +51,11 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
         ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : ""), 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
 
-    if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty()) && eventInfos["TRACER_PID"] != "0") {
-        std::string processName = CommonUtils::GetProcNameByPid(std::stoi(eventInfos["TRACER_PID"]));
-        eventInfos["LAST_FRAME"] += ("(Tracer Process Name:" + processName + ")");
+    if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty())) {
+        int32_t pid = 0;
+        if (sscanf_s(eventInfos["TRACER_PID"].c_str(), "%d", &pid) == 1 && pid > 0) {
+            eventInfos["LAST_FRAME"] += ("(Tracer Process Name:" + CommonUtils::GetProcNameByPid(pid) + ")");
+        }
     }
 
     return true;
