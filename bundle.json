@@ -93,15 +93,6 @@
                     }
                 },
                 {
-                    "name": "//base/hiviewdfx/hiview/adapter/system_service:system_service",
-                    "header": {
-                        "header_base": "//base/hiviewdfx/hiview/adapter/system_service/include",
-                        "header_files": [
-                            "parameter_ex.h"
-                        ]
-                    }
-                },
-                {
                     "name": "//base/hiviewdfx/hiview/base:hiviewbase",
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/base/include",
@@ -110,15 +101,6 @@
                             "event_loop.h",
                             "plugin.h",
                             "event.h"
-                        ]
-                    }
-                },
-                {
-                    "name": "//base/hiviewdfx/hiview/core:hiview_core",
-                    "header": {
-                        "header_base": "//base/hiviewdfx/hiview/core/include",
-                        "header_files": [
-                            "hiview_platform.h"
                         ]
                     }
                 }
