@@ -34,6 +34,8 @@ ohos_source_set("log_analyzer") {
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
+
+  part_name = "hiview"
 }
 
 ohos_source_set("faultlogger_common") {
