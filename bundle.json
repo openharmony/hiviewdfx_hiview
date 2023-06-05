@@ -91,6 +91,36 @@
                             "xpower_event_js.h"
                         ]
                     }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/adapter/system_service:system_service",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/adapter/system_service/include",
+                        "header_files": [
+                            "parameter_ex.h"
+                        ]
+                    }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/base:hiviewbase",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/base/include",
+                        "header_files": [
+                            "plugin_factory.h",
+                            "event_loop.h",
+                            "plugin.h",
+                            "event.h"
+                        ]
+                    }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/core:hiview_core",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/core/include",
+                        "header_files": [
+                            "hiview_platform.h"
+                        ]
+                    }
                 }
             ],
             "test": [ "//base/hiviewdfx/hiview:hiview_test_package" ]
