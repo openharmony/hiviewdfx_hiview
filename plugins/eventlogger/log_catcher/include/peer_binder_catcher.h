@@ -29,12 +29,16 @@ class PeerBinderCatcher : public EventLogCatcher {
 public:
     explicit PeerBinderCatcher();
     ~PeerBinderCatcher() override{};
-    bool Initialize(const std::string& strParam1, int pid, int layer) override;
+    bool Initialize(const std::string& perfCmd, int layer, int pid) override;
     int Catch(int fd) override;
     void Init(std::shared_ptr<SysEvent> event, const std::string& filePath);
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
     static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/proc/transaction_proc";
+    static constexpr int BP_CMD_LAYER_INDEX = 1;
+    static constexpr int BP_CMD_PERF_TYPE_INDEX = 2;
+    static constexpr int PERF_LOG_EXPIRE_TIME = 60;
+    static constexpr size_t BP_CMD_SZ = 3;
 
 private:
     struct BinderInfo {
@@ -49,6 +53,7 @@ private:
 
     int pid_ = 0;
     int layer_ = 0;
+    std::string perfCmd_ = "";
     std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
     std::unique_ptr<Developtools::HiPerf::HiperfClient::Client> perfClient_ = nullptr;

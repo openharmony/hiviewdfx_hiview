@@ -35,10 +35,6 @@ constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DataPublisherSysEven
 void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& sysEvent,
     const std::vector<int64_t>& seq)
 {
-    lastSrcFilePath_ = srcPath_;
-    lastSrcFilePath_.append("-")
-        .append(std::to_string(fileIndex_))
-        .append(FILE_SUFFIX);
     lastDestFilePath_ = destPath_;
     lastDestFilePath_.append("-")
         .append(SUCCESS_CODE)
@@ -49,12 +45,8 @@ void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& s
     for (auto iter: sysEvent) {
         int32_t eventJsonSize = static_cast<int32_t>((iter.size() + 1) * sizeof(std::u16string));
         if (eventJsonSize + totalJsonSize_ > MAXIMUM_FILE_SIZE) {
-            HandleEventFile(lastSrcFilePath_, lastDestFilePath_);
+            HandleEventFile(srcPath_, lastDestFilePath_);
             fileIndex_++;
-            lastSrcFilePath_ = srcPath_;
-            lastSrcFilePath_.append("-")
-                .append(std::to_string(fileIndex_))
-                .append(FILE_SUFFIX);
             lastDestFilePath_ = destPath_;
             lastDestFilePath_.append("-")
                 .append(SUCCESS_CODE)
@@ -64,7 +56,7 @@ void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& s
             totalJsonSize_ = 0;
         }
         std::string str = convert.to_bytes(iter);
-        if (!FileUtil::SaveStringToFile(lastSrcFilePath_, str + ",", false)) {
+        if (!FileUtil::SaveStringToFile(srcPath_, str + ",", false)) {
             HiLog::Error(LABEL, "failed to persist iter to file");
         }
         totalJsonSize_ += eventJsonSize;
@@ -74,7 +66,7 @@ void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& s
 void DataPublisherSysEventCallback::OnComplete(int32_t reason, int32_t total, int64_t seq)
 {
     if (totalJsonSize_ != 0) {
-        HandleEventFile(lastSrcFilePath_, lastDestFilePath_);
+        HandleEventFile(srcPath_, lastDestFilePath_);
     }
 }
 
@@ -84,8 +76,7 @@ void DataPublisherSysEventCallback::HandleEventFile(const std::string &srcPath, 
     if (res == -1) {
         HiLog::Error(LABEL, "failed to move file to desPath.");
     }
-    auto result = FileUtil::RemoveFile(srcPath);
-    if (!result) {
+    if (!FileUtil::RemoveFile(srcPath)) {
         HiLog::Error(LABEL, "failed to remove resourceFile.");
     }
     if (chmod(desPath.c_str(), FileUtil::FILE_PERM_666)) {

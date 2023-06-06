@@ -141,7 +141,7 @@ void DataPublisher::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event
         return;
     }
     int64_t timestamp = TimeUtil::GetMilliseconds();
-    std::string timeStr = TimeUtil::FormatTime(timestamp, TIME_STAMP_FORMAT);
+    std::string timeStr = std::to_string(timestamp);
     std::string srcPath = TEMP_SRC_DIR;
     if (looper_ != nullptr) {
         auto task = std::bind(&DataPublisher::HandleSubscribeTask, this, event, srcPath, timeStr);
@@ -234,8 +234,11 @@ void DataPublisher::AddExportTask(std::shared_ptr<BaseEventQueryWrapper> queryWr
         HiLog::Error(LABEL, "failed to create resourceFile.");
         return;
     }
-    std::string timeStr = TimeUtil::FormatTime(timestamp, TIME_STAMP_FORMAT);
-    std::string srcPath = PATH_DIR + timeStr;
+    std::string timeStr = std::to_string(timestamp);
+    std::string srcPath = TEMP_EXPORT_SRC_DIR;
+    if (!FileUtil::RemoveFile(srcPath)) {
+        HiLog::Error(LABEL, "failed to remove resourceFile.");
+    }
     std::string desPath = OHOS::HiviewDFX::DataShareUtil::GetSandBoxPathByUid(uid);
     desPath.append(DOMAIN_PATH);
     desPath.append(timeStr);

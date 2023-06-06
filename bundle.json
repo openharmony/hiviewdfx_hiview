@@ -42,7 +42,8 @@
                 "os_account",
                 "safwk",
                 "samgr",
-                "time_service"
+                "time_service",
+                "napi"
             ],
             "third_party": [
                 "ejdb",
@@ -50,7 +51,9 @@
                 "jsoncpp",
                 "libxml2",
                 "sqlite",
-                "openssl"
+                "openssl",
+                "bounds_checking_function",
+                "zlib"
             ]
         },
         "build": {
@@ -86,6 +89,18 @@
                         "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
                         "header_files": [
                             "xpower_event_js.h"
+                        ]
+                    }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/base:hiviewbase",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/base/include",
+                        "header_files": [
+                            "plugin_factory.h",
+                            "event_loop.h",
+                            "plugin.h",
+                            "event.h"
                         ]
                     }
                 }

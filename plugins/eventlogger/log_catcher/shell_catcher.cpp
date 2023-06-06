@@ -29,10 +29,9 @@ ShellCatcher::ShellCatcher() : EventLogCatcher()
     name_ = "ShellCatcher";
 }
 
-bool ShellCatcher::Initialize(const std::string& cmd, int type, int intParam __UNUSED)
+bool ShellCatcher::Initialize(const std::string& cmd, int type __UNUSED, int intParam __UNUSED)
 {
     catcherCmd = cmd;
-    catcherType = CATCHER_TYPE(type);
     description_ = "catcher cmd: " + catcherCmd + " ";
     return true;
 }
@@ -45,17 +44,7 @@ void ShellCatcher::DoChildProcess(int writeFd)
         _exit(-1);
     }
 
-    int ret = 0;
-    switch (catcherType) {
-        case CATCHER_HILOG:
-            ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
-            break;
-        case CATCHER_HITRACE:
-            ret = execl("/system/bin/hitrace", "hitrace", nullptr);
-            break;
-        default:
-            break;        
-    }
+    int ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         _exit(-1);

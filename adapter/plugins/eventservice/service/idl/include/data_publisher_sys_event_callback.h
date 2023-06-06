@@ -37,7 +37,6 @@ public:
 private:
     std::string srcPath_;
     std::string destPath_;
-    std::string lastSrcFilePath_;
     std::string lastDestFilePath_;
     int32_t fileIndex_;
     int32_t totalJsonSize_;

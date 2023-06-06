@@ -49,9 +49,10 @@ constexpr int64_t EXTRACE_TIME = 12;
 
 class IHitraceService : public IRemoteBroker {
 public:
-    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.PerformanceDFX.IHierviceAbility");
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.PerformanceDFX.IHiServiceAbility");
     enum {
         TRANS_ID_PING_ABILITY = 1,
+        DUMP_TRACE_TO_DIR = 2,
     };
 
     virtual int32_t DumpHitrace(const std::string &fullTracePath, int64_t beginTime) = 0;
@@ -125,6 +126,9 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
                 sysEvent->eventName_.c_str(), pid, errno, strerror(errno));
             return;
         }
+        if (!JudgmentRateLimiting(sysEvent)) {
+            return;
+        }
         this->StartLogCollect(sysEvent);
     };
     eventPool_->AddTask(task, "eventlogger");
@@ -150,9 +154,6 @@ int EventLogger::Getfile(std::shared_ptr<SysEvent> event, std::string& logFile)
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
-    if (!JudgmentRateLimiting(event)) {
-        return;
-    }
     std::string logFile;
     int fd = Getfile(event, logFile);
     if (fd < 0) {
