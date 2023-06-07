@@ -80,6 +80,7 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
                         "header_files": [
+                            "xpower_event_common.h",
                             "xpower_event.h"
                         ]
                     }
@@ -89,7 +90,9 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
                         "header_files": [
-                            "xpower_event_js.h"
+                            "xpower_event_common.h",
+                            "xpower_event_js.h",
+                            "xpower_event_jsvm.h"
                         ]
                     }
                 },
