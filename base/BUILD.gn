@@ -50,10 +50,7 @@ ohos_source_set("logger") {
 
 ohos_source_set("hiview_base") {
   part_name = "hiview"
-  public_configs = [
-    ":hiview_base_config",
-    "$hiview_core:hiview_core_config",
-  ]
+  public_configs = [ ":hiview_base_config" ]
 
   sources = [
     "audit.cpp",
@@ -94,7 +91,10 @@ ohos_source_set("hiview_base") {
 ohos_shared_library("hiviewbase") {
   all_dependent_configs = [ ":hiview_base_config" ]
   public_configs = [ ":hiview_base_config" ]
-  public_configs += [ "event_report:hiview_event_report_config" ]
+  public_configs += [
+    "event_report:hiview_event_report_config",
+    "$hiview_core:hiview_core_config",
+  ]
 
   deps = [
     ":hiview_base",
