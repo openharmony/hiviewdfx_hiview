@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "decoded_param.h"
 #include "base/raw_data_base_def.h"
 #include "base/raw_data.h"
+#include "decoded_param.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -67,7 +67,7 @@ private:
             std::is_same_v<std::decay_t<T>, uint64_t> ||
             std::is_same_v<std::decay_t<T>, float> ||
             std::is_same_v<std::decay_t<T>, double>) {
-            ss << "\"" << key << "\":" << std::to_string(val) << ",";
+            ss << "\"" << key << "\":" << val << ",";
             return;
         }
         AppendArrayValue(ss, key, val);
@@ -95,7 +95,7 @@ private:
             std::is_same_v<std::decay_t<T>, std::vector<float>> ||
             std::is_same_v<std::decay_t<T>, std::vector<double>>) {
             for (auto item : vals) {
-                ss << "" << std::to_string(item) << ",";
+                ss << "" << item << ",";
             }
         }
         if (ss.tellp() != 0) {
