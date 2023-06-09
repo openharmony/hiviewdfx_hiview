@@ -17,8 +17,6 @@
 
 #include "hilog/log.h"
 
-#include "securec.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
@@ -51,8 +49,6 @@ bool RawDataEncoder::ValueTypeEncoded(RawData& data, bool isArray, ValueType typ
         .valueType = static_cast<uint8_t>(type),
         .valueByteCnt = count,
     };
-    HiLog::Debug(LABEL, "Encoder isArray  is %{public}d.", static_cast<int>(kvType.isArray));
-    HiLog::Debug(LABEL, "Encoder valueType  is %{public}d.", static_cast<int>(kvType.valueType));
     if (!data.Append(reinterpret_cast<uint8_t*>(&kvType), sizeof(struct ParamValueType))) {
         return false;
     }

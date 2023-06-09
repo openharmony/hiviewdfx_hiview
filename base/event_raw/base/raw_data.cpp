@@ -145,7 +145,6 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
             return false;
         }
         capacity_ += expandedSize;
-        HiLog::Debug(LABEL, "Capacity of data is resized to %{public}zu.", capacity_);
         if (data_ != nullptr) {
             delete []data_;
         }
