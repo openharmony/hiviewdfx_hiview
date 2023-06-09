@@ -1,0 +1,27 @@
+{
+  global:
+    extern "C" {
+      AddFaultLog;
+      ReportCppCrashEvent;
+      FaultLogInfoInner*;
+    };
+    extern "C++" {
+      VTT?for?OHOS::HiviewDFX::FaultLogInfoOhos;
+      vtable?for?OHOS::HiviewDFX::FaultLogInfoOhos;
+      OHOS::HiviewDFX::CheckFaultloggerStatus*;
+      OHOS::HiviewDFX::AddFaultLog*;
+      OHOS::HiviewDFX::Query*;
+      OHOS::HiviewDFX::FaultLogInfo::Get*;
+      OHOS::HiviewDFX::FaultLogQueryResult::Next*;
+      OHOS::HiviewDFX::FaultLogQueryResult::HasNext*;
+      OHOS::HiviewDFX::FaultLogQueryResultStub::OnRemoteRequest*;
+      OHOS::HiviewDFX::FaultLoggerServiceStub::OnRemoteRequest*;
+
+      OHOS::HiviewDFX::FaultLogInfoOhos*;
+      OHOS::HiviewDFX::FaultLogInfo::~FaultLogInfo*;
+      OHOS::HiviewDFX::FaultLogQueryResult::~FaultLogQueryResult*;
+      OHOS::HiviewDFX::FaultLogInfo::Set*;
+    };
+  local:
+    *;
+};
