@@ -37,8 +37,6 @@ public:
 private:
     int32_t CopyOrMoveFile(
         const std::string& logType, const std::string& logName, const std::string& dest, bool isMove);
-    int32_t ConstructRequestParcel(MessageParcel& data,
-        const std::string& logType, const std::string& logName = "", const std::string& dest = "");
 };
 } // namespace HiviewDFX
 } // namespace OHOS

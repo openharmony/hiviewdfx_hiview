@@ -29,9 +29,10 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
 {
     HIVIEW_LOGI("start list.");
     MessageParcel data;
-    int32_t constructRequestRet = ConstructRequestParcel(data, logType);
-    if (constructRequestRet != ERR_OK) {
-        return constructRequestRet;
+    if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
+        || !data.WriteString(logType)) {
+        HIVIEW_LOGE("write data failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
     }
     MessageParcel reply;
     MessageOption option;
@@ -73,9 +74,10 @@ int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
     const std::string& logType, const std::string& logName, const std::string& dest, bool isMove)
 {
     MessageParcel data;
-    int32_t constructRequestRet = ConstructRequestParcel(data, logType, logName, dest);
-    if (constructRequestRet != ERR_OK) {
-        return constructRequestRet;
+    if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
+        || !data.WriteString(logType) || !data.WriteString(logName) || !data.WriteString(dest)) {
+        HIVIEW_LOGE("write data failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
     }
     MessageParcel reply;
     MessageOption option;
@@ -95,9 +97,10 @@ int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
 int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std::string& logName)
 {
     MessageParcel data;
-    int32_t constructRequestRet = ConstructRequestParcel(data, logType, logName);
-    if (constructRequestRet != ERR_OK) {
-        return constructRequestRet;
+    if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
+        || !data.WriteString(logType) || !data.WriteString(logName)) {
+        HIVIEW_LOGE("write data failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
     }
     MessageParcel reply;
     MessageOption option;
@@ -112,28 +115,6 @@ int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std:
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
     return result;
-}
-
-int32_t HiviewServiceAbilityProxy::ConstructRequestParcel(
-    MessageParcel& data, const std::string& logType, const std::string& logName, const std::string& dest)
-{
-    if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())) {
-        HIVIEW_LOGE("write descriptor failed.");
-        return HiviewNapiErrCode::ERR_DEFAULT;
-    }
-    if (!logType.empty() && !data.WriteString(logType)) {
-        HIVIEW_LOGE("write log type failed.");
-        return HiviewNapiErrCode::ERR_DEFAULT;
-    }
-    if (!logName.empty() && !data.WriteString(logName)) {
-        HIVIEW_LOGE("write log name failed.");
-        return HiviewNapiErrCode::ERR_DEFAULT;
-    }
-    if (!dest.empty() && !data.WriteString(dest)) {
-        HIVIEW_LOGE("write dest failed.");
-        return HiviewNapiErrCode::ERR_DEFAULT;
-    }
-    return ERR_OK;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
