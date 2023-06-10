@@ -42,7 +42,7 @@ public:
     static FaultLogInfoOhos* Unmarshalling(Parcel &parcel);
 
     FaultLogInfoOhos(){};
-    virtual ~FaultLogInfoOhos() {};
+    ~FaultLogInfoOhos() {};
 };
 }
 } // namespace OHOS

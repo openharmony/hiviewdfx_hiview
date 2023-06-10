@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,17 +22,68 @@ class FaultLogInfo {
 public:
     ~FaultLogInfo();
 
+    /**
+     * @brief get user id
+     *
+     * @return user id
+    */
     uint32_t GetId() const;
+
+    /**
+     * @brief get process id
+     *
+     * @return process id
+    */
     int32_t GetProcessId() const;
 
-    // the fd is managed by fault log info obj
-    // it will be closed in destructor
+    /**
+     * @brief get file descriptor
+     * the fd is managed by fault log info obj it will be closed in destructor
+     *
+     * @return file descriptor
+    */
     int32_t GetRawFileDescriptor() const;
+
+    /**
+     * @brief get type of fault
+     *
+     * @return type of fault(int32_t)
+    */
     int32_t GetFaultType() const;
+
+    /**
+     * @brief get timestamp when fault happened
+     *
+     * @return timestamp
+    */
     int64_t GetTimeStamp() const;
+
+    /**
+     * @brief get type of fault
+     *
+     * @return fault type(string)
+    */
     std::string GetStringFaultType() const;
+
+    /**
+     * @brief get the reason for fault
+     *
+     * @return the reason for fault
+    */
     std::string GetFaultReason() const;
+
+    /**
+     * @brief get the name of module which occurred fault
+     *
+     * @return the name of module
+    */
     std::string GetModuleName() const;
+
+    /**
+     * @brief get the summary of fault infomation
+     *
+     * @return summary of fault infomation
+    */
     std::string GetFaultSummary() const;
 
     void SetId(uint32_t id);
