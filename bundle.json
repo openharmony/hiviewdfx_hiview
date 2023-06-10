@@ -14,7 +14,8 @@
         "subsystem": "hiviewdfx",
         "syscap": [
             "SystemCapability.HiviewDFX.Hiview",
-            "SystemCapability.HiviewDFX.Hiview.FaultLogger"
+            "SystemCapability.HiviewDFX.Hiview.FaultLogger",
+            "SystemCapability.HiviewDFX.Hiview.LogLibrary"
         ],
         "adapted_system_type": [
             "standard"
