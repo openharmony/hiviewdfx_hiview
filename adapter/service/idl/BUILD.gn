@@ -31,22 +31,16 @@ ohos_source_set("hiview_service_impl") {
     "$hiview_base/include",
     "$hiview_service",
     "include",
-    "${ability_runtime_path}/interfaces/kits/native/appkit/ability_runtime/context",
   ]
 
   sources = [
     "src/hiview_file_info.cpp",
     "src/hiview_log_config_manager.cpp",
     "src/hiview_service_ability.cpp",
-    "src/hiview_service_ability_proxy.cpp",
     "src/hiview_service_ability_stub.cpp",
-    "src/hiview_service_agent.cpp",
   ]
 
-  deps = [
-    "$hiview_base:hiviewbase",
-    "${ability_runtime_path}/frameworks/native/appkit:app_context",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
@@ -56,7 +50,6 @@ ohos_source_set("hiview_service_impl") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "storage_service:storage_manager_acl",
   ]
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
@@ -68,7 +61,6 @@ ohos_source_set("hiview_service_impl_for_js") {
   include_dirs = [
     "$hiview_base/include",
     "include",
-    "${ability_runtime_path}/interfaces/kits/native/appkit/ability_runtime/context",
   ]
 
   sources = [
@@ -77,12 +69,10 @@ ohos_source_set("hiview_service_impl_for_js") {
     "src/hiview_service_agent.cpp",
   ]
 
-  deps = [
-    "$hiview_base:hiviewbase",
-    "${ability_runtime_path}/frameworks/native/appkit:app_context",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
+    "ability_runtime:app_context",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog_native:libhilog",
