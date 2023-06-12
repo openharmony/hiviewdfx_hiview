@@ -1,0 +1,9 @@
+{
+  global:
+    extern "C++" {
+        OHOS::HiviewDFX::ReportXPowerStackSysEvent*;
+        OHOS::HiviewDFX::ReportXPowerJsStackSysEvent*;
+    };
+  local:
+    *;
+};

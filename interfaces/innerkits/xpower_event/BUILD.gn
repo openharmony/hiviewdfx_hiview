@@ -29,6 +29,8 @@ ohos_shared_library("libxpower_event") {
     "init:libbegetutil",
   ]
 
+  innerapi_tags = [ "platformsdk" ]
+  version_script = "libxpower_events.map"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
@@ -45,6 +47,7 @@ ohos_shared_library("libxpower_event_js") {
   ]
 
   innerapi_tags = [ "platformsdk" ]
+  version_script = "libxpower_events.map"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
