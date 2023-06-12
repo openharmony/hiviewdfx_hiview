@@ -16,8 +16,6 @@
 #ifndef BASE_EVENT_RAW_DECODE_INCLUDE_RAW_DATA_DECODER_H
 #define BASE_EVENT_RAW_DECODE_INCLUDE_RAW_DATA_DECODER_H
 
-#include "decoded_event.h"
-
 #include "base/raw_data_base_def.h"
 
 namespace OHOS {
@@ -25,11 +23,11 @@ namespace HiviewDFX {
 namespace EventRaw {
 class RawDataDecoder {
 public:
-    static bool FloatingNumberDecoded(uint8_t* data, const size_t maxLen, size_t& pos, double& dest);
+    static bool FloatingNumberDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, double& dest);
     static bool SignedVarintDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, int64_t& dest);
-    static bool StringValueDecoded(uint8_t* data, const size_t maxLen, size_t& pos, std::string& dest);
+    static bool StringValueDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, std::string& dest);
     static bool UnsignedVarintDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, uint64_t& dest);
-    static bool ValueTypeDecoded(uint8_t* data, const size_t maxLen, size_t& pos, struct ParamValueType& dest);
+    static bool ValueTypeDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, struct ParamValueType& dest);
 
 private:
     static constexpr int TAG_BYTE_OFFSET = 5;
