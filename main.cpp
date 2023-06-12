@@ -20,6 +20,7 @@
 #include "defines.h"
 #include "logger.h"
 #include "memory_util.h"
+#include "dump_manager_cpu_service.h"
 
 DEFINE_LOG_TAG("HiView-Main");
 using namespace OHOS::HiviewDFX;
@@ -40,8 +41,12 @@ int main(int argc __UNUSED, char* argv[] __UNUSED)
         return -1;
     }
 
+    auto hidumperCpuService = std::make_unique<DumpManagerCpuService>();
+    hidumperCpuService->StartService();
+
     // start service
     auto hiviewService = std::make_unique<HiviewService>();
     hiviewService->StartService();
+
     return 0;
 }
