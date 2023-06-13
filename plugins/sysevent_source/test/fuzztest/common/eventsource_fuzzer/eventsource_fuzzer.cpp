@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "hiview_platform.h"
 #include "sysevent_source.h"
 
 namespace OHOS {
@@ -33,13 +32,8 @@ int g_fd = 0;
 struct Initializer {
     Initializer()
     {
-        HiviewPlatform& platform = HiviewPlatform::GetInstance();
-        if (!platform.InitEnvironment()) {
-            printf("failed to init environment, exit\n");
-            isInit = false;
-            return;
-        }
-        g_eventSource.SetHiviewContext(&platform);
+        HiviewContext context;
+        g_eventSource.SetHiviewContext(&context);
         g_eventSource.OnLoad();
 
         g_fd = open("/dev/null", O_RDWR | O_CREAT | O_TRUNC, 0644); //0644 for file mode
