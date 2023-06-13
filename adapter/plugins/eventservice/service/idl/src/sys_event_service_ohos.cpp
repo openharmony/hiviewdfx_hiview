@@ -119,7 +119,7 @@ int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules,
 int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& events)
 {
     size_t maxEventNum = 30;  // count of total events is limited to 30.
-    if (events.size() >= maxEventNum) {
+    if (events.size() > maxEventNum) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyEvents(maxEventNum);
         return ERR_TOO_MANY_EVENTS;
     }
