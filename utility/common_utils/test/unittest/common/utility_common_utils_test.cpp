@@ -198,5 +198,88 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest003, testing::ext::TestSize.Level3)
     ret = Tbox::WaitForDoneFile(GenerateLogFileName(caseName, SUFFIX_0), 1);
     ASSERT_TRUE(ret);
 }
+
+/* @tc.name: TboxTest004
+ * @tc.desc: Test FilterTrace method of class Tbox
+ * @tc.type: FUNC
+ * @tc.require: DTS2023061410216
+ */
+HWTEST_F(UtilityCommonUtilsTest, TboxTest004, testing::ext::TestSize.Level3)
+{
+    std::string stack = R"("#00 pc 00000000000cfaac /system/lib/ld-musl-aarch64.so.1
+        #01 pc 00000000000cfc60 /system/lib/ld-musl-aarch64.so.1(raise+76)
+        #02 pc 0000000000094c98 /system/lib/ld-musl-aarch64.so.1(abort+20)
+        #03 pc 00000000000af8d8 /system/lib64/libc++.so(c790e35ba2b0181d76f8e722e0f6670ff6aaf23c)
+        #04 pc 0000000000098004 /system/lib64/libc++.so(c790e35ba2b0181d76f8e722e0f6670ff6aaf23c)
+        #05 pc 00000000000aea80 /system/lib64/libc++.so(c790e35ba2b0181d76f8e722e0f6670ff6aaf23c)
+        #06 pc 00000000000b1d6c /system/lib64/libc++.so(__cxa_rethrow+216)(c790e35ba2b0181d76f8e722e0f6670ff6aaf23c)
+        #07 pc 000000000010020c /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #08 pc 0000000000105e58 /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #09 pc 00000000001d478c /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #10 pc 00000000000d6ea8 /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #11 pc 00000000000d869c /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #12 pc 00000000000d614c /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #13 pc 00000000000d5454 /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #14 pc 0000000000130928 /system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)
+        #15 pc 0000000000091c3c /system/lib64/libappexecfwk_core.z.so(OHOS::AppExecFwk::BundleMgrHost
+        #16 pc 00000000000a27b0 /system/lib64/libappexecfwk_corOHOS::MessageOption&)+1004)
+        #17 pc 0000000000034efc /system/lib64/platformsdk/libipc_core.z.so(OHOS::BinderInvoker::OnTransaction
+        #18 pc 0000000000035554 /system/lib64/platformsdk/libipc_core.z.so(OHOS::BinderInvoker::HandleCommandsInner
+        #19 pc 00000000000348b4 /system/lib64/platformsdk/libipc_core.z.so(OHOS::BinderInvoker::HandleCommands
+        #20 pc 0000000000034820 /system/lib64/platformsdk/libipc_core.z.so(OHOS::BinderInvoker::StartWorkLoop()
+        #21 pc 00000000000355f4 /system/lib64/platformsdk/libipc_core.z.so(OHOS::BinderInvoker::JoinThread(bool)
+        #22 pc 000000000002ff24 /system/lib64/platformsdk/libipc_core.z.so(OHOS::IPCWorkThread::ThreadHandler)
+        #23 pc 00000000000e4934 /system/lib/ld-musl-aarch64.so.1
+        #24 pc 00000000000876b4 /system/lib/ld-musl-aarch64.so.1")";
+
+    std::map<std::string, std::string> eventInfos;
+    eventInfos.insert(std::pair("END_STACK", stack));
+    eventInfos.insert(std::pair("PNAME", "foundation"));
+    Tbox::FilterTrace(eventInfos);
+
+    EXPECT_STREQ(eventInfos["FIRST_FRAME"].c_str(), "/system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)");
+    EXPECT_STREQ(eventInfos["SECOND_FRAME"].c_str(), "/system/lib64/libbms.z.so(3256be1e0b8fdc2b4e25a28f1c2086eb)");
+    EXPECT_STREQ(eventInfos["LAST_FRAME"].c_str(),
+                            "/system/lib64/platformsdk/libipc_core.z.so(OHOS::IPCWorkThread::ThreadHandler)");
+}
+
+/* @tc.name: TboxTest005
+ * @tc.desc: Test FilterTrace method of class Tbox
+ * @tc.type: FUNC
+ * @tc.require: DTS2023061410216
+ */
+HWTEST_F(UtilityCommonUtilsTest, TboxTest005, testing::ext::TestSize.Level3)
+{
+    std::string stack = R"("#00 pc 000000000006ca40 /system/lib64/libc.so(syscall+32)
+        #01 pc 0000000000070cc4 /system/lib64/libc.so(__futex_wait_ex(void volatile*, bool, timespec const*)+144)
+        #02 pc 00000000000cf2cc /system/lib64/libc.so(pthread_cond_timedwait+124)
+        #03 pc 0000000000071714 /system/lib64/libc++.so(std::__1::condition_variable)
+        #04 pc 000000000001a33c /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::NoneIoWaiter)
+        #05 pc 0000000000011db4 /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::WaitUntilLocked)
+        #06 pc 0000000000011cf8 /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::GetEvent()+112)
+        #07 pc 0000000000017728 /system/lib64/libeventhandler.z.so
+        #08 pc 000000000001608c /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventRunner::Run()+96)
+        #09 pc 000000000009380c /system/lib64/libappkit_native.z.so(OHOS::AppExecFwk::MainThread::Start()+372)
+        #10 pc 00000000000144b8 /system/bin/appspawn
+        #11 pc 00000000000139ec /system/bin/appspawn
+        #12 pc 000000000001fd90 /system/lib64/libbegetutil.z.so
+        #13 pc 000000000001f980 /system/lib64/libbegetutil.z.so
+        #14 pc 000000000001ccd0 /system/lib64/libbegetutil.z.so(ProcessEvent+108)
+        #15 pc 000000000001c6cc /system/lib64/libbegetutil.z.so
+        #16 pc 00000000000128b4 /system/bin/appspawn
+        #17 pc 000000000001053c /system/bin/appspawn
+        #18 pc 000000000006afa4 /system/lib64/libc.so(__libc_init+112")";
+
+    std::map<std::string, std::string> eventInfos;
+    eventInfos.insert(std::pair("END_STACK", stack));
+    eventInfos.insert(std::pair("PNAME", "foundation"));
+    Tbox::FilterTrace(eventInfos);
+
+    EXPECT_STREQ(eventInfos["FIRST_FRAME"].c_str(),
+                 "/system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::NoneIoWaiter)");
+    EXPECT_STREQ(eventInfos["SECOND_FRAME"].c_str(),
+                 "/system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::WaitUntilLocked)");
+    EXPECT_STREQ(eventInfos["LAST_FRAME"].c_str(), "/system/bin/appspawn");
+}
 }
 }
