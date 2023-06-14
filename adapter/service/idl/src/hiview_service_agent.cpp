@@ -140,16 +140,12 @@ bool HiviewServiceAgent::CreateDestDirs(const std::string& rootDir, const std::s
 
 bool HiviewServiceAgent::CreateAndGrantAclPermission(const std::string& dirPath)
 {
-    if (FileUtil::FileExists(dirPath)) {
-        return true;
-    }
-    if (!FileUtil::ForceCreateDirectory(dirPath)) {
+    if (!FileUtil::FileExists(dirPath) && !FileUtil::ForceCreateDirectory(dirPath)) {
         HIVIEW_LOGE("create dir failed.");
         return false;
     }
     if (OHOS::StorageDaemon::AclSetAccess(dirPath, "g:1201:rwx") != 0) {
-        bool result = FileUtil::RemoveFile(dirPath);
-        HIVIEW_LOGE("set acl access failed, remove result: %{public}d.", result);
+        HIVIEW_LOGE("set acl access failed.");
         return false;
     }
     return true;
