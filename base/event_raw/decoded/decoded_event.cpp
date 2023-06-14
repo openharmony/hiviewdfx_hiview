@@ -118,7 +118,7 @@ void DecodedEvent::AppendBaseInfo(std::stringstream& ss)
     AppendValue(ss, BASE_INFO_KEY_UID, header_.uid);
     AppendValue(ss, BASE_INFO_KEY_ID, TransUInt64ToFixedLengthStr(header_.id));
     if (header_.isTraceOpened == 1) {
-        AppendValue(ss, BASE_INFO_KEY_TRACE_FLAG, traceInfo_.traceFlag);
+        AppendValue(ss, BASE_INFO_KEY_TRACE_FLAG, static_cast<int>(traceInfo_.traceFlag));
         AppendValue(ss, BASE_INFO_KEY_TRACE_ID, TransNumToHexStr(traceInfo_.traceId));
         AppendValue(ss, BASE_INFO_KEY_SPAN_ID, TransNumToHexStr(traceInfo_.spanId));
         AppendValue(ss, BASE_INFO_KEY_PARENT_SPAN_ID, TransNumToHexStr(traceInfo_.pSpanId));
