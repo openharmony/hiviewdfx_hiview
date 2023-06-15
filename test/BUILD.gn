@@ -131,11 +131,7 @@ if (!defined(ohos_lite)) {
         "napi:ace_napi",
       ]
 
-      if (is_standard_system) {
-        external_deps += [ "hiviewdfx_hilog_native:libhilog" ]
-      } else {
-        external_deps += [ "hilog:libhilog" ]
-      }
+      external_deps += [ "hilog:libhilog" ]
     }
   }
 }

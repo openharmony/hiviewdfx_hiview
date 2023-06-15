@@ -43,7 +43,7 @@ ohos_source_set("hiview_adapter_utility") {
   subsystem_name = "hiviewdfx"
   external_deps = [
     "c_utils:utils",
-    "hilog_native:libhilog",
+    "hilog:libhilog",
   ]
 }
 

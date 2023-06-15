@@ -33,7 +33,7 @@ ohos_source_set("faultlogger") {
     "service:faultlogger_service",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 group("fuzztest") {
