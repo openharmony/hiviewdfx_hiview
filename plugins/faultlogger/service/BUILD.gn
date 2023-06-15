@@ -37,7 +37,7 @@ ohos_source_set("faultlogger_service_ability") {
   ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -78,7 +78,7 @@ ohos_source_set("faultlogger_service") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "hisysevent_native:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",

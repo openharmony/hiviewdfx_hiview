@@ -65,7 +65,7 @@ ohos_unittest("FreezeDetectorUnittest") {
   sources = [ "unittest/common/freeze_detector_unittest.cpp" ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "hiview:libfaultlogger",
   ]
 

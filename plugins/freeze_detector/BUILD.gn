@@ -42,7 +42,7 @@ ohos_source_set("freeze_detector") {
   configs = [ ":freeze_detector_config" ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "hiview:libfaultlogger",
   ]
 

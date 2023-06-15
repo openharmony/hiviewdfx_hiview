@@ -47,5 +47,5 @@ ohos_source_set("hiview_service") {
     "$hiview_core:hiview_core",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }

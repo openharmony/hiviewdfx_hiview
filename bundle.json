@@ -39,7 +39,7 @@
                 "ets_runtime",
                 "faultloggerd",
                 "hidumper",
-                "hilog_native",
+                "hilog",
                 "hisysevent_native",
                 "init",
                 "ipc",

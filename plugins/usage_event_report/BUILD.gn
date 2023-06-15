@@ -46,7 +46,7 @@ if (enable_hiview_usage_event_report_build) {
     ]
 
     external_deps = [
-      "hilog_native:libhilog",
+      "hilog:libhilog",
       "hisysevent_native:libhisysevent",
       "ipc:ipc_single",
       "power_manager:powermgr_client",

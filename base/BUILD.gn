@@ -45,7 +45,7 @@ ohos_source_set("logger") {
     "logger.cpp",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
@@ -86,7 +86,7 @@ ohos_source_set("hiview_base") {
   ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "hisysevent_native:libhisysevent",
   ]
 }
@@ -116,7 +116,7 @@ ohos_shared_library("hiviewbase") {
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_static_library("hiviewbase_static_lib_for_tdd") {
@@ -139,5 +139,5 @@ ohos_static_library("hiviewbase_static_lib_for_tdd") {
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }

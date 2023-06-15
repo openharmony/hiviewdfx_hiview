@@ -31,7 +31,7 @@ ohos_source_set("bbox_detector") {
   configs = [ ":bbox_detector_config" ]
 
   external_deps = [
-    "hilog_native:libhilog",
+    "hilog:libhilog",
     "hisysevent_native:libhisysevent",
   ]
 
