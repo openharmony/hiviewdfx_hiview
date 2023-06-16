@@ -114,6 +114,7 @@ ohos_shared_library("hiviewbase") {
 
   version_script = "libhiviewbase.map"
 
+  innerapi_tags = [ "platformsdk" ]
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   external_deps = [ "hilog:libhilog" ]
