@@ -45,7 +45,7 @@ ohos_source_set("hiview_event_report") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
   ]
 
   deps = [ "//third_party/jsoncpp:jsoncpp" ]

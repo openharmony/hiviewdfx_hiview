@@ -31,7 +31,7 @@ ohos_source_set("hicollie_collector") {
 
   configs = [ ":hicollie_collector_config" ]
 
-  external_deps = [ "hisysevent_native:libhisysevent" ]
+  external_deps = [ "hisysevent:libhisysevent" ]
 
   deps = [
     "$hiview_adapter/system_service:system_service",
