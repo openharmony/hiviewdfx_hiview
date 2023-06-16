@@ -46,7 +46,7 @@ ohos_source_set("hiview_core") {
   ]
 
   external_deps = [
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",

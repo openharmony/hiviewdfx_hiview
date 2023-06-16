@@ -40,7 +40,7 @@
                 "faultloggerd",
                 "hidumper",
                 "hilog",
-                "hisysevent_native",
+                "hisysevent",
                 "init",
                 "ipc",
                 "os_account",

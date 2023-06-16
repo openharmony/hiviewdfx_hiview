@@ -79,7 +79,7 @@ ohos_source_set("faultlogger_service") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

@@ -25,7 +25,7 @@ ohos_shared_library("libxpower_event") {
 
   external_deps = [
     "faultloggerd:libbacktrace_local",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
 
@@ -41,7 +41,7 @@ ohos_shared_library("libxpower_event_js") {
 
   external_deps = [
     "ets_runtime:libark_jsruntime",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
     "napi:ace_napi",
   ]
