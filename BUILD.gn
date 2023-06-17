@@ -137,6 +137,7 @@ group("hiview_test_package") {
     "plugins:fuzztest",
     "plugins:moduletest",
     "plugins:unittest",
+    "service:fuzztest",
     "test:moduletest",
     "test:unittest",
     "utility/common_utils:unittest",
