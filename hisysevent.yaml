@@ -135,6 +135,7 @@ MEMORY_LEAK:
   UID: {type: INT32, desc: memory_leak uid}
   SUMMARY: {type: STRING, desc: fault summary}
   FIRST_FRAME: {type: STRING, desc: f1Name}
+  SECOND_FRAME: {type: STRING, desc: log grade}
   MEMTOTAL: {type: STRING, desc: memory total}
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
   LOG_PATH: {type: STRING, desc: memory leak log path}
