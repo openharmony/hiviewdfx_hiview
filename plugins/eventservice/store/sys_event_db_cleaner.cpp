@@ -59,7 +59,8 @@ void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& 
 
     int64_t delEndTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     int saveHour = config.second;
-    int64_t delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+    int64_t delTime = delEndTime > saveHour * MILLISECS_PER_HOUR ?
+        (delEndTime - saveHour * MILLISECS_PER_HOUR) : delEndTime;
     bool isDeleteLess = false;
     while (curNum > config.first && delTime <= delEndTime) {
         auto delNum = CleanDbByTime(type, delTime);
@@ -81,7 +82,8 @@ void SysEventDbCleaner::TryToCleanDb(StoreType type, const std::pair<int, int>& 
                 saveHour = delBdyHour;
                 isDeleteLess = true;
             }
-            delTime = delEndTime - saveHour * MILLISECS_PER_HOUR;
+            delTime = delEndTime > saveHour * MILLISECS_PER_HOUR ?
+                (delEndTime - saveHour * MILLISECS_PER_HOUR) : delEndTime;
         }
         HIVIEW_LOGD("cleaning db: curNum=%{public}d, delTime=%{public}" PRId64 ", delEndTime=%{public}" PRId64,
             curNum, delTime, delEndTime);
