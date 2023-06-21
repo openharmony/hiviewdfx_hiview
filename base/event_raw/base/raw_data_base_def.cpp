@@ -51,6 +51,11 @@ std::string ParseTimeZone(const uint8_t tzVal)
     }
     return ALL_TIME_ZONES.at(tzVal);
 }
+
+size_t GetValidDataMinimumByteCount()
+{
+    return sizeof(int32_t) + sizeof(struct EventRaw::HiSysEventHeader);
+}
 } // namespace EventRaw
 } // namespace HiviewDFX
 } // namespace OHOS

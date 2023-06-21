@@ -20,6 +20,7 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "base/raw_data_base_def.h"
 #include "hilog/log.h"
 #include "decoded/raw_data_decoder.h"
 
@@ -58,7 +59,7 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
     HiLog::Debug(LABEL, "decoded blockSize is %{public}zu.", blockSize);
-    if (blockSize == 0 || blockSize > MAX_BLOCK_SIZE) {
+    if (blockSize < GetValidDataMinimumByteCount() || blockSize > MAX_BLOCK_SIZE) {
         return;
     }
     rawData_ = new(std::nothrow) uint8_t[blockSize];
