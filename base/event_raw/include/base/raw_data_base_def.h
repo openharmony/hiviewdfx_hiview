@@ -155,6 +155,7 @@ enum EncodeType: int8_t {
 
 int ParseTimeZone(const std::string& tzStr);
 std::string ParseTimeZone(const uint8_t tzVal);
+size_t GetValidDataMinimumByteCount();
 
 } // namespace EventRaw
 } // namespace HiviewDFX
