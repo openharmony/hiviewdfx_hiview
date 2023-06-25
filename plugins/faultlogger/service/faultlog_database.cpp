@@ -168,7 +168,6 @@ bool FaultLogDatabase::IsFaultExist(int32_t pid, int32_t uid, int32_t faultType)
         HIVIEW_LOGE("Unsupported fault type, please check it!");
         return false;
     }
-    std::string faultName = GetFaultNameByType(faultType, false);
     EventStore::Cond hiviewUidCond("uid_", EventStore::Op::EQ, static_cast<int64_t>(getuid()));
     EventStore::Cond pidUpperCond = hiviewUidCond.And("PID", EventStore::Op::EQ, pid).
         And("UID", EventStore::Op::EQ, uid);
