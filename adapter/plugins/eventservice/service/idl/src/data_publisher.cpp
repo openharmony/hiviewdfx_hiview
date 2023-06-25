@@ -56,15 +56,14 @@ constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataPublisher"};
 
 DataPublisher::DataPublisher()
 {
-    std::shared_ptr<DataShareStore> store_ = std::make_shared<DataShareStore>(DATABASE_DIR);
-    dataShareDao_ = std::make_shared<DataShareDao>(store_);
     this->InitSubscriber();
 }
 
 int32_t DataPublisher::AddSubscriber(int32_t uid, const std::vector<std::string> &eventList)
 {
     std::string events;
-    auto ret = dataShareDao_->GetEventListByUid(uid, events);
+    std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
+    auto ret = dataShareDao->GetEventListByUid(uid, events);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "query DB failed.");
         return ret;
@@ -78,7 +77,7 @@ int32_t DataPublisher::AddSubscriber(int32_t uid, const std::vector<std::string>
         eventRelationMap_[event].insert(uid);
     }
     auto newEvents = StringUtil::ConvertVectorToStr(eventList, ";");
-    ret = dataShareDao_->SaveSubscriberInfo(uid, newEvents);
+    ret = dataShareDao->SaveSubscriberInfo(uid, newEvents);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "query DB failed.");
         return ret;
@@ -89,7 +88,8 @@ int32_t DataPublisher::AddSubscriber(int32_t uid, const std::vector<std::string>
 int32_t DataPublisher::RemoveSubscriber(int32_t uid)
 {
     std::string events;
-    auto ret = dataShareDao_->GetEventListByUid(uid, events);
+    std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
+    auto ret = dataShareDao->GetEventListByUid(uid, events);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to get events by uid");
         return ERR_REMOVE_SUBSCRIBE;
@@ -103,7 +103,7 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
     for (auto &event : eventList) {
         eventRelationMap_[event].erase(uid);
     }
-    ret = dataShareDao_->DeleteSubscriberInfo(uid);
+    ret = dataShareDao->DeleteSubscriberInfo(uid);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to delete subscriberInfo");
         return ERR_REMOVE_SUBSCRIBE;
@@ -114,7 +114,8 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
 void DataPublisher::InitSubscriber()
 {
     std::map<int, std::string> uidToEventsMap;
-    int ret = dataShareDao_->GetTotalSubscriberInfo(uidToEventsMap);
+    std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
+    int ret = dataShareDao->GetTotalSubscriberInfo(uidToEventsMap);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to get total subscriberInfo");
         return;
@@ -202,7 +203,8 @@ void DataPublisher::HandleAppUninstallEvent(std::shared_ptr<OHOS::HiviewDFX::Sys
         return;
     }
     int32_t uid = -1;
-    auto ret = dataShareDao_->GetUidByBundleName(bundleName, uid);
+    std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
+    auto ret = dataShareDao->GetUidByBundleName(bundleName, uid);
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to query from DB.");
         return;
@@ -277,6 +279,12 @@ int64_t DataPublisher::GetTimeStampByUid(int32_t uid)
         timeStamp = 0;
     }
     return timeStamp;
+}
+
+std::shared_ptr<DataShareDao> DataPublisher::GetDataShareDao()
+{
+    std::shared_ptr<DataShareStore> dataShareStore = std::make_shared<DataShareStore>(DATABASE_DIR);
+    return std::make_shared<DataShareDao>(dataShareStore);
 }
 
 }  // namespace HiviewDFX

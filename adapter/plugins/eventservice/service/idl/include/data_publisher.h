@@ -52,10 +52,11 @@ private:
     void HandleAppUninstallEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event);
     void HandleSubscribeTask(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event,
         std::string srcPath, std::string timeStr);
+    std::shared_ptr<DataShareDao> GetDataShareDao();
+
 private:
     std::map<std::string, std::set<int>> eventRelationMap_;
     std::map<int32_t, int64_t> uidTimeStampMap_;
-    std::shared_ptr<DataShareDao> dataShareDao_;
     std::shared_ptr<EventLoop> looper_;
 };
 }  // namespace HiviewDFX
