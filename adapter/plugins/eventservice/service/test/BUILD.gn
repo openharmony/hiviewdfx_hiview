@@ -40,9 +40,9 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
   configs = [ ":unittest_config" ]
 
   sources = [
+    "unittest/common/data_share_test.cpp",
     "unittest/common/sys_event_callback_ohos_test.cpp",
     "unittest/common/sys_event_service_ohos_test.cpp",
-    "unittest/common/data_share_test.cpp",
   ]
 
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]

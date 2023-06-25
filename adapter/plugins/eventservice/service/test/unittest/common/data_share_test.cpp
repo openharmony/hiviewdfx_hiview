@@ -135,13 +135,15 @@ HWTEST_F(DataShareTest, DataShareUtilTest001, testing::ext::TestSize.Level3)
 {
     std::string testCaseName("DataShareUtilTest001");
     int expectedFailedRet = -1;
-    auto ret = DataShareUtil::CopyFile("//......./invalid_dest_file", GenerateTestFileName(testCaseName, INDEX_1).c_str());
+    auto ret = DataShareUtil::CopyFile("//......./invalid_dest_file",
+        GenerateTestFileName(testCaseName, INDEX_1).c_str());
     ASSERT_EQ(expectedFailedRet, ret);
     (void)FileUtil::SaveStringToFile(GenerateTestFileName(testCaseName, INDEX_0).c_str(), "test0");
     ret = DataShareUtil::CopyFile(GenerateTestFileName(testCaseName, INDEX_0).c_str(), "//...../invalid_dest_file");
     ASSERT_EQ(expectedFailedRet, ret);
     (void)FileUtil::SaveStringToFile(GenerateTestFileName(testCaseName, INDEX_1).c_str(), "test1");
-    ret = DataShareUtil::CopyFile(GenerateTestFileName(testCaseName, INDEX_0).c_str(), GenerateTestFileName(testCaseName, INDEX_1).c_str());
+    ret = DataShareUtil::CopyFile(GenerateTestFileName(testCaseName, INDEX_0).c_str(),
+        GenerateTestFileName(testCaseName, INDEX_1).c_str());
     int expectedSuccessRet = 0;
     ASSERT_EQ(expectedSuccessRet, ret);
     int32_t uid = 20010039;
@@ -176,7 +178,7 @@ HWTEST_F(DataShareTest, DataPublisherTest001, testing::ext::TestSize.Level3)
     dataPublisher->OnSysEvent(sysEvent);
     ASSERT_TRUE(true);
     sysEventCreator = SysEventCreator("BUNDLE_MANAGER", "BUNDLE_UNINSTALL", SysEventCreator::FAULT);
-    sysEventCreator.SetKeyValue("BUNDLE_NAME", "com.huawei.test");
+    sysEventCreator.SetKeyValue("BUNDLE_NAME", "com.test.demo");
     sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
     dataPublisher->OnSysEvent(sysEvent);
     ASSERT_TRUE(true);
@@ -190,20 +192,20 @@ HWTEST_F(DataShareTest, DataPublisherTest001, testing::ext::TestSize.Level3)
  */
 HWTEST_F(DataShareTest, DataPublisherSysEventCallbackTest001, testing::ext::TestSize.Level3)
 {
-    DataPublisherSysEventCallback callback1("/data/log/hiview/system_event_db/events/testSrc1.evt", 
+    DataPublisherSysEventCallback callback1("/data/log/hiview/system_event_db/events/testSrc1.evt",
         "/data/log/hiview/system_event_db/events/DomainTest1", 0, 0);
     std::vector<std::u16string> eventList1 = { u"test event" };
     std::vector<int64_t> emptySeqList;
     callback1.OnQuery(eventList1, emptySeqList);
     callback1.OnComplete(0, 10, 12345);
     ASSERT_TRUE(true);
-    DataPublisherSysEventCallback callback2("/data/log/hiview/system_event_db/events/testSrc2.evt", 
+    DataPublisherSysEventCallback callback2("/data/log/hiview/system_event_db/events/testSrc2.evt",
         "/data/log/hiview/system_event_db/events/DomainTest2", 0, MAXIMUM_FILE_SIZE);
     std::vector<std::u16string> eventList2 = { u"test event2" };
     callback2.OnQuery(eventList2, emptySeqList);
     callback2.OnComplete(0, 10, 12345);
     ASSERT_TRUE(true);
-    DataPublisherSysEventCallback callback3("//......./invalid_dest_file", 
+    DataPublisherSysEventCallback callback3("//......./invalid_dest_file",
         "/data/log/hiview/system_event_db/events/DomainTest3", 0, 0);
     callback3.HandleEventFile("//......./invalid_src_file", "/data/log/hiview/system_event_db/events/Domain3");
     ASSERT_TRUE(true);
