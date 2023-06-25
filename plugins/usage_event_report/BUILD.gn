@@ -33,8 +33,6 @@ if (enable_hiview_usage_event_report_build) {
       "cache/usage_event_cacher.cpp",
       "event/sys_usage_event.cpp",
       "idl/hiview_shutdown_callback.cpp",
-      "idl/hiview_shutdown_callback_proxy.cpp",
-      "idl/hiview_shutdown_callback_stub.cpp",
       "usage_event_report.cpp",
     ]
 

@@ -23,6 +23,7 @@
 #include "plugin_factory.h"
 #include "power_mgr_client.h"
 #include "securec.h"
+#include "shutdown/shutdown_client.h"
 #include "string_util.h"
 #include "time_util.h"
 #include "usage_event_cacher.h"
@@ -61,7 +62,7 @@ void UsageEventReport::OnUnload()
         workLoop_.reset();
     }
     if (callback_ != nullptr) {
-        PowerMgr::PowerMgrClient::GetInstance().UnRegisterShutdownCallback(callback_);
+        PowerMgr::ShutdownClient::GetInstance().UnRegisterShutdownCallback(callback_);
         callback_ = nullptr;
     }
 }
@@ -114,8 +115,8 @@ void UsageEventReport::InitCallback()
 {
     HIVIEW_LOGI("start to init shutdown callback");
     callback_ = new (std::nothrow) HiViewShutdownCallback();
-    PowerMgr::PowerMgrClient::GetInstance().RegisterShutdownCallback(callback_,
-        PowerMgr::IShutdownCallback::ShutdownPriority::POWER_SHUTDOWN_PRIORITY_HIGH);
+    PowerMgr::ShutdownClient::GetInstance().RegisterShutdownCallback(callback_,
+        PowerMgr::ShutdownPriority::HIGH);
 }
 
 void UsageEventReport::Start()
