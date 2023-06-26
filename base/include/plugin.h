@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -271,6 +271,10 @@ public:
     virtual void AppendPluginToPipeline(const std::string& pluginName __UNUSED,
                                         const std::string& pipelineName __UNUSED) {};
     virtual void RequestLoadBundle(const std::string& bundleName __UNUSED) {};
+
+    // request plugin platform to release plugin bundle
+    virtual void RequestUnloadBundle(const std::string& bundleName, uint64_t delay = 0) {};
+
     virtual std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy __UNUSED)
     {
         return nullptr;
