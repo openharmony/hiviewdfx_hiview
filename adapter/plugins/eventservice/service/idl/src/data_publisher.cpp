@@ -141,7 +141,7 @@ void DataPublisher::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event
         HiLog::Error(LABEL, "failed to create resourceFile.");
         return;
     }
-    int64_t timestamp = TimeUtil::GetMilliseconds();
+    int64_t timestamp = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     std::string timeStr = std::to_string(timestamp);
     std::string srcPath = TEMP_SRC_DIR;
     if (looper_ != nullptr) {
