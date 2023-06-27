@@ -65,6 +65,7 @@ public:
     bool IsReady() override;
     void AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName) override;
     void RequestLoadBundle(const std::string& bundleName __UNUSED) override;
+    void RequestUnloadBundle(const std::string& bundleName, uint64_t delay = 0) override;
     std::shared_ptr<Plugin> InstancePluginByProxy(std::shared_ptr<Plugin> proxy) override;
     std::shared_ptr<Plugin> GetPluginByName(const std::string& name) override;
     void AddDispatchInfo(std::weak_ptr<Plugin> plugin, const std::unordered_set<uint8_t>& types,
