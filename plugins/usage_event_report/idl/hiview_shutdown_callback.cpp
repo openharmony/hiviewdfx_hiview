@@ -21,7 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-ShutdownCallback");
 
-void HiViewShutdownCallback::ShutdownCallback()
+void HiViewShutdownCallback::OnAsyncShutdown()
 {
     HIVIEW_LOGI("hiview shutdown callback start");
     UsageEventReport::SaveEventToDb();
