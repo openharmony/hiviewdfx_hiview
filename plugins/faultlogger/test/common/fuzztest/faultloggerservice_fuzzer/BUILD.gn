@@ -38,8 +38,6 @@ ohos_fuzztest("FaultloggerServiceFuzzTest") {
   ]
 
   deps = [
-    "$hiview_adapter/system_service:system_service",
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_plugin/faultlogger/common:faultlogger_common",

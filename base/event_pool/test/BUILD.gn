@@ -19,7 +19,6 @@ module_output_path = "hiview/hiview/base"
 config("unittest_config") {
   include_dirs = [
     "../include",
-    "$hiview_adapter/utility/include",
     "unittest/common",
   ]
 
@@ -36,7 +35,6 @@ ohos_unittest("EventPoolTest") {
   sources = [ "unittest/common/event_pool_test.cpp" ]
 
   deps = [
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "../:eventpool",
     "//third_party/googletest:gtest_main",

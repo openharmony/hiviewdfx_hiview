@@ -26,7 +26,6 @@
 #include "event.h"
 #include "event_loop.h"
 #include "plugin_extra_info.h"
-#include "dispatch_config.h"
 
 class HiEvent;
 namespace OHOS {
@@ -51,7 +50,7 @@ public:
      */
     virtual bool CanProcessEvent(std::shared_ptr<Event> event) override;
 
-    /* If the plugin is in a pipeline, this function will be used to determine 
+    /* If the plugin is in a pipeline, this function will be used to determine
      * whether the current pipeline event can be processed by the plugin.
      */
     virtual bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;

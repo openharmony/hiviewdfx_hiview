@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,9 +14,10 @@
  */
 
 #include "time_util.h"
-#include <chrono>
+
 #include <sys/time.h>
 #include <unistd.h>
+#include <chrono>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,7 +33,7 @@ time_t StrToTimeStamp(const std::string& tmStr, const std::string& format)
 
 uint64_t GenerateTimestamp()
 {
-    struct timeval now { 0 };
+    struct timeval now;
     if (gettimeofday(&now, nullptr) == -1) {
         return 0;
     }
@@ -100,6 +101,43 @@ int64_t Get0ClockStampMs()
         zero = std::mktime(l) * SEC_TO_MILLISEC;  // time is 00:00:00
     }
     return zero;
+}
+
+uint64_t GetSteadyClockTimeMs()
+{
+    auto now = std::chrono::steady_clock::now();
+    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return millisecs.count();
+}
+
+TimeCalculator::TimeCalculator(std::shared_ptr<uint64_t>& timePtr)
+{
+    this->time_ = timePtr;
+    this->startTime_ = GenerateTimestamp();
+    this->endTime_ = 0;
+}
+
+TimeCalculator::~TimeCalculator()
+{
+    this->endTime_ = GenerateTimestamp();
+    if (this->time_ != nullptr && this->endTime_ > this->startTime_) {
+        *(this->time_) += this->endTime_ - this->startTime_;
+    }
+}
+
+std::string FormatTime(const int64_t timestamp, const std::string &format)
+{
+    std::time_t tt = static_cast<std::time_t>(timestamp / SEC_TO_MILLISEC);
+    std::tm t = *std::localtime(&tt);
+    char buffer[MAX_BUFFER_SIZE] = {0};
+    std::strftime(buffer, sizeof(buffer), format.c_str(), &t);
+    return std::string(buffer);
+}
+
+uint64_t GetNanoTime()
+{
+    auto nanoNow = std::chrono::steady_clock::now().time_since_epoch();
+    return nanoNow.count();
 }
 } // namespace TimeUtil
 } // namespace HiviewDFX

@@ -19,7 +19,6 @@ module_output_path = "hiview/hiview/hicollieCollector"
 config("unittest_config") {
   include_dirs = [
     "./unittest/common/",
-    "$hiview_adapter/utility/include",
     "$hiview_core/",
     "$hiview_plugin/hicollie_collector",
   ]

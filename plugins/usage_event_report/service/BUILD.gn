@@ -41,7 +41,6 @@ ohos_executable("usage_report") {
   ]
 
   deps = [
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "//third_party/jsoncpp:jsoncpp",
   ]

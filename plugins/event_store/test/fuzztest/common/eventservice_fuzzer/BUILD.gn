@@ -36,7 +36,6 @@ ohos_fuzztest("EventServiceFuzzTest") {
 
   deps = [
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//third_party/jsoncpp:jsoncpp",

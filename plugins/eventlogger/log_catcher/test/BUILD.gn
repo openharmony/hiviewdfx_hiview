@@ -19,7 +19,6 @@ module_output_path = "hiview/hiview/eventlogger/logCatcher"
 config("unittest_config") {
   include_dirs = [
     "../include",
-    "$hiview_adapter/utility/include",
     "unittest/common",
   ]
 

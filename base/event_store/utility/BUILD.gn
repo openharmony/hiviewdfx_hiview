@@ -17,7 +17,6 @@ config("event_store_utility_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
-    "$hiview_adapter/utility/include",
     "$hiview_base/event_store/include",
     "$hiview_base/utility/include",
     "$hiview_base/include",

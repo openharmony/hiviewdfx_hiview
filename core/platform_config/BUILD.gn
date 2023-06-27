@@ -33,7 +33,6 @@ ohos_source_set("hiviewplatform_config") {
 
   deps = [
     ":hiview_platform_config",
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
   ]
 }

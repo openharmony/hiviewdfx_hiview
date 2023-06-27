@@ -39,7 +39,6 @@ if (enable_hiview_usage_event_report_build) {
     ]
 
     deps = [
-      "$hiview_adapter/utility:hiview_adapter_utility",
       "$hiview_base:hiviewbase",
       "//third_party/bounds_checking_function:libsec_shared",
       "//third_party/jsoncpp:jsoncpp",

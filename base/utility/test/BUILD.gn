@@ -18,7 +18,11 @@ module_output_path = "hiview/base/utility"
 
 group("unittest") {
   testonly = true
-  deps = [ ":BaseUtilityUnitTest" ]
+  deps = [
+    ":AdapterUtilityOhosTest",
+    ":BaseUtilityUnitTest",
+    ":SystemServiceOhosUnitTest",
+  ]
 }
 
 config("base_utility_config_test") {
@@ -40,10 +44,48 @@ ohos_unittest("BaseUtilityUnitTest") {
   sources = [ "unittest/common/base_utility_unit_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
-    "//base/hiviewdfx/hiview/base/utility:hiview_utility",
+    "$hiview_base/utility:hiview_utility",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
+  ]
+}
+
+ohos_unittest("SystemServiceOhosUnitTest") {
+  module_out_path = module_output_path
+
+  configs = [ ":base_utility_config_test" ]
+
+  sources = [ "unittest/common/system_service_ohos_test.cpp" ]
+
+  cflags_cc = [ "-DTEST_LOCAL_SRC" ]
+
+  deps = [
+    "$hiview_base/utility:hiview_utility",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "init:libbeget_proxy",
+    "init:libbegetutil",
+  ]
+}
+
+ohos_unittest("AdapterUtilityOhosTest") {
+  module_out_path = module_output_path
+
+  configs = [ ":base_utility_config_test" ]
+
+  sources = [ "unittest/common/adapter_utility_ohos_test.cpp" ]
+
+  cflags_cc = [ "-DTEST_LOCAL_SRC" ]
+
+  deps = [
+    "$hiview_base/utility:hiview_utility",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "init:libbeget_proxy",
+    "init:libbegetutil",
   ]
 }

@@ -12,19 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HIVIEW_OAL_DYNAMIC_MODULE_LINUX_H
+#define HIVIEW_OAL_DYNAMIC_MODULE_LINUX_H
 
-#include "time_util.h"
-
-#include <chrono>
-
+#include <string>
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 namespace OHOS {
 namespace HiviewDFX {
-namespace TimeUtil {
-uint64_t GetNanoTime()
-{
-    auto nanoNow = std::chrono::steady_clock::now().time_since_epoch();
-    return nanoNow.count();
-}
-} // namespace TimeUtil
-} // namespace HiviewDFX
-} // namespace OHOS
+#if defined(_WIN32)
+using DynamicModule = HMODULE;
+#define DynamicModuleDefault NULL
+#else
+using DynamicModule = void *;
+#define DynamicModuleDefault nullptr
+#endif
+DynamicModule LoadModule(const std::string &name);
+void UnloadModule(DynamicModule module);
+}  // namespace HiviewDFX
+}  // namespace OHOS
+
+#endif  // HIVIEW_OAL_DYNAMIC_MODULE_H

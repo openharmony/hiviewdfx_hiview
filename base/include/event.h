@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include "defines.h"
 #include "public_defines.h"
-#include "dispatch_config.h"
 
 #include "base/raw_data.h"
 
@@ -246,7 +245,7 @@ public:
     {
         return true;
     };
-    
+
     virtual std::string GetHandlerInfo()
     {
         return "";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,6 +49,28 @@ bool SetProperty(const std::string& key, const std::string& defaultValue)
 int WaitParamSync(const char *key, const char *value, int timeout)
 {
     return WaitParameter(key, value, timeout);
+}
+
+bool IsBetaVersion()
+{
+    auto userType = GetInteger(KEY_HIVIEW_USER_TYPE, UserType::COMMERCIAL);
+    return ((userType == UserType::BETA) || (userType == UserType::OVERSEAS_BETA));
+}
+
+DeviceType GetDeviceType()
+{
+    std::string deviceType = GetString(KEY_BUILD_CHARACTER, "unknown");
+    if (deviceType == "phone" || deviceType == "default") {
+        return DeviceType::PHONE;
+    } else if (deviceType == "watch") {
+        return DeviceType::WATCH;
+    } else if (deviceType == "tv") {
+        return DeviceType::TV;
+    } else if (deviceType == "car") {
+        return DeviceType::IVI;
+    } else {
+        return DeviceType::UNKNOWN;
+    }
 }
 } // namespace Parameter
 } // namespace HiviewDFX

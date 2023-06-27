@@ -121,7 +121,6 @@ ohos_unittest("HiviewPlatformConfigTest") {
   sources = [ "unittest/common/hiview_platform_config_test.cpp" ]
 
   deps = [
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
     "../platform_config:hiviewplatform_config",
@@ -136,7 +135,7 @@ ohos_unittest("EventServerTest") {
   sources = [ "unittest/common/event_server_test.cpp" ]
 
   deps = [
-    "$hiview_adapter/utility:hiview_adapter_utility",
+    "$hiview_base/utility:hiview_utility",
     "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]

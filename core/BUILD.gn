@@ -19,7 +19,6 @@ config("hiview_core_config") {
     "include",
     "$hiview_root/include",
     "$hiview_base/utility/include",
-    "$hiview_adapter/utility/include",
     "//third_party/jsoncpp/include",
   ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
@@ -40,7 +39,6 @@ ohos_source_set("hiview_core") {
   deps = [
     "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "platform_config:hiviewplatform_config",
   ]

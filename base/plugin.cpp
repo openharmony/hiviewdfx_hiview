@@ -20,6 +20,7 @@
 #include "hiview_event_report.h"
 #include "thread_util.h"
 #include "time_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 Plugin::~Plugin()

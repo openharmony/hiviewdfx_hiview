@@ -48,14 +48,13 @@ Hiview源代码目录结构如下：
 ```
 /base/hiviewdfx/hiview.
 ├── adapter             #平台适配
-│   ├── service        #服务适配
-│   └── system_service #系统接口适配
+│   └── service        #服务适配
 ├── base                #模块定义，工具类
 │   └── utility
 ├── build               #编译脚本
 ├── include             #公共定义
 ├── core                #插件管理
-└── service             #平台服务 
+└── service             #平台服务
 ```
 
 ## 约束<a name="section7147138193814"></a>
