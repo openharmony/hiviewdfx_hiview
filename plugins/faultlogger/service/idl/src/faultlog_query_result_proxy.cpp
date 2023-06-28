@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include "message_parcel.h"
 
 #include "faultlog_info_ohos.h"
+#include "hiviewfaultlogger_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -35,7 +36,7 @@ bool FaultLogQueryResultProxy::HasNext()
         return false;
     }
 
-    if (remote->SendRequest(static_cast<int>(IFaultLogQueryResult::IFaultLogQueryResult_HASNEXT),
+    if (remote->SendRequest(static_cast<uint32_t>(FaultLogQueryResultInterfaceCode::HASNEXT),
         data, reply, option) != ERR_OK) {
         return false;
     }
@@ -61,7 +62,7 @@ sptr<FaultLogInfoOhos> FaultLogQueryResultProxy::GetNext()
         return nullptr;
     }
 
-    if (remote->SendRequest(static_cast<int>(IFaultLogQueryResult::IFaultLogQueryResult_GETNEXT),
+    if (remote->SendRequest(static_cast<uint32_t>(FaultLogQueryResultInterfaceCode::GETNEXT),
         data, reply, option) != ERR_OK) {
         return nullptr;
     }
