@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {

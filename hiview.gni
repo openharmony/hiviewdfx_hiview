@@ -28,9 +28,6 @@ hiview_test = "//base/hiviewdfx/hiview/test"
 hiview_faultlogger = "//base/hiviewdfx/hiview/plugins/faultlogger"
 hiview_eventlogger = "//base/hiviewdfx/hiview/plugins/eventlogger"
 
-# base path of ability runtime
-ability_runtime_path = "//foundation/ability/ability_runtime"
-
 declare_args() {
   device_usage_statistics_enable = true
   if (defined(global_parts_info) &&

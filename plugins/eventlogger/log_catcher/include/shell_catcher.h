@@ -28,8 +28,19 @@ public:
     ~ShellCatcher() override {};
     bool Initialize(const std::string& cmd, int type, int intParam2) override;
     int Catch(int fd) override;
+
+    enum CATCHER_TYPE {
+        CATCHER_AMS,
+        CATCHER_WMS,
+        CATCHER_CPU,
+        CATCHER_MEM,
+        CATCHER_PMS,
+        CATCHER_HILOG
+    }; 
 private:
-    std::string catcherCmd;
+    std::string catcherCmd_;
+    int pid_;
+    CATCHER_TYPE catcherType_;
 
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);

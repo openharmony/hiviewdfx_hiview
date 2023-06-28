@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,12 +26,17 @@ class FaultLogQueryResult {
 public:
     FaultLogQueryResult(FaultLogQueryResultImpl* impl) : impl_(impl) {};
     ~FaultLogQueryResult();
-
-    // Get the next available fault log info
-    // if no log is available, nullptr will be returned
+    /**
+     * @brief Get the next available fault log info
+     *
+     * @return  if no log is available, nullptr will be returned
+    */
     std::unique_ptr<FaultLogInfo> Next();
-
-    // check whether we have next available fault log info
+    /**
+     * @brief Check whether we have next available fault log info
+     *
+     * @return if next fault log is available, return true, otherwise return false
+    */
     bool HasNext();
 private:
     FaultLogQueryResultImpl* impl_;

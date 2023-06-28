@@ -14,7 +14,8 @@
         "subsystem": "hiviewdfx",
         "syscap": [
             "SystemCapability.HiviewDFX.Hiview",
-            "SystemCapability.HiviewDFX.Hiview.FaultLogger"
+            "SystemCapability.HiviewDFX.Hiview.FaultLogger",
+            "SystemCapability.HiviewDFX.Hiview.LogLibrary"
         ],
         "adapted_system_type": [
             "standard"
@@ -35,13 +36,19 @@
                 "bundle_framework",
                 "c_utils",
                 "device_usage_statistics",
-                "hilog_native",
-                "hisysevent_native",
+                "ets_runtime",
+                "faultloggerd",
+                "hidumper",
+                "hilog",
+                "hisysevent",
                 "init",
                 "ipc",
                 "os_account",
+                "power_manager",
+                "relational_store",
                 "safwk",
                 "samgr",
+                "storage_service",
                 "time_service",
                 "napi"
             ],
@@ -80,6 +87,7 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
                         "header_files": [
+                            "xpower_event_common.h",
                             "xpower_event.h"
                         ]
                     }
@@ -89,19 +97,9 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/innerkits/xpower_event/include",
                         "header_files": [
-                            "xpower_event_js.h"
-                        ]
-                    }
-                },
-                {
-                    "name": "//base/hiviewdfx/hiview/base:hiviewbase",
-                    "header": {
-                        "header_base": "//base/hiviewdfx/hiview/base/include",
-                        "header_files": [
-                            "plugin_factory.h",
-                            "event_loop.h",
-                            "plugin.h",
-                            "event.h"
+                            "xpower_event_common.h",
+                            "xpower_event_js.h",
+                            "xpower_event_jsvm.h"
                         ]
                     }
                 }

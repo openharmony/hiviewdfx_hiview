@@ -30,11 +30,11 @@
 
 #include <securec.h>
 
+#include "base/raw_data_base_def.h"
 #include "decoded/decoded_event.h"
 #include "device_node.h"
 #include "init_socket.h"
 #include "logger.h"
-#include "base/raw_data.h"
 #include "socket_util.h"
 
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
@@ -51,6 +51,12 @@ constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
 #endif
 constexpr char SOCKET_CONFIG_FILE[] = "/system/etc/hiview/hisysevent_extra_socket";
 std::string g_extraSocketPath;
+
+struct Header {
+    unsigned short len;
+    unsigned short headerSize;
+    char msg[0];
+};
 
 struct Initializer {
     Initializer()
@@ -206,15 +212,19 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
         socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
         int n = recvfrom(socketId_, buffer, sizeof(char) * BUFFER_SIZE, 0,
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
-        if (n <= 0) {
+        if (n < static_cast<int>(EventRaw::GetValidDataMinimumByteCount())) {
             break;
         }
         buffer[n] = 0;
-        auto dataByteCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(buffer)));
-        HIVIEW_LOGD("length of data received from client is %{public}zu.", dataByteCnt);
+        int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
+        if (dataByteCnt != n) {
+            HIVIEW_LOGE("length of data received from client is invalid.");
+            break;
+        }
+        HIVIEW_LOGD("length of data received from client is %{public}d.", dataByteCnt);
         EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
         std::string eventJsonStr = event.AsJsonStr();
-        HIVIEW_LOGD("receive from client %{public}s", eventJsonStr.c_str());
+        HIVIEW_LOGD("receive from client %{private}s", eventJsonStr.c_str());
         if (!g_extraSocketPath.empty()) {
             TransferEvent(eventJsonStr);
         }
@@ -260,15 +270,19 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
     char buffer[EVENT_READ_BUFFER];
     (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
     int ret = read(fd_, buffer, EVENT_READ_BUFFER);
-    if (ret <= 0) {
+    if (ret < static_cast<int>(EventRaw::GetValidDataMinimumByteCount())) {
         return -1;
     }
     buffer[EVENT_READ_BUFFER - 1] = '\0';
-    auto dataByteCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(buffer)));
-    HIVIEW_LOGD("length of data received from kernel is %{public}zu.", dataByteCnt);
+    int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
+    if (dataByteCnt != (ret - sizeof(struct Header) - 1)) { // extra bytes in kernel write
+        HIVIEW_LOGE("length of data received from kernel is invalid.");
+        return -1;
+    }
+    HIVIEW_LOGD("length of data received from kernel is %{public}d.", dataByteCnt);
     EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
     std::string eventJsonStr = event.AsJsonStr();
-    HIVIEW_LOGD("receive from kernel %{public}s", eventJsonStr.c_str());
+    HIVIEW_LOGD("receive data from kernel %{private}s", eventJsonStr.c_str());
     if (!g_extraSocketPath.empty()) {
         TransferEvent(eventJsonStr);
     }

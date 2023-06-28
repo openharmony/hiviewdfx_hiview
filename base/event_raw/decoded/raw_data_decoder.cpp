@@ -15,15 +15,11 @@
 
 #include "decoded/raw_data_decoder.h"
 
-#include "hilog/log.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawDataDecoder" };
-}
 
 bool RawDataDecoder::FloatingNumberDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, double& dest)
 {
@@ -83,7 +79,6 @@ bool RawDataDecoder::StringValueDecoded(uint8_t* rawData, const size_t maxLen, s
         return true;
     }
     dest = std::string(reinterpret_cast<char*>(rawData + pos), valByteCnt);
-    HiLog::Debug(LABEL, "decoded string is %{public}s.", dest.c_str());
     pos += valByteCnt;
     return true;
 }

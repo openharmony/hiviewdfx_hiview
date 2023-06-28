@@ -129,7 +129,6 @@ RawDataBuilder& RawDataBuilder::AppendType(const int eventType)
 {
     header_.type = static_cast<uint8_t>(eventType - 1); // header_.type is only 2 bits which must be
                                                        // subtracted 1 in order to avoid data overrflow.
-    HiLog::Debug(LABEL, "Encode event type is %{public}d.", eventType);
     return *this;
 }
 

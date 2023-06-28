@@ -37,7 +37,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
 
   configs = [ ":bbox_detector_test_config" ]
 
-  external_deps = [ "hisysevent_native:libhisysevent" ]
+  external_deps = [ "hisysevent:libhisysevent" ]
 
   cflags = [ "-DUNITTEST" ]
 
@@ -60,7 +60,7 @@ ohos_moduletest("BBoxDetectorModuleTest") {
 
   cflags = [ "-DUNITTEST" ]
 
-  external_deps = [ "hisysevent_native:libhisysevent" ]
+  external_deps = [ "hisysevent:libhisysevent" ]
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",

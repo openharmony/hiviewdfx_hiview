@@ -50,7 +50,7 @@ ohos_unittest("PlatformConfigTest") {
   ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("PluginPlatformTest") {
@@ -77,7 +77,7 @@ ohos_unittest("PluginPlatformTest") {
   ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("PluginBundleTest") {
@@ -96,7 +96,7 @@ ohos_unittest("PluginBundleTest") {
   ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("EventDispatchQueueTest") {

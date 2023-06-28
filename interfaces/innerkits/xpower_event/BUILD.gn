@@ -25,10 +25,12 @@ ohos_shared_library("libxpower_event") {
 
   external_deps = [
     "faultloggerd:libbacktrace_local",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
 
+  innerapi_tags = [ "platformsdk" ]
+  version_script = "libxpower_events.map"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
@@ -39,12 +41,13 @@ ohos_shared_library("libxpower_event_js") {
 
   external_deps = [
     "ets_runtime:libark_jsruntime",
-    "hisysevent_native:libhisysevent",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
     "napi:ace_napi",
   ]
 
   innerapi_tags = [ "platformsdk" ]
+  version_script = "libxpower_events.map"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

@@ -20,6 +20,7 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "base/raw_data_base_def.h"
 #include "hilog/log.h"
 #include "decoded/raw_data_decoder.h"
 
@@ -58,7 +59,7 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
     HiLog::Debug(LABEL, "decoded blockSize is %{public}zu.", blockSize);
-    if (blockSize == 0 || blockSize > MAX_BLOCK_SIZE) {
+    if (blockSize < GetValidDataMinimumByteCount() || blockSize > MAX_BLOCK_SIZE) {
         return;
     }
     rawData_ = new(std::nothrow) uint8_t[blockSize];
@@ -118,7 +119,7 @@ void DecodedEvent::AppendBaseInfo(std::stringstream& ss)
     AppendValue(ss, BASE_INFO_KEY_UID, header_.uid);
     AppendValue(ss, BASE_INFO_KEY_ID, TransUInt64ToFixedLengthStr(header_.id));
     if (header_.isTraceOpened == 1) {
-        AppendValue(ss, BASE_INFO_KEY_TRACE_FLAG, traceInfo_.traceFlag);
+        AppendValue(ss, BASE_INFO_KEY_TRACE_FLAG, static_cast<int>(traceInfo_.traceFlag));
         AppendValue(ss, BASE_INFO_KEY_TRACE_ID, TransNumToHexStr(traceInfo_.traceId));
         AppendValue(ss, BASE_INFO_KEY_SPAN_ID, TransNumToHexStr(traceInfo_.spanId));
         AppendValue(ss, BASE_INFO_KEY_PARENT_SPAN_ID, TransNumToHexStr(traceInfo_.pSpanId));

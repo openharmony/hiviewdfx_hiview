@@ -105,6 +105,9 @@ ohos_executable("hiview") {
   sources = [ "main.cpp" ]
 
   deps += plugin_static_deps
+
+  external_deps = [ "hidumper:hidumperservice_cpu_source" ]
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
@@ -134,6 +137,7 @@ group("hiview_test_package") {
     "plugins:fuzztest",
     "plugins:moduletest",
     "plugins:unittest",
+    "service:fuzztest",
     "test:moduletest",
     "test:unittest",
     "utility/common_utils:unittest",

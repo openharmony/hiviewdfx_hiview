@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,30 +13,27 @@
  * limitations under the License.
  */
 
-#include "eventsource_fuzzer.h"
+#include "hiviewservice_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
-#include "sysevent_source.h"
+#include "hiview_service.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-SysEventSource g_eventSource;
+HiviewService g_hiviewService;
 int g_fd = 0;
 
 struct Initializer {
     Initializer()
     {
-        HiviewContext context;
-        g_eventSource.SetHiviewContext(&context);
-        g_eventSource.OnLoad();
-
-        g_fd = open("/dev/null", O_RDWR | O_CREAT | O_TRUNC, 0644); //0644 for file mode
+        g_fd = open("/dev/null", O_RDWR | O_CREAT | O_TRUNC, 0600); //0600 for file mode
         if (g_fd <= 0) {
             printf("failed to open file, exit\n");
             isInit = false;
@@ -48,7 +45,6 @@ struct Initializer {
     ~Initializer()
     {
         if (isInit) {
-            g_eventSource.OnUnload();
             (void)close(g_fd);
         }
     }
@@ -58,11 +54,11 @@ struct Initializer {
 Initializer g_initializer;
 }
 
-static void SysEventSourceDumpTest(const uint8_t* data, size_t size)
+static void HiviewServiceDumpTest(const uint8_t* data, size_t size)
 {
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
-    g_eventSource.Dump(g_fd, {strData});
-    g_eventSource.Dump(g_fd, {strData, strData});
+    g_hiviewService.DumpRequestDispatcher(g_fd, {});
+    g_hiviewService.DumpRequestDispatcher(g_fd, {strData});
 }
 } // namespace HiviewDFX
 } // namespace OHOS
@@ -75,7 +71,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         printf("failed to init environment, exit\n");
         return 0;
     }
-    OHOS::HiviewDFX::SysEventSourceDumpTest(data, size);
+    OHOS::HiviewDFX::HiviewServiceDumpTest(data, size);
     return 0;
 }
 

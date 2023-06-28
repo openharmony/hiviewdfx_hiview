@@ -130,6 +130,10 @@ int32_t HiviewServiceAbilityStub::HandleCopyOrMoveRequest(
         HIVIEW_LOGW("cannot get dest dir");
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
+    if (dest.find("..") != std::string::npos) {
+        HIVIEW_LOGW("invalid dest: %{public}s", dest.c_str());
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
     int32_t ret = isMove ? Move(logType, logName, dest) : Copy(logType, logName, dest);
     if (!reply.WriteInt32(ret)) {
         return HiviewNapiErrCode::ERR_DEFAULT;
