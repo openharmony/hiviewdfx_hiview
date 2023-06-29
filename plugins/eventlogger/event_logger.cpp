@@ -26,7 +26,6 @@
 
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "system_ability.h"
 
 #include "common_utils.h"
 #include "event_source.h"
@@ -256,32 +255,29 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
         return false;
     }
 
-    auto task = [this, event, beginTime, hitraceTime, fullTracePath, iHitraceService]() {
-        std::string returnDir = iHitraceService->DumpTraceToDir();
-        HIVIEW_LOGI("Get trace path: %{public}s", returnDir.c_str());
-        size_t pos = returnDir.rfind('/');
-        if (pos == std::string::npos) {
-            HIVIEW_LOGI("DumpTraceToDir failed.");
-        }
+    std::string returnDir = iHitraceService->DumpTraceToDir();
+    HIVIEW_LOGI("Get trace path: %{public}s", returnDir.c_str());
+    size_t pos = returnDir.rfind('/');
+    if (pos == std::string::npos) {
+        HIVIEW_LOGI("DumpTraceToDir failed.");
+    }
 
-        std::string dirName = returnDir.substr(pos + 1);
-        if (returnDir.size() == 0) {
-            HIVIEW_LOGE("Get iHitraceService DumpTraceToDir failed");
-        } else {
-            if (event != nullptr) {
-                HIVIEW_LOGI("SetEventValue: %{public}s", dirName.c_str());
-                event->SetEventValue("HITRACE_TIME", dirName);
-            }
+    std::string dirName = returnDir.substr(pos + 1);
+    if (returnDir.size() == 0) {
+        HIVIEW_LOGE("Get iHitraceService DumpTraceToDir failed");
+    } else {
+        if (event != nullptr) {
+            HIVIEW_LOGI("SetEventValue: %{public}s", dirName.c_str());
+            event->SetEventValue("HITRACE_TIME", dirName);
         }
-        HIVIEW_LOGI("end DumpTraceToDir");
+    }
+    HIVIEW_LOGI("end DumpTraceToDir");
 
-        if (this->DetectionHiTraceMap(fullTracePath)) {
-            std::unique_lock<std::mutex> lck(finishMutex_);
-            event->ResetPendingStatus();
-            event->OnContinue();
-        }
-    };
-    eventPool_->AddTask(task, "eventlogger_hitrace");
+    if (this->DetectionHiTraceMap(fullTracePath)) {
+        std::unique_lock<std::mutex> lck(finishMutex_);
+        event->ResetPendingStatus();
+        event->OnContinue();
+    }
     return true;
 }
 

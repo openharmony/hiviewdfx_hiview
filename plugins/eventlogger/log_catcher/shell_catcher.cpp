@@ -15,7 +15,6 @@
 #include "shell_catcher.h"
 #include <unistd.h>
 #include <sys/wait.h>
-#include "dump_client_main.h"
 #include "logger.h"
 #include "common_utils.h"
 #include "log_catcher_utils.h"
@@ -29,10 +28,12 @@ ShellCatcher::ShellCatcher() : EventLogCatcher()
     name_ = "ShellCatcher";
 }
 
-bool ShellCatcher::Initialize(const std::string& cmd, int type __UNUSED, int intParam __UNUSED)
+bool ShellCatcher::Initialize(const std::string& cmd, int type, int catcherPid)
 {
-    catcherCmd = cmd;
-    description_ = "catcher cmd: " + catcherCmd + " ";
+    catcherCmd_ = cmd;
+    catcherType_ = CATCHER_TYPE(type);
+    pid_ = catcherPid;
+    description_ = "catcher cmd: " + catcherCmd_ + " ";
     return true;
 }
 
@@ -44,7 +45,28 @@ void ShellCatcher::DoChildProcess(int writeFd)
         _exit(-1);
     }
 
-    int ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
+    int ret = -1;
+    switch (catcherType_) {
+        case CATCHER_AMS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "AbilityManagerService", "-a", "-a", nullptr);
+            break;
+        case CATCHER_WMS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a", "-a", nullptr);
+            break;
+        case CATCHER_CPU:
+            ret = execl("/system/bin/hidumper", "hidumper", "--cpuusage", nullptr);
+            break;
+        case CATCHER_MEM:
+            ret = execl("/system/bin/hidumper", "hidumper", "--mem", std::to_string(pid_).c_str(), nullptr);
+            break;
+        case CATCHER_PMS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "PowerManagerService", "-a",
+                "-s", "DisplayPowerManagerService", nullptr);
+            break;
+        case CATCHER_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
+            break;
+    }
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         _exit(-1);
@@ -72,12 +94,12 @@ bool ShellCatcher::ReadShellToFile(int writeFd, const std::string& cmd)
 int ShellCatcher::Catch(int fd)
 {
     auto originSize = GetFdSize(fd);
-    if (catcherCmd.empty()) {
+    if (catcherCmd_.empty()) {
         HIVIEW_LOGE("catcherCmd empty");
         return -1;
     }
 
-    ReadShellToFile(fd, catcherCmd);
+    ReadShellToFile(fd, catcherCmd_);
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
 }
