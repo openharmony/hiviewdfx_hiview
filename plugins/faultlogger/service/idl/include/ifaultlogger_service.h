@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,12 +28,6 @@ namespace OHOS {
 namespace HiviewDFX {
 class IFaultLoggerService : public IRemoteBroker {
 public:
-    enum {
-        IFaultLoggerService_ADD_FAULTLOG = 0,
-        IFaultLoggerService_QUERY_SELF_FAULTLOG,
-        IFaultLoggerService_DESTROY,
-    };
-
     virtual void AddFaultLog(const FaultLogInfoOhos& info) = 0;
     virtual sptr<IRemoteObject> QuerySelfFaultLog(int32_t faultType, int32_t maxNum) = 0;
     virtual void Destroy()  = 0;
