@@ -26,6 +26,7 @@
 
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "parameter.h"
 
 #include "common_utils.h"
 #include "event_source.h"
@@ -108,6 +109,10 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
+    if (!IsHandleAppfreeze(sysEvent)) {
+        return true;
+    }
+
     if (sysEvent->GetValue("eventLog_action").empty()) {
         UpdateDB(sysEvent, "nolog");
         return true;
@@ -319,8 +324,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
     headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
     headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
-    event->SetEventValue("MSG", StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n"));
-    std::string msg = event->GetEventValue("MSG");
+    std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     headerStream << "MSG = " << msg << std::endl;
 
     std::string stack = event->GetEventValue("STACK");
@@ -381,6 +385,28 @@ bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
     } else {
         auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
         event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
+    }
+    return true;
+}
+
+bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
+{
+    std::string bundleName = event->GetEventValue("PACKAGE_NAME");
+    if (bundleName.empty()) {
+        bundleName = event->GetEventValue("MODULE_NAME");
+    }
+    if (bundleName.empty()) {
+        return true;
+    }
+
+    const int buffSize = 128;
+    char paramOutBuff[buffSize] = {0};
+    GetParameter("hiviewdfx.appfreeze.filter_bundle_name", "", paramOutBuff, buffSize - 1);
+
+    std::string str(paramOutBuff);
+    if (str.find(bundleName) != std::string::npos) {
+        HIVIEW_LOGW("appfreeze filtration %{public}s.", bundleName.c_str());
+        return false;
     }
     return true;
 }
