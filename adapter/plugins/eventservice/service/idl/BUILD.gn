@@ -96,7 +96,6 @@ ohos_source_set("sys_event_service_ohos") {
 
   deps = [
     ":sys_event_service_ohos_common",
-    "$hiview_adapter/utility:hiview_adapter_utility",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
     "$hiview_base/running_status_logger:running_status_logger_source",

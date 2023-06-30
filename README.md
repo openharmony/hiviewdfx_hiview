@@ -48,8 +48,7 @@ The code directory structure of Hiview is as follows:
 ```
 /base/hiviewdfx/hiview
 ├── adapter             # Platform adaptation code
-│   ├── service        # Service adaptation code
-│   └── system_service # System API adaptation code
+│   └── service        # Service adaptation code
 ├── base                # Module definition and utility class
 │   └── utility
 ├── build               # Compilation scripts

@@ -19,7 +19,6 @@ config("hiview_utils_config") {
   include_dirs = [
     ".",
     "include",
-    "$hiview_adapter/utility/include",
   ]
 }
 
@@ -27,11 +26,16 @@ ohos_source_set("hiview_utility") {
   public_configs = [ ":hiview_utils_config" ]
 
   sources = [
+    "common_utils.cpp",
+    "dynamic_module.cpp",
+    "file_util.cpp",
     "memory_util.cpp",
+    "parameter_ex.cpp",
+    "socket_util.cpp",
     "string_util.cpp",
+    "thread_util.cpp",
+    "time_util.cpp",
   ]
-
-  deps = [ "$hiview_adapter/utility:hiview_adapter_utility" ]
 
   defines = []
   if (use_musl && use_jemalloc && use_jemalloc_dfx_intf) {
@@ -41,6 +45,7 @@ ohos_source_set("hiview_utility") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "init:libbegetutil",
   ]
 
   part_name = "hiview"

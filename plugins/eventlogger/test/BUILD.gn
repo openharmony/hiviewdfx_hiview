@@ -20,7 +20,6 @@ config("unittest_config") {
   include_dirs = [
     "../include",
     "../log_catcher/include",
-    "$hiview_adapter/utility/include",
     "unittest/common",
   ]
 

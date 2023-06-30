@@ -19,7 +19,6 @@ module_output_path = "hiview/hiview/freezedetector"
 config("unittest_config") {
   include_dirs = [
     "./unittest/common/",
-    "$hiview_adapter/utility/include",
     "$hiview_plugin/freeze_detector",
   ]
 
@@ -54,7 +53,6 @@ ohos_unittest("FreezeDetectorUnittest") {
 
   include_dirs = [
     "./unittest/common/",
-    "$hiview_adapter/utility/include",
     "$hiview_plugin/freeze_detector",
     "//third_party/libxml2/include",
     "//base/hiviewdfx/hiview/base/include",

@@ -28,7 +28,6 @@ ohos_source_set("eventlogger") {
   sources = [ "event_logger.cpp" ]
 
   deps = [
-    "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
     "$hiview_plugin/freeze_detector:freeze_detector",
     "config:eventlogger_config",

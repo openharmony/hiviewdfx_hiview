@@ -20,7 +20,6 @@ config("running_status_logger_config") {
   include_dirs = [
     "include",
     "$hiview_adapter/dbstore/include",
-    "$hiview_adapter/utility/include",
     "$hiview_base/log/include",
     "$hiview_base/include",
     "$hiview_base/running_status_logger/include",
@@ -48,6 +47,7 @@ ohos_source_set("running_status_logger_source") {
   deps = [
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_base/event_raw:hiview_event_raw_encode",
+    "$hiview_base/utility:hiview_utility",
     "//third_party/jsoncpp:jsoncpp",
   ]
 

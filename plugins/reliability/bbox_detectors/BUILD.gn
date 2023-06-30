@@ -36,7 +36,6 @@ ohos_source_set("bbox_detector") {
   ]
 
   deps = [
-    "$hiview_adapter/system_service:system_service",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",

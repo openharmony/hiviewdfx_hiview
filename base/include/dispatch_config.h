@@ -25,25 +25,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct DllExport DomainRule
-{
-    enum FilterType {
-        INCLUDE,
-        EXCLUDE
-    };
-    uint8_t filterType;
-    std::unordered_set<std::string> eventlist;
-    bool FindEvent(const std::string& eventName) const;
-};
-
-struct DllExport DispatchRule {
-    std::unordered_set<uint8_t> typeList;
-    std::unordered_set<std::string> tagList;
-    std::unordered_set<std::string> eventList;
-    std::unordered_map<std::string, DomainRule> domainRuleMap;
-    bool FindEvent(const std::string &domain, const std::string &eventName);
-};
-
 class DllExport HiviewRuleParser {
 public:
     explicit HiviewRuleParser(const std::string & filePath);
