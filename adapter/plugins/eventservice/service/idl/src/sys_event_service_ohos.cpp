@@ -534,7 +534,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
     int32_t uid = IPCSkeleton::GetCallingUid();
     auto timestamp = dataPublisher_->GetTimeStampByUid(uid);
     int64_t currentTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
-    if (currentTime - timestamp < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
+    if ((currentTime - timestamp < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) && (currentTime - timestamp > 0)) {
         HiLog::Debug(LABEL, "forbid export, time frequency limit < 1 h.");
         return ERR_EXPORT_FREQUENCY_OVER_LIMIT;
     }
