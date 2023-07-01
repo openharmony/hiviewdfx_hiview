@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,7 +52,8 @@ int32_t SysEventServiceProxy::AddListener(const std::vector<SysEventRule>& rules
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(ADD_SYS_EVENT_LISTENER, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::ADD_SYS_EVENT_LISTENER), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -88,7 +89,8 @@ int32_t SysEventServiceProxy::RemoveListener(const sptr<ISysEventCallback> &call
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(REMOVE_SYS_EVENT_LISTENER, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::REMOVE_SYS_EVENT_LISTENER), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -134,7 +136,8 @@ int32_t SysEventServiceProxy::Query(const QueryArgument& queryArgument, const st
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(QUERY_SYS_EVENT, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::QUERY_SYS_EVENT), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -175,7 +178,8 @@ int32_t SysEventServiceProxy::SetDebugMode(const sptr<ISysEventCallback>& callba
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(SET_DEBUG_MODE, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::SET_DEBUG_MODE), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -209,7 +213,8 @@ int64_t SysEventServiceProxy::AddSubscriber(const std::vector<SysEventQueryRule>
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(ADD_SYS_EVENT_SUBSCRIBER, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::ADD_SYS_EVENT_SUBSCRIBER), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -237,7 +242,8 @@ int32_t SysEventServiceProxy::RemoveSubscriber()
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(REMOVE_SYS_EVENT_SUBSCRIBER, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::REMOVE_SYS_EVENT_SUBSCRIBER), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;
@@ -274,7 +280,8 @@ int64_t SysEventServiceProxy::Export(const QueryArgument &queryArgument, const s
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = remote->SendRequest(EXPORT_SYS_EVENT, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventServiceInterfaceCode::EXPORT_SYS_EVENT), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
         return ERR_CAN_NOT_SEND_REQ;

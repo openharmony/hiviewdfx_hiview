@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -179,25 +179,25 @@ int32_t SysEventServiceStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
         return ERR_INVALID_VALUE;
     }
     switch (code) {
-        case ADD_SYS_EVENT_LISTENER: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::ADD_SYS_EVENT_LISTENER): {
             return HandleAddSysEventListener(data, reply, option);
         }
-        case REMOVE_SYS_EVENT_LISTENER: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::REMOVE_SYS_EVENT_LISTENER): {
             return HandleRemoveSysEventListener(data, reply, option);
         }
-        case QUERY_SYS_EVENT: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::QUERY_SYS_EVENT): {
             return HandleQueryEvent(data, reply, option);
         }
-        case SET_DEBUG_MODE: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::SET_DEBUG_MODE): {
             return HandleSetDebugMode(data, reply, option);
         }
-        case ADD_SYS_EVENT_SUBSCRIBER: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::ADD_SYS_EVENT_SUBSCRIBER): {
             return HandleAddSubscriber(data, reply, option);
         }
-        case REMOVE_SYS_EVENT_SUBSCRIBER: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::REMOVE_SYS_EVENT_SUBSCRIBER): {
             return HandleRemoveSubscriber(data, reply, option);
         }
-        case EXPORT_SYS_EVENT: {
+        case static_cast<uint32_t>(SysEventServiceInterfaceCode::EXPORT_SYS_EVENT): {
             return HandleExportEvent(data, reply, option);
         }
         default:

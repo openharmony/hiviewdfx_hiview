@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "query_argument.h"
 #include "sys_event_query_rule.h"
 #include "sys_event_rule.h"
+#include "sys_event_service_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -38,15 +39,6 @@ public:
     virtual int64_t AddSubscriber(const std::vector<SysEventQueryRule> &rules) = 0;
     virtual int32_t RemoveSubscriber() = 0;
     virtual int64_t Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule> &rules) = 0;
-    enum {
-        ADD_SYS_EVENT_LISTENER = 0,
-        REMOVE_SYS_EVENT_LISTENER,
-        QUERY_SYS_EVENT,
-        SET_DEBUG_MODE,
-        ADD_SYS_EVENT_SUBSCRIBER,
-        REMOVE_SYS_EVENT_SUBSCRIBER,
-        EXPORT_SYS_EVENT
-    };
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.hiviewdfx.ISysEventService");
