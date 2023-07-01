@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 
 #include "faultlog_info.h"
 #include "faultlog_info_ohos.h"
+#include "hiviewfaultlogger_ipc_interface_code.h"
 
 #include "logger.h"
 
@@ -36,7 +37,7 @@ int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     }
 
     switch (code) {
-        case IFaultLoggerService_ADD_FAULTLOG: {
+        case static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::ADD_FAULTLOG): {
             sptr<FaultLogInfoOhos> ohosInfo = FaultLogInfoOhos::Unmarshalling(data);
             if (ohosInfo == nullptr) {
                 HIVIEW_LOGE("failed to Unmarshalling info.");
@@ -47,7 +48,7 @@ int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             AddFaultLog(info);
             return ERR_OK;
         }
-        case IFaultLoggerService_QUERY_SELF_FAULTLOG: {
+        case static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::QUERY_SELF_FAULTLOG): {
             int32_t type = data.ReadInt32();
             int32_t maxNum = data.ReadInt32();
             auto result = QuerySelfFaultLog(type, maxNum);
@@ -62,7 +63,7 @@ int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             }
             return ERR_OK;
         }
-        case IFaultLoggerService_DESTROY: {
+        case static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::DESTROY): {
             Destroy();
             return ERR_OK;
         }

@@ -26,7 +26,7 @@
 
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "system_ability.h"
+#include "parameter.h"
 
 #include "common_utils.h"
 #include "event_source.h"
@@ -109,6 +109,10 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
+    if (!IsHandleAppfreeze(sysEvent)) {
+        return true;
+    }
+
     if (sysEvent->GetValue("eventLog_action").empty()) {
         UpdateDB(sysEvent, "nolog");
         return true;
@@ -256,32 +260,29 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
         return false;
     }
 
-    auto task = [this, event, beginTime, hitraceTime, fullTracePath, iHitraceService]() {
-        std::string returnDir = iHitraceService->DumpTraceToDir();
-        HIVIEW_LOGI("Get trace path: %{public}s", returnDir.c_str());
-        size_t pos = returnDir.rfind('/');
-        if (pos == std::string::npos) {
-            HIVIEW_LOGI("DumpTraceToDir failed.");
-        }
+    std::string returnDir = iHitraceService->DumpTraceToDir();
+    HIVIEW_LOGI("Get trace path: %{public}s", returnDir.c_str());
+    size_t pos = returnDir.rfind('/');
+    if (pos == std::string::npos) {
+        HIVIEW_LOGI("DumpTraceToDir failed.");
+    }
 
-        std::string dirName = returnDir.substr(pos + 1);
-        if (returnDir.size() == 0) {
-            HIVIEW_LOGE("Get iHitraceService DumpTraceToDir failed");
-        } else {
-            if (event != nullptr) {
-                HIVIEW_LOGI("SetEventValue: %{public}s", dirName.c_str());
-                event->SetEventValue("HITRACE_TIME", dirName);
-            }
+    std::string dirName = returnDir.substr(pos + 1);
+    if (returnDir.size() == 0) {
+        HIVIEW_LOGE("Get iHitraceService DumpTraceToDir failed");
+    } else {
+        if (event != nullptr) {
+            HIVIEW_LOGI("SetEventValue: %{public}s", dirName.c_str());
+            event->SetEventValue("HITRACE_TIME", dirName);
         }
-        HIVIEW_LOGI("end DumpTraceToDir");
+    }
+    HIVIEW_LOGI("end DumpTraceToDir");
 
-        if (this->DetectionHiTraceMap(fullTracePath)) {
-            std::unique_lock<std::mutex> lck(finishMutex_);
-            event->ResetPendingStatus();
-            event->OnContinue();
-        }
-    };
-    eventPool_->AddTask(task, "eventlogger_hitrace");
+    if (this->DetectionHiTraceMap(fullTracePath)) {
+        std::unique_lock<std::mutex> lck(finishMutex_);
+        event->ResetPendingStatus();
+        event->OnContinue();
+    }
     return true;
 }
 
@@ -323,8 +324,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
     headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
     headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
-    event->SetEventValue("MSG", StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n"));
-    std::string msg = event->GetEventValue("MSG");
+    std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     headerStream << "MSG = " << msg << std::endl;
 
     std::string stack = event->GetEventValue("STACK");
@@ -385,6 +385,28 @@ bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
     } else {
         auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
         event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
+    }
+    return true;
+}
+
+bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
+{
+    std::string bundleName = event->GetEventValue("PACKAGE_NAME");
+    if (bundleName.empty()) {
+        bundleName = event->GetEventValue("MODULE_NAME");
+    }
+    if (bundleName.empty()) {
+        return true;
+    }
+
+    const int buffSize = 128;
+    char paramOutBuff[buffSize] = {0};
+    GetParameter("hiviewdfx.appfreeze.filter_bundle_name", "", paramOutBuff, buffSize - 1);
+
+    std::string str(paramOutBuff);
+    if (str.find(bundleName) != std::string::npos) {
+        HIVIEW_LOGW("appfreeze filtration %{public}s.", bundleName.c_str());
+        return false;
     }
     return true;
 }

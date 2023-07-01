@@ -16,15 +16,15 @@
 #ifndef HIVIEW_PLUGINS_USAGE_EVENT_REPORT_IDL_HIVIEW_SHUTDOWN_CALLBACK_H
 #define HIVIEW_PLUGINS_USAGE_EVENT_REPORT_IDL_HIVIEW_SHUTDOWN_CALLBACK_H
 
-#include "hiview_shutdown_callback_stub.h"
+#include "shutdown/async_shutdown_callback_stub.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class HiViewShutdownCallback : public HiViewShutdownCallbackStub {
+class HiViewShutdownCallback : public PowerMgr::AsyncShutdownCallbackStub {
 public:
     HiViewShutdownCallback() {}
-    virtual ~HiViewShutdownCallback() {}
-    void ShutdownCallback() override;
+    ~HiViewShutdownCallback() override = default;
+    void OnAsyncShutdown() override;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

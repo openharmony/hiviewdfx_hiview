@@ -180,6 +180,29 @@ HWTEST_F(FaultloggerUnittest, genCppCrashtoAnalysisFaultlog001, testing::ext::Te
 }
 
 /**
+ * @tc.name: genJsCrashtoAnalysisFaultlog001
+ * @tc.desc: create Js crash FaultLogInfo and check AnalysisFaultlog
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, genJsCrashtoAnalysisFaultlog001, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create Js crash FaultLogInfo
+     * @tc.expected: AnalysisFaultlog return expected result
+     */
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 0;
+    info.pid = 7497;
+    info.faultLogType = 3;
+    info.module = "com.example.testapplication";
+    info.reason = "TestReason";
+    std::map<std::string, std::string> eventInfos;
+    ASSERT_EQ(AnalysisFaultlog(info, eventInfos), false);
+    ASSERT_EQ(!eventInfos["fingerPrint"].empty(), true);
+}
+
+/**
  * @tc.name: genjserrorLogTest002
  * @tc.desc: create JS ERROR event and send it to faultlogger
  * @tc.type: FUNC
@@ -540,6 +563,8 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     args.push_back(u"Faultlogger");
     args.push_back(u"-l");
     serviceOhos.Dump(fd, args);
+    args.push_back(u"&@#");
+    ASSERT_EQ(serviceOhos.Dump(fd, args), -1);
     close(fd);
     fd = -1;
     std::string result;
@@ -550,5 +575,71 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     }
     serviceOhos.Destroy();
 }
+
+/**
+ * @tc.name: FaultloggerTest001
+ * @tc.desc: Test calling Faultlogger.StartBootScan Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    time_t now = time(nullptr);
+    std::string timeStr = GetFormatedTime(now);
+    std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
+        "Fault thread Info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
+    ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-101-" + std::to_string(now), content));
+    auto plugin = CreateFaultloggerInstance();
+    plugin->StartBootScan();
+    //check faultlog file content
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    ASSERT_TRUE(FileUtil::FileExists(fileName));
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
+    ASSERT_EQ(plugin->GetFaultLogInfo(fileName)->module, "BootScanUnittest");
+    // check event database
+    std::string cmd = "hisysevent -l | grep " + std::to_string(now);
+    FILE* fp = popen(cmd.c_str(), "r");
+    char buffer[1024] = {0};
+    if (fp != nullptr) {
+        fgets(buffer, sizeof(buffer), fp);
+        pclose(fp);
+        std::string str(buffer);
+        ASSERT_NE(str.find(std::to_string(now).c_str()), std::string::npos);
+    } else {
+        FAIL();
+    }
+}
+
+/**
+ * @tc.name: FaultloggerTest002
+ * @tc.desc: Test calling Faultlogger.StartBootScan Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    time_t now = time(nullptr);
+    std::string timeStr = GetFormatedTime(now);
+    std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
+        "Fault thread Info:\nTid:102, Name:BootScanUnittest\n";
+    std::string fileName = "/data/log/faultlog/temp/cppcrash-102-" + std::to_string(now);
+    ASSERT_TRUE(FileUtil::SaveStringToFile(fileName, content));
+    auto plugin = CreateFaultloggerInstance();
+    plugin->StartBootScan();
+    ASSERT_FALSE(FileUtil::FileExists(fileName));
+    // check event database
+    std::string cmd = "hisysevent -l | grep CPP_CRASH_NO_LOG | grep " + std::to_string(now);
+    FILE* fp = popen(cmd.c_str(), "r");
+    char buffer[1024] = {0};
+    if (fp != nullptr) {
+        fgets(buffer, sizeof(buffer), fp);
+        pclose(fp);
+        std::string str(buffer);
+        ASSERT_NE(str.find("BootScanUnittest"), std::string::npos);
+    } else {
+        FAIL();
+    }
+}
+
 } // namespace HiviewDFX
 } // namespace OHOS

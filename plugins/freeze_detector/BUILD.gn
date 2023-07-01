@@ -49,6 +49,7 @@ ohos_source_set("freeze_detector") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_plugin/faultlogger:libfaultlogger",
     "$hiview_root/utility/smart_parser:smart_parser",
     "config:config",
     "//third_party/libxml2:xml2",

@@ -25,7 +25,6 @@
 #include "singleton.h"
 #include "sys_event.h"
 
-#include "command_catcher.h"
 #include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -59,13 +58,11 @@ private:
     uint32_t taskLogSize_;
     volatile Status status_;
     std::map<std::string, capture> captureList_;
-    std::shared_ptr<CommandCatcher> cmdCatcher_;
+    int pid_;
 
     bool ShouldStopLogTask(int fd, uint32_t curTaskIndex, int curLogSize, std::shared_ptr<EventLogCatcher> catcher);
     void AddStopReason(int fd, std::shared_ptr<EventLogCatcher> catcher, const std::string& reason);
     void AddSeparator(int fd, std::shared_ptr<EventLogCatcher> catcher) const;
-
-    std::shared_ptr<CommandCatcher> GetCmdCatcher();
 
     void AppStackCapture();
     void SystemStackCapture();

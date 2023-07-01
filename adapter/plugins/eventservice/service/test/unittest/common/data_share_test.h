@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,27 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_HIVIEWDFX_IFAULTLOG_QUERY_RESULT_H
-#define OHOS_HIVIEWDFX_IFAULTLOG_QUERY_RESULT_H
 
-#include <string>
+#ifndef DATA_SHARE_TEST_H
+#define DATA_SHARE_TEST_H
 
-#include "iremote_broker.h"
-#include "iremote_object.h"
-
-#include "faultlog_info_ohos.h"
+#include <gtest/gtest.h>
 
 namespace OHOS {
 namespace HiviewDFX {
-class IFaultLogQueryResult : public IRemoteBroker {
+class DataShareTest : public testing::Test {
 public:
-    virtual bool HasNext()  = 0;
-    virtual sptr<FaultLogInfoOhos> GetNext() = 0;
-
-public:
-    DECLARE_INTERFACE_DESCRIPTOR(u"ohos.hiviewdfx.IFaultLogQueryResult");
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+    void SetUp();
+    void TearDown();
 };
-} // space HiviewDFX
+
+} // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // OHOS_HIVIEWDFX_IFAULTLOG_QUERY_RESULT_H
+#endif // DATA_SHARE_TEST_H

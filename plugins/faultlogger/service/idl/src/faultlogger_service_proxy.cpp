@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include "faultlog_info_ohos.h"
 #include "faultlog_query_result_proxy.h"
 #include "hilog/log_cpp.h"
+#include "hiviewfaultlogger_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -45,7 +46,7 @@ void FaultLoggerServiceProxy::AddFaultLog(const FaultLogInfoOhos& info)
 
     auto flags = option.GetFlags();
     option.SetFlags(flags | 0x01); // 0X01 return immediately
-    if (remote->SendRequest(static_cast<int>(IFaultLoggerService::IFaultLoggerService_ADD_FAULTLOG),
+    if (remote->SendRequest(static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::ADD_FAULTLOG),
         data, reply, option) != ERR_OK) {
         return;
     }
@@ -73,7 +74,7 @@ sptr<IRemoteObject> FaultLoggerServiceProxy::QuerySelfFaultLog(int32_t faultType
         return nullptr;
     }
 
-    if (remote->SendRequest(static_cast<int>(IFaultLoggerService::IFaultLoggerService_QUERY_SELF_FAULTLOG),
+    if (remote->SendRequest(static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::QUERY_SELF_FAULTLOG),
         data, reply, option) != ERR_OK) {
         return nullptr;
     }
@@ -99,7 +100,7 @@ void FaultLoggerServiceProxy::Destroy()
         return;
     }
 
-    if (remote->SendRequest(static_cast<int>(IFaultLoggerService::IFaultLoggerService_DESTROY),
+    if (remote->SendRequest(static_cast<uint32_t>(FaultLoggerServiceInterfaceCode::DESTROY),
         data, reply, option) != ERR_OK) {
         return;
     }

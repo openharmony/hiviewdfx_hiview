@@ -102,7 +102,7 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
         return false;
     }
     CreateWorkingDirectories(platformConfigDir);
-   
+
     // update beta config
     UpdateBetaConfigIfNeed();
 
@@ -890,6 +890,17 @@ void HiviewPlatform::RequestLoadBundle(const std::string& bundleName)
 
     std::string configPath = defaultConfigDir_ + bundleName + "_plugin_config";
     LoadPluginBundle(bundleName, configPath);
+}
+
+void HiviewPlatform::RequestUnloadBundle(const std::string& bundleName, uint64_t delay)
+{
+    auto task = [this, bundleName]() {
+        HIVIEW_LOGI("start to unload the bundle %{pulic}s.", bundleName.c_str());
+        if (pluginBundleInfos_.find(bundleName) != pluginBundleInfos_.end()) {
+            pluginBundleInfos_.erase(bundleName);
+        }
+    };
+    sharedWorkLoop_->AddTimerEvent(nullptr, nullptr, task, delay, false);
 }
 
 std::shared_ptr<Plugin> HiviewPlatform::InstancePluginByProxy(std::shared_ptr<Plugin> proxy)

@@ -26,7 +26,6 @@
 #include "binder_catcher.h"
 #include "open_stacktrace_catcher.h"
 #include "peer_binder_catcher.h"
-#include "command_catcher.h"
 #include "dmesg_catcher.h"
 #include "shell_catcher.h"
 namespace OHOS {
@@ -44,7 +43,8 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
       taskLogSize_(0),
       status_(Status::TASK_RUNNABLE)
 {
-    cmdCatcher_ = nullptr;
+    int pid = event_->GetEventIntValue("PID");
+    pid_ = pid ? pid : event_->GetPid();
     captureList_.insert(std::pair<std::string, capture>("s", std::bind(&EventLogTask::AppStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("S", std::bind(&EventLogTask::SystemStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("b", std::bind(&EventLogTask::BinderLogCapture, this)));
@@ -184,27 +184,10 @@ long EventLogTask::GetLogSize() const
     return taskLogSize_;
 }
 
-std::shared_ptr<CommandCatcher> EventLogTask::GetCmdCatcher()
-{
-    if (cmdCatcher_ != nullptr) {
-        return cmdCatcher_;
-    }
-
-    auto capture = std::make_shared<CommandCatcher>();
-    int pid = event_->GetEventIntValue("PID");
-    pid = pid ? pid : event_->GetPid();
-    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
-    tasks_.push_back(capture);
-    cmdCatcher_ = capture;
-    return cmdCatcher_;
-}
-
 void EventLogTask::AppStackCapture()
 {
     auto capture = std::make_shared<OpenStacktraceCatcher>();
-    int pid = event_->GetEventIntValue("PID");
-    pid = pid ? pid : event_->GetPid();
-    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid, 0);
+    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), pid_, 0);
     tasks_.push_back(capture);
 }
 
@@ -237,11 +220,9 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
         return false;
     }
 
-    int pid = event_->GetEventIntValue("PID");
-    pid = pid ? pid : event_->GetPid();
     auto capture = std::make_shared<PeerBinderCatcher>();
     capture->Initialize(cmdList[PeerBinderCatcher::BP_CMD_PERF_TYPE_INDEX],
-        StringUtil::StrToInt(cmdList[PeerBinderCatcher::BP_CMD_LAYER_INDEX]), pid);
+        StringUtil::StrToInt(cmdList[PeerBinderCatcher::BP_CMD_LAYER_INDEX]), pid_);
     capture->Init(event_, "");
     tasks_.push_back(capture);
     return true;
@@ -249,45 +230,44 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 
 void EventLogTask::WMSUsageCapture()
 {
-    auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "-s", "WindowManagerService", "-a", "-a"};
-    cmdCatcher->AddCmd(cmd);
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s WindowManagerService -a -a", ShellCatcher::CATCHER_WMS, pid_);
+    tasks_.push_back(capture);
 }
 
 void EventLogTask::AMSUsageCapture()
 {
-    auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "-s", "AbilityManagerService", "-a", "-a"};
-    cmdCatcher->AddCmd(cmd);
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s AbilityManagerService -a -a", ShellCatcher::CATCHER_AMS, pid_);
+    tasks_.push_back(capture);
 }
 
 void EventLogTask::CpuUsageCapture()
 {
-    auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "--cpuusage"};
-    cmdCatcher->AddCmd(cmd);
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper --cpuusage", ShellCatcher::CATCHER_CPU, pid_);
+    tasks_.push_back(capture);
 }
 
 void EventLogTask::MemoryUsageCapture()
 {
-    auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "--mem", std::to_string(cmdCatcher->GetPid())};
-    cmdCatcher->AddCmd(cmd);
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper --mem", ShellCatcher::CATCHER_MEM, pid_);
+    tasks_.push_back(capture);
 }
 
 void EventLogTask::PMSUsageCapture()
 {
-    auto cmdCatcher = GetCmdCatcher();
-    std::vector<std::string> cmd = {"hidumper", "-s", "PowerManagerService", "-a", "-s"};
-    cmdCatcher->AddCmd(cmd);
-    std::vector<std::string> cmd1 = {"hidumper", "-s", "DisplayPowerManagerService"};
-    cmdCatcher->AddCmd(cmd1);
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s PowerManagerService -a -s DisplayPowerManagerService",
+        ShellCatcher::CATCHER_PMS, pid_);
+    tasks_.push_back(capture);
 }
 
 void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hilog -x", 0, 0);
+    capture->Initialize("hilog -x", ShellCatcher::CATCHER_PMS, 0);
     tasks_.push_back(capture);
 }
 

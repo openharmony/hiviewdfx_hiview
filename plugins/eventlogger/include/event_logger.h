@@ -88,6 +88,7 @@ private:
         const std::string& fullTracePath, std::shared_ptr<SysEvent> event);
     std::string GetHitraceName(int64_t& beginTime, std::string& hitraceTime);
     bool DetectionHiTraceMap(const std::string& name);
+    bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

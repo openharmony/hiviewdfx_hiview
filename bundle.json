@@ -60,7 +60,8 @@
                 "sqlite",
                 "openssl",
                 "bounds_checking_function",
-                "zlib"
+                "zlib",
+                "hiperf"
             ]
         },
         "build": {

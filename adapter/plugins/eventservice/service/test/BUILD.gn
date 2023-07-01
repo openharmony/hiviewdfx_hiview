@@ -26,6 +26,7 @@ config("unittest_config") {
     "//third_party/jsoncpp/include",
     "//third_party/bounds_checking_function/include",
     "unittest/common",
+    "$hiview_adapter/utility/include",
     "$hiview_plugin/sysevent_source/include",
     "$hiview_core/include",
     "$hiview_base/include",
@@ -39,6 +40,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
   configs = [ ":unittest_config" ]
 
   sources = [
+    "unittest/common/data_share_test.cpp",
     "unittest/common/sys_event_callback_ohos_test.cpp",
     "unittest/common/sys_event_service_ohos_test.cpp",
   ]
@@ -59,6 +61,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

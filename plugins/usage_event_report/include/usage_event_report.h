@@ -20,7 +20,7 @@
 #include <string>
 
 #include "event_loop.h"
-#include "ishutdown_callback.h"
+#include "shutdown/iasync_shutdown_callback.h"
 #include "plugin.h"
 
 namespace OHOS {
@@ -47,7 +47,7 @@ private:
     static void SaveSysUsageEvent();
 
 private:
-    sptr<PowerMgr::IShutdownCallback> callback_;
+    sptr<PowerMgr::IAsyncShutdownCallback> callback_;
     uint64_t timeOutCnt_;
     static uint64_t lastSysReportTime_;
     static uint64_t lastReportTime_;
