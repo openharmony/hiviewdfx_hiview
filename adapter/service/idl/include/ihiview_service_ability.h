@@ -20,6 +20,7 @@
 
 #include "hiview_file_info.h"
 #include "iremote_broker.h"
+#include "hiview_service_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,13 +33,6 @@ public:
     virtual int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
     virtual int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
     virtual int32_t Remove(const std::string& logType, const std::string& logName) = 0;
-
-    enum {
-        HIVIEW_SERVICE_ID_LIST = 1001,
-        HIVIEW_SERVICE_ID_COPY = 1002,
-        HIVIEW_SERVICE_ID_MOVE = 1003,
-        HIVIEW_SERVICE_ID_REMOVE = 1004
-    };
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.HiviewDFX.IHiviewServiceAbility");

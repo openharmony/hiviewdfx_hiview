@@ -36,7 +36,8 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(HIVIEW_SERVICE_ID_LIST, data, reply, option);
+    int32_t res = Remote()->SendRequest(
+        static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST), data, reply, option);
     if (res != ERR_OK) {
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);
         return res;
@@ -81,7 +82,9 @@ int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(isMove ? HIVIEW_SERVICE_ID_MOVE : HIVIEW_SERVICE_ID_COPY, data, reply, option);
+    int32_t res = Remote()->SendRequest(
+        isMove ? static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE) :
+        static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY), data, reply, option);
     if (res != ERR_OK) {
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);
         return res;
@@ -104,7 +107,8 @@ int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std:
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(HIVIEW_SERVICE_ID_REMOVE, data, reply, option);
+    int32_t res = Remote()->SendRequest(
+        static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE), data, reply, option);
     if (res != ERR_OK) {
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);
         return res;

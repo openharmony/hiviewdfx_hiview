@@ -28,10 +28,10 @@ namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
 const std::unordered_map<uint32_t, std::string> PERMISSION_MAP = {
-    {IHiviewServiceAbility::HIVIEW_SERVICE_ID_LIST, "ohos.permission.READ_HIVIEW_SYSTEM"},
-    {IHiviewServiceAbility::HIVIEW_SERVICE_ID_COPY, "ohos.permission.READ_HIVIEW_SYSTEM"},
-    {IHiviewServiceAbility::HIVIEW_SERVICE_ID_MOVE, "ohos.permission.WRITE_HIVIEW_SYSTEM"},
-    {IHiviewServiceAbility::HIVIEW_SERVICE_ID_REMOVE, "ohos.permission.WRITE_HIVIEW_SYSTEM"}
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST), "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY), "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE), "ohos.permission.WRITE_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE), "ohos.permission.WRITE_HIVIEW_SYSTEM"}
 };
 }
 
@@ -48,13 +48,13 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
         return HiviewNapiErrCode::ERR_PERMISSION_CHECK;
     }
     switch (code) {
-        case HIVIEW_SERVICE_ID_LIST:
+        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST):
             return HandleListRequest(data, reply, option);
-        case HIVIEW_SERVICE_ID_COPY:
+        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY):
             return HandleCopyRequest(data, reply, option);
-        case HIVIEW_SERVICE_ID_MOVE:
+        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE):
             return HandleMoveRequest(data, reply, option);
-        case HIVIEW_SERVICE_ID_REMOVE:
+        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE):
             return HandleRemoveRequest(data, reply, option);
         default:
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
