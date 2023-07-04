@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <mutex>
 
 #include "event.h"
 #include "event_loop.h"
@@ -72,6 +73,7 @@ private:
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
     int const maxEventPoolCount = 5;
     std::unique_ptr<EventThreadPool> eventPool_;
+    std::mutex intervalMutex_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);

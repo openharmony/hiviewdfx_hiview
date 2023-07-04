@@ -199,6 +199,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
 
+    std::unique_lock<std::mutex> lck(intervalMutex_);
     std::time_t now = std::time(0);
     for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
         if (it->first.find(eventName) != it->first.npos) {
