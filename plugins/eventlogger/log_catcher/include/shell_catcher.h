@@ -35,6 +35,7 @@ public:
         CATCHER_CPU,
         CATCHER_MEM,
         CATCHER_PMS,
+        CATCHER_DPMS,
         CATCHER_HILOG
     }; 
 private:

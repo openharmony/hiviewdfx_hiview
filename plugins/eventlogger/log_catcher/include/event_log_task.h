@@ -73,7 +73,7 @@ private:
     void WMSUsageCapture();
     void AMSUsageCapture();
     void PMSUsageCapture();
-    void HitraceCapture();
+    void DPMSUsageCapture();
     void HilogCapture();
     void DmesgCapture();
     void SysrqCapture(bool isWriteNewFile);

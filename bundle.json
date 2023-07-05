@@ -50,7 +50,8 @@
                 "samgr",
                 "storage_service",
                 "time_service",
-                "napi"
+                "napi",
+                "hiperf"
             ],
             "third_party": [
                 "ejdb",
@@ -60,8 +61,7 @@
                 "sqlite",
                 "openssl",
                 "bounds_checking_function",
-                "zlib",
-                "hiperf"
+                "zlib"
             ]
         },
         "build": {
