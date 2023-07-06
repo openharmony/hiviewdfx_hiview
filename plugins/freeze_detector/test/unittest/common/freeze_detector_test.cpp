@@ -76,7 +76,7 @@ bool GetFreezeDectorTestFile(const std::string& eventName,
     while (count < 10) { // 10: 最大等待10s
         sleep(1);
         std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
+        FileUtil::GetDirFiles("/data/log/faultlog/", files);
         ++count;
         for (auto& i : files) {
             if (i.find(packageName) == std::string::npos) {
@@ -241,6 +241,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest001, TestSize.Level3)
     }
     uint64_t time = sysEvent->GetEventIntValue("time_");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    event->eventName_ = sysEvent->GetEventValue("name_");
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
@@ -291,6 +292,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
     }
     uint64_t time = sysEvent->GetEventIntValue("time_");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    event->eventName_ = sysEvent->GetEventValue("name_");
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
