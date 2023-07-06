@@ -33,7 +33,7 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
     }
     bool ret = false;
     switch (code) {
-        case ON_QUERY: {
+        case static_cast<uint32_t>(QuerySysEventCallbackInterfaceCode::ON_QUERY): {
             std::vector<std::u16string> sysEvent;
             ret = AshMemUtils::ReadBulkData(data, sysEvent);
             if (!ret) {
@@ -49,7 +49,7 @@ int32_t QuerySysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel&
             OnQuery(sysEvent, seq);
             return ERR_OK;
         }
-        case ON_COMPLETE: {
+        case static_cast<uint32_t>(QuerySysEventCallbackInterfaceCode::ON_COMPLETE): {
             int32_t reason = 0;
             ret = data.ReadInt32(reason);
             if (!ret) {

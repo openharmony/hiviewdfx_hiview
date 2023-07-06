@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #define OHOS_HIVIEWDFX_ISYS_EVENT_CALLBACK_H
 
 #include "iremote_broker.h"
+#include "sys_event_service_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -24,10 +25,6 @@ class ISysEventCallback : public IRemoteBroker {
 public:
     virtual void Handle(const std::u16string& domain, const std::u16string& eventName, uint32_t eventType,
         const std::u16string& eventDetail) = 0;
-
-    enum {
-        HANDLE = 0,
-    };
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.hiviewdfx.ISysEventCallback");

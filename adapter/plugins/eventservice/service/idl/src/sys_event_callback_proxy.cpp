@@ -42,7 +42,8 @@ void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16s
     }
     MessageParcel reply;
     MessageOption option = {MessageOption::TF_ASYNC};
-    int32_t res = remote->SendRequest(HANDLE, data, reply, option);
+    int32_t res = remote->SendRequest(
+        static_cast<uint32_t>(SysEventCallbackInterfaceCode::HANDLE), data, reply, option);
     if (res != ERR_OK) {
         HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
     }
