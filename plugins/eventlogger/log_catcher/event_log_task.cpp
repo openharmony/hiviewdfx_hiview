@@ -53,6 +53,7 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:d", std::bind(&EventLogTask::DPMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq",
@@ -259,15 +260,21 @@ void EventLogTask::MemoryUsageCapture()
 void EventLogTask::PMSUsageCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s PowerManagerService -a -s DisplayPowerManagerService",
-        ShellCatcher::CATCHER_PMS, pid_);
+    capture->Initialize("hidumper -s PowerManagerService -a -s", ShellCatcher::CATCHER_PMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::DPMSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s DisplayPowerManagerService", ShellCatcher::CATCHER_DPMS, pid_);
     tasks_.push_back(capture);
 }
 
 void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hilog -x", ShellCatcher::CATCHER_PMS, 0);
+    capture->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
     tasks_.push_back(capture);
 }
 

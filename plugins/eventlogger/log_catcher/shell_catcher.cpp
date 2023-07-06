@@ -60,11 +60,15 @@ void ShellCatcher::DoChildProcess(int writeFd)
             ret = execl("/system/bin/hidumper", "hidumper", "--mem", std::to_string(pid_).c_str(), nullptr);
             break;
         case CATCHER_PMS:
-            ret = execl("/system/bin/hidumper", "hidumper", "-s", "PowerManagerService", "-a",
-                "-s", "DisplayPowerManagerService", nullptr);
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "PowerManagerService", "-a", "-s", nullptr);
+            break;
+        case CATCHER_DPMS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "DisplayPowerManagerService", nullptr);
             break;
         case CATCHER_HILOG:
             ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
+            break;
+        default:
             break;
     }
     if (ret < 0) {
