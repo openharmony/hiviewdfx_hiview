@@ -28,6 +28,15 @@ enum class SysEventServiceInterfaceCode {
     REMOVE_SYS_EVENT_SUBSCRIBER,
     EXPORT_SYS_EVENT
 };
+
+enum class SysEventCallbackInterfaceCode {
+    HANDLE = 0,
+};
+
+enum class QuerySysEventCallbackInterfaceCode {
+    ON_QUERY = 0,
+    ON_COMPLETE,
+};
 } // namespace HiviewDFX
 } // namespace OHOS
 

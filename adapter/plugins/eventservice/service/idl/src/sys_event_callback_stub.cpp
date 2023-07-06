@@ -31,7 +31,7 @@ int32_t SysEventCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel& data
         return ERR_INVALID_VALUE;
     }
     switch (code) {
-        case HANDLE: {
+        case static_cast<uint32_t>(SysEventCallbackInterfaceCode::HANDLE): {
             std::u16string domain;
             bool ret = data.ReadString16(domain);
             if (!ret) {
