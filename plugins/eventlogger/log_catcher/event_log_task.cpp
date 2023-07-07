@@ -196,7 +196,7 @@ void EventLogTask::SystemStackCapture()
 {
     for (auto packageName : SYSTEM_STACK) {
         auto capture = std::make_shared<OpenStacktraceCatcher>();
-        capture->Initialize(packageName, 0, 0);
+        capture->Initialize(packageName, pid_, 0);
         tasks_.push_back(capture);
     }
 }

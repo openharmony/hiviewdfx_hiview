@@ -15,3 +15,4 @@ event id="" name="SAMGR_SERVICE_BLOCK" action="s,pb:0:a,cmd:c,cmd:m" interval="0
 event id="" name="SCREEN_ON" action="cmd:p,cmd:d,T,e" interval="0"
 event id="" name="SCREEN_OFF" action="cmd:p,cmd:d,T,e" interval="0"
 event id="" name="HUNGTASK" action="k:SysRq" interval="0"
+event id="" name="BINDER_FULL" action="S" interval="0"
