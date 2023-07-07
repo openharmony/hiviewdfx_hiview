@@ -81,6 +81,15 @@ void ParameterWatchCallback(const char* key, const char* value, void* context)
 {
     testTypeConfigured = GetConfiguredTestType(value);
 }
+
+bool ReadSysEventDefFromFile(const std::string& path, Json::Value& hiSysEventDef)
+{
+    std::ifstream fin(path, std::ifstream::binary);
+    Json::CharReaderBuilder jsonRBuilder;
+    Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
+    JSONCPP_STRING errs;
+    return parseFromStream(jsonRBuilder, fin, &hiSysEventDef, &errs);
+}
 }
 
 DEFINE_LOG_TAG("Event-JsonParser");
@@ -100,27 +109,24 @@ bool DuplicateIdFilter::IsDuplicateEvent(const uint64_t sysEventId)
     return false;
 }
 
-EventJsonParser::EventJsonParser(const std::string& path)
+EventJsonParser::EventJsonParser(std::vector<std::string>& paths)
 {
     Json::Value hiSysEventDef;
-    std::ifstream fin(path, std::ifstream::binary);
-#ifdef JSONCPP_VERSION_STRING
-    Json::CharReaderBuilder jsonRBuilder;
-    Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
-    JSONCPP_STRING errs;
-    if (!parseFromStream(jsonRBuilder, fin, &hiSysEventDef, &errs)) {
-#else
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(fin, hiSysEventDef)) {
-#endif
-        HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
+    for (auto path : paths) {
+        if (!ReadSysEventDefFromFile(path, hiSysEventDef)) {
+            HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
+        }
+        ParseHiSysEventDef(hiSysEventDef);
     }
-    ParseHiSysEventDef(hiSysEventDef);
+    WatchParameterAndReadLatestSeq();
+}
+
+void EventJsonParser::WatchParameterAndReadLatestSeq()
+{
     if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, nullptr) != 0) {
         HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
     }
-
-    ReadSeqFromFile(curSeq);
+    ReadSeqFromFile(curSeq_);
 }
 
 std::string EventJsonParser::GetTagByDomainAndName(const std::string& domain, const std::string& name) const
@@ -168,7 +174,7 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
     }
 
     AppendExtensiveInfo(event, curSysEventId);
-    WriteSeqToFile(++curSeq);
+    WriteSeqToFile(++curSeq_);
 
     return true;
 }
@@ -191,7 +197,7 @@ void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const
     }
 
     // add seq to sys event and then persist it into local file
-    event->SetEventSeq(curSeq);
+    event->SetEventSeq(curSeq_);
 }
 
 bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
@@ -239,9 +245,9 @@ BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& doma
         HIVIEW_LOGD("domain named %{public}s is not defined.", domain.c_str());
         return baseInfo;
     }
-    auto domaintNames = hiSysEventDef_.at(domain);
-    auto nameIter = domaintNames.find(name);
-    if (nameIter == domaintNames.end()) {
+    auto domainNames = hiSysEventDef_.at(domain);
+    auto nameIter = domainNames.find(name);
+    if (nameIter == domainNames.end()) {
         HIVIEW_LOGD("%{public}s is not defined in domain named %{public}s.",
             name.c_str(), domain.c_str());
         return baseInfo;

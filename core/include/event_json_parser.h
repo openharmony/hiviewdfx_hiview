@@ -21,6 +21,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "json/json.h"
 #include "sys_event.h"
@@ -48,7 +49,7 @@ private:
 
 class EventJsonParser {
 public:
-    EventJsonParser(const std::string& path);
+    EventJsonParser(std::vector<std::string>& paths);
     ~EventJsonParser() {};
 
 public:
@@ -73,11 +74,12 @@ private:
     std::string GetSequenceFile() const;
     void ReadSeqFromFile(int64_t& seq);
     void WriteSeqToFile(int64_t seq) const;
+    void WatchParameterAndReadLatestSeq();
 
 private:
     DOMAIN_INFO_MAP hiSysEventDef_;
     DuplicateIdFilter filter_;
-    int64_t curSeq = 0;
+    int64_t curSeq_ = 0;
 }; // SysEventDbMgr
 } // namespace HiviewDFX
 } // namespace OHOS
