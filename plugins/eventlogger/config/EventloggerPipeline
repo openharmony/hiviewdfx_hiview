@@ -18,6 +18,9 @@
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "SCREEN_OFF", "HUNGTASK"]
+        },{
+            "domain": "FFRT",
+            "include": ["SERIAL_TASK_TIMEOUT", "TASK_DEADLOCK"]
         }
     ]
 }
