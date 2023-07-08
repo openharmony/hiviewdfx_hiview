@@ -14,7 +14,7 @@
             "include": ["THREAD_BLOCK_6S", "THREAD_BLOCK_3S", "LIFECYCLE_TIMEOUT", "APP_LIFECYCLE_TIMEOUT"]
         },{
             "domain": "FRAMEWORK",
-            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT"]
+            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "BINDER_FULL"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "SCREEN_OFF", "HUNGTASK"]
