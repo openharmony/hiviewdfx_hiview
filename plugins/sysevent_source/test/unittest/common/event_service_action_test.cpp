@@ -64,10 +64,12 @@ HWTEST_F(EventServiceActionTest, EventJsonParserTest001, testing::ext::TestSize.
     constexpr char JSON_STR[] = "{\"domain_\":\"DEMO\",\"name_\":\"EVENT_NAME_A\",\"type_\":4,\
         \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
     auto sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, JSON_STR);
-    std::string yamlFile =
+    std::string defFile =
         HiviewGlobal::GetInstance()->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
-    yamlFile = (yamlFile.back() != '/') ? (yamlFile + "/hisysevent.def") : (yamlFile + "hisysevent.def");
-    auto sysEventParser = std::make_unique<EventJsonParser>(yamlFile);
+    defFile = (defFile.back() != '/') ? (defFile + "/hisysevent.def") : (defFile + "hisysevent.def");
+    std::vector<std::string> defFiles;
+    defFiles.emplace_back(defFile);
+    auto sysEventParser = std::make_unique<EventJsonParser>(defFiles);
     ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));
     ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("abc", "abc") == "");
     ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("DEMO", "abc") == "");
