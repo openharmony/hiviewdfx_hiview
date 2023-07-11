@@ -33,7 +33,7 @@ void HiviewNapiAdapter::Copy(napi_env env, HiviewFileParams* params)
     HiviewNapiUtil::CreateStringValue(env, "CopyFileProcess", resource);
     napi_create_async_work(env, nullptr, resource, CopyFileExecution,
         FileOperationCompleteCallback, reinterpret_cast<void*>(params), &params->asyncWork);
-    napi_queue_async_work(env, params->asyncWork);
+    napi_queue_async_work_with_qos(env, params->asyncWork, napi_qos_background);
 }
 
 void HiviewNapiAdapter::CopyFileExecution(napi_env env, void* data)
@@ -48,7 +48,7 @@ void HiviewNapiAdapter::Move(napi_env env, HiviewFileParams* params)
     HiviewNapiUtil::CreateStringValue(env, "MoveFileProcess", resource);
     napi_create_async_work(env, nullptr, resource, MoveFileExecution,
         FileOperationCompleteCallback, reinterpret_cast<void*>(params), &params->asyncWork);
-    napi_queue_async_work(env, params->asyncWork);
+    napi_queue_async_work_with_qos(env, params->asyncWork, napi_qos_background);
 }
 
 void HiviewNapiAdapter::MoveFileExecution(napi_env env, void* data)
