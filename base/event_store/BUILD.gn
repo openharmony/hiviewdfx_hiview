@@ -35,13 +35,6 @@ config("event_store_private_config") {
   ]
 }
 
-ohos_prebuilt_etc("event_store_config.cfg") {
-  source = "config/event_store_config.config"
-  relative_install_dir = "hiview"
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-}
-
 ohos_source_set("event_store_source") {
   part_name = "hiview"
   public_configs = [ ":event_store_config" ]
