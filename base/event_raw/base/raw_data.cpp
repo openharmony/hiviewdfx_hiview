@@ -171,7 +171,6 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
     }
     if ((pos + len) > len_) {
         len_ = pos + len;
-        HiLog::Debug(LABEL, "Length of data is expanded to %{public}zu.", len_);
     }
     return true;
 }
