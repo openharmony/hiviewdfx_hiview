@@ -186,18 +186,6 @@ void HiviewPlatform::InitSysEventParser()
 
 void HiviewPlatform::UpdateBetaConfigIfNeed()
 {
-    int32_t userType = Parameter::GetInteger(KEY_HIVIEW_USER_TYPE, Parameter::UserType::UNKNOWN_TYPE);
-    if (userType == Parameter::UserType::BETA) {
-        // init audit status
-        Audit::GetInstance().Init(true);
-    }
-
-    if (userType == Parameter::UserType::COMMERCIAL || userType == Parameter::UserType::OVERSEAS_COMMERCIAL) {
-        if (defaultWorkDir_ == std::string(DEFAULT_WORK_DIR)) {
-            defaultWorkDir_ = defaultCommercialWorkDir_;
-            FileUtil::CreateDirWithDefaultPerm(defaultWorkDir_, AID_SYSTEM, AID_SYSTEM);
-        }
-    }
 }
 
 void HiviewPlatform::LoadBusinessPlugin(const PluginConfig& config)
