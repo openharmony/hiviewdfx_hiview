@@ -11,7 +11,8 @@
             "include": ["APPLICATION_BLOCK_INPUT"]
         },{
             "domain": "AAFWK",
-            "include": ["THREAD_BLOCK_6S", "THREAD_BLOCK_3S", "LIFECYCLE_TIMEOUT", "APP_LIFECYCLE_TIMEOUT"]
+            "include": ["THREAD_BLOCK_6S", "THREAD_BLOCK_3S", "LIFECYCLE_TIMEOUT",
+                        "LIFECYCLE_HALF_TIMEOUT", "APP_LIFECYCLE_TIMEOUT", "APP_INPUT_BLOCK"]
         },{
             "domain": "FRAMEWORK",
             "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "BINDER_FULL"]
