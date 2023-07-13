@@ -38,8 +38,8 @@ void SystemServiceOhosTest::TearDown() {}
 HWTEST_F(SystemServiceOhosTest, SystemServiceTest001, testing::ext::TestSize.Level3)
 {
     auto ret = Parameter::IsBetaVersion();
-    auto userType = Parameter::GetInteger(KEY_HIVIEW_USER_TYPE, Parameter::UserType::COMMERCIAL);
-    ASSERT_TRUE(ret == (userType == Parameter::UserType::BETA) || (userType == Parameter::UserType::OVERSEAS_BETA));
+    auto userType = Parameter::GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");
+    ASSERT_TRUE(ret == (userType.find("beta") != std::string::npos));
 }
 
 /**

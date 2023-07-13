@@ -28,6 +28,7 @@
 #include "file_util.h"
 #include "log_catcher_utils.h"
 #include "logger.h"
+#include "parameter_ex.h"
 #include "string_util.h"
 
 #include "open_stacktrace_catcher.h"
@@ -243,6 +244,11 @@ void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
 #if defined(__aarch64__)
     if (perfCmd_.empty()) {
         HIVIEW_LOGI("BinderPeer perf is not configured.");
+        return;
+    }
+
+    if (!Parameter::IsBetaVersion()) {
+        HIVIEW_LOGI("BinderPeer perf is only enabled in beta version.");
         return;
     }
 

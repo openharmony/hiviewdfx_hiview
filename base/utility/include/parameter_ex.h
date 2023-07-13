@@ -19,18 +19,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 constexpr char KEY_BUILD_CHARACTER[] = "ro.build.characteristics";
-constexpr char KEY_HIVIEW_USER_TYPE[] = "ro.logsystem.usertype";
+constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
 namespace Parameter {
-enum UserType {
-    UNKNOWN_TYPE = -1,
-    COMMERCIAL = 1,
-    FANS,
-    BETA,
-    TEST,
-    OVERSEAS_BETA,
-    OVERSEAS_COMMERCIAL,
-};
-
 enum DeviceType {
     UNKNOWN = 0,
     PHONE,

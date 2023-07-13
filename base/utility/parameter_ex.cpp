@@ -53,8 +53,8 @@ int WaitParamSync(const char *key, const char *value, int timeout)
 
 bool IsBetaVersion()
 {
-    auto userType = GetInteger(KEY_HIVIEW_USER_TYPE, UserType::COMMERCIAL);
-    return ((userType == UserType::BETA) || (userType == UserType::OVERSEAS_BETA));
+    auto versionType = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");
+    return (versionType.find("beta") != std::string::npos);
 }
 
 DeviceType GetDeviceType()
