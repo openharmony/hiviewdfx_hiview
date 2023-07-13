@@ -192,7 +192,7 @@ static napi_value QuerySelfFaultLog(napi_env env, napi_callback_info info)
     napi_create_string_utf8(env, "QuerySelfFaultLog", NAPI_AUTO_LENGTH, &resourceName);
     napi_create_async_work(env, resource, resourceName, FaultLogExecuteCallback,
         FaultLogCompleteCallback, (void *)faultLogInfoContext, &faultLogInfoContext->work);
-    napi_queue_async_work_with_qos(env, faultLogInfoContext->work, napi_qos_background);
+    napi_queue_async_work_with_qos(env, faultLogInfoContext->work, napi_qos_default);
     return result;
 }
 
@@ -290,7 +290,7 @@ static napi_value Query(napi_env env, napi_callback_info info)
     napi_create_string_utf8(env, "QuerySelfFaultLog", NAPI_AUTO_LENGTH, &resourceName);
     napi_create_async_work(env, resource, resourceName, FaultLogExecuteCallback,
         FaultLogCompleteCallback, (void *)faultLogInfoContext, &faultLogInfoContext->work);
-    napi_queue_async_work_with_qos(env, faultLogInfoContext->work, napi_qos_background);
+    napi_queue_async_work_with_qos(env, faultLogInfoContext->work, napi_qos_default);
     return result;
 }
 
