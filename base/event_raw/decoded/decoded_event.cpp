@@ -58,7 +58,7 @@ DecodedEvent::DecodedEvent(uint8_t* src)
         return;
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
-    HiLog::Debug(LABEL, "decoded blockSize is %{public}zu.", blockSize);
+    HiLog::Info(LABEL, "Decoded blockSize is %{public}zu.", blockSize);
     if (blockSize < GetValidDataMinimumByteCount() || blockSize > MAX_BLOCK_SIZE) {
         return;
     }

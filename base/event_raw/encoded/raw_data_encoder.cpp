@@ -31,6 +31,7 @@ uint8_t RawDataEncoder::EncodedTag(uint8_t type)
 
 bool RawDataEncoder::StringValueEncoded(RawData& data, const std::string& val)
 {
+    HiLog::Debug(LABEL, "Length of encoded string is %{public}zu.", val.length());
     if (!UnsignedVarintEncoded(data, EncodeType::LENGTH_DELIMITED, val.length())) {
         return false;
     }
