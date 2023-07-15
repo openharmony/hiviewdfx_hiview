@@ -44,7 +44,10 @@ ohos_source_set("eventlogger") {
 
 group("unittest") {
   testonly = true
-  deps = []
+  deps = [
+    "config/test:EventloggerConfigTest",
+    "test:EventloggerPluginTest",
+  ]
 }
 
 group("moduletest") {
