@@ -184,7 +184,7 @@ HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
     uint64_t time = sysEvent->GetEventIntValue("time_");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     std::shared_ptr<HiCollieCollector> hiCollieCollector = std::static_pointer_cast<HiCollieCollector>(plugin);
-    hiCollieCollector->OnUnorderedEvent(*(event.get()));
+    hiCollieCollector->OnEventListeningCallback(*(event.get()));
 
     sleep(3);
     if (!GetFreezeDectorTestFile("SERVICE_TIMEOUT",
@@ -193,6 +193,9 @@ HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
         printf("GetFreezeDectorTest001File, failed\n");
         FAIL();
     }
+
+    ASSERT_EQ(hiCollieCollector->CanProcessEvent(sysEvent), false);
+    hiCollieCollector->OnUnload();
 }
 
 /**
@@ -225,7 +228,7 @@ HWTEST_F(HicollieCollectorTest, HicollieCollectorTest002, TestSize.Level3)
     }
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     std::shared_ptr<HiCollieCollector> hiCollieCollector = std::static_pointer_cast<HiCollieCollector>(plugin);
-    hiCollieCollector->OnUnorderedEvent(*(event.get()));
+    hiCollieCollector->OnEventListeningCallback(*(event.get()));
 
     sleep(3);
     ASSERT_EQ(plugin->GetPluginInfo(), "HiCollieCollector");

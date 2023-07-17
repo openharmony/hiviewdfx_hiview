@@ -36,6 +36,12 @@
 
 #include "event_log_task.h"
 #include "event_logger.h"
+#include "event_log_catcher.h"
+#include "shell_catcher.h"
+#include "binder_catcher.h"
+#include "peer_binder_catcher.h"
+#include "open_stacktrace_catcher.h"
+#include "dmesg_catcher.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
@@ -353,5 +359,163 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
         close(fd);
         FAIL();
     }
+    close(fd);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest004
+ * @tc.desc: test shell_catcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest004, TestSize.Level3)
+{
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, defaultLogFileMode);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        return RETURN_OPEN_FAIL;
+    }
+
+    auto shellCatcher = std::make_shared<ShellCatcher>();
+    int pid_ = CommonUtils::GetPidByName("foundation");
+
+    int res = Initialize("", ShellCatcher::CATCHER_WMS, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) == -1);
+
+    shellCatcher->Initialize("hidumper -s WindowManagerService -a -a", ShellCatcher::CATCHER_WMS, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hidumper -s AbilityManagerService -a -a", ShellCatcher::CATCHER_AMS, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hidumper --cpuusage", ShellCatcher::CATCHER_CPU, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hidumper --mem", ShellCatcher::CATCHER_MEM, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hidumper -s PowerManagerService -a -s", ShellCatcher::CATCHER_PMS, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hidumper -s DisplayPowerManagerService", ShellCatcher::CATCHER_DPMS, pid_);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    shellCatcher->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    ASSERT_TRUE(shellCatcher->Catch(fd) > 0);
+
+    close(fd);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest005
+ * @tc.desc: test binder_catcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest005, TestSize.Level3)
+{
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, defaultLogFileMode);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        return RETURN_OPEN_FAIL;
+    }
+
+    auto binderCatcher = std::make_shared<BinderCatcher>();
+    binderCatcher->Initialize("", 0, 0);
+    ASSERT_TRUE(binderCatcher->Catch(fd) > 0);
+    close(fd);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest006
+ * @tc.desc: test open_stacktrace_catcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest006, TestSize.Level3)
+{
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, defaultLogFileMode);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        return RETURN_OPEN_FAIL;
+    }
+
+    auto openStackCatcher = std::make_shared<OpenStacktraceCatcher>();
+    ASSERT_EQ(openStackCatcher->capture->Initialize("", -1, 0), false);
+    ASSERT_EQ(openStackCatcher->capture->Initialize("foundation", -1, 0), false);
+    ASSERT_EQ(openStackCatcher->capture->Initialize("foundation", 0, 0), true);
+    ASSERT_TRUE(openStackCatcher->Catch(fd) > 0);
+    close(fd);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest007
+ * @tc.desc: test PeerBinderCatcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest007, TestSize.Level3)
+{
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, defaultLogFileMode);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        return RETURN_OPEN_FAIL;
+    }
+
+    auto peerBinderCatcher = std::make_shared<PeerBinderCatcher>();
+    int pid_ = CommonUtils::GetPidByName("foundation");
+
+    peerBinderCatcher->capture->Initialize("r", 1, 0);
+    ASSERT_TRUE(peerBinderCatcher->Catch(fd) > 0);
+
+    peerBinderCatcher->capture->Initialize("a", 0, 0);
+    ASSERT_TRUE(peerBinderCatcher->Catch(fd) > 0);
+    close(fd);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest008
+ * @tc.desc: test EventLogCatcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest008, TestSize.Level3)
+{
+    auto eventLogCatcher = std::make_shared<EventLogCatcher>();
+    ASSERT_TRUE(eventLogCatcher->GetLogSize() == -1);
+    eventLogCatcher->SetLogSize(1);
+    ASSERT_TRUE(eventLogCatcher->GetLogSize() == 1);
+    ASSERT_TRUE(eventLogCatcher->Catcher() == 0);
+    ASSERT_TRUE(eventLogCatcher->AppendFile(-1, "") == 0);
+}
+
+/**
+ * @tc.name: EventloggerCatcherTest009
+ * @tc.desc: test DmesgCatcher
+ * @tc.type: FUNC
+ * @tc.require: AR000I3GC3
+ */
+HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest009, TestSize.Level3)
+{
+    auto dmesgCatcher = std::make_shared<DmesgCatcher>();
+    auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("Eventlogger004", nullptr, jsonStr);
+    event->eventId_ = 0;
+    event->domain_ = "KERNEL_VENDOR";
+    event->eventName_ = "HUNGTASK";
+    event->SetEventValue("PID", 0);
+    dmesgCatcher->init(event);
+
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, defaultLogFileMode);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        return RETURN_OPEN_FAIL;
+    }
+    dmesgCatcher->Initialize("", 0, 0);
+    ASSERT_TRUE(dmesgCatcher->Catcher(fd) > 0);
+
+    dmesgCatcher->Initialize("", true, 1);
+    ASSERT_TRUE(dmesgCatcher->Catcher(fd) > 0);
+
     close(fd);
 }
