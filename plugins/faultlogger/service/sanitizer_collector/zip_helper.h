@@ -45,7 +45,6 @@ const std::string EMPTY_PARAM = "";
 
 bool IsLinkFile(const std::string& sfilename);
 bool GetRealPath(const std::string& fn, std::string& out);
-bool ReadNormalFileToString(const std::string& path, std::string& content);
 bool ReadFileToString(const std::string& path, std::string& out);
 std::vector<std::string> SplitString(const std::string& input, const std::string& regex);
 unsigned HashString(const std::string& input);

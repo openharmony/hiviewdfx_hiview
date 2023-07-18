@@ -68,37 +68,6 @@ bool GetRealPath(const std::string& fn, std::string& out)
     return false;
 }
 
-bool ReadNormalFileToString(const std::string& path, std::string& content)
-{
-    if (!FileUtil::FileExists(path)) {
-        SANITIZERD_LOGW("file %{public}s not exists.", path.c_str());
-    }
-    int32_t fd = open(path.c_str(), O_RDONLY);
-    if (fd < 0) {
-        SANITIZERD_LOGE("open file %{public}s err: %{public}s", path.c_str(), strerror(errno));
-        return false;
-    }
-
-    struct stat sb {};
-    if (fstat(fd, &sb) != -1 && sb.st_size > 0) {
-        content.resize(sb.st_size);
-    }
-    ssize_t n;
-    size_t remaining = sb.st_size;
-    auto p = reinterpret_cast<char *>(content.data());
-    while (remaining > 0) {
-        n = read(fd, p, remaining);
-        if (n < 0) {
-            return false;
-        }
-        p += n;
-        remaining -= n;
-    }
-    close(fd);
-    fd = -1;
-    return true;
-}
-
 bool ReadFileToString(const std::string& path, std::string& out)
 {
     std::string realfpath;
