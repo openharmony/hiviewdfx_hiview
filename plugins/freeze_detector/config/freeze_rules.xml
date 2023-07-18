@@ -61,20 +61,6 @@
         </event>
       </links>
     </rule>
-    <rule id="7" domain="FFRT" stringid="SERIAL_TASK_TIMEOUT">	<!-- FFRT_TASK_TIMEOUT -->
-      <links type="watchpoint">
-        <event window="0" domain="FFRT" stringid="SERIAL_TASK_TIMEOUT">	<!-- FFRT_TASK_TIMEOUT -->
-          <result code="1" scope="sys"/>
-        </event>
-      </links>
-    </rule>
-    <rule id="8" domain="FFRT" stringid="TASK_DEADLOCK">	<!-- FFRT_TASK_DEADLOCK -->
-      <links type="watchpoint">
-        <event window="0" domain="FFRT" stringid="TASK_DEADLOCK">	<!-- FFRT_TASK_DEADLOCK -->
-          <result code="1" scope="sys"/>
-        </event>
-      </links>
-    </rule>
     <rule id="9" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
       <links type="watchpoint">
         <event window="0" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
