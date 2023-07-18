@@ -75,9 +75,9 @@
         </event>
       </links>
     </rule>
-    <rule id="9" domain="FRAMEWORK" stringid="BINDER_FULL">	<!-- BINDER_FULL -->
+    <rule id="9" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
       <links type="watchpoint">
-        <event window="0" domain="FRAMEWORK" stringid="BINDER_FULL">	<!-- BINDER_FULL -->
+        <event window="0" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
           <result code="1" scope="sys"/>
         </event>
       </links>

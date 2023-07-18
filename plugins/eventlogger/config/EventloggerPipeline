@@ -15,7 +15,7 @@
                         "LIFECYCLE_HALF_TIMEOUT", "APP_LIFECYCLE_TIMEOUT", "APP_INPUT_BLOCK"]
         },{
             "domain": "FRAMEWORK",
-            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "BINDER_FULL"]
+            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "SCREEN_OFF", "HUNGTASK"]
