@@ -54,7 +54,10 @@
     <rule id="6" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
       <links type="watchpoint">
         <event window="0" domain="AAFWK" stringid="LIFECYCLE_TIMEOUT">	<!-- LIFECYCLE_TIMEOUT -->
-          <result code="1" scope="sys"/>
+          <result code="1" scope="sys" samePackage="true"/>
+        </event>
+        <event window="-30" domain="AAFWK" stringid="LIFECYCLE_HALF_TIMEOUT">	<!-- LIFECYCLE_HALF_TIMEOUT -->
+          <result code="1" scope="sys" samePackage="true"/>
         </event>
       </links>
     </rule>
@@ -104,9 +107,9 @@
         </event>
       </links>
     </rule>
-    <rule id="3" domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
+    <rule id="3" domain="AAFWK" stringid="APP_INPUT_BLOCK">	<!-- APP_INPUT_BLOCK -->
       <links type="watchpoint">
-        <event window="0" domain="MULTIMODALINPUT" stringid="APPLICATION_BLOCK_INPUT">	<!-- APPLICATION_BLOCK_INPUT -->
+        <event window="0" domain="AAFWK" stringid="APP_INPUT_BLOCK">	<!-- APP_INPUT_BLOCK -->
           <result code="0" scope="app"/>
         </event>
       </links>
