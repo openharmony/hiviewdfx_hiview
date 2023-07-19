@@ -20,6 +20,8 @@
 #include "sys_event.h"
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/inotify.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "event.h"
@@ -27,6 +29,11 @@
 #include "faultlog_database.h"
 #define private public
 #include "faultlogger.h"
+#include "asan_collector.h"
+#include "sanitizerd_collector.h"
+#include "sanitizerd_monitor.h"
+#include "reporter.h"
+#include "zip_helper.h"
 #undef private
 #include "faultlog_info_ohos.h"
 #include "faultlogger_adapter.h"
@@ -639,6 +646,55 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     } else {
         FAIL();
     }
+}
+
+/**
+ * @tc.name: FaultloggerSanitizerTest001
+ * @tc.desc: Test calling Faultlogger sanitizer collector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerSanitizerTest001, testing::ext::TestSize.Level3)
+{
+    std::string fileName = "asan.log.appspawn.443";
+    SanitizerdMonitor monitor;
+    monitor.Init(nullptr);
+    int wd = inotify_add_watch(monitor.gUfds[0].fd, fileName.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
+    std::string receivedFilename = "test.txt";
+    int ret = monitor.ReadNotify(&receivedFilename, monitor.gUfds[0].fd);
+    ASSERT_EQ(ret, 0);
+    ASSERT_EQ(receivedFilename, fileName);
+    inotify_rm_watch(monitor.gUfds[0].fd, wd);
+    monitor.Uninit();
+    remove(fileName.c_str());
+    std::unordered_map<std::string, std::string> sktmap;
+    SanitizerdCollector collector(sktmap);
+    std::string sanDump = "stacktrace";
+    std::string sanSignature = "signature";
+    bool printDiagnostics = true;
+    bool result = collector.ComputeStackSignature(sanDump, sanSignature, printDiagnostics);
+    ASSERT_FALSE(result);
+}
+
+/**
+ * @tc.name: FaultloggerSanitizerTest002
+ * @tc.desc: Test calling Faultlogger sanitizer collector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerSanitizerTest002, testing::ext::TestSize.Level3)
+{
+    EXPECT_EQ(0, Init(ASAN_LOG_RPT));
+    EXPECT_EQ(0, Init(UBSAN_LOG_RPT));
+    EXPECT_EQ(0, Init(KASAN_LOG_RPT));
+    EXPECT_EQ(0, Init(LSAN_LOG_RPT));
+    std::string fileName = "asan.log.appspawn.443";
+    ASSERT_FALSE(IsLinkFile(fileName));
+    std::string filePath = "/dev/asanlog";
+    std::string outPath;
+    bool result = GetRealPath(filePath, outPath);
+    ASSERT_TRUE(result);
+    std::string expectPath = "/data/log/faultlog/faultlogger";
+    EXPECT_EQ(outPath, expectPath);
+    ASSERT_FALSE(ReadFileToString(filePath, outPath));
 }
 
 } // namespace HiviewDFX
