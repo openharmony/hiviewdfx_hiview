@@ -51,7 +51,8 @@
                 "storage_service",
                 "time_service",
                 "napi",
-                "hiperf"
+                "hiperf",
+                "hitrace"
             ],
             "third_party": [
                 "ejdb",
