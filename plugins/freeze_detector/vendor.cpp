@@ -151,7 +151,7 @@ std::string Vendor::MergeEventLog(
         ? APPFREEZE : SYSFREEZE;
     if (processName == "" && packageName != "") {
         processName = packageName;
-    } else if (processName == "" && packageName == "") {
+    } else if (type == SYSFREEZE || (processName == "" && packageName == "")) {
         processName = stringId;
     }
 
