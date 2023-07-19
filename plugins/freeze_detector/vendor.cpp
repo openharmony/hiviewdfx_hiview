@@ -149,9 +149,12 @@ std::string Vendor::MergeEventLog(
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? APPFREEZE : SYSFREEZE;
-    if (processName == "" && packageName != "") {
+    if (type == SYSFREEZE) {
+        processName = stringId;
+    } else if (processName == "" && packageName != "") {
         processName = packageName;
-    } else if (type == SYSFREEZE || (processName == "" && packageName == "")) {
+    }
+    if (processName == "" && packageName == "") {
         processName = stringId;
     }
 
