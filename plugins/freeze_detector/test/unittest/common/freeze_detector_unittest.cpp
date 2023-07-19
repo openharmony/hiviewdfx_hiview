@@ -633,30 +633,62 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
  */
 HWTEST_F(FreezeDetectorUnittest, FreezeDBHelper_001, TestSize.Level3)
 {
+    auto freezeCommon = nullptr;
+    auto db = std::make_unique<DBHelper>(freezeCommon);
+    ASSERT_NE(db, nullptr);
+    std::string watchPackage = "com.package.name";
+    std::vector<WatchPoint> list;
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("ACE")
+        .InitStringId("UI_BLOCK_3S")
+        .InitPackageName(watchPackage)
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .Build();
+    list.push_back(watchPoint);
+    WatchPoint watchPoint1 = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("ACE")
+        .InitStringId("UI_BLOCK_RECOVERED")
+        .InitPackageName(watchPackage)
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .Build();
+    list.push_back(watchPoint1);
+    unsigned long long start = TimeUtil::GetMilliseconds() - 5L;
+    unsigned long long end = TimeUtil::GetMilliseconds();
+    auto result = FreezeResult(5, "ACE", "UI_BLOCK_3S");
+    db->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), result);
+}
+
+/**
+ * @tc.name: FreezeDBHelper_002
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeDBHelper_002, TestSize.Level3)
+{
     auto freezeCommon = std::make_shared<FreezeCommon>();
     bool ret1 = freezeCommon->Init();
     ASSERT_EQ(ret1, true);
     auto db = std::make_unique<DBHelper>(freezeCommon);
+    ASSERT_NE(db, nullptr);
+    std::string watchPackage = "com.package.name";
     std::vector<WatchPoint> list;
-    FreezeResult result;
-    result.SetId(1);
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("ACE")
         .InitStringId("UI_BLOCK_3S")
+        .InitPackageName(watchPackage)
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .Build();
-        list.push_back(watchPoint);
+    list.push_back(watchPoint);
     WatchPoint watchPoint1 = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("ACE")
         .InitStringId("UI_BLOCK_RECOVERED")
+        .InitPackageName(watchPackage)
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .Build();
     list.push_back(watchPoint1);
-
-    std::string watchPackage = "watchPackage";
-    unsigned long long start = 0;
-    unsigned long long end = 10;
-    db->SelectEventFromDB(start, end, list, watchPackage, result);
+    unsigned long long start = TimeUtil::GetMilliseconds() + 1000L;
+    unsigned long long end = TimeUtil::GetMilliseconds();
+    auto result = FreezeResult(5, "ACE", "UI_BLOCK_3S");
+    db->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), result);
 }
 }
 }
