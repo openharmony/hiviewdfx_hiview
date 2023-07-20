@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -83,7 +83,7 @@ std::string GetProcNameByPid(pid_t pid)
         return result;
     }
     result.erase(pos + 1);
-    return result.c_str();
+    return result;
 }
 
 pid_t GetPidByName(const std::string& processName)
@@ -91,9 +91,9 @@ pid_t GetPidByName(const std::string& processName)
     pid_t pid = -1;
     std::string cmd = "pidof " + processName;
 
-    char buffer[BUF_SIZE_256] = {'\0'};
     FILE* fp = popen(cmd.c_str(), "r");
     if (fp != nullptr) {
+        char buffer[BUF_SIZE_256] = {'\0'};
         while (fgets(buffer, sizeof(buffer) - 1, fp) != nullptr) {}
         std::istringstream istr(buffer);
         istr >> pid;
@@ -121,9 +121,10 @@ bool WriteCommandResultToFile(int fd, const std::string& cmd)
     if (cmd.empty()) {
         return false;
     }
-    char buffer[BUF_SIZE_256];
+
     FILE* fp = popen(cmd.c_str(), "r");
     if (fp != nullptr) {
+        char buffer[BUF_SIZE_256] = {0};
         while (fgets(buffer, sizeof(buffer), fp) != nullptr) {
             FileUtil::SaveStringToFd(fd, buffer);
         }
