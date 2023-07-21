@@ -22,6 +22,7 @@ hiview_base = "//base/hiviewdfx/hiview/base"
 hiview_core = "//base/hiviewdfx/hiview/core"
 hiview_plugin = "//base/hiviewdfx/hiview/plugins"
 hiview_service = "//base/hiviewdfx/hiview/service"
+hiview_framework = "//base/hiviewdfx/hiview/framework"
 hiview_interfaces = "//base/hiviewdfx/hiview/interfaces"
 hiview_test = "//base/hiviewdfx/hiview/test"
 
