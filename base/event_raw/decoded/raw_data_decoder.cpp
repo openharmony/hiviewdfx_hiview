@@ -72,6 +72,7 @@ bool RawDataDecoder::StringValueDecoded(uint8_t* rawData, const size_t maxLen, s
     }
     uint64_t valByteCnt = 0; // default 0
     if (!UnsignedVarintDecoded(rawData, maxLen, pos, valByteCnt) ||
+        valByteCnt > maxLen || // for value flip
         ((pos + valByteCnt) > maxLen)) {
         return false;
     }
