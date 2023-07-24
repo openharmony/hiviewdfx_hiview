@@ -63,8 +63,8 @@
         ]
     },
     "Rule6":{
-        "DirOrFile":"/data/hisi_logs/",
-        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
         "featureId":"04_PANIC_01",
         "segmentType":"OneLayer",
         "startSeg":["NocTrace.v_cpu"],
@@ -85,8 +85,8 @@
         ]
     },
     "Rule7":{
-        "DirOrFile":"/data/bbox_logs/",
-        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
         "featureId":"04_HWWATCHDOG_00",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"sysrq: Trigger a crash", "v_fiq":"(.*)"},

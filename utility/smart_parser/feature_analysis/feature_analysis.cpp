@@ -433,23 +433,5 @@ void FeatureAnalysis::SetStackRegex(const std::string& key, const std::string& r
         stackRegex_.emplace(pair(key, StringUtil::EraseString(regex, L3_VARIABLE_TRACE_BLOCK)));
     }
 }
-
-void FeatureAnalysis::GetCrashFaultLine(const std::string& file, std::string& line) const
-{
-    stringstream buffer;
-    LogUtil::ReadFileBuff(file, buffer);
-    if (!buffer.good() || buffer.eof()) {
-        return;
-    }
-
-    std::string lineTrace;
-    while (getline(buffer, lineTrace)) {
-        if (lineTrace.empty()) {
-            getline(buffer, line);
-            return;
-        }
-    }
-    line = "NoExceptionInfo";
-}
 } // namespace HiviewDFX
 } // namespace OHOS

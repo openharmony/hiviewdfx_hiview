@@ -32,7 +32,6 @@ public:
     LogParse& operator=(const LogParse&) = delete;
     bool IsIgnoreLibrary(const std::string& val) const;
     static std::string MatchExceptionLibrary(const std::string& val);
-    void GetCrashFaultLine(const std::string& file, std::string& line) const;
     void SetFrame(std::stack<std::string>& stack, std::map<std::string, std::string>& eventInfo) const;
     std::string GetFilterTrace(const std::string& info, std::vector<std::string>& trace,
         std::string eventType) const;

@@ -1,0 +1,52 @@
+{
+    "version": "1.0.0",
+    "RUST_PANIC": {
+        "01_RUST_PANIC_01":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_02":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_03":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_04":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_05":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_06":{
+            "PNAME": "BasicParam.v_pname:BasicParam.num",
+            "REASON":"",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_07":{
+            "REASON":"",
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
+    },
+    "CPP_CRASH": {
+        "02_CPP_CRASH_01": {
+            "PNAME": "BasicParam.v_process",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "02_CPP_CRASH_02": {
+            "PNAME": "BasicParam.v_process",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
+    },
+    "PANIC": {
+        "03_PANIC_01":{
+            "F1NAME": "NocTrace.v_errcode+NocTrace.v_master+NocTrace.v_slave+NocTrace.v_address+NocTrace.v_user_signal+NocTrace.v_security",
+            "F3NAME": "BasicParam.v_noc",
+            "END_STACK": "MainCallTrace.v_trace"
+       }
+    }
+}
