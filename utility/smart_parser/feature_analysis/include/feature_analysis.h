@@ -78,7 +78,6 @@ private:
     bool IsMatchAndExpression(const std::string& line, const std::string& src) const;
     void SetStackRegex(const std::string& key, const std::string& regex);
     void SetParamRecord(const std::string& key, const LineFeature& value, const int type);
-    void GetCrashFaultLine(const std::string& file, std::string& line) const;
 
 private:
     int taskId_;

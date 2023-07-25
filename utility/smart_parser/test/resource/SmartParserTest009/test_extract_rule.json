@@ -1,0 +1,19 @@
+{
+    "version": "1.0.0",
+    "Rule1":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"rustpanic-.*-\\d+-\\d+",
+        "featureId":"01_RUST_PANIC_01",
+        "rules":[
+            {}
+        ]
+    },
+    "Rule2":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"",
+        "featureId":"01_RUST_PANIC_02",
+        "rules":[
+            {}
+        ]
+    }
+}

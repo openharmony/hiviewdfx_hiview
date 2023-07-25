@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "PANIC": {
+        "04_PANIC_00":{
+            "F1NAME": "NocTrace.v_errcode+NocTrace.v_master+NocTrace.v_slave+NocTrace.v_address+NocTrace.v_user_signal+NocTrace.v_security",
+            "F3NAME": "BasicParam.v_noc",
+            "END_STACK": "MainCallTrace.v_trace"
+       },
+       "04_PANIC_01":{
+            "F1NAME": "BasicParam.v_pname:BasicParam.v_f1",
+            "REASON": "BasicParam.v_pname:BasicParam.v_f1",
+            "F3NAME": "BasicParam.v_noc",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
+    }
+}

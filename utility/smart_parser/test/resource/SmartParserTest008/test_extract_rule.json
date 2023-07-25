@@ -1,0 +1,55 @@
+{
+    "version": "1.0.0",
+    "segmentStatus":[
+        {"namespace":"segStatus", "matchKey":"tid=\\d+ (.*)", "desc":""},
+        {"namespace":"segWaitOther", "matchKey":"waiting to lock.*held by thread (\\d+)", "desc":" waiting on lock held by "},
+        {"namespace":"segWaitSelf", "matchKey":"- waiting on <(.*)>", "desc":" waiting on itself"},
+        {"namespace":"segIpcTrans", "matchKey":"os\\.(IpcProxy)\\.transact", "desc":" ipc transact:"},
+        {"namespace":"segIpcFull", "matchKey":"os\\.Ipc\\.(blockUntilThreadAvailable)", "desc":" ipc full:"}
+    ],
+    "Rule1":{
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
+        "featureId":"04_PANIC_00",
+        "segmentType":"OneLayer",
+        "startSeg":["NocTrace.v_cpu"],
+        "segStack":["[0-9a-zA-Z_.]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)", "el1_irq+0", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test"],
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Unhandled fault:@|@Unable to handle kernel@|@kernel BUG at@|@BUG: failure at@|@Bad mode in@|@DPM device timeout@|@invoked oom-killer@|@Synchronous External Abort:@|@,init]potentially unexpected fatal signal@|@Internal error:@|@NoC Error Probe:@|@mali gpu: Unhandled Page@|@CFI failure@|@Kernel panic - not syncing:", "v_cause":"pid:\\d+,cpu\\d+,.*\\]([A-Za-z].*)", "v_pname":",cpu[0-9],(.*?)[,:\\]]", "v_noc":"(NoC Error)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_pname", "matchKey":"PC is at ", "num":1, "v_f1":"PC is at ([^\\+ ]+.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"err_code=", "v_errcode":"\\[(err_code=\\d+)\\]"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"init_flow=", "v_master":"\\[init_flow=\\d+\\]: (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"target_flow=", "v_slave":"\\[target_flow=\\d+\\]: (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"adjusted ADDR", "v_address":"adjusted.* = (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"USER_SIGNAL =", "v_user_signal":"USER_SIGNAL = 0x[0-9a-z]+ (.*)", "v_cpu":"\\(MID: AP_CPU(\\d+)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"sec_val =", "v_security":"(sec_val = 0x[0-9a-f]+)"},
+            {"namespace":"MainCallTrace", "depend":"BasicParam", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_.]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
+        ],
+        "segmentRule":[
+            {"namespace":"LayerOneCmd", "matchKey":"]:CPU@&@: stopping", "num":1, "v_id":"\\]:CPU(\\d+): stopping", "v_name":"\\]:(CPU\\d+): stopping"}
+        ]
+    },
+    "Rule2":{
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
+        "featureId":"04_PANIC_01",
+        "segmentType":"OneLayer",
+        "startSeg":["NocTrace.v_cpu"],
+        "segStack":["[0-9a-zA-Z_.]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)", "el1_irq+0", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test"],
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Unhandled fault:@|@Unable to handle kernel@|@kernel BUG at@|@BUG: failure at@|@Bad mode in@|@DPM device timeout@|@invoked oom-killer@|@Synchronous External Abort:@|@,init]potentially unexpected fatal signal@|@Internal error:@|@NoC Error Probe:@|@mali gpu: Unhandled Page@|@CFI failure@|@Kernel panic - not syncing:", "v_cause":"pid:\\d+,cpu\\d+,.*\\]([A-Za-z].*)", "v_pname":",cpu[0-9],(.*?)[,:\\]]", "v_noc":"(NoC Error)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_pname", "matchKey":"PC is at ", "num":1, "v_f1":"PC is at ([^\\+ ]+.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"err_code=", "v_errcode":"\\[(err_code=\\d+)\\]"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"init_flow=", "v_master":"\\[init_flow=\\d+\\]: (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"target_flow=", "v_slave":"\\[target_flow=\\d+\\]: (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"adjusted ADDR", "v_address":"adjusted.* = (.*)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"USER_SIGNAL =", "v_user_signal":"USER_SIGNAL = 0x[0-9a-z]+ (.*)", "v_cpu":"\\(MID: AP_CPU(\\d+)"},
+            {"namespace":"NocTrace", "depend":"BasicParam.v_noc", "matchKey":"sec_val =", "v_security":"(sec_val = 0x[0-9a-f]+)"},
+            {"namespace":"MainCallTrace", "depend":"BasicParam", "matchKey":"Call trace:", "v_trace":"@T@[0-9a-zA-Z_.]+\\+0x[0-9a-f]+/0x[0-9a-f]+(.*)"}
+        ],
+        "segmentRule":[
+            {"namespace":"LayerOneCmd", "matchKey":"]:CPU@&@: stopping", "num":1, "v_id":"@L@\\]:CPU(\\d+): stopping", "v_name":"\\]:(CPU\\d+): stopping"},
+            {"namespace":"LayerOneCmd", "matchKey":"]:CPU@&@: stopping", "num":1, "v_id":"\\]:CPU(\\d+): stopping", "v_name":"\\]:(CPU\\d+): stopping"}
+        ]
+    }
+}

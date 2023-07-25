@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "RUST_PANIC": {
+        "01_RUST_PANIC_01":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_02":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "01_RUST_PANIC_03":{
+            "PNAME": "BasicParam.v_pname",
+            "END_STACK": "MainCallTrace.v_trace"
+        }
+    }
+}

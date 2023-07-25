@@ -44,8 +44,6 @@ public:
     ~LogUtil() {};
     LogUtil(const LogUtil&) = delete;
     LogUtil& operator=(const LogUtil&) = delete;
-    std::tuple<std::pair<int, int>, std::vector<std::string>> ParseIpcInfo(
-        std::stringstream& buffer, const int offset, const std::pair<int, int>& pidTid);
     static void GetTrace(std::stringstream& buffer, int cursor, const std::string& reg, std::string& result,
         std::string startReg = "");
     static bool ReadFileBuff(const std::string& file, std::stringstream& buffer);
@@ -60,15 +58,7 @@ public:
 
 
 private:
-    void ReadIpcInfo(std::stringstream& buffer, const int offset);
-    IpcItem ParseIpcStr(std::string IpcStr) const;
-    void GetIpcInfo(const std::string& line);
-    IpcTrans ParseZeroIpc(const IpcTrans& beginIpc) const;
-    void ParseIpcList(const std::string& clientPidTid, std::vector<IpcTrans>& IpcNode) const;
     static int GetFileFd(const std::string& file);
-
-private:
-    std::map<std::string, std::pair<std::string, IpcTrans>> IpcInfo_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
