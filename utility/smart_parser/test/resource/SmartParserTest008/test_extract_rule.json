@@ -8,8 +8,8 @@
         {"namespace":"segIpcFull", "matchKey":"os\\.Ipc\\.(blockUntilThreadAvailable)", "desc":" ipc full:"}
     ],
     "Rule1":{
-        "DirOrFile":"/data/log/faultlog/faultlogger/",
-        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
         "featureId":"04_PANIC_00",
         "segmentType":"OneLayer",
         "startSeg":["NocTrace.v_cpu"],
