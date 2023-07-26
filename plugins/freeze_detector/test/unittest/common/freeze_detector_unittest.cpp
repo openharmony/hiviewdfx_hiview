@@ -347,7 +347,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_007, TestSize.Level3)
     ASSERT_EQ(vendor->Init(), true);
 
     ASSERT_EQ(vendor->MergeEventLog(watchPoint, list, result),
-        "/data/log/faultlog/sysfreeze-processName-1000-20230627174503.tmp");
+        "/data/log/faultlog/sysfreeze-SCREEN_ON-1000-20230627174503.tmp");
 }
 
 /**
