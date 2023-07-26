@@ -30,6 +30,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const char TEST_LEVEL[] = "MINOR";
+constexpr int32_t TEST_INT32_VALUE = 1;
+constexpr int64_t TEST_INT64_VALUE = 1;
+constexpr double TEST_DOU_VALUE = 123.456;
+const std::string TEST_STR_VALUE = "test";
 }
 void SysEventDaoTest::SetUpTestCase()
 {
@@ -294,6 +298,181 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_011, testing::ext::TestSize.Level3)
             }
         }));
     ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+}
+
+/**
+ * @tc.name: FieldValueTest_01
+ * @tc.desc: test the constructor function of FieldValue.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldValueTest_01, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    // default value
+    FieldValue value1;
+    ASSERT_TRUE(value1.IsInteger());
+    ASSERT_EQ(value1.GetInteger(), 0);
+
+    // int32_t value
+    FieldValue value2(TEST_INT32_VALUE);
+    ASSERT_TRUE(value2.IsInteger());
+    ASSERT_EQ(value2.GetInteger(), TEST_INT32_VALUE);
+
+    // int64_t value
+    FieldValue value3(TEST_INT64_VALUE);
+    ASSERT_TRUE(value3.IsInteger());
+    ASSERT_EQ(value3.GetInteger(), TEST_INT64_VALUE);
+
+    // double value
+    FieldValue value4(TEST_DOU_VALUE);
+    ASSERT_TRUE(value4.IsDouble());
+    ASSERT_EQ(value4.GetDouble(), TEST_DOU_VALUE);
+
+    // string value
+    FieldValue value5(TEST_STR_VALUE);
+    ASSERT_TRUE(value5.IsString());
+    ASSERT_EQ(value5.GetString(), TEST_STR_VALUE);
+}
+
+/**
+ * @tc.name: FieldValueTest_02
+ * @tc.desc: test the operator function of FieldValue.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldValueTest_02, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    // ==
+    FieldValue iValue1(TEST_INT32_VALUE);
+    FieldValue iValue2(TEST_INT32_VALUE);
+    ASSERT_TRUE(iValue1 == iValue2);
+    FieldValue dValue1(TEST_DOU_VALUE);
+    FieldValue dValue2(TEST_DOU_VALUE);
+    ASSERT_TRUE(dValue1 == dValue2);
+    FieldValue sValue1(TEST_STR_VALUE);
+    FieldValue sValue2(TEST_STR_VALUE);
+    ASSERT_TRUE(sValue1 == sValue2);
+    ASSERT_FALSE(iValue1 == dValue1);
+
+    // !=
+    FieldValue iValue3(0);
+    ASSERT_TRUE(iValue1 != iValue3);
+    FieldValue dValue3(12.3456);
+    ASSERT_TRUE(dValue1 != dValue3);
+    FieldValue sValue3("tes");
+    ASSERT_TRUE(sValue1 != sValue3);
+    ASSERT_FALSE(iValue1 != dValue1);
+
+    // <
+    ASSERT_TRUE(iValue3 < iValue1);
+    ASSERT_TRUE(dValue3 < dValue1);
+    ASSERT_TRUE(sValue3 < sValue1);
+    ASSERT_FALSE(iValue1 < dValue1);
+
+    // <=
+    ASSERT_TRUE(iValue3 <= iValue1);
+    ASSERT_TRUE(dValue3 <= dValue1);
+    ASSERT_TRUE(sValue3 <= sValue1);
+    ASSERT_FALSE(iValue1 <= dValue1);
+
+    // >
+    ASSERT_TRUE(iValue1 > iValue3);
+    ASSERT_TRUE(dValue1 > dValue3);
+    ASSERT_TRUE(sValue1 > sValue3);
+    ASSERT_FALSE(iValue1 > dValue1);
+
+    // >=
+    ASSERT_TRUE(iValue1 >= iValue3);
+    ASSERT_TRUE(dValue1 >= dValue3);
+    ASSERT_TRUE(sValue1 >= sValue3);
+    ASSERT_FALSE(iValue1 >= dValue1);
+
+    // IsStartWith / IsNotStartWith for string
+    ASSERT_FALSE(sValue1.IsStartWith(iValue1));
+    ASSERT_FALSE(sValue1.IsNotStartWith(iValue1));
+    ASSERT_FALSE(iValue1.IsStartWith(iValue2));
+    ASSERT_FALSE(iValue1.IsNotStartWith(iValue2));
+    ASSERT_TRUE(sValue1.IsStartWith(sValue3));
+    ASSERT_FALSE(sValue1.IsNotStartWith(sValue3));
+}
+
+/**
+ * @tc.name: CondTest_01
+ * @tc.desc: test the function of Cond.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, CondTest_01, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    Cond invalidCond;
+    ASSERT_EQ(invalidCond.ToString(), "INVALID COND");
+    Cond cond1("name", EQ, "event");
+    ASSERT_EQ(cond1.ToString(), "name == event");
+    Cond cond2("name", NE, "event");
+    ASSERT_EQ(cond2.ToString(), "name != event");
+    Cond cond3("num", LT, 0);
+    ASSERT_EQ(cond3.ToString(), "num < 0");
+    Cond cond4("num", LE, 0);
+    ASSERT_EQ(cond4.ToString(), "num <= 0");
+    Cond cond5("num", GT, TEST_DOU_VALUE);
+    ASSERT_EQ(cond5.ToString(), "num > 123.456000");
+    Cond cond6("num", GE, TEST_DOU_VALUE);
+    ASSERT_EQ(cond6.ToString(), "num >= 123.456000");
+    Cond cond7("name", SW, "event");
+    ASSERT_EQ(cond7.ToString(), "name SW event");
+    Cond cond8("name", NSW, "event");
+    ASSERT_EQ(cond8.ToString(), "name NSW event");
+}
+
+/**
+ * @tc.name: DocQueryTest_01
+ * @tc.desc: test the function of Cond.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, DocQueryTest_01, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    // test for nullptr
+    DocQuery docQuery;
+    ASSERT_TRUE(docQuery.IsContainInnerConds(nullptr));
+
+    // test for invalid conditon
+    Cond invalidCond(EventCol::DOMAIN, EQ, TEST_STR_VALUE);
+    docQuery.And(invalidCond);
+    ASSERT_TRUE(docQuery.ToString().empty());
+
+    // test for IsContainExtraConds
+    Cond cond1("INT_VALUE", EQ, 1);
+    docQuery.And(cond1);
+    Cond cond2("DOU_VALUE", GT, 1.0);
+    docQuery.And(cond2);
+    Cond cond3("STR_VALUE", NE, "invalid value");
+    docQuery.And(cond3);
+    Cond cond4("INT_VALUE", GE, 0);
+    docQuery.And(cond4);
+    Cond cond5("INT_VALUE", LT, 2); // INT_VALUE < 2
+    docQuery.And(cond5);
+    Cond cond6("INT_VALUE", LE, 2); // INT_VALUE <= 2
+    docQuery.And(cond6);
+    Cond cond7("STR_VALUE", SW, "test");
+    docQuery.And(cond7);
+    Cond cond8("STR_VALUE", NSW, "invalid");
+    docQuery.And(cond8);
+    ASSERT_FALSE(docQuery.ToString().empty());
+
+    std::string jsonStr = R"~({"domain_":"demo","name_":"DocQueryTest_01","type_":1,"tz_":8,"time_":1620271291188,
+        "pid_":6527,"tid_":6527,"INT_VALUE":1,"DOU_VALUE":1.23,"STR_VALUE":"test_event"})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
+    EventRaw::DecodedEvent decodedEvent(sysEvent->rawData_->GetData());
+    ASSERT_TRUE(docQuery.IsContainExtraConds(decodedEvent));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
