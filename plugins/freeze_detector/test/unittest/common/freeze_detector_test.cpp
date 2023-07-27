@@ -233,7 +233,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest001, TestSize.Level3)
         FAIL();
     }
 
-    auto sysEvent = makeEvent("FreezeDectorTest001", "MULTIMODALINPUT", "APPLICATION_BLOCK_INPUT",
+    auto sysEvent = makeEvent("FreezeDectorTest001", "AAFWK", "APP_INPUT_BLOCK",
                               "FreezeDectorTest001", logPath);
     if (sysEvent == nullptr) {
         printf("GetFreezeDectorTest001File, failed\n");
@@ -245,7 +245,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest001, TestSize.Level3)
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
-    if (!GetFreezeDectorTestFile("APPLICATION_BLOCK_INPUT",
+    if (!GetFreezeDectorTestFile("APP_INPUT_BLOCK",
                                  "FreezeDectorTest001",
                                  time)) {
         printf("GetFreezeDectorTest001File, failed\n");
@@ -284,7 +284,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
         FAIL();
     }
 
-    auto sysEvent = makeEvent("FreezeDectorTest002", "AAFWK", "LIFECYCLE_TIMEOUT",
+    auto sysEvent = makeEvent("FreezeDectorTest002", "GRAPHIC", "NO_DRAW",
                               "FreezeDectorTest002", logPath);
     if (sysEvent == nullptr) {
         printf("GetFreezeDectorTest002File, failed\n");
@@ -296,7 +296,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
     plugin->OnEventListeningCallback(*(event.get()));
 
     sleep(10);
-    if (!GetFreezeDectorTestFile("LIFECYCLE_TIMEOUT",
+    if (!GetFreezeDectorTestFile("NO_DRAW",
                                  "FreezeDectorTest002",
                                  time)) {
         printf("GetFreezeDectorTest002File, failed\n");
