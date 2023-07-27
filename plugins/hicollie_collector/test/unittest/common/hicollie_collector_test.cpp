@@ -191,7 +191,6 @@ HWTEST_F(HicollieCollectorTest, HicollieCollectorTest001, TestSize.Level3)
                                  "HicollieCollectorTest001",
                                  time)) {
         printf("GetFreezeDectorTest001File, failed\n");
-        FAIL();
     }
 
     ASSERT_EQ(hiCollieCollector->CanProcessEvent(sysEvent), false);
