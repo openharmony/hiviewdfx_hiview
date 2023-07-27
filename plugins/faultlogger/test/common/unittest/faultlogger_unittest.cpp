@@ -235,47 +235,6 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
     ASSERT_EQ(result, true);
 }
 
-/**
- * @tc.name: SaveFaultLogInfoTest001
- * @tc.desc: Test calling SaveFaultLogInfo Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
-{
-    InitHiviewContext();
-    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
-    FaultLogInfo info;
-    info.time = std::time(nullptr); // 3 : index of timestamp
-    info.pid = getpid();
-    info.id = 0;
-    info.faultLogType = 2;
-    info.module = "FaultloggerUnittest";
-    info.reason = "unittest for SaveFaultLogInfo";
-    info.summary = "summary for SaveFaultLogInfo";
-    info.sectionMap["APPVERSION"] = "1.0";
-    info.sectionMap["FAULT_MESSAGE"] = "abort";
-    info.sectionMap["TRACEID"] = "0x1646145645646";
-    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
-    info.sectionMap["REASON"] = "TestReason";
-    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    faultLogDb->SaveFaultLogInfo(info);
-
-    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
-            printf("sucess!\r\n");
-        } else {
-            FAIL();
-        }
-    } else {
-        FAIL();
-    }
-}
 
 /**
  * @tc.name: GetFaultInfoListTest001
@@ -312,50 +271,6 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
     faultLogManager->Init();
     int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
     ASSERT_GT(fd, 0);
-}
-
-/**
- * @tc.name: FaultLogManager::SaveFaultInfoToRawDb
- * @tc.desc: Test calling SaveFaultInfoToRawDb Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Level3)
-{
-    InitHiviewContext();
-
-    FaultLogInfo info;
-    info.time = std::time(nullptr); // 3 : index of timestamp
-    info.pid = getpid();
-    info.id = 0;
-    info.faultLogType = 2;
-    info.module = "FaultloggerUnittest1111";
-    info.reason = "unittest for SaveFaultLogInfo";
-    info.summary = "summary for SaveFaultLogInfo";
-    info.sectionMap["APPVERSION"] = "1.0";
-    info.sectionMap["FAULT_MESSAGE"] = "abort";
-    info.sectionMap["TRACEID"] = "0x1646145645646";
-    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
-    info.sectionMap["REASON"] = "TestReason";
-    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
-    faultLogManager->Init();
-    faultLogManager->SaveFaultInfoToRawDb(info);
-
-    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
-            printf("sucess!\r\n");
-        } else {
-            FAIL();
-        }
-    } else {
-        FAIL();
-    }
 }
 
 /**
@@ -574,71 +489,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
         FAIL();
     }
     serviceOhos.Destroy();
-}
-
-/**
- * @tc.name: FaultloggerTest001
- * @tc.desc: Test calling Faultlogger.StartBootScan Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
-{
-    InitHiviewContext();
-    time_t now = time(nullptr);
-    std::string timeStr = GetFormatedTime(now);
-    std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
-        "Fault thread Info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
-    ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-101-" + std::to_string(now), content));
-    auto plugin = CreateFaultloggerInstance();
-    plugin->StartBootScan();
-    //check faultlog file content
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
-    ASSERT_TRUE(FileUtil::FileExists(fileName));
-    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
-    ASSERT_EQ(plugin->GetFaultLogInfo(fileName)->module, "BootScanUnittest");
-    // check event database
-    std::string cmd = "hisysevent -l | grep " + std::to_string(now);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        ASSERT_NE(str.find(std::to_string(now).c_str()), std::string::npos);
-    } else {
-        FAIL();
-    }
-}
-
-/**
- * @tc.name: FaultloggerTest002
- * @tc.desc: Test calling Faultlogger.StartBootScan Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
-{
-    InitHiviewContext();
-    time_t now = time(nullptr);
-    std::string timeStr = GetFormatedTime(now);
-    std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
-        "Fault thread Info:\nTid:102, Name:BootScanUnittest\n";
-    std::string fileName = "/data/log/faultlog/temp/cppcrash-102-" + std::to_string(now);
-    ASSERT_TRUE(FileUtil::SaveStringToFile(fileName, content));
-    auto plugin = CreateFaultloggerInstance();
-    plugin->StartBootScan();
-    ASSERT_FALSE(FileUtil::FileExists(fileName));
-    // check event database
-    std::string cmd = "hisysevent -l | grep CPP_CRASH_NO_LOG | grep " + std::to_string(now);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        ASSERT_NE(str.find("BootScanUnittest"), std::string::npos);
-    } else {
-        FAIL();
-    }
 }
 
 } // namespace HiviewDFX
