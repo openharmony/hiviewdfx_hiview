@@ -39,7 +39,6 @@ protected:
     virtual void ProcessStackTrace(const std::string& asanDump, bool printDiagnostics, unsigned *hash);
     int UpdateCollectedData(const std::string& hash, const std::string& rfile);
     bool IsDuplicate(const std::string& hash);
-    std::string GetTopStackWithoutCommonLib(const std::string& description);
     void CalibrateErrTypeProcName();
     void SetHappenTime();
 };

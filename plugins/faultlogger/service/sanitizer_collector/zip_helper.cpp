@@ -95,28 +95,6 @@ unsigned HashString(const std::string& input)
     return hash;
 }
 
-bool GetNameByPid(pid_t pid, const char *procName)
-{
-    char pidPath[BUF_SIZE];
-    char buf[BUF_SIZE];
-    bool ret = false;
- 
-    sprintf_s(pidPath, BUF_SIZE, "/proc/%d/status", pid);
-    FILE *fp = fopen(pidPath, "r");
-    if (fp != nullptr) {
-        if (fgets(buf, BUF_SIZE - 1, fp) != nullptr) {
-            if (sscanf_s(buf, "%*s %s", procName, MAX_PROCESS_PATH) == 1) {
-                ret = true;
-            }
-        } else {
-            ret = false;
-        }
-        fclose(fp);
-    }
-
-    return ret;
-}
-
 bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
 {
     std::vector<std::string> nameVec;
