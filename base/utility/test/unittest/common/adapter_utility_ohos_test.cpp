@@ -349,7 +349,7 @@ HWTEST_F(AdapterUtilityOhosTest, FileUtilOhosTest010, testing::ext::TestSize.Lev
  */
 HWTEST_F(AdapterUtilityOhosTest, FileUtilOhosTest011, testing::ext::TestSize.Level3)
 {
-    auto ret = FileUtil::GetParentDir("");
+    auto ret = FileUtil::GetParentDir("/");
     ASSERT_EQ("", ret);
     ret = FileUtil::GetParentDir("123/345/789");
     ASSERT_EQ("123/345", ret);
