@@ -193,33 +193,8 @@ int AsanCollector::UpdateCollectedData(const std::string& hash, const std::strin
     return 0;
 }
 
-std::string AsanCollector::GetTopStackWithoutCommonLib(const std::string& description)
-{
-    std::string topstack;
-    std::string record = description;
-    std::smatch stackCaptured;
-    std::string stackRecord =
-    "  #[\\d+] " + std::string(XDIGIT_REGEX) +
-    "[\\s\\?(]+" +
-    "[^\\+ ]+/(\\w+)(.z)?.so\\+" + std::string(XDIGIT_REGEX);
-    static const std::regex STACK_RECORD(stackRecord);
-
-    while (std::regex_search(record, stackCaptured, STACK_RECORD)) {
-        if (topstack.size() == 0) {
-            topstack = stackCaptured[1].str();
-        }
-        if (SKIP_SPECIAL_LIB.find(stackCaptured[1].str().c_str()) == std::string::npos) {
-            return stackCaptured[1].str();
-        }
-        record = stackCaptured.suffix().str();
-    }
-
-    return topstack;
-}
-
 void AsanCollector::CalibrateErrTypeProcName()
 {
-    char procName[MAX_PROCESS_PATH];
     std::map<std::string, std::string>::iterator fault_type_iter;
 
     fault_type_iter = g_faultTypeInShort.find(curr_.errType);
@@ -231,18 +206,7 @@ void AsanCollector::CalibrateErrTypeProcName()
 
     if (curr_.uid >= MIN_APP_USERID) {
         curr_.procName = GetApplicationNameById(curr_.uid);
-    }
-
-    if  (curr_.uid >= MIN_APP_USERID && !curr_.procName.empty() && IsModuleNameValid(curr_.procName)) {
-        curr_.procName = RegulateModuleNameIfNeed(curr_.procName);
-        HIVIEW_LOGI("Get procName %{public}s from uid %{public}d.", curr_.procName.c_str(), curr_.uid);
         curr_.appVersion = GetApplicationVersion(curr_.uid, curr_.procName);
-        HIVIEW_LOGI("Version is %{public}s.", curr_.appVersion.c_str());
-    } else if (OHOS::HiviewDFX::GetNameByPid(static_cast<pid_t>(curr_.pid), procName) == true) {
-        curr_.procName = std::string(procName);
-    } else if (SKIP_SPECIAL_PROCESS.find(curr_.procName.c_str()) != std::string::npos) {
-        // get top stack
-        curr_.procName = GetTopStackWithoutCommonLib(curr_.description);
     }
 }
 
