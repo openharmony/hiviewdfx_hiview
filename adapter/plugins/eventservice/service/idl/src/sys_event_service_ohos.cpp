@@ -128,7 +128,7 @@ int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& event
 
 int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
 {
-    size_t queryRuleCntLimit = 10; // count of query rule for each querier is limited to 10.
+    size_t queryRuleCntLimit = 100; // count of query rule for each querier is limited to 100.
     if (rules.size() > queryRuleCntLimit) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyQueryRules(rules);
         return ERR_TOO_MANY_QUERY_RULES;
