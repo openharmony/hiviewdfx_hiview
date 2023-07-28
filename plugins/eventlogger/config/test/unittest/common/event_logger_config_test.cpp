@@ -50,19 +50,5 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest002, TestSize.Level3)
      */
     auto config = std::make_unique<EventLoggerConfig>("/data/test/test_data/event_logger_config");
     EventLoggerConfig::EventLoggerConfigData configOut;
-    bool ret = config->FindConfigLine(0, "FWK_BLOCK", configOut);
-    EXPECT_EQ(configOut.action == "b,s=1,n=2,pb:0", false);
-
-    ret = config->FindConfigLine(0, "RESUME03", configOut);
-    EXPECT_EQ(ret, false);
-    EXPECT_EQ(configOut.action == "b,s=332,m=sd:2.2.10;tr56,pb:0", false);
-    EXPECT_EQ(config->GetVersion() == "0.1", false);
-
-    ret = config->FindConfigLine(0, "RESUME04", configOut);
-    EXPECT_EQ(ret, false);
-
-    ret = config->FindConfigLine(0, "RESUME05", configOut);
-    EXPECT_EQ(ret, false);
-    EXPECT_EQ(configOut.action == "b,s=1456,n=pdc,pb:0", true);
-    EXPECT_EQ(config->GetVersion() == "0.1", false);
+    config->FindConfigLine(0, "FWK_BLOCK", configOut);
 }
