@@ -138,7 +138,7 @@ public:
 
     bool IsBundlePlugin()
     {
-        return bundle_.empty();
+        return !bundle_.empty();
     }
 
     bool HasLoaded()
