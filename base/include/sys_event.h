@@ -81,8 +81,11 @@ public:
     template<typename T>
     void SetEventValue(const std::string& key, T value, bool appendValue = false)
     {
+        if (builder_ == nullptr) {
+            return;
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
-            auto param = rawDataBuilder_.GetValue(key);
+            auto param = builder_->GetValue(key);
             std::string paramValue;
             if (appendValue && (param != nullptr) && param->AsString(paramValue)) {
                 paramValue = UnescapeJsonStringValue(paramValue);
@@ -91,7 +94,7 @@ public:
             }
             value = EscapeJsonStringValue(value);
         }
-        rawDataBuilder_.AppendValue(key, value);
+        builder_->AppendValue(key, value);
     }
 
     template<typename T,
@@ -99,6 +102,9 @@ public:
         std::is_same_v<std::decay_t<T>, std::string>>* = nullptr>
     void SetId(T id)
     {
+        if (builder_ == nullptr) {
+            return;
+        }
         uint64_t eventHash = 0;
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
             auto idStream = std::stringstream(id);
@@ -107,8 +113,8 @@ public:
         if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
             eventHash = id;
         }
-        rawDataBuilder_.AppendId(eventHash);
-        rawData_ = rawDataBuilder_.Build(); // update
+        builder_->AppendId(eventHash);
+        rawData_ = builder_->Build(); // update
     }
 
 public:
@@ -120,12 +126,7 @@ public:
     static std::atomic<int64_t> totalSize_;
 
 private:
-    void InitialMember();
-    void InitEventBuilder(std::shared_ptr<EventRaw::RawData> rawData, EventRaw::RawDataBuilder& builder);
-    void InitEventBuilderValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
-        EventRaw::RawDataBuilder& builder);
-    void InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
-        EventRaw::RawDataBuilder& builder);
+    void InitialMembers();
     std::shared_ptr<EventRaw::RawData> TansJsonStrToRawData(const std::string& jsonStr);
     std::string EscapeJsonStringValue(const std::string& src);
     std::string UnescapeJsonStringValue(const std::string& src);
@@ -139,7 +140,7 @@ private:
     int64_t eventSeq_;
     std::string tag_;
     std::string level_;
-    EventRaw::RawDataBuilder rawDataBuilder_;
+    std::shared_ptr<EventRaw::RawDataBuilder> builder_;
 };
 
 class SysEventCreator {
@@ -158,18 +159,21 @@ public:
     template<typename T>
     void SetKeyValue(const std::string& key, T value)
     {
+        if (builder_ == nullptr) {
+            return;
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
             std::vector<std::string> transVal;
             for (auto item : value) {
                 transVal.emplace_back(EscapeJsonStringValue(item));
             }
-            rawDataBuilder_.AppendValue(key, transVal);
+            builder_->AppendValue(key, transVal);
             return;
         }
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
             value = EscapeJsonStringValue(value);
         }
-        rawDataBuilder_.AppendValue(key, value);
+        builder_->AppendValue(key, value);
     }
 
 public:
@@ -179,7 +183,7 @@ private:
     std::string EscapeJsonStringValue(const std::string& src);
 
 private:
-    EventRaw::RawDataBuilder rawDataBuilder_;
+    std::shared_ptr<EventRaw::RawDataBuilder> builder_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
