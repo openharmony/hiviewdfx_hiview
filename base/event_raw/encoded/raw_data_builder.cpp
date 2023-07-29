@@ -21,12 +21,30 @@
 #include <vector>
 
 #include "hilog/log.h"
+#include "decoded/decoded_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
 namespace {
 constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawDataBuilder" };
+}
+
+RawDataBuilder::RawDataBuilder(std::shared_ptr<EventRaw::RawData> rawData)
+{
+    if (rawData == nullptr) {
+        return;
+    }
+    EventRaw::DecodedEvent event(rawData->GetData());
+    auto header = event.GetHeader();
+    auto traceInfo = event.GetTraceInfo();
+    AppendDomain(header.domain).AppendName(header.name).AppendType(static_cast<int>(header.type) + 1).
+        AppendTimeStamp(header.timestamp).AppendTimeZone(header.timeZone).
+        AppendUid(header.uid).AppendPid(header.pid).AppendTid(header.tid).AppendId(header.id);
+    if (header.isTraceOpened == 1) {
+        AppendTraceInfo(traceInfo.traceId, traceInfo.spanId, traceInfo.pSpanId, traceInfo.traceFlag);
+    }
+    InitValueParams(event.GetAllCustomizedValues());
 }
 
 RawDataBuilder::RawDataBuilder(const std::string& domain, const std::string& name, const int eventType)
@@ -36,61 +54,59 @@ RawDataBuilder::RawDataBuilder(const std::string& domain, const std::string& nam
     (void)AppendType(eventType);
 }
 
-bool RawDataBuilder::BuildHeader()
+bool RawDataBuilder::BuildHeader(std::shared_ptr<RawData> dest)
 {
-    if (!rawData_.Append(reinterpret_cast<uint8_t*>(&header_), sizeof(struct HiSysEventHeader))) {
+    if (!dest->Append(reinterpret_cast<uint8_t*>(&header_), sizeof(struct HiSysEventHeader))) {
         HiLog::Error(LABEL, "Event header copy failed.");
         return false;
     }
     // append trace info
     if (header_.isTraceOpened == 1 &&
-        !rawData_.Append(reinterpret_cast<uint8_t*>(&traceInfo_), sizeof(struct TraceInfo))) {
+        !dest->Append(reinterpret_cast<uint8_t*>(&traceInfo_), sizeof(struct TraceInfo))) {
         HiLog::Error(LABEL, "Trace info copy failed.");
         return false;
     }
     return true;
 }
 
-bool RawDataBuilder::BuildCustomizedParams()
+bool RawDataBuilder::BuildCustomizedParams(std::shared_ptr<RawData> dest)
 {
-    for (auto param : allParams_) {
+    std::lock_guard<std::mutex> lock(paramsOptMtx_);
+    return !any_of(allParams_.begin(), allParams_.end(), [&dest] (auto& param) {
         auto rawData = param->GetRawData();
-        if (!rawData_.Append(rawData.GetData(), rawData.GetDataLength())) {
-            return false;
-        }
-    }
-    return true;
+        return !dest->Append(rawData.GetData(), rawData.GetDataLength());
+    });
 }
 
 std::shared_ptr<RawData> RawDataBuilder::Build()
 {
     // placehold block size
     int32_t blockSize = 0;
-    rawData_.Reset();
-    if (!rawData_.Append(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t))) {
+    auto rawData = std::make_shared<RawData>();
+    if (!rawData->Append(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t))) {
         HiLog::Error(LABEL, "Block size copy failed.");
-        return std::make_shared<RawData>(rawData_);
+        return nullptr;
     }
-    if (!BuildHeader()) {
+    if (!BuildHeader(rawData)) {
         HiLog::Error(LABEL, "Header of sysevent build failed.");
-        return std::make_shared<RawData>(rawData_);
+        return nullptr;
     }
     // append parameter count
     int32_t paramCnt = static_cast<int32_t>(allParams_.size());
-    if (!rawData_.Append(reinterpret_cast<uint8_t*>(&paramCnt), sizeof(int32_t))) {
+    if (!rawData->Append(reinterpret_cast<uint8_t*>(&paramCnt), sizeof(int32_t))) {
         HiLog::Error(LABEL, "Parameter count copy failed.");
-        return std::make_shared<RawData>(rawData_);
+        return rawData;
     }
-    if (!BuildCustomizedParams()) {
-        HiLog::Error(LABEL, "Customized paramters of sys event build failed.");
-        return std::make_shared<RawData>(rawData_);
+    if (!BuildCustomizedParams(rawData)) {
+        HiLog::Error(LABEL, "Customized paramters of sysevent build failed.");
+        return rawData;
     }
     // update block size
-    blockSize = static_cast<int32_t>(rawData_.GetDataLength());
-    if (!rawData_.Update(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t), 0)) {
+    blockSize = static_cast<int32_t>(rawData->GetDataLength());
+    if (!rawData->Update(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t), 0)) {
         HiLog::Error(LABEL, "Failed to update block size.");
     }
-    return std::make_shared<RawData>(rawData_);
+    return rawData;
 }
 
 bool RawDataBuilder::IsBaseInfo(const std::string& key)
@@ -230,13 +246,14 @@ RawDataBuilder& RawDataBuilder::AppendValue(std::shared_ptr<EncodedParam> param)
         return *this;
     }
     auto paramKey = param->GetKey();
-    for (auto iter = allParams_.begin(); iter < allParams_.end(); iter++) {
+    std::lock_guard<std::mutex> lock(paramsOptMtx_);
+    for (auto iter = allParams_.begin(); iter != allParams_.end(); ++iter) {
         if ((*iter) == nullptr) {
             continue;
         }
         if ((*iter)->GetKey() == paramKey) {
-            allParams_.erase(iter);
-            break;
+            *iter = param;
+            return *this;
         }
     }
     allParams_.emplace_back(param);
@@ -245,7 +262,8 @@ RawDataBuilder& RawDataBuilder::AppendValue(std::shared_ptr<EncodedParam> param)
 
 std::shared_ptr<EncodedParam> RawDataBuilder::GetValue(const std::string& key)
 {
-    for (auto iter = allParams_.begin(); iter < allParams_.end(); iter++) {
+    std::lock_guard<std::mutex> lock(paramsOptMtx_);
+    for (auto iter = allParams_.begin(); iter != allParams_.end(); ++iter) {
         if ((*iter) == nullptr) {
             continue;
         }
@@ -284,6 +302,99 @@ struct HiSysEventHeader& RawDataBuilder::GetHeader()
 struct TraceInfo& RawDataBuilder::GetTraceInfo()
 {
     return traceInfo_;
+}
+
+void RawDataBuilder::InitValueParams(std::vector<std::shared_ptr<DecodedParam>> params)
+{
+    std::unordered_map<EventRaw::DataCodedType,
+        std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (uint64_t val = 0; param->AsUint64(val)) {
+                    this->AppendValue(std::make_shared<UnsignedVarintEncodedParam<uint64_t>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::SIGNED_VARINT, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (int64_t val = 0; param->AsInt64(val)) {
+                    this->AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::FLOATING, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (double val = 0.0; param->AsDouble(val)) {
+                    this->AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::DSTRING, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (std::string val; param->AsString(val)) {
+                    this->AppendValue(std::make_shared<StringEncodedParam>(param->GetKey(),
+                        val));
+                }
+            }, std::placeholders::_1)},
+    };
+    auto iter = paramFuncs.begin();
+    for (auto param : params) {
+        if (param == nullptr) {
+            continue;
+        }
+        iter = paramFuncs.find(param->GetDataCodedType());
+        if (iter == paramFuncs.end()) {
+            continue;
+        }
+        iter->second(param);
+    }
+    InitArrayValueParams(params);
+}
+
+void RawDataBuilder::InitArrayValueParams(std::vector<std::shared_ptr<DecodedParam>> params)
+{
+    std::unordered_map<EventRaw::DataCodedType,
+        std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (std::vector<uint64_t> vals; param->AsUint64Vec(vals)) {
+                    this->AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::SIGNED_VARINT_ARRAY, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (std::vector<int64_t> vals; param->AsInt64Vec(vals)) {
+                    this->AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::FLOATING_ARRAY, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (std::vector<double> vals; param->AsDoubleVec(vals)) {
+                    this->AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+        {EventRaw::DataCodedType::DSTRING_ARRAY, std::bind(
+            [this] (std::shared_ptr<DecodedParam> param) {
+                if (std::vector<std::string> vals; param->AsStringVec(vals)) {
+                    this->AppendValue(std::make_shared<StringEncodedArrayParam>(param->GetKey(),
+                        vals));
+                }
+            }, std::placeholders::_1)},
+    };
+    auto iter = paramFuncs.begin();
+    for (auto param : params) {
+        if (param == nullptr) {
+            continue;
+        }
+        iter = paramFuncs.find(param->GetDataCodedType());
+        if (iter == paramFuncs.end()) {
+            continue;
+        }
+        iter->second(param);
+    }
 }
 } // namespace EventRaw
 } // namespace HiviewDFX

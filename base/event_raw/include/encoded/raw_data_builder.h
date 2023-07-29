@@ -18,13 +18,16 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <list>
 #include <memory>
-#include <string>
+#include <mutex>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <unordered_map>
 #include <functional>
 
+#include "decoded/decoded_param.h"
 #include "encoded/encoded_param.h"
 #include "base/raw_data_base_def.h"
 #include "base/raw_data.h"
@@ -35,6 +38,7 @@ namespace EventRaw {
 class RawDataBuilder {
 public:
     RawDataBuilder() {};
+    RawDataBuilder(std::shared_ptr<EventRaw::RawData> rawData);
     RawDataBuilder(const std::string& domain, const std::string& name, const int eventType);
     ~RawDataBuilder() = default;
 
@@ -506,8 +510,10 @@ private:
         return false;
     }
 
-    bool BuildHeader();
-    bool BuildCustomizedParams();
+    bool BuildHeader(std::shared_ptr<RawData> dest);
+    bool BuildCustomizedParams(std::shared_ptr<RawData> dest);
+    void InitValueParams(std::vector<std::shared_ptr<DecodedParam>> params);
+    void InitArrayValueParams(std::vector<std::shared_ptr<DecodedParam>> params);
 
 private:
     struct HiSysEventHeader header_ = {
@@ -528,8 +534,8 @@ private:
         .spanId = 0,
         .pSpanId = 0,
     };
-    std::vector<std::shared_ptr<EncodedParam>> allParams_;
-    RawData rawData_;
+    std::list<std::shared_ptr<EncodedParam>> allParams_;
+    std::mutex paramsOptMtx_;
 };
 } // namespace EventRaw
 } // namespace HiviewDFX

@@ -84,10 +84,10 @@ SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
         return;
     }
     rawData_ = rawData;
-    InitEventBuilder(rawData_, rawDataBuilder_);
+    builder_ = std::make_shared<EventRaw::RawDataBuilder>(rawData);
     totalCount_.fetch_add(1);
     totalSize_.fetch_add(AsJsonStr().length());
-    InitialMember();
+    InitialMembers();
 }
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator)
@@ -103,27 +103,29 @@ SysEvent::~SysEvent()
     if (totalCount_ > 0) {
         totalCount_.fetch_sub(1);
     }
-
     totalSize_.fetch_sub(AsJsonStr().length());
     if (totalSize_ < 0) {
         totalSize_.store(0);
     }
 }
 
-void SysEvent::InitialMember()
+void SysEvent::InitialMembers()
 {
-    domain_ = rawDataBuilder_.GetDomain();
-    eventName_ = rawDataBuilder_.GetName();
-    auto header = rawDataBuilder_.GetHeader();
-    eventType_ = rawDataBuilder_.GetEventType();
+    if (builder_ == nullptr) {
+        return;
+    }
+    domain_ = builder_->GetDomain();
+    eventName_ = builder_->GetName();
+    auto header = builder_->GetHeader();
+    eventType_ = builder_->GetEventType();
     what_ = static_cast<uint16_t>(eventType_);
     happenTime_ = header.timestamp;
     if (happenTime_ == 0) {
         auto currentTimeStamp = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-        rawDataBuilder_.AppendTimeStamp(currentTimeStamp);
+        builder_->AppendTimeStamp(currentTimeStamp);
         happenTime_ = currentTimeStamp;
     }
-    auto seqParam = rawDataBuilder_.GetValue("seq_");
+    auto seqParam = builder_->GetValue("seq_");
     if (seqParam != nullptr) {
         seqParam->AsInt64(eventSeq_);
     }
@@ -132,124 +134,11 @@ void SysEvent::InitialMember()
     tid_ = static_cast<int32_t>(header.tid);
     uid_ = static_cast<int32_t>(header.uid);
     if (header.isTraceOpened == 1) {
-        auto traceInfo = rawDataBuilder_.GetTraceInfo();
+        auto traceInfo = builder_->GetTraceInfo();
         traceId_ = StringUtil::ToString(traceInfo.traceId);
         spanId_ =  StringUtil::ToString(traceInfo.spanId);
         parentSpanId_ =  StringUtil::ToString(traceInfo.pSpanId);
         traceFlag_ =  StringUtil::ToString(traceInfo.traceFlag);
-    }
-}
-
-void SysEvent::InitEventBuilder(std::shared_ptr<EventRaw::RawData> rawData,
-    EventRaw::RawDataBuilder& builder)
-{
-    if (rawData == nullptr) {
-        return;
-    }
-    EventRaw::DecodedEvent event(rawData->GetData());
-    auto header = event.GetHeader();
-    auto traceInfo = event.GetTraceInfo();
-    builder.AppendDomain(header.domain).AppendName(header.name).AppendType(static_cast<int>(header.type) + 1).
-        AppendTimeStamp(header.timestamp).AppendTimeZone(header.timeZone).
-        AppendUid(header.uid).AppendPid(header.pid).AppendTid(header.tid).AppendId(header.id);
-    if (header.isTraceOpened == 1) {
-        builder.AppendTraceInfo(traceInfo.traceId, traceInfo.spanId, traceInfo.pSpanId, traceInfo.traceFlag);
-    }
-    InitEventBuilderValueParams(event.GetAllCustomizedValues(), builder);
-}
-
-void SysEvent::InitEventBuilderValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
-    EventRaw::RawDataBuilder& builder)
-{
-    std::unordered_map<EventRaw::DataCodedType,
-        std::function<void(std::shared_ptr<EventRaw::DecodedParam>)>> paramFuncs = {
-        {EventRaw::DataCodedType::UNSIGNED_VARINT, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (uint64_t val = 0; param->AsUint64(val)) {
-                    builder.AppendValue(std::make_shared<UnsignedVarintEncodedParam<uint64_t>>(param->GetKey(),
-                        val));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::SIGNED_VARINT, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (int64_t val = 0; param->AsInt64(val)) {
-                    builder.AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(param->GetKey(),
-                        val));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::FLOATING, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (double val = 0.0; param->AsDouble(val)) {
-                    builder.AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(param->GetKey(),
-                        val));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::DSTRING, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (std::string val; param->AsString(val)) {
-                    builder.AppendValue(std::make_shared<StringEncodedParam>(param->GetKey(),
-                        val));
-                }
-            }, std::placeholders::_1)},
-    };
-    auto iter = paramFuncs.begin();
-    for (auto param : params) {
-        if (param == nullptr) {
-            continue;
-        }
-        iter = paramFuncs.find(param->GetDataCodedType());
-        if (iter == paramFuncs.end()) {
-            continue;
-        }
-        iter->second(param);
-    }
-    InitEventBuilderArrayValueParams(params, builder);
-}
-
-void SysEvent::InitEventBuilderArrayValueParams(std::vector<std::shared_ptr<EventRaw::DecodedParam>> params,
-    EventRaw::RawDataBuilder& builder)
-{
-    std::unordered_map<EventRaw::DataCodedType,
-        std::function<void(std::shared_ptr<EventRaw::DecodedParam>)>> paramFuncs = {
-        {EventRaw::DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (std::vector<uint64_t> vals; param->AsUint64Vec(vals)) {
-                    builder.AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(param->GetKey(),
-                        vals));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::SIGNED_VARINT_ARRAY, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (std::vector<int64_t> vals; param->AsInt64Vec(vals)) {
-                    builder.AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(param->GetKey(),
-                        vals));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::FLOATING_ARRAY, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (std::vector<double> vals; param->AsDoubleVec(vals)) {
-                    builder.AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(param->GetKey(),
-                        vals));
-                }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::DSTRING_ARRAY, std::bind(
-            [&builder] (std::shared_ptr<EventRaw::DecodedParam> param) {
-                if (std::vector<std::string> vals; param->AsStringVec(vals)) {
-                    builder.AppendValue(std::make_shared<StringEncodedArrayParam>(param->GetKey(),
-                        vals));
-                }
-            }, std::placeholders::_1)},
-    };
-    auto iter = paramFuncs.begin();
-    for (auto param : params) {
-        if (param == nullptr) {
-            continue;
-        }
-        iter = paramFuncs.find(param->GetDataCodedType());
-        if (iter == paramFuncs.end()) {
-            continue;
-        }
-        iter->second(param);
     }
 }
 
@@ -329,17 +218,23 @@ int16_t SysEvent::GetTz() const
 std::string SysEvent::GetEventValue(const std::string& key)
 {
     std::string dest;
-    rawDataBuilder_.ParseValueByKey(key, dest);
+    if (builder_ == nullptr) {
+        return dest;
+    }
+    builder_->ParseValueByKey(key, dest);
     return dest;
 }
 
 int64_t SysEvent::GetEventIntValue(const std::string& key)
 {
     int64_t intDest = 0; // default value is 0
-    auto ret = rawDataBuilder_.ParseValueByKey(key, intDest);
+    if (builder_ == nullptr) {
+        return intDest;
+    }
+    auto ret = builder_->ParseValueByKey(key, intDest);
     if (!ret) {
         uint64_t uIntDest = 0; // default value is 0
-        rawDataBuilder_.ParseValueByKey(key, uIntDest);
+        builder_->ParseValueByKey(key, uIntDest);
         return static_cast<int64_t>(uIntDest);
     }
     return intDest;
@@ -352,7 +247,10 @@ int SysEvent::GetEventType()
 
 std::string SysEvent::AsJsonStr()
 {
-    auto rawData = rawDataBuilder_.Build(); // update
+    if (builder_ == nullptr) {
+        return "";
+    }
+    auto rawData = builder_->Build(); // update
     if (rawData == nullptr) {
         return "";
     }
@@ -374,7 +272,10 @@ std::string SysEvent::AsJsonStr()
 
 uint8_t* SysEvent::AsRawData()
 {
-    auto rawData = rawDataBuilder_.Build();
+    if (builder_ == nullptr) {
+        return nullptr;
+    }
+    auto rawData = builder_->Build();
     if (rawData != nullptr) {
         rawData_ = rawData;
         return rawData_->GetData();
@@ -395,14 +296,20 @@ std::string SysEvent::UnescapeJsonStringValue(const std::string& src)
 SysEventCreator::SysEventCreator(const std::string& domain, const std::string& eventName,
     SysEventCreator::EventType type)
 {
-    rawDataBuilder_.AppendDomain(domain).AppendName(eventName).AppendType(static_cast<int>(type)).
-        AppendTimeStamp(TimeUtil::GetMilliseconds()).AppendTimeZone(TimeUtil::GetTimeZone()).
-        AppendPid(getpid()).AppendTid(gettid()).AppendUid(getuid());
+    builder_ = std::make_shared<EventRaw::RawDataBuilder>();
+    if (builder_ != nullptr) {
+        builder_->AppendDomain(domain).AppendName(eventName).AppendType(static_cast<int>(type)).
+            AppendTimeStamp(TimeUtil::GetMilliseconds()).AppendTimeZone(TimeUtil::GetTimeZone()).
+            AppendPid(getpid()).AppendTid(gettid()).AppendUid(getuid());
+    }
 }
 
 std::shared_ptr<EventRaw::RawData> SysEventCreator::GetRawData()
 {
-    return rawDataBuilder_.Build();
+    if (builder_ == nullptr) {
+        return nullptr;
+    }
+    return builder_->Build();
 }
 
 std::string SysEventCreator::EscapeJsonStringValue(const std::string& src)
