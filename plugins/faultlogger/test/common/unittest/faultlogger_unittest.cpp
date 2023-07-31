@@ -35,10 +35,12 @@
 #include "reporter.h"
 #include "zip_helper.h"
 #undef private
+#include "faultevent_listener.h"
 #include "faultlog_info_ohos.h"
 #include "faultlogger_adapter.h"
 #include "faultlogger_service_ohos.h"
 #include "file_util.h"
+#include "hisysevent_manager.h"
 #include "hiview_global.h"
 #include "hiview_platform.h"
 #include "log_analyzer.h"
@@ -49,6 +51,7 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
+static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
 class FaultloggerUnittest : public testing::Test {
 public:
     void SetUp()
@@ -75,7 +78,13 @@ static void InitHiviewContext()
     bool result = platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
     printf("InitHiviewContext result:%d\n", result);
 }
-
+static void StartHisyseventListen(std::string domain, std::string eventName)
+{
+    faultEventListener = std::make_shared<FaultEventListener>();
+    ListenerRule tagRule(domain, eventName, RuleType::WHOLE_WORD);
+    std::vector<ListenerRule> sysRules = {tagRule};
+    HiSysEventManager::AddListener(faultEventListener, sysRules);
+}
 /**
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
@@ -250,6 +259,7 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
 HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     FaultLogInfo info;
     info.time = std::time(nullptr); // 3 : index of timestamp
@@ -266,22 +276,9 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     faultLogDb->SaveFaultLogInfo(info);
-
-    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
-            printf("sucess!\r\n");
-        } else {
-            FAIL();
-        }
-    } else {
-        FAIL();
-    }
+    sleep(1);
+    std::vector<std::string> keyWords = { std::to_string(info.time) };
+    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
 }
 
 /**
@@ -329,7 +326,7 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
-
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     FaultLogInfo info;
     info.time = std::time(nullptr); // 3 : index of timestamp
     info.pid = getpid();
@@ -347,22 +344,9 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
     faultLogManager->SaveFaultInfoToRawDb(info);
-
-    std::string cmd = "hisysevent -l | grep " + std::to_string(info.time);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        if (str.find(std::to_string(info.time).c_str()) != std::string::npos) {
-            printf("sucess!\r\n");
-        } else {
-            FAIL();
-        }
-    } else {
-        FAIL();
-    }
+    sleep(1);
+    std::vector<std::string> keyWords = { std::to_string(info.time) };
+    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
 }
 
 /**
@@ -591,6 +575,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
 HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = time(nullptr);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
@@ -604,17 +589,8 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     ASSERT_EQ(plugin->GetFaultLogInfo(fileName)->module, "BootScanUnittest");
     // check event database
-    std::string cmd = "hisysevent -l | grep " + std::to_string(now);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        ASSERT_NE(str.find(std::to_string(now).c_str()), std::string::npos);
-    } else {
-        FAIL();
-    }
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
 }
 
 /**
@@ -625,6 +601,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
 HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH_NO_LOG");
     time_t now = time(nullptr);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
@@ -635,17 +612,9 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     plugin->StartBootScan();
     ASSERT_FALSE(FileUtil::FileExists(fileName));
     // check event database
-    std::string cmd = "hisysevent -l | grep CPP_CRASH_NO_LOG | grep " + std::to_string(now);
-    FILE* fp = popen(cmd.c_str(), "r");
-    char buffer[1024] = {0};
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        std::string str(buffer);
-        ASSERT_NE(str.find("BootScanUnittest"), std::string::npos);
-    } else {
-        FAIL();
-    }
+    sleep(1);
+    std::vector<std::string> keyWords = { "BootScanUnittest" };
+    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
 }
 
 /**

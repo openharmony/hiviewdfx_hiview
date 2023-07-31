@@ -47,6 +47,7 @@ ohos_unittest("FaultloggerUnittest") {
     "$hiview_faultlogger/service/sanitizer_collector/sanitizerd_collector.cpp",
     "$hiview_faultlogger/service/sanitizer_collector/sanitizerd_monitor.cpp",
     "$hiview_faultlogger/service/sanitizer_collector/zip_helper.cpp",
+    "common/faultevent_listener.cpp",
     "common/unittest/faultlogger_unittest.cpp",
   ]
 
@@ -65,6 +66,8 @@ ohos_unittest("FaultloggerUnittest") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hisysevent:libhisyseventmanager",
     "init:libbegetutil",
     "ipc:ipc_single",
   ]
