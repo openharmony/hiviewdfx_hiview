@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class GpuCollectorImpl: public GpuCollector {
+class GpuCollectorImpl : public GpuCollector {
 public:
     GpuCollectorImpl() = default;
     virtual ~GpuCollectorImpl() = default;

@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class NetworkCollectorImpl: public NetworkCollector {
+class NetworkCollectorImpl : public NetworkCollector {
 public:
     NetworkCollectorImpl() = default;
     virtual ~NetworkCollectorImpl() = default;

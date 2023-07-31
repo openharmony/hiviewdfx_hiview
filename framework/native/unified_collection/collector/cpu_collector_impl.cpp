@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class CpuCollectorImpl: public CpuCollector {
+class CpuCollectorImpl : public CpuCollector {
 public:
     CpuCollectorImpl() = default;
     virtual ~CpuCollectorImpl() = default;

@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
-class TraceCollectorImpl: public TraceCollector {
+class TraceCollectorImpl : public TraceCollector {
 public:
     TraceCollectorImpl() = default;
     virtual ~TraceCollectorImpl() = default;

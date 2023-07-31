@@ -22,7 +22,7 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 
-class CpuCollectorTest: public testing::Test {
+class CpuCollectorTest : public testing::Test {
 public:
     void SetUp() {};
     void TearDown() {};
