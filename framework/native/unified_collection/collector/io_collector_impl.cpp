@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class IoCollectorImpl: public IoCollector {
+class IoCollectorImpl : public IoCollector {
 public:
     IoCollectorImpl() = default;
     virtual ~IoCollectorImpl() = default;

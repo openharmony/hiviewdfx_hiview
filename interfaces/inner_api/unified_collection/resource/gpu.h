@@ -18,7 +18,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct GpuFreq{
+struct GpuFreq {
     int32_t curFeq;
     int32_t minFeq;
     int32_t maxFeq;

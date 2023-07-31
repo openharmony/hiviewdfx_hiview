@@ -17,7 +17,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
-class MemoryCollectorImpl: public MemoryCollector {
+class MemoryCollectorImpl : public MemoryCollector {
 public:
     MemoryCollectorImpl() = default;
     virtual ~MemoryCollectorImpl() = default;
