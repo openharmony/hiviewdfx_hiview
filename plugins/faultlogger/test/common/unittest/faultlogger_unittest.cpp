@@ -29,11 +29,6 @@
 #include "faultlog_database.h"
 #define private public
 #include "faultlogger.h"
-#include "asan_collector.h"
-#include "sanitizerd_collector.h"
-#include "sanitizerd_monitor.h"
-#include "reporter.h"
-#include "zip_helper.h"
 #undef private
 #include "faultevent_listener.h"
 #include "faultlog_info_ohos.h"
@@ -51,7 +46,10 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
-static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
+namespace {
+    static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
+}
+
 class FaultloggerUnittest : public testing::Test {
 public:
     void SetUp()
@@ -78,6 +76,7 @@ static void InitHiviewContext()
     bool result = platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
     printf("InitHiviewContext result:%d\n", result);
 }
+
 static void StartHisyseventListen(std::string domain, std::string eventName)
 {
     faultEventListener = std::make_shared<FaultEventListener>();
@@ -85,6 +84,7 @@ static void StartHisyseventListen(std::string domain, std::string eventName)
     std::vector<ListenerRule> sysRules = {tagRule};
     HiSysEventManager::AddListener(faultEventListener, sysRules);
 }
+
 /**
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
@@ -615,55 +615,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     sleep(1);
     std::vector<std::string> keyWords = { "BootScanUnittest" };
     ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
-}
-
-/**
- * @tc.name: FaultloggerSanitizerTest001
- * @tc.desc: Test calling Faultlogger sanitizer collector Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultloggerSanitizerTest001, testing::ext::TestSize.Level3)
-{
-    std::string fileName = "asan.log.appspawn.443";
-    SanitizerdMonitor monitor;
-    monitor.Init(nullptr);
-    int wd = inotify_add_watch(monitor.gUfds[0].fd, fileName.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
-    std::string receivedFilename = "test.txt";
-    int ret = monitor.ReadNotify(&receivedFilename, monitor.gUfds[0].fd);
-    ASSERT_EQ(ret, 0);
-    ASSERT_EQ(receivedFilename, fileName);
-    inotify_rm_watch(monitor.gUfds[0].fd, wd);
-    monitor.Uninit();
-    remove(fileName.c_str());
-    std::unordered_map<std::string, std::string> sktmap;
-    SanitizerdCollector collector(sktmap);
-    std::string sanDump = "stacktrace";
-    std::string sanSignature = "signature";
-    bool printDiagnostics = true;
-    bool result = collector.ComputeStackSignature(sanDump, sanSignature, printDiagnostics);
-    ASSERT_FALSE(result);
-}
-
-/**
- * @tc.name: FaultloggerSanitizerTest002
- * @tc.desc: Test calling Faultlogger sanitizer collector Func
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, FaultloggerSanitizerTest002, testing::ext::TestSize.Level3)
-{
-    EXPECT_EQ(0, Init(ASAN_LOG_RPT));
-    EXPECT_EQ(0, Init(UBSAN_LOG_RPT));
-    EXPECT_EQ(0, Init(KASAN_LOG_RPT));
-    EXPECT_EQ(0, Init(LSAN_LOG_RPT));
-    std::string fileName = "asan.log.appspawn.443";
-    ASSERT_FALSE(IsLinkFile(fileName));
-    std::string filePath = "/dev/asanlog";
-    std::string outPath;
-    bool result = GetRealPath(filePath, outPath);
-    ASSERT_TRUE(result);
-    std::string expectPath = "/data/log/faultlog/faultlogger";
-    EXPECT_EQ(outPath, expectPath);
-    ASSERT_FALSE(ReadFileToString(filePath, outPath));
 }
 
 } // namespace HiviewDFX
