@@ -294,6 +294,10 @@
         "OHOS::HiviewDFX::TimeUtil::TimestampFormatToDate(long long, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::TimeUtil::GetMilliseconds()";
         "OHOS::HiviewDFX::Parameter::GetString(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::Parameter::GetInteger(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, long)";
+        "OHOS::HiviewDFX::Parameter::GetBoolean(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, bool)";
+        "OHOS::HiviewDFX::Parameter::SetProperty(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::EventLoop::RemoveEvent(unsigned long)";
     };
   local:
     *;
