@@ -369,6 +369,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeRuleCluster_002, TestSize.Level3)
     auto freezeRuleCluster = std::make_unique<FreezeRuleCluster>();
     ASSERT_EQ(freezeRuleCluster->Init(), true);
     ASSERT_EQ(freezeRuleCluster->CheckFileSize("path"), false);
+    ASSERT_EQ(freezeRuleCluster->CheckFileSize("/system/etc/hiview/freeze_rules.xml"), true);
 }
 
 /**
@@ -380,6 +381,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeRuleCluster_003, TestSize.Level3)
     auto freezeRuleCluster = std::make_unique<FreezeRuleCluster>();
     ASSERT_EQ(freezeRuleCluster->Init(), true);
     ASSERT_EQ(freezeRuleCluster->ParseRuleFile("path"), false);
+    ASSERT_EQ(freezeRuleCluster->ParseRuleFile("/system/etc/hiview/freeze_rules.xml"), true);
 }
 
 /**
@@ -515,6 +517,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_001, TestSize.Level3)
 HWTEST_F(FreezeDetectorUnittest, FreezeCommon_002, TestSize.Level3)
 {
     auto freezeCommon = std::make_unique<FreezeCommon>();
+    ASSERT_EQ(freezeCommon->IsFreezeEvent("KERNEL_VENDOR", "SCREEN_ON"), false);
     freezeCommon->Init();
     ASSERT_EQ(freezeCommon->IsFreezeEvent("KERNEL_VENDOR", "SCREEN_ON"), true);
 }
@@ -526,6 +529,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_002, TestSize.Level3)
 HWTEST_F(FreezeDetectorUnittest, FreezeCommon_003, TestSize.Level3)
 {
     auto freezeCommon = std::make_unique<FreezeCommon>();
+    ASSERT_EQ(freezeCommon->IsApplicationEvent("KERNEL_VENDOR", "SCREEN_ON"), false);
     freezeCommon->Init();
     ASSERT_EQ(freezeCommon->IsApplicationEvent("KERNEL_VENDOR", "SCREEN_ON"), false);
 }
@@ -537,6 +541,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_003, TestSize.Level3)
 HWTEST_F(FreezeDetectorUnittest, FreezeCommon_004, TestSize.Level3)
 {
     auto freezeCommon = std::make_unique<FreezeCommon>();
+    ASSERT_EQ(freezeCommon->IsSystemEvent("KERNEL_VENDOR", "SCREEN_ON"), false);
     freezeCommon->Init();
     ASSERT_EQ(freezeCommon->IsSystemEvent("KERNEL_VENDOR", "SCREEN_ON"), true);
 }
@@ -552,6 +557,8 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_005, TestSize.Level3)
     FreezeResult result;
     result.SetId(1);
     ASSERT_EQ(freezeCommon->IsSystemResult(result), true);
+    result.SetId(0);
+    ASSERT_EQ(freezeCommon->IsSystemResult(result), false);
 }
 
 /**
@@ -565,6 +572,8 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_006, TestSize.Level3)
     FreezeResult result;
     result.SetId(0);
     ASSERT_EQ(freezeCommon->IsApplicationResult(result), true);
+    result.SetId(1);
+    ASSERT_EQ(freezeCommon->IsApplicationResult(result), false);
 }
 
 /**
@@ -574,6 +583,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_006, TestSize.Level3)
 HWTEST_F(FreezeDetectorUnittest, FreezeCommon_007, TestSize.Level3)
 {
     auto freezeCommon = std::make_unique<FreezeCommon>();
+    freezeCommon->GetPrincipalStringIds();
     freezeCommon->Init();
     freezeCommon->GetPrincipalStringIds();
 }
@@ -616,15 +626,21 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_002, TestSize.Level3)
  */
 HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
 {
-    auto wp1 = std::make_unique<WatchPoint>();
-    WatchPoint point = OHOS::HiviewDFX::WatchPoint::Builder()
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("KERNEL_VENDOR")
         .InitStringId("SCREEN_ON")
-        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .InitTimestamp(1687859103947)
         .Build();
-    auto wp2 = std::make_unique<WatchPoint>(point);
-    ASSERT_EQ(wp1 == wp2, false);
-    ASSERT_EQ(wp1 < wp2, true);
+    auto wp = std::make_unique<WatchPoint>(watchPoint);
+
+    WatchPoint watchPoint1 = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("SCREEN_ON")
+        .InitTimestamp(1687859103950)
+        .Build();
+    auto wp1 = std::make_unique<WatchPoint>(watchPoint1);
+    ASSERT_EQ(wp < wp1, true);
+    ASSERT_EQ(wp == wp1, false);
 }
 
 /**
