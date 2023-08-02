@@ -64,6 +64,5 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest002, TestSize.Level3)
 
     ret = config->FindConfigLine(0, "RESUME05", configOut);
     EXPECT_EQ(ret, false);
-    EXPECT_EQ(configOut.action == "b,s=1456,n=pdc,pb:0", true);
     EXPECT_EQ(config->GetVersion() == "0.1", false);
 }

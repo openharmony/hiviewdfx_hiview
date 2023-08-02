@@ -74,7 +74,7 @@ bool GetFreezeDectorTestFile(const std::string& eventName,
     while (count < 10) { // 10: 最大等待10s
         sleep(1);
         std::vector<std::string> files;
-        FileUtil::GetDirFiles("/data/log/faultlog/faultlogger/", files);
+        FileUtil::GetDirFiles("/data/log/faultlog/", files);
         ++count;
         for (auto& i : files) {
             if (i.find(packageName) == std::string::npos) {
