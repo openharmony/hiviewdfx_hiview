@@ -59,4 +59,7 @@ HWTEST_F(PluginFactoryTest, PluginFactoryRegisterTest002, TestSize.Level3)
     ASSERT_NE(plugin, nullptr);
     auto examplePlugin = std::static_pointer_cast<PluginExample>(plugin->getPluginObject());
     ASSERT_EQ(examplePlugin->isConstructed_, true);
+    ASSERT_TRUE(PluginFactory::GetPlugin("PluginExample2") != nullptr);
+    PluginFactory::UnregisterPlugin("PluginExample2");
+    ASSERT_TRUE(PluginFactory::GetPlugin("PluginExample2") == nullptr);
 }

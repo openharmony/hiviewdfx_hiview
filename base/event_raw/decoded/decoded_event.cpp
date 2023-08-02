@@ -58,8 +58,8 @@ DecodedEvent::DecodedEvent(uint8_t* src)
         return;
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
-    HiLog::Info(LABEL, "Decoded blockSize is %{public}zu.", blockSize);
     if (blockSize < GetValidDataMinimumByteCount() || blockSize > MAX_BLOCK_SIZE) {
+        HiLog::Error(LABEL, "size of raw data is %{public}zu, which is invalid.", blockSize);
         return;
     }
     rawData_ = new(std::nothrow) uint8_t[blockSize];

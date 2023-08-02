@@ -40,6 +40,8 @@ constexpr int LEFT_BRACKET_CHAR = static_cast<int>('[');
 constexpr int RIGHT_BRACKET_CHAR = static_cast<int>(']');
 constexpr int MINUS_CHAR = static_cast<int>('-');
 constexpr int ESCAPE_CHAR = static_cast<int>('\\');
+constexpr int POSITIVE_CHAR = static_cast<int>('+');
+constexpr int SICENTIFIC_NOTAITION_CHAR = static_cast<int>('e');
 
 template<typename T>
 static void TransStrToType(const std::string& str, T& val)
@@ -126,6 +128,8 @@ void RawDataBuilderJsonParser::InitDoubleParseStatus()
         }
         statusTabs_[STATUS_DOUBLE_PARSE][i] = STATUS_NONE;
     }
+    statusTabs_[STATUS_DOUBLE_PARSE][POSITIVE_CHAR] = STATUS_DOUBLE_PARSE;
+    statusTabs_[STATUS_DOUBLE_PARSE][SICENTIFIC_NOTAITION_CHAR] = STATUS_DOUBLE_PARSE;
     statusTabs_[STATUS_DOUBLE_PARSE][COMMA_CHAR] = STATUS_RUN;
 }
 
@@ -176,6 +180,8 @@ void RawDataBuilderJsonParser::InitDoubleItemParseStatus()
         }
         statusTabs_[STATUS_DOUBLE_ITEM_PARSE][i] = STATUS_NONE;
     }
+    statusTabs_[STATUS_DOUBLE_ITEM_PARSE][POSITIVE_CHAR] = STATUS_DOUBLE_ITEM_PARSE;
+    statusTabs_[STATUS_DOUBLE_ITEM_PARSE][SICENTIFIC_NOTAITION_CHAR] = STATUS_DOUBLE_ITEM_PARSE;
     statusTabs_[STATUS_DOUBLE_ITEM_PARSE][COMMA_CHAR] = STATUS_ARRAY_PARSE;
     statusTabs_[STATUS_DOUBLE_ITEM_PARSE][RIGHT_BRACKET_CHAR] = STATUS_RUN;
 }
