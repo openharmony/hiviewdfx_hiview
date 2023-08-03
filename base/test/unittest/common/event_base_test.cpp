@@ -127,7 +127,8 @@ HWTEST_F(EventBaseTest, EventListenerTest001, testing::ext::TestSize.Level0)
     TestEventListener listener;
     EventListener& listenerRef = listener;
     Event event("");
-    listenerRef.AddListenerInfo(0); // 0 is random type.
+    std::map<std::string, DomainRule> domainRulesMap;
+    listenerRef.AddListenerInfo(0, domainRulesMap); // 0 is random type.
     ASSERT_TRUE(!listenerRef.OnOrderedEvent(event));
     ASSERT_TRUE(listenerRef.GetListenerName() == "TestEventListener");
 }
