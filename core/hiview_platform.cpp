@@ -888,7 +888,7 @@ void HiviewPlatform::RequestLoadBundle(const std::string& bundleName)
 void HiviewPlatform::RequestUnloadBundle(const std::string& bundleName, uint64_t delay)
 {
     auto task = [this, bundleName]() {
-        HIVIEW_LOGI("start to unload the bundle %{pulic}s.", bundleName.c_str());
+        HIVIEW_LOGI("start to unload the bundle %{public}s.", bundleName.c_str());
         if (pluginBundleInfos_.find(bundleName) != pluginBundleInfos_.end()) {
             pluginBundleInfos_.erase(bundleName);
         }
