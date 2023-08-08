@@ -326,7 +326,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest008, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest009
- * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
  *           1. fault log should can be read;
  *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
  * @tc.type: FUNC
@@ -338,9 +338,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest009, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest004/last_kmsg";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest004/trace.txt";
 
@@ -354,17 +354,17 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest009, TestSize.Level1)
      */
     ExtractRule extractRule;
     ComposeRule composeRule;
-    std::string extractConfig = TEST_CONFIG + "/" + TEST_EXTRACT_CONFIG;
+    std::string extractConfig = TEST_CONFIG + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("PANIC", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
-    std::string composeConfig = TEST_CONFIG + "/" + TEST_COMPOSE_CONFIG;
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
+    std::string composeConfig = TEST_CONFIG + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "PANIC", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
-    ASSERT_EQ(!extractRule_.empty(), true);
-    ASSERT_EQ(!segStatusCfg_.empty(), true);
-    ASSERT_EQ(!composeRule_.empty(), true);
+    ASSERT_EQ(!extract.empty(), true);
+    ASSERT_EQ(!segStatusCfg.empty(), true);
+    ASSERT_EQ(!compose.empty(), true);
 }
 
 /**
@@ -381,9 +381,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest010, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
         "/SmartParserTest006/rustpanic-rustpanic_maker-0-20230419222113";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest006/trace.txt";
@@ -400,15 +400,15 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest010, TestSize.Level1)
     ComposeRule composeRule;
     std::string extractConfig = TEST_CONFIG + "/" + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("RUST_PANIC", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
     std::string composeConfig = TEST_CONFIG + "/" + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "RUST_PANIC", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
-    ASSERT_EQ(!extractRule_.empty(), true);
-    ASSERT_EQ(!segStatusCfg_.empty(), true);
-    ASSERT_EQ(!composeRule_.empty(), true);
+    ASSERT_EQ(!extract.empty(), true);
+    ASSERT_EQ(!segStatusCfg.empty(), true);
+    ASSERT_EQ(!compose.empty(), true);
 }
 
 /**
@@ -425,9 +425,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest011, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
         "/SmartParserTest007/rustpanic-rustpanic_maker-0-20230419222113";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest007/trace.txt";
@@ -444,15 +444,15 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest011, TestSize.Level1)
     ComposeRule composeRule;
     std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest007/" + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("RUST_PANIC", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
     std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest007/" + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "RUST_PANIC", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
     std::map<std::string, std::string> eventInfoMap;
-    for (const auto& composeRules : composeRule_) {
-        FeatureAnalysis feature(extractRule_[composeRules.first], composeRules.second, "RUST_PANIC");
+    for (const auto& composeRules : compose) {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "RUST_PANIC");
         if (feature.AnalysisLog()) {
             auto result = feature.GetReasult();
             for (const auto& one : result) {
@@ -476,9 +476,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest012, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest008/last_kmsg";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest008/trace.txt";
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
@@ -493,15 +493,15 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest012, TestSize.Level1)
     ComposeRule composeRule;
     std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest008/" + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("PANIC", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
     std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest008/" + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "PANIC", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
     std::map<std::string, std::string> eventInfoMap;
-    for (const auto& composeRules : composeRule_) {
-        FeatureAnalysis feature(extractRule_[composeRules.first], composeRules.second, "PANIC");
+    for (const auto& composeRules : compose) {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "PANIC");
         if (feature.AnalysisLog()) {
             auto result = feature.GetReasult();
             for (const auto& one : result) {
@@ -513,7 +513,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest012, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest013
- * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
  *           1. fault log should can be read;
  *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
  * @tc.type: FUNC
@@ -525,9 +525,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest013, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
         "/SmartParserTest009/rustpanic-rustpanic_maker-0-20230419222113";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest009/trace.txt";
@@ -543,15 +543,15 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest013, TestSize.Level1)
     ComposeRule composeRule;
     std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest009/" + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("RUST_PANIC", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
     std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest009/" + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "RUST_PANIC", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
     std::map<std::string, std::string> eventInfoMap;
-    for (const auto& composeRules : composeRule_) {
-        FeatureAnalysis feature(extractRule_[composeRules.first], composeRules.second, "RUST_PANIC");
+    for (const auto& composeRules : compose) {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "RUST_PANIC");
         if (feature.AnalysisLog()) {
             auto result = feature.GetReasult();
             for (const auto& one : result) {
@@ -563,7 +563,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest013, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest014
- * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process APP_FREEZE fault, this case match FeatureAnalysisForRebootsys.Json.
  *           1. fault log should can be read;
  *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
  * @tc.type: FUNC
@@ -575,9 +575,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest014, TestSize.Level1)
     /**
      * @tc.steps: step1. Set taskSheet fault log path and eventid.
      */
-    std::map<std::string, FeatureSet> extractRule_;
-    std::list<std::pair<std::string, std::map<std::string, std::string>>> composeRule_;
-    std::map<std::string, std::vector<std::string>> segStatusCfg_;
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
         "/SmartParserTest010/appfreeze-com.example.jsinject-20010039-19700326211815";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest010/trace.txt";
@@ -593,20 +593,83 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest014, TestSize.Level1)
     ComposeRule composeRule;
     std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest010/" + TEST_EXTRACT_CONFIG;
     extractRule.ParseExtractRule("APP_FREEZE", extractConfig, faultFile);
-    extractRule_ = extractRule.GetExtractRule();
-    segStatusCfg_ = extractRule.GetSegStatusCfg();
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
     std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest010/" + TEST_COMPOSE_CONFIG;
     composeRule.ParseComposeRule(composeConfig, "APP_FREEZE", extractRule.GetFeatureId());
-    composeRule_ = composeRule.GetComposeRule();
+    compose = composeRule.GetComposeRule();
 
     std::map<std::string, std::string> eventInfoMap;
-    for (const auto& composeRules : composeRule_) {
-        FeatureAnalysis feature(extractRule_[composeRules.first], composeRules.second, "APP_FREEZE");
+    for (const auto& composeRules : compose) {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "APP_FREEZE");
         if (feature.AnalysisLog()) {
             auto result = feature.GetReasult();
             for (const auto& one : result) {
                 eventInfoMap.emplace(one.first, one.second);
             }
+        }
+    }
+}
+
+/**
+ * @tc.name: SmartParserTest015
+ * @tc.desc: process APP_FREEZE fault, this case match FeatureAnalysisForRebootsys.Json.
+ *           1. fault log should can be read;
+ *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest015, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+                            "/SmartParserTest011/appfreeze-com.example.jsinject-20010039-19700326211815";
+    std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest011/trace.txt";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+    ASSERT_EQ(FileUtil::FileExists(traceFile), true);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    ExtractRule extractRule;
+    ComposeRule composeRule;
+    std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest011/" + TEST_EXTRACT_CONFIG;
+    extractRule.ParseExtractRule("APP_FREEZE", extractConfig, faultFile);
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
+    std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest011/" + TEST_COMPOSE_CONFIG;
+    composeRule.ParseComposeRule(composeConfig, "APP_FREEZE", extractRule.GetFeatureId());
+    compose = composeRule.GetComposeRule();
+
+    std::map<std::string, std::string> eventInfoMap;
+    for (const auto &composeRules : compose)
+    {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "APP_FREEZE");
+        if (feature.AnalysisLog())
+        {
+            auto result = feature.GetReasult();
+            for (const auto &one : result)
+            {
+                eventInfoMap.emplace(one.first, one.second);
+            }
+            std::string writeLine(2049, 't');
+            stringstream buffer(writeLine);
+            feature.RawInfoPosition(buffer);
+
+            stringstream bufferTwo(" test");
+            feature.RawInfoPosition(bufferTwo);
+
+            stringstream bufferThree("\t");
+            feature.RawInfoPosition(bufferThree);
+
+            bool segmentStart = true;
+            feature.CheckStartSegment(segmentStart);
         }
     }
 }

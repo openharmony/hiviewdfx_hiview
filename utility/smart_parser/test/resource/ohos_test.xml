@@ -47,6 +47,10 @@
             <option name="push" value="SmartParserTest010/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest010" src="res"/>
             <option name="push" value="SmartParserTest010/test_compose_rule.json -> /data/test/test_data/SmartParser/SmartParserTest010" src="res"/>
             <option name="push" value="SmartParserTest010/test_extract_rule.json -> /data/test/test_data/SmartParser/SmartParserTest010" src="res"/>
+            <option name="push" value="SmartParserTest011/appfreeze-com.example.jsinject-20010039-19700326211815 -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
+            <option name="push" value="SmartParserTest011/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
+            <option name="push" value="SmartParserTest011/test_compose_rule.json -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
+            <option name="push" value="SmartParserTest011/test_extract_rule.json -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
         </preparer>
     </target>
 </configuration>

@@ -1,5 +1,12 @@
 {
     "version": "1.0.0",
+    "segmentStatus":[
+        {"namespace":"segStatus", "matchKey":"tid=\\d+ (.*)", "desc":""},
+        {"namespace":"segWaitOther", "matchKey":"waiting to lock.*held by thread (\\d+)", "desc":" waiting on lock held by "},
+        {"namespace":"segWaitSelf", "matchKey":"- waiting on <(.*)>", "desc":" waiting on itself"},
+        {"namespace":"segIpcTrans", "matchKey":"os\\.(IpcProxy)\\.transact", "desc":" ipc transact:"},
+        {"namespace":"segIpcFull", "matchKey":"os\\.Ipc\\.(blockUntilThreadAvailable)", "desc":" ipc full:"}
+    ],
     "Rule1":{
         "DirOrFile":"/data/log/faultlog/faultlogger/",
         "Subcatalog":"appfreeze-.*-\\d+-\\d+",
