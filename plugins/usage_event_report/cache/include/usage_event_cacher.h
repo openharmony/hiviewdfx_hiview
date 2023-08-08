@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,12 +32,12 @@ public:
     ~UsageEventCacher() {}
 
     void GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events) const;
-    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
+    std::shared_ptr<LoggerEvent> GetSysUsageEvent(const std::string& table = SysUsageDbSpace::SYS_USAGE_TABLE) const;
     void DeletePluginStatsEventsFromDb() const;
     void SavePluginStatsEventsToDb(const std::vector<std::shared_ptr<LoggerEvent>>& events) const;
-    void DeleteSysUsageEventFromDb(const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
+    void DeleteSysUsageEventFromDb(const std::string& table = SysUsageDbSpace::SYS_USAGE_TABLE) const;
     void SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event,
-        const std::string& coll = SysUsageDbSpace::SYS_USAGE_COLL) const;
+        const std::string& table = SysUsageDbSpace::SYS_USAGE_TABLE) const;
 
 private:
     std::unique_ptr<EventDbHelper> dbHelper_;

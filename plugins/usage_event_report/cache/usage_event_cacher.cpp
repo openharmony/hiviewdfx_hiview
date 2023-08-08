@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,19 +28,19 @@ UsageEventCacher::UsageEventCacher(const std::string& workPath) : dbHelper_(null
 void UsageEventCacher::GetPluginStatsEvents(std::vector<std::shared_ptr<LoggerEvent>>& events) const
 {
     if (dbHelper_->QueryPluginStatsEvent(events) < 0) {
-        HIVIEW_LOGE("failed to query plugin stats events from db");
+        HIVIEW_LOGI("failed to query plugin stats events from db");
         return;
     }
 }
 
-std::shared_ptr<LoggerEvent> UsageEventCacher::GetSysUsageEvent(const std::string& coll) const
+std::shared_ptr<LoggerEvent> UsageEventCacher::GetSysUsageEvent(const std::string& table) const
 {
-    std::vector<std::shared_ptr<LoggerEvent>> events;
-    if (dbHelper_->QuerySysUsageEvent(events, coll) < 0) {
-        HIVIEW_LOGE("failed to query sys usage event from db");
+    std::shared_ptr<LoggerEvent> event = nullptr;
+    if (dbHelper_->QuerySysUsageEvent(event, table) < 0) {
+        HIVIEW_LOGI("failed to query sys usage event from db");
         return nullptr;
     }
-    return events.empty() ? nullptr : events[0];
+    return event;
 }
 
 void UsageEventCacher::DeletePluginStatsEventsFromDb() const
@@ -51,11 +51,11 @@ void UsageEventCacher::DeletePluginStatsEventsFromDb() const
     }
 }
 
-void UsageEventCacher::DeleteSysUsageEventFromDb(const std::string& coll) const
+void UsageEventCacher::DeleteSysUsageEventFromDb(const std::string& table) const
 {
-    std::vector<std::shared_ptr<LoggerEvent>> events;
-    if (dbHelper_->QuerySysUsageEvent(events, coll) >= 0) {
-        dbHelper_->DeleteSysUsageEvent(coll);
+    std::shared_ptr<LoggerEvent> event = nullptr;
+    if (dbHelper_->QuerySysUsageEvent(event, table) >= 0) {
+        dbHelper_->DeleteSysUsageEvent(table);
     }
 }
 
@@ -69,12 +69,12 @@ void UsageEventCacher::SavePluginStatsEventsToDb(const std::vector<std::shared_p
     }
 }
 
-void UsageEventCacher::SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event, const std::string& coll) const
+void UsageEventCacher::SaveSysUsageEventToDb(const std::shared_ptr<LoggerEvent>& event, const std::string& table) const
 {
     if (event == nullptr) {
         return;
     }
-    if (dbHelper_->InsertSysUsageEvent(event, coll) < 0) {
+    if (dbHelper_->InsertSysUsageEvent(event, table) < 0) {
         HIVIEW_LOGE("failed to save sys usage event to db");
     }
 }

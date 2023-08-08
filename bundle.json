@@ -55,8 +55,6 @@
                 "hitrace"
             ],
             "third_party": [
-                "ejdb",
-                "iowow",
                 "jsoncpp",
                 "libxml2",
                 "sqlite",

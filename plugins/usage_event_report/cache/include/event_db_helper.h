@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,7 @@
 #include <string>
 
 #include "logger_event.h"
-#include "store_manager.h"
+#include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -29,27 +29,31 @@ class EventDbHelper {
 public:
     EventDbHelper(const std::string workPath);
     ~EventDbHelper();
-    int InsertPluginStatsEvent(const std::shared_ptr<LoggerEvent>& event);
-    int InsertSysUsageEvent(const std::shared_ptr<LoggerEvent>& event, const std::string& coll);
+    int InsertPluginStatsEvent(std::shared_ptr<LoggerEvent> event);
+    int InsertSysUsageEvent(std::shared_ptr<LoggerEvent> event, const std::string& table);
     int QueryPluginStatsEvent(std::vector<std::shared_ptr<LoggerEvent>>& events, const std::string& pluginName = "");
-    int QuerySysUsageEvent(std::vector<std::shared_ptr<LoggerEvent>>& events, const std::string& coll);
+    int QuerySysUsageEvent(std::shared_ptr<LoggerEvent>& events, const std::string& table);
     int DeletePluginStatsEvent();
-    int DeleteSysUsageEvent(const std::string& coll);
+    int DeleteSysUsageEvent(const std::string& table);
 
 private:
-    void InitDbPath();
-    void InitDbStoreMgr();
-    std::shared_ptr<DocStore> GetDocStore();
-    int CloseDocStore();
-    int InsertDb(const std::string& jsonStr, const std::string& coll);
-    void BuildQuery(DataQuery& query, const std::map<std::string, std::string>& condMap = {});
-    int QueryDb(const DataQuery& query, std::vector<Entry>& entries, const std::string& coll);
-    int UpdateDb(int id, const std::string& value, const std::string& coll);
-    int DeleteDb(const DataQuery& query, const std::string& coll);
+    void InitDbStore();
+    int CreateTable(const std::string& table, const std::vector<std::pair<std::string, std::string>>& fields);
+    int CreatePluginStatsTable(const std::string& table);
+    int CreateSysUsageTable(const std::string& table);
+    int InsertPluginStatsTable(const std::string& pluginName, const std::string& eventStr);
+    int InsertSysUsageTable(const std::string& table, const std::string& eventStr);
+    int UpdatePluginStatsTable(const std::string& pluginName, const std::string& eventStr);
+    int UpdateSysUsageTable(const std::string& table, const std::string& eventStr);
+    int QueryPluginStatsTable(std::vector<std::string>& eventStrs, const std::string& pluginName);
+    int QuerySysUsageTable(std::string& eventStr, const std::string& table);
+    int QueryDb(std::vector<std::string>& eventStrs, const std::string& table,
+        const std::vector<std::pair<std::string, std::string>>& queryConds);
+    int DeleteTableData(const std::string& table);
 
 private:
     std::string dbPath_;
-    std::unique_ptr<StoreManager> storeMgr_;
+    std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

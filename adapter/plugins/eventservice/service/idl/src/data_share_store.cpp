@@ -25,6 +25,7 @@
 
 #include "data_share_store_callback.h"
 #include "file_util.h"
+#include "sql_util.h"
 
 using namespace OHOS::HiviewDFX::SubscribeStore;
 
@@ -33,31 +34,6 @@ namespace HiviewDFX {
 
 namespace {
 constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataShareStore"};
-
-std::string GenerateCreateSql(const std::string &table, std::vector<std::pair<std::string, std::string>> fields)
-{
-    std::string sql;
-    sql += "CREATE TABLE IF NOT EXISTS ";
-    sql += table;
-    sql += "(";
-    sql += "id INTEGER PRIMARY KEY AUTOINCREMENT";  // default field: id
-    for (auto field : fields) {
-        sql += ", ";
-        sql += field.first;
-        sql += " ";
-        sql += field.second;
-    }
-    sql += ")";
-    return sql;
-}
-
-std::string GenerateDropSql(const std::string &table)
-{
-    std::string sql;
-    sql += "DROP TABLE IF EXISTS ";
-    sql += table;
-    return sql;
-}
 }  // namespace
 
 int DataShareStoreCallback::OnCreate(NativeRdb::RdbStore &rdbStore)
@@ -66,7 +42,7 @@ int DataShareStoreCallback::OnCreate(NativeRdb::RdbStore &rdbStore)
         {EventTable::FIELD_BUNDLE_NAME, SQL_TEXT_TYPE},
         {EventTable::FIELD_SUBSCRIBETIME, SQL_BIGINT_TYPE},
         {EventTable::FIELD_EVENTLIST, SQL_TEXT_TYPE}};
-    std::string sql = GenerateCreateSql(EventTable::TABLE, fields);
+    std::string sql = SqlUtil::GenerateCreateSql(EventTable::TABLE, fields);
     if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
         HiLog::Error(LABEL, "failed to create events table, ret=%{public}d", ret);
         return ret;
@@ -98,7 +74,7 @@ int DataShareStore::DropTable(const std::string &tableName)
         HiLog::Error(LABEL, "failed to drop table %{public}s, db is null", tableName.c_str());
         return DB_FAILED;
     }
-    std::string sql = GenerateDropSql(tableName);
+    std::string sql = SqlUtil::GenerateDropSql(tableName);
     if (int ret = dbStore->ExecuteSql(sql); ret != NativeRdb::E_OK) {
         HiLog::Error(LABEL, "failed to drop table %{public}s, ret=%{public}d", tableName.c_str(), ret);
         return DB_FAILED;

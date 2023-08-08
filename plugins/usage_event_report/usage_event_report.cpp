@@ -81,7 +81,7 @@ void UsageEventReport::Init()
         HIVIEW_LOGI("get plugin stats event=%{public}d", pluginStatEvents.size());
 
         // get last report time from db if any
-        if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL); event != nullptr) {
+        if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_TABLE); event != nullptr) {
             HIVIEW_LOGI("get cache sys usage event=%{public}s", event->ToJsonString().c_str());
             lastReportTime_ = event->GetValue(KEY_OF_START).GetUint64();
         } else {
