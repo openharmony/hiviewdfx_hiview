@@ -1,0 +1,72 @@
+{
+    "version": "1.0.0",
+    "segmentStatus":[
+        {"namespace":"segStatus", "matchKey":"tid=\\d+ (.*)", "desc":""},
+        {"namespace":"segWaitOther", "matchKey":"waiting to lock.*held by thread (\\d+)", "desc":" waiting on lock held by "},
+        {"namespace":"segWaitSelf", "matchKey":"- waiting on <(.*)>", "desc":" waiting on itself"},
+        {"namespace":"segIpcTrans", "matchKey":"os\\.(IpcProxy)\\.transact", "desc":" ipc transact:"},
+        {"namespace":"segIpcFull", "matchKey":"os\\.Ipc\\.(blockUntilThreadAvailable)", "desc":" ipc full:"}
+    ],
+    "Rule1":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_01",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_pid}@"}
+        ]
+    },
+    "Rule2":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_02",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_pid}@"}
+        ]
+    },
+    "Rule3":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_03",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)", "v_LayerOneCmd":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_LayerOneCmd}@"}
+        ]
+    },
+    "Rule4":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_04",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)", "v_LayerTwoCmd":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_LayerTwoCmd}@"}
+        ]
+    },
+    "Rule5":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_05",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"start @&@time:", "v_pid":"PID = (.*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_fiq", "matchKey":"PID = ", "v_pid":"PID = (.*)", "v_LayerTwoCmd":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_pid}@"}
+        ]
+    },
+    "Rule6":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"appfreeze-.*-\\d+-\\d+",
+        "featureId":"63_APP_FREEZE_06",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"@L@Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"start @&@time:", "v_pid":"PID = (.*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_fiq", "matchKey":"PID = ", "v_pid":"PID = (.*)", "v_LayerTwoCmd":"PID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*) @{BasicParam.v_pid}@"}
+        ]
+    }
+}

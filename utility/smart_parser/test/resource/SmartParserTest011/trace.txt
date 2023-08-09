@@ -1,0 +1,19 @@
+#00 pc 000000000006ca40 /system/lib64/libc.so(syscall+32)
+#01 pc 0000000000070cc4 /system/lib64/libc.so(__futex_wait_ex(void volatile*, bool, int, bool, timespec const*)+144)
+#02 pc 00000000000cf2cc /system/lib64/libc.so(pthread_cond_timedwait+124)
+#03 pc 0000000000071714 /system/lib64/libc++.so(std::__1::condition_variable::__do_timed_wait(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::time_point<std::__1::chrono::system_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l> > >)+112)
+#04 pc 000000000001a33c /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::NoneIoWaiter::WaitFor(std::__1::unique_lock<std::__1::mutex>&, long)+204)
+#05 pc 0000000000011db4 /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::WaitUntilLocked(std::__1::chrono::time_point<std::__1::chrono::steady_clock, std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l> > > const&, std::__1::unique_lock<std::__1::mutex>&)+96)
+#06 pc 0000000000011cf8 /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::GetEvent()+112)
+#07 pc 0000000000017728 /system/lib64/libeventhandler.z.so
+#08 pc 000000000001608c /system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventRunner::Run()+96)
+#09 pc 000000000009380c /system/lib64/libappkit_native.z.so(OHOS::AppExecFwk::MainThread::Start()+372)
+#10 pc 00000000000144b8 /system/bin/appspawn
+#11 pc 00000000000139ec /system/bin/appspawn
+#12 pc 000000000001fd90 /system/lib64/libbegetutil.z.so
+#13 pc 000000000001f980 /system/lib64/libbegetutil.z.so
+#14 pc 000000000001ccd0 /system/lib64/libbegetutil.z.so(ProcessEvent+108)
+#15 pc 000000000001c6cc /system/lib64/libbegetutil.z.so
+#16 pc 00000000000128b4 /system/bin/appspawn
+#17 pc 000000000001053c /system/bin/appspawn
+#18 pc 000000000006afa4 /system/lib64/libc.so(__libc_init+112)

@@ -49,13 +49,14 @@ public:
 
     // interface
     bool AnalysisLog();
+    void RawInfoPosition(std::stringstream& buffer);
+    bool CheckStartSegment(bool& segmentStart) const;
     int GetErrorCode() const { return errorCode_; };
     std::map<std::string, std::string> GetReasult() const { return eventInfo_; };
     std::vector<std::pair<std::string, LineFeature>> GetParamSeekRecord() {return paramSeekRecord_;};
 
 private:
     void Extract();
-    void RawInfoPosition(std::stringstream& buffer);
     bool IsSourceMatch(const std::string& line, const FeatureRule& rule) const;
     bool ParseElementForParam(const std::string& src, FeatureRule& rule);
     int GetSeekInfo(const std::string& param, std::string& value) const;
@@ -72,7 +73,6 @@ private:
         const std::vector<std::pair<std::string, LineFeature>>& lineFeatures, const std::string& regex) const;
     std::string ComposeParam(const std::string& param) const;
     std::vector<std::string> SplitParam(const std::string& param) const;
-    bool CheckStartSegment(bool& segmentStart) const;
     void ProcessReason(std::map<std::string, std::string>& info);
     bool IsMatchOrExpression(const std::string& line, const std::string& src) const;
     bool IsMatchAndExpression(const std::string& line, const std::string& src) const;
