@@ -27,7 +27,14 @@ ohos_unittest("UCollectionUtilityUnitTest") {
 
   configs = [ ":ucollection_utility_test_config" ]
 
-  sources = [ "cpu_collector_test.cpp" ]
+  sources = [
+    "cpu_collector_test.cpp",
+    "gpu_collector_test.cpp",
+    "io_collector_test.cpp",
+    "memory_collector_test.cpp",
+    "network_collector_test.cpp",
+    "trace_collector_test.cpp",
+  ]
 
   cflags_cc = []
 
