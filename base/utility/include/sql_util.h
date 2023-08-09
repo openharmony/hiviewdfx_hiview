@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,24 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HIVIEW_BASE_UTILITY_SQL_UTIL_H
+#define HIVIEW_BASE_UTILITY_SQL_UTIL_H
 
-#ifndef SYS_ADAPTER_DBSTORE_TEST_H
-#define SYS_ADAPTER_DBSTORE_TEST_H
-
-#include <gtest/gtest.h>
-#include "store_manager.h"
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace OHOS {
 namespace HiviewDFX {
-class SysAdapterDbstoreTest : public testing::Test {
-public:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
-    void SetUp();
-    void TearDown();
-    std::unique_ptr<StoreManager> storeMgr_;
-};
+namespace SqlUtil {
+std::string GenerateCreateSql(const std::string& table,
+    const std::vector<std::pair<std::string, std::string>>& fields);
+std::string GenerateDropSql(const std::string& table);
+} // namespace SqlUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-
-#endif
+#endif // HIVIEW_BASE_UTILITY_SQL_UTIL_H

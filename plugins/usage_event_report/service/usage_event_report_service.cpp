@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -91,7 +91,7 @@ void UsageEventReportService::UpdateCacheSysUsage(std::shared_ptr<LoggerEvent>& 
     const UsageEventCacher& cacher)
 {
     std::shared_ptr<LoggerEvent> nowUsage = std::make_unique<SysUsageEventFactory>()->Create();
-    auto lastUsage = cacher.GetSysUsageEvent(LAST_SYS_USAGE_COLL);
+    auto lastUsage = cacher.GetSysUsageEvent(LAST_SYS_USAGE_TABLE);
     for (auto key : SYS_USAGE_KEYS) {
         uint64_t nowUsageTime = nowUsage->GetValue(key).GetUint64();
         uint64_t lastUsageTime = lastUsage == nullptr ?  0 : lastUsage->GetValue(key).GetUint64();
@@ -106,7 +106,7 @@ void UsageEventReportService::UpdateLastSysUsage(std::shared_ptr<LoggerEvent>& n
     const UsageEventCacher& cacher)
 {
     nowUsage->Update(KEY_OF_START, lastReportTime_); // save the last report time for app_usage
-    cacher.SaveSysUsageEventToDb(nowUsage, LAST_SYS_USAGE_COLL);
+    cacher.SaveSysUsageEventToDb(nowUsage, LAST_SYS_USAGE_TABLE);
 }
 
 void UsageEventReportService::SaveSysUsage()

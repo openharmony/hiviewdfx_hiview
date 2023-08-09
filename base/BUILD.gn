@@ -94,7 +94,6 @@ ohos_shared_library("hiviewbase") {
 
   deps = [
     ":hiview_base",
-    "$hiview_adapter/dbstore:db_store_source",
     "logstore:log_store",
   ]
 
@@ -119,7 +118,6 @@ ohos_static_library("hiviewbase_static_lib_for_tdd") {
 
   deps = [
     ":hiview_base",
-    "$hiview_adapter/dbstore:db_store_source_static_lib_for_tdd",
     "logstore:log_store",
   ]
 

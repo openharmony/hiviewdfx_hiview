@@ -40,8 +40,8 @@ const std::string KEY_OF_RUNNING = "RUNNING";
 }
 
 namespace SysUsageDbSpace {
-const std::string SYS_USAGE_COLL = "sys_usage";
-const std::string LAST_SYS_USAGE_COLL = "last_sys_usage";
+const std::string SYS_USAGE_TABLE = "sys_usage";
+const std::string LAST_SYS_USAGE_TABLE = "last_sys_usage";
 }
 } // namespace HiviewDFX
 } // namespace OHOS

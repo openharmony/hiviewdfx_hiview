@@ -55,6 +55,7 @@ ohos_executable("usage_report") {
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
     "time_service:time_client",
   ]
 
