@@ -58,14 +58,18 @@ bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
         } else if (window > 0) {
             unsigned long long start = timestamp;
             unsigned long long end = timestamp + (window * MILLISECOND);
+            std::string packageName = watchPoint.GetPackageName().empty() ?
+                watchPoint.GetProcessName() : watchPoint.GetPackageName();
             if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), i);
+                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
             }
         } else {
             unsigned long long start = timestamp + (window * MILLISECOND);
             unsigned long long end = timestamp;
+            std::string packageName = watchPoint.GetPackageName().empty() ?
+                watchPoint.GetProcessName() : watchPoint.GetPackageName();
             if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), i);
+                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
             }
         }
     }

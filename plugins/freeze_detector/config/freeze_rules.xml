@@ -61,6 +61,23 @@
         </event>
       </links>
     </rule>
+    <rule id="7" domain="FRAMEWORK" stringid="SERVICE_TIMEOUT">	<!-- SERVICE_TIMEOUT -->
+      <links type="watchpoint">
+        <event window="0" domain="FRAMEWORK" stringid="SERVICE_TIMEOUT">	<!-- SERVICE_TIMEOUT -->
+          <result code="1" scope="sys" samePackage="true"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="8" domain="FRAMEWORK" stringid="SERVICE_BLOCK">	<!-- SERVICE_BLOCK -->
+      <links type="watchpoint">
+        <event window="0" domain="FRAMEWORK" stringid="SERVICE_BLOCK">	<!-- SERVICE_BLOCK -->
+          <result code="1" scope="sys" samePackage="true"/>
+        </event>
+        <event window="-70" domain="FRAMEWORK" stringid="SERVICE_WARNING">	<!-- SERVICE_WARNING -->
+          <result code="1" scope="sys" samePackage="true"/>
+        </event>
+      </links>
+    </rule>
     <rule id="9" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
       <links type="watchpoint">
         <event window="0" domain="FRAMEWORK" stringid="IPC_FULL">	<!-- IPC_FULL -->
