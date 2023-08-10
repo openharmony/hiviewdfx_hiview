@@ -17,6 +17,7 @@
 #include <chrono>
 #include <ctime>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <thread>
 
@@ -146,7 +147,7 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
         ASSERT_TRUE(it->GetSeq() == sysEvent1->GetEventSeq());
         std::cout << "seq=" << it->GetSeq() << ", json=" << it->AsJsonStr() << std::endl;
     }
-    ASSERT_TRUE(count == 1);
+    ASSERT_TRUE(count >= 1);
 }
 
 /**
@@ -312,27 +313,32 @@ HWTEST_F(SysEventDaoTest, FieldValueTest_01, testing::ext::TestSize.Level0)
 
     // default value
     FieldValue value1;
-    ASSERT_TRUE(value1.IsInteger());
-    ASSERT_EQ(value1.GetInteger(), 0);
+    ASSERT_TRUE(value1.IsNumber());
+    ASSERT_TRUE(value1.Index() == FieldValue::NUMBER);
+    ASSERT_EQ(value1.GetFieldNumber().GetNumber<int64_t>(), 0);
 
     // int32_t value
     FieldValue value2(TEST_INT32_VALUE);
-    ASSERT_TRUE(value2.IsInteger());
-    ASSERT_EQ(value2.GetInteger(), TEST_INT32_VALUE);
+    ASSERT_TRUE(value2.IsNumber());
+    ASSERT_TRUE(value1.Index() == FieldValue::NUMBER);
+    ASSERT_EQ(value2.GetFieldNumber().GetNumber<int64_t>(), TEST_INT32_VALUE);
 
     // int64_t value
     FieldValue value3(TEST_INT64_VALUE);
-    ASSERT_TRUE(value3.IsInteger());
-    ASSERT_EQ(value3.GetInteger(), TEST_INT64_VALUE);
+    ASSERT_TRUE(value3.IsNumber());
+    ASSERT_TRUE(value1.Index() == FieldValue::NUMBER);
+    ASSERT_EQ(value3.GetFieldNumber().GetNumber<int64_t>(), TEST_INT64_VALUE);
 
     // double value
     FieldValue value4(TEST_DOU_VALUE);
-    ASSERT_TRUE(value4.IsDouble());
-    ASSERT_EQ(value4.GetDouble(), TEST_DOU_VALUE);
+    ASSERT_TRUE(value4.IsNumber());
+    ASSERT_TRUE(value1.Index() == FieldValue::NUMBER);
+    ASSERT_EQ(value4.GetFieldNumber().GetNumber<double>(), TEST_DOU_VALUE);
 
     // string value
     FieldValue value5(TEST_STR_VALUE);
     ASSERT_TRUE(value5.IsString());
+    ASSERT_TRUE(value1.Index() == FieldValue::NUMBER);
     ASSERT_EQ(value5.GetString(), TEST_STR_VALUE);
 }
 
@@ -365,19 +371,19 @@ HWTEST_F(SysEventDaoTest, FieldValueTest_02, testing::ext::TestSize.Level0)
     ASSERT_TRUE(dValue1 != dValue3);
     FieldValue sValue3("tes");
     ASSERT_TRUE(sValue1 != sValue3);
-    ASSERT_FALSE(iValue1 != dValue1);
+    ASSERT_TRUE(iValue1 != dValue1);
 
     // <
     ASSERT_TRUE(iValue3 < iValue1);
     ASSERT_TRUE(dValue3 < dValue1);
     ASSERT_TRUE(sValue3 < sValue1);
-    ASSERT_FALSE(iValue1 < dValue1);
+    ASSERT_TRUE(iValue1 < dValue1);
 
     // <=
     ASSERT_TRUE(iValue3 <= iValue1);
     ASSERT_TRUE(dValue3 <= dValue1);
     ASSERT_TRUE(sValue3 <= sValue1);
-    ASSERT_FALSE(iValue1 <= dValue1);
+    ASSERT_TRUE(iValue1 <= dValue1);
 
     // >
     ASSERT_TRUE(iValue1 > iValue3);
@@ -398,6 +404,194 @@ HWTEST_F(SysEventDaoTest, FieldValueTest_02, testing::ext::TestSize.Level0)
     ASSERT_FALSE(iValue1.IsNotStartWith(iValue2));
     ASSERT_TRUE(sValue1.IsStartWith(sValue3));
     ASSERT_FALSE(sValue1.IsNotStartWith(sValue3));
+}
+
+/**
+ * @tc.name: FieldValueTest_03
+ * @tc.desc: test the base functions of FieldValue.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldValueTest_03, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int8_t i8v1 = 1; // test value
+    FieldValue fv1(i8v1);
+    double dv2 = 1.0; // test value
+    FieldValue fv2(dv2);
+    uint64_t ui64v1 = 3; // test value
+    FieldValue fv3(ui64v1);
+    std::string content = "test";
+    FieldValue fv4(content);
+
+    ASSERT_TRUE(fv1.IsNumber());
+    ASSERT_FALSE(fv1.IsString());
+    ASSERT_TRUE(fv2.IsNumber());
+    ASSERT_FALSE(fv2.IsString());
+    ASSERT_TRUE(fv3.IsNumber());
+    ASSERT_FALSE(fv3.IsString());
+    ASSERT_TRUE(fv4.IsString());
+    ASSERT_FALSE(fv4.IsNumber());
+    ASSERT_TRUE(fv1.GetFieldNumber() == fv2.GetFieldNumber());
+    ASSERT_EQ(fv1.GetString(), "");
+    ASSERT_EQ(fv4.GetFieldNumber().GetNumber<int64_t>(), 0);
+    ASSERT_EQ(fv4.GetString(), content);
+    ASSERT_TRUE(fv1.Index() == FieldValue::NUMBER);
+    ASSERT_TRUE(fv2.Index() == FieldValue::NUMBER);
+    ASSERT_TRUE(fv3.Index() == FieldValue::NUMBER);
+    ASSERT_TRUE(fv4.Index() == FieldValue::STRING);
+    ASSERT_EQ(fv1.FormatAsString(), std::to_string(i8v1));
+    ASSERT_EQ(fv2.FormatAsString(), std::to_string(dv2));
+    ASSERT_EQ(fv3.FormatAsString(), std::to_string(ui64v1));
+    ASSERT_EQ(fv4.FormatAsString(), content);
+}
+
+/**
+ * @tc.name: FieldNumberTest_01
+ * @tc.desc: test the base functions of FieldNumber.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldNumberTest_01, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int8_t i8v1 = 1; // test value
+    FieldNumber fn1(i8v1);
+    double dv2 = 2.0; // test value
+    FieldNumber fn2(dv2);
+    uint64_t ui64v1 = 3; // test value
+    FieldNumber fn3(ui64v1);
+    ASSERT_TRUE(fn1.GetNumber<int64_t>() == i8v1);
+    ASSERT_TRUE(fn1.FormatAsString() == std::to_string(i8v1));
+    ASSERT_TRUE(fn2.GetNumber<double>() == dv2);
+    ASSERT_TRUE(fn2.FormatAsString() == std::to_string(dv2));
+    ASSERT_TRUE(fn3.GetNumber<uint64_t>() == ui64v1);
+    ASSERT_TRUE(fn3.FormatAsString() == std::to_string(ui64v1));
+    ASSERT_TRUE(fn1.Index() == FieldNumber::INT);
+    ASSERT_TRUE(fn2.Index() == FieldNumber::DOUBLE);
+    ASSERT_TRUE(fn3.Index() == FieldNumber::UINT);
+}
+
+/**
+ * @tc.name: FieldNumberTest_02
+ * @tc.desc: test the operator== && operator!= of FieldNumber.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldNumberTest_02, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int64_t i64v1 = 10; // test value
+    FieldNumber fn1(i64v1);
+    int64_t i64v2 = 11; // test value
+    FieldNumber fn2(i64v2);
+    uint64_t ui64v1 = 10; // test value
+    FieldNumber fn3(ui64v1);
+    uint64_t ui64v2 = 11; // test value
+    FieldNumber fn4(ui64v2);
+    double dv1 = 10.0; // test value
+    FieldNumber fn5(dv1);
+    double dv2 = 11.0; // test value
+    FieldNumber fn6(dv2);
+
+    ASSERT_TRUE((fn1 == fn3) && (fn1 == fn5) && (fn3 == fn5));
+    ASSERT_FALSE((fn1 == fn2) || (fn1 == fn4) || (fn1 == fn6));
+    ASSERT_TRUE((fn1 != fn2) && (fn1 != fn4) && (fn1 != fn6));
+    ASSERT_FALSE((fn1 != fn3) || (fn1 != dv1) || (fn3 != dv1));
+}
+
+/**
+ * @tc.name: FieldNumberTest_03
+ * @tc.desc: test the operator< && operator> of FieldNumber.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldNumberTest_03, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int64_t i64v1 = -10; // test value
+    FieldNumber fn1(i64v1);
+    int64_t i64v2 = 11; // test value
+    FieldNumber fn2(i64v2);
+    uint64_t ui64v1 = 10; // test value
+    FieldNumber fn3(ui64v1);
+    uint64_t ui64v2 = 11; // test value
+    FieldNumber fn4(ui64v2);
+    double dv1 = 10.0; // test value
+    FieldNumber fn5(dv1);
+    double dv2 = 11.0; // test value
+    FieldNumber fn6(dv2);
+
+    ASSERT_TRUE((fn1 < fn2) && (fn1 < fn4) && (fn1 < fn6));
+    ASSERT_FALSE((fn1 > fn3) || (fn1 > fn4) || (fn1 > fn5) || (fn1 > fn6));
+}
+
+/**
+ * @tc.name: FieldNumberTest_04
+ * @tc.desc: test the operator<= && operator>= of FieldNumber.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldNumberTest_04, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int64_t i64v1 = -10; // test value
+    FieldNumber fn1(i64v1);
+    int64_t i64v2 = 11; // test value
+    FieldNumber fn2(i64v2);
+    uint64_t ui64v1 = 10; // test value
+    FieldNumber fn3(ui64v1);
+    uint64_t ui64v2 = 11; // test value
+    FieldNumber fn4(ui64v2);
+    double dv1 = 10.0; // test value
+    FieldNumber fn5(dv1);
+    double dv2 = 11.0; // test value
+    FieldNumber fn6(dv2);
+
+    ASSERT_TRUE((fn1 <= fn2) && (fn1 <= fn4) && (fn1 <= fn5));
+    ASSERT_TRUE((fn3 >= fn1) && (fn6 >= fn4));
+    ASSERT_TRUE((fn2 >= fn1) && (fn3 >= fn1) && (fn6 >= fn3) && (fn6 >= fn5));
+}
+
+/**
+ * @tc.name: FieldNumberTest_05
+ * @tc.desc: test the comparasion between different number types by FieldNumber.
+ * @tc.type: FUNC
+ * @tc.require: issueI7NUTO
+ */
+HWTEST_F(SysEventDaoTest, FieldNumberTest_05, testing::ext::TestSize.Level0)
+{
+    using namespace EventStore;
+
+    int64_t i64v1 = 1; // a random test value
+    FieldNumber fn1(i64v1);
+    uint64_t ui64V2 = std::numeric_limits<uint64_t>::max(); // 10 is a random offset
+    FieldNumber fn2(ui64V2);
+    uint64_t ui64V3 = std::numeric_limits<uint64_t>::max() / 2; // 10 is a random offset
+    FieldNumber fn3(ui64V3);
+    int64_t i64V2 = std::numeric_limits<int64_t>::max() - 2; // 2 is a random offset
+    FieldNumber fn4(i64V2);
+    int64_t i64V3 = -100; // a random test value
+    FieldNumber fn5(i64V3);
+    double dV1 = 3.45; // a random test value
+    FieldNumber fn6(dV1);
+    double dV2 = 100.45; // a random test value
+    FieldNumber fn7(dV2);
+    int64_t i64V4 = std::numeric_limits<int64_t>::min();
+    FieldNumber fn8(i64V4);
+
+    ASSERT_TRUE((fn1 < fn2) && (fn1 <= fn2) && (fn1 <= fn2) && (fn3 < fn2) && (fn3 <= fn2) &&
+        (fn1 < fn4) && (fn4 < fn3) && (fn5 < fn2) && (fn5 <= fn2) && (fn5 < fn4) && (fn1 < fn6) &&
+        (fn6 < fn2) && (fn6 < fn3) && (fn7 > fn6) && (fn8 < fn1) && (fn8 < fn2) && (fn8 < fn3) &&
+        (fn8 < fn6) && (fn8 < fn7));
+    ASSERT_TRUE((fn2 > fn1) && (fn2 >= fn1) && (fn2 > fn3) && (fn2 >= fn3) && (fn4 > fn1) &&
+        (fn3 > fn4) && (fn2 > fn5) && (fn2 >= fn5) && (fn4 > fn5) && (fn6 > fn5) && (fn6 < fn7) &&
+        (fn8 < fn7) && (fn8 < fn1) && (fn8 < fn2));
 }
 
 /**

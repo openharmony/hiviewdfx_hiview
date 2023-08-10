@@ -75,7 +75,7 @@ public:
 protected:
     virtual void BuildQuery() = 0;
     virtual void Order() = 0;
-    void BuildConditon(const std::string& condition);
+    void BuildCondition(const std::string& condition);
 
 protected:
     QueryArgument argument;
