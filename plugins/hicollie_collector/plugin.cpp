@@ -48,8 +48,6 @@ void HiCollieCollector::OnLoad()
     SetName("HiCollieCollector");
     SetVersion("HiCollieCollector 1.0");
     HIVIEW_LOGI("OnLoad.");
-    std::unordered_set<std::string> eventNames = {STRINGID_SERVICE_TIMEOUT, STRINGID_SERVICE_BLOCK};
-    AddDispatchInfo({}, eventNames);
 }
 
 void HiCollieCollector::OnUnload()

@@ -50,6 +50,8 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
         auto record = set.Next();
 
         std::string packageName = record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
+        packageName = packageName.empty() ?
+            record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME) : packageName;
         if (result.GetSamePackage() == "true" && watchPackage != packageName) {
             HIVIEW_LOGE("failed to match the same package: %{public}s and  %{public}s",
                 watchPackage.c_str(), packageName.c_str());
