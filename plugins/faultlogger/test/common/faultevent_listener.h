@@ -17,7 +17,6 @@
 #define FAULTEVENT_LISTENER_H
 
 #include "hisysevent_listener.h"
-
 #include <vector>
 
 namespace OHOS {
@@ -29,10 +28,14 @@ public:
 
 public:
     void OnEvent(std::shared_ptr<HiSysEventRecord> sysEvent);
-    bool CheckKeywords(const std::vector<std::string> keywords);
+    void SetKeyWords(const std::vector<std::string>& keyWords);
+    bool CheckKeyWords();
     void OnServiceDied() {};
 private:
-    std::vector<std::string> jsonStr;
+    std::vector<std::string> keyWords;
+    bool allFindFlag = false;
+    std::mutex setFlagMutex;
+    std::condition_variable keyWordCheckCondition;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
