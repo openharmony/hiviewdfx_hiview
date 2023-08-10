@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -35,6 +35,18 @@ declare_args() {
   if (defined(global_parts_info) &&
       !defined(global_parts_info.resourceschedule_device_usage_statistics)) {
     device_usage_statistics_enable = false
+  }
+
+  battery_statistics_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.powermgr_battery_statistics)) {
+    battery_statistics_enable = false
+  }
+
+  power_manager_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.powermgr_power_manager)) {
+    power_manager_enable = false
   }
 
   enable_hiview_usage_event_report_build = true

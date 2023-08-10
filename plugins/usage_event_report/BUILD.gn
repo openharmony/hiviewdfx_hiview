@@ -19,9 +19,12 @@ if (enable_hiview_usage_event_report_build) {
     include_dirs = [
       "cache/include",
       "event/include",
-      "idl/include",
       "include",
     ]
+
+    if (power_manager_enable) {
+      include_dirs += [ "idl/include" ]
+    }
   }
 
   ohos_source_set("usage_event_report") {
@@ -32,9 +35,12 @@ if (enable_hiview_usage_event_report_build) {
       "cache/json_parser.cpp",
       "cache/usage_event_cacher.cpp",
       "event/sys_usage_event.cpp",
-      "idl/hiview_shutdown_callback.cpp",
       "usage_event_report.cpp",
     ]
+
+    if (power_manager_enable) {
+      sources += [ "idl/hiview_shutdown_callback.cpp" ]
+    }
 
     deps = [
       "$hiview_base:hiviewbase",
@@ -46,9 +52,14 @@ if (enable_hiview_usage_event_report_build) {
       "hilog:libhilog",
       "hisysevent:libhisysevent",
       "ipc:ipc_single",
-      "power_manager:powermgr_client",
       "relational_store:native_rdb",
     ]
+
+    defines = []
+    if (power_manager_enable) {
+      external_deps += [ "power_manager:powermgr_client" ]
+      defines += [ "POWER_MANAGER_ENABLE" ]
+    }
 
     part_name = "hiview"
     subsystem_name = "hiviewdfx"
