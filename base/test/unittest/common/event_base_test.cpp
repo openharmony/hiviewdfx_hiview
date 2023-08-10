@@ -114,6 +114,13 @@ HWTEST_F(EventBaseTest, EventTest001, testing::ext::TestSize.Level0)
     event.SetKeyValuePairs(kvSet);
     std::map<std::string, std::string> kvGet = event.GetKeyValuePairs();
     ASSERT_TRUE(kvGet.size() == 1 && kvGet["key1"] == "value1");
+    int32_t i32v = 188; // a test value;
+    event.SetValue("", i32v);
+    event.SetValue("I32_KEY", i32v);
+    int32_t ret = event.GetIntValue("UNKNOWN_KEY");
+    ASSERT_EQ(ret, -1); // unknown value
+    ret = event.GetIntValue("I32_KEY");
+    ASSERT_EQ(ret, i32v);
 }
 
 /**

@@ -52,15 +52,94 @@ enum Op { NONE = 0, EQ = 1, NE, LT, LE, GT, GE, SW, NSW };
 class SysEventDao;
 class SysEventDatabase;
 
+class FieldNumber final {
+public:
+    enum ValueType { DOUBLE = 0, UINT = 1, INT = 2 };
+
+    template<typename T>
+    FieldNumber(T val)
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
+            std::is_same_v<std::decay_t<T>, uint16_t> ||
+            std::is_same_v<std::decay_t<T>, uint32_t> ||
+            std::is_same_v<std::decay_t<T>, uint64_t>) {
+                val_ = static_cast<uint64_t>(val);
+                return;
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, int8_t> ||
+            std::is_same_v<std::decay_t<T>, int16_t> ||
+            std::is_same_v<std::decay_t<T>, int32_t> ||
+            std::is_same_v<std::decay_t<T>, int64_t>) {
+                val_ = static_cast<int64_t>(val);
+                return;
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, float> ||
+            std::is_same_v<std::decay_t<T>, double>) {
+                val_ = static_cast<double>(val);
+                return;
+        }
+        val_ = static_cast<int64_t>(0); // default
+    }
+
+    bool operator==(const FieldNumber& fieldNum) const;
+    bool operator!=(const FieldNumber& fieldNum) const;
+    bool operator<(const FieldNumber& fieldNum) const;
+    bool operator<=(const FieldNumber& fieldNum) const;
+    bool operator>(const FieldNumber& fieldNum) const;
+    bool operator>=(const FieldNumber& fieldNum) const;
+
+    template<typename T,
+        std::enable_if_t<std::is_same_v<std::decay_t<T>, double> ||
+        std::is_same_v<std::decay_t<T>, uint64_t> ||
+        std::is_same_v<std::decay_t<T>, int64_t>>* = nullptr>
+    decltype(auto) GetNumber() const
+    {
+        if (val_.index() == DOUBLE) {
+            return static_cast<std::decay_t<T>>(std::get<DOUBLE>(val_));
+        }
+        if (val_.index() == UINT) {
+            return static_cast<std::decay_t<T>>(std::get<UINT>(val_));
+        }
+        return static_cast<std::decay_t<T>>(std::get<INT>(val_));
+    }
+
+    std::string FormatAsString() const;
+    ValueType Index() const;
+
+private:
+    std::variant<double, uint64_t, int64_t> val_;
+};
+
 class FieldValue {
 public:
-    enum ValueType { INTEGER = 0, DOUBLE = 1, STRING = 2 };
+    enum ValueType { STRING = 0, NUMBER = 1 };
 
-    FieldValue(): value_(static_cast<int64_t>(0)) {}
-    FieldValue(int32_t value): value_(static_cast<int64_t>(value)) {}
-    FieldValue(int64_t value): value_(value) {}
-    FieldValue(double value): value_(value) {}
-    FieldValue(const std::string &value): value_(value) {}
+    FieldValue(): FieldValue(0) {}
+
+    template<typename T>
+    FieldValue(T val)
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
+            std::is_same_v<std::decay_t<T>, uint16_t> ||
+            std::is_same_v<std::decay_t<T>, uint32_t> ||
+            std::is_same_v<std::decay_t<T>, uint64_t> ||
+            std::is_same_v<std::decay_t<T>, int8_t> ||
+            std::is_same_v<std::decay_t<T>, int16_t> ||
+            std::is_same_v<std::decay_t<T>, int32_t> ||
+            std::is_same_v<std::decay_t<T>, int64_t> ||
+            std::is_same_v<std::decay_t<T>, float> ||
+            std::is_same_v<std::decay_t<T>, double>) {
+            val_ = val;
+            return;
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
+            std::is_same_v<std::decay_t<T>, const char*>) {
+            val_ = std::string(val);
+            return;
+        }
+        val_ = 0;
+    }
+
     ~FieldValue() {}
 
     bool operator==(const FieldValue& fieldValue) const;
@@ -72,14 +151,15 @@ public:
     bool IsStartWith(const FieldValue& fieldValue) const;
     bool IsNotStartWith(const FieldValue& fieldValue) const;
 
-    bool IsInteger() const;
-    bool IsDouble() const;
+    bool IsNumber() const;
     bool IsString() const;
-    int64_t GetInteger() const;
-    double GetDouble() const;
+    FieldNumber GetFieldNumber() const;
     std::string GetString() const;
+    std::string FormatAsString() const;
+    ValueType Index() const;
 
-    std::variant<int64_t, double, std::string> value_;
+private:
+    std::variant<std::string, FieldNumber> val_;
 };
 
 class DllExport Cond {

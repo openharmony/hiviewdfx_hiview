@@ -256,7 +256,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
     }
 }
 
-void BaseEventQueryWrapper::BuildConditon(const std::string& condition)
+void BaseEventQueryWrapper::BuildCondition(const std::string& condition)
 {
     if (condition.empty()) {
         return;
@@ -356,7 +356,7 @@ void TimeStampEventQueryWrapper::BuildQuery()
     query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
         queryRule.eventType, INVALID_SEQ);
     query->Where(whereCond);
-    BuildConditon(queryRule.condition);
+    BuildCondition(queryRule.condition);
     Order();
 }
 
@@ -387,7 +387,7 @@ void SeqEventQueryWrapper::BuildQuery()
     query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
         queryRule.eventType, argument.toSeq);
     query->Where(whereCond);
-    BuildConditon(queryRule.condition);
+    BuildCondition(queryRule.condition);
     Order();
 }
 

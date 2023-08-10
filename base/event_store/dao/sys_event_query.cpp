@@ -25,6 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 namespace {
+constexpr double ESP = 0.0000001;
 bool CompareSeqFuncLess(const Entry& entryA, const Entry& entryB)
 {
     return entryA.id < entryB.id;
@@ -46,158 +47,260 @@ bool CompareTimestampFuncGreater(const Entry& entryA, const Entry& entryB)
 }
 }
 
-bool FieldValue::IsInteger() const
+bool FieldValue::IsNumber() const
 {
-    return (value_.index() == INTEGER);
-}
-
-bool FieldValue::IsDouble() const
-{
-    return (value_.index() == DOUBLE);
+    return (Index() == NUMBER);
 }
 
 bool FieldValue::IsString() const
 {
-    return (value_.index() == STRING);
-}
-
-int64_t FieldValue::GetInteger() const
-{
-    return std::get<INTEGER>(value_);
-}
-
-double FieldValue::GetDouble() const
-{
-    return std::get<DOUBLE>(value_);
+    return (Index() == STRING);
 }
 
 std::string FieldValue::GetString() const
 {
-    return std::get<STRING>(value_);
+    if (Index() == NUMBER) {
+        return "";
+    }
+    return std::get<STRING>(val_);
+}
+
+FieldNumber FieldValue::GetFieldNumber() const
+{
+    if (Index() == STRING) {
+        FieldNumber number(0);
+        return number; // default
+    }
+    return std::get<NUMBER>(val_);
+}
+
+std::string FieldValue::FormatAsString() const
+{
+    if (Index() == STRING) {
+        return std::get<STRING>(val_);
+    }
+    return std::get<NUMBER>(val_).FormatAsString();
+}
+
+FieldValue::ValueType FieldValue::Index() const
+{
+    return FieldValue::ValueType(val_.index());
 }
 
 bool FieldValue::operator==(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() == fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() == fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() == fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() == fieldValue.GetString();
+    if (IsString()) {
+        return GetString() == fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::operator!=(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() != fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() != fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() != fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() != fieldValue.GetString();
+    if (IsString()) {
+        return GetString() != fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::operator<(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() < fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() < fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() < fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() < fieldValue.GetString();
+    if (IsString()) {
+        return GetString() < fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::operator<=(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() <= fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() <= fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() <= fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() <= fieldValue.GetString();
+    if (IsString()) {
+        return GetString() <= fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::operator>(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() > fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() > fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() > fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() > fieldValue.GetString();
+    if (IsString()) {
+        return GetString() > fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::operator>=(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsInteger()) {
-        return this->GetInteger() >= fieldValue.GetInteger();
+    if (IsNumber()) {
+        return GetFieldNumber() >= fieldValue.GetFieldNumber();
     }
-    if (this->IsDouble()) {
-        return this->GetDouble() >= fieldValue.GetDouble();
-    }
-    if (this->IsString()) {
-        return this->GetString() >= fieldValue.GetString();
+    if (IsString()) {
+        return GetString() >= fieldValue.GetString();
     }
     return false;
 }
 
 bool FieldValue::IsStartWith(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsString()) {
-        return this->GetString().find(fieldValue.GetString()) == 0;
+    if (IsString()) {
+        return GetString().find(fieldValue.GetString()) == 0;
     }
     return false;
 }
 
 bool FieldValue::IsNotStartWith(const FieldValue& fieldValue) const
 {
-    if (this->value_.index() != fieldValue.value_.index()) {
+    if (Index() != fieldValue.Index()) {
         return false;
     }
-    if (this->IsString()) {
-        return !(this->GetString().find(fieldValue.GetString()) == 0);
+    if (IsString()) {
+        return !(GetString().find(fieldValue.GetString()) == 0);
     }
     return false;
+}
+
+bool FieldNumber::operator==(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return abs(GetNumber<double>() - fieldNum.GetNumber<double>()) <= ESP;
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() == fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() == fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() >= 0) && (GetNumber<uint64_t>() == fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() >= 0) && (fieldNum.GetNumber<uint64_t>() == GetNumber<uint64_t>());
+}
+
+bool FieldNumber::operator!=(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return abs(GetNumber<double>() - fieldNum.GetNumber<double>()) > ESP;
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() != fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() != fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() < 0) || (GetNumber<uint64_t>() != fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() < 0) || (fieldNum.GetNumber<uint64_t>() != GetNumber<uint64_t>());
+}
+
+bool FieldNumber::operator<(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return (abs(GetNumber<double>() - fieldNum.GetNumber<double>()) > ESP) &&
+            (GetNumber<double>() < fieldNum.GetNumber<double>());
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() < fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() < fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() < 0) || (GetNumber<uint64_t>() < fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() >= 0) && (GetNumber<uint64_t>() < fieldNum.GetNumber<uint64_t>());
+}
+
+bool FieldNumber::operator<=(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return (abs(GetNumber<double>() - fieldNum.GetNumber<double>()) <= ESP) ||
+            (GetNumber<double>() < fieldNum.GetNumber<double>());
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() <= fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() <= fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() < 0) || (GetNumber<uint64_t>() <= fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() >= 0) && (GetNumber<uint64_t>() <= fieldNum.GetNumber<uint64_t>());
+}
+
+bool FieldNumber::operator>(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return (abs(GetNumber<double>() - fieldNum.GetNumber<double>()) > ESP) &&
+            (GetNumber<double>() > fieldNum.GetNumber<double>());
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() > fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() > fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() >= 0) && (GetNumber<uint64_t>() > fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() < 0) || (GetNumber<uint64_t>() > fieldNum.GetNumber<uint64_t>());
+}
+
+bool FieldNumber::operator>=(const FieldNumber& fieldNum) const
+{
+    if ((Index() == DOUBLE) || (fieldNum.Index() == DOUBLE)) {
+        return (abs(GetNumber<double>() - fieldNum.GetNumber<double>()) <= ESP) ||
+            (GetNumber<double>() > fieldNum.GetNumber<double>());
+    }
+    if (Index() == fieldNum.Index()) {
+        return (Index() == INT) ? (GetNumber<int64_t>() >= fieldNum.GetNumber<int64_t>()) :
+            (GetNumber<uint64_t>() >= fieldNum.GetNumber<uint64_t>());
+    }
+    if (Index() == INT) {
+        return (GetNumber<int64_t>() >= 0) && (GetNumber<uint64_t>() >= fieldNum.GetNumber<uint64_t>());
+    }
+    return (fieldNum.GetNumber<int64_t>() < 0) || (GetNumber<uint64_t>() >= fieldNum.GetNumber<uint64_t>());
+}
+
+std::string FieldNumber::FormatAsString() const
+{
+    if (Index() == DOUBLE) {
+        return std::to_string(std::get<DOUBLE>(val_));
+    }
+    if (Index() == UINT) {
+        return std::to_string(std::get<UINT>(val_));
+    }
+    return std::to_string(std::get<INT>(val_));
+}
+
+FieldNumber::ValueType FieldNumber::Index() const
+{
+    return FieldNumber::ValueType(val_.index());
 }
 
 Cond &Cond::And(const Cond &cond)
@@ -261,15 +364,7 @@ std::string Cond::ToString() const
             return "INVALID COND";
     }
 
-    if (fieldValue_.IsInteger()) {
-        output.append(std::to_string(fieldValue_.GetInteger()));
-    } else if (fieldValue_.IsDouble()) {
-        output.append(std::to_string(fieldValue_.GetDouble()));
-    } else if (fieldValue_.IsString()) {
-        output.append(fieldValue_.GetString());
-    } else {
-        return "INVALID COND";
-    }
+    output.append(fieldValue_.FormatAsString());
 
     return output;
 }
