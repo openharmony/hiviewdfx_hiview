@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,12 +18,15 @@
 
 #include "hiview_event_report.h"
 #include "hiview_event_cacher.h"
+#ifdef POWER_MANAGER_ENABLE
 #include "hiview_shutdown_callback.h"
+#endif
 #include "logger.h"
 #include "plugin_factory.h"
-#include "power_mgr_client.h"
 #include "securec.h"
+#ifdef POWER_MANAGER_ENABLE
 #include "shutdown/shutdown_client.h"
+#endif
 #include "string_util.h"
 #include "time_util.h"
 #include "usage_event_cacher.h"
@@ -62,7 +65,9 @@ void UsageEventReport::OnUnload()
         workLoop_.reset();
     }
     if (callback_ != nullptr) {
+#ifdef POWER_MANAGER_ENABLE
         PowerMgr::ShutdownClient::GetInstance().UnRegisterShutdownCallback(callback_);
+#endif
         callback_ = nullptr;
     }
 }
@@ -114,9 +119,11 @@ void UsageEventReport::Init()
 void UsageEventReport::InitCallback()
 {
     HIVIEW_LOGI("start to init shutdown callback");
+#ifdef POWER_MANAGER_ENABLE
     callback_ = new (std::nothrow) HiViewShutdownCallback();
     PowerMgr::ShutdownClient::GetInstance().RegisterShutdownCallback(callback_,
         PowerMgr::ShutdownPriority::HIGH);
+#endif
 }
 
 void UsageEventReport::Start()
