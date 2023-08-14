@@ -72,6 +72,8 @@ private:
     std::unordered_map<int, std::string> fileMap_;
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
     std::unordered_set<std::string> hitraceSet_;
+    std::shared_ptr<EventLoop> threadLoop_ = nullptr;
+    std::unordered_set<std::shared_ptr<SysEvent>> sysEventSet_;
     std::mutex hitraceSetMutex_;
     int const maxEventPoolCount = 5;
     std::unique_ptr<EventThreadPool> eventPool_;
@@ -89,6 +91,7 @@ private:
     std::string GetHitraceName(int64_t& beginTime, std::string& hitraceTime);
     bool DetectionHiTraceMap(const std::string& name);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
+    void CheckEventOnContinue();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

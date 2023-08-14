@@ -119,6 +119,16 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     sysEvent->OnPending();
+    sysEvent->SetEventValue("Finish", "0");
+
+    std::unique_lock<std::mutex> lck(finishMutex_);
+    sysEventSet_.insert(sysEvent);
+    if (sysEventSet_.size() == 1) {
+        constexpr int waitTime = 5;
+        auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
+        threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
+    }
+
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
@@ -204,9 +214,8 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     if (!hitraceFile.empty() && !DetectionHiTraceMap(hitraceFile)) {
         return;
     }
-    std::unique_lock<std::mutex> lck(finishMutex_);
-    event->ResetPendingStatus();
-    event->OnContinue();
+    event->SetEventValue("Finish", "1");
+    HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
 
 std::string EventLogger::GetHitraceName(int64_t& beginTime, std::string& hitraceTime)
@@ -279,9 +288,8 @@ bool EventLogger::HitraceCatcher(int64_t& beginTime,
     HIVIEW_LOGI("end DumpTraceToDir");
 
     if (this->DetectionHiTraceMap(fullTracePath)) {
-        std::unique_lock<std::mutex> lck(finishMutex_);
-        event->ResetPendingStatus();
-        event->OnContinue();
+        event->SetEventValue("Finish", "1");
+        HIVIEW_LOGI("hitrace on finish, name: %{public}s", fullTracePath.c_str());
     }
     return true;
 }
@@ -411,6 +419,29 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
     return true;
 }
 
+void EventLogger::CheckEventOnContinue()
+{
+    HIVIEW_LOGI("Check Event can Continue");
+    std::unique_lock<std::mutex> lck(finishMutex_);
+    for (auto eventIter = sysEventSet_.begin(); eventIter != sysEventSet_.end();) {
+        std::shared_ptr<SysEvent> event = *eventIter;
+        if (event->GetEventValue("Finish") == "1") {
+            event->ResetPendingStatus();
+            event->OnContinue();
+            eventIter = sysEventSet_.erase(eventIter);
+            HIVIEW_LOGI("event onContinue");
+        } else {
+            ++eventIter;
+        }
+    }
+
+    if (sysEventSet_.size() > 0) {
+        constexpr int waitTime = 5;
+        auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
+        threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
+    }
+}
+
 void EventLogger::OnLoad()
 {
     HIVIEW_LOGI("EventLogger OnLoad.");
@@ -419,8 +450,8 @@ void EventLogger::OnLoad()
     logStore_->SetMaxSize(MAX_FOLDER_SIZE);
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
     logStore_->Init();
-    std::shared_ptr<EventLoop> tmp = GetWorkLoop();
-    tmp->AddFileDescriptorEventCallback("EventLoggerFd",
+    threadLoop_ = GetWorkLoop();
+    threadLoop_->AddFileDescriptorEventCallback("EventLoggerFd",
         std::static_pointer_cast<EventLogger>(shared_from_this()));
 
     EventLoggerConfig logConfig;
