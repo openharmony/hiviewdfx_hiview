@@ -1,5 +1,6 @@
 {
     "version": "1.0.0",
+    "":"test",
     "segmentStatus":[
         {"namespace":"segStatus", "matchKey":"tid=\\d+ (.*)", "desc":""},
         {"namespace":"segWaitOther", "matchKey":"waiting to lock.*held by thread (\\d+)", "desc":" waiting on lock held by "},
@@ -32,5 +33,6 @@
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_pname":"Module name:(.*)"},
             {"namespace":"MainCallTrace", "matchKey":"Thread name:", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
-    }
+    },
+    "Rule4":{}
 }

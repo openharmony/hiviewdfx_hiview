@@ -47,7 +47,7 @@ void SmartParserModuleTest::TearDown(void) {}
 
 /**
  * @tc.name: SmartParserTest001
- * @tc.desc: process cpp_crash fault, this case match FeatureListForReliability.Json
+ * @tc.desc: process cpp_crash fault, this case match compose_rule.json and extract_rule.json.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -88,7 +88,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest001, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest002
- * @tc.desc: process JS_ERROR fault, this case match FeatureListForReliability.Json
+ * @tc.desc: process JS_ERROR fault, this case match compose_rule.json and extract_rule.json.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -128,7 +128,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest002, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest003
- * @tc.desc: process freeze fault, this case match FeatureListForReliability.Json
+ * @tc.desc: process freeze fault, this case match compose_rule.json and extract_rule.json.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -171,9 +171,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest003, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest004
- * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process PANIC fault, this case match compose_rule.json and extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -206,9 +206,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest004, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest005
- * @tc.desc: process HWWATCHDOG fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process HWWATCHDOG fault, this case match compose_rule.json and extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -241,9 +241,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest005, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest006
- * @tc.desc: process HWWATCHDOG fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process HWWATCHDOG fault, this case match compose_rule.json and extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -265,9 +265,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest006, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest007
- * @tc.desc: process test fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process test fault, this case match compose_rule.json and extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -289,9 +289,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest007, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest008
- * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process RUST_PANIC fault, this case match compose_rule.json and extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -326,9 +326,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest008, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest009
- * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -369,9 +369,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest009, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest010
- * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process RUST_PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -413,9 +413,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest010, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest011
- * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process RUST_PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -464,9 +464,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest011, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest012
- * @tc.desc: process PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -513,9 +513,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest012, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest013
- * @tc.desc: process RUST_PANIC fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process RUST_PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -563,9 +563,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest013, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest014
- * @tc.desc: process APP_FREEZE fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process APP_FREEZE fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -613,9 +613,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest014, TestSize.Level1)
 
 /**
  * @tc.name: SmartParserTest015
- * @tc.desc: process APP_FREEZE fault, this case match FeatureAnalysisForRebootsys.Json.
+ * @tc.desc: process APP_FREEZE fault, this case match test_compose_rule.json and test_extract_rule.json.
  *           1. fault log should can be read;
- *           2. FeatureAnalysisForRebootsys.Json should match the json file in perforce.
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
  * @tc.type: FUNC
  * @tc.require:
  * @tc.author: liuwei
@@ -629,7 +629,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest015, TestSize.Level1)
     std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
     std::map<std::string, std::vector<std::string>> segStatusCfg;
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
-                            "/SmartParserTest011/appfreeze-com.example.jsinject-20010039-19700326211815";
+        "/SmartParserTest011/appfreeze-com.example.jsinject-20010039-19700326211815";
     std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest011/trace.txt";
     ASSERT_EQ(FileUtil::FileExists(faultFile), true);
     ASSERT_EQ(FileUtil::FileExists(traceFile), true);
@@ -670,6 +670,57 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest015, TestSize.Level1)
 
             bool segmentStart = true;
             feature.CheckStartSegment(segmentStart);
+        }
+    }
+}
+
+/**
+ * @tc.name: SmartParserTest016
+ * @tc.desc: process RUST_PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
+ *           1. fault log should can be read;
+ *           2. test_compose_rule.json and test_extract_rule.json. should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: liuwei
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest016, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::map<std::string, FeatureSet> extract;
+    std::list<std::pair<std::string, std::map<std::string, std::string>>> compose;
+    std::map<std::string, std::vector<std::string>> segStatusCfg;
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR +
+        "/SmartParserTest012/rustpanic-rustpanic_maker-0-20230419222113";
+    std::string traceFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest012/trace.txt";
+
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+    ASSERT_EQ(FileUtil::FileExists(traceFile), true);
+    std::stringstream buff;
+    LogUtil::ReadFileBuff(traceFile, buff);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    ExtractRule extractRule;
+    ComposeRule composeRule;
+    std::string extractConfig = "/data/test/test_data/SmartParser/SmartParserTest012/" + TEST_EXTRACT_CONFIG;
+    extractRule.ParseExtractRule("RUST_PANIC", extractConfig, faultFile);
+    extract = extractRule.GetExtractRule();
+    segStatusCfg = extractRule.GetSegStatusCfg();
+    std::string composeConfig = "/data/test/test_data/SmartParser/SmartParserTest012/" + TEST_COMPOSE_CONFIG;
+    composeRule.ParseComposeRule(composeConfig, "RUST_PANIC", extractRule.GetFeatureId());
+    compose = composeRule.GetComposeRule();
+
+    std::map<std::string, std::string> eventInfoMap;
+    for (const auto& composeRules : compose) {
+        FeatureAnalysis feature(extract[composeRules.first], composeRules.second, "RUST_PANIC");
+        if (feature.AnalysisLog()) {
+            auto result = feature.GetReasult();
+            for (const auto& one : result) {
+                eventInfoMap.emplace(one.first, one.second);
+            }
         }
     }
 }
