@@ -51,6 +51,10 @@
             <option name="push" value="SmartParserTest011/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
             <option name="push" value="SmartParserTest011/test_compose_rule.json -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
             <option name="push" value="SmartParserTest011/test_extract_rule.json -> /data/test/test_data/SmartParser/SmartParserTest011" src="res"/>
+            <option name="push" value="SmartParserTest012/rustpanic-rustpanic_maker-0-20230419222113 -> /data/test/test_data/SmartParser/SmartParserTest012" src="res"/>
+            <option name="push" value="SmartParserTest012/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest012" src="res"/>
+            <option name="push" value="SmartParserTest012/test_compose_rule.json -> /data/test/test_data/SmartParser/SmartParserTest012" src="res"/>
+            <option name="push" value="SmartParserTest012/test_extract_rule.json -> /data/test/test_data/SmartParser/SmartParserTest012" src="res"/>
         </preparer>
     </target>
 </configuration>
