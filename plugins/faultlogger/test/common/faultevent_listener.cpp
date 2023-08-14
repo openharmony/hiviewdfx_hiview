@@ -20,29 +20,62 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+
+void FaultEventListener::SetKeyWords(const std::vector<std::string>& keyWords)
+{
+    std::cout << "Enter SetKeyWords" << std::endl;
+    this->keyWords = keyWords;
+    {
+        std::lock_guard<std::mutex> lock(setFlagMutex);
+        allFindFlag = false;
+    }
+}
+
 void FaultEventListener::OnEvent(std::shared_ptr<HiSysEventRecord> sysEvent)
 {
     if (sysEvent == nullptr) {
         return;
     }
     auto str = sysEvent->AsJson();
-    jsonStr.emplace_back(str);
-}
-
-bool FaultEventListener::CheckKeywords(const std::vector<std::string> keywords)
-{
-    for (auto str : jsonStr) {
-        bool flag = true;
-        for (auto keyword : keywords) {
-            if (str.find(keyword) == std::string::npos) {
-                flag = false;
-            }
-        }
-        if (flag) {
-            return true;
+    std::cout << "recv event:" << str << std::endl;
+    for (const auto& keyWord : keyWords) {
+        std::cout << "match KeyWords, keyWord:" << keyWord << " , str:" << str  << std::endl;
+        if (str.find(keyWord) == std::string::npos) {
+            std::cout << "str not find keyWord"  << std::endl;
+            return;
         }
     }
-    return false;
+
+    // find all keywords, set allFindFlag to true
+    std::cout << "OnEvent get all keyWords"  << std::endl;
+    {
+        std::lock_guard<std::mutex> lock(setFlagMutex);
+        allFindFlag = true;
+        keyWordCheckCondition.notify_all();
+    }
+}
+
+bool FaultEventListener::CheckKeyWords()
+{
+    std::cout << "Enter CheckKeyWords"  << std::endl;
+    std::unique_lock<std::mutex> lock(setFlagMutex);
+    if (allFindFlag) {
+        std::cout << "allFindFlag is true, match ok, return true"  << std::endl;
+        return true;
+    }
+
+    auto flagCheckFunc = [&]() {
+        return allFindFlag;
+    };
+
+    // 6: wait allFindFlag set true for 6 seconds
+    if (keyWordCheckCondition.wait_for(lock, std::chrono::seconds(6), flagCheckFunc)) {
+        std::cout << "match ok, return true"  << std::endl;
+        return true;
+    } else {
+        std::cout << "match keywords timeout"  << std::endl;
+        return false;
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

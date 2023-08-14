@@ -260,9 +260,12 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
 {
     InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
+    time_t now = std::time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
     FaultLogDatabase *faultLogDb = new FaultLogDatabase();
     FaultLogInfo info;
-    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.time = now;
     info.pid = getpid();
     info.id = 0;
     info.faultLogType = 2;
@@ -276,9 +279,7 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     faultLogDb->SaveFaultLogInfo(info);
-    sleep(1);
-    std::vector<std::string> keyWords = { std::to_string(info.time) };
-    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
 /**
@@ -327,8 +328,11 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
 {
     InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
+    time_t now = std::time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
     FaultLogInfo info;
-    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.time = now;
     info.pid = getpid();
     info.id = 0;
     info.faultLogType = 2;
@@ -344,9 +348,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
     faultLogManager->SaveFaultInfoToRawDb(info);
-    sleep(1);
-    std::vector<std::string> keyWords = { std::to_string(info.time) };
-    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
 /**
@@ -362,7 +364,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
     for (int i = 1; i < 7; i++) {
-        info.time = std::time(nullptr); // 3 : index of timestamp
+        info.time = std::time(nullptr);
         info.pid = getpid();
         info.id = 0;
         info.faultLogType = i;
@@ -501,7 +503,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
     FaultLogInfoOhos info;
-    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.time = std::time(nullptr);
     info.pid = getpid();
     info.uid = 0;
     info.faultLogType = 2;
@@ -510,7 +512,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     serviceOhos.AddFaultLog(info);
     auto list = serviceOhos.QuerySelfFaultLog(2, 10);
     ASSERT_NE(list, nullptr);
-    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.time = std::time(nullptr);
     info.pid = getpid();
     info.uid = 10;
     info.faultLogType = 2;
@@ -519,7 +521,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
     serviceOhos.AddFaultLog(info);
     list = serviceOhos.QuerySelfFaultLog(2, 10);
     ASSERT_EQ(list, nullptr);
-    info.time = std::time(nullptr); // 3 : index of timestamp
+    info.time = std::time(nullptr);
     info.pid = getpid();
     info.uid = 0;
     info.faultLogType = 2;
@@ -577,6 +579,8 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
         "Fault thread Info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
@@ -588,9 +592,9 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     ASSERT_TRUE(FileUtil::FileExists(fileName));
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     ASSERT_EQ(plugin->GetFaultLogInfo(fileName)->module, "BootScanUnittest");
+
     // check event database
-    std::vector<std::string> keyWords = { std::to_string(now) };
-    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
 /**
@@ -602,6 +606,8 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
 {
     InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH_NO_LOG");
+    std::vector<std::string> keyWords = { "BootScanUnittest" };
+    faultEventListener->SetKeyWords(keyWords);
     time_t now = time(nullptr);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
@@ -611,10 +617,9 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     auto plugin = CreateFaultloggerInstance();
     plugin->StartBootScan();
     ASSERT_FALSE(FileUtil::FileExists(fileName));
+
     // check event database
-    sleep(1);
-    std::vector<std::string> keyWords = { "BootScanUnittest" };
-    ASSERT_TRUE(faultEventListener->CheckKeywords(keyWords));
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
 } // namespace HiviewDFX
