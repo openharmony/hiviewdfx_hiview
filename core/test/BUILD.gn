@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -18,6 +18,7 @@ group("unittest") {
   testonly = true
   deps = [
     ":EventDispatchQueueTest",
+    ":EventJsonParserTest",
     ":HiviewPlatformConfigTest",
     ":PlatformConfigTest",
     ":PluginBundleTest",
@@ -128,15 +129,15 @@ ohos_unittest("HiviewPlatformConfigTest") {
   ]
 }
 
-ohos_unittest("EventServerTest") {
+ohos_unittest("EventJsonParserTest") {
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 
-  sources = [ "unittest/common/event_server_test.cpp" ]
+  sources = [ "unittest/common/event_json_parser_test.cpp" ]
 
   deps = [
-    "$hiview_base/utility:hiview_utility",
-    "$hiview_plugin/sysevent_source:sysevent_source",
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
 }

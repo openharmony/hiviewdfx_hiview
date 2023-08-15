@@ -90,6 +90,12 @@ HWTEST_F(PluginTest, PluginTest001, testing::ext::TestSize.Level0)
     plugin.SetBundleName(bundleName);
     ASSERT_TRUE(plugin.IsBundlePlugin());
 
+    ASSERT_EQ(plugin.GetUseCount(), 0);
+    plugin.AddUseCount();
+    ASSERT_EQ(plugin.GetUseCount(), 1);
+    plugin.SubUseCount();
+    ASSERT_EQ(plugin.GetUseCount(), 0);
+
     plugin.OnUnload();
     printf("PluginTest001 end\n");
 }
