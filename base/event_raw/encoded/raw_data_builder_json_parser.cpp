@@ -21,13 +21,10 @@
 #include <vector>
 #include <unordered_map>
 
-#include "hilog/log.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawDataBuilderJsonParser" };
 constexpr int NUM_MIN_CHAR = static_cast<int>('0');
 constexpr int NUM_MAX_CHAR = static_cast<int>('9');
 constexpr int DOUBLE_QUOTA_CHAR = static_cast<int>('"');
@@ -242,6 +239,9 @@ void RawDataBuilderJsonParser::HandleStatusRun()
     if (lastStatus_ == STATUS_STRING_PARSE) { // special for parsing empty string value
         lastValueParseStatus_ = lastStatus_;
     }
+    if (lastStatus_ == STATUS_ARRAY_PARSE && (lastValueParseStatus_ != STATUS_STRING_ITEM_PARSE)) { // "KEY":[]
+        lastValueParseStatus_ = STATUS_INT_ITEM_PARSE;
+    }
 }
 
 void RawDataBuilderJsonParser::HandleStatusValueParse()
@@ -273,22 +273,22 @@ void RawDataBuilderJsonParser::HandleStatusArrayParse()
 
 void RawDataBuilderJsonParser::HandleStatusStringParse()
 {
+    lastValueParseStatus_ = status_;
     if (lastStatus_ != STATUS_STRING_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_PARSE) {
         value_.clear();
         return;
     }
     value_.append(1, charactor_);
-    lastValueParseStatus_ = status_;
 }
 
 void RawDataBuilderJsonParser::HandleStatusStringItemParse()
 {
+    lastValueParseStatus_ = status_;
     if (lastStatus_ != STATUS_STRING_ITEM_PARSE && lastStatus_ != STATUS_ESCAPE_CHAR_ITEM_PARSE) {
         value_.clear();
         return;
     }
     value_.append(1, charactor_);
-    lastValueParseStatus_ = status_;
 }
 
 void RawDataBuilderJsonParser::HandleStatusValueAppend()
@@ -312,9 +312,8 @@ void RawDataBuilderJsonParser::BuilderAppendIntValue(const std::string& key, con
     }
     if (value.find("-") != std::string::npos) {
         int64_t i64Value = 0;
-        TransStrToType(value.substr(1), i64Value);
-        HiLog::Debug(LABEL, "key is %{public}s, value is %{public}" PRId64 ".", key.c_str(), -i64Value);
-        builder_->AppendValue(key, -i64Value);
+        TransStrToType(value, i64Value);
+        builder_->AppendValue(key, i64Value);
         return;
     }
     uint64_t u64Value = 0;
@@ -348,17 +347,18 @@ void RawDataBuilderJsonParser::BuilderAppendIntArrayValue(const std::string& key
         return;
     }
     if (any_of(values.begin(), values.end(), [] (auto& item) {
+        return !item.empty() && item.find(".") != std::string::npos;
+    })) {
+        BuilderAppendFloatingArrayValue(key, values);
+        return;
+    }
+    if (any_of(values.begin(), values.end(), [] (auto& item) {
         return !item.empty() && item.find("-") != std::string::npos;
     })) {
         std::vector<int64_t> i64Values;
         int64_t i64Value = 0;
         for (auto value : values) {
             if (value.empty()) {
-                continue;
-            }
-            if (value.find("-") != std::string::npos) {
-                TransStrToType(value.substr(1), i64Value);
-                i64Values.emplace_back(-i64Value);
                 continue;
             }
             TransStrToType(value, i64Value);
