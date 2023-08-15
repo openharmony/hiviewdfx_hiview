@@ -126,10 +126,9 @@ int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& event
     return IPC_CALL_SUCCEED;
 }
 
-int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules)
+int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules, size_t limit)
 {
-    size_t queryRuleCntLimit = 100; // count of query rule for each querier is limited to 100.
-    if (rules.size() > queryRuleCntLimit) {
+    if (rules.size() > limit) {
         OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyQueryRules(rules);
         return ERR_TOO_MANY_QUERY_RULES;
     }
@@ -390,7 +389,7 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
         callback->OnComplete(ERR_NO_PERMISSION, 0, curSeq.load(std::memory_order_acquire));
         return ERR_NO_PERMISSION;
     }
-    auto checkRet = CheckEventQueryingValidity(rules);
+    auto checkRet = CheckEventQueryingValidity(rules, 100); // count of query rule limits to 100 in query.
     if (checkRet != IPC_CALL_SUCCEED) {
         callback->OnComplete(checkRet, 0, curSeq.load(std::memory_order_acquire));
         return checkRet;
@@ -527,7 +526,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
     }
-    auto checkRet = CheckEventQueryingValidity(rules);
+    auto checkRet = CheckEventQueryingValidity(rules, 10); // count of query rule limits to 10 in export.
     if (checkRet != IPC_CALL_SUCCEED) {
         return checkRet;
     }
