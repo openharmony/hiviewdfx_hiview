@@ -78,7 +78,9 @@ private:
     {
         ss << "\"" << key << "\":";
         ss << "[";
+        bool arrayIsNotEmpty = false;
         if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
+            arrayIsNotEmpty = (vals.size() > 0);
             for (auto item : vals) {
                 ss << "\"" << item << "\",";
             }
@@ -94,11 +96,12 @@ private:
             std::is_same_v<std::decay_t<T>, std::vector<uint64_t>> ||
             std::is_same_v<std::decay_t<T>, std::vector<float>> ||
             std::is_same_v<std::decay_t<T>, std::vector<double>>) {
+            arrayIsNotEmpty = (vals.size() > 0);
             for (auto item : vals) {
                 ss << "" << item << ",";
             }
         }
-        if (ss.tellp() != 0) {
+        if (ss.tellp() != 0 && arrayIsNotEmpty) {
             ss.seekp(-1, std::ios_base::end);
         }
         ss << "],";
