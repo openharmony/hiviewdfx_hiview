@@ -65,17 +65,10 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
         long tid = std::strtoul(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
 
         WatchPoint watchPoint = WatchPoint::Builder()
-            .InitSeq(record->GetSeq())
-            .InitDomain(result.GetDomain())
-            .InitStringId(result.GetStringId())
-            .InitTimestamp(record->happenTime_)
-            .InitPid(pid)
-            .InitUid(uid)
-            .InitTid(tid)
-            .InitPackageName(packageName)
+            .InitSeq(record->GetSeq()).InitDomain(result.GetDomain()).InitStringId(result.GetStringId())
+            .InitTimestamp(record->happenTime_).InitPid(pid).InitUid(uid).InitTid(tid).InitPackageName(packageName)
             .InitProcessName(record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME))
-            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeCommon::EVENT_MSG), "\\n", "\n"))
-            .Build();
+            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeCommon::EVENT_MSG), "\\n", "\n")).Build();
 
         std::string info = record->GetEventValue(EventStore::EventCol::INFO);
         std::regex reg("logPath:([^,]+)");
