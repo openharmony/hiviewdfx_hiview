@@ -23,9 +23,9 @@ public:
     virtual ~TraceCollectorImpl() = default;
 
 public:
-    virtual CollectResult<std::string> DumpTrace(const std::string &tag) override;
+    virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
     virtual CollectResult<int32_t> TraceOn() override;
-    virtual CollectResult<std::string> TraceOff() override;
+    virtual CollectResult<std::vector<std::string>> TraceOff() override;
 };
 
 std::shared_ptr<TraceCollector> TraceCollector::Create()
@@ -33,9 +33,9 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
     return std::make_shared<TraceCollectorImpl>();
 }
 
-CollectResult<std::string> TraceCollectorImpl::DumpTrace(const std::string &tag)
+CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
 {
-    CollectResult<std::string> result;
+    CollectResult<std::vector<std::string>> result;
     return result;
 }
 
@@ -45,9 +45,9 @@ CollectResult<int32_t> TraceCollectorImpl::TraceOn()
     return result;
 }
 
-CollectResult<std::string> TraceCollectorImpl::TraceOff()
+CollectResult<std::vector<std::string>> TraceCollectorImpl::TraceOff()
 {
-    CollectResult<std::string> result;
+    CollectResult<std::vector<std::string>> result;
     return result;
 }
 } // UCollectClient

@@ -13,14 +13,15 @@
  * limitations under the License.
  */
 #include <iostream>
-
 #include "trace_collector.h"
-
+#include "trace_manager.h"
 #include <gtest/gtest.h>
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
+
+TraceManager traceManager;
 
 class TraceCollectorTest : public testing::Test {
 public:
@@ -32,21 +33,51 @@ public:
 
 /**
  * @tc.name: TraceCollectorTest001
- * @tc.desc: used to test TraceCollector
+ * @tc.desc: used to test TraceCollector for service dump
  * @tc.type: FUNC
 */
+
+
 HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
 {
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    CollectResult<int32_t> onRes = collector->TraceOn();
-    std::cout << "collect trace on result" << onRes.retCode << std::endl;
-    ASSERT_TRUE(onRes.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(traceManager.OpenServiceTrace(tagGroups) == 0);
+    sleep(10);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
+    std::vector<std::string> items = resultDumpTrace.data; 
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+}
 
-    CollectResult<std::string> dumpRes = collector->DumpTrace("traceName");
-    std::cout << "collect dump trace result" << dumpRes.retCode << std::endl;
-    ASSERT_TRUE(dumpRes.retCode == UcError::SUCCESS);
+/**
+ * @tc.name: TraceCollectorTest002
+ * @tc.desc: used to test TraceCollector for command
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
+{
+    const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(traceManager.OpenCmdTrace(args) == 0);
 
-    CollectResult<std::string> offRes = collector->TraceOff();
-    std::cout << "collect trace on result" << offRes.retCode << std::endl;
-    ASSERT_TRUE(offRes.retCode == UcError::SUCCESS);
+    CollectResult<int32_t> resultTraceOn = collector->TraceOn();
+    std::cout << "collect TraceOn result " << resultTraceOn.retCode << std::endl;
+    ASSERT_TRUE(resultTraceOn.retCode == UcError::SUCCESS);
+    sleep(10);
+    CollectResult<std::vector<std::string>> resultTraceOff = collector->TraceOff();
+    std::vector<std::string> items = resultTraceOff.data;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect TraceOff result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultTraceOff.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(resultTraceOff.data.size() > 0);
+    ASSERT_TRUE(traceManager.CloseTrace() == 0);
 }

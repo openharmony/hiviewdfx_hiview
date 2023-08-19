@@ -17,9 +17,14 @@ import("//build/ohos.gni")
 config("ucolletciton_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
+    "collector/inner_include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
+    "$hiview_service/unified_collection/include",
+    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
+    "//third_party/zlib/contrib/minizip",
+    "//third_party/zlib",
   ]
 }
 
@@ -35,9 +40,16 @@ ohos_source_set("ucollection_source") {
     "collector/memory_collector_impl.cpp",
     "collector/network_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
+    "collector/trace_manager.cpp",
   ]
 
-  deps = []
+  deps = [
+    "$hiview_base/utility:hiview_utility",
+    "//third_party/zlib:libz",
+  ]
 
-  external_deps = []
+  external_deps = [
+    "hilog:libhilog",
+    "hitrace:hitrace_dump",
+  ]
 }
