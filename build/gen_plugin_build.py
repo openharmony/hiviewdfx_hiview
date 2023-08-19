@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -82,7 +82,7 @@ def write_build_file(output_file, plugins, plugin_so, cnt_type):
         return
     out_dir = os.path.dirname(output_file)
     if os.path.isdir(out_dir) is False:
-        os.makedirs(out_dir)
+        os.makedirs(out_dir, exist_ok=True)
     with open(output_file, 'w') as file_id:
         if DEBUG:
             print(build_info)
@@ -126,7 +126,7 @@ def write_config_file(output_file, plugins, pipelines, pipelinegroups, is_so):
     config_info = ''.join(items)
     out_dir = os.path.dirname(output_file)
     if os.path.isdir(out_dir) is False:
-        os.makedirs(out_dir)
+        os.makedirs(out_dir, exist_ok=True)
     with open(output_file, 'w') as file_id:
         file_id.write(config_info)
 
