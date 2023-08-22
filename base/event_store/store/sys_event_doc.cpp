@@ -148,7 +148,7 @@ std::string SysEventDoc::GetCurFile(const std::string& dir)
     FileUtil::GetDirFiles(dir, files);
     std::string curFile;
     for (auto& file : files) {
-        if (file.find(name_ + FILE_NAME_SEPARATOR) == std::string::npos) {
+        if (file.find(FILE_SEPARATOR + name_ + FILE_NAME_SEPARATOR) == std::string::npos) {
             continue;
         }
         if ((file.size() == curFile.size() && file > curFile) || file.size() > curFile.size()) {
