@@ -17,6 +17,7 @@
 #include <cinttypes>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "collect_result.h"
 
@@ -27,11 +28,17 @@ class TraceCollector {
 public:
     TraceCollector() = default;
     virtual ~TraceCollector() = default;
+    enum Caller {
+        RELIABILITY,
+        XPERF,
+        XPOWER,
+        OTHER,
+    };
 
 public:
-    virtual CollectResult<std::string> DumpTrace(const std::string &tag) = 0;
+    virtual CollectResult<std::vector<std::string>> DumpTrace(Caller &caller) = 0;
     virtual CollectResult<int32_t> TraceOn() = 0;
-    virtual CollectResult<std::string> TraceOff() = 0;
+    virtual CollectResult<std::vector<std::string>> TraceOff() = 0;
     static std::shared_ptr<TraceCollector> Create();
 }; // TraceCollector
 } // UCollectClient

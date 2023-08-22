@@ -42,11 +42,12 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
     std::cout << "collect trace on result" << onRes.retCode << std::endl;
     ASSERT_TRUE(onRes.retCode == UcError::SUCCESS);
 
-    CollectResult<std::string> dumpRes = collector->DumpTrace("traceName");
+    TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
+    CollectResult<std::vector<std::string>> dumpRes = collector->DumpTrace(caller);
     std::cout << "collect dump trace result" << dumpRes.retCode << std::endl;
     ASSERT_TRUE(dumpRes.retCode == UcError::SUCCESS);
 
-    CollectResult<std::string> offRes = collector->TraceOff();
+    CollectResult<std::vector<std::string>> offRes = collector->TraceOff();
     std::cout << "collect trace on result" << offRes.retCode << std::endl;
     ASSERT_TRUE(offRes.retCode == UcError::SUCCESS);
 }

@@ -17,7 +17,10 @@ import("//build/test.gni")
 config("ucollection_utility_test_config") {
   visibility = [ ":*" ]
 
-  include_dirs = [ "." ]
+  include_dirs = [
+    ".",
+    "$hiview_framework/native/unified_collection/collector/inner_include",
+  ]
 
   cflags = [ "-D__UNITTEST__" ]
 }
