@@ -29,6 +29,8 @@ public:
     virtual CollectResult<ProcessCpuLoad> CollectProcessCpuLoad(int32_t pid) override;
     virtual CollectResult<CpuFreqStat> CollectCpuFreqStat() override;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
+    virtual CollectResult<std::vector<ProcessCpuUsage>> CollectProcessCpuUsages() override;
+    virtual CollectResult<std::vector<ProcessCpuLoad>> CollectProcessCpuLoads() override;
 };
 
 std::shared_ptr<CpuCollector> CpuCollector::Create()
@@ -71,6 +73,18 @@ CollectResult<CpuFreqStat> CpuCollectorImpl::CollectCpuFreqStat()
 CollectResult<std::vector<CpuFreq>> CpuCollectorImpl::CollectCpuFrequency()
 {
     CollectResult<std::vector<CpuFreq>> result;
+    return result;
+}
+
+CollectResult<std::vector<ProcessCpuUsage>> CpuCollectorImpl::CollectProcessCpuUsages()
+{
+    CollectResult<std::vector<ProcessCpuUsage>> result;
+    return result;
+}
+
+CollectResult<std::vector<ProcessCpuLoad>> CpuCollectorImpl::CollectProcessCpuLoads()
+{
+    CollectResult<std::vector<ProcessCpuLoad>> result;
     return result;
 }
 } // UCollectUtil

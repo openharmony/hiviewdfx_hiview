@@ -16,10 +16,13 @@
 #ifndef INTERFACES_INNER_API_UNIFIED_COLLECTION_RESOURCE_IO_H
 #define INTERFACES_INNER_API_UNIFIED_COLLECTION_RESOURCE_IO_H
 #include <cinttypes>
+#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
 struct ProcessIo {
+    int32_t pid;
+    std::string name;
     int32_t rchar;
     int32_t wchar;
     int32_t syscr;

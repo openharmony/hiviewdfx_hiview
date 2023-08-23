@@ -19,11 +19,13 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct NetworkRate {
+    int32_t rssi;
     int32_t txBitRate;
     int32_t rxBitRate;
 };
 
 struct NetworkPackets {
+    int32_t currentSpeed;
     int32_t currentTxBytes;
     int32_t currentRxBytes;
 };

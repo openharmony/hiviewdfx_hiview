@@ -107,3 +107,29 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest006, TestSize.Level1)
     std::cout << "collect system cpu frequency result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
+
+/**
+ * @tc.name: CpuCollectorTest007
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuUsages
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest007, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    CollectResult<std::vector<ProcessCpuUsage>> data = collector->CollectProcessCpuUsages();
+    std::cout << "collect process cpu usages result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: CpuCollectorTest008
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuLoads
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest008, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    CollectResult<std::vector<ProcessCpuLoad>> data = collector->CollectProcessCpuLoads();
+    std::cout << "collect process cpu loads result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
