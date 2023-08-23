@@ -39,13 +39,14 @@ bool RawDataDecoder::FloatingNumberDecoded(uint8_t* rawData, const size_t maxLen
             return false;
         }
         dest = static_cast<double>(tmpf);
-    }
-    if (valByteCnt == sizeof(double)) {
+    } else if (valByteCnt == sizeof(double)) {
         double tmpd;
         if (memcpy_s(reinterpret_cast<uint8_t*>(&tmpd), valByteCnt, rawData + pos, valByteCnt) != EOK) {
             return false;
         }
         dest = tmpd;
+    } else {
+        return false;
     }
     pos += valByteCnt;
     return true;
