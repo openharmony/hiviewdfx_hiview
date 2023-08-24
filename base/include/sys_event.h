@@ -73,6 +73,8 @@ public:
     int64_t GetEventSeq() const;
     std::string GetEventValue(const std::string& key);
     int64_t GetEventIntValue(const std::string& key);
+    uint64_t GetEventUIntValue(const std::string& key);
+    double GetEventDoubleValue(const std::string& key);
     int GetEventType();
     std::string AsJsonStr();
     uint8_t* AsRawData();

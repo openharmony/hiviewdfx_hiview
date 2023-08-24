@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
 #include <string>
 
 namespace OHOS {
@@ -157,6 +158,13 @@ int ParseTimeZone(const std::string& tzStr);
 std::string ParseTimeZone(const uint8_t tzVal);
 size_t GetValidDataMinimumByteCount();
 
+template<typename T>
+std::string TransNumToHexStr(T num)
+{
+    std::stringstream ss;
+    ss << std::hex << num;
+    return ss.str();
+}
 } // namespace EventRaw
 } // namespace HiviewDFX
 } // namespace OHOS

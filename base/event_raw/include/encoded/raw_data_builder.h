@@ -424,6 +424,16 @@ private:
         return iter->second(encodedParam, val);
     }
 
+    template<typename T, typename V>
+    bool ParseAndSetTraceInfo(T& to, V from)
+    {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+            to = TransNumToHexStr(from);
+            return true;
+        }
+        return ParseValue(to, from);
+    }
+
     template<typename T>
     bool GetBaseInfoValueByKey(const std::string& key, T& val)
     {
@@ -435,12 +445,14 @@ private:
                     return this->ParseValue(val, std::string(header_.name));
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_TYPE, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.type);
+                    int type = static_cast<int>(header_.type) + 1;
+                    return this->ParseValue(val, type);
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_TIME_STAMP, std::bind([this] (T& val) -> bool {
                     return this->ParseValue(val, header_.timestamp);
                 }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TIME_ZONE, std::bind(&RawDataBuilder::PareTimeZone<T>, this, std::placeholders::_1)},
+            {BASE_INFO_KEY_TIME_ZONE, std::bind(&RawDataBuilder::ParseTimeZoneFromHeader<T>, this,
+                std::placeholders::_1)},
             {BASE_INFO_KEY_ID, std::bind([this] (T& val) -> bool {
                     return this->ParseValue(val, header_.id);
                 }, std::placeholders::_1)},
@@ -454,15 +466,16 @@ private:
                     return this->ParseValue(val, header_.uid);
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_TRACE_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, traceInfo_.traceId);
+                    return this->ParseAndSetTraceInfo(val, traceInfo_.traceId);
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_SPAN_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, traceInfo_.spanId);
+                    return this->ParseAndSetTraceInfo(val, traceInfo_.spanId);
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_PARENT_SPAN_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, traceInfo_.pSpanId);
+                    return this->ParseAndSetTraceInfo(val, traceInfo_.pSpanId);
                 }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TRACE_FLAG, std::bind(&RawDataBuilder::PareTraceFlag<T>, this, std::placeholders::_1)},
+            {BASE_INFO_KEY_TRACE_FLAG, std::bind(&RawDataBuilder::PareTraceFlagFromHeader<T>, this,
+                std::placeholders::_1)},
         };
         auto iter = parseFuncs.find(key);
         if (iter == parseFuncs.end()) {
@@ -472,21 +485,42 @@ private:
     }
 
     template<typename T, typename V>
-    bool ParseValue(T& val, V dest)
+    bool ParseValue(T& to, V from)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, std::decay_t<V>>) {
-            val = dest;
+            to = from;
+            return true;
+        }
+        if constexpr (((std::is_same_v<std::decay_t<T>, std::decay_t<int8_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<int16_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<int32_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<int64_t>>) && (
+            std::is_same_v<std::decay_t<V>, std::decay_t<int8_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<int16_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<int32_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<int64_t>>)) || ((
+            std::is_same_v<std::decay_t<T>, std::decay_t<uint8_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<uint16_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<uint32_t>> ||
+            std::is_same_v<std::decay_t<T>, std::decay_t<uint64_t>>) && (
+            std::is_same_v<std::decay_t<V>, std::decay_t<uint8_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<uint16_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<uint32_t>> ||
+            std::is_same_v<std::decay_t<V>, std::decay_t<uint64_t>>
+            ))) {
+            to = static_cast<std::decay_t<T>>(from);
             return true;
         }
         return false;
     }
 
     template<typename T>
-    bool PareTimeZone(T& val)
+    bool ParseTimeZoneFromHeader(T& val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, int8_t> ||
-            std::is_same_v<std::decay_t<T>, int16_t> ||
-            std::is_same_v<std::decay_t<T>, int32_t>) {
+        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
+            std::is_same_v<std::decay_t<T>, uint16_t> ||
+            std::is_same_v<std::decay_t<T>, uint32_t> ||
+            std::is_same_v<std::decay_t<T>, uint64_t>) {
             val = static_cast<std::decay_t<T>>(header_.timeZone);
             return true;
         }
@@ -499,11 +533,12 @@ private:
     }
 
     template<typename T>
-    bool PareTraceFlag(T& val)
+    bool PareTraceFlagFromHeader(T& val)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
             std::is_same_v<std::decay_t<T>, uint16_t> ||
-            std::is_same_v<std::decay_t<T>, uint32_t>) {
+            std::is_same_v<std::decay_t<T>, uint32_t> ||
+            std::is_same_v<std::decay_t<T>, uint64_t>) {
             val = static_cast<std::decay_t<T>>(traceInfo_.traceFlag);
             return true;
         }
