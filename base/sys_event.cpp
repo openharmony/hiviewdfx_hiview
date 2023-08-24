@@ -16,6 +16,7 @@
 
 #include <chrono>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -228,16 +229,31 @@ std::string SysEvent::GetEventValue(const std::string& key)
 int64_t SysEvent::GetEventIntValue(const std::string& key)
 {
     int64_t intDest = 0; // default value is 0
-    if (builder_ == nullptr) {
+    uint64_t uIntDest = 0; // default value is 0
+    if ((builder_ == nullptr) || builder_->ParseValueByKey(key, intDest) ||
+        !builder_->ParseValueByKey(key, uIntDest) ||
+        (uIntDest > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))) {
         return intDest;
     }
-    auto ret = builder_->ParseValueByKey(key, intDest);
-    if (!ret) {
-        uint64_t uIntDest = 0; // default value is 0
-        builder_->ParseValueByKey(key, uIntDest);
-        return static_cast<int64_t>(uIntDest);
+    return static_cast<int64_t>(uIntDest);
+}
+
+uint64_t SysEvent::GetEventUIntValue(const std::string& key)
+{
+    uint64_t uIntDest = 0; // default value is 0
+    int64_t intDest = 0; // default value is 0
+    if ((builder_ == nullptr) || builder_->ParseValueByKey(key, uIntDest) ||
+        !builder_->ParseValueByKey(key, intDest) || (intDest < 0)) {
+        return uIntDest;
     }
-    return intDest;
+    return static_cast<uint64_t>(intDest);
+}
+
+double SysEvent::GetEventDoubleValue(const std::string& key)
+{
+    double parsedVal = 0.0;
+    (void)builder_->ParseValueByKey(key, parsedVal);
+    return parsedVal;
 }
 
 int SysEvent::GetEventType()

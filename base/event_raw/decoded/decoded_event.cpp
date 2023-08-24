@@ -42,14 +42,6 @@ std::string TransUInt64ToFixedLengthStr(uint64_t src)
     dest.replace(maxIdLen - uint64Str.size(), uint64Str.size(), uint64Str);
     return dest;
 }
-
-template<typename T>
-std::string TransNumToHexStr(T num)
-{
-    std::stringstream ss;
-    ss << std::hex << num;
-    return ss.str();
-}
 }
 
 DecodedEvent::DecodedEvent(uint8_t* src)
