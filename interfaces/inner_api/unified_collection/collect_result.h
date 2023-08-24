@@ -19,7 +19,7 @@ namespace OHOS {
 namespace HiviewDFX {
 enum UcError {
     SUCCESS = 0,
-    UPSUPPORT = 1
+    UNSUPPORT = 1
 };
 
 template<typename T> class CollectResult {

@@ -52,7 +52,8 @@
                 "time_service",
                 "napi",
                 "hiperf",
-                "hitrace"
+                "hitrace",
+                "wifi"
             ],
             "third_party": [
                 "jsoncpp",

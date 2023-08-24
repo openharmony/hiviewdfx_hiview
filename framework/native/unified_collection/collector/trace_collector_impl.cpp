@@ -224,7 +224,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
         result.data = outputFiles;
         result.retCode = UcError::SUCCESS;
     } else {
-        result.retCode = UcError::UPSUPPORT;
+        result.retCode = UcError::UNSUPPORT;
     }
     return result;
 }
@@ -235,7 +235,7 @@ CollectResult<int32_t> TraceCollectorImpl::TraceOn()
     if (OHOS::HiviewDFX::Hitrace::DumpTraceOn() == TraceErrorCode::SUCCESS) {
         result.retCode = UcError::SUCCESS;
     } else {
-        result.retCode = UcError::UPSUPPORT;
+        result.retCode = UcError::UNSUPPORT;
     }
     return result;
 }
@@ -248,7 +248,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::TraceOff()
         result.data = ret.outputFiles;
         result.retCode = UcError::SUCCESS;
     } else {
-        result.retCode = UcError::UPSUPPORT;
+        result.retCode = UcError::UNSUPPORT;
     }
     return result;
 }

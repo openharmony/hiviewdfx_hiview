@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 #include "network_collector.h"
+#include "wifi_device.h"
+#include "logger.h"
+
+using std::unique_ptr;
+
+DEFINE_LOG_TAG("UCollectUtil");
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -34,13 +40,59 @@ std::shared_ptr<NetworkCollector> NetworkCollector::Create()
 
 CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
 {
+    std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
     CollectResult<NetworkRate> result;
+    bool isActive = false;
+    int ret = wifiDevicePtr->IsWifiActive(isActive);
+    if (isActive) {
+        Wifi::WifiLinkedInfo linkInfo;
+        ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
+        if (ret != Wifi::WIFI_OPT_SUCCESS) {
+            HIVIEW_LOGE("GetLinkedInfo failed");
+            result.retCode = UcError::UNSUPPORT;
+            return result;
+        }
+        NetworkRate& networkRate = result.data;
+        networkRate.rssi = linkInfo.rssi;
+        HIVIEW_LOGD("rssi = %d", networkRate.rssi);
+        networkRate.txBitRate = linkInfo.txLinkSpeed;
+        HIVIEW_LOGD("txBitRate = %d", networkRate.txBitRate);
+        networkRate.rxBitRate = linkInfo.rxLinkSpeed;
+        HIVIEW_LOGD("rxBitRate = %d", networkRate.rxBitRate);
+        result.retCode = UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("IsWifiActive failed");
+        result.retCode = UcError::UNSUPPORT;
+    }
     return result;
 }
 
 CollectResult<NetworkPackets> NetworkCollectorImpl::CollectSysPackets()
 {
+    std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
     CollectResult<NetworkPackets> result;
+    bool isActive = false;
+    int ret = wifiDevicePtr->IsWifiActive(isActive);
+    if (isActive) {
+        Wifi::WifiLinkedInfo linkInfo;
+        ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
+        if (ret != Wifi::WIFI_OPT_SUCCESS) {
+            HIVIEW_LOGE("GetLinkedInfo failed");
+            result.retCode = UcError::UNSUPPORT;
+            return result;
+        }
+        NetworkPackets& networkPackets = result.data;
+        networkPackets.currentSpeed = linkInfo.linkSpeed;
+        HIVIEW_LOGD("currentSpeed = %d", networkPackets.currentSpeed);
+        networkPackets.currentTxBytes = linkInfo.lastTxPackets;
+        HIVIEW_LOGD("currentTxBytes = %d", networkPackets.currentTxBytes);
+        networkPackets.currentRxBytes = linkInfo.lastRxPackets;
+        HIVIEW_LOGD("currentRxBytes = %d", networkPackets.currentRxBytes);
+        result.retCode = UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("IsWifiActive failed");
+        result.retCode = UcError::UNSUPPORT;
+    }
     return result;
 }
 } // UCollectUtil

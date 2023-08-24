@@ -34,6 +34,7 @@ ohos_source_set("ucollection_source") {
   public_configs = [ ":ucolletciton_source_config" ]
 
   sources = [
+    "collector/common_util.cpp",
     "collector/cpu_collector_impl.cpp",
     "collector/gpu_collector_impl.cpp",
     "collector/io_collector_impl.cpp",
@@ -45,11 +46,13 @@ ohos_source_set("ucollection_source") {
 
   deps = [
     "$hiview_base/utility:hiview_utility",
+    "$hiview_core:hiview_core",
     "//third_party/zlib:libz",
   ]
 
   external_deps = [
     "hilog:libhilog",
     "hitrace:hitrace_dump",
+    "wifi:wifi_sdk",
   ]
 }
