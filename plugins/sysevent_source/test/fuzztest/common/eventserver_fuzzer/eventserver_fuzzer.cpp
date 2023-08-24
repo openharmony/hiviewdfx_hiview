@@ -44,8 +44,7 @@ static void SysEventServerFuzzTest(const uint8_t* data, size_t size)
         return;
     }
     EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
-    std::string eventJsonStr = event.AsJsonStr();
-    printf("eventJson string=%s\n", eventJsonStr.c_str());
+    (void)event.AsJsonStr();
     delete[] buffer;
 }
 } // namespace HiviewDFX
