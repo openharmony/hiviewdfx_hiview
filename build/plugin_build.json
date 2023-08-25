@@ -20,10 +20,6 @@
             "path": "plugins/freeze_detector",
             "name": "freeze_detector"
         },
-        "HiCollieCollector": {
-            "path": "plugins/hicollie_collector",
-            "name": "hicollie_collector"
-        },
         "UsageEventReport": {
             "path": "plugins/usage_event_report",
             "name": "usage_event_report"
@@ -54,9 +50,6 @@
                         "loadtime": 0
                     },
                     "FreezeDetectorPlugin": {
-                        "loadtime": 0
-                    },
-                    "HiCollieCollector": {
                         "loadtime": 0
                     },
                     "SysEventStore": {
