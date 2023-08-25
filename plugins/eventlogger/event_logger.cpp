@@ -434,7 +434,7 @@ void EventLogger::CheckEventOnContinue()
             ++eventIter;
         }
     }
-
+    HIVIEW_LOGI("event size:%{public}d", sysEventSet_.size());
     if (sysEventSet_.size() > 0) {
         constexpr int waitTime = 5;
         auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
