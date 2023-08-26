@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 #include "io_collector.h"
+#include "common_util.h"
+#include "common_utils.h"
+#include "logger.h"
+#include "file_util.h"
+#include <string_ex.h>
+
+DEFINE_LOG_TAG("UCollectUtil");
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -34,6 +41,41 @@ std::shared_ptr<IoCollector> IoCollector::Create()
 CollectResult<ProcessIo> IoCollectorImpl::CollectProcessIo(int32_t pid)
 {
     CollectResult<ProcessIo> result;
+    std::string filename = PROC + std::to_string(pid) + IO;
+    std::string content;
+    FileUtil::LoadStringFromFile(filename, content);
+    std::vector<std::string> vec;
+    OHOS::SplitStr(content, "\n", vec);
+    ProcessIo& processIO = result.data;
+    processIO.pid = pid;
+    std::string processName;
+    processIO.name = CommonUtils::GetProcNameByPid(pid);
+    std::string type;
+    int32_t value = 0;
+    for (const std::string &str : vec) {
+        if (CommonUtil::ParseTypeAndValue(str, type, value)) {
+            if (type == "rchar") {
+                processIO.rchar = value;
+                HIVIEW_LOGD("rchar=%{public}d", processIO.rchar);
+            } else if (type == "wchar") {
+                processIO.wchar = value;
+                HIVIEW_LOGD("wchar=%{public}d", processIO.wchar);
+            } else if (type == "syscr") {
+                processIO.syscr = value;
+                HIVIEW_LOGD("syscr=%{public}d", processIO.syscr);
+            } else if (type == "syscw") {
+                processIO.syscw = value;
+                HIVIEW_LOGD("syscw=%{public}d", processIO.syscw);
+            } else if (type == "read_bytes") {
+                processIO.readBytes = value;
+                HIVIEW_LOGD("readBytes=%{public}d", processIO.readBytes);
+            } else if (type == "cancelled_write_bytes") {
+                processIO.cancelledWriteBytes = value;
+                HIVIEW_LOGD("cancelledWriteBytes=%{public}d", processIO.cancelledWriteBytes);
+            }
+        }
+    }
+    result.retCode = UcError::SUCCESS;
     return result;
 }
 } // UCollectUtil
