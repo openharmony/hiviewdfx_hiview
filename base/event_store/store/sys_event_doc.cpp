@@ -28,11 +28,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDoc");
-namespace {
-const char FILE_NAME_SEPARATOR[] = "-";
-const char FILE_SEPARATOR[] = "/";
-const char FILE_EXT[] = ".db";
-}
 
 SysEventDoc::SysEventDoc(const std::string& domain, const std::string& name)
     : writer_(nullptr), reader_(nullptr), domain_(domain), name_(name), type_(0)
