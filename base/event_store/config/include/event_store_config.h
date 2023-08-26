@@ -46,8 +46,8 @@ private:
     bool Contain(int eventType);
 
     std::unordered_map<int, StoreConfig> configMap_;
-}; // CrcGenerator
-} // EventStoreConfig
+};
+} // EventStore
 } // HiviewDFX
 } // OHOS
 #endif // HIVIEW_BASE_EVENT_STORE_CONFIG_EVENT_STORE_CONFIG_H
