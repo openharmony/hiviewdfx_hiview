@@ -27,12 +27,12 @@ public:
 public:
     enum TraceStatus {
         STOP,
-        SERVICE,
-        COMMAND,
+        SNAPSHOT,
+        RECORDING,
     };
 public:
-    int32_t OpenServiceTrace(const std::vector<std::string> &tagGroups);
-    int32_t OpenCmdTrace(const std::string &args);
+    int32_t OpenSnapshotTrace(const std::vector<std::string> &tagGroups);
+    int32_t OpenRecordingTrace(const std::string &args);
     int32_t CloseTrace();
 
 private:

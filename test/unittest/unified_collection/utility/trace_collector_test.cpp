@@ -43,11 +43,11 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenServiceTrace(tagGroups) == 0);
+    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
-    std::vector<std::string> items = resultDumpTrace.data; 
+    std::vector<std::string> items = resultDumpTrace.data;
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
@@ -66,7 +66,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
 {
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenCmdTrace(args) == 0);
+    ASSERT_TRUE(traceManager.OpenRecordingTrace(args) == 0);
 
     CollectResult<int32_t> resultTraceOn = collector->TraceOn();
     std::cout << "collect TraceOn result " << resultTraceOn.retCode << std::endl;
@@ -79,5 +79,29 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
     }
     ASSERT_TRUE(resultTraceOff.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultTraceOff.data.size() > 0);
+    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+}
+
+/**
+ * @tc.name: TraceCollectorTest003
+ * @tc.desc: used to test TraceCollector for BetaClub dump
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::BETACLUB;
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    sleep(5);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
+    std::vector<std::string> items = resultDumpTrace.data;
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
     ASSERT_TRUE(traceManager.CloseTrace() == 0);
 }

@@ -22,11 +22,11 @@ using namespace OHOS::HiviewDFX::Hitrace;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr HiLogLabel LABEL_MANAGER = { LOG_CORE, 0xD002D03, "Hiview-Framework-Collector-Init" };
+constexpr HiLogLabel LABEL_MANAGER = { LOG_CORE, 0xD002D03, "Hiview-TraceMgr" };
 constexpr int32_t ERR_CODE = -1;
 }
 
-int32_t TraceManager::OpenServiceTrace(const std::vector<std::string> &tagGroups)
+int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroups)
 {
     // check trace manager status
     if (status_ != TraceStatus::STOP) {
@@ -37,11 +37,11 @@ int32_t TraceManager::OpenServiceTrace(const std::vector<std::string> &tagGroups
         HiLog::Error(LABEL_MANAGER, "Service OpenTrace fail.");
         return ERR_CODE;
     }
-    status_ = TraceStatus::SERVICE;
+    status_ = TraceStatus::SNAPSHOT;
     return 0;
 }
 
-int32_t TraceManager::OpenCmdTrace(const std::string &args)
+int32_t TraceManager::OpenRecordingTrace(const std::string &args)
 {
     // check trace manager status
     if (status_ != TraceStatus::STOP) {
@@ -52,7 +52,7 @@ int32_t TraceManager::OpenCmdTrace(const std::string &args)
         HiLog::Error(LABEL_MANAGER, "CMD OpenTrace fail.");
         return ERR_CODE;
     }
-    status_ = TraceStatus::COMMAND;
+    status_ = TraceStatus::RECORDING;
     return 0;
 }
 
