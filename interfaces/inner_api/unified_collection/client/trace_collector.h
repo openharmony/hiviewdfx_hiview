@@ -32,6 +32,7 @@ public:
         RELIABILITY,
         XPERF,
         XPOWER,
+        BETACLUB,
         OTHER,
     };
 
