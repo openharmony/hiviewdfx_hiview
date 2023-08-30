@@ -151,6 +151,47 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: TestEventDaoQuery_003
+ * @tc.desc: query event from doc store
+ * @tc.type: FUNC
+ * @tc.require: issue
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_003, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create pipeline event and set event id
+     * @tc.steps: step2. invoke OnEvent func
+     * @tc.expected: all ASSERT_TRUE work through.
+     */
+    std::string jsonStr1 = R"~({"domain_":"DEMO","name_":"SYS_EVENT_DAO_TEST","type_":1,"tz_":8,"time_":162027129100,
+        "pid_":1201,"tid_":1201,"uid_":1201,"KEY_INT":-200,"KEY_DOUBLE":2.2,"KEY_STR":"abc"})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
+    sysEvent->SetLevel(TEST_LEVEL);
+    constexpr int64_t testSeq = 1;
+    sysEvent->SetEventSeq(testSeq);
+    int retCode = EventStore::SysEventDao::Insert(sysEvent);
+    ASSERT_TRUE(retCode == 0);
+
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery("DEMO", {"SYS_EVENT_DAO_TEST"});
+    EventStore::ResultSet resultSet = sysEventQuery->Where(EventStore::EventCol::SEQ, EventStore::Op::EQ, testSeq).
+        Where(EventStore::EventCol::PID, EventStore::Op::EQ, 1201). //1201 test pid value
+        Where(EventStore::EventCol::TID, EventStore::Op::EQ, 1201). //1201 test tid value
+        Where(EventStore::EventCol::UID, EventStore::Op::EQ, 1201). //1201 test uid value
+        Where("KEY_INT", EventStore::Op::EQ, -200). // test int value -200
+        Where("KEY_DOUBLE", EventStore::Op::EQ, 2.2). // test double value 2.2
+        Where("KEY_STR", EventStore::Op::EQ, "abc").
+        Execute();
+    int count = 0;
+    while (resultSet.HasNext()) {
+        count++;
+        EventStore::ResultSet::RecordIter it = resultSet.Next();
+        ASSERT_TRUE(it->GetSeq() == sysEvent->GetEventSeq());
+        std::cout << "event json=" << it->AsJsonStr() << std::endl;
+    }
+    ASSERT_TRUE(count >= 1);
+}
+
+/**
  * @tc.name: TestEventDaoQuery_004
  * @tc.desc: test embed sql
  * @tc.type: FUNC
