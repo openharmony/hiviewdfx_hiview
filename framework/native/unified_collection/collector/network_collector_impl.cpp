@@ -16,8 +16,6 @@
 #include "wifi_device.h"
 #include "logger.h"
 
-using std::unique_ptr;
-
 DEFINE_LOG_TAG("UCollectUtil");
 
 namespace OHOS {
@@ -38,20 +36,31 @@ std::shared_ptr<NetworkCollector> NetworkCollector::Create()
     return std::make_shared<NetworkCollectorImpl>();
 }
 
-CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
+inline bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
 {
     std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
-    CollectResult<NetworkRate> result;
+    if (wifiDevicePtr == nullptr) {
+        return false;
+    }
     bool isActive = false;
-    int ret = wifiDevicePtr->IsWifiActive(isActive);
-    if (isActive) {
-        Wifi::WifiLinkedInfo linkInfo;
-        ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
-        if (ret != Wifi::WIFI_OPT_SUCCESS) {
-            HIVIEW_LOGE("GetLinkedInfo failed");
-            result.retCode = UcError::UNSUPPORT;
-            return result;
-        }
+    wifiDevicePtr->IsWifiActive(isActive);
+    if (!isActive) {
+        return false;
+    }
+    int ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
+    if (ret != Wifi::WIFI_OPT_SUCCESS) {
+        HIVIEW_LOGE("GetLinkedInfo failed");
+        return false;
+    } else {
+        return true;
+    }
+}
+
+CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
+{
+    CollectResult<NetworkRate> result;
+    Wifi::WifiLinkedInfo linkInfo;
+    if (GetNetworkInfo(linkInfo)) {
         NetworkRate& networkRate = result.data;
         networkRate.rssi = linkInfo.rssi;
         HIVIEW_LOGD("rssi = %d", networkRate.rssi);
@@ -69,18 +78,9 @@ CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
 
 CollectResult<NetworkPackets> NetworkCollectorImpl::CollectSysPackets()
 {
-    std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
     CollectResult<NetworkPackets> result;
-    bool isActive = false;
-    int ret = wifiDevicePtr->IsWifiActive(isActive);
-    if (isActive) {
-        Wifi::WifiLinkedInfo linkInfo;
-        ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
-        if (ret != Wifi::WIFI_OPT_SUCCESS) {
-            HIVIEW_LOGE("GetLinkedInfo failed");
-            result.retCode = UcError::UNSUPPORT;
-            return result;
-        }
+    Wifi::WifiLinkedInfo linkInfo;
+    if (GetNetworkInfo(linkInfo)) {
         NetworkPackets& networkPackets = result.data;
         networkPackets.currentSpeed = linkInfo.linkSpeed;
         HIVIEW_LOGD("currentSpeed = %d", networkPackets.currentSpeed);

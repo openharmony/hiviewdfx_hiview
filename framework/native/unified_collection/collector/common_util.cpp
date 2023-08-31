@@ -19,7 +19,6 @@
 
 DEFINE_LOG_TAG("UCollectUtil");
 
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {

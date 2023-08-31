@@ -13,11 +13,13 @@
  * limitations under the License.
  */
 #include "io_collector.h"
+
+#include <string_ex.h>
+
 #include "common_util.h"
 #include "common_utils.h"
-#include "logger.h"
 #include "file_util.h"
-#include <string_ex.h>
+#include "logger.h"
 
 DEFINE_LOG_TAG("UCollectUtil");
 
@@ -48,7 +50,6 @@ CollectResult<ProcessIo> IoCollectorImpl::CollectProcessIo(int32_t pid)
     OHOS::SplitStr(content, "\n", vec);
     ProcessIo& processIO = result.data;
     processIO.pid = pid;
-    std::string processName;
     processIO.name = CommonUtils::GetProcNameByPid(pid);
     std::string type;
     int32_t value = 0;

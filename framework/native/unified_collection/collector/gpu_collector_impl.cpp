@@ -37,10 +37,10 @@ std::shared_ptr<GpuCollector> GpuCollector::Create()
     return std::make_shared<GpuCollectorImpl>();
 }
 
-inline int32_t getValue(std::string filename)
+inline int32_t GetValue(const std::string& fileName)
 {
     std::string content;
-    FileUtil::LoadStringFromFile(filename, content);
+    FileUtil::LoadStringFromFile(fileName, content);
     return std::stoi(content);
 }
 
@@ -48,12 +48,11 @@ CollectResult<GpuFreq> GpuCollectorImpl::CollectGpuFrequency()
 {
     CollectResult<GpuFreq> result;
     GpuFreq& gpuFreq = result.data;
-    gpuFreq.curFeq = getValue(GPU_CUR_FREQ);
-    HIVIEW_LOGD("curFeq=%{public}d", gpuFreq.curFeq);
-    gpuFreq.maxFeq = getValue(GPU_MAX_FREQ);
-    HIVIEW_LOGD("maxFeq=%{public}d", gpuFreq.maxFeq);
-    gpuFreq.minFeq = getValue(GPU_MIN_FREQ);
-    HIVIEW_LOGD("minFeq=%{public}d", gpuFreq.minFeq);
+    gpuFreq.curFeq = GetValue(GPU_CUR_FREQ);
+    gpuFreq.maxFeq = GetValue(GPU_MAX_FREQ);
+    gpuFreq.minFeq = GetValue(GPU_MIN_FREQ);
+    HIVIEW_LOGD("curFeq=%{public}d,maxFeq=%{public}d,minFeq=%{public}d",
+        gpuFreq.curFeq, gpuFreq.maxFeq, gpuFreq.minFeq);
     result.retCode = UcError::SUCCESS;
     return result;
 }
@@ -62,7 +61,7 @@ CollectResult<SysGpuLoad> GpuCollectorImpl::CollectSysGpuLoad()
 {
     CollectResult<SysGpuLoad> result;
     SysGpuLoad& sysGpuLoad = result.data;
-    sysGpuLoad.gpuLoad = getValue(GPU_LOAD);
+    sysGpuLoad.gpuLoad = GetValue(GPU_LOAD);
     HIVIEW_LOGD("gpuLoad=%{public}f", sysGpuLoad.gpuLoad);
     result.retCode = UcError::SUCCESS;
     return result;

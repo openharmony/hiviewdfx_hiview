@@ -13,12 +13,14 @@
  * limitations under the License.
  */
 #include "memory_collector.h"
+
+#include <fstream>
+#include <string_ex.h>
+
 #include "common_util.h"
 #include "common_utils.h"
 #include "file_util.h"
 #include "logger.h"
-#include <string_ex.h>
-#include <fstream>
 
 DEFINE_LOG_TAG("UCollectUtil");
 

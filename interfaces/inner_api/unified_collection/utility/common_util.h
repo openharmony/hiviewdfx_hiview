@@ -19,7 +19,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string PROC = "/proc/";
-const std::string IO = "/iO";
+const std::string IO = "/io";
 const std::string SMAPS_ROLLUP = "/smaps_rollup";
 const std::string MEM_INFO = "/proc/meminfo";
 const std::string GPU_CUR_FREQ = "/sys/class/devfreq/gpufreq/cur_freq";
