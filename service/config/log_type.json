@@ -11,5 +11,8 @@
     },
     "REMOTELOG": {
         "LOGPATH": "/data/log/logpack/remotelog/"
+    },
+    "TRACE": {
+        "LOGPATH": "/data/log/hiview/unified_collection/trace/share/"
     }
 }
