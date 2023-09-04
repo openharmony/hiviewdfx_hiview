@@ -116,6 +116,34 @@
                             "event.h"
                         ]
                     }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection/client:libucollection_client",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection",
+                        "header_files": [
+                            "client/cpu_collector.h",
+                            "client/gpu_collector.h",
+                            "client/io_collector.h",
+                            "client/memory_collector.h",
+                            "client/network_collector.h",
+                            "client/trace_collector.h"
+                        ]
+                    }
+                },
+                {
+                    "name": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection/utility:libucollection_utility",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection",
+                        "header_files": [
+                            "utility/cpu_collector.h",
+                            "utility/gpu_collector.h",
+                            "utility/io_collector.h",
+                            "utility/memory_collector.h",
+                            "utility/network_collector.h",
+                            "utility/trace_collector.h"
+                        ]
+                    }
                 }
             ],
             "test": [ "//base/hiviewdfx/hiview:hiview_test_package" ]
