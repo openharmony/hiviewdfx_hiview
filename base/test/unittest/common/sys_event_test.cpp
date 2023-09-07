@@ -154,21 +154,21 @@ HWTEST_F(SysEventTest, TestSysEventValueParse002, testing::ext::TestSize.Level3)
     jsonStr.append(std::to_string(std::numeric_limits<uint64_t>::max()));
     jsonStr.append("}");
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    uint64_t dest = sysEvent->GetEventUIntValue("INT_VAL1");
+    uint64_t dest = sysEvent->GetEventUintValue("INT_VAL1");
     ASSERT_EQ(dest, 0); // test value
-    dest = sysEvent->GetEventUIntValue("INT_VAL2");
+    dest = sysEvent->GetEventUintValue("INT_VAL2");
     ASSERT_EQ(dest, 1); // test value
-    dest = sysEvent->GetEventUIntValue("INT_VAL3");
+    dest = sysEvent->GetEventUintValue("INT_VAL3");
     ASSERT_EQ(dest, 0); // test value
-    dest = sysEvent->GetEventUIntValue("INT_VAL4");
+    dest = sysEvent->GetEventUintValue("INT_VAL4");
     ASSERT_EQ(dest, std::numeric_limits<int64_t>::max());
-    dest = sysEvent->GetEventUIntValue("UINT_VAL1");
+    dest = sysEvent->GetEventUintValue("UINT_VAL1");
     ASSERT_EQ(dest, 10); // test value
-    dest = sysEvent->GetEventUIntValue("UINT_VAL2");
+    dest = sysEvent->GetEventUintValue("UINT_VAL2");
     ASSERT_EQ(dest, 1000); // test value
-    dest = sysEvent->GetEventUIntValue("UINT_VAL3");
+    dest = sysEvent->GetEventUintValue("UINT_VAL3");
     ASSERT_EQ(dest, std::numeric_limits<uint64_t>::min());
-    dest = sysEvent->GetEventUIntValue("UINT_VAL4");
+    dest = sysEvent->GetEventUintValue("UINT_VAL4");
     ASSERT_EQ(dest, std::numeric_limits<uint64_t>::max());
 }
 
@@ -206,7 +206,12 @@ HWTEST_F(SysEventTest, TestSysEventValueParse004, testing::ext::TestSize.Level3)
      */
     std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
         "pid_":6527,"tid_":-6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0})~";
+        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0,)~";
+    jsonStr.append(R"~("FLOAT_VAL3":)~");
+    jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<int64_t>::min()) - 1)));
+    jsonStr.append(R"~("FLOAT_VAL4":)~");
+    jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<int64_t>::max()) + 1)));
+    jsonStr.append("}");
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     int64_t dest = sysEvent->GetEventIntValue("domain_");
     ASSERT_EQ(dest, 0); // test value
@@ -223,6 +228,12 @@ HWTEST_F(SysEventTest, TestSysEventValueParse004, testing::ext::TestSize.Level3)
     dest = sysEvent->GetEventIntValue("trace_flag_");
     ASSERT_EQ(dest, 4); // test value
     dest = sysEvent->GetEventIntValue("FLOAT_VAL1");
+    ASSERT_EQ(dest, -1); // test value
+    dest = sysEvent->GetEventIntValue("FLOAT_VAL2");
+    ASSERT_EQ(dest, 1); // test value
+    dest = sysEvent->GetEventIntValue("FLOAT_VAL3");
+    ASSERT_EQ(dest, 0); // test value
+    dest = sysEvent->GetEventIntValue("FLOAT_VAL4");
     ASSERT_EQ(dest, 0); // test value
 }
 
@@ -239,23 +250,34 @@ HWTEST_F(SysEventTest, TestSysEventValueParse005, testing::ext::TestSize.Level3)
      */
     std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0})~";
+        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0,)~";
+    jsonStr.append(R"~("FLOAT_VAL3":)~");
+    jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<uint64_t>::min()) - 1)));
+    jsonStr.append(R"~("FLOAT_VAL4":)~");
+    jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<uint64_t>::max()) + 1)));
+    jsonStr.append("}");
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    uint64_t dest = sysEvent->GetEventUIntValue("domain_");
+    uint64_t dest = sysEvent->GetEventUintValue("domain_");
     ASSERT_EQ(dest, 0); // test value
-    dest = sysEvent->GetEventUIntValue("type_");
+    dest = sysEvent->GetEventUintValue("type_");
     ASSERT_EQ(dest, 1); // test value
-    dest = sysEvent->GetEventUIntValue("time_");
+    dest = sysEvent->GetEventUintValue("time_");
     ASSERT_EQ(dest, 1620271291188); // test value
-    dest = sysEvent->GetEventUIntValue("tz_");
+    dest = sysEvent->GetEventUintValue("tz_");
     ASSERT_EQ(dest, 27); // test value
-    dest = sysEvent->GetEventUIntValue("pid_");
+    dest = sysEvent->GetEventUintValue("pid_");
     ASSERT_EQ(dest, 6527); // test value
-    dest = sysEvent->GetEventUIntValue("traceid_");
+    dest = sysEvent->GetEventUintValue("traceid_");
     ASSERT_EQ(dest, 1085038850905136971); // test value: f0ed5160bb2df4b
-    dest = sysEvent->GetEventUIntValue("trace_flag_");
+    dest = sysEvent->GetEventUintValue("trace_flag_");
     ASSERT_EQ(dest, 4); // test value
-    dest = sysEvent->GetEventUIntValue("FLOAT_VAL1");
+    dest = sysEvent->GetEventUintValue("FLOAT_VAL1");
+    ASSERT_EQ(dest, 0); // test value
+    dest = sysEvent->GetEventUintValue("FLOAT_VAL2");
+    ASSERT_EQ(dest, 1); // test value
+    dest = sysEvent->GetEventUintValue("FLOAT_VAL3");
+    ASSERT_EQ(dest, 0); // test value
+    dest = sysEvent->GetEventUintValue("FLOAT_VAL4");
     ASSERT_EQ(dest, 0); // test value
 }
 
@@ -277,17 +299,15 @@ HWTEST_F(SysEventTest, TestSysEventValueParse006, testing::ext::TestSize.Level3)
     double dest = sysEvent->GetEventDoubleValue("domain_");
     ASSERT_EQ(dest, 0.0); // test value
     dest = sysEvent->GetEventDoubleValue("type_");
-    ASSERT_EQ(dest, 0.0); // test value
+    ASSERT_EQ(dest, 1); // test value
     dest = sysEvent->GetEventDoubleValue("time_");
-    ASSERT_EQ(dest, 0.0); // test value
+    ASSERT_EQ(dest, 1620271291188); // test value
     dest = sysEvent->GetEventDoubleValue("tz_");
-    ASSERT_EQ(dest, 0.0); // test value
+    ASSERT_EQ(dest, 27); // test value
     dest = sysEvent->GetEventDoubleValue("pid_");
-    ASSERT_EQ(dest, 0.0); // test value
-    dest = sysEvent->GetEventDoubleValue("traceid_");
-    ASSERT_EQ(dest, 0.0); // test value
+    ASSERT_EQ(dest, 6527); // test value
     dest = sysEvent->GetEventDoubleValue("trace_flag_");
-    ASSERT_EQ(dest, 0.0); // test value
+    ASSERT_EQ(dest, 4); // test value
     dest = sysEvent->GetEventDoubleValue("FLOAT_VAL1");
     ASSERT_EQ(dest, -1); // test value
     dest = sysEvent->GetEventDoubleValue("FLOAT_VAL2");

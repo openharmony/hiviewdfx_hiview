@@ -58,6 +58,8 @@
         "OHOS::HiviewDFX::Plugin::GetHandlerInfo()";
         "OHOS::HiviewDFX::Plugin::GetPluginInfo()";
         "OHOS::HiviewDFX::SysEvent::GetEventIntValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventUintValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventDoubleValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::GetPid() const";
         "OHOS::HiviewDFX::Event::SetValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, int)";
         "OHOS::HiviewDFX::Event::GetValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&) const";

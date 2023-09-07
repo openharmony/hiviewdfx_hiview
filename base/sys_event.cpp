@@ -44,6 +44,9 @@ std::string EventCol::SEQ = "seq_";
 std::string EventCol::TAG = "tag_";
 }
 namespace {
+constexpr int64_t DEFAULT_INT_VALUE = 0;
+constexpr uint64_t DEFAULT_UINT_VALUE = 0;
+constexpr double DEFAULT_DOUBLE_VALUE = 0.0;
 template<typename T>
 void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
 {
@@ -228,32 +231,59 @@ std::string SysEvent::GetEventValue(const std::string& key)
 
 int64_t SysEvent::GetEventIntValue(const std::string& key)
 {
-    int64_t intDest = 0; // default value is 0
-    uint64_t uIntDest = 0; // default value is 0
-    if ((builder_ == nullptr) || builder_->ParseValueByKey(key, intDest) ||
-        !builder_->ParseValueByKey(key, uIntDest) ||
-        (uIntDest > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))) {
+    if (builder_ == nullptr) {
+        return DEFAULT_INT_VALUE;
+    }
+    if (int64_t intDest = DEFAULT_INT_VALUE; builder_->ParseValueByKey(key, intDest)) {
         return intDest;
     }
-    return static_cast<int64_t>(uIntDest);
+    if (uint64_t uIntDest = DEFAULT_UINT_VALUE; builder_->ParseValueByKey(key, uIntDest) &&
+        (uIntDest <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))) {
+        return static_cast<int64_t>(uIntDest);
+    }
+    if (double dDest = DEFAULT_DOUBLE_VALUE; builder_->ParseValueByKey(key, dDest) &&
+        (dDest >= static_cast<double>(std::numeric_limits<int64_t>::min())) &&
+        (dDest <= static_cast<double>(std::numeric_limits<int64_t>::max()))) {
+        return static_cast<int64_t>(dDest);
+    }
+    return DEFAULT_INT_VALUE;
 }
 
-uint64_t SysEvent::GetEventUIntValue(const std::string& key)
+uint64_t SysEvent::GetEventUintValue(const std::string& key)
 {
-    uint64_t uIntDest = 0; // default value is 0
-    int64_t intDest = 0; // default value is 0
-    if ((builder_ == nullptr) || builder_->ParseValueByKey(key, uIntDest) ||
-        !builder_->ParseValueByKey(key, intDest) || (intDest < 0)) {
+    if (builder_ == nullptr) {
+        return DEFAULT_UINT_VALUE;
+    }
+    if (uint64_t uIntDest = DEFAULT_UINT_VALUE; builder_->ParseValueByKey(key, uIntDest)) {
         return uIntDest;
     }
-    return static_cast<uint64_t>(intDest);
+    if (int64_t intDest = DEFAULT_INT_VALUE; builder_->ParseValueByKey(key, intDest) &&
+        (intDest >= DEFAULT_INT_VALUE)) {
+        return static_cast<uint64_t>(intDest);
+    }
+    if (double dDest = DEFAULT_DOUBLE_VALUE; builder_->ParseValueByKey(key, dDest) &&
+        (dDest >= static_cast<double>(std::numeric_limits<uint64_t>::min())) &&
+        (dDest <= static_cast<double>(std::numeric_limits<uint64_t>::max()))) {
+        return static_cast<uint64_t>(dDest);
+    }
+    return DEFAULT_UINT_VALUE;
 }
 
 double SysEvent::GetEventDoubleValue(const std::string& key)
 {
-    double parsedVal = 0.0;
-    (void)builder_->ParseValueByKey(key, parsedVal);
-    return parsedVal;
+    if (builder_ == nullptr) {
+        return DEFAULT_DOUBLE_VALUE;
+    }
+    if (double dDest = DEFAULT_DOUBLE_VALUE; builder_->ParseValueByKey(key, dDest)) {
+        return dDest;
+    }
+    if (int64_t intDest = DEFAULT_INT_VALUE; builder_->ParseValueByKey(key, intDest)) {
+        return static_cast<double>(intDest);
+    }
+    if (uint64_t uIntDest = DEFAULT_UINT_VALUE; builder_->ParseValueByKey(key, uIntDest)) {
+        return static_cast<double>(uIntDest);
+    }
+    return DEFAULT_DOUBLE_VALUE;
 }
 
 int SysEvent::GetEventType()
