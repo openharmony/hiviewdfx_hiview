@@ -17,14 +17,16 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace UCollect {
 enum UcError {
     SUCCESS = 0,
     UNSUPPORT = 1
 };
+} // UCollect
 
 template<typename T> class CollectResult {
 public:
-    UcError retCode;
+    UCollect::UcError retCode;
     T data;
 };
 } // HiviewDFX

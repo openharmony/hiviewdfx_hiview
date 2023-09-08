@@ -21,6 +21,7 @@
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectClient;
+using namespace OHOS::HiviewDFX::UCollect;
 
 class IoCollectorTest : public testing::Test {
 public:

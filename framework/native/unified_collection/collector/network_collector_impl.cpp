@@ -16,6 +16,8 @@
 #include "wifi_device.h"
 #include "logger.h"
 
+using namespace OHOS::HiviewDFX::UCollect;
+
 DEFINE_LOG_TAG("UCollectUtil");
 
 namespace OHOS {

@@ -13,17 +13,12 @@
  * limitations under the License.
  */
 #include "gpu_collector.h"
-#include "common_util.h"
-#include "logger.h"
-#include "file_util.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 
-DEFINE_LOG_TAG("UCollectUtil");
-
 namespace OHOS {
 namespace HiviewDFX {
-namespace UCollectUtil {
+namespace UCollectClient {
 class GpuCollectorImpl : public GpuCollector {
 public:
     GpuCollectorImpl() = default;
@@ -39,35 +34,17 @@ std::shared_ptr<GpuCollector> GpuCollector::Create()
     return std::make_shared<GpuCollectorImpl>();
 }
 
-inline int32_t GetValue(const std::string& fileName)
-{
-    std::string content;
-    FileUtil::LoadStringFromFile(fileName, content);
-    return std::stoi(content);
-}
-
 CollectResult<GpuFreq> GpuCollectorImpl::CollectGpuFrequency()
 {
     CollectResult<GpuFreq> result;
-    GpuFreq& gpuFreq = result.data;
-    gpuFreq.curFeq = GetValue(GPU_CUR_FREQ);
-    gpuFreq.maxFeq = GetValue(GPU_MAX_FREQ);
-    gpuFreq.minFeq = GetValue(GPU_MIN_FREQ);
-    HIVIEW_LOGD("curFeq=%{public}d,maxFeq=%{public}d,minFeq=%{public}d",
-        gpuFreq.curFeq, gpuFreq.maxFeq, gpuFreq.minFeq);
-    result.retCode = UcError::SUCCESS;
     return result;
 }
 
 CollectResult<SysGpuLoad> GpuCollectorImpl::CollectSysGpuLoad()
 {
     CollectResult<SysGpuLoad> result;
-    SysGpuLoad& sysGpuLoad = result.data;
-    sysGpuLoad.gpuLoad = GetValue(GPU_LOAD);
-    HIVIEW_LOGD("gpuLoad=%{public}f", sysGpuLoad.gpuLoad);
-    result.retCode = UcError::SUCCESS;
     return result;
 }
-} // UCollectUtil
+} // UCollectClient
 } // HiViewDFX
 } // OHOS
