@@ -12,37 +12,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "memory_collector.h"
+#include "network_collector.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
-class MemoryCollectorImpl : public MemoryCollector {
+class NetworkCollectorImpl : public NetworkCollector {
 public:
-    MemoryCollectorImpl() = default;
-    virtual ~MemoryCollectorImpl() = default;
+    NetworkCollectorImpl() = default;
+    virtual ~NetworkCollectorImpl() = default;
 
 public:
-    virtual CollectResult<ProcessMemory> CollectProcessMemory(int32_t pid) override;
-    virtual CollectResult<SysMemory> CollectSysMemory() override;
+    virtual CollectResult<NetworkRate> CollectRate() override;
+    virtual CollectResult<NetworkPackets> CollectSysPackets() override;
 };
 
-std::shared_ptr<MemoryCollector> MemoryCollector::Create()
+std::shared_ptr<NetworkCollector> NetworkCollector::Create()
 {
-    return std::make_shared<MemoryCollectorImpl>();
+    return std::make_shared<NetworkCollectorImpl>();
 }
 
-CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t pid)
+CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
 {
-    CollectResult<ProcessMemory> result;
+    CollectResult<NetworkRate> result;
     return result;
 }
 
-CollectResult<SysMemory> MemoryCollectorImpl::CollectSysMemory()
+CollectResult<NetworkPackets> NetworkCollectorImpl::CollectSysPackets()
 {
-    CollectResult<SysMemory> result;
+    CollectResult<NetworkPackets> result;
     return result;
 }
 } // UCollectClient

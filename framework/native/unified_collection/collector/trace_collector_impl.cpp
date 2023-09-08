@@ -21,6 +21,7 @@
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::Hitrace;
 using namespace OHOS::HiviewDFX::UCollectUtil;
+using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
 namespace HiviewDFX {

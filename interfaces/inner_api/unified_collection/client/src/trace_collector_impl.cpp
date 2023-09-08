@@ -14,6 +14,8 @@
  */
 #include "trace_collector.h"
 
+using namespace OHOS::HiviewDFX::UCollect;
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
