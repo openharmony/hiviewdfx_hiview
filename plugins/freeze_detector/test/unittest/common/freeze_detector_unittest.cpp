@@ -420,6 +420,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeRule_001, TestSize.Level3)
     result.SetId(1);
 
     freezeRule->AddResult("KERNEL_VENDOR", "SCREEN_ON", result);
+    ASSERT_EQ(freezeRule->GetResult("KERNEL_VENDOR", "SCREEN_ON", result), true);
 }
 
 /**
@@ -464,6 +465,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPlugin_003, TestSize.Level3)
 {
     auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
     freezeDetectorPlugin->OnLoad();
+    ASSERT_NE(freezeDetectorPlugin, nullptr);
 }
 
 /**
@@ -474,6 +476,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPlugin_004, TestSize.Level3)
 {
     auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
     freezeDetectorPlugin->OnUnload();
+    ASSERT_NE(freezeDetectorPlugin, nullptr);
 }
 
 /**
@@ -602,6 +605,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_001, TestSize.Level3)
     auto wp1 = std::make_unique<WatchPoint>(point);
     std::string logPath = "/data/test/test_data/LOG001.log";
     wp1->SetLogPath(logPath);
+    ASSERT_EQ(wp1->GetLogPath(), logPath);
 }
 
 /**
@@ -618,6 +622,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_002, TestSize.Level3)
     auto wp1 = std::make_unique<WatchPoint>(point);
     long seq = 1000L;
     wp1->SetSeq(seq);
+    ASSERT_EQ(wp1->GetSeq(), seq);
 }
 
 /**
