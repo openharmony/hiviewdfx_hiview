@@ -531,7 +531,7 @@ HWTEST_F(EventRawEncodedTest, DecodedParamTest002, testing::ext::TestSize.Level1
     size_t decodedOffset = 0;
     std::vector<uint64_t> vals = {1, 2, 3}; // test value
     RawDataEncoder::UnsignedVarintEncoded(data, EncodeType::LENGTH_DELIMITED, vals.size());
-    for (auto item : vals ) {
+    for (auto item : vals) {
         RawDataEncoder::UnsignedVarintEncoded(data, EncodeType::VARINT, item);
     }
     auto decodedParam = std::make_shared<UnsignedVarintDecodedArrayParam>(data.GetData(), MAX_LEN, decodedOffset,
