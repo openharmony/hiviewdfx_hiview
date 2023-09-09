@@ -75,6 +75,10 @@ public:
     int64_t GetEventIntValue(const std::string& key);
     uint64_t GetEventUintValue(const std::string& key);
     double GetEventDoubleValue(const std::string& key);
+    bool GetEventIntArrayValue(const std::string& key, std::vector<int64_t>& dest);
+    bool GetEventUintArrayValue(const std::string& key, std::vector<uint64_t>& dest);
+    bool GetEventDoubleArrayValue(const std::string& key, std::vector<double>& dest);
+    bool GetEventStringArrayValue(const std::string& key, std::vector<std::string>& dest);
     int GetEventType();
     std::string AsJsonStr();
     uint8_t* AsRawData();

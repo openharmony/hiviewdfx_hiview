@@ -116,7 +116,7 @@ HWTEST_F(EventRawBaseTest, RawDataTest001, testing::ext::TestSize.Level1)
     ASSERT_TRUE(data != nullptr);
     ASSERT_TRUE(data->IsEmpty());
     ASSERT_EQ(data->GetDataLength(), 0);
-    
+
     uint8_t* tmpData = new(std::nothrow) uint8_t[CAP];
     data->Append(tmpData, CAP);
     ASSERT_EQ(data->GetDataLength(), CAP);

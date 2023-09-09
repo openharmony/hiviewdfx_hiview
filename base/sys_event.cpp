@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 #include <sys/time.h>
+#include <vector>
 
 #include "encoded/raw_data_builder_json_parser.h"
 #include "string_util.h"
@@ -65,6 +66,21 @@ void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
         appendStr.append(std::to_string(val));
     }
     eventJson.insert(eventJson.size() - 1, appendStr); // 1 for '}'
+}
+
+template<typename T>
+bool ParseArrayValue(std::shared_ptr<EventRaw::RawDataBuilder> builder, const std::string& key,
+    std::function<bool(T&)> itemHandler)
+{
+    if (builder == nullptr) {
+        return false;
+    }
+    if (std::vector<T> arr; builder->ParseValueByKey(key, arr) && (arr.size() > 0)) {
+        return all_of(arr.begin(), arr.end(), [&itemHandler] (T& item) {
+            return itemHandler(item);
+        });
+    }
+    return false;
 }
 }
 using EventRaw::UnsignedVarintEncodedParam;
@@ -284,6 +300,118 @@ double SysEvent::GetEventDoubleValue(const std::string& key)
         return static_cast<double>(uIntDest);
     }
     return DEFAULT_DOUBLE_VALUE;
+}
+
+bool SysEvent::GetEventIntArrayValue(const std::string& key, std::vector<int64_t>& dest)
+{
+    if (builder_ == nullptr) {
+        dest.clear();
+        return false;
+    }
+    auto intArrayItemHandler = [&dest] (int64_t& item) {
+        dest.emplace_back(item);
+        return true;
+    };
+    auto uIntArrayItemHandler = [&dest] (uint64_t& item) {
+        if (item <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+            dest.emplace_back(static_cast<int64_t>(item));
+            return true;
+        }
+        return false;
+    };
+    auto dArrayItemHandler = [&dest] (double& item) {
+        if ((item >= static_cast<double>(std::numeric_limits<int64_t>::min())) &&
+            (item <= static_cast<double>(std::numeric_limits<int64_t>::max()))) {
+            dest.emplace_back(static_cast<int64_t>(item));
+            return true;
+        }
+        return false;
+    };
+    if (ParseArrayValue<int64_t>(builder_, key, intArrayItemHandler) ||
+        ParseArrayValue<uint64_t>(builder_, key, uIntArrayItemHandler) ||
+        ParseArrayValue<double>(builder_, key, dArrayItemHandler)) {
+        return true;
+    }
+    dest.clear();
+    return false;
+}
+
+bool SysEvent::GetEventUintArrayValue(const std::string& key, std::vector<uint64_t>& dest)
+{
+    if (builder_ == nullptr) {
+        dest.clear();
+        return false;
+    }
+    auto uIntArrayItemHandler = [&dest] (uint64_t& item) {
+        dest.emplace_back(item);
+        return true;
+    };
+    auto intArrayItemHandler = [&dest] (int64_t& item) {
+        if (item >= DEFAULT_INT_VALUE) {
+            dest.emplace_back(static_cast<uint64_t>(item));
+            return true;
+        }
+        return false;
+    };
+    auto dArrayItemHandler = [&dest] (double& item) {
+        if ((item >= static_cast<double>(std::numeric_limits<uint64_t>::min())) &&
+            (item <= static_cast<double>(std::numeric_limits<uint64_t>::max()))) {
+            dest.emplace_back(static_cast<uint64_t>(item));
+            return true;
+        }
+        return false;
+    };
+    if (ParseArrayValue<uint64_t>(builder_, key, uIntArrayItemHandler) ||
+        ParseArrayValue<int64_t>(builder_, key, intArrayItemHandler) ||
+        ParseArrayValue<double>(builder_, key, dArrayItemHandler)) {
+        return true;
+    }
+    dest.clear();
+    return false;
+}
+
+bool SysEvent::GetEventDoubleArrayValue(const std::string& key, std::vector<double>& dest)
+{
+    if (builder_ == nullptr) {
+        dest.clear();
+        return false;
+    }
+    auto dArrayItemHandler = [&dest] (double& item) {
+        dest.emplace_back(item);
+        return true;
+    };
+    auto intArrayItemHandler = [&dest] (int64_t& item) {
+        dest.emplace_back(static_cast<double>(item));
+        return true;
+    };
+    auto uIntArrayItemHandler = [&dest] (uint64_t& item) {
+        dest.emplace_back(static_cast<double>(item));
+        return true;
+    };
+    if (ParseArrayValue<double>(builder_, key, dArrayItemHandler) ||
+        ParseArrayValue<int64_t>(builder_, key, intArrayItemHandler) ||
+        ParseArrayValue<uint64_t>(builder_, key, uIntArrayItemHandler)) {
+        return true;
+    }
+    dest.clear();
+    return false;
+}
+
+bool SysEvent::GetEventStringArrayValue(const std::string& key, std::vector<std::string>& dest)
+{
+    if (builder_ == nullptr) {
+        dest.clear();
+        return false;
+    }
+    auto strArrayItemHandler = [&dest] (std::string& item) {
+        dest.emplace_back(item);
+        return true;
+    };
+    if (ParseArrayValue<std::string>(builder_, key, strArrayItemHandler)) {
+        return true;
+    }
+    dest.clear();
+    return false;
 }
 
 int SysEvent::GetEventType()

@@ -60,6 +60,12 @@
         "OHOS::HiviewDFX::SysEvent::GetEventIntValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::GetEventUintValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::SysEvent::GetEventDoubleValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventIntArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<long, std::__h::allocator<long>>&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventIntArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<long long, std::__h::allocator<long long>>&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventUintArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<unsigned long, std::__h::allocator<unsigned long>>&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventUintArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<unsigned long long, std::__h::allocator<unsigned long long>>&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventDoubleArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<double, std::__h::allocator<double>>&)";
+        "OHOS::HiviewDFX::SysEvent::GetEventStringArrayValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>>&)";
         "OHOS::HiviewDFX::SysEvent::GetPid() const";
         "OHOS::HiviewDFX::Event::SetValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, int)";
         "OHOS::HiviewDFX::Event::GetValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&) const";
