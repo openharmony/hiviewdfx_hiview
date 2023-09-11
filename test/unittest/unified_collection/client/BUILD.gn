@@ -29,8 +29,10 @@ ohos_unittest("UCollectionClientUnitTest") {
 
   sources = [
     "cpu_collector_client_test.cpp",
+    "gpu_collector_client_test.cpp",
     "io_collector_client_test.cpp",
     "memory_collector_client_test.cpp",
+    "network_collector_client_test.cpp",
     "trace_collector_client_test.cpp",
   ]
 
