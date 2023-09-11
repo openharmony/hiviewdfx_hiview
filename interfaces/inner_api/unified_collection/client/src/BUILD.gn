@@ -30,8 +30,10 @@ ohos_source_set("ucollection_client_source") {
 
   sources = [
     "cpu_collector_impl.cpp",
+    "gpu_collector_impl.cpp",
     "io_collector_impl.cpp",
     "memory_collector_impl.cpp",
+    "network_collector_impl.cpp",
     "trace_collector_impl.cpp",
   ]
 
