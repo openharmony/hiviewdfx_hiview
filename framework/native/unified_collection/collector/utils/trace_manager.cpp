@@ -14,15 +14,16 @@
  */
 #include "hilog/log.h"
 #include "hitrace_dump.h"
+#include "logger.h"
 #include "trace_manager.h"
 #include <iostream>
 
-using namespace std;
+DEFINE_LOG_TAG("UCollectUtil");
+
 using namespace OHOS::HiviewDFX::Hitrace;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr HiLogLabel LABEL_MANAGER = { LOG_CORE, 0xD002D03, "Hiview-TraceMgr" };
 constexpr int32_t ERR_CODE = -1;
 }
 
@@ -34,7 +35,7 @@ int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroup
         status_ = TraceStatus::STOP;
     }
     if (OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups) != TraceErrorCode::SUCCESS) {
-        HiLog::Error(LABEL_MANAGER, "Service OpenTrace fail.");
+        HIVIEW_LOGE("Service OpenTrace fail.");
         return ERR_CODE;
     }
     status_ = TraceStatus::SNAPSHOT;
@@ -49,7 +50,7 @@ int32_t TraceManager::OpenRecordingTrace(const std::string &args)
         status_ = TraceStatus::STOP;
     }
     if (OHOS::HiviewDFX::Hitrace::OpenTrace(args) != TraceErrorCode::SUCCESS) {
-        HiLog::Error(LABEL_MANAGER, "CMD OpenTrace fail.");
+        HIVIEW_LOGE("CMD OpenTrace fail.");
         return ERR_CODE;
     }
     status_ = TraceStatus::RECORDING;
@@ -59,7 +60,7 @@ int32_t TraceManager::OpenRecordingTrace(const std::string &args)
 int32_t TraceManager::CloseTrace()
 {
     if (OHOS::HiviewDFX::Hitrace::CloseTrace() != TraceErrorCode::SUCCESS) {
-        HiLog::Error(LABEL_MANAGER, "CloseTrace fail.");
+        HIVIEW_LOGE("CloseTrace fail.");
         return ERR_CODE;
     }
     status_ = TraceStatus::STOP;

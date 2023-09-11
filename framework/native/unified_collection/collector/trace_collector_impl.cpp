@@ -15,8 +15,7 @@
 #include "file_utils.h"
 #include "trace_collector.h"
 #include "trace_manager.h"
-#include "zip_utils.h"
-#include "file_util.h"
+#include <mutex>
 
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::Hitrace;
@@ -26,6 +25,9 @@ using namespace OHOS::HiviewDFX::UCollect;
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+namespace {
+    std::mutex g_dumpTraceMutex;
+}
 class TraceCollectorImpl : public TraceCollector {
 public:
     TraceCollectorImpl() = default;
@@ -44,6 +46,7 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
 {
+    std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
     CollectResult<std::vector<std::string>> result;
     TraceRetInfo ret = OHOS::HiviewDFX::Hitrace::DumpTrace();
     if (ret.errorCode == TraceErrorCode::SUCCESS) {
