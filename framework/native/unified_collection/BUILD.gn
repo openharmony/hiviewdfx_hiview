@@ -46,6 +46,7 @@ ohos_source_set("ucollection_source") {
   deps = [
     "$hiview_base/utility:hiview_utility",
     "$hiview_core:hiview_core",
+    "collector/device_client:collect_device_client",
   ]
 
   external_deps = [
