@@ -33,10 +33,12 @@ public:
     virtual CollectResult<SysCpuUsage> CollectSysCpuUsage() = 0;
     virtual CollectResult<ProcessCpuUsage> CollectProcessCpuUsage(int32_t pid) = 0;
     virtual CollectResult<ProcessCpuLoad> CollectProcessCpuLoad(int32_t pid) = 0;
+    virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid) = 0;
     virtual CollectResult<CpuFreqStat> CollectCpuFreqStat() = 0;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() = 0;
     virtual CollectResult<std::vector<ProcessCpuUsage>> CollectProcessCpuUsages() = 0;
     virtual CollectResult<std::vector<ProcessCpuLoad>> CollectProcessCpuLoads() = 0;
+    virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos() = 0;
     static std::shared_ptr<CpuCollector> Create();
 }; // CpuCollector
 } // UCollectUtil

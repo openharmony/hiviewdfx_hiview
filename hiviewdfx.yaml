@@ -95,3 +95,6 @@ XPOWER_STACKTRACE:
   TAGNAME: {type: STRING,  desc: tag name}
   INFO: {type: STRING,  desc: additional information}
   STACKTRACE: {type: STRING,  desc: stack data}
+
+CPU_COLLECTION:
+  __BASE: {type: FAULT, level: MINOR, desc: HiView CPU Unified Collection Event}

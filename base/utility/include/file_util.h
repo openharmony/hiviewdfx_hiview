@@ -71,9 +71,10 @@ int32_t CreateFile(const std::string &path, mode_t mode = DEFAULT_FILE_MODE);
 // directory_ex.h
 std::string ExtractFilePath(const std::string& fileFullName);
 std::string ExtractFileName(const std::string& fileFullName);
+std::string ExtractFileExt(const std::string& fileName);
 std::string IncludeTrailingPathDelimiter(const std::string& path);
 std::string ExcludeTrailingPathDelimiter(const std::string& path);
-void GetDirFiles(const std::string& path, std::vector<std::string>& files);
+void GetDirFiles(const std::string& path, std::vector<std::string>& files, bool isRecursive = true);
 void GetDirDirs(const std::string& path, std::vector<std::string>& dirs);
 bool ForceCreateDirectory(const std::string& path);
 bool ForceCreateDirectory(const std::string& path, mode_t mode);
@@ -93,6 +94,7 @@ void CreateDirWithDefaultPerm(const std::string& path, uid_t aidRoot, uid_t aid_
 int CopyFile(const std::string &src, const std::string &des);
 bool IsDirectory(const std::string &path);
 bool GetLastLine(std::istream &fin, std::string &line, uint32_t maxLen = 10240); // 10240 : max line len
+std::string GetFirstLine(const std::string& path);
 std::string GetParentDir(const std::string &path);
 bool IsLegalPath(const std::string& path);
 bool RenameFile(const std::string& src, const std::string& dest);

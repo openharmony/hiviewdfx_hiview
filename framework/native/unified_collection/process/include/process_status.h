@@ -12,24 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_BASE_UTILITY_SQL_UTIL_H
-#define HIVIEW_BASE_UTILITY_SQL_UTIL_H
+#ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_PROCESS_PROCESS_STATUS_H
+#define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_PROCESS_PROCESS_STATUS_H
 
-#include <string>
-#include <utility>
-#include <vector>
+#include <mutex>
+#include <unordered_map>
+
+#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace SqlUtil {
-const std::string COLUMN_TYPE_INT = "INTEGER";
-const std::string COLUMN_TYPE_STR = "TEXT";
-const std::string COLUMN_TYPE_DOU = "REAL";
+namespace UCollectUtil {
+class ProcessStatus : public OHOS::DelayedRefSingleton<ProcessStatus> {
+public:
+    std::string GetProcessName(int32_t pid);
 
-std::string GenerateCreateSql(const std::string& table,
-    const std::vector<std::pair<std::string, std::string>>& fields);
-std::string GenerateDropSql(const std::string& table);
-} // namespace SqlUtil
+private:
+    bool NeedClearProcessNames();
+    void ClearProcessNames();
+
+private:
+    std::mutex mutex_;
+    /* map<pid, processName> */
+    std::unordered_map<int32_t, std::string> processNames_;
+};
+} // namespace UCollectUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIVIEW_BASE_UTILITY_SQL_UTIL_H
+#endif // HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_PROCESS_PROCESS_STATUS_H
