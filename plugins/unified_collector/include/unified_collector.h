@@ -12,24 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_BASE_UTILITY_SQL_UTIL_H
-#define HIVIEW_BASE_UTILITY_SQL_UTIL_H
+#ifndef HIVIEW_PLUGINS_UNIFIED_COLLECTOR_INCLUDE_UNIFIED_COLLECTOR_H
+#define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_INCLUDE_UNIFIED_COLLECTOR_H
 
-#include <string>
-#include <utility>
-#include <vector>
+#include <memory>
+
+#include "plugin.h"
+#include "cpu_collection_task.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace SqlUtil {
-const std::string COLUMN_TYPE_INT = "INTEGER";
-const std::string COLUMN_TYPE_STR = "TEXT";
-const std::string COLUMN_TYPE_DOU = "REAL";
+class UnifiedCollector : public Plugin {
+public:
+    void OnLoad() override;
+    void OnUnload() override;
 
-std::string GenerateCreateSql(const std::string& table,
-    const std::vector<std::pair<std::string, std::string>>& fields);
-std::string GenerateDropSql(const std::string& table);
-} // namespace SqlUtil
+private:
+    void Init();
+    void InitWorkLoop();
+    void InitWorkPath();
+    void RunCpuCollectionTask();
+
+private:
+    std::string workPath_;
+    std::shared_ptr<CpuCollectionTask> cpuCollectionTask_;
+}; // UnifiedCollector
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIVIEW_BASE_UTILITY_SQL_UTIL_H
+#endif // HIVIEW_PLUGINS_UNIFIED_COLLECTOR_INCLUDE_UNIFIED_COLLECTOR_H

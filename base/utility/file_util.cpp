@@ -78,6 +78,11 @@ std::string ExtractFileName(const std::string& fileFullName)
     return OHOS::ExtractFileName(fileFullName);
 }
 
+std::string ExtractFileExt(const std::string& fileName)
+{
+    return OHOS::ExtractFileExt(fileName);
+}
+
 std::string IncludeTrailingPathDelimiter(const std::string& path)
 {
     return OHOS::IncludeTrailingPathDelimiter(path);
@@ -88,9 +93,30 @@ std::string ExcludeTrailingPathDelimiter(const std::string& path)
     return OHOS::ExcludeTrailingPathDelimiter(path);
 }
 
-void GetDirFiles(const std::string& path, std::vector<std::string>& files)
+void GetDirFiles(const std::string& path, std::vector<std::string>& files, bool isRecursive)
 {
-    return OHOS::GetDirFiles(path, files);
+    DIR* dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        return;
+    }
+
+    while (true) {
+        struct dirent* ptr = readdir(dir);
+        if (ptr == nullptr) {
+            break;
+        }
+
+        // current dir or parent dir
+        if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
+            continue;
+        } else if (ptr->d_type == DT_DIR && isRecursive) {
+            std::string pathStringWithDelimiter = IncludeTrailingPathDelimiter(path) + string(ptr->d_name);
+            GetDirFiles(pathStringWithDelimiter, files);
+        } else {
+            files.push_back(IncludeTrailingPathDelimiter(path) + string(ptr->d_name));
+        }
+    }
+    closedir(dir);
 }
 
 void GetDirDirs(const std::string& path, std::vector<std::string>& dirs)
@@ -302,6 +328,18 @@ bool GetLastLine(std::istream &fin, std::string &line, uint32_t maxLen)
     getline(fin, line);
     fin.seekg(oldPos);
     return true;
+}
+
+std::string GetFirstLine(const std::string& path)
+{
+    std::ifstream inFile(path.c_str());
+    if (!inFile) {
+        return "";
+    }
+    std::string firstLine;
+    getline(inFile, firstLine);
+    inFile.close();
+    return firstLine;
 }
 
 std::string GetParentDir(const std::string &path)

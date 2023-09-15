@@ -31,6 +31,10 @@
         "SysEventDispatcher": {
             "path": "plugins/sys_dispatcher",
             "name": "sys_dispatcher"
+        },
+        "UnifiedCollector": {
+            "path": "plugins/unified_collector",
+            "name": "unified_collector"
         }
     },
     "rules": [
@@ -63,8 +67,11 @@
                     },
                     "BBoxDetectorPlugin": {
                         "loadtime": 0
-                    }, 
+                    },
                     "SysEventDispatcher": {
+                        "loadtime": 0
+                    },
+                    "UnifiedCollector": {
                         "loadtime": 0
                     }
                 },

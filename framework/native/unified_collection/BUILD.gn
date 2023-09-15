@@ -17,7 +17,9 @@ import("//build/ohos.gni")
 config("ucolletciton_source_config") {
   visibility = [ "*:*" ]
   include_dirs = [
+    "calculator/include",
     "collector/inner_include",
+    "process/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
@@ -32,6 +34,7 @@ ohos_source_set("ucollection_source") {
   public_configs = [ ":ucolletciton_source_config" ]
 
   sources = [
+    "calculator/cpu_calculator.cpp",
     "collector/common_util.cpp",
     "collector/cpu_collector_impl.cpp",
     "collector/gpu_collector_impl.cpp",
@@ -41,6 +44,7 @@ ohos_source_set("ucollection_source") {
     "collector/trace_collector_impl.cpp",
     "collector/utils/file_utils.cpp",
     "collector/utils/trace_manager.cpp",
+    "process/process_status.cpp",
   ]
 
   deps = [
