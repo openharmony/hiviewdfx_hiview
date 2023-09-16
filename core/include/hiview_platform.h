@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,6 @@
 #include "plugin.h"
 #include "plugin_bundle.h"
 #include "plugin_config.h"
-#include "plugin_extra_info.h"
 #include "dispatch_config.h"
 #include "event_json_parser.h"
 
@@ -57,11 +56,6 @@ public:
     std::string GetHiViewDirectory(DirectoryType type) override;
     std::string GetHiviewProperty(const std::string& key, const std::string& defaultValue) override;
     bool SetHiviewProperty(const std::string& key, const std::string& value, bool forceUpdate) override;
-    void PublishPluginCapacity(PluginCapacityInfo &pluginCapacityInfo) override;
-    void GetRemoteByCapacity(const std::string& plugin, const std::string& capacity,
-        std::list<std::string> &deviceIdList) override;
-    int32_t PostEventToRemote(std::shared_ptr<Plugin> caller, const std::string& deviceId,
-        const std::string& targetPlugin, std::shared_ptr<Event> event) override;
     bool IsReady() override;
     void AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName) override;
     void RequestLoadBundle(const std::string& bundleName __UNUSED) override;

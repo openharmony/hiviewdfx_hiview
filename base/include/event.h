@@ -23,7 +23,6 @@
 #include <string>
 #include <sys/types.h>
 #include "defines.h"
-#include "public_defines.h"
 
 #include "base/raw_data.h"
 
@@ -125,7 +124,7 @@ public:
         EXTERNAL_EVENT,
         EXTERNAL_REMOTE_EVENT,
         CROSS_PLATFORM,
-        PRIVATE_MESSAGE_TYPE // Expand macro from public_defines.h
+        PRIVATE_MESSAGE_TYPE // Expand macro from defines.h
     };
 
     enum ManageType {

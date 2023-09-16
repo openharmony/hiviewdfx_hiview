@@ -23,7 +23,6 @@ config("hiview_base_config") {
     "event_store/include",
     "$hiview_root/include",
     "logstore/include",
-    "$hiview_adapter/dbstore/include",
   ]
 
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
@@ -32,8 +31,14 @@ config("hiview_base_config") {
   }
 }
 
+config("logger_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "include" ]
+}
+
 ohos_source_set("logger") {
-  public_configs = [ ":hiview_base_config" ]
+  public_configs = [ ":logger_config" ]
 
   sources = [
     "default_logger.cpp",

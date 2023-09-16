@@ -25,7 +25,6 @@
 #include "dynamic_module.h"
 #include "event.h"
 #include "event_loop.h"
-#include "plugin_extra_info.h"
 
 class HiEvent;
 namespace OHOS {
@@ -212,21 +211,10 @@ public:
     virtual void PostAsyncEventToTarget(std::shared_ptr<Plugin> caller __UNUSED, const std::string& callee __UNUSED,
                                         std::shared_ptr<Event> event __UNUSED) {};
 
-    // post event to distributed communicator plugin, to send to remote device
-    virtual int32_t PostEventToRemote(std::shared_ptr<Plugin> caller __UNUSED, const std::string& deviceId __UNUSED,
-        const std::string& targetPlugin __UNUSED, std::shared_ptr<Event> event __UNUSED)
-    {
-        return 0;
-    }
     // request plugin platform to release plugin instance
     // do not recommend unload an plugin in pipeline scheme
     // platform will check the reference count if other module still holding the reference of this module
     virtual void RequestUnloadPlugin(std::shared_ptr<Plugin> caller __UNUSED) {};
-
-    // publish plugin capacity and get remote capacity
-    virtual void PublishPluginCapacity(PluginCapacityInfo &pluginCapacityInfo __UNUSED) {};
-    virtual void GetRemoteByCapacity(const std::string& plugin __UNUSED, const std::string& capacity __UNUSED,
-        std::list<std::string> &deviceIdList __UNUSED) {};
 
     // get the shared event loop reference
     virtual std::shared_ptr<EventLoop> GetSharedWorkLoop()

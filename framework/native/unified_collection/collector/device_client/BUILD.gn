@@ -23,11 +23,6 @@ config("collect_device_client_config") {
 }
 
 ohos_source_set("collect_device_client") {
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-
-  configs = [ "$hiview_base:hiview_base_config" ]
-
   public_configs = [ ":collect_device_client_config" ]
 
   sources = [
@@ -35,10 +30,16 @@ ohos_source_set("collect_device_client") {
     "process_cpu_data.cpp",
   ]
 
-  deps = [ "$hiview_base/utility:hiview_utility" ]
+  deps = [
+    "$hiview_base:logger",
+    "$hiview_base/utility:hiview_utility",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
   ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 }
