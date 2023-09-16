@@ -12,7 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "file_utils.h"
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <sys/stat.h>
+#include <vector>
+
+#include "file_util.h"
+#include "trace_utils.h"
 #include "logger.h"
 #include "string_util.h"
 
@@ -23,20 +30,36 @@ using namespace OHOS::HiviewDFX::UCollectUtil;
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
+    const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
+    const std::string RELIABILITY = "Reliability";
+    const std::string XPERF = "Xperf";
+    const std::string XPOWER = "Xpower";
+    const std::string BETACLUB = "BetaClub";
+    const std::string OTHER = "Other";
+    const uint32_t UNIFIED_SHARE_COUNTS = 20;
+    const uint32_t UNIFIED_SPECIAL_XPERF = 3;
+    const uint32_t UNIFIED_SPECIAL_OTHER = 5;
+}
+
+enum {
+    SHARE = 0,
+    SPECIAL = 1,
+};
 
 class CleanPolicy {
 public:
-    explicit CleanPolicy(int type) : type_(type) {};
-    virtual ~CleanPolicy() {};
+    explicit CleanPolicy(int type) : type_(type) {}
+    virtual ~CleanPolicy() {}
+    void DoClean();
 
-public:
+protected:
     virtual bool IsMine(const std::string &fileName) = 0;
     virtual uint32_t MyThreshold() = 0;
 
-    void LoadAllFiles(std::vector<std::string> &files);
-    void DoClean();
-
 private:
+    void LoadAllFiles(std::vector<std::string> &files);
     int type_;
 };
 
@@ -44,10 +67,10 @@ void CleanPolicy::LoadAllFiles(std::vector<std::string> &files)
 {
     // set path
     std::string path;
-    if (type_ == share) {
-        path = UnifiedPath::UNIFIED_SHARE_PATH;
+    if (type_ == SHARE) {
+        path = UNIFIED_SHARE_PATH;
     } else {
-        path = UnifiedPath::UNIFIED_SPECIAL_PATH;
+        path = UNIFIED_SPECIAL_PATH;
     }
     // Load all files under the path
     FileUtil::GetDirFiles(path, files);
@@ -60,96 +83,93 @@ void CleanPolicy::DoClean()
     LoadAllFiles(files);
 
     // Filter files that belong to me
-    std::map<uint64_t, std::string> myFiles;
-    // create file time
-    std::vector<uint64_t> fileTime;
+    std::map<uint64_t, std::vector<std::string>> myFiles;
     for (const auto &file : files) {
         if (IsMine(file)) {
             struct stat fileInfo;
             stat(file.c_str(), &fileInfo);
-            fileTime.emplace_back(fileInfo.st_mtime);
-            myFiles.insert(std::pair<uint64_t, std::string>(fileInfo.st_mtime, file));
+            std::vector<std::string> fileLists;
+            if (myFiles.find(fileInfo.st_mtime) != myFiles.end()) {
+                fileLists = myFiles[fileInfo.st_mtime];
+                fileLists.push_back(file);
+                myFiles[fileInfo.st_mtime] = fileLists;
+            } else {
+                fileLists.push_back(file);
+                myFiles.insert(std::pair<uint64_t, std::vector<std::string>>(fileInfo.st_mtime, fileLists));
+            }
         }
     }
 
-    // sort
-    std::sort(fileTime.begin(), fileTime.end());
-    HIVIEW_LOGD("fileTime size : %{public}d, myFiles size : %{public}d.", fileTime.size(), myFiles.size());
+    HIVIEW_LOGD("myFiles size : %{public}d.", myFiles.size());
 
     // Clean up old files
-    while (fileTime.size() > MyThreshold()) {
-        uint64_t delFileTime = fileTime.front();
-        std::string delFileName = myFiles[delFileTime];
-        FileUtil::RemoveFile(delFileName);
-        fileTime.erase(fileTime.begin());
-        if (fileTime.size() == 0) {
-            return;
+    while (myFiles.size() > MyThreshold()) {
+        for (const auto &file : myFiles.begin()->second) {
+            FileUtil::RemoveFile(file);
         }
+        myFiles.erase(myFiles.begin());
     }
 }
 
 class ShareCleanPolicy : public CleanPolicy {
 public:
-    ShareCleanPolicy(int type) : CleanPolicy(type) {}
-    ~ShareCleanPolicy() {}
+    explicit ShareCleanPolicy(int type) : CleanPolicy(type) {}
+    ~ShareCleanPolicy() override {}
 
-public:
-    bool IsMine(const std::string &fileName)
+protected:
+    bool IsMine(const std::string &fileName) override
     {
         return true;
     }
-    uint32_t MyThreshold()
+
+    uint32_t MyThreshold() override
     {
-        return TraceCount::UNIFIED_SHARE_COUNTS;
+        return UNIFIED_SHARE_COUNTS;
     }
 };
 
 class SpecialXperfCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialXperfCleanPolicy(int type) : CleanPolicy(type) {}
-    ~SpecialXperfCleanPolicy() {}
+    ~SpecialXperfCleanPolicy() override {}
 
-public:
-    bool IsMine(const std::string &fileName)
+protected:
+    bool IsMine(const std::string &fileName) override
     {
         // check xperf trace
-        size_t posXperf = fileName.find(TraceCaller::XPERF);
-        if (posXperf == std::string::npos) {
-            return false;
-        }
-        return true;
+        size_t posXperf = fileName.find(XPERF);
+        return posXperf != std::string::npos;
     }
-    uint32_t MyThreshold()
+
+    uint32_t MyThreshold() override
     {
-        return TraceCount::UNIFIED_SPECIAL_XPERF;
+        return UNIFIED_SPECIAL_XPERF;
     }
 };
 
 class SpecialOtherCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialOtherCleanPolicy(int type) : CleanPolicy(type) {}
-    ~SpecialOtherCleanPolicy() {}
+    ~SpecialOtherCleanPolicy() override {}
 
-public:
-    bool IsMine(const std::string &fileName)
+protected:
+    bool IsMine(const std::string &fileName) override
     {
         // check Betaclub and other trace
-        size_t posBeta = fileName.find(TraceCaller::BETACLUB);
-        size_t posOther = fileName.find(TraceCaller::OTHER);
-        if (posBeta == std::string::npos && posOther == std::string::npos) {
-            return false;
-        }
-        return true;
+        size_t posBeta = fileName.find(BETACLUB);
+        size_t posOther = fileName.find(OTHER);
+        return posBeta != std::string::npos || posOther != std::string::npos;
     }
-    uint32_t MyThreshold()
+
+    uint32_t MyThreshold() override
     {
-        return TraceCount::UNIFIED_SPECIAL_OTHER;
+        return UNIFIED_SPECIAL_OTHER;
     }
 };
 
 std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &caller)
 {
-    if (type == share) {
+    if (type == SHARE) {
         return std::make_shared<ShareCleanPolicy>(type);
     }
 
@@ -161,8 +181,8 @@ std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &ca
 
 void FileRemove(TraceCollector::Caller &caller)
 {
-    std::shared_ptr<CleanPolicy> shareCleaner = GetCleanPolicy(share, caller);
-    std::shared_ptr<CleanPolicy> specialCleaner = GetCleanPolicy(special, caller);
+    std::shared_ptr<CleanPolicy> shareCleaner = GetCleanPolicy(SHARE, caller);
+    std::shared_ptr<CleanPolicy> specialCleaner = GetCleanPolicy(SPECIAL, caller);
     switch (caller) {
         case TraceCollector::Caller::RELIABILITY:
         case TraceCollector::Caller::XPOWER:
@@ -176,7 +196,6 @@ void FileRemove(TraceCollector::Caller &caller)
             specialCleaner->DoClean();
             break;
     }
-    return;
 }
 
 void CheckAndCreateDirectory(const std::string &tmpDirPath)
@@ -210,21 +229,21 @@ const std::string EnumToString(TraceCollector::Caller &caller)
 {
     switch (caller) {
         case TraceCollector::Caller::RELIABILITY:
-            return TraceCaller::RELIABILITY;
+            return RELIABILITY;
         case TraceCollector::Caller::XPERF:
-            return TraceCaller::XPERF;
+            return XPERF;
         case TraceCollector::Caller::XPOWER:
-            return TraceCaller::XPOWER;
+            return XPOWER;
         case TraceCollector::Caller::BETACLUB:
-            return TraceCaller::BETACLUB;
+            return BETACLUB;
         default:
-            return TraceCaller::OTHER;
+            return OTHER;
     }
 }
 
 std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
 {
-    if (EnumToString(caller) == TraceCaller::OTHER || EnumToString(caller) == TraceCaller::BETACLUB) {
+    if (EnumToString(caller) == OTHER || EnumToString(caller) == BETACLUB) {
         return GetUnifiedSpecialFiles(ret, caller);
     } else {
         return GetUnifiedShareFiles(ret, caller);
@@ -234,22 +253,19 @@ std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Calle
 bool IsTraceExists(const std::string &trace)
 {
     std::vector<std::string> files;
-    FileUtil::GetDirFiles(UnifiedPath::UNIFIED_SHARE_PATH, files);
+    FileUtil::GetDirFiles(UNIFIED_SHARE_PATH, files);
     for (const auto &file : files) {
-        std::string revRightStr = StringUtil::GetRrightSubstr(trace, "/");
-        size_t posMatch = file.find(revRightStr);
-        if (posMatch != std::string::npos) {
-            return true;
-        }
+        std::string traceFile = FileUtil::ExtractFileName(trace);
+        size_t posMatch = file.find(traceFile);
+        return posMatch != std::string::npos;
     }
     return false;
 }
 
 // Save three traces for xperf
-void CopyXperfToSpecialPath(const std::string &trace, const std::string &revRightStr)
+void CopyXperfToSpecialPath(const std::string &trace, const std::string &traceFile)
 {
-    std::string dst = UnifiedPath::UNIFIED_SPECIAL_PATH + TraceCaller::XPERF
-        + "_" + revRightStr;
+    std::string dst = UNIFIED_SPECIAL_PATH + XPERF + "_" + traceFile;
     FileUtil::CopyFile(trace, dst);
 }
 
@@ -265,28 +281,28 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
         return {};
     }
 
-    if (!FileUtil::FileExists(UnifiedPath::UNIFIED_SHARE_PATH)) {
-        if (!CreateMultiDirectory(UnifiedPath::UNIFIED_SHARE_PATH)) {
+    if (!FileUtil::FileExists(UNIFIED_SHARE_PATH)) {
+        if (!CreateMultiDirectory(UNIFIED_SHARE_PATH)) {
             HIVIEW_LOGE("failed to create multidirectory.");
             return {};
         }
     }
 
     std::vector<std::string> files;
-    for (const auto &trace : ret.outputFiles) {
-        std::string revRightStr = StringUtil::GetRrightSubstr(trace, "/");
+    for (const auto &tracePath : ret.outputFiles) {
         // check trace exists or not
-        if (IsTraceExists(trace)) {
+        if (IsTraceExists(tracePath)) {
             continue;
         }
 
+        std::string traceFile = FileUtil::ExtractFileName(tracePath);
         // copy xperf trace to */trace/special/, reserve 3 trace in */trace/special/
-        if (EnumToString(caller) == TraceCaller::XPERF) {
-            CopyXperfToSpecialPath(trace, revRightStr);
+        if (EnumToString(caller) == XPERF) {
+            CopyXperfToSpecialPath(tracePath, traceFile);
         }
-        const std::string dst = UnifiedPath::UNIFIED_SHARE_PATH + revRightStr;
+        const std::string dst = UNIFIED_SHARE_PATH + traceFile;
         // for copy
-        FileUtil::CopyFile(trace, dst);
+        FileUtil::CopyFile(tracePath, dst);
         files.push_back(dst);
         HIVIEW_LOGI("trace file : %{public}s.", dst.c_str());
     }
@@ -309,8 +325,8 @@ std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, TraceCollector
         return {};
     }
 
-    if (!FileUtil::FileExists(UnifiedPath::UNIFIED_SPECIAL_PATH)) {
-        if (!CreateMultiDirectory(UnifiedPath::UNIFIED_SPECIAL_PATH)) {
+    if (!FileUtil::FileExists(UNIFIED_SPECIAL_PATH)) {
+        if (!CreateMultiDirectory(UNIFIED_SPECIAL_PATH)) {
             HIVIEW_LOGE("Failed to dump trace, error code (%{public}d).", ret.errorCode);
             return {};
         }
@@ -318,8 +334,8 @@ std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, TraceCollector
 
     std::vector<std::string> files;
     for (const auto &trace : ret.outputFiles) {
-        std::string revRightStr = StringUtil::GetRrightSubstr(trace, "/");
-        const std::string dst = UnifiedPath::UNIFIED_SPECIAL_PATH + EnumToString(caller) + "_" + revRightStr;
+        std::string traceFile = FileUtil::ExtractFileName(trace);
+        const std::string dst = UNIFIED_SPECIAL_PATH + EnumToString(caller) + "_" + traceFile;
 
         // for copy
         FileUtil::CopyFile(trace, dst);

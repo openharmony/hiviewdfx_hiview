@@ -16,7 +16,6 @@
 #include "hitrace_dump.h"
 #include "logger.h"
 #include "trace_manager.h"
-#include <iostream>
 
 DEFINE_LOG_TAG("UCollectUtil");
 
