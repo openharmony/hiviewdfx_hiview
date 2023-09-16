@@ -55,7 +55,7 @@ std::string GetOriginTestString()
 {
     std::string jsonStr = R"~({"domain_":"DEMO","name_":"NAME1","type_":1,"tz_":"+0800","time_":1620271291188,
         "pid_":6527,"tid_":6527,"traceid_":"f0ed6160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,)~";
-    jsonStr.append(R"~("INT_ARRAY1":[)~");
+    jsonStr.append(R"~("EMPTY_ARRAY":[],"INT_ARRAY1":[)~");
     jsonStr.append(std::to_string(std::numeric_limits<int64_t>::min()));
     jsonStr.append(R"~(,)~");
     jsonStr.append(std::to_string(std::numeric_limits<int64_t>::max()));
@@ -180,7 +180,7 @@ HWTEST_F(SysEventTest, TestSysEventValueParse001, testing::ext::TestSize.Level3)
     dest = sysEvent->GetEventIntValue("UINT_VAL2");
     ASSERT_EQ(dest, 1000); // test value
     dest = sysEvent->GetEventIntValue("UINT_VAL3");
-    ASSERT_EQ(dest, std::numeric_limits<uint64_t>::min());
+    ASSERT_EQ(dest, static_cast<int64_t>(std::numeric_limits<uint64_t>::min()));
     dest = sysEvent->GetEventIntValue("UINT_VAL4");
     ASSERT_EQ(dest, 0); // test value
 }
@@ -217,7 +217,7 @@ HWTEST_F(SysEventTest, TestSysEventValueParse002, testing::ext::TestSize.Level3)
     dest = sysEvent->GetEventUintValue("INT_VAL3");
     ASSERT_EQ(dest, 0); // test value
     dest = sysEvent->GetEventUintValue("INT_VAL4");
-    ASSERT_EQ(dest, std::numeric_limits<int64_t>::max());
+    ASSERT_EQ(dest, static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
     dest = sysEvent->GetEventUintValue("UINT_VAL1");
     ASSERT_EQ(dest, 10); // test value
     dest = sysEvent->GetEventUintValue("UINT_VAL2");
@@ -448,6 +448,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse008, testing::ext::TestSize.Level3)
     std::vector<int64_t> dest7;
     ASSERT_TRUE(!sysEvent->GetEventIntArrayValue("STR_ARRAY", dest7));
     ASSERT_TRUE(dest7.empty());
+    std::vector<int64_t> dest8;
+    ASSERT_TRUE(sysEvent->GetEventIntArrayValue("EMPTY_ARRAY", dest8));
+    ASSERT_TRUE(dest8.empty());
 }
 
 /**
@@ -483,6 +486,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse009, testing::ext::TestSize.Level3)
     std::vector<uint64_t> dest7;
     ASSERT_TRUE(!sysEvent->GetEventUintArrayValue("STR_ARRAY", dest7));
     ASSERT_TRUE(dest7.empty());
+    std::vector<uint64_t> dest8;
+    ASSERT_TRUE(sysEvent->GetEventUintArrayValue("EMPTY_ARRAY", dest8));
+    ASSERT_TRUE(dest8.empty());
 }
 
 /**
@@ -522,6 +528,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse010, testing::ext::TestSize.Level3)
     std::vector<double> dest7;
     ASSERT_TRUE(!sysEvent->GetEventDoubleArrayValue("STR_ARRAY", dest7));
     ASSERT_TRUE(dest7.empty());
+    std::vector<double> dest8;
+    ASSERT_TRUE(sysEvent->GetEventDoubleArrayValue("EMPTY_ARRAY", dest8));
+    ASSERT_TRUE(dest8.empty());
 }
 
 /**
@@ -556,6 +565,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse011, testing::ext::TestSize.Level3)
     ASSERT_TRUE(sysEvent->GetEventStringArrayValue("STR_ARRAY", dest7));
     std::vector<std::string> origin = {"STR1", "STR2", "STR3"};
     ASSERT_EQ(dest7, origin);
+    std::vector<std::string> dest8;
+    ASSERT_TRUE(sysEvent->GetEventStringArrayValue("EMPTY_ARRAY", dest8));
+    ASSERT_TRUE(dest8.empty());
 }
 } // HiviewDFX
 } // OHOS
