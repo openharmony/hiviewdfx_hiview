@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "file_utils.h"
 #include "trace_collector.h"
 #include "trace_manager.h"
+#include "trace_utils.h"
 #include <mutex>
 
 using namespace OHOS::HiviewDFX;
