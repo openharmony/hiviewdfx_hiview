@@ -21,7 +21,6 @@ config("event_store_config") {
     "//third_party/bounds_checking_function/include",
     "//commonlibrary/c_utils/base/include",
     "include",
-    "$hiview_base/log/include",
     "$hiview_base/include",
     "$hiview_base/running_status_logger/include",
     "$hiview_root/include",

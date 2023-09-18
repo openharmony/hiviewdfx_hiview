@@ -125,14 +125,6 @@ HWTEST_F(PluginTest, HiviewContextTest001, testing::ext::TestSize.Level0)
     context.PostAsyncEventToTarget(nullptr, "", nullptr);
     // RequestUnloadPlugin
     context.RequestUnloadPlugin(nullptr);
-    // PublishPluginCapacity
-    PluginCapacityInfo capInfo = { "", {}, "", {} };
-    context.PublishPluginCapacity(capInfo);
-    // GetRemoteByCapacity
-    std::string plugin;
-    std::string capacity;
-    std::list<std::string> deviceIdList;
-    context.GetRemoteByCapacity(plugin, capacity, deviceIdList);
     // AppendPluginToPipeline
     context.AppendPluginToPipeline("", "");
     // RequestLoadBundle
@@ -149,8 +141,6 @@ HWTEST_F(PluginTest, HiviewContextTest001, testing::ext::TestSize.Level0)
     /* default null function test with return value */
     // PostSyncEventToTarget
     ASSERT_TRUE(context.PostSyncEventToTarget(nullptr, "", nullptr));
-    // PostEventToRemote
-    ASSERT_EQ(context.PostEventToRemote(nullptr, "", "",  nullptr), 0);
     // GetSharedWorkLoop
     ASSERT_EQ(context.GetSharedWorkLoop(), nullptr);
     // GetPipelineSequenceByName

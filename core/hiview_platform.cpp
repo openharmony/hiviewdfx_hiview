@@ -806,58 +806,6 @@ std::string HiviewPlatform::GetPluginConfigPath()
     return defaultConfigDir_ + defaultConfigName_;
 }
 
-void HiviewPlatform::PublishPluginCapacity(PluginCapacityInfo& pluginCapacityInfo)
-{
-    auto it = pluginMap_.find(DISTRIBUTED_COMMUNICATOR_PLUGIN);
-    if (it == pluginMap_.end()) {
-        return;
-    }
-    auto callee = it->second;
-    if (callee == nullptr) {
-        return;
-    }
-    auto event = std::make_shared<CapacityPublishEvent>(pluginCapacityInfo.name_, pluginCapacityInfo);
-    event->messageType_ = Event::MessageType::CROSS_PLATFORM;
-    event->eventId_ = CapacityEventId::CAP_PUBLISH;
-    auto eventParent = std::dynamic_pointer_cast<Event>(event);
-    callee->OnEvent(eventParent);
-}
-
-void HiviewPlatform::GetRemoteByCapacity(const std::string& plugin, const std::string& capacity,
-                                         std::list<std::string>& deviceIdList)
-{
-    auto it = pluginMap_.find(DISTRIBUTED_COMMUNICATOR_PLUGIN);
-    if (it == pluginMap_.end()) {
-        return;
-    }
-    auto callee = it->second;
-    if (callee == nullptr) {
-        return;
-    }
-    auto event = std::make_shared<CapacityObtainEvent>(plugin, capacity);
-    event->messageType_ = Event::MessageType::CROSS_PLATFORM;
-    event->eventId_ = CapacityEventId::CAP_OBTAIN;
-    auto eventParent = std::dynamic_pointer_cast<Event>(event);
-    if (!callee->OnEvent(eventParent)) {
-        return;
-    }
-    deviceIdList = event->deviceList_;
-}
-
-int32_t HiviewPlatform::PostEventToRemote(std::shared_ptr<Plugin> caller, const std::string& deviceId,
-                                          const std::string& targetPlugin, std::shared_ptr<Event> event)
-{
-    if (event == nullptr) {
-        return -1;
-    }
-    event->SetValue("targetPlugin", targetPlugin);
-    event->SetValue("deviceId", deviceId);
-    if (PostSyncEventToTarget(caller, DISTRIBUTED_COMMUNICATOR_PLUGIN, event)) {
-        return event->GetIntValue("result");
-    }
-    return -1;
-}
-
 void HiviewPlatform::AppendPluginToPipeline(const std::string& pluginName, const std::string& pipelineName)
 {
     auto it = pipelines_.find(pipelineName);
