@@ -22,12 +22,12 @@
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
+#include <file_util.h>
 #include <regex>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "file_util.h"
 #include "string_ex.h"
 #include "securec.h"
 #include "limits.h"
@@ -38,47 +38,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 using namespace OHOS::AppExecFwk;
-bool IsLinkFile(const std::string& sfilename)
-{
-    struct stat statinfo {};
-    bool isslnk = false;
-
-    if (lstat(sfilename.c_str(), &statinfo) < 0) {
-        SANITIZERD_LOGE("IsLinkFile lstat %{public}s err: %{public}s", sfilename.c_str(), strerror(errno));
-        return isslnk;
-    }
-
-    if (!S_ISLNK(statinfo.st_mode) && statinfo.st_nlink > 1) {
-        SANITIZERD_LOGI("IsLinkFile hardlink %{public}s", sfilename.c_str());
-    } else if (S_ISLNK(statinfo.st_mode)) {
-        isslnk = true;
-    }
-    return isslnk;
-}
-
-bool GetRealPath(const std::string& fn, std::string& out)
-{
-    char buf[SL_BUF_LEN];
-    ssize_t count = readlink(fn.c_str(), buf, sizeof(buf));
-    if (count != -1 && count <= static_cast<ssize_t>(sizeof(buf))) {
-        buf[count] = '\0';
-        out = std::string(buf);
-        return true;
-    }
-    return false;
-}
-
-bool ReadFileToString(const std::string& path, std::string& out)
-{
-    std::string realfpath;
-    if (IsLinkFile(path)) {
-        GetRealPath(path, realfpath);
-    } else {
-        realfpath = path;
-    }
-    return FileUtil::LoadStringFromFile(path, out);
-}
-
 std::vector<std::string> SplitString(const std::string& input, const std::string& regex)
 {
     std::regex re(regex);
