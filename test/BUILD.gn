@@ -136,35 +136,12 @@ if (!defined(ohos_lite)) {
   }
 }
 
-ohos_unittest("XcollecterHiTraceTest") {
-  module_out_path = module_output_path
-
-  include_dirs = [
-    "$hiview_service/unified_collection/include",
-    "$hiview_interfaces/innerkits/xcollecter_hitrace/include",
-  ]
-
-  sources = [ "unittest/xcollecter_hitrace/xcollecter_test.cpp" ]
-
-  deps = [
-    "$hiview_interfaces/innerkits/xcollecter_hitrace:libxcollecter_hitrace",
-    "//third_party/googletest:gtest_main",
-  ]
-
-  external_deps = [
-    "hilog:libhilog",
-    "hilog:libhilog",
-    "hitrace:hitrace_dump",
-  ]
-}
-
 group("unittest") {
   testonly = true
   deps = [
     ":HiviewPlatformModuleTest",
     ":HolisticPlatformTest",
     ":ReportXPowerEventTest",
-    ":XcollecterHiTraceTest",
     "unittest/unified_collection/client:UCollectionClientUnitTest",
     "unittest/unified_collection/utility:UCollectionUtilityUnitTest",
   ]
