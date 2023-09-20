@@ -71,10 +71,27 @@ bool IsDbFile(const std::string& dbFilePath)
     return dbFileExt == "db";
 }
 
-bool NeedStoreInDb(const ProcessCpuStatInfo& cpuCollectionInfo)
+bool IsValidCpuLoad(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
     constexpr double storeFilteringThresholdOfCpuLoad = 0.0005; // 0.05%
     return cpuCollectionInfo.cpuLoad >= storeFilteringThresholdOfCpuLoad;
+}
+
+bool IsInvalidCpuLoad(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    return cpuCollectionInfo.cpuLoad == 0;
+}
+
+bool IsValidCpuUsage(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    constexpr double storeFilteringThresholdOfCpuUsage = 0.0005; // 0.05%
+    return cpuCollectionInfo.cpuUsage >= storeFilteringThresholdOfCpuUsage;
+}
+
+bool NeedStoreInDb(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    return IsValidCpuLoad(cpuCollectionInfo)
+        || (IsInvalidCpuLoad(cpuCollectionInfo) && IsValidCpuUsage(cpuCollectionInfo));
 }
 
 double TruncateDecimalWithNBitPrecision(double decimal, uint32_t precision = DEFAULT_PRECISION_OF_DECIMAL)

@@ -35,9 +35,20 @@ std::string GetProcessNameFromProcCmdline(int32_t pid)
     if (procCmdlineContent.empty()) {
         return "";
     }
-    // for the format '/system/bin/hiview' or 'hiview' of the cmdline file
-    return (procCmdlineContent.rfind("/", 0) == 0) ?
-        FileUtil::ExtractFileName(procCmdlineContent) : procCmdlineContent;
+
+    size_t procNameStartPos = 0;
+    size_t procNameEndPos = procCmdlineContent.size();
+    for (size_t i = 0; i < procCmdlineContent.size(); i++) {
+        if (procCmdlineContent[i] == '/') {
+            // for the format '/system/bin/hiview' of the cmdline file
+            procNameStartPos = i + 1; // 1 for next char
+        } else if (procCmdlineContent[i] == '\0') {
+            // for the format 'hiview \0 3 \0 hiview' of the cmdline file
+            procNameEndPos = i;
+            break;
+        }
+    }
+    return procCmdlineContent.substr(procNameStartPos, procNameEndPos - procNameStartPos);
 }
 
 std::string GetProcessNameFromProcStat(int32_t pid)
