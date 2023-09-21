@@ -14,18 +14,17 @@
  */
 
 #include "asan_collector.h"
-
 #include <fcntl.h>
 #include <map>
 #include <regex>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "faultlog_util.h"
+#include "file_util.h"
 #include "logger.h"
-
 #include "reporter.h"
 #include "zip_helper.h"
-#include "faultlog_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -223,13 +222,11 @@ bool AsanCollector::ReadRecordToString(std::string& fullFile, const std::string&
     // A record is a log dump. It has an associated size of "record_size".
     std::string record;
     std::smatch captured;
-
     record.clear();
-    if (!OHOS::HiviewDFX::ReadFileToString(fullFile, record)) {
+    if (!FileUtil::LoadStringFromFile(fullFile, record)) {
         HIVIEW_LOGI("Unable to open %{public}s", fullFile.c_str());
         return false;
     }
-
     int hitcount = 0;
     struct stat st;
     if (stat(fullFile.c_str(), &st) == -1) {
