@@ -139,7 +139,7 @@ FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName)
 std::string RegulateModuleNameIfNeed(const std::string& name)
 {
     std::vector<std::string> splitStr;
-    StringUtil::SplitStr(name, "/\\", splitStr);
+    StringUtil::SplitStr(name, "/", splitStr);
     auto size = splitStr.size();
     if (size > 0) {
         return splitStr[size - 1];
