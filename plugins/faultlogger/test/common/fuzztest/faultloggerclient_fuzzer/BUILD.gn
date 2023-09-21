@@ -15,7 +15,7 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 
 ohos_fuzztest("FaultloggerClientFuzzTest") {
-  module_out_path = "hiviewdfx/faultlogger/"
+  module_out_path = "hiview/faultlogger"
 
   fuzz_config_file = "//base/hiviewdfx/hiview/plugins/faultlogger/test/common/fuzztest/faultloggerclient_fuzzer"
 
