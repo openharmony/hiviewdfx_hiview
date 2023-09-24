@@ -20,7 +20,6 @@ config("smart_parser_config") {
   include_dirs = [
     "//third_party/bounds_checking_function/include",
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
-    "//third_party/jsoncpp/include",
     ".",
     "include",
     "../include",

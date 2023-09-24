@@ -24,7 +24,6 @@ config("running_status_logger_config") {
     "$hiview_base/include",
     "$hiview_base/running_status_logger/include",
     "$hiview_root/include",
-    "//third_party/jsoncpp/include",
   ]
 }
 

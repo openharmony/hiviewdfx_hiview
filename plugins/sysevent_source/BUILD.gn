@@ -37,6 +37,7 @@ ohos_source_set("sysevent_source") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   public_configs = [ ":hiview_core_config" ]
+  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
 
   sources = [
     "event_server.cpp",

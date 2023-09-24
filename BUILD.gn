@@ -93,6 +93,8 @@ ohos_executable("hiview") {
     "service:hiview_service",
   ]
 
+  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
+
   sources = [ "main.cpp" ]
 
   deps += plugin_static_deps
