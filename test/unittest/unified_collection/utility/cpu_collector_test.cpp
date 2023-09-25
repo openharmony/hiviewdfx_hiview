@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <climits>
 #include <iostream>
 
 #include "cpu_collector.h"
@@ -133,4 +134,60 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest008, TestSize.Level1)
     CollectResult<std::vector<ProcessCpuLoad>> data = collector->CollectProcessCpuLoads();
     std::cout << "collect process cpu loads result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: CpuCollectorTest009
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfo
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest009, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    constexpr int initPid = 1;
+    auto collectResult = collector->CollectProcessCpuStatInfo(initPid);
+    ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+    ASSERT_GT(collectResult.data.startTime, 0);
+    ASSERT_GT(collectResult.data.endTime, 0);
+    ASSERT_EQ(collectResult.data.pid, initPid);
+    ASSERT_FALSE(collectResult.data.procName.empty());
+}
+
+/**
+ * @tc.name: CpuCollectorTest010
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfo
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest010, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    constexpr int notExistPid = INT_MAX;
+    auto collectResult = collector->CollectProcessCpuStatInfo(notExistPid);
+    ASSERT_TRUE(collectResult.retCode != UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: CpuCollectorTest011
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfo
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest011, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    constexpr int invalidPid = -1;
+    auto collectResult = collector->CollectProcessCpuStatInfo(invalidPid);
+    ASSERT_TRUE(collectResult.retCode != UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: CpuCollectorTest012
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfos
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest012, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto collectResult = collector->CollectProcessCpuStatInfos();
+    ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(collectResult.data.empty());
 }
