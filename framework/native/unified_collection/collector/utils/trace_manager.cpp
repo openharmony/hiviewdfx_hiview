@@ -15,55 +15,79 @@
 #include "hilog/log.h"
 #include "hitrace_dump.h"
 #include "logger.h"
+#include "parameter_ex.h"
 #include "trace_manager.h"
+
+#include <mutex>
 
 DEFINE_LOG_TAG("UCollectUtil");
 
-using namespace OHOS::HiviewDFX::Hitrace;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr int32_t ERR_CODE = -1;
+    std::mutex lock_;
 }
 
 int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroups)
 {
-    // check trace manager status
-    if (status_ != TraceStatus::STOP) {
-        OHOS::HiviewDFX::Hitrace::CloseTrace();
-        status_ = TraceStatus::STOP;
+    std::lock_guard<std::mutex> lock(lock_);
+    // service mode
+    if (OHOS::HiviewDFX::Hitrace::GetTraceMode() ==
+        OHOS::HiviewDFX::Hitrace::TraceMode::SERVICE_MODE) {
+        HIVIEW_LOGE("Service status.");
+        return OHOS::HiviewDFX::Hitrace::TraceErrorCode::CALL_ERROR;
     }
-    if (OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups) != TraceErrorCode::SUCCESS) {
-        HIVIEW_LOGE("Service OpenTrace fail.");
-        return ERR_CODE;
+
+    // recording mode
+    if (OHOS::HiviewDFX::Hitrace::GetTraceMode() ==
+        OHOS::HiviewDFX::Hitrace::TraceMode::CMD_MODE) {
+        HIVIEW_LOGE("Recording status, open snapshot failed.");
+        return OHOS::HiviewDFX::Hitrace::TraceErrorCode::TRACE_IS_OCCUPIED;
     }
-    status_ = TraceStatus::SNAPSHOT;
-    return 0;
+
+    return OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups);
 }
 
 int32_t TraceManager::OpenRecordingTrace(const std::string &args)
 {
-    // check trace manager status
-    if (status_ != TraceStatus::STOP) {
+    std::lock_guard<std::mutex> lock(lock_);
+    // recording mode
+    if (OHOS::HiviewDFX::Hitrace::GetTraceMode() ==
+        OHOS::HiviewDFX::Hitrace::TraceMode::CMD_MODE) {
+        HIVIEW_LOGE("Recording status, open recording failed.");
+        return OHOS::HiviewDFX::Hitrace::TraceErrorCode::TRACE_IS_OCCUPIED;
+    }
+
+    // service mode
+    if (OHOS::HiviewDFX::Hitrace::GetTraceMode() ==
+        OHOS::HiviewDFX::Hitrace::TraceMode::SERVICE_MODE) {
+        HIVIEW_LOGI("TraceMode is switching: snapshot close, open recording.");
         OHOS::HiviewDFX::Hitrace::CloseTrace();
-        status_ = TraceStatus::STOP;
     }
-    if (OHOS::HiviewDFX::Hitrace::OpenTrace(args) != TraceErrorCode::SUCCESS) {
-        HIVIEW_LOGE("CMD OpenTrace fail.");
-        return ERR_CODE;
-    }
-    status_ = TraceStatus::RECORDING;
-    return 0;
+
+    return OHOS::HiviewDFX::Hitrace::OpenTrace(args);
 }
 
 int32_t TraceManager::CloseTrace()
 {
-    if (OHOS::HiviewDFX::Hitrace::CloseTrace() != TraceErrorCode::SUCCESS) {
-        HIVIEW_LOGE("CloseTrace fail.");
-        return ERR_CODE;
+    std::lock_guard<std::mutex> lock(lock_);
+    HIVIEW_LOGI("TraceManager: close trace.");
+    return OHOS::HiviewDFX::Hitrace::CloseTrace();
+}
+
+int32_t TraceManager::RecoverTrace()
+{
+    std::lock_guard<std::mutex> lock(lock_);
+    int32_t ret = OHOS::HiviewDFX::Hitrace::CloseTrace();
+
+    if (Parameter::IsBetaVersion()) {
+        HIVIEW_LOGI("TraceManager: RecoverTrace to Snapshot.");
+        const std::vector<std::string> tagGroups = {"scene_performance"};
+        return OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups);
     }
-    status_ = TraceStatus::STOP;
-    return 0;
+
+    HIVIEW_LOGI("TraceManager: RecoverTrace to Close.");
+    return ret;
 }
 } // HiviewDFX
 } // OHOS

@@ -22,21 +22,14 @@ namespace OHOS {
 namespace HiviewDFX {
 class TraceManager {
 public:
-    TraceManager(): status_(STOP) {};
+    TraceManager() {};
     ~TraceManager() {};
-public:
-    enum TraceStatus {
-        STOP,
-        SNAPSHOT,
-        RECORDING,
-    };
+
 public:
     int32_t OpenSnapshotTrace(const std::vector<std::string> &tagGroups);
     int32_t OpenRecordingTrace(const std::string &args);
     int32_t CloseTrace();
-
-private:
-    TraceStatus status_;
+    int32_t RecoverTrace();
 };
 } // HiViewDFX
 } // OHOS
