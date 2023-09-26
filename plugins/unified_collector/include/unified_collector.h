@@ -26,6 +26,7 @@ class UnifiedCollector : public Plugin {
 public:
     void OnLoad() override;
     void OnUnload() override;
+    void OnEventListeningCallback(const Event& event) override;
 
 private:
     void Init();

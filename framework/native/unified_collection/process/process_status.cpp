@@ -14,14 +14,19 @@
  */
 #include "process_status.h"
 
+#include <unordered_map>
+
 #include "file_util.h"
 #include "logger.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-ProcessStatus");
 namespace {
+constexpr uint64_t INVALID_LAST_FOREGROUND_TIME = 0;
+
 bool IsValidProcessId(int32_t pid)
 {
     std::string procDir = "/proc/" + std::to_string(pid);
@@ -78,44 +83,129 @@ std::string ProcessStatus::GetProcessName(int32_t pid)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     // the cleanup judgment is triggered each time
-    if (NeedClearProcessNames()) {
-        ClearProcessNames();
+    if (NeedClearProcessInfos()) {
+        ClearProcessInfos();
     }
 
-    if (processNames_.find(pid) != processNames_.end()) {
-        return processNames_[pid];
+    if (processInfos_.find(pid) != processInfos_.end() && !processInfos_[pid].name.empty()) {
+        return processInfos_[pid].name;
     }
     std::string procName = GetProcessNameFromProcCmdline(pid);
-    if (!procName.empty()) {
-        processNames_[pid] = procName;
+    if (UpdateProcessName(pid, procName)) {
         return procName;
     }
     procName = GetProcessNameFromProcStat(pid);
-    if (!procName.empty()) {
-        processNames_[pid] = procName;
+    if (UpdateProcessName(pid, procName)) {
         return procName;
     }
     HIVIEW_LOGW("failed to get proc name from pid=%{public}d", pid);
     return "";
 }
 
-bool ProcessStatus::NeedClearProcessNames()
+bool ProcessStatus::NeedClearProcessInfos()
 {
     constexpr size_t maxSizeOfProcessNames = 1000;
-    return processNames_.size() > maxSizeOfProcessNames;
+    return processInfos_.size() > maxSizeOfProcessNames;
 }
 
-void ProcessStatus::ClearProcessNames()
+void ProcessStatus::ClearProcessInfos()
 {
-    HIVIEW_LOGI("start to clear process name, size=%{public}zu", processNames_.size());
-    for (auto it = processNames_.begin(); it != processNames_.end();) {
+    HIVIEW_LOGI("start to clear process cache, size=%{public}zu", processInfos_.size());
+    for (auto it = processInfos_.begin(); it != processInfos_.end();) {
         if (!IsValidProcessId(it->first)) {
-            processNames_.erase(it++);
+            processInfos_.erase(it++);
         } else {
             it++;
         }
     }
-    HIVIEW_LOGI("end to clear process name, size=%{public}zu", processNames_.size());
+    HIVIEW_LOGI("end to clear process cache, size=%{public}zu", processInfos_.size());
+}
+
+bool ProcessStatus::UpdateProcessName(int32_t pid, const std::string& procName)
+{
+    if (procName.empty()) {
+        return false;
+    }
+
+    if (processInfos_.find(pid) != processInfos_.end()) {
+        processInfos_[pid].name = procName;
+        return true;
+    }
+    processInfos_[pid] = {
+        .name = procName,
+        .state = BACKGROUND,
+        .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
+    };
+    return true;
+}
+
+ProcessState ProcessStatus::GetProcessState(int32_t pid)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    return (processInfos_.find(pid) != processInfos_.end())
+        ? processInfos_[pid].state
+        : BACKGROUND;
+}
+
+uint64_t ProcessStatus::GetProcessLastForegroundTime(int32_t pid)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    return (processInfos_.find(pid) != processInfos_.end())
+        ? processInfos_[pid].lastForegroundTime
+        : INVALID_LAST_FOREGROUND_TIME;
+}
+
+void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    UpdateProcessState(pid, procState);
+}
+
+void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState)
+{
+    HIVIEW_LOGI("update process=%{public}d state=%{public}d", pid, procState);
+    switch (procState) {
+        case FOREGROUND:
+            UpdateProcessForegroundState(pid);
+            break;
+        case BACKGROUND:
+            UpdateProcessBackgroundState(pid);
+            break;
+        default:
+            HIVIEW_LOGW("invalid process=%{public}d state=%{public}d", pid, procState);
+    }
+}
+
+void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
+{
+    uint64_t nowTime = TimeUtil::GetMilliseconds();
+    if (processInfos_.find(pid) != processInfos_.end()) {
+        processInfos_[pid].state = FOREGROUND;
+        processInfos_[pid].lastForegroundTime = nowTime;
+        return;
+    }
+    processInfos_[pid] = {
+        .name = "",
+        .state = FOREGROUND,
+        .lastForegroundTime = nowTime,
+    };
+}
+
+void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
+{
+    if (processInfos_.find(pid) != processInfos_.end()) {
+        // last foreground time needs to be updated when the foreground status is switched to the background
+        if (processInfos_[pid].state == FOREGROUND) {
+            processInfos_[pid].lastForegroundTime = TimeUtil::GetMilliseconds();
+        }
+        processInfos_[pid].state = BACKGROUND;
+        return;
+    }
+    processInfos_[pid] = {
+        .name = "",
+        .state = BACKGROUND,
+        .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
+    };
 }
 } // UCollectUtil
 }  // namespace HiviewDFX
