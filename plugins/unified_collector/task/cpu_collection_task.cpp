@@ -45,7 +45,7 @@ void CpuCollectionTask::ReportCpuCollectionEvent()
 
 void CpuCollectionTask::CollectCpuData()
 {
-    auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos();
+    auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
         cpuStorage_->Store(cpuCollectionsResult.data);
     }

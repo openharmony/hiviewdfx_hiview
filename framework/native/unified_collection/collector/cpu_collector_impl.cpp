@@ -57,7 +57,8 @@ public:
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuUsage>> CollectProcessCpuUsages() override;
     virtual CollectResult<std::vector<ProcessCpuLoad>> CollectProcessCpuLoads() override;
-    virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos() override;
+    virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
+        bool isNeedUpdate = false) override;
 
 private:
     bool InitDeviceClient();
@@ -65,8 +66,10 @@ private:
     std::shared_ptr<ProcessCpuData> FetchProcessCpuData(int32_t pid = INVALID_PID);
     void UpdateCollectionTime();
     void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem);
-    void CalculateProcessCpuStatInfos(std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
-        std::shared_ptr<ProcessCpuData> processCpuData);
+    void CalculateProcessCpuStatInfos(
+        std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
+        std::shared_ptr<ProcessCpuData> processCpuData,
+        bool isNeedUpdate);
     std::optional<ProcessCpuStatInfo> CalculateProcessCpuStatInfo(
         const ucollection_process_cpu_item* procCpuItem, uint64_t startTime, uint64_t endTime);
     void UpdateClearTime();
@@ -224,7 +227,7 @@ CollectResult<std::vector<ProcessCpuLoad>> CpuCollectorImpl::CollectProcessCpuLo
     return result;
 }
 
-CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessCpuStatInfos()
+CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessCpuStatInfos(bool isNeedUpdate)
 {
     CollectResult<std::vector<ProcessCpuStatInfo>> cpuCollectResult = {
         .retCode = UCollect::UcError::UNSUPPORT,
@@ -236,8 +239,10 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessC
     if (processCpuData == nullptr) {
         return cpuCollectResult;
     }
-    UpdateCollectionTime();
-    CalculateProcessCpuStatInfos(cpuCollectResult.data, processCpuData);
+    if (isNeedUpdate) {
+        UpdateCollectionTime();
+    }
+    CalculateProcessCpuStatInfos(cpuCollectResult.data, processCpuData, isNeedUpdate);
     HIVIEW_LOGI("collect process cpu statistics information size=%{public}zu", cpuCollectResult.data.size());
     if (!cpuCollectResult.data.empty()) {
         cpuCollectResult.retCode = UCollect::UcError::SUCCESS;
@@ -248,7 +253,8 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessC
 
 void CpuCollectorImpl::CalculateProcessCpuStatInfos(
     std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
-    std::shared_ptr<ProcessCpuData> processCpuData)
+    std::shared_ptr<ProcessCpuData> processCpuData,
+    bool isNeedUpdate)
 {
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
@@ -256,7 +262,9 @@ void CpuCollectorImpl::CalculateProcessCpuStatInfos(
         if (processCpuStatInfo.has_value()) {
             processCpuStatInfos.emplace_back(processCpuStatInfo.value());
         }
-        UpdateLastProcCpuTimeInfo(procCpuItem);
+        if (isNeedUpdate) {
+            UpdateLastProcCpuTimeInfo(procCpuItem);
+        }
         procCpuItem = processCpuData->GetNextProcess();
     }
 }

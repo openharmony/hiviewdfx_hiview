@@ -151,6 +151,10 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest009, TestSize.Level1)
     ASSERT_GT(collectResult.data.endTime, 0);
     ASSERT_EQ(collectResult.data.pid, initPid);
     ASSERT_FALSE(collectResult.data.procName.empty());
+
+    auto nextCollectResult = collector->CollectProcessCpuStatInfo(initPid);
+    ASSERT_TRUE(nextCollectResult.retCode == UcError::SUCCESS);
+    ASSERT_EQ(nextCollectResult.data.startTime, collectResult.data.startTime);
 }
 
 /**
@@ -190,4 +194,36 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest012, TestSize.Level1)
     auto collectResult = collector->CollectProcessCpuStatInfos();
     ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
     ASSERT_FALSE(collectResult.data.empty());
+}
+
+/**
+ * @tc.name: CpuCollectorTest013
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfos
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest013, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto collectResult = collector->CollectProcessCpuStatInfos(true);
+    ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(collectResult.data.empty());
+}
+
+/**
+ * @tc.name: CpuCollectorTest014
+ * @tc.desc: used to test CpuCollector.CollectProcessCpuStatInfos
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest014, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto firstCollectResult = collector->CollectProcessCpuStatInfos(false);
+    ASSERT_TRUE(firstCollectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(firstCollectResult.data.empty());
+
+    auto secondCollectResult = collector->CollectProcessCpuStatInfos(false);
+    ASSERT_TRUE(secondCollectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(secondCollectResult.data.empty());
+
+    ASSERT_EQ(firstCollectResult.data[0].startTime, secondCollectResult.data[0].startTime);
 }
