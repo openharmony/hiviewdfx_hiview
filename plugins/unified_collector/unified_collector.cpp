@@ -17,11 +17,30 @@
 #include "file_util.h"
 #include "logger.h"
 #include "plugin_factory.h"
+#include "process_status.h"
+#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(UnifiedCollector);
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
+using namespace OHOS::HiviewDFX::UCollectUtil;
+namespace {
+const std::unordered_map<std::string, ProcessState> APP_STATES = {
+    {"APP_FOREGROUND", FOREGROUND},
+    {"APP_BACKGROUND", BACKGROUND},
+};
+
+ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
+{
+    std::string eventName = sysEvent.GetEventName();
+    if (APP_STATES.find(eventName) != APP_STATES.end()) {
+        return APP_STATES.at(eventName);
+    }
+    HIVIEW_LOGW("invalid event name=%{public}s", eventName.c_str());
+    return INVALID;
+}
+}
 
 void UnifiedCollector::OnLoad()
 {
@@ -32,6 +51,22 @@ void UnifiedCollector::OnLoad()
 void UnifiedCollector::OnUnload()
 {
     HIVIEW_LOGI("start to unload UnifiedCollector plugin");
+}
+
+void UnifiedCollector::OnEventListeningCallback(const Event& event)
+{
+    SysEvent& sysEvent = static_cast<SysEvent&>(const_cast<Event&>(event));
+    int32_t procId = sysEvent.GetEventIntValue("APP_PID");
+    if (procId <= 0) {
+        HIVIEW_LOGW("invalid process id=%{public}d", procId);
+        return;
+    }
+    ProcessState procState = GetProcessStateByEvent(sysEvent);
+    if (procState == INVALID) {
+        HIVIEW_LOGW("invalid process state=%{public}d", procState);
+        return;
+    }
+    ProcessStatus::GetInstance().NotifyProcessState(procId, procState);
 }
 
 void UnifiedCollector::Init()

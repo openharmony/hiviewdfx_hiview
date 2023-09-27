@@ -62,6 +62,7 @@ Note:If the text contains special characters, please escape them according to th
                 <filteritem type="filename" name="BBoxDetectorPipeline" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="faultloggerPipeline" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="EventloggerPipeline" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="UnifiedCollector" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="libfaultlogger.map" desc=" version script config file, not support comments"/>
             </filefilter>
                 <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
@@ -71,6 +72,7 @@ Note:If the text contains special characters, please escape them according to th
                 <filteritem type="filename" name="BBoxDetectorPipeline" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="faultloggerPipeline" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="EventloggerPipeline" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="UnifiedCollector" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="libfaultlogger.map" desc=" version script config file, not support comments"/>
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">

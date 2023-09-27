@@ -23,18 +23,37 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+enum ProcessState {
+    INVALID = -1,
+    BACKGROUND = 0,
+    FOREGROUND,
+};
+
+struct ProcessInfo {
+    std::string name;
+    ProcessState state;
+    uint64_t lastForegroundTime;
+};
+
 class ProcessStatus : public OHOS::DelayedRefSingleton<ProcessStatus> {
 public:
     std::string GetProcessName(int32_t pid);
+    ProcessState GetProcessState(int32_t pid);
+    uint64_t GetProcessLastForegroundTime(int32_t pid);
+    void NotifyProcessState(int32_t pid, ProcessState procState);
 
 private:
-    bool NeedClearProcessNames();
-    void ClearProcessNames();
+    bool UpdateProcessName(int32_t pid, const std::string& procName);
+    void UpdateProcessState(int32_t pid, ProcessState procState);
+    void UpdateProcessForegroundState(int32_t pid);
+    void UpdateProcessBackgroundState(int32_t pid);
+    bool NeedClearProcessInfos();
+    void ClearProcessInfos();
 
 private:
     std::mutex mutex_;
-    /* map<pid, processName> */
-    std::unordered_map<int32_t, std::string> processNames_;
+    /* map<pid, ProcessInfo> */
+    std::unordered_map<int32_t, ProcessInfo> processInfos_;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

@@ -20,6 +20,7 @@
 #include "file_util.h"
 #include "hisysevent.h"
 #include "logger.h"
+#include "process_status.h"
 #include "rdb_helper.h"
 #include "sql_util.h"
 #include "string_util.h"
@@ -28,6 +29,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-CpuStorage");
+using namespace OHOS::HiviewDFX::UCollectUtil;
 namespace {
 constexpr int32_t DB_VERSION = 1;
 const std::string TABLE_NAME = "unified_collection_cpu";
@@ -35,6 +37,7 @@ const std::string COLUMN_START_TIME = "start_time";
 const std::string COLUMN_END_TIME = "end_time";
 const std::string COLUMN_PID = "pid";
 const std::string COLUMN_PROC_NAME = "proc_name";
+const std::string COLUMN_PROC_STATE = "proc_state";
 const std::string COLUMN_CPU_LOAD = "cpu_load";
 const std::string COLUMN_CPU_USAGE = "cpu_usage";
 constexpr uint32_t MAX_NUM_OF_DB_FILES = 7; // save files for one week
@@ -98,6 +101,24 @@ double TruncateDecimalWithNBitPrecision(double decimal, uint32_t precision = DEF
 {
     auto truncateCoefficient = std::pow(10, precision);
     return std::floor(decimal * truncateCoefficient) / truncateCoefficient;
+}
+
+bool IsForegroundStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    int32_t pid = cpuCollectionInfo.pid;
+    ProcessState procState = ProcessStatus::GetInstance().GetProcessState(pid);
+    if (procState == FOREGROUND) {
+        return true;
+    }
+    uint64_t procForegroundTime = ProcessStatus::GetInstance().GetProcessLastForegroundTime(pid);
+    return (procForegroundTime >= cpuCollectionInfo.startTime && procForegroundTime < cpuCollectionInfo.endTime);
+}
+
+int32_t GetProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    return IsForegroundStateInCollectionPeriod(cpuCollectionInfo)
+        ? static_cast<int32_t>(FOREGROUND)
+        : static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(cpuCollectionInfo.pid));
 }
 }
 
@@ -181,6 +202,7 @@ void CpuStorage::InsertTable(const ProcessCpuStatInfo& cpuCollectionInfo)
     bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollectionInfo.startTime));
     bucket.PutLong(COLUMN_END_TIME, static_cast<int64_t>(cpuCollectionInfo.endTime));
     bucket.PutInt(COLUMN_PID, cpuCollectionInfo.pid);
+    bucket.PutInt(COLUMN_PROC_STATE, GetProcessStateInCollectionPeriod(cpuCollectionInfo));
     bucket.PutString(COLUMN_PROC_NAME, cpuCollectionInfo.procName);
     bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuLoad));
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuUsage));
@@ -195,16 +217,17 @@ int32_t CpuStorage::CreateTable()
     /**
      * table: unified_collection_cpu
      *
-     * |-----|------------|----------|-----|-----------|----------|-----------|
-     * |  id | start_time | end_time | pid | proc_name | cpu_load | cpu_usage |
-     * |-----|------------|----------|-----|-----------|----------|-----------|
-     * | INT |    INT64   |   INT64  | INT |  VARCHAR  |  DOUBLE  |   DOUBLE  |
-     * |-----|------------|----------|-----|-----------|----------|-----------|
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
+     * |  id | start_time | end_time | pid | proc_state | proc_name | cpu_load | cpu_usage |
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
+     * | INT |    INT64   |   INT64  | INT |    INT     |  VARCHAR  |  DOUBLE  |   DOUBLE  |
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
      */
     const std::vector<std::pair<std::string, std::string>> fields = {
         {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
         {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
         {COLUMN_PID, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_PROC_STATE, SqlUtil::COLUMN_TYPE_INT},
         {COLUMN_PROC_NAME, SqlUtil::COLUMN_TYPE_STR},
         {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
         {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
