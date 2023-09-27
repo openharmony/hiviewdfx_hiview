@@ -14,5 +14,8 @@
     },
     "TRACE": {
         "LOGPATH": "/data/log/hiview/unified_collection/trace/share/"
+    },
+    "CONTAINER": {
+        "LOGPATH": "/data/virt_service/containerized_aosp/anco_android_data/log/LogService/uploading/"
     }
 }
