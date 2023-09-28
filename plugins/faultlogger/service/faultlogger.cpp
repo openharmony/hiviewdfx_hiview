@@ -415,6 +415,7 @@ void Faultlogger::OnLoad()
     }
 #ifndef UNIT_TEST
     std::thread sanitizerdThread(&Faultlogger::RunSanitizerd);
+    pthread_setname_np(sanitizerdThread.native_handle(), "RunSanitizerd");
     sanitizerdThread.detach();
 #endif
 }
