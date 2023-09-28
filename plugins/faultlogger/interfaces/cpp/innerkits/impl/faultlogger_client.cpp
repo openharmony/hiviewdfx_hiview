@@ -97,6 +97,8 @@ void AddFaultLog(const FaultLogInfoInner &info)
     infoOhos.reason = info.reason;
     infoOhos.summary = info.summary;
     infoOhos.logPath = info.logPath;
+    infoOhos.registers = info.registers;
+    infoOhos.otherThreadInfo = info.otherThreadInfo;
     infoOhos.sectionMaps = info.sectionMaps;
     infoOhos.fd = -1;
     service->AddFaultLog(infoOhos);

@@ -57,36 +57,37 @@ static const char *CPU_USAGE[] = {"FAULTCPU", "CPU Usage:"};
 static const char *TRACE_ID[] = {"TRACEID", "Trace-Id:"};
 static const char *SUMMARY[] = {"SUMMARY", "Summary:\n"};
 static const char *TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
+static const char *MEMORY_NEAR_REGISTERS[] = {"MEMORY_NEAR_REGISTERS", "Memory near registers:\n"};
 
 auto CPP_CRASH_LOG_SEQUENCE = {
     DEVICE_INFO,      BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID, MODULE_UID,      FAULT_TYPE,
     SYSVMTYPE,        APPVMTYPE,  REASON,      FAULT_MESSAGE,  TRACE_ID,   PROCESS_NAME,    KEY_THREAD_INFO,
-    KEY_THREAD_REGISTERS, OTHER_THREAD_INFO
+    SUMMARY, KEY_THREAD_REGISTERS, OTHER_THREAD_INFO, MEMORY_NEAR_REGISTERS
 };
 
 auto JAVASCRIPT_CRASH_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME,   MODULE_VERSION, MODULE_PID,
     MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, SYSVMTYPE,      APPVMTYPE,
-    FOREGROUND,  LIFETIME,   REASON,        TRACE_ID
+    FOREGROUND,  LIFETIME,   REASON,        TRACE_ID, SUMMARY
 };
 
 auto APP_FREEZE_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
     MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
     TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
-    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE
+    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
 };
 
 auto SYS_FREEZE_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
     MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
     TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
-    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE
+    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
 };
 
 auto RUST_PANIC_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME,   MODULE_VERSION, MODULE_PID,
-    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON
+    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
 };
 
 std::list<const char **> GetLogParseList(int32_t logType)
@@ -198,17 +199,16 @@ void WriteFaultLogToFile(int32_t fd, int32_t logType, std::map<std::string, std:
     for (auto &item : seq) {
         auto value = sections[item[LOG_MAP_KEY]];
         if (!value.empty()) {
-            FileUtil::SaveStringToFd(fd, item[LOG_MAP_VALUE]);
+            // Does not require adding an identifier header for Summary section
+            std::string keyStr = item[LOG_MAP_KEY];
+            if (keyStr.find(SUMMARY[LOG_MAP_KEY]) == std::string::npos) {
+                FileUtil::SaveStringToFd(fd, item[LOG_MAP_VALUE]);
+            }
             if (value.back() != '\n') {
                 value.append("\n");
             }
             FileUtil::SaveStringToFd(fd, value);
         }
-    }
-
-    auto summary = sections[SUMMARY[LOG_MAP_KEY]];
-    if (!summary.empty()) {
-        FileUtil::SaveStringToFd(fd, summary);
     }
 
     if (!sections["KEYLOGFILE"].empty()) {
@@ -227,6 +227,8 @@ static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
     info.module = info.sectionMap[PROCESS_NAME[LOG_MAP_KEY]];
     info.reason = info.sectionMap[REASON[LOG_MAP_KEY]];
     info.summary = info.sectionMap[KEY_THREAD_INFO[LOG_MAP_KEY]];
+    info.registers = info.sectionMap[KEY_THREAD_REGISTERS[LOG_MAP_KEY]];
+    info.otherThreadInfo = info.sectionMap[OTHER_THREAD_INFO[LOG_MAP_KEY]];
     size_t removeStartPos = info.summary.find("Tid:");
     size_t removeEndPos = info.summary.find("Name:");
     if (removeStartPos != std::string::npos && removeEndPos != std::string::npos) {
@@ -269,6 +271,8 @@ FaultLogInfo ParseFaultLogInfoFromFile(const std::string &path, bool isTempFile)
 
         if (ParseFaultLogLine(parseList, line, multline, multlineName, info)) {
             multline.append(line).append("\n");
+        } else {
+            multline.clear();
         }
     }
 

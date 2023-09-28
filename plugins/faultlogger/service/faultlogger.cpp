@@ -210,6 +210,13 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     } else {
         info.sectionMap["SUMMARY"] = info.summary;
     }
+
+    if (!info.registers.empty()) {
+        info.sectionMap["KEY_THREAD_REGISTERS"] = info.registers;
+    }
+    if (!info.otherThreadInfo.empty()) {
+        info.sectionMap["OTHER_THREAD_INFO"] = info.otherThreadInfo;
+    }
 }
 
 void Faultlogger::Dump(int fd, const std::vector<std::string> &cmds)
