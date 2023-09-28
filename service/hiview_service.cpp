@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "hiview_service.h"
 
 #include <cinttypes>
@@ -24,6 +25,7 @@
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
 #include "logger.h"
+#include "trace_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,6 +34,12 @@ namespace {
 constexpr int MIN_SUPPORT_CMD_SIZE = 1;
 constexpr int32_t ERR_DEFAULT = -1;
 }
+
+HiviewService::HiviewService()
+{
+    traceCollector_ = UCollectUtil::TraceCollector::Create();
+}
+
 void HiviewService::StartService()
 {
     std::unique_ptr<HiviewServiceAdapter> adapter = std::make_unique<HiviewServiceAdapter>();
@@ -144,6 +152,7 @@ void HiviewService::DumpPluginUsageInfo(int fd)
         }
     }
 }
+
 void HiviewService::DumpPluginUsageInfo(int fd, const std::string &pluginName) const
 {
     if (parser_ == nullptr) {
@@ -280,6 +289,97 @@ int32_t HiviewService::Remove(const std::string& filePath)
     bool result = FileUtil::RemoveFile(filePath);
     HIVIEW_LOGI("remove file, result:%{public}d", result);
     return 0;
+}
+
+CollectResult<int32_t> HiviewService::OpenSnapshotTrace(const std::vector<std::string>& tagGroups)
+{
+    TraceManager manager;
+    int32_t openRet = manager.OpenSnapshotTrace(tagGroups);
+    CollectResult<int32_t> ret;
+    if (openRet == UCollect::UcError::SUCCESS) {
+        ret.retCode = UCollect::UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("failed to open trace in snapshort mode.");
+        ret.retCode = UCollect::UcError::UNSUPPORT;
+    }
+    return ret;
+}
+
+CollectResult<std::vector<std::string>> HiviewService::DumpSnapshotTrace()
+{
+    auto caller = UCollectUtil::TraceCollector::Caller::OTHER;
+    CollectResult<std::vector<std::string>> dumpRet = traceCollector_->DumpTrace(caller);
+    if (dumpRet.retCode != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGE("failed to dump the trace in snapshort mode.");
+    }
+    return dumpRet;
+}
+
+CollectResult<int32_t> HiviewService::OpenRecordingTrace(const std::string& tags)
+{
+    TraceManager manager;
+    int32_t openRet = manager.OpenRecordingTrace(tags);
+    CollectResult<int32_t> ret;
+    if (openRet == UCollect::UcError::SUCCESS) {
+        ret.retCode = UCollect::UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("failed to open trace in recording mode.");
+        ret.retCode = UCollect::UcError::UNSUPPORT;
+    }
+    return ret;
+}
+
+CollectResult<int32_t> HiviewService::RecordingTraceOn()
+{
+    CollectResult<int32_t> traceOnRet = traceCollector_->TraceOn();
+    if (traceOnRet.retCode != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGE("failed to turn on the trace in recording mode.");
+    }
+    return traceOnRet;
+}
+
+CollectResult<std::vector<std::string>> HiviewService::RecordingTraceOff()
+{
+    CollectResult<std::vector<std::string>> traceOffRet = traceCollector_->TraceOff();
+    if (traceOffRet.retCode != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGE("failed to turn off the trace in recording mode.");
+        return traceOffRet;
+    }
+    TraceManager manager;
+    auto recoverRet = manager.RecoverTrace();
+    if (recoverRet != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGE("failed to recover the trace after trace off in recording mode.");
+        traceOffRet.retCode = UCollect::UcError::UNSUPPORT;
+    }
+    return traceOffRet;
+}
+
+CollectResult<int32_t> HiviewService::CloseTrace()
+{
+    TraceManager manager;
+    int32_t closeRet = manager.CloseTrace();
+    CollectResult<int32_t> ret;
+    if (closeRet == UCollect::UcError::SUCCESS) {
+        ret.retCode = UCollect::UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("failed to close the trace.");
+        ret.retCode = UCollect::UcError::UNSUPPORT;
+    }
+    return ret;
+}
+
+CollectResult<int32_t> HiviewService::RecoverTrace()
+{
+    TraceManager manager;
+    int32_t recoverRet = manager.RecoverTrace();
+    CollectResult<int32_t> ret;
+    if (recoverRet == UCollect::UcError::SUCCESS) {
+        ret.retCode = UCollect::UcError::SUCCESS;
+    } else {
+        HIVIEW_LOGE("failed to recover the trace.");
+        ret.retCode = UCollect::UcError::UNSUPPORT;
+    }
+    return ret;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

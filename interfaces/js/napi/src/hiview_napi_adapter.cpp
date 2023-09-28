@@ -15,7 +15,7 @@
 
 #include "hiview_napi_adapter.h"
 
-#include "hiview_napi_err_code.h"
+#include "hiview_err_code.h"
 #include "hiview_napi_util.h"
 #include "hiview_service_agent.h"
 

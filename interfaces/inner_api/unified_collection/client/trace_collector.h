@@ -28,18 +28,16 @@ class TraceCollector {
 public:
     TraceCollector() = default;
     virtual ~TraceCollector() = default;
-    enum Caller {
-        RELIABILITY,
-        XPERF,
-        XPOWER,
-        BETACLUB,
-        OTHER,
-    };
 
 public:
-    virtual CollectResult<std::vector<std::string>> DumpTrace(Caller &caller) = 0;
-    virtual CollectResult<int32_t> TraceOn() = 0;
-    virtual CollectResult<std::vector<std::string>> TraceOff() = 0;
+    virtual CollectResult<int32_t> OpenSnapshot(const std::vector<std::string>& tagGroups) = 0;
+    virtual CollectResult<std::vector<std::string>> DumpSnapshot() = 0;
+    virtual CollectResult<int32_t> OpenRecording(const std::string& tags) = 0;
+    virtual CollectResult<int32_t> RecordingOn() = 0;
+    virtual CollectResult<std::vector<std::string>> RecordingOff() = 0;
+    virtual CollectResult<int32_t> Close() = 0;
+    virtual CollectResult<int32_t> Recover() = 0;
+
     static std::shared_ptr<TraceCollector> Create();
 }; // TraceCollector
 } // UCollectClient
