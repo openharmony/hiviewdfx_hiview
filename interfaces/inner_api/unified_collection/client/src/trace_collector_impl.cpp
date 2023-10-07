@@ -14,6 +14,8 @@
  */
 #include "trace_collector.h"
 
+#include "hiview_service_trace_delegate.h"
+
 using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
@@ -25,9 +27,13 @@ public:
     virtual ~TraceCollectorImpl() = default;
 
 public:
-    virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
-    virtual CollectResult<int32_t> TraceOn() override;
-    virtual CollectResult<std::vector<std::string>> TraceOff() override;
+    virtual CollectResult<int32_t> OpenSnapshot(const std::vector<std::string>& tagGroups) override;
+    virtual CollectResult<std::vector<std::string>> DumpSnapshot() override;
+    virtual CollectResult<int32_t> OpenRecording(const std::string& tags) override;
+    virtual CollectResult<int32_t> RecordingOn() override;
+    virtual CollectResult<std::vector<std::string>> RecordingOff() override;
+    virtual CollectResult<int32_t> Close() override;
+    virtual CollectResult<int32_t> Recover() override;
 };
 
 std::shared_ptr<TraceCollector> TraceCollector::Create()
@@ -35,22 +41,39 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
     return std::make_shared<TraceCollectorImpl>();
 }
 
-CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
+CollectResult<int32_t> TraceCollectorImpl::OpenSnapshot(const std::vector<std::string>& tagGroups)
 {
-    CollectResult<std::vector<std::string>> result;
-    return result;
+    return HiViewServiceTraceDelegate::OpenSnapshot(tagGroups);
 }
 
-CollectResult<int32_t> TraceCollectorImpl::TraceOn()
+CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpSnapshot()
 {
-    CollectResult<int32_t> result;
-    return result;
+    return HiViewServiceTraceDelegate::DumpSnapshot();
 }
 
-CollectResult<std::vector<std::string>> TraceCollectorImpl::TraceOff()
+CollectResult<int32_t> TraceCollectorImpl::OpenRecording(const std::string& tags)
 {
-    CollectResult<std::vector<std::string>> result;
-    return result;
+    return HiViewServiceTraceDelegate::OpenRecording(tags);
+}
+
+CollectResult<int32_t> TraceCollectorImpl::RecordingOn()
+{
+    return HiViewServiceTraceDelegate::RecordingOn();
+}
+
+CollectResult<std::vector<std::string>> TraceCollectorImpl::RecordingOff()
+{
+    return HiViewServiceTraceDelegate::RecordingOff();
+}
+
+CollectResult<int32_t> TraceCollectorImpl::Close()
+{
+    return HiViewServiceTraceDelegate::Close();
+}
+
+CollectResult<int32_t> TraceCollectorImpl::Recover()
+{
+    return HiViewServiceTraceDelegate::Recover();
 }
 } // UCollectClient
 } // HiViewDFX

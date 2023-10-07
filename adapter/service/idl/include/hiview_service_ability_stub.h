@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_SERVICE_ABILITY_STUB_H
 #define HIVIEW_SERVICE_ABILITY_STUB_H
 
@@ -21,6 +22,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+using RequestHandler = std::function<int32_t(MessageParcel&, MessageParcel&, MessageOption&)>;
 class HiviewServiceAbilityStub : public IRemoteStub<IHiviewServiceAbility> {
 public:
     HiviewServiceAbilityStub() {};
@@ -33,7 +35,19 @@ private:
     int32_t HandleMoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
     int32_t HandleRemoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
     int32_t HandleCopyOrMoveRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option, bool isMove);
+    
+    int32_t HandleOpenSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleDumpSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleOpenRecordingTraceRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleRecordingTraceOnRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleRecordingTraceOffRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleCloseTraceRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+    int32_t HandleRecoverTraceRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
+
     bool IsPermissionGranted(uint32_t code);
+    RequestHandler GetRequestHandler(uint32_t code);
+    std::unordered_map<uint32_t, RequestHandler> GetRequestHandlers();
+    std::unordered_map<uint32_t, RequestHandler> GetTraceRequestHandlers();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

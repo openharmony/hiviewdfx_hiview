@@ -17,7 +17,7 @@
 
 #include "application_context.h"
 #include "file_util.h"
-#include "hiview_napi_err_code.h"
+#include "hiview_err_code.h"
 #include "hiview_service_ability_proxy.h"
 #include "iservice_registry.h"
 #include "logger.h"

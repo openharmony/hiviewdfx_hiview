@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
+#include <functional>
 #include <mutex>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -24,7 +25,6 @@
 #include "bundle_mgr_client.h"
 #include "file_util.h"
 #include "hiview_log_config_manager.h"
-#include "hiview_napi_err_code.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "string_util.h"
@@ -267,6 +267,62 @@ void HiviewServiceAbility::OnStart()
 void HiviewServiceAbility::OnStop()
 {
     HIVIEW_LOGI("called");
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbility::OpenSnapshotTrace(const std::vector<std::string>& tagGroups)
+{
+    auto traceRetHandler = [&tagGroups] (HiviewService* service) {
+        return service->OpenSnapshotTrace(tagGroups);
+    };
+    return TraceCalling<int32_t>(traceRetHandler);
+}
+
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbility::DumpSnapshotTrace()
+{
+    auto traceRetHandler = [] (HiviewService* service) {
+        return service->DumpSnapshotTrace();
+    };
+    return TraceCalling<std::vector<std::string>>(traceRetHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbility::OpenRecordingTrace(const std::string& tags)
+{
+    auto traceRetHandler = [&tags] (HiviewService* service) {
+        return service->OpenRecordingTrace(tags);
+    };
+    return TraceCalling<int32_t>(traceRetHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbility::RecordingTraceOn()
+{
+    auto traceRetHandler = [] (HiviewService* service) {
+        return service->RecordingTraceOn();
+    };
+    return TraceCalling<int32_t>(traceRetHandler);
+}
+
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbility::RecordingTraceOff()
+{
+    auto traceRetHandler = [] (HiviewService* service) {
+        return service->RecordingTraceOff();
+    };
+    return TraceCalling<std::vector<std::string>>(traceRetHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbility::CloseTrace()
+{
+    auto traceRetHandler = [] (HiviewService* service) {
+        return service->CloseTrace();
+    };
+    return TraceCalling<int32_t>(traceRetHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbility::RecoverTrace()
+{
+    auto traceRetHandler = [] (HiviewService* service) {
+        return service->RecoverTrace();
+    };
+    return TraceCalling<int32_t>(traceRetHandler);
 }
 
 HiviewServiceAbilityDeathRecipient::HiviewServiceAbilityDeathRecipient()

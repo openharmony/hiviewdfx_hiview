@@ -17,11 +17,20 @@
 #include "trace_collector.h"
 
 #include <gtest/gtest.h>
+#include <unistd.h>
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectClient;
 using namespace OHOS::HiviewDFX::UCollect;
+
+namespace {
+constexpr int SLEEP_DURATION = 10;
+void Sleep()
+{
+    sleep(SLEEP_DURATION);
+}
+}
 
 class TraceCollectorTest : public testing::Test {
 public:
@@ -33,22 +42,40 @@ public:
 
 /**
  * @tc.name: TraceCollectorTest001
- * @tc.desc: used to test TraceCollector
+ * @tc.desc: use trace in snapshot mode.
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
 {
-    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    CollectResult<int32_t> onRes = collector->TraceOn();
-    std::cout << "collect trace on result" << onRes.retCode << std::endl;
-    ASSERT_TRUE(onRes.retCode == UcError::SUCCESS);
+    auto traceCollector = TraceCollector::Create();
+    ASSERT_TRUE(traceCollector != nullptr);
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    auto openRet = traceCollector->OpenSnapshot(tagGroups);
+    if (openRet.retCode == UcError::SUCCESS) {
+        Sleep();
+        auto dumpRes = traceCollector->DumpSnapshot();
+        ASSERT_TRUE(dumpRes.data.size() >= 0);
+        auto closeRet = traceCollector->Close();
+        ASSERT_TRUE(closeRet.retCode == UcError::SUCCESS);
+    }
+}
 
-    TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
-    CollectResult<std::vector<std::string>> dumpRes = collector->DumpTrace(caller);
-    std::cout << "collect dump trace result" << dumpRes.retCode << std::endl;
-    ASSERT_TRUE(dumpRes.retCode == UcError::SUCCESS);
-
-    CollectResult<std::vector<std::string>> offRes = collector->TraceOff();
-    std::cout << "collect trace on result" << offRes.retCode << std::endl;
-    ASSERT_TRUE(offRes.retCode == UcError::SUCCESS);
+/**
+ * @tc.name: TraceCollectorTest002
+ * @tc.desc: use trace in recording mode.
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
+{
+    auto traceCollector = TraceCollector::Create();
+    ASSERT_TRUE(traceCollector != nullptr);
+    std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
+    auto openRet = traceCollector->OpenRecording(args);
+    if (openRet.retCode == UcError::SUCCESS) {
+        auto recOnRet = traceCollector->RecordingOn();
+        ASSERT_TRUE(recOnRet.retCode == UcError::SUCCESS);
+        Sleep();
+        auto recOffRet = traceCollector->RecordingOff();
+        ASSERT_TRUE(recOffRet.data.size() >= 0);
+    }
 }

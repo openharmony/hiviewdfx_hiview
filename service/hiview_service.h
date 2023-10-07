@@ -21,13 +21,15 @@
 #include <vector>
 
 #include "audit_log_parser.h"
+#include "utility/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class HiviewService {
 public:
-    HiviewService() : parser_(nullptr){};
+    HiviewService();
     ~HiviewService(){};
+
     void StartService();
     // Dump interface
     void DumpRequestDispatcher(int fd, const std::vector<std::string>& cmds);
@@ -35,6 +37,16 @@ public:
     int32_t Copy(const std::string& srcFilePath, const std::string& destFilePath);
     int32_t Move(const std::string& srcFilePath, const std::string& destFilePath);
     int32_t Remove(const std::string& filePath);
+
+    // Trace interfaces
+    CollectResult<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups);
+    CollectResult<std::vector<std::string>> DumpSnapshotTrace();
+    CollectResult<int32_t> OpenRecordingTrace(const std::string& tags);
+    CollectResult<int32_t> RecordingTraceOn();
+    CollectResult<std::vector<std::string>> RecordingTraceOff();
+    CollectResult<int32_t> CloseTrace();
+    CollectResult<int32_t> RecoverTrace();
+
 private:
     void DumpDetailedInfo(int fd);
     void DumpPluginInfo(int fd, const std::vector<std::string>& cmds) const;
@@ -51,7 +63,10 @@ private:
     int CopyFile(const std::string& srcFilePath, const std::string& destFilePath);
 
     void PrintUsage(int fd) const;
-    std::unique_ptr<AuditLogParser> parser_;
+
+private:
+    std::unique_ptr<AuditLogParser> parser_ = nullptr;
+    std::shared_ptr<UCollectUtil::TraceCollector> traceCollector_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

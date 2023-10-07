@@ -21,6 +21,7 @@
 #include "hiview_file_info.h"
 #include "iremote_broker.h"
 #include "hiview_service_ipc_interface_code.h"
+#include "collect_result_pracelable.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,6 +34,14 @@ public:
     virtual int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
     virtual int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest) = 0;
     virtual int32_t Remove(const std::string& logType, const std::string& logName) = 0;
+
+    virtual CollectResultParcelable<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups) = 0;
+    virtual CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace() = 0;
+    virtual CollectResultParcelable<int32_t> OpenRecordingTrace(const std::string& tags) = 0;
+    virtual CollectResultParcelable<int32_t> RecordingTraceOn() = 0;
+    virtual CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() = 0;
+    virtual CollectResultParcelable<int32_t> CloseTrace() = 0;
+    virtual CollectResultParcelable<int32_t> RecoverTrace() = 0;
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.HiviewDFX.IHiviewServiceAbility");

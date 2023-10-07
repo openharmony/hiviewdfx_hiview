@@ -16,10 +16,11 @@
 #include "hiview_service_ability_stub.h"
 
 #include <unordered_map>
+#include <vector>
 
 #include "accesstoken_kit.h"
 #include "errors.h"
-#include "hiview_napi_err_code.h"
+#include "hiview_err_code.h"
 #include "ipc_skeleton.h"
 #include "logger.h"
 
@@ -28,11 +29,46 @@ namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
 const std::unordered_map<uint32_t, std::string> PERMISSION_MAP = {
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST), "ohos.permission.READ_HIVIEW_SYSTEM"},
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY), "ohos.permission.READ_HIVIEW_SYSTEM"},
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE), "ohos.permission.WRITE_HIVIEW_SYSTEM"},
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE), "ohos.permission.WRITE_HIVIEW_SYSTEM"}
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
+        "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY),
+        "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"}
 };
+
+const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
+        "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_RECORDING_TRACE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_ON),
+        "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_OFF),
+        "ohos.permission.READ_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"}
+};
+
+const std::vector<std::unordered_map<uint32_t, std::string>> ALL_PERMISSION_MAPS = {
+    PERMISSION_MAP,
+    TRACE_PERMISSION_MAP
+};
+
+int32_t WriteTracePracelableToMessage(MessageParcel& dest, Parcelable& data)
+{
+    if (!dest.WriteParcelable(&data)) {
+        HIVIEW_LOGW("failed to write TraceErrorCodeWrapper to parcel");
+        return TraceErrCode::ERR_WRITE_MSG_PARCEL;
+    }
+    return TraceErrCode::ERR_OK;
+}
 }
 
 int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
@@ -47,33 +83,93 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
     if (!IsPermissionGranted(code)) {
         return HiviewNapiErrCode::ERR_PERMISSION_CHECK;
     }
-    switch (code) {
-        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST):
-            return HandleListRequest(data, reply, option);
-        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY):
-            return HandleCopyRequest(data, reply, option);
-        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE):
-            return HandleMoveRequest(data, reply, option);
-        case static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE):
-            return HandleRemoveRequest(data, reply, option);
-        default:
-            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+    auto requestHandler = GetRequestHandler(code);
+    if (requestHandler == nullptr) {
+        return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
+    return requestHandler(data, reply, option);
 }
 
 bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
 {
-    auto iter = PERMISSION_MAP.find(code);
-    if (iter == PERMISSION_MAP.end()) {
-        return true;
+    for (auto permissionMap : ALL_PERMISSION_MAPS) {
+        auto iter = permissionMap.find(code);
+        if (iter == permissionMap.end()) {
+            continue;
+        }
+        Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+        int verifyResult = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
+        if (verifyResult == Security::AccessToken::PERMISSION_GRANTED) {
+            return true;
+        }
+        HIVIEW_LOGW("%{public}s not granted, code: %{public}u", iter->second.c_str(), code);
+        return false;
     }
-    Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
-    int verifyResult = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
-    if (verifyResult == Security::AccessToken::PERMISSION_GRANTED) {
-        return true;
+    return true;
+}
+
+std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
+{
+    static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
+            std::bind(&HiviewServiceAbilityStub::HandleListRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY),
+            std::bind(&HiviewServiceAbilityStub::HandleCopyRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE),
+            std::bind(&HiviewServiceAbilityStub::HandleMoveRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE),
+            std::bind(&HiviewServiceAbilityStub::HandleRemoveRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+    };
+    return requestHandlers;
+}
+
+std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceRequestHandlers()
+{
+    static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_RECORDING_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleOpenRecordingTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_ON),
+            std::bind(&HiviewServiceAbilityStub::HandleRecordingTraceOnRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_OFF),
+            std::bind(&HiviewServiceAbilityStub::HandleRecordingTraceOffRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleCloseTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleRecoverTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+    };
+    return requestHandlers;
+}
+
+RequestHandler HiviewServiceAbilityStub::GetRequestHandler(uint32_t code)
+{
+    std::vector<std::unordered_map<uint32_t, RequestHandler>> allHandlerMaps = {
+        GetRequestHandlers(),
+        GetTraceRequestHandlers()
+    };
+    for (auto handlerMap : allHandlerMaps) {
+        auto iter = handlerMap.find(code);
+        if (iter == handlerMap.end()) {
+            continue;
+        }
+        return iter->second;
     }
-    HIVIEW_LOGW("%{public}s not granted, code: %{public}u", iter->second.c_str(), code);
-    return false;
+    HIVIEW_LOGE("function for handling request isn't found");
+    return nullptr;
 }
 
 int32_t HiviewServiceAbilityStub::HandleListRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option)
@@ -158,6 +254,65 @@ int32_t HiviewServiceAbilityStub::HandleRemoveRequest(MessageParcel& data, Messa
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
     return ERR_OK;
+}
+
+int32_t HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    std::vector<std::string> tagGroups;
+    if (!data.ReadStringVector(&tagGroups)) {
+        HIVIEW_LOGW("failed to read tag groups from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    auto ret = OpenSnapshotTrace(tagGroups);
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = DumpSnapshotTrace();
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleOpenRecordingTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    std::string tags;
+    if (!data.ReadString(tags)) {
+        HIVIEW_LOGW("failed to read tags from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    auto ret = OpenRecordingTrace(tags);
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleRecordingTraceOnRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = RecordingTraceOn();
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleRecordingTraceOffRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = RecordingTraceOff();
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleCloseTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = CloseTrace();
+    return WriteTracePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleRecoverTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = RecoverTrace();
+    return WriteTracePracelableToMessage(reply, ret);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

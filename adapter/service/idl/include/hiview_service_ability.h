@@ -19,6 +19,7 @@
 #include <string>
 #include <memory>
 
+#include "hiview_err_code.h"
 #include "hiview_file_info.h"
 #include "hiview_service.h"
 #include "hiview_service_ability_stub.h"
@@ -45,10 +46,36 @@ public:
     int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest) override;
     int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest) override;
     int32_t Remove(const std::string& logType, const std::string& logName) override;
+
+    CollectResultParcelable<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups) override;
+    CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace() override;
+    CollectResultParcelable<int32_t> OpenRecordingTrace(const std::string& tags) override;
+    CollectResultParcelable<int32_t> RecordingTraceOn() override;
+    CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() override;
+    CollectResultParcelable<int32_t> CloseTrace() override;
+    CollectResultParcelable<int32_t> RecoverTrace() override;
+
 protected:
     void OnDump() override;
     void OnStart() override;
     void OnStop() override;
+
+private:
+    template<typename T>
+    CollectResultParcelable<T> TraceCalling(std::function<CollectResult<T>(HiviewService*)> traceRetHandler)
+    {
+        auto traceRet = CollectResultParcelable<T>::Init();
+        if (traceRetHandler == nullptr) {
+            return traceRet;
+        }
+        auto service = GetOrSetHiviewService();
+        if (service == nullptr) {
+            return traceRet;
+        }
+        auto collectRet = traceRetHandler(service);
+        return CollectResultParcelable<T>(collectRet);
+    }
+
 private:
     void GetFileInfoUnderDir(const std::string& dirPath, std::vector<HiviewFileInfo>& fileInfos);
     int32_t CopyOrMoveFile(

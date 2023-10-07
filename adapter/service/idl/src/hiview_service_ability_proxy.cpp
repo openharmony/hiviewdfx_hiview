@@ -15,7 +15,7 @@
 
 #include "hiview_service_ability_proxy.h"
 
-#include "hiview_napi_err_code.h"
+#include "collect_result.h"
 #include "logger.h"
 
 namespace OHOS {
@@ -59,13 +59,15 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
     return ERR_OK;
 }
 
-int32_t HiviewServiceAbilityProxy::Copy(const std::string& logType, const std::string& logName, const std::string& dest)
+int32_t HiviewServiceAbilityProxy::Copy(const std::string& logType, const std::string& logName,
+    const std::string& dest)
 {
     HIVIEW_LOGI("start copy.");
     return CopyOrMoveFile(logType, logName, dest, false);
 }
 
-int32_t HiviewServiceAbilityProxy::Move(const std::string& logType, const std::string& logName, const std::string& dest)
+int32_t HiviewServiceAbilityProxy::Move(const std::string& logType, const std::string& logName,
+    const std::string& dest)
 {
     HIVIEW_LOGI("start move.");
     return CopyOrMoveFile(logType, logName, dest, true);
@@ -119,6 +121,70 @@ int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std:
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
     return result;
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::OpenSnapshotTrace(
+    const std::vector<std::string>& tagGroups)
+{
+    auto parcelHandler = [&tagGroups] (MessageParcel& data) {
+        return data.WriteStringVector(tagGroups);
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE,
+        parcelHandler);
+}
+
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbilityProxy::DumpSnapshotTrace()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<std::vector<std::string>>(
+        HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE, parcelHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::OpenRecordingTrace(const std::string& tags)
+{
+    auto parcelHandler = [&tags] (MessageParcel& data) {
+        return data.WriteString(tags);
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_RECORDING_TRACE,
+        parcelHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::RecordingTraceOn()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_ON,
+        parcelHandler);
+}
+
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbilityProxy::RecordingTraceOff()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<std::vector<std::string>>(
+        HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_OFF, parcelHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CloseTrace()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE,
+        parcelHandler);
+}
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::RecoverTrace()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE,
+        parcelHandler);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
