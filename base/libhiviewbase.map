@@ -132,6 +132,7 @@
         "OHOS::HiviewDFX::Plugin::OnEventProxy(std::__1::shared_ptr<OHOS::HiviewDFX::Event>)";
         "OHOS::HiviewDFX::Plugin::IsInterestedPipelineEvent(std::__1::shared_ptr<OHOS::HiviewDFX::Event>)";
         "OHOS::HiviewDFX::StringUtil::SplitStr(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>>&, bool, bool)";
+        "OHOS::HiviewDFX::FileUtil::ExtractFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::FileUtil::RemoveFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::FileUtil::IsLegalPath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::FileUtil::ForceRemoveDirectory(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, bool)";
