@@ -265,6 +265,13 @@ bool IsTraceExists(const std::string &trace)
 // Save three traces for xperf
 void CopyXperfToSpecialPath(const std::string &trace, const std::string &traceFile)
 {
+    if (!FileUtil::FileExists(UNIFIED_SPECIAL_PATH)) {
+        if (!CreateMultiDirectory(UNIFIED_SPECIAL_PATH)) {
+            HIVIEW_LOGE("failed to create multidirectory.");
+            return;
+        }
+    }
+
     std::string dst = UNIFIED_SPECIAL_PATH + XPERF + "_" + traceFile;
     FileUtil::CopyFile(trace, dst);
 }
