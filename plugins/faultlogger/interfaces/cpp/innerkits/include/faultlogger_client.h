@@ -42,6 +42,10 @@ struct FaultLogInfoInner {
     std::string summary;
     /** file path of log */
     std::string logPath;
+    /** key thread registers */
+    std::string registers;
+    /** other thread info */
+    std::string otherThreadInfo;
     /** information about faultlog using <key,value> */
     std::map<std::string, std::string> sectionMaps;
 };

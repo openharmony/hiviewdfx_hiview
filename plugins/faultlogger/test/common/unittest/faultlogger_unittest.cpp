@@ -622,5 +622,48 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
+/**
+ * @tc.name: FaultloggerTest003
+ * @tc.desc: Test calling Faultlogger.StartBootScan Func, for full log
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
+    time_t now = time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
+    std::string timeStr = GetFormatedTime(now);
+    std::string regs = "r0:00000019 r1:0097cd3c\nr4:f787fd2c\nfp:f787fd18 ip:7fffffff pc:0097c982\n";
+    std::string otherThreadInfo =
+        "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
+    std::string content = std::string("Pid:111\nUid:0\nProcess name:BootScanUnittest\n") +
+        "Reason:unittest for StartBootScan\n" +
+        "Fault thread Info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
+        "Registers:\n" + regs +
+        "Other thread info:\n" + otherThreadInfo +
+        "Memory near registers:\nr1(/data/xxxxx):\n    0097cd34 47886849\n    0097cd38 96059d05\n\n" +
+        "Maps:\n96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
+    ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-111-" + std::to_string(now), content));
+    auto plugin = CreateFaultloggerInstance();
+    plugin->StartBootScan();
+
+    //check faultlog file content
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    ASSERT_TRUE(FileUtil::FileExists(fileName));
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
+    auto info = plugin->GetFaultLogInfo(fileName);
+    ASSERT_EQ(info->module, "BootScanUnittest");
+
+    // check regs and otherThreadInfo is ok
+    std::string logInfo;
+    FileUtil::LoadStringFromFile(fileName, logInfo);
+    ASSERT_TRUE(logInfo.find(regs) != std::string::npos);
+    ASSERT_TRUE(logInfo.find(otherThreadInfo) != std::string::npos);
+
+    // check event database
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
+}
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -31,6 +31,8 @@ struct FaultLogInfo {
     std::string reason;
     std::string summary;
     std::string logPath;
+    std::string registers;
+    std::string otherThreadInfo;
     std::map<std::string, std::string> sectionMap;
     std::list<std::string> additionalLogs;
 };
