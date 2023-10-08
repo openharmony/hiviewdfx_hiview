@@ -42,6 +42,7 @@ APP_USAGE:
   VERSION: {type: STRING, desc: version name}
   USAGE: {type: UINT32, desc: usage duration}
   DATE: {type: STRING, desc: usage date}
+  TOTAL_START_NUM: {type: UINT32, desc: total start number}
 
 SYS_USAGE:
   __BASE: {type: STATISTIC, level: CRITICAL, tag: usageStats, desc: system usage statistics}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,14 +23,16 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct AppUsageInfo {
-    AppUsageInfo(const std::string& package, const std::string& version, int64_t usage, const std::string& date)
-        : package_(package), version_(version), usage_(usage), date_(date)
+    AppUsageInfo(const std::string& package, const std::string& version, uint64_t usage,
+        const std::string& date, uint32_t startNum)
+        : package_(package), version_(version), usage_(usage), date_(date), startNum_(startNum)
     {}
 
     std::string package_;
     std::string version_;
     uint64_t usage_;
     std::string date_;
+    uint32_t startNum_;
 };
 
 class AppUsageEventFactory : public LoggerEventFactory {
