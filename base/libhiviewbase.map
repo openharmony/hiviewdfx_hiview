@@ -99,6 +99,7 @@
         "OHOS::HiviewDFX::ParamValue::ParamValue(unsigned int)";
         "OHOS::HiviewDFX::ParamValue::ParamValue(unsigned long long)";
         "OHOS::HiviewDFX::ParamValue::GetUint64() const";
+        "OHOS::HiviewDFX::ParamValue::GetUint32() const";
         "OHOS::HiviewDFX::ParamValue::ParamValue()";
         "OHOS::HiviewDFX::LoggerEvent::InnerUpdate(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::ParamValue const&)";
         "OHOS::HiviewDFX::HiviewEventReport::ReportPluginStats()";

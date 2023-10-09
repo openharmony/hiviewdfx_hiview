@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,7 @@ const std::string KEY_OF_PACKAGE = "PACKAGE";
 const std::string KEY_OF_VERSION = "VERSION";
 const std::string KEY_OF_USAGE = "USAGE";
 const std::string KEY_OF_DATE = "DATE";
+const std::string KEY_OF_START_NUM = "TOTAL_START_NUM";
 }
 
 namespace SysUsageEventSpace {

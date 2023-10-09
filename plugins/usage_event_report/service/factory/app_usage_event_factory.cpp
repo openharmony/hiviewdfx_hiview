@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -72,6 +72,7 @@ void AppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>>& eve
         event->Update(KEY_OF_VERSION, info.version_);
         event->Update(KEY_OF_USAGE, info.usage_);
         event->Update(KEY_OF_DATE, info.date_);
+        event->Update(KEY_OF_START_NUM, info.startNum_);
         events.push_back(std::move(event));
     }
 }
@@ -115,11 +116,13 @@ void AppUsageEventFactory::GetAppUsageInfosByUserId(std::vector<AppUsageInfo>& a
             return info.package_ == package;
         });
         uint64_t usage = stat.totalInFrontTime_ > 0 ? static_cast<uint64_t>(stat.totalInFrontTime_) : 0;
+        uint32_t startNum = stat.startCount_ > 0 ? static_cast<uint32_t>(stat.startCount_) : 0;
         if (it != appUsageInfos.end()) {
             it->usage_ += usage;
+            it->startNum_ += startNum;
         } else {
             std::string version = GetAppVersion(stat.bundleName_);
-            appUsageInfos.push_back(AppUsageInfo(stat.bundleName_, version, usage, dateStr));
+            appUsageInfos.push_back(AppUsageInfo(stat.bundleName_, version, usage, dateStr, startNum));
         }
     }
 #endif
