@@ -45,8 +45,8 @@ void CpuCalculator::InitNumOfCpuCores()
     } else if (cpuCoresFileFirstLine.length() == 1) { // 1: '0'
         constexpr uint32_t singleCpuCores = 1;
         numOfCpuCores_ = singleCpuCores;
-    } else if (cpuCoresFileFirstLine.length() == 3) { // 3: '0-7'
-        constexpr uint32_t maxCoreIndex = 2; // 2: '7'
+    } else if (cpuCoresFileFirstLine.length() >= 3) { // '0-7' '0-11'
+        constexpr uint32_t maxCoreIndex = 2; // next char of '0-'
         numOfCpuCores_ = StringUtil::StringToUl(cpuCoresFileFirstLine.substr(maxCoreIndex)) + 1; // 1 for real num
     } else {
         HIVIEW_LOGE("invalid cpu cores content=%{public}s", cpuCoresFileFirstLine.c_str());
