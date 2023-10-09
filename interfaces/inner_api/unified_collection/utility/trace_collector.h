@@ -33,6 +33,7 @@ public:
         XPERF,
         XPOWER,
         BETACLUB,
+        DEVELOP,
         OTHER,
     };
 

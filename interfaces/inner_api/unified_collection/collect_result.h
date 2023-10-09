@@ -20,7 +20,13 @@ namespace HiviewDFX {
 namespace UCollect {
 enum UcError {
     SUCCESS = 0,
-    UNSUPPORT = 1
+    UNSUPPORT = 1,
+    // for trace call
+    TRACE_IS_OCCUPIED = 1002,
+    TRACE_TAG_ERROR = 1003,
+    TRACE_FILE_ERROR = 1004,
+    TRACE_WRITE_ERROR = 1005,
+    TRACE_CALL_ERROR = 1006,
 };
 } // UCollect
 

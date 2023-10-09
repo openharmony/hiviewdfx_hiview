@@ -15,13 +15,30 @@
 #ifndef FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_FILE_UTILS_H
 #define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_FILE_UTILS_H
 
+#include <map>
 #include <string>
 
 #include "hitrace_dump.h"
 #include "trace_collector.h"
 
+using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
+using OHOS::HiviewDFX::UCollect::UcError;
+
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+const std::map<TraceErrorCode, UcError> CODE_MAP = {
+    {TraceErrorCode::SUCCESS, UcError::SUCCESS},
+    {TraceErrorCode::TRACE_NOT_SUPPORTED, UcError::UNSUPPORT},
+    {TraceErrorCode::TRACE_IS_OCCUPIED, UcError::TRACE_IS_OCCUPIED},
+    {TraceErrorCode::TAG_ERROR, UcError::TRACE_TAG_ERROR},
+    {TraceErrorCode::FILE_ERROR, UcError::TRACE_FILE_ERROR},
+    {TraceErrorCode::WRITE_TRACE_INFO_ERROR, UcError::TRACE_WRITE_ERROR},
+    {TraceErrorCode::CALL_ERROR, UcError::TRACE_CALL_ERROR},
+};
+}
+
+UcError TransCodeToUcError(TraceErrorCode ret);
 void FileRemove(UCollectUtil::TraceCollector::Caller &caller);
 void CheckAndCreateDirectory(const std::string &tmpDirPath);
 bool CreateMultiDirectory(const std::string &dirPath);
