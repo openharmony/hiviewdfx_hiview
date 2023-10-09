@@ -243,7 +243,8 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessC
         UpdateCollectionTime();
     }
     CalculateProcessCpuStatInfos(cpuCollectResult.data, processCpuData, isNeedUpdate);
-    HIVIEW_LOGI("collect process cpu statistics information size=%{public}zu", cpuCollectResult.data.size());
+    HIVIEW_LOGI("collect process cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
+        cpuCollectResult.data.size(), isNeedUpdate);
     if (!cpuCollectResult.data.empty()) {
         cpuCollectResult.retCode = UCollect::UcError::SUCCESS;
         TryToDeleteDeadProcessInfo();
