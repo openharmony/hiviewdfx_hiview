@@ -17,12 +17,14 @@
 
 #include "doc_query.h"
 #include "running_status_logger.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr char SPACE_CONCAT[] = " ";
 constexpr int DEFAULT_CONCURRENT_CNT = 0;
+
 time_t GetCurTime()
 {
     time_t current;
@@ -95,7 +97,7 @@ void QueryStatusLogUtil::Logging(const std::string& detail)
 }
 
 ConcurrentQueries SysEventQueryWrapper::concurrentQueries_ = { DEFAULT_CONCURRENT_CNT, DEFAULT_CONCURRENT_CNT };
-LastQueries SysEventQueryWrapper::lastQueries_;
+LruCache<pid_t, SysEventQueryWrapper::QueryRecord> SysEventQueryWrapper::queryController_;
 std::mutex SysEventQueryWrapper::lastQueriesMutex_;
 std::mutex SysEventQueryWrapper::concurrentQueriesMutex_;
 ResultSet SysEventQueryWrapper::Execute(int limit, DbQueryTag tag, QueryProcessInfo callerInfo,
@@ -186,17 +188,18 @@ bool SysEventQueryWrapper::IsQueryFrequenceValid(const DbQueryTag& tag, const Qu
     if (!tag.needFrequenceCheck) {
         return true;
     }
-    time_t current;
-    (void)time(&current);
     auto queryProcessId = processInfo.first;
-    auto processIter = lastQueries_.find(queryProcessId);
-    if (processIter == lastQueries_.end()) {
-        lastQueries_[queryProcessId] = current;
+    QueryRecord record = queryController_.Get(queryProcessId);
+    uint64_t cur = TimeUtil::GetMilliseconds();
+    if (!record.IsValid() || (record.begin > cur) || ((cur - record.begin) > QUERY_CONTROL_PERIOD_IN_MILLI_SECONDS)) {
+        record.count = 1; // record the first event querying during one cycle
+        record.begin = cur;
+        queryController_.Put(queryProcessId, record);
         return true;
     }
-    time_t queryFrequent = 1;
-    if (abs(current - processIter->second) > queryFrequent) {
-        lastQueries_[queryProcessId] = current;
+    record.count++;
+    if (record.count <= QUERY_CONTROL_THRESHOLD) {
+        queryController_.Put(queryProcessId, record);
         return true;
     }
     QueryStatusLogUtil::LogQueryTooFrequently(this->ToString(), processInfo.second, tag.isInnerQuery);
