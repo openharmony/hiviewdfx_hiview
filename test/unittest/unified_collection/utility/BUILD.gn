@@ -20,6 +20,7 @@ config("ucollection_utility_test_config") {
   include_dirs = [
     ".",
     "$hiview_framework/native/unified_collection/collector/inner_include",
+    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 
   cflags = [ "-D__UNITTEST__" ]
@@ -46,5 +47,5 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = []
+  external_deps = [ "hitrace:hitrace_dump" ]
 }

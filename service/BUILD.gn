@@ -20,6 +20,7 @@ config("hiview_service_config") {
     ".",
     "$hiview_framework/native/unified_collection/collector/inner_include",
     "$hiview_interfaces/inner_api/unified_collection",
+    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 }
 
@@ -53,7 +54,10 @@ ohos_source_set("hiview_service") {
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "hitrace:hitrace_dump",
+  ]
 }
 
 group("fuzztest") {

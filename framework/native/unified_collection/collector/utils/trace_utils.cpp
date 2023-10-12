@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <sys/stat.h>
 #include <vector>
@@ -47,6 +46,16 @@ enum {
     SHARE = 0,
     SPECIAL = 1,
 };
+
+UcError TransCodeToUcError(TraceErrorCode ret)
+{
+    if (CODE_MAP.find(ret) == CODE_MAP.end()) {
+        HIVIEW_LOGE("ErrorCode is not exists.");
+        return UcError::UNSUPPORT;
+    } else {
+        return CODE_MAP.at(ret);
+    }
+}
 
 class CleanPolicy {
 public:

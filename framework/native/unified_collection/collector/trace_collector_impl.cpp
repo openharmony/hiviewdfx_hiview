@@ -12,22 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <mutex>
+
+#include "logger.h"
 #include "trace_collector.h"
 #include "trace_manager.h"
 #include "trace_utils.h"
-#include <mutex>
 
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::Hitrace;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
+DEFINE_LOG_TAG("UCollectUtil");
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 namespace {
-    std::mutex g_dumpTraceMutex;
+std::mutex g_dumpTraceMutex;
 }
+
 class TraceCollectorImpl : public TraceCollector {
 public:
     TraceCollectorImpl() = default;
@@ -50,23 +55,24 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
     CollectResult<std::vector<std::string>> result;
     TraceRetInfo ret = OHOS::HiviewDFX::Hitrace::DumpTrace();
     if (ret.errorCode == TraceErrorCode::SUCCESS) {
-        std::vector<std::string> outputFiles = GetUnifiedFiles(ret, caller);
-        result.data = outputFiles;
-        result.retCode = UcError::SUCCESS;
-    } else {
-        result.retCode = UcError::UNSUPPORT;
+        if (caller == TraceCollector::Caller::DEVELOP) {
+            result.data = ret.outputFiles;
+        } else {
+            std::vector<std::string> outputFiles = GetUnifiedFiles(ret, caller);
+            result.data = outputFiles;
+        }
     }
+    result.retCode = TransCodeToUcError(ret.errorCode);
+    HIVIEW_LOGI("DumpTrace, ret = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
     return result;
 }
 
 CollectResult<int32_t> TraceCollectorImpl::TraceOn()
 {
     CollectResult<int32_t> result;
-    if (OHOS::HiviewDFX::Hitrace::DumpTraceOn() == TraceErrorCode::SUCCESS) {
-        result.retCode = UcError::SUCCESS;
-    } else {
-        result.retCode = UcError::UNSUPPORT;
-    }
+    TraceErrorCode ret = OHOS::HiviewDFX::Hitrace::DumpTraceOn();
+    result.retCode = TransCodeToUcError(ret);
+    HIVIEW_LOGI("TraceOn, ret = %{public}d.", result.retCode);
     return result;
 }
 
@@ -76,10 +82,9 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::TraceOff()
     TraceRetInfo ret = OHOS::HiviewDFX::Hitrace::DumpTraceOff();
     if (ret.errorCode == TraceErrorCode::SUCCESS) {
         result.data = ret.outputFiles;
-        result.retCode = UcError::SUCCESS;
-    } else {
-        result.retCode = UcError::UNSUPPORT;
     }
+    result.retCode = TransCodeToUcError(ret.errorCode);
+    HIVIEW_LOGI("TraceOff, ret = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
     return result;
 }
 } // UCollectUtil
