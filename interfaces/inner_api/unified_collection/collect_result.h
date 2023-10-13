@@ -21,6 +21,8 @@ namespace UCollect {
 enum UcError {
     SUCCESS = 0,
     UNSUPPORT = 1,
+    READ_FAILED = 2,
+    WRITE_FAILED = 3,
     // for trace call
     TRACE_IS_OCCUPIED = 1002,
     TRACE_TAG_ERROR = 1003,

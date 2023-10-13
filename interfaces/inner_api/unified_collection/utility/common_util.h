@@ -26,6 +26,7 @@ const std::string GPU_CUR_FREQ = "/sys/class/devfreq/gpufreq/cur_freq";
 const std::string GPU_MAX_FREQ = "/sys/class/devfreq/gpufreq/max_freq";
 const std::string GPU_MIN_FREQ = "/sys/class/devfreq/gpufreq/min_freq";
 const std::string GPU_LOAD = "/sys/class/devfreq/gpufreq/gpu_scene_aware/utilisation";
+const std::string MEMINFO_SAVE_DIR = "/data/log/hiview/unified_collection/memory";
 
 class CommonUtil {
 private:
@@ -36,6 +37,8 @@ public:
     template <typename T>
     static bool StrToNum(const std::string& sString, T &tX);
     static bool ParseTypeAndValue(const std::string &str, std::string &type, int32_t &value);
+    static bool StartWith(const std::string& str, const std::string& sub);
+    static bool EndWith(const std::string& str, const std::string& sub);
 }; // MemoryCollector
 } // UCollectUtil
 } // HiviewDFX
