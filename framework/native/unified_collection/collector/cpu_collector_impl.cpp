@@ -257,9 +257,11 @@ void CpuCollectorImpl::CalculateProcessCpuStatInfos(
     std::shared_ptr<ProcessCpuData> processCpuData,
     bool isNeedUpdate)
 {
+    uint64_t lastCollectionTime = isNeedUpdate ? lastCollectionTime_ : currCollectionTime_;
+    uint64_t currCollectionTime = isNeedUpdate ? currCollectionTime_ : TimeUtil::GetMilliseconds();
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
-        auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, lastCollectionTime_, currCollectionTime_);
+        auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, lastCollectionTime, currCollectionTime);
         if (processCpuStatInfo.has_value()) {
             processCpuStatInfos.emplace_back(processCpuStatInfo.value());
         }
