@@ -111,7 +111,7 @@ bool CpuCollectorImpl::InitDeviceClient()
     }
     std::vector<char> clientCpuDmipses;
     std::transform(cpuDmipses.begin(), cpuDmipses.end(), std::back_inserter(clientCpuDmipses), [](uint32_t cpuDmipse) {
-        return static_cast<char>(cpuDmipse / 10); // divided by 10 is used to adapt to the char type of the kernel
+        return static_cast<char>(cpuDmipse);
     });
     deviceClient_->SetDmips(clientCpuDmipses);
     return true;
