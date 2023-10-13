@@ -477,6 +477,13 @@ void EventLogger::OnLoad()
         HIVIEW_LOGE("plugin plugin %{public}s.", plugin->GetName().c_str());
         context->AddDispatchInfo(plugin, {}, eventNames, {}, {});
     }
+
+    GetCmdlineContent();
+    GetRebootReasonConfig();
+
+    auto ptr = std::static_pointer_cast<EventLogger>(shared_from_this());
+    context->RegisterUnorderedEventListener(ptr);
+    AddListenerInfo(Event::MessageType::PLUGIN_MAINTENANCE);
 }
 
 void EventLogger::OnUnload()
@@ -614,6 +621,97 @@ int32_t EventLogger::GetPollFd()
 int32_t EventLogger::GetPollType()
 {
     return EPOLLIN;
+}
+
+std::string EventLogger::GetListenerName()
+{
+    return "EventLogger";
+}
+
+void EventLogger::OnUnorderedEvent(const Event& msg)
+{
+    if (CanProcessRebootEvent(msg)) {
+        auto task = std::bind(&EventLogger::ProcessRebootEvent, this);
+        threadLoop_->AddEvent(nullptr, nullptr, task);
+    }
+}
+
+bool EventLogger::CanProcessRebootEvent(const Event& event)
+{
+    return (event.messageType_ == Event::MessageType::PLUGIN_MAINTENANCE) &&
+        (event.eventId_ == Event::EventId::PLUGIN_LOADED);
+}
+
+void EventLogger::ProcessRebootEvent()
+{
+    if (GetRebootReason() != LONG_PRESS) {
+        return;
+    }
+
+    auto event = std::make_shared<SysEvent>("EventLogger", nullptr, "");
+    event->domain_ = DOMAIN_LONGPRESS;
+    event->eventName_ = STRINGID_LONGPRESS;
+    event->happenTime_ = TimeUtil::GetMilliseconds();
+    event->messageType_ = Event::MessageType::SYS_EVENT;
+    event->SetEventValue(EventStore::EventCol::DOMAIN, DOMAIN_LONGPRESS);
+    event->SetEventValue(EventStore::EventCol::NAME, STRINGID_LONGPRESS);
+    event->SetEventValue(EventStore::EventCol::TYPE, 1);
+    event->SetEventValue(EventStore::EventCol::TS, TimeUtil::GetMilliseconds());
+    event->SetEventValue(EventStore::EventCol::TZ, TimeUtil::GetTimeZone());
+    event->SetEventValue("PID", 0);
+    event->SetEventValue("UID", 0);
+    event->SetEventValue("PACKAGE_NAME", STRINGID_LONGPRESS);
+    event->SetEventValue("PROCESS_NAME", STRINGID_LONGPRESS);
+    event->SetEventValue("MSG", STRINGID_LONGPRESS);
+
+    auto context = GetHiviewContext();
+    if (event != nullptr && context != nullptr) {
+        auto seq = context->GetPipelineSequenceByName("EventloggerPipeline");
+        event->SetPipelineInfo("EventloggerPipeline", seq);
+        event->OnContinue();
+    }
+}
+
+std::string EventLogger::GetRebootReason() const
+{
+    std::string reboot = "";
+    std::string reset = "";
+    if (GetMatchString(cmdlineContent_, reboot, REBOOT_REASON + PATTERN_WITHOUT_SPACE) &&
+        GetMatchString(cmdlineContent_, reset, NORMAL_RESET_TYPE + PATTERN_WITHOUT_SPACE)) {
+            for (auto reason : rebootReasons_) {
+                if (reason == reboot || reason == reset) {
+                    HIVIEW_LOGI("get reboot reason: LONG_PRESS.");
+                    return LONG_PRESS;
+                }
+            }
+        }
+    return "";
+}
+
+void EventLogger::GetCmdlineContent()
+{
+    if (FileUtil::LoadStringFromFile(cmdlinePath_, cmdlineContent_) == false) {
+        HIVIEW_LOGE("failed to read cmdline:%{public}s.", cmdlinePath_.c_str());
+    }
+}
+
+void EventLogger::GetRebootReasonConfig()
+{
+    rebootReasons_.clear();
+    if (rebootReasons_.size() == 0) {
+        rebootReasons_.push_back(AP_S_PRESS6S);
+    }
+}
+
+bool EventLogger::GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const
+{
+    std::regex reg(pattern);
+    std::smatch result;
+    if (std::regex_search(src, result, reg)) {
+        dst = StringUtil::TrimStr(result[1], '\n');
+        return true;
+    }
+    return false;
 }
 } // namesapce HiviewDFX
 } // namespace OHOS

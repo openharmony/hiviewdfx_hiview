@@ -122,6 +122,8 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
     std::string logPath = "";
     if (std::regex_search(info, result, reg)) {
         logPath = result[1].str();
+    } else if (info == "nolog") {
+        logPath = info;
     }
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitSeq(seq)
