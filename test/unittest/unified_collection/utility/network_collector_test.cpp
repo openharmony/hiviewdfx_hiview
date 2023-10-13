@@ -14,7 +14,12 @@
  */
 #include <iostream>
 
+#include "accesstoken_kit.h"
+#include "nativetoken_kit.h"
 #include "network_collector.h"
+#include "token_setproc.h"
+#include "network_collector.h"
+#include "wifi_device.h"
 
 #include <gtest/gtest.h>
 
@@ -22,6 +27,57 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
+
+namespace {
+void NativeTokenGet(const char* perms[], int size)
+{
+    uint64_t tokenId;
+    NativeTokenInfoParams infoInstance = {
+        .dcapsNum = 0,
+        .permsNum = size,
+        .aclsNum = 0,
+        .dcaps = nullptr,
+        .perms = perms,
+        .acls = nullptr,
+        .aplStr = "system_basic",
+    };
+
+    infoInstance.processName = "UCollectionUtilityUnitTest";
+    tokenId = GetAccessTokenId(&infoInstance);
+    SetSelfTokenID(tokenId);
+    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+}
+
+void EnablePermissionAccess()
+{
+    const char* perms[] = {
+        "ohos.permission.GET_WIFI_INFO",
+    };
+    NativeTokenGet(perms, 1); // 1 is the size of the array which consists of required permissions.
+}
+
+void DisablePermissionAccess()
+{
+    NativeTokenGet(nullptr, 0); // empty permission array.
+}
+
+bool IsWifiEnabled()
+{
+    std::shared_ptr<OHOS::Wifi::WifiDevice> wifiDevicePtr =
+        OHOS::Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
+    if (wifiDevicePtr == nullptr) {
+        return false;
+    }
+    bool isActive = false;
+    wifiDevicePtr->IsWifiActive(isActive);
+    if (!isActive) {
+        return false;
+    }
+    OHOS::Wifi::WifiLinkedInfo linkInfo;
+    int ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
+    return ret == OHOS::Wifi::WIFI_OPT_SUCCESS;
+}
+}
 
 class NetworkCollectorTest : public testing::Test {
 public:
@@ -38,10 +94,14 @@ public:
 */
 HWTEST_F(NetworkCollectorTest, NetworkCollectorTest001, TestSize.Level1)
 {
+    EnablePermissionAccess();
     std::shared_ptr<NetworkCollector> collector = NetworkCollector::Create();
     CollectResult<NetworkRate> data = collector->CollectRate();
     std::cout << "collect network rate result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    if (IsWifiEnabled()) {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    }
+    DisablePermissionAccess();
 }
 
 /**
@@ -51,8 +111,12 @@ HWTEST_F(NetworkCollectorTest, NetworkCollectorTest001, TestSize.Level1)
 */
 HWTEST_F(NetworkCollectorTest, NetworkCollectorTest002, TestSize.Level1)
 {
+    EnablePermissionAccess();
     std::shared_ptr<NetworkCollector> collector = NetworkCollector::Create();
     CollectResult<NetworkPackets> data = collector->CollectSysPackets();
     std::cout << "collect network packets result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    if (IsWifiEnabled()) {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    }
+    DisablePermissionAccess();
 }

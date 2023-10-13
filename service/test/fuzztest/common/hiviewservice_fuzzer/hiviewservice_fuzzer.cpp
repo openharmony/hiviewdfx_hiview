@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <vector>
 
 #include "hiview_service.h"
 
@@ -54,11 +55,25 @@ struct Initializer {
 Initializer g_initializer;
 }
 
-static void HiviewServiceDumpTest(const uint8_t* data, size_t size)
+static void HiviewServiceDumpFuzzTest(const uint8_t* data, size_t size)
 {
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
     g_hiviewService.DumpRequestDispatcher(g_fd, {});
     g_hiviewService.DumpRequestDispatcher(g_fd, {strData});
+}
+
+static void HiViewServiceSnapshotTraceFuzzTest(const uint8_t* data, size_t size)
+{
+    std::string tag = std::string(reinterpret_cast<const char*>(data), size);
+    std::vector<std::string> tagsGroup;
+    tagsGroup.emplace_back(tag);
+    g_hiviewService.OpenSnapshotTrace(tagsGroup);
+}
+
+static void HiViewServiceRecordingTraceFuzzTest(const uint8_t* data, size_t size)
+{
+    std::string tags = std::string(reinterpret_cast<const char*>(data), size);
+    g_hiviewService.OpenRecordingTrace(tags);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
@@ -71,7 +86,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         printf("failed to init environment, exit\n");
         return 0;
     }
-    OHOS::HiviewDFX::HiviewServiceDumpTest(data, size);
+    OHOS::HiviewDFX::HiviewServiceDumpFuzzTest(data, size);
+    OHOS::HiviewDFX::HiViewServiceSnapshotTraceFuzzTest(data, size);
+    OHOS::HiviewDFX::HiViewServiceRecordingTraceFuzzTest(data, size);
     return 0;
 }
 

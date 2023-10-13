@@ -13,9 +13,13 @@
  * limitations under the License.
  */
 #include "gpu_collector.h"
+
 #include "common_util.h"
 #include "logger.h"
 #include "file_util.h"
+#include "string_util.h"
+
+#include <sstream>
 
 using namespace OHOS::HiviewDFX::UCollect;
 
@@ -43,7 +47,9 @@ inline int32_t GetValue(const std::string& fileName)
 {
     std::string content;
     FileUtil::LoadStringFromFile(fileName, content);
-    return std::stoi(content);
+    int32_t parsedVal = 0;
+    StringUtil::StrToInt(content, parsedVal);
+    return parsedVal;
 }
 
 CollectResult<GpuFreq> GpuCollectorImpl::CollectGpuFrequency()
