@@ -14,6 +14,7 @@
  */
 #include <climits>
 #include <iostream>
+#include <unistd.h>
 
 #include "cpu_collector.h"
 
@@ -152,9 +153,11 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest009, TestSize.Level1)
     ASSERT_EQ(collectResult.data.pid, initPid);
     ASSERT_FALSE(collectResult.data.procName.empty());
 
+    sleep(1); // 1s
     auto nextCollectResult = collector->CollectProcessCpuStatInfo(initPid);
     ASSERT_TRUE(nextCollectResult.retCode == UcError::SUCCESS);
     ASSERT_EQ(nextCollectResult.data.startTime, collectResult.data.startTime);
+    ASSERT_GT(nextCollectResult.data.endTime, collectResult.data.endTime);
 }
 
 /**
@@ -191,9 +194,19 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest011, TestSize.Level1)
 HWTEST_F(CpuCollectorTest, CpuCollectorTest012, TestSize.Level1)
 {
     std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    auto collectResult = collector->CollectProcessCpuStatInfos();
+    auto collectResult = collector->CollectProcessCpuStatInfos(true);
     ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
     ASSERT_FALSE(collectResult.data.empty());
+
+    sleep(1); // 1s
+    auto nextCollectResult = collector->CollectProcessCpuStatInfos();
+    ASSERT_TRUE(nextCollectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(nextCollectResult.data.empty());
+
+    std::cout << "next collection startTime=" << nextCollectResult.data[0].startTime << std::endl;
+    std::cout << "next collection endTime=" << nextCollectResult.data[0].endTime << std::endl;
+    ASSERT_EQ(nextCollectResult.data[0].startTime, collectResult.data[0].endTime);
+    ASSERT_GT(nextCollectResult.data[0].endTime, nextCollectResult.data[0].startTime);
 }
 
 /**
@@ -207,6 +220,14 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest013, TestSize.Level1)
     auto collectResult = collector->CollectProcessCpuStatInfos(true);
     ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
     ASSERT_FALSE(collectResult.data.empty());
+
+    sleep(1); // 1s
+    auto nextCollectResult = collector->CollectProcessCpuStatInfos(true);
+    ASSERT_TRUE(nextCollectResult.retCode == UcError::SUCCESS);
+    ASSERT_FALSE(nextCollectResult.data.empty());
+
+    ASSERT_GT(nextCollectResult.data[0].startTime, collectResult.data[0].startTime);
+    ASSERT_GT(nextCollectResult.data[0].endTime, collectResult.data[0].endTime);
 }
 
 /**
@@ -221,9 +242,11 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest014, TestSize.Level1)
     ASSERT_TRUE(firstCollectResult.retCode == UcError::SUCCESS);
     ASSERT_FALSE(firstCollectResult.data.empty());
 
+    sleep(1); // 1s
     auto secondCollectResult = collector->CollectProcessCpuStatInfos(false);
     ASSERT_TRUE(secondCollectResult.retCode == UcError::SUCCESS);
     ASSERT_FALSE(secondCollectResult.data.empty());
 
     ASSERT_EQ(firstCollectResult.data[0].startTime, secondCollectResult.data[0].startTime);
+    ASSERT_LT(firstCollectResult.data[0].endTime, secondCollectResult.data[0].endTime);
 }
