@@ -28,8 +28,65 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+constexpr size_t DEFAULT_CACHE_CAPACITY = 30;
+constexpr size_t QUERY_CONTROL_THRESHOLD = 50;
+constexpr uint64_t QUERY_CONTROL_PERIOD_IN_MILLI_SECONDS = 1000;
+constexpr uint64_t INVALID_TIME_STAMP = 0;
+
+template<typename K, typename V, size_t capacity = DEFAULT_CACHE_CAPACITY>
+class LruCache {
+public:
+    V Get(K key)
+    {
+        std::lock_guard<std::mutex> lock(lmtMutex_);
+        V v;
+        if (keyToIndex_.count(key) == 0) {
+            return v;
+        }
+        Modify(key);
+        return keyToIndex_[key].value;
+    }
+
+    void Put(K key, V value)
+    {
+        std::lock_guard<std::mutex> lock(lmtMutex_);
+        if (keyToIndex_.count(key) > 0) {
+            keyToIndex_[key].value = value;
+            Modify(key);
+            return;
+        }
+        if (allKeysCache_.size() == capacity) {
+            keyToIndex_.erase(allKeysCache_.back());
+            allKeysCache_.pop_back();
+        }
+        allKeysCache_.push_front(key);
+        keyToIndex_[key] = {
+            .iter = allKeysCache_.cbegin(),
+            .value = value
+        };
+    }
+
+private:
+    template<typename K_, typename V_>
+    struct CacheNode {
+        typename std::list<K_>::const_iterator iter;
+        V_ value;
+    };
+
+private:
+    void Modify(K key)
+    {
+        allKeysCache_.splice(allKeysCache_.begin(), allKeysCache_, keyToIndex_[key].iter);
+        keyToIndex_[key].iter = allKeysCache_.cbegin();
+    }
+
+private:
+    std::unordered_map<K, CacheNode<K, V>> keyToIndex_;
+    std::list<K> allKeysCache_;
+    std::mutex lmtMutex_;
+};
+
 using ConcurrentQueries = std::pair<int, int>;
-using LastQueries = std::unordered_map<pid_t, time_t>;
 
 class QueryStatusLogUtil {
 public:
@@ -57,6 +114,25 @@ public:
     virtual ResultSet Execute(int limit, DbQueryTag tag, QueryProcessInfo callerInfo,
         DbQueryCallback queryCallback) override;
 
+public:
+    struct QueryRecord {
+        size_t count;
+        uint64_t begin;
+
+    public:
+        QueryRecord()
+        {
+            count = 0;
+            begin = INVALID_TIME_STAMP;
+        }
+
+    public:
+        bool IsValid()
+        {
+            return count > 0;
+        }
+    };
+
 private:
     bool IsConditionCntValid(const DbQueryTag& tag);
     bool IsQueryCntLimitValid(const DbQueryTag& tag, const int limit, const DbQueryCallback& callback);
@@ -70,7 +146,7 @@ private:
 
 private:
     static ConcurrentQueries concurrentQueries_;
-    static LastQueries lastQueries_;
+    static LruCache<pid_t, QueryRecord> queryController_;
     static std::mutex concurrentQueriesMutex_;
     static std::mutex lastQueriesMutex_;
 };
