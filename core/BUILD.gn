@@ -19,7 +19,6 @@ config("hiview_core_config") {
     "include",
     "$hiview_root/include",
     "$hiview_base/utility/include",
-    "//third_party/jsoncpp/include",
   ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
 }
@@ -27,6 +26,7 @@ config("hiview_core_config") {
 ohos_source_set("hiview_core") {
   part_name = "hiview"
   public_configs = [ ":hiview_core_config" ]
+  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
 
   sources = [
     "event_json_parser.cpp",

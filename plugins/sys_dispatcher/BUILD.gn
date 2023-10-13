@@ -15,10 +15,7 @@ import("//build/ohos.gni")
 
 config("hiview_core_config") {
   visibility = [ "*:*" ]
-  include_dirs = [
-    "include",
-    "//third_party/jsoncpp/include",
-  ]
+  include_dirs = [ "include" ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
 }
 
@@ -26,6 +23,7 @@ ohos_source_set("sys_dispatcher") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   public_configs = [ ":hiview_core_config" ]
+  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
 
   sources = [ "sys_dispatcher.cpp" ]
 
