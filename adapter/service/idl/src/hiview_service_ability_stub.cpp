@@ -28,6 +28,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
+constexpr pid_t HID_ROOT = 0;
+constexpr pid_t HID_SHELL = 2000;
+constexpr pid_t HID_OHOS = 1000;
+
 const std::unordered_map<uint32_t, std::string> PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
         "ohos.permission.READ_HIVIEW_SYSTEM"},
@@ -92,20 +96,25 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
 
 bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
 {
+    using namespace Security::AccessToken;
+    pid_t callingUid = IPCSkeleton::GetCallingUid();
+    if ((callingUid == HID_SHELL) || (callingUid == HID_ROOT) || (callingUid == HID_OHOS)) {
+        return true;
+    }
     for (auto permissionMap : ALL_PERMISSION_MAPS) {
         auto iter = permissionMap.find(code);
         if (iter == permissionMap.end()) {
             continue;
         }
-        Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
-        int verifyResult = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
-        if (verifyResult == Security::AccessToken::PERMISSION_GRANTED) {
+        AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+        int verifyResult = AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
+        if (verifyResult == PERMISSION_GRANTED) {
             return true;
         }
         HIVIEW_LOGW("%{public}s not granted, code: %{public}u", iter->second.c_str(), code);
         return false;
     }
-    return true;
+    return false;
 }
 
 std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
