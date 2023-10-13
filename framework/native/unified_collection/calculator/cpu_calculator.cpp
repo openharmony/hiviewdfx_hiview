@@ -63,7 +63,7 @@ void CpuCalculator::InitCpuDmipses()
             HIVIEW_LOGE("failed to get cpu capacity content from file=%{public}s", cpuCapacityFileContent.c_str());
             return;
         }
-        uint32_t dmipse = StringUtil::StringToUl(cpuCapacityFileContent);
+        uint32_t dmipse = StringUtil::StringToUl(cpuCapacityFileContent) / 10; // 10: adapt char type of kernel
         cpuDmipses_.emplace_back(dmipse);
         HIVIEW_LOGI("get cpu=%{public}u capacity value=%{public}u", i, dmipse);
     }
