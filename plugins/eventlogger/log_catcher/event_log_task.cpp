@@ -28,6 +28,7 @@
 #include "peer_binder_catcher.h"
 #include "dmesg_catcher.h"
 #include "shell_catcher.h"
+#include "trace_collector.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -60,6 +61,7 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
         std::bind(&EventLogTask::SysrqCapture, this, false)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRqFile",
         std::bind(&EventLogTask::SysrqCapture, this, true)));
+    captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -292,6 +294,17 @@ void EventLogTask::SysrqCapture(bool isWriteNewFile)
     capture->Initialize("", isWriteNewFile, 1);
     capture->Init(event_);
     tasks_.push_back(capture);
+}
+
+void EventLogTask::HitraceCapture()
+{
+    std::shared_ptr<UCollectUtil::TraceCollector> collector = UCollectUtil::TraceCollector::Create();
+    UCollectUtil::TraceCollector::Caller caller = UCollectUtil::TraceCollector::Caller::RELIABILITY;
+    auto result = collector->DumpTrace(caller);
+    if (result.retCode != 0) {
+        HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);
+        return;
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
