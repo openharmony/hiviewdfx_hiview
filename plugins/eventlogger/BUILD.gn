@@ -29,17 +29,14 @@ ohos_source_set("eventlogger") {
 
   deps = [
     "$hiview_base:hiviewbase",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "$hiview_plugin/freeze_detector:freeze_detector",
     "config:eventlogger_config",
     "log_catcher:log_catcher",
     "//third_party/libxml2:xml2",
   ]
 
-  external_deps = [
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "samgr:samgr_proxy",
-  ]
+  external_deps = [ "init:libbegetutil" ]
 }
 
 group("unittest") {
