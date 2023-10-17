@@ -99,6 +99,12 @@ bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
         return true;
     }
 
+    for (auto res : result) {
+        if (res.GetAction() == "or") {
+            return (list.size() >= minMatchNum);
+        }
+    }
+
     if (list.size() == result.size()) {
         return true;
     }

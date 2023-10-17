@@ -85,6 +85,37 @@
         </event>
       </links>
     </rule>
+    <rule id="10" domain="KERNEL_VENDOR" stringid="COM_LONG_PRESS">	<!-- COM_LONG_PRESS -->
+      <links type="watchpoint">
+        <event window="0" domain="KERNEL_VENDOR" stringid="COM_LONG_PRESS">	<!-- COM_LONG_PRESS -->
+          <result code="1" scope="sys"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_TP_I2C">	<!-- DMD_TP_I2C -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_TP_HP">	<!-- DMD_TP_HP -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_LCD_DDR">	<!-- DMD_LCD_DDR -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_EMMC_TUNING">	<!-- DMD_EMMC_TUNING -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_EXT4">	<!-- DMD_EXT4 -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_F2FS_UNLINK">	<!-- DMD_F2FS_UNLINK -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_UFS_FASTBOOT">	<!-- DMD_UFS_FASTBOOT -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+        <event window="-120" domain="KERNEL_VENDOR" stringid="DMD_FSCK_F2FS">	<!-- DMD_FSCK_F2FS -->
+          <result code="1" scope="sys" action="or"/>
+        </event>
+      </links>
+    </rule>
   </rules>
   <rules resolver="AppResolver">
     <rule id="1" domain="ACE" stringid="UI_BLOCK_6S">	<!-- UI_BLOCK_6S -->

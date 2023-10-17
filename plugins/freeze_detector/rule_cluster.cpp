@@ -199,10 +199,12 @@ void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
     unsigned long code = GetAttributeValue<unsigned long>(tag, ATTRIBUTE_CODE);
     std::string scope = GetAttributeValue<std::string>(tag, ATTRIBUTE_SCOPE);
     std::string samePackage = GetAttributeValue<std::string>(tag, ATTRIBUTE_SAME_PACKAGE);
+    std::string action = GetAttributeValue<std::string>(tag, attributeAction);
 
     result.SetId(code);
     result.SetScope(scope);
     result.SetSamePackage(samePackage);
+    result.SetAction(action);
 }
 
 template<typename T>

@@ -39,7 +39,7 @@ struct BinderInfo {
     unsigned long wait;
 };
 
-class EventLogger : public Plugin, public FileDescriptorEventCallback  {
+class EventLogger : public EventListener, public Plugin, public FileDescriptorEventCallback  {
 public:
     EventLogger() : logStore_(std::make_unique<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
         startTime_(time(nullptr)),
@@ -52,9 +52,18 @@ public:
     bool OnFileDescriptorEvent(int fd, int type) override;
     int32_t GetPollFd() override;
     int32_t GetPollType() override;
+    std::string GetListenerName() override;
+    void OnUnorderedEvent(const Event& msg) override;
 private:
     static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
     static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
+    static const inline std::string LONG_PRESS = "LONG_PRESS";
+    static const inline std::string AP_S_PRESS6S = "AP_S_PRESS6S";
+    static const inline std::string REBOOT_REASON = "reboot_reason";
+    static const inline std::string NORMAL_RESET_TYPE = "normal_reset_type";
+    static const inline std::string PATTERN_WITHOUT_SPACE = "\\s*=\\s*([^ \\n]*)";
+    static const inline std::string DOMAIN_LONGPRESS = "KERNEL_VENDOR";
+    static const inline std::string STRINGID_LONGPRESS = "COM_LONG_PRESS";
     static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };
@@ -77,6 +86,9 @@ private:
     std::unique_ptr<EventThreadPool> eventPool_;
     std::mutex intervalMutex_;
     std::mutex finishMutex_;
+    std::string cmdlinePath_ = "/proc/cmdline";
+    std::string cmdlineContent_ = "";
+    std::vector<std::string> rebootReasons_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     int Getfile(std::shared_ptr<SysEvent> event, std::string& logFile);
@@ -86,6 +98,12 @@ private:
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
     void CheckEventOnContinue();
+    bool CanProcessRebootEvent(const Event& event);
+    void ProcessRebootEvent();
+    std::string GetRebootReason() const;
+    void GetCmdlineContent();
+    void GetRebootReasonConfig();
+    bool GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
