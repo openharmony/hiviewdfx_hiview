@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "accesstoken_kit.h"
+#include "client/trace_collector.h"
 #include "errors.h"
 #include "hiview_err_code.h"
 #include "ipc_skeleton.h"
@@ -280,7 +281,12 @@ int32_t HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest(MessageParcel& 
 int32_t HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
-    auto ret = DumpSnapshotTrace();
+    int32_t caller = UCollectClient::TraceCollector::Caller::OTHER;
+    if (!data.ReadInt32(caller)) {
+        HIVIEW_LOGW("failed to read trace caller from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    auto ret = DumpSnapshotTrace(caller);
     return WriteTracePracelableToMessage(reply, ret);
 }
 

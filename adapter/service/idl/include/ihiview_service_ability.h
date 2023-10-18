@@ -36,7 +36,7 @@ public:
     virtual int32_t Remove(const std::string& logType, const std::string& logName) = 0;
 
     virtual CollectResultParcelable<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups) = 0;
-    virtual CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace() = 0;
+    virtual CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace(int32_t caller) = 0;
     virtual CollectResultParcelable<int32_t> OpenRecordingTrace(const std::string& tags) = 0;
     virtual CollectResultParcelable<int32_t> RecordingTraceOn() = 0;
     virtual CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() = 0;
