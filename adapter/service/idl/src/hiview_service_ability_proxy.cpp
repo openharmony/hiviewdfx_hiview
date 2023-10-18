@@ -133,10 +133,10 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::OpenSnapshotTrace(
         parcelHandler);
 }
 
-CollectResultParcelable<std::vector<std::string>> HiviewServiceAbilityProxy::DumpSnapshotTrace()
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbilityProxy::DumpSnapshotTrace(int32_t caller)
 {
-    auto parcelHandler = [] (MessageParcel& data) {
-        return true;
+    auto parcelHandler = [caller] (MessageParcel& data) {
+        return data.WriteInt32(caller);
     };
     return SendTraceRequest<std::vector<std::string>>(
         HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE, parcelHandler);

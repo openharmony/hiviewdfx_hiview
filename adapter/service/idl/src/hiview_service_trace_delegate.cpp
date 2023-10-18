@@ -30,10 +30,10 @@ CollectResult<int32_t> HiViewServiceTraceDelegate::OpenSnapshot(const std::vecto
     return TraceCalling<int32_t>(proxyHandler);
 }
 
-CollectResult<std::vector<std::string>> HiViewServiceTraceDelegate::DumpSnapshot()
+CollectResult<std::vector<std::string>> HiViewServiceTraceDelegate::DumpSnapshot(int32_t caller)
 {
-    auto proxyHandler = [] (HiviewServiceAbilityProxy& proxy) {
-        return proxy.DumpSnapshotTrace();
+    auto proxyHandler = [caller] (HiviewServiceAbilityProxy& proxy) {
+        return proxy.DumpSnapshotTrace(caller);
     };
     return TraceCalling<std::vector<std::string>>(proxyHandler);
 }

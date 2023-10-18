@@ -29,6 +29,7 @@
 #include "iservice_registry.h"
 #include "string_util.h"
 #include "system_ability_definition.h"
+#include "utility/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -277,10 +278,10 @@ CollectResultParcelable<int32_t> HiviewServiceAbility::OpenSnapshotTrace(const s
     return TraceCalling<int32_t>(traceRetHandler);
 }
 
-CollectResultParcelable<std::vector<std::string>> HiviewServiceAbility::DumpSnapshotTrace()
+CollectResultParcelable<std::vector<std::string>> HiviewServiceAbility::DumpSnapshotTrace(int32_t caller)
 {
-    auto traceRetHandler = [] (HiviewService* service) {
-        return service->DumpSnapshotTrace();
+    auto traceRetHandler = [caller] (HiviewService* service) {
+        return service->DumpSnapshotTrace(static_cast<UCollectUtil::TraceCollector::Caller>(caller));
     };
     return TraceCalling<std::vector<std::string>>(traceRetHandler);
 }

@@ -48,7 +48,7 @@ public:
     int32_t Remove(const std::string& logType, const std::string& logName) override;
 
     CollectResultParcelable<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups) override;
-    CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace() override;
+    CollectResultParcelable<std::vector<std::string>> DumpSnapshotTrace(int32_t caller) override;
     CollectResultParcelable<int32_t> OpenRecordingTrace(const std::string& tags) override;
     CollectResultParcelable<int32_t> RecordingTraceOn() override;
     CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() override;

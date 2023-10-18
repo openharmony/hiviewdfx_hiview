@@ -29,7 +29,7 @@ namespace HiviewDFX {
 class HiViewServiceTraceDelegate {
 public:
     static CollectResult<int32_t> OpenSnapshot(const std::vector<std::string>& tagGroups);
-    static CollectResult<std::vector<std::string>> DumpSnapshot();
+    static CollectResult<std::vector<std::string>> DumpSnapshot(int32_t caller);
     static CollectResult<int32_t> OpenRecording(const std::string& tags);
     static CollectResult<int32_t> RecordingOn();
     static CollectResult<std::vector<std::string>> RecordingOff();
