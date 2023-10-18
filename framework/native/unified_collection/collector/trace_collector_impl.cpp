@@ -24,7 +24,7 @@ using namespace OHOS::HiviewDFX::Hitrace;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
-DEFINE_LOG_TAG("UCollectUtil");
+DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -52,17 +52,31 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
 {
     std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
+
+    std::shared_ptr<ControlPolicy> controlPolicy = std::make_shared<ControlPolicy>();
     CollectResult<std::vector<std::string>> result;
+    // check 1, judge whether need to dump
+    if (!controlPolicy->NeedDump(caller)) {
+        result.retCode = UcError::TRACE_OVER_FLOW;
+        return result;
+    }
+
     TraceRetInfo ret = OHOS::HiviewDFX::Hitrace::DumpTrace();
-    if (ret.errorCode == TraceErrorCode::SUCCESS) {
-        if (caller == TraceCollector::Caller::DEVELOP) {
-            result.data = ret.outputFiles;
-        } else {
-            std::vector<std::string> outputFiles = GetUnifiedFiles(ret, caller);
-            result.data = outputFiles;
+    // check 2, judge whether to upload or not
+    if (controlPolicy->NeedUpload(caller, ret)) {
+        if (ret.errorCode == TraceErrorCode::SUCCESS) {
+            if (caller == TraceCollector::Caller::DEVELOP) {
+                result.data = ret.outputFiles;
+            } else {
+                std::vector<std::string> outputFiles = GetUnifiedFiles(ret, caller);
+                result.data = outputFiles;
+            }
         }
     }
+
     result.retCode = TransCodeToUcError(ret.errorCode);
+    // step3： update db
+    controlPolicy->StoreDb();
     HIVIEW_LOGI("DumpTrace, ret = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
     return result;
 }

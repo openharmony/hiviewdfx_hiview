@@ -28,6 +28,7 @@ const std::string COLUMN_TYPE_DOU = "REAL";
 
 std::string GenerateCreateSql(const std::string& table,
     const std::vector<std::pair<std::string, std::string>>& fields);
+std::string GenerateExistSql(const std::string& table);
 std::string GenerateDropSql(const std::string& table);
 } // namespace SqlUtil
 } // namespace HiviewDFX

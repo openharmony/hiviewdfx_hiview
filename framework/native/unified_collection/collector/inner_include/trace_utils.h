@@ -16,10 +16,17 @@
 #define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_FILE_UTILS_H
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "hitrace_dump.h"
 #include "trace_collector.h"
+#include "trace_storage.h"
+
+using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
+using OHOS::HiviewDFX::Hitrace::TraceRetInfo;
+using OHOS::HiviewDFX::UCollectUtil::TraceCollector;
+using OHOS::HiviewDFX::UCollect::UcError;
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::UCollect::UcError;
@@ -37,6 +44,32 @@ const std::map<TraceErrorCode, UcError> CODE_MAP = {
     {TraceErrorCode::CALL_ERROR, UcError::TRACE_CALL_ERROR},
 };
 }
+
+class ControlPolicy {
+public:
+    ControlPolicy();
+    ~ControlPolicy() = default;
+    bool NeedDump(TraceCollector::Caller &caller);
+    bool NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret);
+    void StoreDb();
+
+private:
+    void InitTraceData();
+    void InitTraceStorage();
+    void UpdateTraceStorage(int64_t systemTime, int64_t xperfSize,
+                            int64_t xpowerSize, int64_t reliabilitySize);
+    int64_t GetDate();
+    int64_t GetTraceSize(Hitrace::TraceRetInfo ret);
+    bool IsLowerLimit(int64_t nowSize, int64_t traceSize, int64_t limitSize);
+    std::vector<uint64_t> QueryDb();
+
+private:
+    int64_t systemTime_;
+    int64_t xperfSize_;
+    int64_t xpowerSize_;
+    int64_t reliabilitySize_;
+    std::shared_ptr<TraceStorage> traceStorage_;
+};
 
 UcError TransCodeToUcError(TraceErrorCode ret);
 void FileRemove(UCollectUtil::TraceCollector::Caller &caller);
