@@ -28,7 +28,70 @@ struct ProcessIo {
     int32_t syscr;
     int32_t syscw;
     int32_t readBytes;
+    int32_t writeBytes;
     int32_t cancelledWriteBytes;
+};
+
+struct DiskData {
+    uint64_t sectorRead = 0;  /* number of sectors read */
+    uint64_t sectorWrite = 0; /* number of sectors written */
+    uint64_t operRead = 0;    /* number of reads merged */
+    uint64_t operWrite = 0;   /* number of writes merged */
+    uint64_t readTime = 0;    /* number of time spent reading (ms) */
+    uint64_t writeTime = 0;   /* number of time spent writing (ms) */
+    uint64_t ioWait = 0;      /* number of I/Os currently in progress */
+};
+
+struct DiskStats {
+    std::string deviceName;
+    double sectorReadRate = 0.0;  /* number of sectors read persecond */
+    double sectorWriteRate = 0.0; /* number of sectors written persecond */
+    double operReadRate = 0.0;    /* number of reads merged persecond */
+    double operWriteRate = 0.0;   /* number of writes merged persecond */
+    double readTimeRate = 0.0;    /* number of time spent reading (ms) persecond */
+    double writeTimeRate = 0.0;   /* number of time spent writing (ms) persecond */
+    uint64_t ioWait = 0;        /* number of I/Os currently in progress */
+};
+
+struct DiskStatsDevice {
+    DiskData preData;
+    DiskStats stats;
+    uint64_t collectTime = 0;
+};
+
+struct EMMCInfo {
+    std::string name;
+    std::string manfid;
+    std::string csd;
+    std::string type;
+    int64_t size;
+};
+
+struct ProcessIoStats {
+    int32_t pid;
+    std::string name;
+    int32_t ground;
+    double rcharRate;
+    double wcharRate;
+    double syscrRate;
+    double syscwRate;
+    double readBytesRate;
+    double writeBytesRate;
+};
+
+struct SysIoStats {
+    double rcharRate;
+    double wcharRate;
+    double syscrRate;
+    double syscwRate;
+    double readBytesRate;
+    double writeBytesRate;
+};
+
+struct ProcessIoStatsInfo {
+    ProcessIo preData;
+    ProcessIoStats stats;
+    uint64_t collectTime = 0;
 };
 } // HiviewDFX
 } // OHOS

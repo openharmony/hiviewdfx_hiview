@@ -15,6 +15,7 @@
 #include "unified_collector.h"
 
 #include "file_util.h"
+#include "io_collector.h"
 #include "logger.h"
 #include "plugin_factory.h"
 #include "process_status.h"
@@ -78,6 +79,7 @@ void UnifiedCollector::Init()
     InitWorkLoop();
     InitWorkPath();
     RunCpuCollectionTask();
+    RunIoCollectionTask();
 }
 
 void UnifiedCollector::InitWorkLoop()
@@ -115,6 +117,24 @@ void UnifiedCollector::RunCpuCollectionTask()
         std::bind(&CpuCollectionTask::Collect, cpuCollectionTask_.get()),
         taskInterval,
         true);
+}
+
+void UnifiedCollector::RunIoCollectionTask()
+{
+    if (workLoop_ == nullptr) {
+        HIVIEW_LOGE("workLoop is null");
+        return;
+    }
+    auto ioCollectionTask = std::bind(&UnifiedCollector::IoCollectionTask, this);
+    const uint64_t taskInterval = 30; // 30s
+    workLoop_->AddTimerEvent(nullptr, nullptr, ioCollectionTask, taskInterval, true);
+}
+
+void UnifiedCollector::IoCollectionTask()
+{
+    auto ioCollector = UCollectUtil::IoCollector::Create();
+    (void)ioCollector->CollectDiskStats([](const DiskStats &stats) { return false; }, true);
+    (void)ioCollector->CollectAllProcIoStats(true);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

@@ -23,6 +23,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+using DiskStatsFilter = std::function<bool(const DiskStats &)>;
+static bool DefaultDiskStatsFilter(const DiskStats &stats)
+{
+    return (stats.operReadRate == 0 && stats.operWriteRate == 0);
+}
+
 class IoCollector {
 public:
     IoCollector() = default;
@@ -30,6 +36,16 @@ public:
 
 public:
     virtual CollectResult<ProcessIo> CollectProcessIo(int32_t pid) = 0;
+    virtual CollectResult<std::string> CollectRawDiskStats() = 0;
+    virtual CollectResult<std::vector<DiskStats>> CollectDiskStats(
+        DiskStatsFilter filter = DefaultDiskStatsFilter, bool isUpdate = false) = 0;
+    virtual CollectResult<std::string> ExportDiskStats(DiskStatsFilter filter = DefaultDiskStatsFilter) = 0;
+    virtual CollectResult<std::vector<EMMCInfo>> CollectEMMCInfo() = 0;
+    virtual CollectResult<std::string> ExportEMMCInfo() = 0;
+    virtual CollectResult<std::vector<ProcessIoStats>> CollectAllProcIoStats(bool isUpdate = false) = 0;
+    virtual CollectResult<std::string> ExportAllProcIoStats() = 0;
+    virtual CollectResult<SysIoStats> CollectSysIoStats() = 0;
+    virtual CollectResult<std::string> ExportSysIoStats() = 0;
     static std::shared_ptr<IoCollector> Create();
 }; // IoCollector
 } // UCollectUtil
