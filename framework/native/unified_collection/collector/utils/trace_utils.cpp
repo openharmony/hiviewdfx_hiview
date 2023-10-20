@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 #include <algorithm>
-#include <memory>
+#include <chrono>
+#include <ctime>
 #include <sys/stat.h>
 #include <vector>
 
@@ -22,10 +23,9 @@
 #include "logger.h"
 #include "string_util.h"
 
-DEFINE_LOG_TAG("UCollectUtil");
+DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 
-using namespace OHOS::HiviewDFX::Hitrace;
-using namespace OHOS::HiviewDFX::UCollectUtil;
+using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -40,6 +40,12 @@ namespace {
     const uint32_t UNIFIED_SHARE_COUNTS = 20;
     const uint32_t UNIFIED_SPECIAL_XPERF = 3;
     const uint32_t UNIFIED_SPECIAL_OTHER = 5;
+    const int64_t XPERF_SIZE = 1835008000;       // 1750 * 1024 * 1024
+    const int64_t XPOWER_SIZE = 734003200;       // 700 * 1024 * 1024
+    const int64_t RELIABILITY_SIZE = 367001600;  // 350 * 1024 * 1024
+    const int64_t SECOND_PER_DAY = 24 * 60 * 60;
+    const uint32_t DB_LENGTH = 4;
+    const float TEN_PERCENT_LIMIT = 0.1;
 }
 
 enum {
@@ -205,6 +211,171 @@ void FileRemove(TraceCollector::Caller &caller)
             specialCleaner->DoClean();
             break;
     }
+}
+
+void CreateTracePath(const std::string &filePath)
+{
+    if (!FileUtil::FileExists(filePath)) {
+        if (!CreateMultiDirectory(filePath)) {
+            HIVIEW_LOGE("failed to create multidirectory %{public}s.", filePath.c_str());
+            return;
+        }
+    }
+}
+
+void ControlPolicy::InitTraceData()
+{
+    std::vector<uint64_t> values = QueryDb();
+    HIVIEW_LOGI("trace storage: values.size() = %{public}d.", values.size());
+    for (auto value : values) {
+        HIVIEW_LOGI("trace storage: value = %{public}d.", value);
+    }
+    if (values.size() != DB_LENGTH) {
+        HIVIEW_LOGE("trace storage: db is destoryed.");
+        return;
+    }
+    systemTime_ = values[0];
+    xperfSize_ = values[1];
+    xpowerSize_ = values[2];
+    reliabilitySize_ = values[3];
+}
+
+void ControlPolicy::InitTraceStorage()
+{
+    CreateTracePath(UNIFIED_SHARE_PATH);
+    CreateTracePath(UNIFIED_SPECIAL_PATH);
+
+    traceStorage_ = std::make_shared<TraceStorage>();
+}
+
+ControlPolicy::ControlPolicy()
+{
+    InitTraceStorage();
+    InitTraceData();
+}
+
+bool ControlPolicy::NeedDump(TraceCollector::Caller &caller)
+{
+    int64_t nowDays = GetDate();
+    HIVIEW_LOGI("start to dump, nowDays = %{public}d, systemTime_ = %{public}d.", nowDays, systemTime_);
+    if (nowDays != systemTime_) {
+        UpdateTraceStorage(nowDays, 0, 0, 0);
+        return true;
+    }
+
+    switch (caller) {
+        case TraceCollector::Caller::RELIABILITY:
+            return reliabilitySize_ < RELIABILITY_SIZE;
+        case TraceCollector::Caller::XPERF:
+            return xperfSize_ < XPERF_SIZE;
+        case TraceCollector::Caller::XPOWER:
+            return xpowerSize_ < XPOWER_SIZE;
+        default:
+            return true;
+    }
+}
+
+bool ControlPolicy::NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret)
+{
+    int64_t traceSize = GetTraceSize(ret);
+    HIVIEW_LOGI("start to upload , systemTime_ = %{public}d, traceSize = %{public}d.", systemTime_, traceSize);
+    switch (caller) {
+        case TraceCollector::Caller::RELIABILITY:
+            if (IsLowerLimit(reliabilitySize_, traceSize, RELIABILITY_SIZE)) {
+                reliabilitySize_ = reliabilitySize_ + traceSize;
+                return true;
+            } else {
+                return false;
+            }
+        case TraceCollector::Caller::XPERF:
+            if (IsLowerLimit(xperfSize_, traceSize, XPERF_SIZE)) {
+                xperfSize_ = xperfSize_ + traceSize;
+                return true;
+            } else {
+                return false;
+            }
+        case TraceCollector::Caller::XPOWER:
+            if (IsLowerLimit(xpowerSize_, traceSize, XPOWER_SIZE)) {
+                xpowerSize_ = xpowerSize_ + traceSize;
+                return true;
+            } else {
+                return false;
+            }
+        default:
+            return true;
+    }
+}
+
+bool ControlPolicy::IsLowerLimit(int64_t nowSize, int64_t traceSize, int64_t limitSize)
+{
+    if (limitSize == 0) {
+        HIVIEW_LOGE("error, limit size is zero.");
+        return false;
+    }
+
+    int64_t totalSize = nowSize + traceSize;
+    if (totalSize < limitSize) {
+        return true;
+    }
+
+    float limit = static_cast<float>(totalSize - limitSize) / limitSize;
+    if (limit > TEN_PERCENT_LIMIT) {
+        return false;
+    }
+    return true;
+}
+
+void ControlPolicy::UpdateTraceStorage(int64_t systemTime, int64_t xperfSize,
+                                       int64_t xpowerSize, int64_t reliabilitySize)
+{
+    HIVIEW_LOGI("systemTime_ = %{public}d.", systemTime);
+    systemTime_ = systemTime;
+    xperfSize_ = xperfSize;
+    xpowerSize_ = xpowerSize;
+    reliabilitySize_ = reliabilitySize;
+}
+
+void ControlPolicy::StoreDb()
+{
+    struct UcollectionTraceStorage traceCollection;
+    traceCollection.system_time = systemTime_;
+    traceCollection.xperf_size = xperfSize_;
+    traceCollection.xpower_size = xpowerSize_;
+    traceCollection.reliability_size = reliabilitySize_;
+
+    HIVIEW_LOGI("storeDb, system_time:%{public}d, xperfSize_:%{public}d, xpowerSize_:%{public}d, reliabilitySize_:%{public}d.",
+        systemTime_, xperfSize_, xpowerSize_, reliabilitySize_);
+    traceStorage_->Store(traceCollection);
+}
+
+int64_t ControlPolicy::GetTraceSize(TraceRetInfo ret)
+{
+    struct stat fileInfo;
+    int64_t traceSize = 0;
+    for (const auto &tracePath : ret.outputFiles) {
+        stat(tracePath.c_str(), &fileInfo);
+        traceSize += fileInfo.st_size;
+    }
+    return traceSize;
+}
+
+int64_t ControlPolicy::GetDate()
+{
+    auto now = std::chrono::system_clock::now();
+    typedef std::chrono::duration<int64_t, std::ratio<SECOND_PER_DAY>> Day;
+    Day days = std::chrono::duration_cast<Day>(now.time_since_epoch());
+    return days.count();
+}
+
+/*
+ * values: <int64_t, int64_t, int64_t, int64_t>
+ * <system_time, xperf_size, xpower_size, reliability_size>
+ */
+std::vector<uint64_t> ControlPolicy::QueryDb()
+{
+    std::vector<uint64_t> values;
+    traceStorage_->Query(values);
+    return values;
 }
 
 void CheckAndCreateDirectory(const std::string &tmpDirPath)

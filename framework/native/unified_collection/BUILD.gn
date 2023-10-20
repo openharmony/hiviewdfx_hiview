@@ -44,6 +44,7 @@ ohos_source_set("ucollection_source") {
     "collector/network_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
     "collector/utils/trace_manager.cpp",
+    "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
     "process/process_status.cpp",
   ]
@@ -57,6 +58,7 @@ ohos_source_set("ucollection_source") {
   external_deps = [
     "hilog:libhilog",
     "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
     "wifi:wifi_sdk",
   ]
 

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <map>
 #include <mutex>
 
 #include "hilog/log.h"
@@ -22,7 +23,10 @@
 #include "trace_manager.h"
 #include "trace_utils.h"
 
-DEFINE_LOG_TAG("UCollectUtil");
+DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
+
+using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
+using OHOS::HiviewDFX::UCollect::UcError;
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::UCollect::UcError;

@@ -15,6 +15,8 @@
 #ifndef FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_UNIFIED_COLLECTION_DATA
 #define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_UNIFIED_COLLECTION_DATA
 
+#include <cstdint>
+#include <string>
 #include <sys/ioctl.h>
 
 // kernel struct, modify at the same time
@@ -43,6 +45,13 @@ struct ucollection_cpu_dmips {
     int magic;
     int total_count;
     char dmips[];
+};
+
+struct UcollectionTraceStorage {
+    int64_t system_time = 0;
+    int64_t xperf_size = 0;
+    int64_t xpower_size = 0;
+    int64_t reliability_size = 0;
 };
 
 #define IOCTRL_COLLECT_ALL_PROC_CPU_MAGIC 1
