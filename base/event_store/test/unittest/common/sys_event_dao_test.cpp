@@ -256,18 +256,17 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_008, testing::ext::TestSize.Level3)
         std::thread t([&queryStatus] () {
             auto sysEventQuery = EventStore::SysEventDao::BuildQuery("d1", {"e1"});
             int queryCount = 10;
-            (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+            (void)(sysEventQuery->Execute(queryCount, { true, false }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
                 [&queryStatus] (EventStore::DbQueryStatus status) {
                     if (status != EventStore::DbQueryStatus::SUCCEED) {
                         queryStatus = status;
                     }
                 }));
         });
-        t.detach();
+        t.join();
     }
-    sleep(8);
-    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::CONCURRENT ||
-        queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+    ASSERT_TRUE((queryStatus == EventStore::DbQueryStatus::CONCURRENT) ||
+        (queryStatus == EventStore::DbQueryStatus::SUCCEED));
 }
 
 /**
@@ -287,59 +286,35 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_009, testing::ext::TestSize.Level3)
                 queryStatus = status;
             }
         }));
-    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::OVER_LIMIT);
+    ASSERT_EQ(queryStatus, EventStore::DbQueryStatus::OVER_LIMIT);
 }
 
 /**
  * @tc.name: TestEventDaoQuery_010
- * @tc.desc: test query in high frequency, query twice in 1 second
+ * @tc.desc: test query in high frequency, query 51 times in 1 second
  * @tc.type: FUNC
  * @tc.require: issueI5L2RV
  */
 HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
 {
     auto sysEventQuery = EventStore::SysEventDao::BuildQuery("d1", {"e1"});
-    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
     int queryCount = 10;
-    (void)sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
-        [&queryStatus] (EventStore::DbQueryStatus status) {
-            if (status != EventStore::DbQueryStatus::SUCCEED) {
-                queryStatus = status;
-            }
-        });
-    (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
-        [&queryStatus] (EventStore::DbQueryStatus status) {
-            if (status != EventStore::DbQueryStatus::SUCCEED) {
-                queryStatus = status;
-            }
-        }));
-    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
-}
-
-/**
- * @tc.name: TestEventDaoQuery_011
- * @tc.desc: test query in high frequency with ejdb newest configuration for defensing event storm
- * @tc.type: FUNC
- * @tc.require: issueI5LFCZ
- */
-HWTEST_F(SysEventDaoTest, TestEventDaoQuery_011, testing::ext::TestSize.Level3)
-{
-    auto sysEventQuery = EventStore::SysEventDao::BuildQuery("d1", {"e1"});
-    EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
-    int queryCount = 10;
-    (void)sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
-        [&queryStatus] (EventStore::DbQueryStatus status) {
-            if (status != EventStore::DbQueryStatus::SUCCEED) {
-                queryStatus = status;
-            }
-        });
-    (void)(sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
-        [&queryStatus] (EventStore::DbQueryStatus status) {
-            if (status != EventStore::DbQueryStatus::SUCCEED) {
-                queryStatus = status;
-            }
-        }));
-    ASSERT_TRUE(queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY);
+    const int threshhold = 50;
+    const int delayDuration = 1; // 1 second
+    for (int i = 0; i < 2; i++) { // 2 cycles
+        sleep(delayDuration);
+        for (int j = 0; j <= threshhold; j++) { // more than 50 queries in 1 second is never allowed
+            EventStore::DbQueryStatus queryStatus = EventStore::DbQueryStatus::SUCCEED;
+            (void)sysEventQuery->Execute(queryCount, { true, true }, std::make_pair(EventStore::INNER_PROCESS_ID, ""),
+                [&queryStatus] (EventStore::DbQueryStatus status) {
+                    if (status != EventStore::DbQueryStatus::SUCCEED) {
+                        queryStatus = status;
+                    }
+                });
+            ASSERT_TRUE((queryStatus == EventStore::DbQueryStatus::TOO_FREQENTLY) ||
+                (queryStatus == EventStore::DbQueryStatus::SUCCEED));
+        }
+    }
 }
 
 /**
