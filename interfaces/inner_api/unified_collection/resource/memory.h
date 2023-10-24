@@ -21,16 +21,30 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct SysMemory {
-    int32_t memTotal;     //unit KB
-    int32_t memFree;      //unit KB
-    int32_t memAvailable; //unit KB
+    int32_t memTotal;     // total amount of usable RAM, unit KB
+    int32_t memFree;      // unit KB
+    int32_t memAvailable; // unit KB
+    int32_t zramUsed;     // unit KB
+    int32_t swapCached;   // unit KB
+    int32_t cached;       // unit KB
 };
 
 struct ProcessMemory {
-    int32_t pid;
-    std::string name;
-    int32_t rss; //unit KB
-    int32_t pss; //unit KB
+    int32_t pid;        // process id
+    std::string name;   // process name
+    int32_t rss;        // resident set size, unit KB
+    int32_t pss;        // proportional set Size, unit KB
+    int32_t swapPss;    // swap pss, unit KB
+    int32_t adj;        // /proc/$pid/oom_score_adj
+};
+
+extern "C" {
+const int HIAI_MAX_QUERIED_USER_MEMINFO_LIMIT = 256;
+
+typedef struct {
+    int pid;    // process id
+    int size;   // byte
+} AIProcessMem;
 };
 } // HiviewDFX
 } // OHOS
