@@ -33,6 +33,8 @@ private:
     void InitWorkLoop();
     void InitWorkPath();
     void RunCpuCollectionTask();
+    void RunIoCollectionTask();
+    void IoCollectionTask();
 
 private:
     std::string workPath_;

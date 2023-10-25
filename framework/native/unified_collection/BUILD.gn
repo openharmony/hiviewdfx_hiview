@@ -36,6 +36,7 @@ ohos_source_set("ucollection_source") {
 
   sources = [
     "calculator/cpu_calculator.cpp",
+    "calculator/io_calculator.cpp",
     "collector/common_util.cpp",
     "collector/cpu_collector_impl.cpp",
     "collector/gpu_collector_impl.cpp",
