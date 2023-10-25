@@ -13,6 +13,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 ohos_source_set("bundle_plugin_example3") {
+  testonly = true
   include_dirs = [
     ".",
     "../bundle_event_source_example",

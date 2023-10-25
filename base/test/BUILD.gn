@@ -82,6 +82,7 @@ ohos_unittest("AuditLogParserTest") {
 }
 
 ohos_unittest("PluginPipelineTest") {
+  testonly = true
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 
