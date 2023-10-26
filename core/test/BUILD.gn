@@ -55,6 +55,7 @@ ohos_unittest("PlatformConfigTest") {
 }
 
 ohos_unittest("PluginPlatformTest") {
+  testonly = true
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 

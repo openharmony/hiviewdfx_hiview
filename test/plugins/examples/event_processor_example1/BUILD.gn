@@ -17,6 +17,7 @@ config("event_processor_example1_config") {
 }
 
 ohos_source_set("event_processor_example1") {
+  testonly = true
   include_dirs = [ "." ]
   configs = [ "../event_source_example:event_source_example_config" ]
   sources = [ "event_processor_example1.cpp" ]

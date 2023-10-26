@@ -13,6 +13,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 ohos_source_set("event_processor_example2") {
+  testonly = true
   include_dirs = [
     ".",
     "../event_source_example",
