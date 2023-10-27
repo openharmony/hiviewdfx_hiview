@@ -61,14 +61,17 @@ private:
         MessageParcel reply;
         MessageOption option;
         int32_t ret = Remote()->SendRequest(static_cast<uint32_t>(requestCode), data, reply, option);
-        if (ret != TraceErrCode::ERR_OK) {
+        if (ret == TraceErrCode::ERR_OK) {
+            auto readParcel = reply.ReadParcelable<CollectResultParcelable<T>>();
+            if (readParcel == nullptr) {
+                return traceRet;
+            }
+            traceRet = *readParcel;
             return traceRet;
         }
-        auto readParcel = reply.ReadParcelable<CollectResultParcelable<T>>();
-        if (readParcel == nullptr) {
-            return traceRet;
+        if (ret == TraceErrCode::ERR_PERMISSION_CHECK) {
+            traceRet.result_.retCode = UCollect::UcError::PERMISSION_CHECK_FAILED;
         }
-        traceRet = *readParcel;
         return traceRet;
     }
 };
