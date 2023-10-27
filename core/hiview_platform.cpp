@@ -49,7 +49,6 @@ static const char RECORDER_VERSION[] = "01.00";
 static const char PLUGIN_CONFIG_NAME[] = "plugin_config";
 static const char HIVIEW_PID_FILE_NAME[] = "hiview.pid";
 static const char DEFAULT_CONFIG_DIR[] = "/system/etc/hiview/";
-static const char CHIPSET_HISYSEVENT_DEF_PATH[] = "/vendor/etc/hiview/hisysevent.def";
 static const char PIPELINE_RULE_CONFIG_DIR[] = "/system/etc/hiview/dispatch_rule/";
 static const char DISPATCH_RULE_CONFIG_DIR[] = "/system/etc/hiview/listener_rule/";
 static const char DEFAULT_WORK_DIR[] = "/data/log/hiview/";
@@ -175,11 +174,9 @@ void HiviewPlatform::InitSysEventParser()
     if (sysEventParser_ == nullptr) {
         std::string systemDefineFile = (defaultConfigDir_.back() != '/') ? (defaultConfigDir_ + "/hisysevent.def") :
             (defaultConfigDir_ + "hisysevent.def");
-        HIVIEW_LOGI("path of hisysevent.def for system components is %{public}s", systemDefineFile.c_str());
+        HIVIEW_LOGI("path of hisysevent.def is %{public}s", systemDefineFile.c_str());
         std::vector<std::string> allDefineFiles;
         allDefineFiles.emplace_back(systemDefineFile);
-        allDefineFiles.emplace_back(CHIPSET_HISYSEVENT_DEF_PATH);
-        HIVIEW_LOGI("path of hisysevent.def for chipset components is %{public}s", CHIPSET_HISYSEVENT_DEF_PATH);
         sysEventParser_ = std::make_shared<EventJsonParser>(allDefineFiles);
     }
 }
