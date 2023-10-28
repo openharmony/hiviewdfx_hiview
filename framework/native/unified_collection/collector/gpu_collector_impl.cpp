@@ -17,7 +17,6 @@
 #include "common_util.h"
 #include "logger.h"
 #include "file_util.h"
-#include "string_util.h"
 
 #include <sstream>
 
@@ -48,7 +47,10 @@ inline int32_t GetValue(const std::string& fileName)
     std::string content;
     FileUtil::LoadStringFromFile(fileName, content);
     int32_t parsedVal = 0;
-    StringUtil::StrToInt(content, parsedVal);
+    // this string content might be empty or consist of some sepcial charactors
+    // so "std::stoi" and "StringUtil::StrToInt" aren't applicable here.
+    std::stringstream ss(content); 
+    ss >> parsedVal;
     return parsedVal;
 }
 
