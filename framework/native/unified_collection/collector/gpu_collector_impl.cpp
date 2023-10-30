@@ -47,9 +47,9 @@ inline int32_t GetValue(const std::string& fileName)
     std::string content;
     FileUtil::LoadStringFromFile(fileName, content);
     int32_t parsedVal = 0;
-    // this string content might be empty or consist of some sepcial charactors
+    // this string content might be empty or consist of some special charactors
     // so "std::stoi" and "StringUtil::StrToInt" aren't applicable here.
-    std::stringstream ss(content); 
+    std::stringstream ss(content);
     ss >> parsedVal;
     return parsedVal;
 }
