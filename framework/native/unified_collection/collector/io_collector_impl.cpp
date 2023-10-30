@@ -89,6 +89,7 @@ private:
     void CalculateAllProcIoStats(uint64_t period, bool isUpdate);
     void CalculateProcIoStats(const ProcessIo& currData, int32_t pid, uint64_t period);
     bool ProcIoStatsFilter(const ProcessIoStats& stats);
+    int32_t GetProcStateInCollectionPeriod(int32_t pid);
     std::string CreateExportFileName(const std::string& filePrefix);
 
 private:
@@ -97,6 +98,7 @@ private:
     std::mutex exportFileMutex_;
     uint64_t preCollectDiskTime_ = 0;
     uint64_t preCollectProcIoTime_ = 0;
+    uint64_t currCollectProcIoTime_ = 0;
     std::unordered_map<std::string, DiskStatsDevice> diskStatsMap_;
     std::unordered_map<int32_t, ProcessIoStatsInfo> procIoStatsMap_;
 };
@@ -124,7 +126,8 @@ void IoCollectorImpl::InitDiskData()
 void IoCollectorImpl::InitProcIoData()
 {
     std::unique_lock<std::mutex> lockProcIo(collectProcIoMutex_);
-    preCollectProcIoTime_ = TimeUtil::GetMilliseconds();
+    currCollectProcIoTime_ = TimeUtil::GetMilliseconds();
+    preCollectProcIoTime_ = currCollectProcIoTime_;
     CalculateAllProcIoStats(0, true);
 }
 
@@ -526,14 +529,14 @@ CollectResult<std::string> IoCollectorImpl::ExportEMMCInfo()
 void IoCollectorImpl::GetProcIoStats(std::vector<ProcessIoStats>& allProcIoStats, bool isUpdate)
 {
     std::unique_lock<std::mutex> lock(collectProcIoMutex_);
-    uint64_t currCollectProcIoTime = TimeUtil::GetMilliseconds();
-    uint64_t period = (currCollectProcIoTime > preCollectProcIoTime_) ?
-        ((currCollectProcIoTime - preCollectProcIoTime_) / TimeUtil::SEC_TO_MILLISEC) : 0;
+    currCollectProcIoTime_ = TimeUtil::GetMilliseconds();
+    uint64_t period = (currCollectProcIoTime_ > preCollectProcIoTime_) ?
+        ((currCollectProcIoTime_ - preCollectProcIoTime_) / TimeUtil::SEC_TO_MILLISEC) : 0;
     if (period > PROC_IO_STATS_PERIOD) {
-        if (isUpdate) {
-            preCollectProcIoTime_ = currCollectProcIoTime;
-        }
         CalculateAllProcIoStats(period, isUpdate);
+        if (isUpdate) {
+            preCollectProcIoTime_ = currCollectProcIoTime_;
+        }
     }
 
     for (auto it = procIoStatsMap_.begin(); it != procIoStatsMap_.end();) {
@@ -569,7 +572,7 @@ void IoCollectorImpl::CalculateAllProcIoStats(uint64_t period, bool isUpdate)
         if (collectProcIoResult.retCode == UcError::SUCCESS) {
             CalculateProcIoStats(collectProcIoResult.data, pid, period);
             if (isUpdate) {
-                procIoStatsMap_[pid].collectTime = preCollectProcIoTime_;
+                procIoStatsMap_[pid].collectTime = currCollectProcIoTime_;
                 procIoStatsMap_[pid].preData = collectProcIoResult.data;
             }
         }
@@ -583,6 +586,19 @@ bool IoCollectorImpl::ProcIoStatsFilter(const ProcessIoStats& stats)
         stats.readBytesRate == 0 && stats.writeBytesRate == 0);
 }
 
+int32_t IoCollectorImpl::GetProcStateInCollectionPeriod(int32_t pid)
+{
+    ProcessState procState = ProcessStatus::GetInstance().GetProcessState(pid);
+    if (procState == FOREGROUND) {
+        return static_cast<int32_t>(FOREGROUND);
+    }
+    uint64_t procForegroundTime = ProcessStatus::GetInstance().GetProcessLastForegroundTime(pid);
+    if (procForegroundTime >= preCollectProcIoTime_ && procForegroundTime < currCollectProcIoTime_) {
+        return static_cast<int32_t>(FOREGROUND);
+    }
+    return static_cast<int32_t>(procState);
+}
+
 void IoCollectorImpl::CalculateProcIoStats(const ProcessIo& currData, int32_t pid, uint64_t period)
 {
     if (procIoStatsMap_.find(pid) == procIoStatsMap_.end()) {
@@ -594,7 +610,7 @@ void IoCollectorImpl::CalculateProcIoStats(const ProcessIo& currData, int32_t pi
     ProcessIoStats& stats = statsInfo.stats;
     stats.pid = pid;
     stats.name = ProcessStatus::GetInstance().GetProcessName(pid);
-    stats.ground = static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(pid));
+    stats.ground = GetProcStateInCollectionPeriod(pid);
     if (period != 0) {
         stats.rcharRate = IoCalculator::PercentValue(preData.rchar, currData.rchar, period);
         stats.wcharRate = IoCalculator::PercentValue(preData.wchar, currData.wchar, period);
