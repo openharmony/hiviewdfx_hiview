@@ -17,11 +17,11 @@
 #include "logger.h"
 #include "file_util.h"
 
-DEFINE_LOG_TAG("UCollectUtil");
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+DEFINE_LOG_TAG("UCollectUtil");
+
 template <typename T> bool CommonUtil::StrToNum(const std::string &sString, T &tX)
 {
     std::istringstream iStream(sString);

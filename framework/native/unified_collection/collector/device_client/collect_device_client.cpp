@@ -27,11 +27,11 @@
 #include "logger.h"
 #include "securec.h"
 
-DEFINE_LOG_TAG("UDeviceCli");
-
 #define UNIFIED_COLLECTION_DEVICE  "/dev/ucollection"
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("UDeviceCli");
+
 CollectDeviceClient::CollectDeviceClient(): fd_(-1)
 {}
 

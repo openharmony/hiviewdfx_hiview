@@ -23,7 +23,9 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
-TraceManager traceManager;
+namespace {
+TraceManager g_traceManager;
+}
 
 class TraceCollectorTest : public testing::Test {
 public:
@@ -43,7 +45,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -53,7 +55,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -66,7 +68,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::XPOWER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -76,7 +78,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -89,7 +91,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     TraceCollector::Caller caller = TraceCollector::Caller::RELIABILITY;
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -99,7 +101,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -111,7 +113,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest004, TestSize.Level1)
 {
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenRecordingTrace(args) == 0);
+    ASSERT_TRUE(g_traceManager.OpenRecordingTrace(args) == 0);
 
     CollectResult<int32_t> resultTraceOn = collector->TraceOn();
     std::cout << "collect TraceOn result " << resultTraceOn.retCode << std::endl;
@@ -124,7 +126,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest004, TestSize.Level1)
     }
     ASSERT_TRUE(resultTraceOff.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultTraceOff.data.size() > 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -137,7 +139,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::BETACLUB;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -148,7 +150,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     }
     ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultDumpTrace.data.size() > 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -161,7 +163,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::OTHER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -172,71 +174,71 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     }
     ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultDumpTrace.data.size() > 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
  * @tc.name: TraceCollectorTest007
- * @tc.desc: used to test traceManager
+ * @tc.desc: used to test g_traceManager
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
-    ASSERT_TRUE(traceManager.OpenRecordingTrace(args) == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.OpenRecordingTrace(args) == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
  * @tc.name: TraceCollectorTest008
- * @tc.desc: used to test traceManager
+ * @tc.desc: used to test g_traceManager
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
  * @tc.name: TraceCollectorTest009
- * @tc.desc: used to test traceManager
+ * @tc.desc: used to test g_traceManager
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
 {
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
-    ASSERT_TRUE(traceManager.OpenRecordingTrace(args) == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.OpenRecordingTrace(args) == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
  * @tc.name: TraceCollectorTest010
- * @tc.desc: used to test traceManager
+ * @tc.desc: used to test g_traceManager
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
 {
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
-    ASSERT_TRUE(traceManager.OpenRecordingTrace(args) == 0);
-    ASSERT_TRUE(traceManager.RecoverTrace() == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.OpenRecordingTrace(args) == 0);
+    ASSERT_TRUE(g_traceManager.RecoverTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
  * @tc.name: TraceCollectorTest011
- * @tc.desc: used to test traceManager
+ * @tc.desc: used to test g_traceManager
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
-    ASSERT_TRUE(traceManager.RecoverTrace() == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.RecoverTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -249,7 +251,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -260,7 +262,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     }
     ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultDumpTrace.data.size() > 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -273,7 +275,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest013, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     CollectResult<std::vector<std::string>> resultDumpTrace;
     while (resultDumpTrace.retCode != UcError::TRACE_OVER_FLOW) {
         sleep(10);
@@ -286,7 +288,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest013, TestSize.Level1)
     }
     }
     ASSERT_TRUE(resultDumpTrace.data.size() == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -299,7 +301,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::XPOWER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     CollectResult<std::vector<std::string>> resultDumpTrace;
     while (resultDumpTrace.retCode != UcError::TRACE_OVER_FLOW) {
         sleep(10);
@@ -312,7 +314,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
     }
     }
     ASSERT_TRUE(resultDumpTrace.data.size() == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
 /**
@@ -325,7 +327,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     TraceCollector::Caller caller = TraceCollector::Caller::RELIABILITY;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    ASSERT_TRUE(traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
     CollectResult<std::vector<std::string>> resultDumpTrace;
     while (resultDumpTrace.retCode != UcError::TRACE_OVER_FLOW) {
         sleep(10);
@@ -338,5 +340,5 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
     }
     }
     ASSERT_TRUE(resultDumpTrace.data.size() == 0);
-    ASSERT_TRUE(traceManager.CloseTrace() == 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }

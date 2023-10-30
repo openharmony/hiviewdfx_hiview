@@ -34,12 +34,11 @@
 
 using namespace OHOS::HiviewDFX::UCollect;
 
-DEFINE_LOG_TAG("UCollectUtil-IoCollector");
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 namespace {
+DEFINE_LOG_TAG("UCollectUtil-IoCollector");
 constexpr int DISK_STATS_SIZE = 12;
 constexpr int DISK_STATS_PERIOD = 2;
 constexpr int PROC_IO_STATS_PERIOD = 2;
