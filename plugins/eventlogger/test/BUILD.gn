@@ -56,6 +56,8 @@ ohos_unittest("EventloggerPluginTest") {
     "//third_party/googletest:gtest_main",
   ]
 
+  external_deps = [ "input:libmmi-client" ]
+
   resource_config_file =
       "//base/hiviewdfx/hiview/plugins/eventlogger/test/resource/ohos_test.xml"
 }

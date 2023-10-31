@@ -65,9 +65,20 @@ void ShellCatcher::DoChildProcess(int writeFd)
         case CATCHER_DPMS:
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "DisplayPowerManagerService", nullptr);
             break;
+        case CATCHER_RS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "RenderService", "-a", "allInfo", nullptr);
+            break;
         case CATCHER_HILOG:
             ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
             break;
+        case CATCHER_SNAPSHOT:
+            {
+                std::string path = "/data/log/eventlog/snapshot_display_";
+                path += TimeUtil::TimestampFormatToDate(TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC,
+                    "%Y%m%d%H%M%S");
+                path += ".jpeg";
+                ret = execl("/system/bin/snapshot_display", "snapshot_display", "-f", path.c_str(), nullptr);
+            }
         default:
             break;
     }

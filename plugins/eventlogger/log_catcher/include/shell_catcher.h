@@ -36,7 +36,9 @@ public:
         CATCHER_MEM,
         CATCHER_PMS,
         CATCHER_DPMS,
-        CATCHER_HILOG
+        CATCHER_RS,
+        CATCHER_HILOG,
+        CATCHER_SNAPSHOT,
     }; 
 private:
     std::string catcherCmd_;

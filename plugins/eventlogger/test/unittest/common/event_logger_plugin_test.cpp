@@ -23,7 +23,6 @@
 #include "file_util.h"
 #include "time_util.h"
 
-#include "event_log_action.h"
 #include "event_logger.h"
 #include "hiview_platform.h"
 using namespace testing::ext;

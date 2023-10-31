@@ -29,6 +29,7 @@
 #include "plugin.h"
 #include "sys_event.h"
 
+#include "active_key_event.h"
 #include "event_logger_config.h"
 #include "event_thread_pool.h"
 namespace OHOS {
@@ -41,7 +42,7 @@ struct BinderInfo {
 
 class EventLogger : public EventListener, public Plugin, public FileDescriptorEventCallback  {
 public:
-    EventLogger() : logStore_(std::make_unique<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
+    EventLogger() : logStore_(std::make_shared<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
         startTime_(time(nullptr)),
         inotifyFd_(0) {};
     ~EventLogger() {};
@@ -74,7 +75,7 @@ private:
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
 
-    std::unique_ptr<LogStoreEx> logStore_;
+    std::shared_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
     int inotifyFd_;
@@ -83,9 +84,10 @@ private:
     std::shared_ptr<EventLoop> threadLoop_ = nullptr;
     std::unordered_set<std::shared_ptr<SysEvent>> sysEventSet_;
     int const maxEventPoolCount = 5;
-    std::unique_ptr<EventThreadPool> eventPool_;
+    std::shared_ptr<EventThreadPool> eventPool_;
     std::mutex intervalMutex_;
     std::mutex finishMutex_;
+    std::unique_ptr<ActiveKeyEvent> activeKeyEvent_;
     std::string cmdlinePath_ = "/proc/cmdline";
     std::string cmdlineContent_ = "";
     std::vector<std::string> rebootReasons_;

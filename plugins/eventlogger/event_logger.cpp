@@ -158,11 +158,15 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         logTask->AddLog(cmd);
     }
 
+    const uint32_t placeholder = 3;
     auto start = TimeUtil::GetMilliseconds();
     uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
-    std::string startTimeStr = TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
-    startTimeStr += ":" + std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
-    FileUtil::SaveStringToFd(fd, "start time: " + startTimeStr + "\n");
+    std::ostringstream startTimeStr;
+    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
+        std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
+    startTimeStr << std::endl;
+    FileUtil::SaveStringToFd(fd, startTimeStr.str());
     WriteCommonHead(fd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
@@ -328,9 +332,11 @@ void EventLogger::OnLoad()
     EventLoggerConfig logConfig;
     eventLoggerConfig_ = logConfig.GetConfig();
 
-    eventPool_ = std::make_unique<EventThreadPool>(maxEventPoolCount, "EventLog");
+    eventPool_ = std::make_shared<EventThreadPool>(maxEventPoolCount, "EventLog");
     eventPool_->Start();
 
+    activeKeyEvent_ = std::make_unique<ActiveKeyEvent>();
+    activeKeyEvent_ ->init(eventPool_, logStore_);
     FreezeCommon freezeCommon;
     if (!freezeCommon.Init()) {
         HIVIEW_LOGE("FreezeCommon filed.");

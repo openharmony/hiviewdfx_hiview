@@ -55,6 +55,8 @@ EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:d", std::bind(&EventLogTask::DPMSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:rs", std::bind(&EventLogTask::RSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:ss", std::bind(&EventLogTask::Screenshot, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq",
@@ -277,6 +279,20 @@ void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::RSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s RenderService -a allInfo", ShellCatcher::CATCHER_RS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::Screenshot()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("snapshot_display -f x.jpeg", ShellCatcher::CATCHER_SNAPSHOT, pid_);
     tasks_.push_back(capture);
 }
 
