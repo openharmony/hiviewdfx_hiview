@@ -120,8 +120,7 @@ static bool WriteAIProcessMemToFile(std::string& filePath, const std::vector<AIP
 
     file << "pid" << '\t' << "mem(byte)" << std::endl;
     for (auto& aiProcMem : aiProcMems) {
-        std::stringstream ss;
-        ss << std::setw(WIDTH) << std::left << aiProcMem.pid << '\t' << aiProcMem.size << std::endl;
+        file << std::setw(WIDTH) << std::left << aiProcMem.pid << '\t' << aiProcMem.size << std::endl;
     }
     file.close();
     return true;
@@ -170,7 +169,7 @@ static bool ReadMemFromAILib(AIProcessMem memInfos[], int len, int& realSize)
         return false;
     }
     using AIFunc = int (*)(AIProcessMem[], int, int*);
-    AIFunc aiFunc = (AIFunc) dlsym(handle, interface.c_str());
+    AIFunc aiFunc = reinterpret_cast<AIFunc>(dlsym(handle, interface.c_str()));
     if (!aiFunc) {
         HIVIEW_LOGE("dlsym %{public}s failed, %{public}s.", libName.c_str(), dlerror());
         dlclose(handle);
