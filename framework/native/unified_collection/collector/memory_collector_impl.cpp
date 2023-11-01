@@ -37,11 +37,10 @@ const std::size_t WIDTH = 12;
 const std::size_t DELAY_MILLISEC = 3;
 using namespace OHOS::HiviewDFX::UCollect;
 
-DEFINE_LOG_TAG("UCollectUtil");
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+DEFINE_LOG_TAG("UCollectUtil");
 
 std::mutex g_memMutex;
 

@@ -16,25 +16,33 @@
 #ifndef FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_TRACE_STORAGE_H
 #define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_TRACE_STORAGE_H
 
+#include <cstdint>
 #include <memory>
+#include <string>
 
 #include "rdb_store.h"
-#include "unified_collection_data.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+struct UcollectionTraceStorage {
+    std::string systemTime = "";
+    int64_t xperfSize = 0;
+    int64_t xpowerSize = 0;
+    int64_t reliabilitySize = 0;
+};
+
 class TraceStorage {
 public:
     TraceStorage();
     ~TraceStorage() = default;
-    void Store(const UcollectionTraceStorage& traceCollection);
-    void Query(std::vector<uint64_t>& values);
+    void Store(const UcollectionTraceStorage& traceStorage);
+    void Query(UcollectionTraceStorage &traceStorage);
 
 private:
     void InitDbStore();
     int32_t CreateTable();
-    void InsertTable(const UcollectionTraceStorage& traceCollection);
-    void GetResultItems(std::vector<uint64_t>& values);
+    void InsertTable(const UcollectionTraceStorage& traceStorage);
+    void GetResultItems(UcollectionTraceStorage &traceStorage);
 
 private:
     std::string dbStorePath_;

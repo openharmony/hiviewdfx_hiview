@@ -12,6 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef OHOS_HIVIEWDFX_UCOLLECTUTIL_COMMON_UTIL_H
+#define OHOS_HIVIEWDFX_UCOLLECTUTIL_COMMON_UTIL_H
+
 #include <cinttypes>
 #include <string>
 
@@ -43,3 +46,4 @@ public:
 } // UCollectUtil
 } // HiviewDFX
 } // OHOS
+#endif // OHOS_HIVIEWDFX_UCOLLECTUTIL_COMMON_UTIL_H

@@ -37,10 +37,7 @@ std::string GenerateCreateSql(const std::string& table,
 
 std::string GenerateExistSql(const std::string& table)
 {
-    std::string sql;
-    sql += "SELECT name FROM sqlite_sequence WHERE name = '";
-    sql += table;
-    sql += "'";
+    std::string sql = "SELECT name FROM sqlite_sequence WHERE name = '" + table + "'";
     return sql;
 }
 

@@ -23,8 +23,6 @@
 #include "trace_manager.h"
 #include "trace_utils.h"
 
-DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
-
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::UCollect::UcError;
 
@@ -34,6 +32,7 @@ using OHOS::HiviewDFX::UCollect::UcError;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_traceLock;
 }
 

@@ -18,11 +18,11 @@
 
 using namespace OHOS::HiviewDFX::UCollect;
 
-DEFINE_LOG_TAG("UCollectUtil");
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+DEFINE_LOG_TAG("UCollectUtil");
+
 class NetworkCollectorImpl : public NetworkCollector {
 public:
     NetworkCollectorImpl() = default;

@@ -12,24 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <memory>
 #include <mutex>
 
 #include "logger.h"
 #include "trace_collector.h"
+#include "trace_flow_controller.h"
 #include "trace_manager.h"
 #include "trace_utils.h"
 
 using namespace OHOS::HiviewDFX;
+using OHOS::HiviewDFX::TraceFlowController;
 using namespace OHOS::HiviewDFX::Hitrace;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
-
-DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 namespace {
+DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_dumpTraceMutex;
 }
 
@@ -53,31 +55,35 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
 {
     std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
 
-    std::shared_ptr<ControlPolicy> controlPolicy = std::make_shared<ControlPolicy>();
+    std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
     CollectResult<std::vector<std::string>> result;
     // check 1, judge whether need to dump
     if (!controlPolicy->NeedDump(caller)) {
         result.retCode = UcError::TRACE_OVER_FLOW;
+        HIVIEW_LOGI("trace is over flow, can not dump.");
         return result;
     }
 
-    TraceRetInfo ret = OHOS::HiviewDFX::Hitrace::DumpTrace();
+    TraceRetInfo traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace();
     // check 2, judge whether to upload or not
-    if (controlPolicy->NeedUpload(caller, ret)) {
-        if (ret.errorCode == TraceErrorCode::SUCCESS) {
-            if (caller == TraceCollector::Caller::DEVELOP) {
-                result.data = ret.outputFiles;
-            } else {
-                std::vector<std::string> outputFiles = GetUnifiedFiles(ret, caller);
-                result.data = outputFiles;
-            }
+    if (!controlPolicy->NeedUpload(caller, traceRetInfo)) {
+        result.retCode = UcError::TRACE_OVER_FLOW;
+        HIVIEW_LOGI("trace is over flow, can not upload.");
+        return result;
+    }
+    if (traceRetInfo.errorCode == TraceErrorCode::SUCCESS) {
+        if (caller == TraceCollector::Caller::DEVELOP) {
+            result.data = traceRetInfo.outputFiles;
+        } else {
+            std::vector<std::string> outputFiles = GetUnifiedFiles(traceRetInfo, caller);
+            result.data = outputFiles;
         }
     }
 
-    result.retCode = TransCodeToUcError(ret.errorCode);
+    result.retCode = TransCodeToUcError(traceRetInfo.errorCode);
     // step3： update db
     controlPolicy->StoreDb();
-    HIVIEW_LOGI("DumpTrace, ret = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
+    HIVIEW_LOGI("DumpTrace, retCode = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
     return result;
 }
 

@@ -44,6 +44,7 @@ ohos_source_set("ucollection_source") {
     "collector/memory_collector_impl.cpp",
     "collector/network_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
+    "collector/utils/trace_flow_controller.cpp",
     "collector/utils/trace_manager.cpp",
     "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
