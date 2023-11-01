@@ -98,6 +98,9 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
     }
     int totalSize = sizeof(struct ucollection_cpu_dmips) + sizeof(char) * dmipVals.size();
     struct ucollection_cpu_dmips *dmips = (struct ucollection_cpu_dmips *)malloc(totalSize);
+    if (dmips == nullptr) {
+        return -1;
+    }
     memset_s(dmips, totalSize, 0, totalSize);
 
     dmips->magic = IOCTRL_SET_CPU_DMIPS_MAGIC;
@@ -116,6 +119,7 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
         close(f);
         HIVIEW_LOGI("set cpu dmips successful");
     }
+    free(dimps);
     return 0;
 }
 } // HiviewDFX

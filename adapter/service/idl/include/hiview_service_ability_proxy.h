@@ -62,7 +62,7 @@ private:
         MessageOption option;
         int32_t ret = Remote()->SendRequest(static_cast<uint32_t>(requestCode), data, reply, option);
         if (ret == TraceErrCode::ERR_OK) {
-            auto readParcel = reply.ReadParcelable<CollectResultParcelable<T>>();
+            std::unique_ptr<CollectResultParcelable<T>> readParcel(reply.ReadParcelable<CollectResultParcelable<T>>());
             if (readParcel == nullptr) {
                 return traceRet;
             }
