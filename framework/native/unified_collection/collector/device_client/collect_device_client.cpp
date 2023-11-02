@@ -119,7 +119,7 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
         close(f);
         HIVIEW_LOGI("set cpu dmips successful");
     }
-    free(dimps);
+    free(dmips);
     return 0;
 }
 } // HiviewDFX
