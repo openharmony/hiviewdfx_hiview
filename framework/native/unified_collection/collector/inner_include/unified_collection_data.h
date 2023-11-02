@@ -43,7 +43,7 @@ struct ucollection_process_cpu_entry {
 
 struct ucollection_cpu_dmips {
     int magic;
-    int total_count;
+    uint32_t total_count;
     char dmips[];
 };
 
