@@ -99,12 +99,13 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
     size_t totalSize = sizeof(struct ucollection_cpu_dmips) + sizeof(char) * dmipVals.size();
     struct ucollection_cpu_dmips *dmips = (struct ucollection_cpu_dmips *)malloc(totalSize);
     if (dmips == nullptr) {
+        HIVIEW_LOGW("dmips is nullptr");
         return -1;
     }
     memset_s(dmips, totalSize, 0, totalSize);
 
     dmips->magic = IOCTRL_SET_CPU_DMIPS_MAGIC;
-    dmips->total_count = dmipVals.size();
+    dmips->total_count = static_cast<int>(dmipVals.size());
     for (uint32_t ii = 0; ii < dmips->total_count; ii++) {
         dmips->dmips[ii] = dmipVals[ii];
     }
@@ -114,6 +115,7 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
     int ret = ioctl(f, IOCTRL_SET_CPU_DMIPS, dmips);
     if (ret < 0) {
         HIVIEW_LOGI("ioctl IOCTRL_SET_CPU_DMIPS cmd=%{public}u, ret=%{public}d", IOCTRL_SET_CPU_DMIPS, ret);
+        free(dmips);
         return -1;
     } else {
         close(f);
