@@ -156,9 +156,6 @@ int EventloggerActionTest::StartCreate(const std::string sender, const std::stri
         return RETURN_OPEN_FAIL;
     }
 
-    auto eventLogAction = std::make_unique<EventLogAction>(fd, event);
-    eventLogAction->Init();
-    eventLogAction->CaptureAction();
     close(fd);
     return 0;
 }

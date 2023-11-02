@@ -42,6 +42,7 @@
                 "hilog",
                 "hisysevent",
                 "init",
+                "input",
                 "ipc",
                 "os_account",
                 "power_manager",

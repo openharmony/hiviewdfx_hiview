@@ -74,6 +74,8 @@ private:
     void AMSUsageCapture();
     void PMSUsageCapture();
     void DPMSUsageCapture();
+    void RSUsageCapture();
+    void Screenshot();
     void HilogCapture();
     void DmesgCapture();
     void SysrqCapture(bool isWriteNewFile);
