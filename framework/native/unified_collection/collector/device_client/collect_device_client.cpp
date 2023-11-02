@@ -106,7 +106,7 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
 
     dmips->magic = IOCTRL_SET_CPU_DMIPS_MAGIC;
     dmips->total_count = static_cast<int>(dmipVals.size());
-    for (uint32_t ii = 0; ii < dmips->total_count; ii++) {
+    for (int ii = 0; ii < dmips->total_count; ii++) {
         dmips->dmips[ii] = dmipVals[ii];
     }
 
