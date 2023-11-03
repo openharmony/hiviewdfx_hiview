@@ -379,6 +379,7 @@ CollectResult<std::string> MemoryCollectorImpl::ExportAllProcessMemory()
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
+    DoClearFiles("all_processes_mem_");
     result.data = savePath;
     result.retCode = UcError::SUCCESS;
     return result;
@@ -435,6 +436,7 @@ CollectResult<std::string> MemoryCollectorImpl::ExportAllAIProcess()
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
+    DoClearFiles("all_ai_processes_mem_");
     result.data = savePath;
     result.retCode = UcError::SUCCESS;
     return result;
@@ -528,6 +530,7 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
                 result.retCode = UcError::WRITE_FAILED;
                 return result;
             }
+            DoClearFiles("jsheap_");
             result.data = savePath;
             result.retCode = UcError::SUCCESS;
             return result;
@@ -539,6 +542,7 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
+    DoClearFiles("jsheap_");
     result.data = savePath;
     result.retCode = UcError::SUCCESS;
     return result;
