@@ -336,7 +336,7 @@ void EventLogger::OnLoad()
     eventPool_->Start();
 
     activeKeyEvent_ = std::make_unique<ActiveKeyEvent>();
-    activeKeyEvent_ ->init(eventPool_, logStore_);
+    activeKeyEvent_ ->Init(eventPool_, logStore_);
     FreezeCommon freezeCommon;
     if (!freezeCommon.Init()) {
         HIVIEW_LOGE("FreezeCommon filed.");

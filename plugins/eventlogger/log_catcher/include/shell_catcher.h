@@ -39,7 +39,7 @@ public:
         CATCHER_RS,
         CATCHER_HILOG,
         CATCHER_SNAPSHOT,
-    }; 
+    };
 private:
     std::string catcherCmd_;
     int pid_;
