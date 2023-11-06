@@ -311,6 +311,8 @@
         "OHOS::HiviewDFX::FileUtil::GetLastLine(std::__h::basic_istream<char, std::__h::char_traits<char>>&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>&, unsigned int)";
         "OHOS::HiviewDFX::TimeUtil::StrToTimeStamp(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::StringUtil::StrToInt(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::FileUtil::CopyFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::FileUtil::ExtractFileName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;
