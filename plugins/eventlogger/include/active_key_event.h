@@ -31,30 +31,31 @@ public:
     ActiveKeyEvent& operator=(const ActiveKeyEvent&) = delete;
     ActiveKeyEvent(const ActiveKeyEvent&) = delete;
 
-    void init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore);
+    void Init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore);
     static int64_t SystemTimeMillisecond();
 
 private:
-    void CombinationKeyHandle();
+    void InitSubscribe(int32_t preKey, int32_t finalKey, int32_t count);
+    void CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEvent);
     void CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEvent);
     void HitraceCapture();
     void SysMemCapture(int fd);
     void DumpCapture(int fd);
-    void GeneratingLogs();
 
-    int32_t subscribeId_;
+    const uint64_t initDelay_ = 5000;
+    std::list<int32_t> subscribeIds_;
     std::shared_ptr<EventThreadPool> eventPool_;
     std::shared_ptr<LogStoreEx> logStore_;
     uint64_t triggeringTime_;
 
     static const inline std::string CMD_LIST[] = {
         "cmd:w",
+        "cmd:rs",
         "cmd:a",
+        "k:SysRqFile",
         "cmd:p",
         "cmd:d",
-        "cmd:rs",
         "cmd:c",
-        "cmd:ss",
     };
 };
 } // namespace HiviewDFX

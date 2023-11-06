@@ -28,7 +28,6 @@ namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-ActiveKeyEvent");
 ActiveKeyEvent::ActiveKeyEvent()
 {
-    subscribeId_ = -1;
     triggeringTime_ = 0;
     eventPool_ = nullptr;
     logStore_ = nullptr;
@@ -36,10 +35,11 @@ ActiveKeyEvent::ActiveKeyEvent()
 
 ActiveKeyEvent::~ActiveKeyEvent()
 {
-    if (subscribeId_ >= 0) {
-        MMI::InputManager::GetInstance()->UnsubscribeKeyEvent(subscribeId_);
-        HIVIEW_LOGI("~ActiveKeyEvent subscribeId_: %{public}d", subscribeId_);
-        subscribeId_ = -1;
+    for (auto it = subscribeIds_.begin(); it != subscribeIds_.end(); it = subscribeIds_.erase(it)) {
+        if (*it >= 0) {
+            MMI::InputManager::GetInstance()->UnsubscribeKeyEvent(*it);
+            HIVIEW_LOGI("~ActiveKeyEvent subscribeId_: %{public}d", *it);
+        }
     }
 }
 
@@ -52,29 +52,58 @@ int64_t ActiveKeyEvent::SystemTimeMillisecond()
     return (int64_t)((t.tv_sec) * TimeUtil::SEC_TO_NANOSEC + t.tv_nsec) / TimeUtil::SEC_TO_MICROSEC;
 }
 
-void ActiveKeyEvent::init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore)
+void ActiveKeyEvent::InitSubscribe(int32_t preKey, int32_t finalKey, int32_t count)
 {
-    HIVIEW_LOGI("CombinationKeyInit");
-    eventPool_ = eventPool;
-    logStore_ = logStore;
+    const int32_t maxCount = 5;
+    if (++count > maxCount) {
+        return;
+    }
     std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
     if (keyOption == nullptr) {
         HIVIEW_LOGE("Invalid key option");
     }
 
     std::set<int32_t> preKeys;
-    preKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_UP);
+    preKeys.insert(preKey);
     keyOption->SetPreKeys(preKeys);
-    keyOption->SetFinalKey(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
+    keyOption->SetFinalKey(finalKey);
     keyOption->SetFinalKeyDown(true);
     const int holdTime = 500;
     keyOption->SetFinalKeyDownDuration(holdTime);
     auto keyEventCallBack = std::bind(&ActiveKeyEvent::CombinationKeyCallback, this, std::placeholders::_1);
-    int32_t subscribeId_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption, keyEventCallBack);
-    if (subscribeId_ < 0) {
-        HIVIEW_LOGE("SubscribeKeyEvent: subscribing: %{public}d option failed", subscribeId_);
+    int32_t subscribeId = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption, keyEventCallBack);
+    if (subscribeId < 0) {
+        HIVIEW_LOGE("SubscribeKeyEvent failed, %{public}d_%{public}d,"
+            "subscribeId: %{public}d option failed.", preKey, finalKey, subscribeId);
+        if (eventPool_ == nullptr) {
+            return;
+        }
+        auto initSubscribe = std::bind(&ActiveKeyEvent::InitSubscribe, this, preKey, finalKey, count);
+        eventPool_->AddTask(initSubscribe, "initSubscribe" + std::to_string(finalKey) +
+            "_" + std::to_string(count), initDelay_ * count);
     }
-    HIVIEW_LOGI("CombinationKeyInit: subscribeId_: %{public}d", subscribeId_);
+    subscribeIds_.emplace_back(subscribeId);
+    HIVIEW_LOGI("CombinationKeyInit %{public}d_ %{public}d subscribeId_: %{public}d",
+        preKey, finalKey, subscribeId);
+}
+
+void ActiveKeyEvent::Init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore)
+{
+    HIVIEW_LOGI("CombinationKeyInit");
+    eventPool_ = eventPool;
+    logStore_ = logStore;
+    
+    if (eventPool_ == nullptr) {
+        InitSubscribe(MMI::KeyEvent::KEYCODE_VOLUME_UP, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0);
+        InitSubscribe(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, MMI::KeyEvent::KEYCODE_POWER, 0);
+        return;
+    }
+    auto initSubscribeDown = std::bind(&ActiveKeyEvent::InitSubscribe, this,
+        MMI::KeyEvent::KEYCODE_VOLUME_UP, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0);
+    auto initSubscribePower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
+        MMI::KeyEvent::KEYCODE_VOLUME_DOWN, MMI::KeyEvent::KEYCODE_POWER, 0);
+    eventPool_->AddTask(initSubscribeDown, "initSubscribeDown", initDelay_);
+    eventPool_->AddTask(initSubscribePower, "initSubscribePower", initDelay_);
 }
 
 void ActiveKeyEvent::HitraceCapture()
@@ -98,7 +127,6 @@ void ActiveKeyEvent::SysMemCapture(int fd)
 
 void ActiveKeyEvent::DumpCapture(int fd)
 {
-    auto sysStart = ActiveKeyEvent::SystemTimeMillisecond();
     SysEventCreator sysEventCreator("HIVIEWDFX", "ACTIVE_KEY", SysEventCreator::FAULT);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("ActiveKeyEvent", nullptr, sysEventCreator);
     std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, sysEvent);
@@ -106,27 +134,16 @@ void ActiveKeyEvent::DumpCapture(int fd)
         logTask->AddLog(cmd);
     }
 
-    const uint32_t placeholder = 3;
-    auto start = TimeUtil::GetMilliseconds();
-    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
-    std::ostringstream startTimeStr;
-    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
-    startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
-        std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
-    startTimeStr << std::endl;
-    FileUtil::SaveStringToFd(fd, startTimeStr.str());
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
     }
     SysMemCapture(fd);
-    auto end = ActiveKeyEvent::SystemTimeMillisecond();
-    std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - sysStart) + "ms\n";
-    FileUtil::SaveStringToFd(fd, totalTime);
 }
 
-void ActiveKeyEvent::GeneratingLogs()
+void ActiveKeyEvent::CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEvent)
 {
+    HIVIEW_LOGI("Receive CombinationKeyHandle.");
     if (logStore_ == nullptr) {
         return;
     }
@@ -139,15 +156,33 @@ void ActiveKeyEvent::GeneratingLogs()
         return;
     }
     int fd = logStore_->CreateLogFile(logFile);
-    HitraceCapture();
-    DumpCapture(fd);
-    close(fd);
-}
 
-void ActiveKeyEvent::CombinationKeyHandle()
-{
-    HIVIEW_LOGI("Receive CombinationKeyHandle.");
-    GeneratingLogs();
+    auto sysStart = ActiveKeyEvent::SystemTimeMillisecond();
+    const uint32_t placeholder = 3;
+    auto start = TimeUtil::GetMilliseconds();
+    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
+    std::ostringstream startTimeStr;
+    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
+        std::to_string(start % TimeUtil::SEC_TO_MILLISEC) << std::endl;
+    std::vector<int32_t> keys = keyEvent->GetPressedKeys();
+    for (auto& i : keys) {
+        startTimeStr << "CombinationKeyCallback key : ";
+        startTimeStr << MMI::KeyEvent::KeyCodeToString(i) << std::endl;
+    }
+    FileUtil::SaveStringToFd(fd, startTimeStr.str());
+
+    if (eventPool_ == nullptr) {
+        HitraceCapture();
+    } else {
+        auto hitraceCapture = std::bind(&ActiveKeyEvent::HitraceCapture, this);
+        eventPool_->AddTask(hitraceCapture, "HitraceCapture", 0, EventThreadPool::Priority::HIGH_PRIORITY);
+    }
+    DumpCapture(fd);
+    auto end = ActiveKeyEvent::SystemTimeMillisecond();
+    std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - sysStart) + "ms\n";
+    FileUtil::SaveStringToFd(fd, totalTime);
+    close(fd);
 }
 
 void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEvent)
@@ -159,13 +194,11 @@ void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEv
         return;
     }
     triggeringTime_ = now;
-    std::vector<int32_t> keys = keyEvent->GetPressedKeys();
-    for (auto& i : keys) {
-        HIVIEW_LOGI("CombinationKeyCallback key i: %{pulic}d.", i);
-    }
-    auto combinationKeyHandle = std::bind(&ActiveKeyEvent::CombinationKeyHandle, this);
+    auto combinationKeyHandle = std::bind(&ActiveKeyEvent::CombinationKeyHandle, this, keyEvent);
     if (eventPool_ != nullptr) {
-        eventPool_->AddTask(combinationKeyHandle, "ActiveKeyEvent");
+        eventPool_->AddTask(combinationKeyHandle, "ActiveKeyEvent", 0, EventThreadPool::Priority::HIGH_PRIORITY);
+    } else {
+        CombinationKeyHandle(keyEvent);
     }
 }
 } // namesapce HiviewDFX
