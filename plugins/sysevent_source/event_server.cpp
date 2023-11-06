@@ -247,7 +247,13 @@ int BBoxDevice::Close()
 
 int BBoxDevice::Open()
 {
-    fd_ = open("/dev/bbox", O_RDONLY, 0);
+    fd_ = open("/dev/sysevent", O_RDONLY, 0);
+    if (fd_ < 0) {
+        fd_ = open("/dev/bbox", O_RDONLY, 0);
+    } else {
+        hasBbox_ = true;
+    }
+
     if (fd_ < 0) {
         HIVIEW_LOGE("open bbox failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
         return -1;
@@ -275,7 +281,8 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
     }
     buffer[EVENT_READ_BUFFER - 1] = '\0';
     int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
-    if (dataByteCnt != (ret - sizeof(struct Header) - 1)) { // extra bytes in kernel write
+    if ((hasBbox_ && dataByteCnt != ret) ||
+        (!hasBbox_ && dataByteCnt != (ret - sizeof(struct Header) - 1))) { // extra bytes in kernel write
         HIVIEW_LOGE("length of data received from kernel is invalid.");
         return -1;
     }

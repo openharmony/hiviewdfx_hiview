@@ -51,6 +51,7 @@ public:
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
 private:
     int fd_ = -1;
+    bool hasBbox_ = false;
 };
 
 class EventServer {
