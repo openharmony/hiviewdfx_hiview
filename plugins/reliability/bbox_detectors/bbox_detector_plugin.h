@@ -30,10 +30,19 @@ public:
     bool OnEvent(std::shared_ptr<Event> &event) override;
 
 private:
-    void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
+    void StartBootScan();
     void WaitForLogs(const std::string& logDir);
+    void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
+    bool IsEventProcessed(const std::string& name, const std::string& key, const std::string& value);
 
+    static constexpr int SECONDS = 10;
+    static constexpr int READ_LINE_NUM = 5;
+    static constexpr int MILLSECONDS = 1000;
+    static constexpr int ONE_DAY = 86400 * MILLSECONDS;
+    static constexpr char DOMAIN[] = "KERNEL_VENDOR";
+    std::string HISTORY_PATH = "/data/hisi_logs/";
     std::string logParseConfig_ = "/system/etc/hiview";
+    std::string HISTORY_LOG = "/data/hisi_logs/history.log";
 };
 }
 }

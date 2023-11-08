@@ -17,9 +17,11 @@
 #include <fstream>
 #include <securec.h>
 
-#include "event.h"
-#include "file_util.h"
 #include "common_defines.h"
+#include "event.h"
+#include "event_loop.h"
+#include "file_util.h"
+#include "hisysevent.h"
 #include "logger.h"
 #include "plugin_factory.h"
 #include "sys_event_dao.h"
@@ -27,6 +29,7 @@
 #include "string_util.h"
 #include "tbox.h"
 #include "time_util.h"
+
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -38,6 +41,13 @@ void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
     SetVersion("BBoxDetector1.0");
+
+    auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
+    if (eventloop != nullptr) {
+        eventloop->AddTimerEvent(nullptr, nullptr, [&]() {
+            StartBootScan();
+        }, SECONDS, false); // delay 10s
+    }
 }
 
 void BBoxDetectorPlugin::OnUnload()
@@ -69,14 +79,21 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string module = sysEvent->GetEventValue("MODULE");
     std::string timeStr = sysEvent->GetEventValue("SUB_LOG_PATH");
     std::string LOG_PATH = sysEvent->GetEventValue("LOG_PATH");
+    std::string name = sysEvent->GetEventValue("name_");
+
     std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
                                   LOG_PATH : LOG_PATH + '/') + timeStr;
+    if (IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+        HIVIEW_LOGE("HandleBBoxEvent is processed event path is %{public}s", dynamicPaths.c_str());
+        return;
+    }
+
     auto times = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetRleftSubstr(timeStr, "-"),
                                                                "%Y%m%d%H%M%S"));
-    sysEvent->SetEventValue("HAPPEN_TIME", times);
+    sysEvent->SetEventValue("HAPPEN_TIME", times * MILLSECONDS);
 
     WaitForLogs(dynamicPaths);
-    auto eventInfos = SmartParser::Analysis(dynamicPaths, logParseConfig_, sysEvent->GetEventValue("name_"));
+    auto eventInfos = SmartParser::Analysis(dynamicPaths, logParseConfig_, name);
     Tbox::FilterTrace(eventInfos);
 
     sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
@@ -88,6 +105,52 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     sysEvent->SetEventValue("FINGERPRINT", Tbox::CalcFingerPrint(event + module + eventInfos["FIRST_FRAME"] +
         eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"], 0, FP_BUFFER));
     sysEvent->SetEventValue("LOG_PATH", dynamicPaths);
+    HIVIEW_LOGI("HandleBBoxEvent event: %{public}s is success ", name.c_str());
+}
+
+void BBoxDetectorPlugin::StartBootScan()
+{
+    int num = READ_LINE_NUM;
+    string line;
+    ifstream fin(HISTORY_LOG, ios::ate);
+    while (FileUtil::GetLastLine(fin, line) && num > 0) {
+        num--;
+        string name = StringUtil::GetMidSubstr(line, "category [", "]");
+        if (name.empty() || name == "NORMALBOOT") {
+            continue;
+        }
+
+        string module = StringUtil::GetMidSubstr(line, "core [", "]");
+        string reason = StringUtil::GetMidSubstr(line, "reason [", "]");
+        string bootup_keypoint = StringUtil::GetMidSubstr(line, "bootup_keypoint [", "]");
+        string dynamicPaths = HISTORY_PATH + StringUtil::GetMidSubstr(line, "time [", "]");
+        auto time_now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
+        auto time_event = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time [", "-"),
+                                                                        "%Y%m%d%H%M%S")) * MILLSECONDS;
+        if (abs(time_now - abs(time_event)) > ONE_DAY  || IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+            continue;
+        }
+        int res = HiSysEventWrite(
+            DOMAIN, name, HiSysEvent::EventType::FAULT,
+            "MODULE", module,
+            "REASON", reason,
+            "LOG_PATH", "/data/hisi_logs/",
+            "SUB_LOG_PATH", StringUtil::GetMidSubstr(line, "time [", "]"),
+            "SUMMARY", "bootup_keypoint:" + bootup_keypoint);
+        HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
+    }
+}
+
+bool BBoxDetectorPlugin::IsEventProcessed (const std::string& name, const std::string& key, const std::string& value)
+{
+    auto sysEventQuery = EventStore::SysEventDao::BuildQuery("KERNEL_VENDOR", {name});
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    EventStore::ResultSet resultSet = sysEventQuery->Select(selections).
+        Where(key, EventStore::Op::EQ, value).Execute();
+    if (resultSet.HasNext()) {
+        return true;
+    }
+    return false;
 }
 }
 }

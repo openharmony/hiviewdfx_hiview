@@ -16,6 +16,7 @@
 
 #include "bbox_detector_plugin.h"
 #include "sys_event.h"
+#include "sys_event_dao.h"
 #include "smart_parser.h"
 #include "tbox.h"
 using namespace std;

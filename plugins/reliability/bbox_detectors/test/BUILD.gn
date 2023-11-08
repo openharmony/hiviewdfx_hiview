@@ -43,6 +43,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_store:event_store_source",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
