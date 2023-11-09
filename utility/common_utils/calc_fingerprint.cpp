@@ -61,15 +61,34 @@ int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
     if (filePath.empty() || hash == nullptr || !FileUtil::IsLegalPath(filePath)) {
         return EINVAL;
     }
+    unsigned char value[SHA256_DIGEST_LENGTH] = {0};
+    if (CalcFileShaOriginal(filePath, value, len) != 0) {
+        return EINVAL;
+    }
+    return ConvertToString(value, hash, len);
+}
+
+int CalcFingerprint::CalcFileShaOriginal(const string& filePath, unsigned char *hash, size_t len)
+{
+    if (filePath.empty() || hash == nullptr || !FileUtil::IsLegalPath(filePath)) {
+        HIVIEW_LOGE("file is invalid.");
+        return EINVAL;
+    }
+
+    if (len < SHA256_DIGEST_LENGTH) {
+        HIVIEW_LOGE("hash buf len error.");
+        return EINVAL;
+    }
+
     FILE *fp = nullptr;
     fp = fopen(filePath.c_str(), "rb");
     if (fp == nullptr) {
+        HIVIEW_LOGE("open file failed.");
         return errno; // if file not exist, errno will be ENOENT
     }
 
     size_t n;
     char buffer[HASH_BUFFER_SIZE] = {0};
-    unsigned char value[SHA256_DIGEST_LENGTH] = {0};
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
     while ((n = fread(buffer, 1, sizeof(buffer), fp))) {
@@ -79,8 +98,8 @@ int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
         HIVIEW_LOGE("fclose is failed");
     }
     fp = nullptr;
-    SHA256_Final(value, &ctx);
-    return ConvertToString(value, hash, len);
+    SHA256_Final(hash, &ctx);
+    return 0;
 }
 
 /*

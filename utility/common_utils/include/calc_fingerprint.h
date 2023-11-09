@@ -37,6 +37,15 @@ public:
     static int CalcFileSha(const std::string& filePath, char *hash, size_t len);
 
     /*
+    * CalcFileSha: calculate a file sha1 hash for given file
+    *
+    * This function read the file and calc the sha1 value ,
+    * The caller can pass a char hash[41] to get the hash
+    * The return value: 0 means successful,others mean failed.
+    */
+    static int CalcFileShaOriginal(const std::string& filePath, unsigned char *hash, size_t len);
+
+    /*
     * CalcBufferSha: calculate a buffer sha1 hash for given buffer
     *
     * This function read the buffer and calc the sha1 value ,

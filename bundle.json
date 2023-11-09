@@ -34,6 +34,7 @@
                 "access_token",
                 "battery_statistics",
                 "bundle_framework",
+                "common_event_service",
                 "c_utils",
                 "device_usage_statistics",
                 "ets_runtime",

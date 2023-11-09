@@ -70,6 +70,9 @@ public:
     // called by plugin framework in main thread
     virtual void OnLoad(){};
 
+    // called by parameter upgrade module
+    virtual void OnConfigUpdate(const std::string &localCfgPath, const std::string &cloudCfgPath) {};
+
     // release resource and clear pending workloads
     // after calling this function ,the reference of this plugin will be deleted
     // called by plugin framework in main thread
