@@ -1,0 +1,61 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+config("hiview_param_update_config") {
+  visibility = [ "*:*" ]
+  include_dirs = [
+    "include",
+    "$hiview_core/include",
+    "$hiview_root/utility/common_utils/include",
+  ]
+}
+
+ohos_prebuilt_etc("hiviewparam_update") {
+  source = "hiviewparam_update"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  relative_install_dir = "hiview"
+}
+
+ohos_source_set("hiview_param_update") {
+  part_name = "hiview"
+  public_configs = [ ":hiview_param_update_config" ]
+  subsystem_name = "hiviewdfx"
+
+  sources = [
+    "src/log_sign_tools.cpp",
+    "src/param_event_manager.cpp",
+    "src/param_manager.cpp",
+    "src/param_reader.cpp",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_base/utility:hiview_utility",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
+    "//third_party/openssl:libcrypto_shared",
+    "//third_party/openssl:ssl_source",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_runtime:ability_manager",
+    "common_event_service:cesfwk_innerkits",
+    "hilog:libhilog",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}

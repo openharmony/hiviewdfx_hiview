@@ -138,6 +138,7 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
     isReady_ = true;
     NotifyPluginReady();
     ScheduleCheckUnloadablePlugins();
+    paramEventManager.SubscriberEvent();
     return true;
 }
 
