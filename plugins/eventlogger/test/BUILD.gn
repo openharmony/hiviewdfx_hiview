@@ -61,3 +61,23 @@ ohos_unittest("EventloggerPluginTest") {
   resource_config_file =
       "//base/hiviewdfx/hiview/plugins/eventlogger/test/resource/ohos_test.xml"
 }
+
+ohos_unittest("ActiveKeyEventTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/active_key_event_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_core:hiview_core",
+    "$hiview_eventlogger:eventlogger",
+    "$hiview_eventlogger/config:eventlogger_config",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "init:libbegetutil",
+    "input:libmmi-client",
+  ]
+}

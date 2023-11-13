@@ -40,13 +40,6 @@ void EventloggerPluginTest::TearDown()
 
 void EventloggerPluginTest::SetUpTestCase()
 {
-    OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    std::string defaultDir = "/data/test/test_data/hiview_platform_config";
-    if (!platform.InitEnvironment(defaultDir)) {
-        std::cout << "fail to init environment" << std::endl;
-    } else {
-        std::cout << "init environment successful" << std::endl;
-    }
     printf("SetUpTestCase.\n");
 }
 

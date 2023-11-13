@@ -32,6 +32,11 @@ ohos_unittest("EventloggerCatcherTest") {
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 
+  include_dirs = [
+    "include",
+    "$hiview_eventlogger/include",
+  ]
+
   sources = [ "unittest/common/event_logger_catcher_test.cpp" ]
 
   deps = [
@@ -39,5 +44,10 @@ ohos_unittest("EventloggerCatcherTest") {
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
     "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "hiperf:hiperf_client",
+    "input:libmmi-client",
   ]
 }
