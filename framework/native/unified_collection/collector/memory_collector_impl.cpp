@@ -220,7 +220,8 @@ static void DoClearFiles(const std::string& filePrefix)
     }
 }
 
-static CollectResult<std::string> CollectRawInfo(const std::string& filePath, const std::string& preFix)
+static CollectResult<std::string> CollectRawInfo(const std::string& filePath, const std::string& preFix,
+                                                 bool doClearFlag = true)
 {
     CollectResult<std::string> result;
     std::string content;
@@ -246,7 +247,9 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
-    DoClearFiles(preFix);
+    if (doClearFlag) {
+        DoClearFiles(preFix);
+    }
     result.retCode = UcError::SUCCESS;
     return result;
 }
@@ -339,7 +342,7 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcess
             HIVIEW_LOGD("%{public}s is not num string, value=%{public}d.", fileName.c_str(), value);
             continue;
         }
-        std::string smapsPath = PROC + fileName + "/smaps";
+        std::string smapsPath = PROC + fileName + "/smaps_rollup";
         std::string adjPath = PROC + fileName + "/oom_score_adj";
         ProcessMemory procMemory;
         procMemory.pid = value;
@@ -447,7 +450,9 @@ CollectResult<std::string> MemoryCollectorImpl::CollectRawSmaps(int32_t pid)
     std::string pidStr = std::to_string(pid);
     std::string fileName = PROC + pidStr + "/smaps";
     std::string preFix = "proc_smaps_" + pidStr + "_";
-    return CollectRawInfo(fileName, preFix);
+    CollectResult<std::string> result = CollectRawInfo(fileName, preFix, false);
+    DoClearFiles("proc_smaps_");
+    return result;
 }
 
 static std::string GetNewestSnapshotPath(const std::string& path)
@@ -503,10 +508,8 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
 {
     CollectResult<std::string> result;
     std::string pidStr = std::to_string(pid);
-    const std::string cmd = "kill -40 " + pidStr;
-    std::vector<std::string> cmdRet;
-    if (CommonUtils::ExecCommand(cmd, cmdRet) == -1) {
-        HIVIEW_LOGE("exec cmd: %{public}s failed.", cmd.c_str());
+    if (kill(pid, 40) != 0) {   // kill -40
+        HIVIEW_LOGE("send kill-signal failed, pid=%{public}d, errno=%{public}d.", pid, errno);
         result.retCode = UcError::UNSUPPORT;
         return result;
     }
