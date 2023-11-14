@@ -128,7 +128,6 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
     oss << FreezeCommon::EVENT_UID << FreezeCommon::COLON << watchPoint.GetUid() << std::endl;
     oss << FreezeCommon::EVENT_PACKAGE_NAME << FreezeCommon::COLON << watchPoint.GetPackageName() << std::endl;
     oss << FreezeCommon::EVENT_PROCESS_NAME << FreezeCommon::COLON << watchPoint.GetProcessName() << std::endl;
-    oss << FreezeCommon::EVENT_MSG << FreezeCommon::COLON << watchPoint.GetMsg() << std::endl;
 }
 
 std::string Vendor::MergeEventLog(
@@ -145,7 +144,6 @@ std::string Vendor::MergeEventLog(
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
-    std::string msg = watchPoint.GetMsg();
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? APPFREEZE : SYSFREEZE;
@@ -210,17 +208,6 @@ std::string Vendor::MergeEventLog(
         }
 
         body << HEADER << std::endl;
-        if (node.GetDomain() == "RELIABILITY" && node.GetStringId() == "STACK") {
-            body << FreezeCommon::EVENT_DOMAIN << "=" << node.GetDomain() << std::endl;
-            body << FreezeCommon::EVENT_STRINGID << "=" << node.GetStringId() << std::endl;
-            body << FreezeCommon::EVENT_TIMESTAMP << "=" << node.GetTimestamp() << std::endl;
-            body << FreezeCommon::EVENT_PID << "=" << watchPoint.GetPid() << std::endl;
-            body << FreezeCommon::EVENT_UID << "=" << watchPoint.GetUid() << std::endl;
-            body << FreezeCommon::EVENT_PACKAGE_NAME << "=" << watchPoint.GetPackageName() << std::endl;
-            body << FreezeCommon::EVENT_PROCESS_NAME << "=" << watchPoint.GetProcessName() << std::endl;
-            body << FreezeCommon::EVENT_MSG << "=" << node.GetMsg() << std::endl;
-            body << std::endl;
-        }
         body << ifs.rdbuf();
         ifs.close();
     }
