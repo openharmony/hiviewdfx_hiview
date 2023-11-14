@@ -89,12 +89,6 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     std::unique_lock<std::mutex> lck(finishMutex_);
     sysEventSet_.insert(sysEvent);
-    if (sysEventSet_.size() == 1) {
-        constexpr int waitTime = 5;
-        auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
-        threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
-    }
-
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
@@ -160,7 +154,11 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
     UpdateDB(event, logFile);
+
+    constexpr int waitTime = 1;
     event->SetEventValue("Finish", "1");
+    auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
+    threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
     HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
 
@@ -279,7 +277,6 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
 
 void EventLogger::CheckEventOnContinue()
 {
-    HIVIEW_LOGI("Check Event can Continue");
     std::unique_lock<std::mutex> lck(finishMutex_);
     for (auto eventIter = sysEventSet_.begin(); eventIter != sysEventSet_.end();) {
         std::shared_ptr<SysEvent> event = *eventIter;
@@ -287,17 +284,12 @@ void EventLogger::CheckEventOnContinue()
             event->ResetPendingStatus();
             event->OnContinue();
             eventIter = sysEventSet_.erase(eventIter);
-            HIVIEW_LOGI("event onContinue");
+            HIVIEW_LOGI("event %{public}s sonContinue", event->eventName_.c_str());
         } else {
             ++eventIter;
         }
     }
     HIVIEW_LOGI("event size:%{public}d", sysEventSet_.size());
-    if (sysEventSet_.size() > 0) {
-        constexpr int waitTime = 5;
-        auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
-        threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
-    }
 }
 
 void EventLogger::OnLoad()
