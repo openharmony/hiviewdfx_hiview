@@ -16,6 +16,7 @@
 #include "db_helper.h"
 
 #include <regex>
+#include <map>
 
 #include "logger.h"
 #include "string_util.h"
@@ -46,8 +47,10 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
         return;
     }
 
+    std::map<std::string, WatchPoint> resultMap;
     while (set.HasNext()) {
         auto record = set.Next();
+        std::string key = record->domain_ + "-" + record->eventName_;
 
         std::string packageName = record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
         packageName = packageName.empty() ?
@@ -77,7 +80,15 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
             watchPoint.SetLogPath(smatchResult[1].str());
         }
 
-        list.push_back(watchPoint);
+        if (resultMap.find(key) != resultMap.end() && watchPoint.GetTimestamp() > resultMap[key].GetTimestamp()) {
+            resultMap[key] = watchPoint;
+        } else {
+            resultMap.insert(std::pair<std::string, WatchPoint>(key, watchPoint));
+        }
+    }
+    std::map<std::string, WatchPoint>::iterator it;
+    for (it = resultMap.begin(); it != resultMap.end(); it++) {
+        list.push_back(it->second);
     }
 
     HIVIEW_LOGI("select event from db, size =%{public}zu.", list.size());

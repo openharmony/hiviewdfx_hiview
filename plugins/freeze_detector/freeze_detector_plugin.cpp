@@ -113,7 +113,6 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
     uid = uid ? uid : sysEvent.GetUid();
     std::string packageName = sysEvent.GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
     std::string processName = sysEvent.GetEventValue(FreezeCommon::EVENT_PROCESS_NAME);
-    std::string msg = RemoveRedundantNewline(sysEvent.GetEventValue(FreezeCommon::EVENT_MSG));
     std::string hiteaceTime = sysEvent.GetEventValue(FreezeCommon::HIREACE_TIME);
     std::string sysrqTime = sysEvent.GetEventValue(FreezeCommon::SYSRQ_TIME);
     std::string info = sysEvent.GetEventValue(EventStore::EventCol::INFO);
@@ -135,15 +134,15 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
         .InitUid(uid)
         .InitPackageName(packageName)
         .InitProcessName(processName)
-        .InitMsg(msg)
+        .InitMsg("")
         .InitLogPath(logPath)
         .InitHitraceTime(hiteaceTime)
         .InitSysrqTime(sysrqTime)
         .Build();
     HIVIEW_LOGI("watchpoint domain=%{public}s, stringid=%{public}s, pid=%{public}ld, uid=%{public}ld, "
-        "seq=%{public}ld, packageName=%{public}s, processName=%{public}s, msg=%{public}s logPath=%{public}s.",
+        "seq=%{public}ld, packageName=%{public}s, processName=%{public}s, logPath=%{public}s.",
         event.domain_.c_str(), event.eventName_.c_str(), pid, uid,
-        seq, packageName.c_str(), processName.c_str(), msg.c_str(), logPath.c_str());
+        seq, packageName.c_str(), processName.c_str(), logPath.c_str());
 
     return watchPoint;
 }
