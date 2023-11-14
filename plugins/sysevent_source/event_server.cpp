@@ -247,9 +247,9 @@ int BBoxDevice::Close()
 
 int BBoxDevice::Open()
 {
-    fd_ = open("/dev/sysevent", O_RDONLY, 0);
+    fd_ = open("/dev/sysevent", O_RDONLY, O_NONBLOCK, 0);
     if (fd_ < 0) {
-        fd_ = open("/dev/bbox", O_RDONLY, 0);
+        fd_ = open("/dev/bbox", O_RDONLY, O_NONBLOCK, 0);
     } else {
         hasBbox_ = true;
     }
