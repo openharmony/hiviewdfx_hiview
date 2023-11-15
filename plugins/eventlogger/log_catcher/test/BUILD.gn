@@ -46,8 +46,9 @@ ohos_unittest("EventloggerCatcherTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [
-    "hiperf:hiperf_client",
-    "input:libmmi-client",
-  ]
+  external_deps = [ "input:libmmi-client" ]
+  if (has_hiperf) {
+    cflags = [ "-DHAS_HIPERF" ]
+    external_deps += [ "hiperf:hiperf_client" ]
+  }
 }

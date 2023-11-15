@@ -53,4 +53,10 @@ declare_args() {
   }
 
   enable_hiview_usage_event_report_build = true
+
+  has_hiperf = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.developtools_hiperf)) {
+    has_hiperf = false
+  }
 }
