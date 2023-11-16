@@ -35,7 +35,9 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-PeerBinderCatcher");
+#ifdef HAS_HIPERF
 using namespace Developtools::HiPerf;
+#endif
 constexpr char EVENT_LOG_PATH[] = "/data/log/eventlog";
 PeerBinderCatcher::PeerBinderCatcher() : EventLogCatcher()
 {
@@ -83,8 +85,9 @@ int PeerBinderCatcher::Catch(int fd)
         std::string content = "PeerBinder pids is empty\r\n";
         FileUtil::SaveStringToFd(fd, content);
     }
-
+#ifdef HAS_HIPERF
     ForkToDumpHiperf(pids);
+#endif
     std::string pidStr = "";
     for (auto pidTemp : pids) {
         if (pidTemp != pid_) {
@@ -211,6 +214,7 @@ void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
     LogCatcherUtils::DumpStacktrace(fd, pid);
 }
 
+#ifdef HAS_HIPERF
 void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set<int>& pids)
 {
     HiperfClient::RecordOption opt;
@@ -286,5 +290,6 @@ void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
     }
 #endif
 }
+#endif
 } // namespace HiviewDFX
 } // namespace OHOS

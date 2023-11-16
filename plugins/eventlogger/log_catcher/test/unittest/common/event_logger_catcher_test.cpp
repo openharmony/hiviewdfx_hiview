@@ -532,10 +532,11 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest008, TestSize.Level3)
     peerBinderCatcher->Initialize("foundation", 1, pid_);
     peerBinderCatcher->GetBinderPeerPids(fd);
     peerBinderCatcher->CatcherStacktrace(fd, pid_);
-
+#ifdef HAS_HIPERF
     std::set<int> pids;
     pids.insert(pid_);
     peerBinderCatcher->DoExecHiperf("peerBinderCatcher", pids);
+#endif
     close(fd);
     printf("PeerBinderCatcher End\n");
 }

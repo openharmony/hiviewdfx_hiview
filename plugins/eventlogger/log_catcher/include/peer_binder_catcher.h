@@ -22,7 +22,9 @@
 #include "sys_event.h"
 
 #include "event_log_catcher.h"
+#ifdef HAS_HIPERF
 #include "hiperf_client.h"
+#endif
 namespace OHOS {
 namespace HiviewDFX {
 class PeerBinderCatcher : public EventLogCatcher {
@@ -56,14 +58,18 @@ private:
     std::string perfCmd_ = "";
     std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
+#ifdef HAS_HIPERF
     std::unique_ptr<Developtools::HiPerf::HiperfClient::Client> perfClient_ = nullptr;
+#endif
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin, int fd) const;
     void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::set<int>& pids, int pid) const;
     std::set<int> GetBinderPeerPids(int fd) const;
     void CatcherStacktrace(int fd, int pid) const;
+#ifdef HAS_HIPERF
     void ForkToDumpHiperf(const std::set<int>& pids);
     void DoExecHiperf(const std::string& fileName, const std::set<int>& pids);
+#endif
 };
 } // namespace HiviewDFX
 } // namespace OHOS
