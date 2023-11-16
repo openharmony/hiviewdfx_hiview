@@ -40,19 +40,15 @@ struct BinderInfo {
     unsigned long wait;
 };
 
-class EventLogger : public EventListener, public Plugin, public FileDescriptorEventCallback  {
+class EventLogger : public EventListener, public Plugin {
 public:
     EventLogger() : logStore_(std::make_shared<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
-        startTime_(time(nullptr)),
-        inotifyFd_(0) {};
+        startTime_(time(nullptr)) {};
     ~EventLogger() {};
     bool OnEvent(std::shared_ptr<Event> &event) override;
     void OnLoad() override;
     void OnUnload() override;
     bool IsInterestedPipelineEvent(std::shared_ptr<Event> event) override;
-    bool OnFileDescriptorEvent(int fd, int type) override;
-    int32_t GetPollFd() override;
-    int32_t GetPollType() override;
     std::string GetListenerName() override;
     void OnUnorderedEvent(const Event& msg) override;
 private:
@@ -78,7 +74,6 @@ private:
     std::shared_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
-    int inotifyFd_;
     std::unordered_map<int, std::string> fileMap_;
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
     std::shared_ptr<EventLoop> threadLoop_ = nullptr;
