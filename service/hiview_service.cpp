@@ -299,13 +299,11 @@ CollectResult<int32_t> HiviewService::OpenSnapshotTrace(const std::vector<std::s
 {
     TraceManager manager;
     int32_t openRet = manager.OpenSnapshotTrace(tagGroups);
-    CollectResult<int32_t> ret;
-    if (openRet == UCollect::UcError::SUCCESS) {
-        ret.retCode = UCollect::UcError::SUCCESS;
-    } else {
-        HIVIEW_LOGE("failed to open trace in snapshort mode.");
-        ret.retCode = UCollect::UcError::UNSUPPORT;
+    if (openRet != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGW("failed to open trace in snapshort mode.");
     }
+    CollectResult<int32_t> ret;
+    ret.retCode = UCollect::UcError(openRet);
     return ret;
 }
 
@@ -322,13 +320,11 @@ CollectResult<int32_t> HiviewService::OpenRecordingTrace(const std::string& tags
 {
     TraceManager manager;
     int32_t openRet = manager.OpenRecordingTrace(tags);
-    CollectResult<int32_t> ret;
-    if (openRet == UCollect::UcError::SUCCESS) {
-        ret.retCode = UCollect::UcError::SUCCESS;
-    } else {
-        HIVIEW_LOGE("failed to open trace in recording mode.");
-        ret.retCode = UCollect::UcError::UNSUPPORT;
+    if (openRet != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGW("failed to open trace in recording mode.");
     }
+    CollectResult<int32_t> ret;
+    ret.retCode = UCollect::UcError(openRet);
     return ret;
 }
 
@@ -361,13 +357,11 @@ CollectResult<int32_t> HiviewService::CloseTrace()
 {
     TraceManager manager;
     int32_t closeRet = manager.CloseTrace();
-    CollectResult<int32_t> ret;
-    if (closeRet == UCollect::UcError::SUCCESS) {
-        ret.retCode = UCollect::UcError::SUCCESS;
-    } else {
-        HIVIEW_LOGE("failed to close the trace.");
-        ret.retCode = UCollect::UcError::UNSUPPORT;
+    if (closeRet != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGW("failed to close the trace.");
     }
+    CollectResult<int32_t> ret;
+    ret.retCode = UCollect::UcError(closeRet);
     return ret;
 }
 
@@ -375,13 +369,11 @@ CollectResult<int32_t> HiviewService::RecoverTrace()
 {
     TraceManager manager;
     int32_t recoverRet = manager.RecoverTrace();
-    CollectResult<int32_t> ret;
-    if (recoverRet == UCollect::UcError::SUCCESS) {
-        ret.retCode = UCollect::UcError::SUCCESS;
-    } else {
-        HIVIEW_LOGE("failed to recover the trace.");
-        ret.retCode = UCollect::UcError::UNSUPPORT;
+    if (recoverRet != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGW("failed to recover the trace.");
     }
+    CollectResult<int32_t> ret;
+    ret.retCode = UCollect::UcError(recoverRet);
     return ret;
 }
 }  // namespace HiviewDFX
