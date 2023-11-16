@@ -584,7 +584,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest009, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: AR000I3GC3
  */
-HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest010, TestSize.Level3)
+static HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest010, TestSize.Level3)
 {
     auto fd = open("/data/test/dmesgCatcherFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
     if (fd < 0) {

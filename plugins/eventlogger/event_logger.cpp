@@ -79,6 +79,11 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         return true;
     }
 
+    long pid = sysEvent->GetEventIntValue("PID");
+    pid = pid ? pid : sysEvent->GetPid();
+    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}d", sysEvent->domain_.c_str(),
+        sysEvent->eventName_.c_str(), pid);
+
     if (sysEvent->GetValue("eventLog_action").empty()) {
         UpdateDB(sysEvent, "nolog");
         return true;
@@ -301,8 +306,6 @@ void EventLogger::OnLoad()
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
     logStore_->Init();
     threadLoop_ = GetWorkLoop();
-    threadLoop_->AddFileDescriptorEventCallback("EventLoggerFd",
-        std::static_pointer_cast<EventLogger>(shared_from_this()));
 
     EventLoggerConfig logConfig;
     eventLoggerConfig_ = logConfig.GetConfig();
@@ -342,137 +345,6 @@ void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
     eventPool_->Stop();
-}
-
-void EventLogger::CreateAndPublishEvent(std::string& dirPath, std::string& fileName)
-{
-    uint8_t count = 0;
-    for (auto& i : MONITOR_STACK_FLIE_NAME) {
-        if (fileName.find(i) != fileName.npos) {
-            ++count;
-            break;
-        }
-    }
-
-    if (count == 0) {
-        return;
-    }
-    std::string logPath = dirPath + "/" + fileName;
-    if (!FileUtil::FileExists(logPath)) {
-        HIVIEW_LOGW("file %{public}s not exist. exit!", logPath.c_str());
-        return;
-    }
-    std::vector<std::string> values;
-    StringUtil::SplitStr(fileName, "-", values, false, false);
-    if (values.size() != 3) { // 3: type-pid-timestamp
-        HIVIEW_LOGE("failed to split stack file name %{public}s.", fileName.c_str());
-        return;
-    }
-    int32_t pid = 0;
-    StringUtil::ConvertStringTo<int32_t>(values[1], pid);  // 1: pid
-
-    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
-    auto sysEvent = std::make_shared<SysEvent>("EventLogger", nullptr, jsonStr);
-    sysEvent->SetEventValue("name_", "STACK");
-    sysEvent->SetEventValue("type_", 1);
-    sysEvent->SetEventValue("time_", TimeUtil::GetMilliseconds());
-    sysEvent->SetEventValue("pid_", getpid());
-    sysEvent->SetEventValue("tid_", gettid());
-    sysEvent->SetEventValue("uid_", getuid());
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("PID", pid);
-    sysEvent->SetEventValue("MSG", "application stack");
-    std::string tmpStr = R"~(logPath:)~" + logPath;
-    sysEvent->SetEventValue(EventStore::EventCol::INFO, tmpStr);
-    auto context = GetHiviewContext();
-    if (context != nullptr) {
-        auto seq = context->GetPipelineSequenceByName("SysEventPipeline");
-        sysEvent->SetPipelineInfo("SysEventPipeline", seq);
-        sysEvent->OnContinue();
-    }
-}
-
-bool EventLogger::OnFileDescriptorEvent(int fd, int type)
-{
-    HIVIEW_LOGD("fd:%{public}d, type:%{public}d, inotifyFd_:%{public}d.\n", fd, type, inotifyFd_);
-    const int bufSize = 2048;
-    char buffer[bufSize] = {0};
-    char *offset = nullptr;
-    struct inotify_event *event = nullptr;
-    if (inotifyFd_ < 0) {
-        HIVIEW_LOGE("Invalid inotify fd:%{public}d", inotifyFd_);
-        return false;
-    }
-    int len = read(inotifyFd_, buffer, bufSize);
-    if (len <= 0) {
-        HIVIEW_LOGE("failed to read event");
-        return false;
-    }
-
-    offset = buffer;
-    event = (struct inotify_event *)buffer;
-    while ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event)) <
-            static_cast<uintptr_t>(len)) {
-        if ((reinterpret_cast<char *>(event) - buffer + sizeof(struct inotify_event) + event->len) >
-            static_cast<uintptr_t>(len)) {
-            break;
-        }
-
-        if (event->len != 0) {
-            const auto& it = fileMap_.find(event->wd);
-            if (it == fileMap_.end()) {
-                continue;
-            }
-
-            std::string fileName = std::string(event->name);
-            HIVIEW_LOGI("fileName: %{public}s event->mask: 0x%{public}x, event->len: %{public}d",
-                fileName.c_str(), event->mask, event->len);
-                
-            if (it->second != MONITOR_STACK_LOG_PATH) {
-                return false;
-            }
-            CreateAndPublishEvent(it->second, fileName);
-        }
-
-        int tmpLen = sizeof(struct inotify_event) + event->len;
-        event = (struct inotify_event *)(offset + tmpLen);
-        offset += tmpLen;
-    }
-    return true;
-}
-
-int32_t EventLogger::GetPollFd()
-{
-    HIVIEW_LOGD("call");
-    if (inotifyFd_ > 0) {
-        return inotifyFd_;
-    }
-
-    inotifyFd_ = inotify_init();
-    if (inotifyFd_ == -1) {
-        HIVIEW_LOGE("failed to init inotify: %s.\n", strerror(errno));
-        return -1;
-    }
-
-    for (const std::string& i : MONITOR_LOG_PATH) {
-        int wd = inotify_add_watch(inotifyFd_, i.c_str(), IN_CLOSE_WRITE | IN_MOVED_TO);
-        if (wd < 0) {
-            HIVIEW_LOGE("failed to add watch entry : %s(%s).\n", strerror(errno), i.c_str());
-            continue;
-        }
-        fileMap_[wd] = i;
-    }
-
-    if (fileMap_.empty()) {
-        close(inotifyFd_);
-        inotifyFd_ = -1;
-    }
-    return inotifyFd_;
-}
-
-int32_t EventLogger::GetPollType()
-{
-    return EPOLLIN;
 }
 
 std::string EventLogger::GetListenerName()

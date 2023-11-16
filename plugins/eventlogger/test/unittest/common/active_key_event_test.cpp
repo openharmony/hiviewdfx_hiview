@@ -48,11 +48,11 @@ void ActiveKeyEventTest::TearDownTestCase()
  * @tc.desc: ActiveKeyEventTest Init
  * @tc.type: FUNC
  */
-HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest, TestSize.Level3)
+static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest, TestSize.Level3)
 {
     std::shared_ptr<EventThreadPool> eventPool = std::make_shared<EventThreadPool>(5, "EventThreadPool");
     EXPECT_TRUE(eventPool != nullptr);
-    const std::string logStorePath = "/data/log/test/";
+    std::string logStorePath = "/data/log/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
