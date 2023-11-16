@@ -25,15 +25,14 @@
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::UCollect::UcError;
-
-using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
-using OHOS::HiviewDFX::UCollect::UcError;
+using OHOS::HiviewDFX::Hitrace::TraceMode;
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_traceLock;
+TraceMode g_recoverMode = Parameter::IsBetaVersion() ? TraceMode::SERVICE_MODE : TraceMode::CLOSE;
 }
 
 int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroups)
@@ -55,6 +54,9 @@ int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroup
     }
 
     TraceErrorCode ret = OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups);
+    if (ret == TraceErrorCode::SUCCESS) {
+        g_recoverMode = TraceMode::SERVICE_MODE;
+    }
     return TransCodeToUcError(ret);
 }
 
@@ -85,6 +87,7 @@ int32_t TraceManager::CloseTrace()
     std::lock_guard<std::mutex> lock(g_traceLock);
     HIVIEW_LOGI("start to close trace.");
     TraceErrorCode ret = OHOS::HiviewDFX::Hitrace::CloseTrace();
+    g_recoverMode = TraceMode::CLOSE;
     return TransCodeToUcError(ret);
 }
 
@@ -94,7 +97,7 @@ int32_t TraceManager::RecoverTrace()
     HIVIEW_LOGI("start to recover trace.");
     TraceErrorCode ret = OHOS::HiviewDFX::Hitrace::CloseTrace();
 
-    if (Parameter::IsBetaVersion()) {
+    if (g_recoverMode == TraceMode::SERVICE_MODE) {
         HIVIEW_LOGI("recover trace to Snapshot.");
         const std::vector<std::string> tagGroups = {"scene_performance"};
         TraceErrorCode ret = OHOS::HiviewDFX::Hitrace::OpenTrace(tagGroups);
