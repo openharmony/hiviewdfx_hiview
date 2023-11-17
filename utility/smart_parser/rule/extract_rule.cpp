@@ -171,19 +171,26 @@ bool ExtractRule::IsMatchPath(const string& sourceFile, const string& name, cons
         return LogUtil::FileExist(desPath);
     }
 
-    std::vector<std::string> parts;
-    StringUtil::SplitStr(pattern, "/", parts, false, false);
-    std::string out = (name.back() == '/') ? name : (name + "/");
-    for (auto& part : parts) {
-        smatch result;
-        if (regex_match(sourceFile, result, regex(out + part))) {
-            out = ((*(sourceFile.rbegin())) == '/') ? sourceFile : (sourceFile + "/");
-        } else {
-            out += part + "/";
+    std::vector<std::string> paths;
+    StringUtil::SplitStr(pattern, "@|@", paths, false, false);
+
+    for (auto path : paths) {
+        std::vector<std::string> parts;
+        StringUtil::SplitStr(path, "/", parts, false, false);
+        std::string out = (name.back() == '/') ? name : (name + "/");
+        for (auto& part : parts) {
+            if (regex_match(sourceFile, regex(out + part))) {
+                out = ((*(sourceFile.rbegin())) == '/') ? sourceFile : (sourceFile + "/");
+            } else {
+                out += part + "/";
+            }
+        }
+        desPath = out.substr(0, out.size() - 1);
+        if (LogUtil::FileExist(desPath)) {
+            return true;
         }
     }
-    desPath = out.substr(0, out.size() - 1);
-    return LogUtil::FileExist(desPath);
+    return false;
 }
 
 vector<string> ExtractRule::SplitFeatureId(const Json::Value& object) const

@@ -46,7 +46,6 @@
     "HWWATCHDOG": {
         "04_HWWATCHDOG_00":{
             "PNAME": "BasicParam.v_pname",
-            "F1NAME": "BasicParam.v_f1",
             "END_STACK": "MainCallTrace.v_trace"
         }
     },
@@ -54,6 +53,13 @@
         "04_RUST_PANIC_00":{
             "PNAME": "BasicParam.v_pname",
             "END_STACK": "MainCallTrace.v_trace"
+        }
+    },
+    "BOOTFAIL": {
+        "04_BOOTFAIL_00":{
+            "FIRST_FRAME": "BasicParam.v_bootfailReason",
+            "SECOND_FRAME": "BasicParam.v_bootfailDetail",
+            "LAST_FRAME": "BasicParam.v_bootfailErrno"
         }
     }
 }
