@@ -20,6 +20,7 @@ config("ucolletciton_source_config") {
     "calculator/include",
     "collector/inner_include",
     "process/include",
+    "utils/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
@@ -49,6 +50,7 @@ ohos_source_set("ucollection_source") {
     "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
     "process/process_status.cpp",
+    "utils/cpu_util.cpp",
   ]
 
   deps = [

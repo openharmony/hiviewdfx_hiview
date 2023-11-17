@@ -16,6 +16,7 @@
 
 #include <cinttypes>
 
+#include "cpu_util.h"
 #include "file_util.h"
 #include "logger.h"
 #include "string_util.h"
@@ -25,7 +26,10 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-CpuCalculator");
 namespace {
-const std::string SYS_CPU_DIR_PREFIX = "/sys/devices/system/cpu/cpu";
+uint32_t CalcIntegerDiffValue(uint32_t currValue, uint32_t lastValue)
+{
+    return currValue > lastValue ? (currValue - lastValue) : 0;
+}
 }
 
 CpuCalculator::CpuCalculator()
@@ -37,21 +41,7 @@ CpuCalculator::CpuCalculator()
 
 void CpuCalculator::InitNumOfCpuCores()
 {
-    const std::string cpuCoresFilePath = "/sys/devices/system/cpu/possible";
-    std::string cpuCoresFileFirstLine = FileUtil::GetFirstLine(cpuCoresFilePath);
-    if (cpuCoresFileFirstLine.empty()) {
-        HIVIEW_LOGE("failed to get cpu cores content from file=%{public}s", cpuCoresFilePath.c_str());
-        return;
-    } else if (cpuCoresFileFirstLine.length() == 1) { // 1: '0'
-        constexpr uint32_t singleCpuCores = 1;
-        numOfCpuCores_ = singleCpuCores;
-    } else if (cpuCoresFileFirstLine.length() >= 3) { // '0-7' '0-11'
-        constexpr uint32_t maxCoreIndex = 2; // next char of '0-'
-        numOfCpuCores_ = StringUtil::StringToUl(cpuCoresFileFirstLine.substr(maxCoreIndex)) + 1; // 1 for real num
-    } else {
-        HIVIEW_LOGE("invalid cpu cores content=%{public}s", cpuCoresFileFirstLine.c_str());
-    }
-    HIVIEW_LOGI("init number of cpu cores=%{public}u", numOfCpuCores_);
+    numOfCpuCores_ = CpuUtil::GetNumOfCpuCores();
 }
 
 void CpuCalculator::InitCpuDmipses()
@@ -182,6 +172,21 @@ double CpuCalculator::CalculateCpuUsage(uint64_t currCpuUsage, uint64_t lastCpuU
     uint64_t cpuUsageInStatPeriod = currCpuUsage - lastCpuUsage;
     uint64_t totalCpuUsageOfSystemInStatPeriod = statPeriod * numOfCpuCores_;
     return ((cpuUsageInStatPeriod * 1.0) / totalCpuUsageOfSystemInStatPeriod);
+}
+
+CpuUsageInfo CpuCalculator::CalculateSysCpuUsageInfo(const CpuUsageInfo& currCpuInfo, const CpuUsageInfo& lastCpuInfo)
+{
+    CpuUsageInfo calcCpuInfo = {
+        .cpuId = currCpuInfo.cpuId,
+        .userTime = CalcIntegerDiffValue(currCpuInfo.userTime, lastCpuInfo.userTime),
+        .niceTime = CalcIntegerDiffValue(currCpuInfo.niceTime, lastCpuInfo.niceTime),
+        .systemTime = CalcIntegerDiffValue(currCpuInfo.systemTime, lastCpuInfo.systemTime),
+        .idleTime = CalcIntegerDiffValue(currCpuInfo.idleTime, lastCpuInfo.idleTime),
+        .ioWaitTime = CalcIntegerDiffValue(currCpuInfo.ioWaitTime, lastCpuInfo.ioWaitTime),
+        .irqTime = CalcIntegerDiffValue(currCpuInfo.irqTime, lastCpuInfo.irqTime),
+        .softIrqTime = CalcIntegerDiffValue(currCpuInfo.softIrqTime, lastCpuInfo.softIrqTime),
+    };
+    return calcCpuInfo;
 }
 
 std::vector<uint32_t> CpuCalculator::GetCpuDmipses()

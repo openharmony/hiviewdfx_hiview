@@ -58,6 +58,7 @@ constexpr mode_t FILE_PERM_666 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
 
 // file_ex.h
 bool LoadStringFromFile(const std::string& filePath, std::string& content);
+bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines);
 bool LoadStringFromFd(int fd, std::string& content);
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated = true);
 bool SaveStringToFd(int fd, const std::string& content);

@@ -38,6 +38,20 @@ bool LoadStringFromFile(const std::string& filePath, std::string& content)
     return OHOS::LoadStringFromFile(filePath, content);
 }
 
+bool LoadLinesFromFile(const std::string& filePath, std::vector<std::string>& lines)
+{
+    std::ifstream file(filePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            lines.emplace_back(line);
+        }
+        file.close();
+        return true;
+    }
+    return false;
+}
+
 bool LoadStringFromFd(int fd, std::string& content)
 {
     return OHOS::LoadStringFromFd(fd, content);

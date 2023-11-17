@@ -26,34 +26,28 @@ struct SysCpuLoad {
     double avgLoad15;
 };
 
+struct CpuUsageInfo {
+    std::string cpuId;
+    uint32_t userTime = 0;
+    uint32_t niceTime = 0;
+    uint32_t systemTime = 0;
+    uint32_t idleTime = 0;
+    uint32_t ioWaitTime = 0;
+    uint32_t irqTime = 0;
+    uint32_t softIrqTime = 0;
+};
+
 struct SysCpuUsage {
-    double totalUsage;
-    std::vector<double> usages;
+    uint64_t startTime = 0;
+    uint64_t endTime = 0;
+    std::vector<CpuUsageInfo> cpuInfos;
 };
 
 struct CpuFreq {
-    int32_t cpuId;
-    int32_t curFreq;
-    int32_t minFreq;
-    int32_t maxFreq;
-};
-
-struct CpuFreqStat {
-    CpuFreq smallFreq;
-    CpuFreq mediumFreq;
-    CpuFreq bigFreq;
-};
-
-struct ProcessCpuUsage {
-    int32_t processId;
-    std::string processName;
-    double cpuUsage;
-};
-
-struct ProcessCpuLoad {
-    int32_t processId;
-    std::string processName;
-    double cpuLoad;
+    uint32_t cpuId = 0;
+    uint32_t curFreq = 0;
+    uint32_t minFreq = 0;
+    uint32_t maxFreq = 0;
 };
 
 struct ProcessCpuStatInfo {

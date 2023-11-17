@@ -49,6 +49,9 @@ void CpuCollectionTask::CollectCpuData()
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
         cpuStorage_->Store(cpuCollectionsResult.data);
     }
+
+    // collect the system cpu usage periodically for hidumper
+    cpuCollector_->CollectSysCpuUsage(true);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
