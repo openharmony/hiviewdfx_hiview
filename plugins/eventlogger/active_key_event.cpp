@@ -187,7 +187,7 @@ void ActiveKeyEvent::CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEven
 
 void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEvent)
 {
-    HIVIEW_LOGI("Receive CombinationKeyCallback key id: %{pulic}d.", keyEvent->GetId());
+    HIVIEW_LOGI("Receive CombinationKeyCallback key id: %{public}d.", keyEvent->GetId());
     uint64_t now = (uint64_t)ActiveKeyEvent::SystemTimeMillisecond();
     const uint64_t interval = 10000;
     if (now - triggeringTime_ < interval) {
