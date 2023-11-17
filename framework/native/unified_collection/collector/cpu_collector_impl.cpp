@@ -24,6 +24,7 @@
 
 #include "collect_device_client.h"
 #include "cpu_calculator.h"
+#include "cpu_util.h"
 #include "logger.h"
 #include "process_status.h"
 #include "time_util.h"
@@ -49,14 +50,9 @@ public:
 
 public:
     virtual CollectResult<SysCpuLoad> CollectSysCpuLoad() override;
-    virtual CollectResult<SysCpuUsage> CollectSysCpuUsage() override;
-    virtual CollectResult<ProcessCpuUsage> CollectProcessCpuUsage(int32_t pid) override;
-    virtual CollectResult<ProcessCpuLoad> CollectProcessCpuLoad(int32_t pid) override;
+    virtual CollectResult<SysCpuUsage> CollectSysCpuUsage(bool isNeedUpdate = false) override;
     virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid) override;
-    virtual CollectResult<CpuFreqStat> CollectCpuFreqStat() override;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
-    virtual CollectResult<std::vector<ProcessCpuUsage>> CollectProcessCpuUsages() override;
-    virtual CollectResult<std::vector<ProcessCpuLoad>> CollectProcessCpuLoads() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
 
@@ -66,6 +62,8 @@ private:
     std::shared_ptr<ProcessCpuData> FetchProcessCpuData(int32_t pid = INVALID_PID);
     void UpdateCollectionTime();
     void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem);
+    void CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
+        const std::vector<CpuUsageInfo>& currCpuInfos);
     void CalculateProcessCpuStatInfos(
         std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
         std::shared_ptr<ProcessCpuData> processCpuData,
@@ -78,12 +76,14 @@ private:
 
 private:
     std::mutex collectMutex_;
+    uint64_t lastSysCpuUsageTime_ = 0;
     uint64_t currCollectionTime_ = 0;
     uint64_t lastCollectionTime_ = 0;
     uint64_t clearTime_ = 0;
     std::unique_ptr<CollectDeviceClient> deviceClient_;
     /* map<pid, ProcessCpuTimeInfo> */
     std::unordered_map<int32_t, ProcessCpuTimeInfo> lastProcCpuTimeInfos_;
+    std::vector<CpuUsageInfo> lastSysCpuUsageInfos_;
     CpuCalculator cpuCalculator_;
 };
 
@@ -93,6 +93,9 @@ CpuCollectorImpl::CpuCollectorImpl()
         InitLastProcCpuTimeInfos();
     }
     UpdateClearTime();
+
+    // init sys cpu usage infos
+    (void)CollectSysCpuUsage(true);
 }
 
 bool CpuCollectorImpl::InitDeviceClient()
@@ -180,50 +183,49 @@ std::shared_ptr<CpuCollector> CpuCollector::Create()
 CollectResult<SysCpuLoad> CpuCollectorImpl::CollectSysCpuLoad()
 {
     CollectResult<SysCpuLoad> result;
-    result.retCode = UCollect::UcError::SUCCESS;
+    result.retCode = CpuUtil::GetSysCpuLoad(result.data);
     return result;
 }
 
-CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage()
+CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdate)
 {
     CollectResult<SysCpuUsage> result;
-    result.retCode = UCollect::UcError::SUCCESS;
+    std::vector<CpuUsageInfo> currCpuInfos;
+    result.retCode = CpuUtil::GetCpuUsageInfos(currCpuInfos);
+    if (result.retCode != UCollect::UcError::SUCCESS) {
+        return result;
+    }
+
+    SysCpuUsage& sysCpuUsage = result.data;
+    sysCpuUsage.startTime = lastSysCpuUsageTime_;
+    sysCpuUsage.endTime = TimeUtil::GetMilliseconds();
+    CalculateSysCpuUsageInfos(sysCpuUsage.cpuInfos, currCpuInfos);
+
+    if (isNeedUpdate) {
+        lastSysCpuUsageTime_ = sysCpuUsage.endTime;
+        lastSysCpuUsageInfos_ = currCpuInfos;
+    }
+    HIVIEW_LOGI("collect system cpu usage, size=%{public}zu, isNeedUpdate=%{public}d",
+        sysCpuUsage.cpuInfos.size(), isNeedUpdate);
     return result;
 }
 
-CollectResult<ProcessCpuUsage> CpuCollectorImpl::CollectProcessCpuUsage(int32_t pid)
+void CpuCollectorImpl::CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
+    const std::vector<CpuUsageInfo>& currCpuInfos)
 {
-    CollectResult<ProcessCpuUsage> result;
-    return result;
-}
+    if (currCpuInfos.size() != lastSysCpuUsageInfos_.size()) {
+        return;
+    }
 
-CollectResult<ProcessCpuLoad> CpuCollectorImpl::CollectProcessCpuLoad(int32_t pid)
-{
-    CollectResult<ProcessCpuLoad> result;
-    return result;
-}
-
-CollectResult<CpuFreqStat> CpuCollectorImpl::CollectCpuFreqStat()
-{
-    CollectResult<CpuFreqStat> result;
-    return result;
+    for (size_t i = 0; i < currCpuInfos.size(); ++i) {
+        cpuInfos.emplace_back(cpuCalculator_.CalculateSysCpuUsageInfo(currCpuInfos[i], lastSysCpuUsageInfos_[i]));
+    }
 }
 
 CollectResult<std::vector<CpuFreq>> CpuCollectorImpl::CollectCpuFrequency()
 {
     CollectResult<std::vector<CpuFreq>> result;
-    return result;
-}
-
-CollectResult<std::vector<ProcessCpuUsage>> CpuCollectorImpl::CollectProcessCpuUsages()
-{
-    CollectResult<std::vector<ProcessCpuUsage>> result;
-    return result;
-}
-
-CollectResult<std::vector<ProcessCpuLoad>> CpuCollectorImpl::CollectProcessCpuLoads()
-{
-    CollectResult<std::vector<ProcessCpuLoad>> result;
+    result.retCode = CpuUtil::GetCpuFrequency(result.data);
     return result;
 }
 

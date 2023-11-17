@@ -41,100 +41,109 @@ public:
 HWTEST_F(CpuCollectorTest, CpuCollectorTest001, TestSize.Level1)
 {
     std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<SysCpuLoad> data = collector->CollectSysCpuLoad();
-    std::cout << "collect system cpu load result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    CollectResult<SysCpuLoad> result = collector->CollectSysCpuLoad();
+    std::cout << "collect system cpu load result=" << result.retCode << std::endl;
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    const SysCpuLoad& sysCpuLoad = result.data;
+    std::cout << "collect system cpu load, avgLoad1=" << sysCpuLoad.avgLoad1 << std::endl;
+    std::cout << "collect system cpu load, avgLoad5=" << sysCpuLoad.avgLoad5 << std::endl;
+    std::cout << "collect system cpu load, avgLoad15=" << sysCpuLoad.avgLoad15 << std::endl;
+    ASSERT_TRUE(sysCpuLoad.avgLoad1 > 0);
+    ASSERT_TRUE(sysCpuLoad.avgLoad5 > 0);
+    ASSERT_TRUE(sysCpuLoad.avgLoad15 > 0);
 }
 
 /**
  * @tc.name: CpuCollectorTest002
- * @tc.desc: used to test CpuCollector.CollectSysCpuUsage
+ * @tc.desc: used to test CpuCollector.CollectSysCpuUsage with updating
  * @tc.type: FUNC
 */
 HWTEST_F(CpuCollectorTest, CpuCollectorTest002, TestSize.Level1)
 {
     std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<SysCpuUsage> data = collector->CollectSysCpuUsage();
-    std::cout << "collect system cpu usage result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+
+    // first collection
+    sleep(1); // 1s
+    CollectResult<SysCpuUsage> result = collector->CollectSysCpuUsage(true);
+    std::cout << "collect1 system cpu usage result=" << result.retCode << std::endl;
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    const SysCpuUsage& sysCpuUsage = result.data;
+    ASSERT_GT(sysCpuUsage.startTime, 0);
+    ASSERT_GT(sysCpuUsage.endTime, sysCpuUsage.startTime);
+    ASSERT_GT(sysCpuUsage.cpuInfos.size(), 0);
+    for (const auto& cpuInfo : sysCpuUsage.cpuInfos) {
+        std::cout << cpuInfo.cpuId << ", userTime=" << cpuInfo.userTime
+            << ", niceTime=" << cpuInfo.niceTime
+            << ", systemTime=" << cpuInfo.systemTime
+            << ", idleTime=" << cpuInfo.idleTime
+            << ", ioWaitTime=" << cpuInfo.ioWaitTime
+            << ", irqTime=" << cpuInfo.irqTime
+            << ", softIrqTime=" << cpuInfo.softIrqTime
+            << std::endl;
+        ASSERT_FALSE(cpuInfo.cpuId.empty());
+        ASSERT_GE(cpuInfo.userTime, 0);
+    }
+
+    // second collection
+    sleep(1); // 1s
+    CollectResult<SysCpuUsage> nextResult = collector->CollectSysCpuUsage(true);
+    std::cout << "collect2 system cpu usage result=" << nextResult.retCode << std::endl;
+    ASSERT_TRUE(nextResult.retCode == UcError::SUCCESS);
+    ASSERT_EQ(nextResult.data.startTime, sysCpuUsage.endTime);
+    ASSERT_GT(nextResult.data.endTime, nextResult.data.startTime);
+    ASSERT_EQ(nextResult.data.cpuInfos.size(), sysCpuUsage.cpuInfos.size());
 }
 
 /**
  * @tc.name: CpuCollectorTest003
- * @tc.desc: used to test CpuCollector.CollectProcessCpuUsage
+ * @tc.desc: used to test CpuCollector.CollectSysCpuUsage without updating
  * @tc.type: FUNC
 */
 HWTEST_F(CpuCollectorTest, CpuCollectorTest003, TestSize.Level1)
 {
     std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<ProcessCpuUsage> data = collector->CollectProcessCpuUsage(1000);
-    std::cout << "collect process cpu usage result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+
+    // first collection
+    sleep(1); // 1s
+    CollectResult<SysCpuUsage> result = collector->CollectSysCpuUsage(false);
+    std::cout << "collect1 system cpu usage result=" << result.retCode << std::endl;
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    // second collection
+    sleep(1); // 1s
+    CollectResult<SysCpuUsage> nextResult = collector->CollectSysCpuUsage(false);
+    std::cout << "collect2 system cpu usage result=" << nextResult.retCode << std::endl;
+    ASSERT_TRUE(nextResult.retCode == UcError::SUCCESS);
+    ASSERT_EQ(nextResult.data.startTime, result.data.startTime);
+    ASSERT_GT(nextResult.data.endTime, result.data.endTime);
+    ASSERT_EQ(nextResult.data.cpuInfos.size(), result.data.cpuInfos.size());
 }
 
 /**
  * @tc.name: CpuCollectorTest004
- * @tc.desc: used to test CpuCollector.CollectProcessCpuLoad
+ * @tc.desc: used to test CpuCollector.CollectCpuFrequency
  * @tc.type: FUNC
 */
 HWTEST_F(CpuCollectorTest, CpuCollectorTest004, TestSize.Level1)
 {
     std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<ProcessCpuLoad> data = collector->CollectProcessCpuLoad(1000);
-    std::cout << "collect process cpu load result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-}
+    CollectResult<std::vector<CpuFreq>> result = collector->CollectCpuFrequency();
+    std::cout << "collect system cpu frequency result=" << result.retCode << std::endl;
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS);
 
-/**
- * @tc.name: CpuCollectorTest005
- * @tc.desc: used to test CpuCollector.CollectCpuFreqStat
- * @tc.type: FUNC
-*/
-HWTEST_F(CpuCollectorTest, CpuCollectorTest005, TestSize.Level1)
-{
-    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<CpuFreqStat> data = collector->CollectCpuFreqStat();
-    std::cout << "collect system cpu freq stat result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-}
-
-/**
- * @tc.name: CpuCollectorTest006
- * @tc.desc: used to test CpuCollector.CollectCpuFrequency
- * @tc.type: FUNC
-*/
-HWTEST_F(CpuCollectorTest, CpuCollectorTest006, TestSize.Level1)
-{
-    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<std::vector<CpuFreq>> data = collector->CollectCpuFrequency();
-    std::cout << "collect system cpu frequency result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-}
-
-/**
- * @tc.name: CpuCollectorTest007
- * @tc.desc: used to test CpuCollector.CollectProcessCpuUsages
- * @tc.type: FUNC
-*/
-HWTEST_F(CpuCollectorTest, CpuCollectorTest007, TestSize.Level1)
-{
-    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<std::vector<ProcessCpuUsage>> data = collector->CollectProcessCpuUsages();
-    std::cout << "collect process cpu usages result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-}
-
-/**
- * @tc.name: CpuCollectorTest008
- * @tc.desc: used to test CpuCollector.CollectProcessCpuLoads
- * @tc.type: FUNC
-*/
-HWTEST_F(CpuCollectorTest, CpuCollectorTest008, TestSize.Level1)
-{
-    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
-    CollectResult<std::vector<ProcessCpuLoad>> data = collector->CollectProcessCpuLoads();
-    std::cout << "collect process cpu loads result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    const std::vector<CpuFreq>& cpuFreqs = result.data;
+    std::cout << "collect system cpu frequency, size=" << cpuFreqs.size() << std::endl;
+    ASSERT_GT(cpuFreqs.size(), 0);
+    for (size_t i = 0; i < cpuFreqs.size(); ++i) {
+        std::cout << "cpu" << cpuFreqs[i].cpuId << ", curFreq=" << cpuFreqs[i].curFreq << ", minFreq="
+            << cpuFreqs[i].minFreq << ", maxFreq=" << cpuFreqs[i].maxFreq << std::endl;
+        ASSERT_EQ(cpuFreqs[i].cpuId, i);
+        ASSERT_GT(cpuFreqs[i].curFreq, 0);
+        ASSERT_GT(cpuFreqs[i].minFreq, 0);
+        ASSERT_GT(cpuFreqs[i].maxFreq, 0);
+    }
 }
 
 /**
