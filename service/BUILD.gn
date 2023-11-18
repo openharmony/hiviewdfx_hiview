@@ -20,7 +20,6 @@ config("hiview_service_config") {
     ".",
     "$hiview_framework/native/unified_collection/collector/inner_include",
     "$hiview_interfaces/inner_api/unified_collection",
-    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 }
 

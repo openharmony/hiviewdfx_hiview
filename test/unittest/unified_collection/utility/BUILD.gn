@@ -20,7 +20,6 @@ config("ucollection_utility_test_config") {
   include_dirs = [
     ".",
     "$hiview_framework/native/unified_collection/collector/inner_include",
-    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 
   cflags = [ "-D__UNITTEST__" ]
