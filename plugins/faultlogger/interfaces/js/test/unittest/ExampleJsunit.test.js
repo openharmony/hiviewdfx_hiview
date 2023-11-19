@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import faultlogger from '@ohos.faultLogger'
-
+import hiSysEvent from '@ohos.hiSysEvent'
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 
 describe("FaultlogJsTest", function () {
@@ -55,6 +55,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsException_001
      * @tc.name: FaultlogJsException_001
      * @tc.desc: API8 检验函数参数输入错误时程序是否会崩溃
      * @tc.require: AR000GICT2
@@ -87,6 +88,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsException_002
      * @tc.name: FaultlogJsException_002
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
@@ -108,6 +110,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsException_003
      * @tc.name: FaultlogJsException_003
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
@@ -129,6 +132,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsException_004
      * @tc.name: FaultlogJsException_004
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
@@ -150,6 +154,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsException_005
      * @tc.name: FaultlogJsException_005
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
@@ -171,6 +176,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsTest_005
      * @tc.name: FaultlogJsTest_005
      * @tc.desc: API9 检验promise同步方式获取faultlog日志
      * @tc.require: issueI5VRCC
@@ -218,6 +224,7 @@ describe("FaultlogJsTest", function () {
     /**
      * test
      *
+     * @tc.number: FaultlogJsTest_006
      * @tc.name: FaultlogJsTest_006
      * @tc.desc: API9 检验通过回调方式获取faultlog日志
      * @tc.require: issueI5VRCC
@@ -264,6 +271,66 @@ describe("FaultlogJsTest", function () {
             console.info(err);
         }
         console.info("FaultlogJsTest_006 error");
+        expect(false).assertTrue();
+        done();
+    })
+
+    /**
+     * test
+     *
+     * @tc.number: FaultlogJsTest_007
+     * @tc.name: FaultlogJsTest_007
+     * @tc.desc: API9 检验通过回调方式获取faultlog日志的顺序
+     * @tc.require: issueI5VRCC
+     * @tc.author:
+     */
+    it('FaultlogJsTest_007', 0, async function (done) {
+        console.info("---------------------------FaultlogJsTest_007----------------------------------");
+        try {
+            let now = Date.now();
+            console.info("FaultlogJsTest_007 start + " + now);
+            let module = "com.ohos.hiviewtest.faultlogjs";
+            faultlogger.addFaultLog(0,
+                faultlogger.FaultType.APP_FREEZE, module, "faultloggertestsummary07");
+            await msleep(1000);
+            hiSysEvent.write({
+                domain: "ACE",
+                name: "JS_ERROR",
+                eventType: hiSysEvent.EventType.FAULT,
+                params: {
+                    PACKAGE_NAME: "com.ohos.faultlogger.test",
+                    PROCESS_NAME: "com.ohos.faultlogger.test",
+                    MSG: "faultlogger testcase test.",
+                    REASON: "faultlogger testcase test."
+                }
+            }).then(
+                (value) => {
+                    console.log(`HiSysEvent json-callback-success value=${value}`);
+                })
+            await msleep(1000);
+            faultlogger.addFaultLog(0,
+                    faultlogger.FaultType.CPP_CRASH, module, "faultloggertestsummary07");
+            await msleep(1000);
+            console.info("--------FaultlogJsTest_007");
+            function queryFaultLogCallback(error, ret) {
+                if (error) {
+                    console.info('FaultlogJsTest_007  once error is ' + error);
+                } else {
+                    console.info("FaultlogJsTest_007 ret == " + ret.length);
+                    expect(ret[0].type).assertEqual(faultlogger.FaultType.CPP_CRASH);
+                    expect(ret[1].type).assertEqual(faultlogger.FaultType.JS_CRASH);
+                    expect(ret[1].timestamp).assertLess(ret[0].timestamp);
+                    expect(ret[2].type).assertEqual(faultlogger.FaultType.APP_FREEZE);
+                    expect(ret[2].timestamp).assertLess(ret[1].timestamp);
+                }
+                done();
+            }
+            faultlogger.query(faultlogger.FaultType.NO_SPECIFIC, queryFaultLogCallback);
+            return;
+        } catch (err) {
+            console.info(err);
+        }
+        console.info("FaultlogJsTest_007 error");
         expect(false).assertTrue();
         done();
     })
