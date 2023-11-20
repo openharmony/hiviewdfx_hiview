@@ -25,7 +25,6 @@ config("ucolletciton_source_config") {
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
     "$hiview_service/unified_collection/include",
-    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 }
 
