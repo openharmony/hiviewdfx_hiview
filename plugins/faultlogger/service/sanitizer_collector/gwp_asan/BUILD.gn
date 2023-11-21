@@ -1,0 +1,51 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+ohos_shared_library("libasan_logger") {
+  sources = [
+    "gwpasan_collector.cpp",
+  ]
+
+  include_dirs = [ "include" ]
+
+  innerapi_tags = [
+    "chipsetsdk_indirect",
+    "platformsdk_indirect",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+  ]
+
+  deps = [
+    "$hiview_plugin/faultlogger/common:faultlogger_common",
+    "$hiview_plugin/faultlogger/common:log_analyzer",
+    "//third_party/bounds_checking_function:libsec_shared",
+    "//third_party/openssl:libcrypto_shared",
+    "//third_party/zlib:libz",
+  ]
+
+  install_enable = true
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
