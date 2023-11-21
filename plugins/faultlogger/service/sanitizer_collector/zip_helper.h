@@ -43,11 +43,17 @@ constexpr char ROOT_FAULTLOG_LOG_PATH[] = "/data/log/faultlog/";
 const std::string DEVICE_OHOS_VERSION_PARAM = "hw_sc.build.os.version";
 const std::string EMPTY_PARAM = "";
 
+typedef struct DfxBundleInfo {
+    bool isPreInstalled;
+    uint32_t versionCode;
+    std::string versionName;
+} DfxBundleInfo;
+
 std::vector<std::string> SplitString(const std::string& input, const std::string& regex);
 unsigned HashString(const std::string& input);
 bool IsModuleNameValid(const std::string& name);
 std::string GetApplicationNameById(int32_t uid);
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
+bool GetDfxBundleInfo(const std::string& bundleName, DfxBundleInfo& bundleInfo);
 void WriteCollectedData(T_SANITIZERD_PARAMS *params);
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -67,6 +67,7 @@ ohos_source_set("faultlogger_service") {
   deps = [
     ":faultlogger_service_ability",
     "$hiview_base:hiviewbase",
+    "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",
