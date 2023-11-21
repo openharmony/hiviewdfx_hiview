@@ -20,6 +20,9 @@ CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(wo
 {
     InitCpuCollector();
     InitCpuStorage();
+#ifdef HAS_HIPERF
+    InitCpuPerfDump();
+#endif
 }
 
 void CpuCollectionTask::Collect()
@@ -38,6 +41,13 @@ void CpuCollectionTask::InitCpuStorage()
     cpuStorage_ = std::make_shared<CpuStorage>(workPath_);
 }
 
+#ifdef HAS_HIPERF
+void CpuCollectionTask::InitCpuPerfDump()
+{
+    cpuPerfDump_ = std::make_shared<CpuPerfDump>();
+}
+#endif
+
 void CpuCollectionTask::ReportCpuCollectionEvent()
 {
     cpuStorage_->Report();
@@ -48,6 +58,9 @@ void CpuCollectionTask::CollectCpuData()
     auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
         cpuStorage_->Store(cpuCollectionsResult.data);
+#ifdef HAS_HIPERF
+        cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);
+#endif
     }
 
     // collect the system cpu usage periodically for hidumper

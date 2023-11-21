@@ -29,6 +29,7 @@ ohos_source_set("unified_collector") {
   sources = [
     "storage/cpu_storage.cpp",
     "task/cpu_collection_task.cpp",
+    "task/cpu_perf_dump.cpp",
     "unified_collector.cpp",
   ]
 
@@ -43,6 +44,9 @@ ohos_source_set("unified_collector") {
     "relational_store:native_rdb",
   ]
 
+  if (has_hiperf) {
+    cflags = [ "-DHAS_HIPERF" ]
+  }
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

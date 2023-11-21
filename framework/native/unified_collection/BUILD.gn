@@ -44,6 +44,7 @@ ohos_source_set("ucollection_source") {
     "collector/io_collector_impl.cpp",
     "collector/memory_collector_impl.cpp",
     "collector/network_collector_impl.cpp",
+    "collector/perf_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
     "collector/utils/trace_flow_controller.cpp",
     "collector/utils/trace_manager.cpp",
@@ -66,6 +67,10 @@ ohos_source_set("ucollection_source") {
     "wifi:wifi_sdk",
   ]
 
+  if (has_hiperf) {
+    cflags = [ "-DHAS_HIPERF" ]
+    external_deps += [ "hiperf:hiperf_client" ]
+  }
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

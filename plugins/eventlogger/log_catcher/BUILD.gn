@@ -45,6 +45,5 @@ ohos_source_set("log_catcher") {
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
-    external_deps = [ "hiperf:hiperf_client" ]
   }
 }

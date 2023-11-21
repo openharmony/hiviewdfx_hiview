@@ -32,13 +32,14 @@
 #include "string_util.h"
 
 #include "open_stacktrace_catcher.h"
+#include "perf_collector.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-PeerBinderCatcher");
 #ifdef HAS_HIPERF
-using namespace Developtools::HiPerf;
-#endif
+using namespace OHOS::HiviewDFX::UCollectUtil;
 constexpr char EVENT_LOG_PATH[] = "/data/log/eventlog";
+#endif
 PeerBinderCatcher::PeerBinderCatcher() : EventLogCatcher()
 {
     name_ = "PeerBinderCatcher";
@@ -217,13 +218,10 @@ void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
 #ifdef HAS_HIPERF
 void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set<int>& pids)
 {
-    HiperfClient::RecordOption opt;
-    opt.SetOutputFilename(fileName);
+    std::shared_ptr<PerfCollector> perfCollector = PerfCollector::Create();
+    perfCollector->SetOutputFilename(fileName);
     constexpr int collectTime = 1;
-    opt.SetTimeStopSec(collectTime);
-    opt.SetFrequency(1000); // 1000 : 1kHz
-    opt.SetCallGraph("fp");
-    opt.SetOffCPU(true);
+    perfCollector->SetTimeStopSec(collectTime);
     if (perfCmd_.find("a") == std::string::npos) {
         std::vector<pid_t> selectPids;
         selectPids.push_back(pid_);
@@ -232,15 +230,17 @@ void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set
                 selectPids.push_back(pid);
             }
         }
-        opt.SetSelectPids(selectPids);
+        perfCollector->SetSelectPids(selectPids);
     } else {
-        opt.SetTargetSystemWide(true);
+        perfCollector->SetTargetSystemWide(true);
     }
-
-    if (perfClient_ == nullptr) {
-        perfClient_ = std::make_unique<HiperfClient::Client>(EVENT_LOG_PATH);
+    perfCollector->SetFrequency(1000); // 1000 : 1kHz
+    CollectResult<bool> ret = perfCollector->StartPerf(EVENT_LOG_PATH);
+    if (ret.retCode == UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGI("Success to call perf result : %{public}d", ret.data);
+    } else {
+        HIVIEW_LOGI("Failed to  call perf result : %{public}d", ret.data);
     }
-    perfClient_->Start(opt);
 }
 
 void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)

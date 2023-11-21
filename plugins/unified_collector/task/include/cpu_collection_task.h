@@ -20,6 +20,7 @@
 
 #include "cpu_collector.h"
 #include "cpu_storage.h"
+#include "cpu_perf_dump.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -32,6 +33,9 @@ public:
 private:
     void InitCpuCollector();
     void InitCpuStorage();
+#ifdef HAS_HIPERF
+    void InitCpuPerfDump();
+#endif
     void ReportCpuCollectionEvent();
     void CollectCpuData();
 
@@ -39,6 +43,9 @@ private:
     std::string workPath_;
     std::shared_ptr<UCollectUtil::CpuCollector> cpuCollector_;
     std::shared_ptr<CpuStorage> cpuStorage_;
+#ifdef HAS_HIPERF
+    std::shared_ptr<CpuPerfDump> cpuPerfDump_;
+#endif
 }; // CpuCollectionTask
 } // namespace HiviewDFX
 } // namespace OHOS
