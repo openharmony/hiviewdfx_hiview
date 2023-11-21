@@ -41,6 +41,7 @@ public:
     virtual CollectResult<std::string> ExportAllAIProcess() = 0;
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) = 0;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) = 0;
+    virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) = 0;
 }; // MemoryCollector
 } // UCollectUtil
 } // HiviewDFX

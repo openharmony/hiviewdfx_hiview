@@ -186,3 +186,16 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest012, TestSize.Level1)
     std::cout << "collect heap snapshot result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
+
+/**
+ * @tc.name: MemoryCollectorTest013
+ * @tc.desc: used to test MemoryCollector.CollectProcessVss
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest013, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    CollectResult<uint64_t> data = collector->CollectProcessVss(1000);
+    std::cout << "collect processvss result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}

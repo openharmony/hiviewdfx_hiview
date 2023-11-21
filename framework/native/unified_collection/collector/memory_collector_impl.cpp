@@ -62,6 +62,7 @@ public:
     virtual CollectResult<std::string> ExportAllAIProcess() override;
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) override;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
+    virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
 };
 
 static std::string GetCurrTimestamp()
@@ -276,6 +277,12 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
             } else if (type == "Pss") {
                 processMemory.pss = value;
                 HIVIEW_LOGD("Pss=%{public}d", processMemory.pss);
+            } else if (type == "Shared_Dirty") {
+                processMemory.sharedDirty = value;    
+                HIVIEW_LOGD("Shared_Dirty=%{public}d", processMemory.sharedDirty);
+            } else if (type == "Private_Dirty") {
+                processMemory.privateDirty = value;
+                HIVIEW_LOGD("Private_Dirty=%{public}d", processMemory.privateDirty);
             }
         }
     }
@@ -543,6 +550,26 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
     }
     DoClearFiles("jsheap_");
     result.data = savePath;
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
+{
+    CollectResult<uint64_t> result;
+    std::string filename = PROC + std::to_string(pid) + STATM;
+    std::string content;
+    FileUtil::LoadStringFromFile(filename, content);
+    uint64_t& vssValue = result.data;
+    if (!content.empty()) {
+        uint64_t tempValue = 0;
+        int retScanf = sscanf_s(content.c_str(), "%llu^*", &tempValue);
+        if (retScanf != -1) {
+            vssValue = tempValue * VSS_BIT;
+        } else {
+            HIVIEW_LOGD("GetVss error! pid = %d", pid);
+        }
+    }
     result.retCode = UcError::SUCCESS;
     return result;
 }
