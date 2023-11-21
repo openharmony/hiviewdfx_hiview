@@ -54,9 +54,13 @@ struct ProcessCpuStatInfo {
     uint64_t startTime = 0;
     uint64_t endTime = 0;
     int32_t pid = 0;
-    std::string procName;
+    uint32_t minFlt = 0;
+    uint32_t majFlt = 0;
     double cpuLoad = 0;
+    double uCpuUsage = 0;
+    double sCpuUsage = 0;
     double cpuUsage = 0;
+    std::string procName;
 };
 } // HiviewDFX
 } // OHOS

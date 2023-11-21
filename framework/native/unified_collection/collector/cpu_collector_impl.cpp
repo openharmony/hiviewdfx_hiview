@@ -38,8 +38,11 @@ constexpr int32_t INVALID_PID = 0;
 }
 
 struct ProcessCpuTimeInfo {
-    uint64_t cpuUsageTime = 0;
-    uint64_t cpuLoadTime = 0;
+    uint32_t minFlt = 0;
+    uint32_t majFlt = 0;
+    uint64_t uUsageTime = 0;
+    uint64_t sUsageTime = 0;
+    uint64_t loadTime = 0;
     uint64_t collectionTime = 0;
 };
 
@@ -155,18 +158,14 @@ void CpuCollectorImpl::UpdateCollectionTime()
 
 void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem)
 {
-    if (lastProcCpuTimeInfos_.find(procCpuItem->pid) == lastProcCpuTimeInfos_.end()) {
-        lastProcCpuTimeInfos_.insert({procCpuItem->pid, {
-            .cpuUsageTime = procCpuItem->cpu_usage_utime + procCpuItem->cpu_usage_stime,
-            .cpuLoadTime = procCpuItem->cpu_load_time,
-            .collectionTime = currCollectionTime_,
-        }});
-    } else {
-        lastProcCpuTimeInfos_[procCpuItem->pid].cpuUsageTime =
-            procCpuItem->cpu_usage_utime + procCpuItem->cpu_usage_stime;
-        lastProcCpuTimeInfos_[procCpuItem->pid].cpuLoadTime = procCpuItem->cpu_load_time;
-        lastProcCpuTimeInfos_[procCpuItem->pid].collectionTime = currCollectionTime_;
-    }
+    lastProcCpuTimeInfos_[procCpuItem->pid] = {
+        .minFlt = procCpuItem->min_flt,
+        .majFlt = procCpuItem->maj_flt,
+        .uUsageTime = procCpuItem->cpu_usage_utime,
+        .sUsageTime = procCpuItem->cpu_usage_stime,
+        .loadTime = procCpuItem->cpu_load_time,
+        .collectionTime = currCollectionTime_,
+    };
 }
 
 void CpuCollectorImpl::UpdateClearTime()
@@ -205,7 +204,7 @@ CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdat
         lastSysCpuUsageTime_ = sysCpuUsage.endTime;
         lastSysCpuUsageInfos_ = currCpuInfos;
     }
-    HIVIEW_LOGI("collect system cpu usage, size=%{public}zu, isNeedUpdate=%{public}d",
+    HIVIEW_LOGD("collect system cpu usage, size=%{public}zu, isNeedUpdate=%{public}d",
         sysCpuUsage.cpuInfos.size(), isNeedUpdate);
     return result;
 }
@@ -245,7 +244,7 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessC
         UpdateCollectionTime();
     }
     CalculateProcessCpuStatInfos(cpuCollectResult.data, processCpuData, isNeedUpdate);
-    HIVIEW_LOGI("collect process cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
+    HIVIEW_LOGD("collect process cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
         cpuCollectResult.data.size(), isNeedUpdate);
     if (!cpuCollectResult.data.empty()) {
         cpuCollectResult.retCode = UCollect::UcError::SUCCESS;
@@ -284,15 +283,17 @@ std::optional<ProcessCpuStatInfo> CpuCollectorImpl::CalculateProcessCpuStatInfo(
     processCpuStatInfo.startTime = startTime;
     processCpuStatInfo.endTime = endTime;
     processCpuStatInfo.pid = procCpuItem->pid;
+    processCpuStatInfo.minFlt = procCpuItem->min_flt;
+    processCpuStatInfo.majFlt = procCpuItem->maj_flt;
     processCpuStatInfo.procName = ProcessStatus::GetInstance().GetProcessName(procCpuItem->pid);
     uint64_t collectionPeriod = endTime > startTime ? (endTime - startTime) : 0;
-    double procCpuLoad = cpuCalculator_.CalculateCpuLoad(procCpuItem->cpu_load_time,
-        lastProcCpuTimeInfos_[procCpuItem->pid].cpuLoadTime, collectionPeriod);
-    processCpuStatInfo.cpuLoad = procCpuLoad;
-    uint64_t procCpuUsageTime = procCpuItem->cpu_usage_utime + procCpuItem->cpu_usage_stime;
-    double procCpuUsage = cpuCalculator_.CalculateCpuUsage(procCpuUsageTime,
-        lastProcCpuTimeInfos_[procCpuItem->pid].cpuUsageTime, collectionPeriod);
-    processCpuStatInfo.cpuUsage = procCpuUsage;
+    processCpuStatInfo.cpuLoad = cpuCalculator_.CalculateCpuLoad(procCpuItem->cpu_load_time,
+        lastProcCpuTimeInfos_[procCpuItem->pid].loadTime, collectionPeriod);
+    processCpuStatInfo.uCpuUsage = cpuCalculator_.CalculateCpuUsage(procCpuItem->cpu_usage_utime,
+        lastProcCpuTimeInfos_[procCpuItem->pid].uUsageTime, collectionPeriod);
+    processCpuStatInfo.sCpuUsage = cpuCalculator_.CalculateCpuUsage(procCpuItem->cpu_usage_stime,
+        lastProcCpuTimeInfos_[procCpuItem->pid].sUsageTime, collectionPeriod);
+    processCpuStatInfo.cpuUsage = processCpuStatInfo.uCpuUsage + processCpuStatInfo.sCpuUsage;
     return std::make_optional<ProcessCpuStatInfo>(processCpuStatInfo);
 }
 

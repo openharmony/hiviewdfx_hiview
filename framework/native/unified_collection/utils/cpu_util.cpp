@@ -108,7 +108,7 @@ UCollect::UcError CpuUtil::GetCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos)
     for (const auto& line : lines) {
         CpuUsageInfo cpuInfo;
         if (!GetCpuUsageInfoFromString(line, cpuInfo)) {
-            break;
+            break; // if the current line fails, all cpu info has been read.
         }
         cpuInfos.emplace_back(cpuInfo);
     }
