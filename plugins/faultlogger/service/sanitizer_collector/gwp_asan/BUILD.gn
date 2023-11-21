@@ -14,16 +14,11 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 ohos_shared_library("libasan_logger") {
-  sources = [
-    "gwpasan_collector.cpp",
-  ]
+  sources = [ "gwpasan_collector.cpp" ]
 
   include_dirs = [ "include" ]
 
-  innerapi_tags = [
-    "chipsetsdk_indirect",
-    "platformsdk_indirect",
-  ]
+  innerapi_tags = [ "platformsdk_indirect" ]
 
   external_deps = [
     "ability_base:want",

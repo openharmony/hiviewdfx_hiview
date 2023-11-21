@@ -12,13 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef GWPASAN_COLLECTOR_H
+#define GWPASAN_COLLECTOR_H
 
 #include <algorithm>
+#include <cstdint>
+#include <cstdio>
 #include <map>
-#include <stdint.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+void WriteGwpAsanLog(char* buf, size_t sz);
+#ifdef __cplusplus
+}
+#endif
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -44,9 +54,11 @@ struct GwpAsanCurrInfo {
 void ReadGwpAsanRecord(std::string& gwpAsanBuffer);
 std::string GetApplicationNameById(int32_t uid);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
-void WriteCollectedData(const GwpAsanCurrInfo &curr_);
-static std::string CalcCollectedLogName(const GwpAsanCurrInfo &curr_);
-static bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &curr_);
-static int32_t CreateLogFile(const std::string& name);
+void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
+std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
+bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo);
+int32_t CreateLogFile(const std::string& name);
 } // namespace HiviewDFX
-} // namespace OHOS
+} // namespace OHOSi
+
+#endif // GWPASAN_COLLECTOR_H
