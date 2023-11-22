@@ -83,8 +83,6 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
         || !HiviewNapiUtil::ParseStringValue(env, "dest", params[DEST_DIR_INDEX], destDir)) {
         return result;
     }
-    HiLog::Info(LABEL, "type: %{public}s, name: %{public}s, dir: %{public}s",
-        logType.c_str(), logName.c_str(), destDir.c_str());
     if (!HiviewNapiUtil::CheckDirPath(destDir)) {
         HiLog::Error(LABEL, "dest param is invalid: %{public}s", destDir.c_str());
         HiviewNapiUtil::ThrowParamContentError(env, "dest");
@@ -146,7 +144,6 @@ static napi_value Remove(napi_env env, napi_callback_info info)
         || !HiviewNapiUtil::ParseStringValue(env, "logName", params[LOG_NAME_INDEX], logName)) {
         return result;
     }
-    HiLog::Info(LABEL, "type: %{public}s, name: %{public}s", logType.c_str(), logName.c_str());
     int32_t retCode = HiviewServiceAgent::Remove(logType, logName);
     if (retCode != 0) {
         HiLog::Info(LABEL, "retCode: %{public}u.", retCode);
