@@ -278,7 +278,7 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
                 processMemory.pss = value;
                 HIVIEW_LOGD("Pss=%{public}d", processMemory.pss);
             } else if (type == "Shared_Dirty") {
-                processMemory.sharedDirty = value;    
+                processMemory.sharedDirty = value;
                 HIVIEW_LOGD("Shared_Dirty=%{public}d", processMemory.sharedDirty);
             } else if (type == "Private_Dirty") {
                 processMemory.privateDirty = value;
