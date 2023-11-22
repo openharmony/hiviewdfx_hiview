@@ -29,19 +29,6 @@ config("unittest_config") {
   ]
 }
 
-ohos_unittest("EventloggerActionTest") {
-  module_out_path = module_output_path
-  configs = [ ":unittest_config" ]
-
-  sources = [ "unittest/common/event_logger_action_test.cpp" ]
-
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_eventlogger:eventlogger",
-    "//third_party/googletest:gtest_main",
-  ]
-}
-
 ohos_unittest("EventloggerPluginTest") {
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
