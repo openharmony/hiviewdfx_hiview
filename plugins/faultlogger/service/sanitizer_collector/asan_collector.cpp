@@ -205,7 +205,10 @@ void AsanCollector::CalibrateErrTypeProcName()
 
     if (curr_.uid >= MIN_APP_USERID) {
         curr_.procName = GetApplicationNameById(curr_.uid);
-        curr_.appVersion = GetApplicationVersion(curr_.uid, curr_.procName);
+        DfxBundleInfo info;
+        if (GetDfxBundleInfo(curr_.procName, info)) {
+            curr_.appVersion = info.versionName;
+        }
     }
 }
 

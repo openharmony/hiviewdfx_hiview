@@ -85,6 +85,8 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
         "SUMMARY", info.summary,
         "LOG_PATH", info.logPath,
         "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
+        "PRE_INSTALL", info.sectionMap["PRE_INSTALL"],
+        "FOREGROUND", info.sectionMap["FOREGROUND"],
         "HAPPEN_TIME", info.time,
         "HITRACE_TIME", info.sectionMap.find("HITRACE_TIME") != info.sectionMap.end()?
                         info.sectionMap.at("HITRACE_TIME") : "",

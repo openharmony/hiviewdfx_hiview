@@ -30,34 +30,32 @@
 #include <thread>
 #include <unistd.h>
 
+#include "asan_collector.h"
+#include "bundle_mgr_client.h"
 #include "common_utils.h"
 #include "constants.h"
 #include "event.h"
-#include "file_util.h"
-#include "hisysevent.h"
-#include "hiview_global.h"
-#include "logger.h"
-#include "parameter_ex.h"
-#include "plugin_factory.h"
-#include "string_util.h"
-#include "sys_event_dao.h"
-#include "sys_event.h"
-#include "time_util.h"
-
 #include "faultlog_formatter.h"
 #include "faultlog_info.h"
 #include "faultlog_query_result_inner.h"
 #include "faultlog_util.h"
 #include "faultlogger_adapter.h"
+#include "file_util.h"
+#include "hisysevent.h"
+#include "hiview_global.h"
 #include "log_analyzer.h"
-
-#include "bundle_mgr_client.h"
-
-#include "securec.h"
-#include "asan_collector.h"
+#include "logger.h"
+#include "parameter_ex.h"
+#include "plugin_factory.h"
+#include "process_status.h"
+#include "reporter.h"
 #include "sanitizerd_collector.h"
 #include "sanitizerd_monitor.h"
-#include "reporter.h"
+#include "securec.h"
+#include "string_util.h"
+#include "sys_event_dao.h"
+#include "sys_event.h"
+#include "time_util.h"
 #include "zip_helper.h"
 
 namespace OHOS {
@@ -194,9 +192,33 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     info.sectionMap["PID"] = std::to_string(info.pid);
     info.module = RegulateModuleNameIfNeed(info.module);
     info.sectionMap["MODULE"] = info.module;
-    std::string version = GetApplicationVersion(info.id, info.module);
-    if (!version.empty()) {
-        info.sectionMap["VERSION"] = version;
+    DfxBundleInfo bundleInfo;
+    if (info.id >= MIN_APP_USERID && GetDfxBundleInfo(info.module, bundleInfo)) {
+        if (!bundleInfo.versionName.empty()) {
+            info.sectionMap["VERSION"] = bundleInfo.versionName;
+        }
+
+        if (bundleInfo.isPreInstalled) {
+            info.sectionMap["PRE_INSTALL"] = "Yes";
+        } else {
+            info.sectionMap["PRE_INSTALL"] = "No";
+        }
+    }
+
+    if (info.id >= MIN_APP_USERID) {
+        if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
+            UCollectUtil::FOREGROUND) {
+            info.sectionMap["FOREGROUND"] = "Yes";
+        } else if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
+            UCollectUtil::BACKGROUND){
+            int64_t lastFgTime = static_cast<int64_t>(UCollectUtil::ProcessStatus::GetInstance()
+                .GetProcessLastForegroundTime(info.pid));
+            if (lastFgTime > info.time) {
+                info.sectionMap["FOREGROUND"] = "Yes";
+            } else {
+                info.sectionMap["FOREGROUND"] = "No";
+            }
+        }
     }
 
     if (info.reason.empty()) {
@@ -380,6 +402,8 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
     sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
     sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
+    sysEvent->SetEventValue("PRE_INSTALL", info.sectionMap["PRE_INSTALL"]);
+    sysEvent->SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
     std::map<std::string, std::string> eventInfos;
     if (AnalysisFaultlog(info, eventInfos)) {
         sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
