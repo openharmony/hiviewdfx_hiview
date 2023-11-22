@@ -36,8 +36,8 @@ struct ProcessMemory {
     int32_t pss;            // proportional set Size, unit KB
     int32_t swapPss;        // swap pss, unit KB
     int32_t adj;            // /proc/$pid/oom_score_adj
-    uint64_t sharedDirty;   //process Shared_Dirty
-    uint64_t privateDirty;  //process Private_Dirty
+    int32_t sharedDirty;   //process Shared_Dirty
+    int32_t privateDirty;  //process Private_Dirty
 };
 
 extern "C" {
