@@ -75,6 +75,7 @@ private:
     void ReadSeqFromFile(int64_t& seq);
     void WriteSeqToFile(int64_t seq) const;
     void WatchParameterAndReadLatestSeq();
+    bool SaveStringToFile(const std::string& filePath, const std::string& content) const;
 
 private:
     DOMAIN_INFO_MAP hiSysEventDef_;

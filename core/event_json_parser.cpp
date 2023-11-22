@@ -372,10 +372,33 @@ void EventJsonParser::WriteSeqToFile(int64_t seq) const
 {
     std::string seqFile = GetSequenceFile();
     std::string content = std::to_string(seq);
-    if (!FileUtil::SaveStringToFile(seqFile, content, true)) {
+    if (!SaveStringToFile(seqFile, content)) {
         HIVIEW_LOGE("failed to write sequence %{public}s to %{public}s.", content.c_str(), seqFile.c_str());
     }
     SysEventServiceAdapter::UpdateEventSeq(seq);
+}
+
+bool EventJsonParser::SaveStringToFile(const std::string& filePath, const std::string& content) const
+{
+    if (content.empty()) {
+        return true;
+    }
+    std::ofstream file;
+    file.open(filePath.c_str(), std::ios::in | std::ios::out);
+    if (!file.is_open()) {
+        file.open(filePath.c_str(), std::ios::out);
+        if (!file.is_open()) {
+            return false;
+        }
+    }
+    file.seekp(0);
+    file.write(content.c_str(), content.length() + 1);
+    bool ret = true;
+    if (file.fail()) {
+        ret = false;
+    }
+    file.close();
+    return ret;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
