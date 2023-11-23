@@ -14,13 +14,13 @@
  */
 #include "memory_collector.h"
 
+#include <csignal>
 #include <fstream>
 #include <string_ex.h>
 #include <dlfcn.h>
 #include <securec.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <signal.h>
 #include <regex>
 #include <map>
 #include <mutex>
@@ -152,9 +152,9 @@ static bool GetSmapsFromProcPath(const std::string& procPath, ProcessMemory& pro
             swapPss += temp;
         }
     }
-    procMem.rss = rss;
-    procMem.pss = pss;
-    procMem.swapPss = swapPss;
+    procMem.rss = static_cast<int32_t>(rss);
+    procMem.pss = static_cast<int32_t>(pss);
+    procMem.swapPss = static_cast<int32_t>(swapPss);
     return true;
 }
 
