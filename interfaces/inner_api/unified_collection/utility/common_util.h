@@ -24,12 +24,14 @@ namespace UCollectUtil {
 const std::string PROC = "/proc/";
 const std::string IO = "/io";
 const std::string SMAPS_ROLLUP = "/smaps_rollup";
+const std::string STATM = "/statm";
 const std::string MEM_INFO = "/proc/meminfo";
 const std::string GPU_CUR_FREQ = "/sys/class/devfreq/gpufreq/cur_freq";
 const std::string GPU_MAX_FREQ = "/sys/class/devfreq/gpufreq/max_freq";
 const std::string GPU_MIN_FREQ = "/sys/class/devfreq/gpufreq/min_freq";
 const std::string GPU_LOAD = "/sys/class/devfreq/gpufreq/gpu_scene_aware/utilisation";
 const std::string MEMINFO_SAVE_DIR = "/data/log/hiview/unified_collection/memory";
+const static int VSS_BIT = 4;
 
 class CommonUtil {
 private:
