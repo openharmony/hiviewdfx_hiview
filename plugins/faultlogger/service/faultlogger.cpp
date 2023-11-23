@@ -24,7 +24,9 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include <cerrno>
 #include <thread>
@@ -36,6 +38,7 @@
 #include "common_utils.h"
 #include "constants.h"
 #include "event.h"
+#include "event_publish.h"
 #include "faultlog_formatter.h"
 #include "faultlog_info.h"
 #include "faultlog_query_result_inner.h"
@@ -45,6 +48,7 @@
 #include "hisysevent.h"
 #include "hiview_global.h"
 #include "ipc_skeleton.h"
+#include "json/json.h"
 #include "log_analyzer.h"
 #include "logger.h"
 #include "parameter_ex.h"
@@ -56,7 +60,6 @@
 #include "securec.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
-#include "sys_event.h"
 #include "time_util.h"
 #include "zip_helper.h"
 
@@ -86,6 +89,8 @@ constexpr time_t FORTYEIGHT_HOURS = 48 * 60 * 60;
 constexpr int RETRY_COUNT = 10;
 constexpr int RETRY_DELAY = 10;
 #endif
+constexpr int READ_HILOG_BUFFER_SIZE = 1024;
+constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -442,12 +447,64 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
                                 StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     }
     sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+    if (isJsError) {
+        ReportJsErrorToAppEvent(sysEvent);
+    }
     return true;
 }
 
 bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
 {
     return true;
+}
+
+void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
+{
+    std::regex rel("[\\s\\S]*Error message:([\\s\\S]*)SourceCode[\\s\\S]*Stacktrace:([\\s\\S]*)[\\s\\S]*");
+    std::smatch m;
+    std::string summary = sysEvent->GetEventValue("SUMMARY");
+    HIVIEW_LOGD("ReportAppEvent:summary:%{public}s.", summary.c_str());
+    std::regex_search(summary, m, rel);
+
+    Json::Value params;
+    params["time"] = sysEvent->happenTime_;
+    params["crash_type"] = "JsError";
+    params["foreground"] = sysEvent->GetEventValue("FOREGROUND");
+    params["bundle_version"] = sysEvent->GetEventValue("VERSION");
+    params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
+    params["pid"] = sysEvent->GetPid();
+    params["uid"] = sysEvent->GetUid();
+    params["uuid"] = sysEvent->GetEventValue("ID");
+    Json::Value exception;
+    exception["name"] = sysEvent->GetEventValue("REASON");
+    std::string message = m[1]; // 1: is message
+    std::string stack = m[2]; // 2: is stack
+    message.replace(message.end() - 2, message.end(), ""); // 2: to relace tail '\n' to ""
+    stack.replace(stack.begin(), stack.begin() + 6, ""); // 6: to relace head '\n     ' to ""
+    stack.replace(stack.end() - 2, stack.end(), ""); // 2: to relace tail '\n' to ""
+    exception["message"] = message;
+    exception["stack"] = stack;
+    params["exception"] = exception;
+
+    // add hilog
+    std::string log;
+    GetHilog(sysEvent->GetPid(), log);
+    if (log.length() == 0) {
+        HIVIEW_LOGE("Get hilog is empty");
+    } else {
+        Json::Value hilog;
+        std::stringstream logStream(log);
+        std::string oneLine;
+        while (getline(logStream, oneLine)) {
+            hilog.append(oneLine);
+        }
+        params["hilog"] = hilog;
+    }
+
+    std::string paramsStr = Json::FastWriter().write(params);
+    HIVIEW_LOGD("ReportAppEvent: uid:%{public}d, json:%{public}s.",
+        sysEvent->GetUid(), paramsStr.c_str());
+    EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, paramsStr);
 }
 
 bool Faultlogger::ReadyToLoad()
@@ -595,10 +652,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         HIVIEW_LOGW("Invalid module name %{public}s", info.module.c_str());
         return;
     }
-
     AddPublicInfo(info);
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
+        ReportCppCrashToAppEvent(info);
     }
 
     mgr_->SaveFaultLogToFile(info);
@@ -655,6 +712,119 @@ void Faultlogger::StartBootScan()
         }
         AddFaultLogIfNeed(info, nullptr);
     }
+}
+
+void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
+{
+    std::string stackInfo;
+    GetStackInfo(info, stackInfo);
+    if (stackInfo.length() == 0) {
+        HIVIEW_LOGE("stackInfo is empty");
+        return;
+    }
+    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}d", info.pid, stackInfo.length());
+    EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo);
+}
+
+void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const
+{
+    if (info.sectionMap.count("stackInfo") == 0) {
+        HIVIEW_LOGE("stackInfo is not exist");
+        return;
+    }
+    std::string stackInfoOriginal = info.sectionMap.at("stackInfo");
+    if (stackInfoOriginal.length() == 0) {
+        HIVIEW_LOGE("stackInfo original is empty");
+        return;
+    }
+
+    Json::Reader reader;
+    Json::Value stackInfoObj;
+    if (!reader.parse(stackInfoOriginal, stackInfoObj)) {
+        HIVIEW_LOGE("parse stackInfo failed");
+        return;
+    }
+
+    stackInfoObj["bundle_name"] = info.module;
+    if (info.sectionMap.count("VERSION") == 1) {
+        stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
+    }
+    if (info.sectionMap.count("FOREGROUND") == 1) {
+        stackInfoObj["foreground"] = info.sectionMap.at("FOREGROUND");
+    }
+
+    std::string log;
+    GetHilog(info.pid, log);
+    if (log.length() == 0) {
+        HIVIEW_LOGE("Get hilog is empty");
+        return;
+    }
+    Json::Value hilog;
+    std::stringstream logStream(log);
+    std::string oneLine;
+    while (getline(logStream, oneLine)) {
+        hilog.append(oneLine);
+    }
+    stackInfoObj["hilog"] = hilog;
+    stackInfo.append(Json::FastWriter().write(stackInfoObj));
+}
+
+void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
+{
+    HIVIEW_LOGD("Start do get hilog process, pid:%{public}d", pid);
+    if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
+        dup2(writeFd, STDERR_FILENO) == -1) {
+        HIVIEW_LOGE("dup2 writeFd fail");
+        _exit(-1);
+    }
+
+    int ret = -1;
+    ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid).c_str(), nullptr);
+    if (ret < 0) {
+        HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
+        syscall(SYS_close, writeFd);
+        _exit(-1);
+    }
+}
+
+bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
+{
+    int fds[2] = {-1, -1}; // 2: one read pipe, one write pipe
+    if (pipe(fds) != 0) {
+        HIVIEW_LOGE("Failed to create pipe for get log.");
+        return false;
+    }
+    int childPid = fork();
+    if (childPid < 0) {
+        HIVIEW_LOGE("fork fail");
+        return false;
+    } else if (childPid == 0) {
+        syscall(SYS_close, fds[0]);
+        DoGetHilogProcess(pid, fds[1]);
+    } else {
+        syscall(SYS_close, fds[1]);
+
+        // read log from fds[0]
+        char buffer[READ_HILOG_BUFFER_SIZE] = {0};
+        while (true) {
+            (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+            ssize_t nread = read(fds[0], buffer, sizeof(buffer) - 1);
+            if (nread <= 0) {
+                HIVIEW_LOGI("read hilog finished");
+                break;
+            }
+            log.append(buffer);
+        }
+        syscall(SYS_close, fds[0]);
+
+        if (waitpid(childPid, nullptr, 0) != childPid) {
+            HIVIEW_LOGE("waitpid fail, pid: %{public}d, errno: %{public}d", childPid, errno);
+            return false;
+        }
+        HIVIEW_LOGI("get hilog waitpid %{public}d success", childPid);
+        return true;
+    }
+    return false;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
