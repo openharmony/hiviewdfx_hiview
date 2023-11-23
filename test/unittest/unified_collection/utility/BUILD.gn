@@ -34,6 +34,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "cpu_collector_test.cpp",
     "gpu_collector_test.cpp",
     "io_collector_test.cpp",
+    "mem_profiler_collector_test.cpp",
     "memory_collector_test.cpp",
     "network_collector_test.cpp",
     "trace_collector_test.cpp",
@@ -50,7 +51,9 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
+    "hiprofiler:libnative_daemon_client",
     "hitrace:hitrace_dump",
+    "init:libbegetutil",
     "wifi:wifi_sdk",
   ]
 }

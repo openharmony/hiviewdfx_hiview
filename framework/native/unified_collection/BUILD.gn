@@ -42,6 +42,7 @@ ohos_source_set("ucollection_source") {
     "collector/cpu_collector_impl.cpp",
     "collector/gpu_collector_impl.cpp",
     "collector/io_collector_impl.cpp",
+    "collector/mem_profiler_collector_impl.cpp",
     "collector/memory_collector_impl.cpp",
     "collector/network_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
@@ -61,7 +62,9 @@ ohos_source_set("ucollection_source") {
 
   external_deps = [
     "hilog:libhilog",
+    "hiprofiler:libnative_daemon_client",
     "hitrace:hitrace_dump",
+    "init:libbegetutil",
     "relational_store:native_rdb",
     "wifi:wifi_sdk",
   ]
