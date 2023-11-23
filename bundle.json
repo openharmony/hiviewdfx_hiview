@@ -41,6 +41,7 @@
                 "faultloggerd",
                 "hidumper",
                 "hilog",
+                "hiprofiler",
                 "hisysevent",
                 "init",
                 "input",

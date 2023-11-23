@@ -31,7 +31,7 @@ DEFINE_LOG_TAG("UCollectUtil-MemProfilerCollector");
 
 const std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
-constexpr int waitExitMills = 1000;
+constexpr int WAIT_EXIT_MILLS = 1000;
 
 class MemProfilerCollectorImpl : public MemProfilerCollector {
 public:
@@ -49,7 +49,7 @@ void MemProfilerCollectorImpl::start(Developtools::NativeDaemon::NativeMemoryPro
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     while (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(waitExitMills));
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
     }
     NativeMemoryProfilerSaClientManager::Start(type, pid, duration, sampleInterval);
 }
@@ -58,7 +58,7 @@ void MemProfilerCollectorImpl::stop(int pid)
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
     while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(waitExitMills));
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
     }
     NativeMemoryProfilerSaClientManager::Stop(pid);
 }
