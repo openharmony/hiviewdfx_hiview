@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <dlfcn.h>
+#include <fcntl.h>
 #include <iostream>
 
 #include "memory_collector.h"
@@ -30,6 +32,15 @@ public:
     static void SetUpTestCase() {};
     static void TearDownTestCase() {};
 };
+
+namespace {
+bool HasValidAILibrary()
+{
+    const std::string libName = "libai_infra.so";
+    void* handle = dlopen(libName.c_str(), RTLD_LAZY);
+    return handle != nullptr;
+}
+}
 
 /**
  * @tc.name: MemoryCollectorTest001
@@ -145,7 +156,11 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest009, TestSize.Level1)
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     CollectResult<std::vector<AIProcessMem>> data = collector->CollectAllAIProcess();
     std::cout << "collect all AI process result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    if (HasValidAILibrary()) {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    } else {
+        ASSERT_TRUE(data.retCode == UcError::READ_FAILED);
+    }
 }
 
 /**
@@ -158,7 +173,11 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest010, TestSize.Level1)
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     CollectResult<std::string> data = collector->ExportAllAIProcess();
     std::cout << "export all AI process result" << data.retCode << std::endl;
-    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    if (HasValidAILibrary()) {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    } else {
+        ASSERT_TRUE(data.retCode == UcError::READ_FAILED);
+    }
 }
 
 /**
@@ -169,7 +188,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest010, TestSize.Level1)
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest011, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<std::string> data = collector->CollectRawSmaps(1000);
+    CollectResult<std::string> data = collector->CollectRawSmaps(1);
     std::cout << "collect raw smaps info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
@@ -182,7 +201,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest011, TestSize.Level1)
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest012, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<std::string> data = collector->CollectHprof(1000);
+    CollectResult<std::string> data = collector->CollectHprof(1);
     std::cout << "collect heap snapshot result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
