@@ -30,6 +30,7 @@
 #include <thread>
 #include <unistd.h>
 
+#include "accesstoken_kit.h"
 #include "asan_collector.h"
 #include "bundle_mgr_client.h"
 #include "common_utils.h"
@@ -43,6 +44,7 @@
 #include "file_util.h"
 #include "hisysevent.h"
 #include "hiview_global.h"
+#include "ipc_skeleton.h"
 #include "log_analyzer.h"
 #include "logger.h"
 #include "parameter_ex.h"
@@ -241,8 +243,22 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     }
 }
 
+bool Faultlogger::VerifiedDumpPermission()
+{
+    using namespace Security::AccessToken;
+    auto tokenId = IPCSkeleton::GetCallingTokenID();
+    if (AccessTokenKit::VerifyAccessToken(tokenId, "ohos.permission.DUMP") != PermissionState::PERMISSION_GRANTED) {
+        return false;
+    }
+    return true;
+}
+
 void Faultlogger::Dump(int fd, const std::vector<std::string> &cmds)
 {
+    if (!VerifiedDumpPermission()) {
+        dprintf(fd, "dump operation is not permitted.\n");
+        return;
+    }
     auto request = InitDumpRequest();
     int32_t status = DUMP_PARSE_CMD;
     for (auto it = cmds.begin(); it != cmds.end(); it++) {
