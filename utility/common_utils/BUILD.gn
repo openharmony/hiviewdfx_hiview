@@ -28,6 +28,12 @@ config("hiview_reliability_common_utils_config") {
 }
 
 ohos_source_set("hiview_reliability_common_utils") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   configs = [ ":hiview_reliability_common_utils_config" ]

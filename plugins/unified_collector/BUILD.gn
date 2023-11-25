@@ -24,6 +24,12 @@ config("unified_collector_config") {
 }
 
 ohos_source_set("unified_collector") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   configs = [ ":unified_collector_config" ]
 
   sources = [
