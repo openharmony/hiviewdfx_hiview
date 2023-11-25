@@ -145,6 +145,15 @@
                             "utility/trace_collector.h"
                         ]
                     }
+                },
+		{
+                    "name": "//base/hiviewdfx/hiview/plugins/faultlogger/service/sanitizer_collector/gwp_asan:libasan_logger",
+                    "header": {
+                        "header_base": "//base/hiviewdfx/hiview/plugins/faultlogger/service/sanitizer_collector/gwp_asan",
+                        "header_files": [
+                            "gwpasan_collector.h"
+                        ]
+                    }
                 }
             ],
             "test": [ "//base/hiviewdfx/hiview:hiview_test_package" ]
