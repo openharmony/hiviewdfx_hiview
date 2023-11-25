@@ -157,9 +157,26 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest009, TestSize.Level1)
     constexpr int initPid = 1;
     auto collectResult = collector->CollectProcessCpuStatInfo(initPid);
     ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+
+    std::cout << "proc.procName=" << collectResult.data.procName << std::endl;
+    std::cout << "proc.startTime=" << collectResult.data.startTime << std::endl;
+    std::cout << "proc.endTime=" << collectResult.data.endTime << std::endl;
+    std::cout << "proc.pid=" << collectResult.data.pid << std::endl;
+    std::cout << "proc.minFlt=" << collectResult.data.minFlt << std::endl;
+    std::cout << "proc.majFlt=" << collectResult.data.majFlt << std::endl;
+    std::cout << "proc.cpuLoad=" << collectResult.data.cpuLoad << std::endl;
+    std::cout << "proc.uCpuUsage=" << collectResult.data.uCpuUsage << std::endl;
+    std::cout << "proc.sCpuUsage=" << collectResult.data.sCpuUsage << std::endl;
+    std::cout << "proc.cpuUsage=" << collectResult.data.cpuUsage << std::endl;
     ASSERT_GT(collectResult.data.startTime, 0);
     ASSERT_GT(collectResult.data.endTime, 0);
     ASSERT_EQ(collectResult.data.pid, initPid);
+    ASSERT_GE(collectResult.data.minFlt, 0);
+    ASSERT_GE(collectResult.data.majFlt, 0);
+    ASSERT_GE(collectResult.data.cpuLoad, 0);
+    ASSERT_GE(collectResult.data.uCpuUsage, 0);
+    ASSERT_GE(collectResult.data.sCpuUsage, 0);
+    ASSERT_GE(collectResult.data.cpuUsage, 0);
     ASSERT_FALSE(collectResult.data.procName.empty());
 
     sleep(1); // 1s
