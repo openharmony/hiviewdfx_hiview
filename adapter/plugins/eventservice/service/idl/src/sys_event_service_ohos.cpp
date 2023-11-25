@@ -421,10 +421,6 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
 bool SysEventServiceOhos::HasAccessPermission() const
 {
     using namespace Security::AccessToken;
-    auto callingUid = IPCSkeleton::GetCallingUid();
-    if (callingUid == HID_SHELL || callingUid == HID_ROOT || callingUid == HID_OHOS) {
-        return true;
-    }
     auto tokenId = IPCSkeleton::GetFirstTokenID();
     if (tokenId == 0) {
         tokenId = IPCSkeleton::GetCallingTokenID();
@@ -432,7 +428,6 @@ bool SysEventServiceOhos::HasAccessPermission() const
     if (AccessTokenKit::VerifyAccessToken(tokenId, READ_DFX_SYSEVENT_PERMISSION) == RET_SUCCESS) {
         return true;
     }
-    HiLog::Error(LABEL, "hiview service permission denial callingUid=%{public}d", callingUid);
     return false;
 }
 
