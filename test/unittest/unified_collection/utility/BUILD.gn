@@ -20,6 +20,7 @@ config("ucollection_utility_test_config") {
   include_dirs = [
     ".",
     "$hiview_framework/native/unified_collection/collector/inner_include",
+    "$hiview_base/utility/include",
   ]
 
   cflags = [ "-D__UNITTEST__" ]
@@ -36,6 +37,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "io_collector_test.cpp",
     "memory_collector_test.cpp",
     "network_collector_test.cpp",
+    "perf_collector_test.cpp",
     "trace_collector_test.cpp",
   ]
 
@@ -53,4 +55,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "hitrace:hitrace_dump",
     "wifi:wifi_sdk",
   ]
+  if (has_hiperf) {
+    cflags = [ "-DHAS_HIPERF" ]
+  }
 }
