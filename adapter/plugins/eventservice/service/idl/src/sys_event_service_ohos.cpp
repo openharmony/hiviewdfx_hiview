@@ -45,6 +45,7 @@ constexpr pid_t HID_OHOS = 1000;
 const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 SECURITY = 3, BEHAVIOR = 4
 constexpr uint32_t INVALID_EVENT_TYPE = 0;
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
+const string DFX_DUMP_PERMISSION = "ohos.permission.DUMP";
 
 bool MatchContent(int type, const string& rule, const string& match)
 {
@@ -421,18 +422,14 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
 bool SysEventServiceOhos::HasAccessPermission() const
 {
     using namespace Security::AccessToken;
-    auto callingUid = IPCSkeleton::GetCallingUid();
-    if (callingUid == HID_SHELL || callingUid == HID_ROOT || callingUid == HID_OHOS) {
-        return true;
-    }
     auto tokenId = IPCSkeleton::GetFirstTokenID();
     if (tokenId == 0) {
         tokenId = IPCSkeleton::GetCallingTokenID();
     }
-    if (AccessTokenKit::VerifyAccessToken(tokenId, READ_DFX_SYSEVENT_PERMISSION) == RET_SUCCESS) {
+    if ((AccessTokenKit::VerifyAccessToken(tokenId, READ_DFX_SYSEVENT_PERMISSION) == RET_SUCCESS) ||
+        (AccessTokenKit::VerifyAccessToken(tokenId, DFX_DUMP_PERMISSION) == RET_SUCCESS)) {
         return true;
     }
-    HiLog::Error(LABEL, "hiview service permission denial callingUid=%{public}d", callingUid);
     return false;
 }
 

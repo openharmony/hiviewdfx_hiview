@@ -29,11 +29,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
-constexpr pid_t HID_ROOT = 0;
-constexpr pid_t HID_SHELL = 2000;
-constexpr pid_t HID_OHOS = 1000;
 
-const std::unordered_map<uint32_t, std::string> PERMISSION_MAP = {
+const std::unordered_map<uint32_t, std::string> ALL_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
         "ohos.permission.READ_HIVIEW_SYSTEM"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY),
@@ -41,10 +38,7 @@ const std::unordered_map<uint32_t, std::string> PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE),
         "ohos.permission.WRITE_HIVIEW_SYSTEM"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE),
-        "ohos.permission.WRITE_HIVIEW_SYSTEM"}
-};
-
-const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
+        "ohos.permission.WRITE_HIVIEW_SYSTEM"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
         "ohos.permission.WRITE_HIVIEW_SYSTEM"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
@@ -61,10 +55,38 @@ const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
         "ohos.permission.WRITE_HIVIEW_SYSTEM"}
 };
 
-const std::vector<std::unordered_map<uint32_t, std::string>> ALL_PERMISSION_MAPS = {
-    PERMISSION_MAP,
-    TRACE_PERMISSION_MAP
+const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_RECORDING_TRACE),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_ON),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_OFF),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE),
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
+        "ohos.permission.DUMP"}
 };
+
+bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
+{
+    using namespace Security::AccessToken;
+    auto iter = permissions.find(code);
+    if (iter == permissions.end()) {
+        return false;
+    }
+    AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+    int verifyResult = AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
+    if (verifyResult == PERMISSION_GRANTED) {
+        return true;
+    }
+    HIVIEW_LOGW("%{public}s not granted, code: %{public}u", iter->second.c_str(), code);
+    return false;
+}
 
 int32_t WriteTracePracelableToMessage(MessageParcel& dest, Parcelable& data)
 {
@@ -97,25 +119,7 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
 
 bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
 {
-    using namespace Security::AccessToken;
-    pid_t callingUid = IPCSkeleton::GetCallingUid();
-    if ((callingUid == HID_SHELL) || (callingUid == HID_ROOT) || (callingUid == HID_OHOS)) {
-        return true;
-    }
-    for (auto permissionMap : ALL_PERMISSION_MAPS) {
-        auto iter = permissionMap.find(code);
-        if (iter == permissionMap.end()) {
-            continue;
-        }
-        AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
-        int verifyResult = AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
-        if (verifyResult == PERMISSION_GRANTED) {
-            return true;
-        }
-        HIVIEW_LOGW("%{public}s not granted, code: %{public}u", iter->second.c_str(), code);
-        return false;
-    }
-    return false;
+    return HasAccessPermission(code, ALL_PERMISSION_MAP) || HasAccessPermission(code, TRACE_PERMISSION_MAP);
 }
 
 std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
