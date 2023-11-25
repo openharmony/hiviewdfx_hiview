@@ -26,11 +26,22 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string SYS_CPU_DIR_PREFIX = "/sys/devices/system/cpu/cpu";
 
+struct CpuTimeInfo {
+    std::string cpuId;
+    uint32_t userTime = 0;
+    uint32_t niceTime = 0;
+    uint32_t systemTime = 0;
+    uint32_t idleTime = 0;
+    uint32_t ioWaitTime = 0;
+    uint32_t irqTime = 0;
+    uint32_t softIrqTime = 0;
+};
+
 class CpuUtil {
 public:
     static uint32_t GetNumOfCpuCores();
     static UCollect::UcError GetSysCpuLoad(SysCpuLoad& sysCpuLoad);
-    static UCollect::UcError GetCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos);
+    static UCollect::UcError GetCpuTimeInfos(std::vector<CpuTimeInfo>& cpuInfos);
     static UCollect::UcError GetCpuFrequency(std::vector<CpuFreq>& cpuFreqs);
 };
 } // namespace UCollectUtil

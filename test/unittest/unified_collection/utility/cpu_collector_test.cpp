@@ -74,16 +74,15 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest002, TestSize.Level1)
     ASSERT_GT(sysCpuUsage.endTime, sysCpuUsage.startTime);
     ASSERT_GT(sysCpuUsage.cpuInfos.size(), 0);
     for (const auto& cpuInfo : sysCpuUsage.cpuInfos) {
-        std::cout << cpuInfo.cpuId << ", userTime=" << cpuInfo.userTime
-            << ", niceTime=" << cpuInfo.niceTime
-            << ", systemTime=" << cpuInfo.systemTime
-            << ", idleTime=" << cpuInfo.idleTime
-            << ", ioWaitTime=" << cpuInfo.ioWaitTime
-            << ", irqTime=" << cpuInfo.irqTime
-            << ", softIrqTime=" << cpuInfo.softIrqTime
+        std::cout << cpuInfo.cpuId << ", userUsage=" << cpuInfo.userUsage
+            << ", niceUsage=" << cpuInfo.niceUsage
+            << ", systemUsage=" << cpuInfo.systemUsage
+            << ", idleUsage=" << cpuInfo.idleUsage
+            << ", ioWaitUsage=" << cpuInfo.ioWaitUsage
+            << ", irqUsage=" << cpuInfo.irqUsage
+            << ", softIrqUsage=" << cpuInfo.softIrqUsage
             << std::endl;
         ASSERT_FALSE(cpuInfo.cpuId.empty());
-        ASSERT_GE(cpuInfo.userTime, 0);
     }
 
     // second collection

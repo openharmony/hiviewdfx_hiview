@@ -20,6 +20,7 @@
 #include <unordered_map>
 
 #include "cpu.h"
+#include "cpu_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -30,7 +31,7 @@ public:
     ~CpuCalculator() = default;
     double CalculateCpuLoad(uint64_t currCpuLoad, uint64_t lastCpuLoad, uint64_t statPeriod);
     double CalculateCpuUsage(uint64_t currCpuUsage, uint64_t lastCpuUsage, uint64_t statPeriod);
-    CpuUsageInfo CalculateSysCpuUsageInfo(const CpuUsageInfo& currCpuInfo, const CpuUsageInfo& lastCpuInfo);
+    CpuUsageInfo CalculateSysCpuUsageInfo(const CpuTimeInfo& currCpuTimeInfo, const CpuTimeInfo& lastCpuTimeInfo);
     std::vector<uint32_t> GetCpuDmipses();
 
 private:

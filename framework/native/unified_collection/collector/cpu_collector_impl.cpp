@@ -66,7 +66,7 @@ private:
     void UpdateCollectionTime();
     void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem);
     void CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
-        const std::vector<CpuUsageInfo>& currCpuInfos);
+        const std::vector<CpuTimeInfo>& currCpuTimeInfos);
     void CalculateProcessCpuStatInfos(
         std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
         std::shared_ptr<ProcessCpuData> processCpuData,
@@ -86,7 +86,7 @@ private:
     std::unique_ptr<CollectDeviceClient> deviceClient_;
     /* map<pid, ProcessCpuTimeInfo> */
     std::unordered_map<int32_t, ProcessCpuTimeInfo> lastProcCpuTimeInfos_;
-    std::vector<CpuUsageInfo> lastSysCpuUsageInfos_;
+    std::vector<CpuTimeInfo> lastSysCpuTimeInfos_;
     CpuCalculator cpuCalculator_;
 };
 
@@ -189,8 +189,8 @@ CollectResult<SysCpuLoad> CpuCollectorImpl::CollectSysCpuLoad()
 CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdate)
 {
     CollectResult<SysCpuUsage> result;
-    std::vector<CpuUsageInfo> currCpuInfos;
-    result.retCode = CpuUtil::GetCpuUsageInfos(currCpuInfos);
+    std::vector<CpuTimeInfo> currCpuTimeInfos;
+    result.retCode = CpuUtil::GetCpuTimeInfos(currCpuTimeInfos);
     if (result.retCode != UCollect::UcError::SUCCESS) {
         return result;
     }
@@ -198,11 +198,11 @@ CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdat
     SysCpuUsage& sysCpuUsage = result.data;
     sysCpuUsage.startTime = lastSysCpuUsageTime_;
     sysCpuUsage.endTime = TimeUtil::GetMilliseconds();
-    CalculateSysCpuUsageInfos(sysCpuUsage.cpuInfos, currCpuInfos);
+    CalculateSysCpuUsageInfos(sysCpuUsage.cpuInfos, currCpuTimeInfos);
 
     if (isNeedUpdate) {
         lastSysCpuUsageTime_ = sysCpuUsage.endTime;
-        lastSysCpuUsageInfos_ = currCpuInfos;
+        lastSysCpuTimeInfos_ = currCpuTimeInfos;
     }
     HIVIEW_LOGD("collect system cpu usage, size=%{public}zu, isNeedUpdate=%{public}d",
         sysCpuUsage.cpuInfos.size(), isNeedUpdate);
@@ -210,14 +210,15 @@ CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdat
 }
 
 void CpuCollectorImpl::CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
-    const std::vector<CpuUsageInfo>& currCpuInfos)
+    const std::vector<CpuTimeInfo>& currCpuTimeInfos)
 {
-    if (currCpuInfos.size() != lastSysCpuUsageInfos_.size()) {
+    if (currCpuTimeInfos.size() != lastSysCpuTimeInfos_.size()) {
         return;
     }
 
-    for (size_t i = 0; i < currCpuInfos.size(); ++i) {
-        cpuInfos.emplace_back(cpuCalculator_.CalculateSysCpuUsageInfo(currCpuInfos[i], lastSysCpuUsageInfos_[i]));
+    for (size_t i = 0; i < currCpuTimeInfos.size(); ++i) {
+        cpuInfos.emplace_back(cpuCalculator_.CalculateSysCpuUsageInfo(currCpuTimeInfos[i],
+            lastSysCpuTimeInfos_[i]));
     }
 }
 

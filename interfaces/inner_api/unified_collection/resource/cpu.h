@@ -28,13 +28,13 @@ struct SysCpuLoad {
 
 struct CpuUsageInfo {
     std::string cpuId;
-    uint32_t userTime = 0;
-    uint32_t niceTime = 0;
-    uint32_t systemTime = 0;
-    uint32_t idleTime = 0;
-    uint32_t ioWaitTime = 0;
-    uint32_t irqTime = 0;
-    uint32_t softIrqTime = 0;
+    double userUsage = 0;
+    double niceUsage = 0;
+    double systemUsage = 0;
+    double idleUsage = 0;
+    double ioWaitUsage = 0;
+    double irqUsage = 0;
+    double softIrqUsage = 0;
 };
 
 struct SysCpuUsage {

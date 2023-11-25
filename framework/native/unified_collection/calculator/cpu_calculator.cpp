@@ -16,7 +16,6 @@
 
 #include <cinttypes>
 
-#include "cpu_util.h"
 #include "file_util.h"
 #include "logger.h"
 #include "string_util.h"
@@ -26,9 +25,15 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-CpuCalculator");
 namespace {
-uint32_t CalcIntegerDiffValue(uint32_t currValue, uint32_t lastValue)
+uint32_t CalcSysCpuTotalTime(const CpuTimeInfo& cpuTimeInfo)
 {
-    return currValue > lastValue ? (currValue - lastValue) : 0;
+    return cpuTimeInfo.userTime + cpuTimeInfo.niceTime + cpuTimeInfo.systemTime + cpuTimeInfo.idleTime
+        + cpuTimeInfo.ioWaitTime + cpuTimeInfo.irqTime + cpuTimeInfo.softIrqTime;
+}
+
+double CalcSysCpuUsage(uint32_t deltaTime, uint32_t currTime, uint32_t lastTime)
+{
+    return currTime <= lastTime ?  0 : (((currTime - lastTime) * 1.0) / deltaTime);
 }
 }
 
@@ -174,19 +179,26 @@ double CpuCalculator::CalculateCpuUsage(uint64_t currCpuUsage, uint64_t lastCpuU
     return ((cpuUsageInStatPeriod * 1.0) / totalCpuUsageOfSystemInStatPeriod);
 }
 
-CpuUsageInfo CpuCalculator::CalculateSysCpuUsageInfo(const CpuUsageInfo& currCpuInfo, const CpuUsageInfo& lastCpuInfo)
+CpuUsageInfo CpuCalculator::CalculateSysCpuUsageInfo(const CpuTimeInfo& currCpuTimeInfo,
+    const CpuTimeInfo& lastCpuTimeInfo)
 {
-    CpuUsageInfo calcCpuInfo = {
-        .cpuId = currCpuInfo.cpuId,
-        .userTime = CalcIntegerDiffValue(currCpuInfo.userTime, lastCpuInfo.userTime),
-        .niceTime = CalcIntegerDiffValue(currCpuInfo.niceTime, lastCpuInfo.niceTime),
-        .systemTime = CalcIntegerDiffValue(currCpuInfo.systemTime, lastCpuInfo.systemTime),
-        .idleTime = CalcIntegerDiffValue(currCpuInfo.idleTime, lastCpuInfo.idleTime),
-        .ioWaitTime = CalcIntegerDiffValue(currCpuInfo.ioWaitTime, lastCpuInfo.ioWaitTime),
-        .irqTime = CalcIntegerDiffValue(currCpuInfo.irqTime, lastCpuInfo.irqTime),
-        .softIrqTime = CalcIntegerDiffValue(currCpuInfo.softIrqTime, lastCpuInfo.softIrqTime),
-    };
-    return calcCpuInfo;
+    CpuUsageInfo calcInfo;
+    calcInfo.cpuId = currCpuTimeInfo.cpuId;
+    uint32_t currTotalTime = CalcSysCpuTotalTime(currCpuTimeInfo);
+    uint32_t lastTotalTime = CalcSysCpuTotalTime(lastCpuTimeInfo);
+    if (currTotalTime <= lastTotalTime) {
+        return calcInfo;
+    }
+
+    uint32_t deltaTime = currTotalTime - lastTotalTime;
+    calcInfo.userUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.userTime, lastCpuTimeInfo.userTime);
+    calcInfo.niceUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.niceTime, lastCpuTimeInfo.niceTime);
+    calcInfo.systemUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.systemTime, lastCpuTimeInfo.systemTime);
+    calcInfo.idleUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.idleTime, lastCpuTimeInfo.idleTime);
+    calcInfo.ioWaitUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.ioWaitTime, lastCpuTimeInfo.ioWaitTime);
+    calcInfo.irqUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.irqTime, lastCpuTimeInfo.irqTime);
+    calcInfo.softIrqUsage = CalcSysCpuUsage(deltaTime, currCpuTimeInfo.softIrqTime, lastCpuTimeInfo.softIrqTime);
+    return calcInfo;
 }
 
 std::vector<uint32_t> CpuCalculator::GetCpuDmipses()

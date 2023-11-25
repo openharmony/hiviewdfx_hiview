@@ -33,7 +33,7 @@ uint32_t GetIntegerFromFile(const std::string& path)
     return StringUtil::StringToUl(content);
 }
 
-bool GetCpuUsageInfoFromString(const std::string& cpuInfoStr, CpuUsageInfo& cpuInfo)
+bool GetCpuUsageInfoFromString(const std::string& cpuInfoStr, CpuTimeInfo& cpuInfo)
 {
     std::vector<std::string> splitStrs;
     StringUtil::SplitStr(cpuInfoStr, " ", splitStrs);
@@ -97,7 +97,7 @@ UCollect::UcError CpuUtil::GetSysCpuLoad(SysCpuLoad& sysCpuLoad)
     return UCollect::SUCCESS;
 }
 
-UCollect::UcError CpuUtil::GetCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos)
+UCollect::UcError CpuUtil::GetCpuTimeInfos(std::vector<CpuTimeInfo>& cpuInfos)
 {
     const std::string procStatPath = "/proc/stat";
     std::vector<std::string> lines;
@@ -106,7 +106,7 @@ UCollect::UcError CpuUtil::GetCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos)
         return UCollect::READ_FAILED;
     }
     for (const auto& line : lines) {
-        CpuUsageInfo cpuInfo;
+        CpuTimeInfo cpuInfo;
         if (!GetCpuUsageInfoFromString(line, cpuInfo)) {
             break; // if the current line fails, all cpu info has been read.
         }
