@@ -61,6 +61,10 @@ HWTEST_F(PluginTest, PluginTest001, testing::ext::TestSize.Level0)
     plugin.Dump(0, {});
     // OnEventListeningCallback
     plugin.OnEventListeningCallback(*(event.get()));
+    // OnConfigUpdate
+    std::string localCfgPath = "test/local/config";
+    std::string cloudCfgPath = "test/cloud/config";
+    plugin.OnConfigUpdate(localCfgPath, cloudCfgPath);
 
     // delay to handle event
     auto pipelineEvent = std::make_shared<PipelineEvent>(*(event.get()));

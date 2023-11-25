@@ -195,12 +195,17 @@ int32_t HiviewServiceAbilityStub::HandleListRequest(MessageParcel& data, Message
         return ret;
     }
     auto fileNum = fileInfos.size();
+    const size_t listFileNumMax = 1200;
+    if (fileNum > listFileNumMax) {
+        HIVIEW_LOGW("File info list size: %{public}d, keep the first %{public}d", fileNum, listFileNumMax);
+        fileNum = listFileNumMax;
+    }
     if (!reply.WriteInt32(fileNum)) {
         HIVIEW_LOGE("write result failed, ret: %{public}d", ret);
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
-    for (auto& fileInfo : fileInfos) {
-        if (!reply.WriteParcelable(&fileInfo)) {
+    for (size_t i = 0; i < fileNum; ++i) {
+        if (!reply.WriteParcelable(&fileInfos[i])) {
             HIVIEW_LOGE("write file info failed.");
             return HiviewNapiErrCode::ERR_DEFAULT;
         }

@@ -67,6 +67,7 @@ public:
     static int RunSanitizerd();
 
 private:
+    bool VerifiedDumpPermission();
     void AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event);
     void AddPublicInfo(FaultLogInfo& info);
     void Dump(int fd, const DumpRequest& request) const;

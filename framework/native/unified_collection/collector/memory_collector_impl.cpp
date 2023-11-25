@@ -14,13 +14,13 @@
  */
 #include "memory_collector.h"
 
+#include <csignal>
 #include <fstream>
 #include <string_ex.h>
 #include <dlfcn.h>
 #include <securec.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <signal.h>
 #include <regex>
 #include <map>
 #include <mutex>
@@ -62,6 +62,7 @@ public:
     virtual CollectResult<std::string> ExportAllAIProcess() override;
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) override;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
+    virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
 };
 
 static std::string GetCurrTimestamp()
@@ -152,9 +153,9 @@ static bool GetSmapsFromProcPath(const std::string& procPath, ProcessMemory& pro
             swapPss += temp;
         }
     }
-    procMem.rss = rss;
-    procMem.pss = pss;
-    procMem.swapPss = swapPss;
+    procMem.rss = static_cast<int32_t>(rss);
+    procMem.pss = static_cast<int32_t>(pss);
+    procMem.swapPss = static_cast<int32_t>(swapPss);
     return true;
 }
 
@@ -219,7 +220,8 @@ static void DoClearFiles(const std::string& filePrefix)
     }
 }
 
-static CollectResult<std::string> CollectRawInfo(const std::string& filePath, const std::string& preFix)
+static CollectResult<std::string> CollectRawInfo(const std::string& filePath, const std::string& preFix,
+                                                 bool doClearFlag = true)
 {
     CollectResult<std::string> result;
     std::string content;
@@ -245,7 +247,9 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
-    DoClearFiles(preFix);
+    if (doClearFlag) {
+        DoClearFiles(preFix);
+    }
     result.retCode = UcError::SUCCESS;
     return result;
 }
@@ -276,6 +280,12 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
             } else if (type == "Pss") {
                 processMemory.pss = value;
                 HIVIEW_LOGD("Pss=%{public}d", processMemory.pss);
+            } else if (type == "Shared_Dirty") {
+                processMemory.sharedDirty = value;
+                HIVIEW_LOGD("Shared_Dirty=%{public}d", processMemory.sharedDirty);
+            } else if (type == "Private_Dirty") {
+                processMemory.privateDirty = value;
+                HIVIEW_LOGD("Private_Dirty=%{public}d", processMemory.privateDirty);
             }
         }
     }
@@ -338,7 +348,7 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcess
             HIVIEW_LOGD("%{public}s is not num string, value=%{public}d.", fileName.c_str(), value);
             continue;
         }
-        std::string smapsPath = PROC + fileName + "/smaps";
+        std::string smapsPath = PROC + fileName + "/smaps_rollup";
         std::string adjPath = PROC + fileName + "/oom_score_adj";
         ProcessMemory procMemory;
         procMemory.pid = value;
@@ -446,7 +456,9 @@ CollectResult<std::string> MemoryCollectorImpl::CollectRawSmaps(int32_t pid)
     std::string pidStr = std::to_string(pid);
     std::string fileName = PROC + pidStr + "/smaps";
     std::string preFix = "proc_smaps_" + pidStr + "_";
-    return CollectRawInfo(fileName, preFix);
+    CollectResult<std::string> result = CollectRawInfo(fileName, preFix, false);
+    DoClearFiles("proc_smaps_");
+    return result;
 }
 
 static std::string GetNewestSnapshotPath(const std::string& path)
@@ -502,10 +514,8 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
 {
     CollectResult<std::string> result;
     std::string pidStr = std::to_string(pid);
-    const std::string cmd = "kill -40 " + pidStr;
-    std::vector<std::string> cmdRet;
-    if (CommonUtils::ExecCommand(cmd, cmdRet) == -1) {
-        HIVIEW_LOGE("exec cmd: %{public}s failed.", cmd.c_str());
+    if (kill(pid, 40) != 0) {   // kill -40
+        HIVIEW_LOGE("send kill-signal failed, pid=%{public}d, errno=%{public}d.", pid, errno);
         result.retCode = UcError::UNSUPPORT;
         return result;
     }
@@ -543,6 +553,26 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
     }
     DoClearFiles("jsheap_");
     result.data = savePath;
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
+{
+    CollectResult<uint64_t> result;
+    std::string filename = PROC + std::to_string(pid) + STATM;
+    std::string content;
+    FileUtil::LoadStringFromFile(filename, content);
+    uint64_t& vssValue = result.data;
+    if (!content.empty()) {
+        uint64_t tempValue = 0;
+        int retScanf = sscanf_s(content.c_str(), "%llu^*", &tempValue);
+        if (retScanf != -1) {
+            vssValue = tempValue * VSS_BIT;
+        } else {
+            HIVIEW_LOGD("GetVss error! pid = %d", pid);
+        }
+    }
     result.retCode = UcError::SUCCESS;
     return result;
 }

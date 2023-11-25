@@ -54,6 +54,7 @@ ohos_unittest("FaultloggerUnittest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
+    "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "$hiview_plugin/faultlogger/service:faultlogger_service_ability",
@@ -63,6 +64,7 @@ ohos_unittest("FaultloggerUnittest") {
 
   external_deps = [
     "ability_base:want",
+    "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog:libhilog",

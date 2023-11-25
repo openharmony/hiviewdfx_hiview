@@ -97,19 +97,22 @@ std::string GetApplicationNameById(int32_t uid)
     return bundleName;
 }
 
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
+bool GetDfxBundleInfo(const std::string& bundleName, DfxBundleInfo& bundleInfo)
 {
     AppExecFwk::BundleInfo info;
     AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
                               info, Constants::ALL_USERID)) {
-        SANITIZERD_LOGW("Failed to query BundleInfo from bms, uid:%{public}d.", uid);
-        return "";
+        SANITIZERD_LOGW("Failed to query BundleInfo from bms, bundle:%{public}s.", bundleName.c_str());
+        return false;
     } else {
         SANITIZERD_LOGI("The version of %{public}s is %{public}s", bundleName.c_str(),
                         info.versionName.c_str());
     }
-    return info.versionName;
+    bundleInfo.isPreInstalled = info.isPreInstallApp;
+    bundleInfo.versionName = info.versionName;
+    bundleInfo.versionCode = info.versionCode;
+    return true;
 }
 
 int32_t CreateMultiTierDirectory(const std::string &directoryPath, const std::string &rootDirPath,

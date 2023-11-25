@@ -219,7 +219,6 @@ std::string DecodedEvent::AsJsonStr()
         jsonStream.seekp(-1, std::ios_base::end);
     }
     jsonStream << "}";
-    HiLog::Debug(LABEL, "Decoded event: %{public}s.", jsonStream.str().c_str());
     return jsonStream.str();
 }
 
@@ -290,7 +289,6 @@ void DecodedEvent::ParseCustomizedParams(const size_t maxLen)
         return;
     }
     auto paramCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(rawData_ + pos_)));
-    HiLog::Debug(LABEL, "paramCnt is : %{public}zu.", paramCnt);
     pos_ += sizeof(int32_t);
     while (paramCnt > 0) {
         auto decodedParam = ParseCustomizedParam(maxLen);

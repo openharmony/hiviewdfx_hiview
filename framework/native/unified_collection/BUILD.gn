@@ -25,7 +25,6 @@ config("ucolletciton_source_config") {
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
     "$hiview_service/unified_collection/include",
-    "//base/hiviewdfx/hitrace/interfaces/native/innerkits/include/",
   ]
 }
 
@@ -35,6 +34,7 @@ ohos_source_set("ucollection_source") {
     "$hiview_base:logger_config",
   ]
 
+  public_configs = [ ":ucolletciton_source_config" ]
   sources = [
     "calculator/cpu_calculator.cpp",
     "calculator/io_calculator.cpp",

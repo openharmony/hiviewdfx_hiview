@@ -35,6 +35,7 @@ namespace {
     constexpr size_t TWO_PARAMETER = 2;
     constexpr size_t THREE_PARAMETER = 3;
     constexpr size_t FOUR_PARAMETER = 4;
+    std::mutex g_mutex;
 }
 static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogInfo)
 {
@@ -74,6 +75,7 @@ static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogI
 
 static void FaultLogExecuteCallback(napi_env env, void *data)
 {
+    std::lock_guard<std::mutex> lock(g_mutex);
     FaultLogInfoContext* faultLogInfoContext = static_cast<FaultLogInfoContext *>(data);
     const int maxQueryCount = 10;
     int currentCount = 0;
