@@ -85,6 +85,12 @@ config("hiview_plus_config") {
 }
 
 ohos_executable("hiview") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   install_enable = true
 
   deps = [

@@ -33,6 +33,12 @@ ohos_prebuilt_etc("EventloggerPipeline") {
 }
 
 ohos_source_set("eventlogger_config") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   public_configs = [ ":eventlogger_config_config" ]
 

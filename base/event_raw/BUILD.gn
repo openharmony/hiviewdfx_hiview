@@ -21,6 +21,12 @@ config("hiview_event_raw_base_config") {
 }
 
 ohos_source_set("hiview_event_raw_base") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "base/raw_data.cpp",
     "base/raw_data_base_def.cpp",
@@ -44,6 +50,12 @@ config("hiview_event_raw_decode_config") {
 }
 
 ohos_source_set("hiview_event_raw_decode") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "decoded/decoded_event.cpp",
     "decoded/decoded_param.cpp",
@@ -70,6 +82,12 @@ config("hiview_event_raw_encode_config") {
 }
 
 ohos_source_set("hiview_event_raw_encode") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "encoded/encoded_param.cpp",
     "encoded/raw_data_builder.cpp",

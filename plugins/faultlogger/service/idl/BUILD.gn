@@ -22,6 +22,12 @@ config("faultlogger_service_impl_config") {
 }
 
 ohos_source_set("faultlogger_service_ohos_common") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   sources = [
     "src/faultlog_info_ohos.cpp",
@@ -48,6 +54,12 @@ ohos_source_set("faultlogger_service_ohos_common") {
 }
 
 ohos_source_set("faultlogger_service_impl") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   include_dirs = [ "$hiview_plugin/faultlogger/service" ]
 

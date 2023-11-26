@@ -21,6 +21,12 @@ config("event_pool_config") {
 }
 
 ohos_source_set("eventpool") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   public_configs = [ ":event_pool_config" ]
 
