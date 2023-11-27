@@ -34,8 +34,10 @@
 #include "data_share_dao.h"
 #include "data_share_store.h"
 #include "data_share_util.h"
+#include "event_publish.h"
 #include "event_thread_pool.h"
 #include "file_util.h"
+#include "hisysevent.h"
 #include "hiview_event_common.h"
 #include "iquery_base_callback.h"
 #include "logger.h"
@@ -52,6 +54,21 @@ namespace HiviewDFX {
 
 namespace {
 constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataPublisher"};
+
+std::string GetBundleNameFromJsonStr(const std::string& jsonInfo)
+{
+    std::string bundleName = "";
+    Json::Value root;
+    Json::Reader reader;
+    if (!reader.parse(jsonInfo, root)) {
+        HiLog::Error(LABEL, "failed to parse jsonInfo.");
+        return bundleName;
+    }
+    if (root[BUNDLE_NAME].isString()) {
+        bundleName = root[BUNDLE_NAME].asString();
+    }
+    return bundleName;
+}
 }  // namespace
 
 DataPublisher::DataPublisher()
@@ -134,6 +151,7 @@ void DataPublisher::InitSubscriber()
 void DataPublisher::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event)
 {
     HandleAppUninstallEvent(event);
+    HandleAppStartEvent(event);
     if (eventRelationMap_.find(event->eventName_) == eventRelationMap_.end()) {
         return;
     }
@@ -188,17 +206,7 @@ void DataPublisher::HandleAppUninstallEvent(std::shared_ptr<OHOS::HiviewDFX::Sys
         return;
     }
     std::string jsonExtraInfo = event->AsJsonStr();
-    Json::Value extraInfo;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(jsonExtraInfo, extraInfo);
-    if (!parsingSuccessful) {
-        HiLog::Error(LABEL, "failed to parse jsonExtraInfo.");
-        return;
-    }
-    std::string bundleName = "";
-    if (extraInfo[BUNDLE_NAME].isString()) {
-        bundleName = extraInfo[BUNDLE_NAME].asString();
-    }
+    std::string bundleName = GetBundleNameFromJsonStr(jsonExtraInfo);
     if (bundleName.empty()) {
         return;
     }
@@ -213,6 +221,25 @@ void DataPublisher::HandleAppUninstallEvent(std::shared_ptr<OHOS::HiviewDFX::Sys
     if (ret != DB_SUCC) {
         HiLog::Error(LABEL, "failed to remove from DB.");
     }
+}
+
+void DataPublisher::HandleAppStartEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event)
+{
+    if (event->eventName_ != "APP_START") {
+        return;
+    }
+    std::string jsonExtraInfo = event->AsJsonStr();
+    std::string bundleName = GetBundleNameFromJsonStr(jsonExtraInfo);
+    if (bundleName.empty()) {
+        HiLog::Error(LABEL, "bundleName empty.");
+        return;
+    }
+    int32_t uid = OHOS::HiviewDFX::DataShareUtil::GetUidByBundleName(bundleName);
+    if (uid == -1) {
+        HiLog::Error(LABEL, "get uid from bms err. uid=%{public}d, bundleName=%{public}s, eventName=%{public}s",
+            uid, bundleName.c_str(), event->eventName_.c_str());
+    }
+    EventPublish::GetInstance().PushEvent(uid, event->eventName_, HiSysEvent::EventType::BEHAVIOR, jsonExtraInfo);
 }
 
 void DataPublisher::SetWorkLoop(std::shared_ptr<EventLoop> looper)

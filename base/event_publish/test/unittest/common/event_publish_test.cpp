@@ -12,24 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
-#define OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
-
+#include <iostream>
 #include <string>
 
-namespace OHOS {
-namespace HiviewDFX {
-class DataShareUtil {
+#include "event_publish.h"
 
+#include <gtest/gtest.h>
+
+using namespace testing::ext;
+using namespace OHOS::HiviewDFX;
+
+class EventPublishTest : public testing::Test {
 public:
-    static std::string GetSandBoxPathByUid(int32_t uid);
-    static int CopyFile(const char *src, const char *des);
-    static std::string GetBundleNameById(int32_t uid);
-    static int32_t GetUidByBundleName(const std::string& bundleName);
+    void SetUp() {};
+    void TearDown() {};
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
 };
 
-}  // namespace HiviewDFX
-}  // namespace OHOS
-
-#endif  // OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
+/**
+ * @tc.name: EventPublishTest001
+ * @tc.desc: used to test PushEvent
+ * @tc.type: FUNC
+*/
+HWTEST_F(EventPublishTest, EventPublishTest001, TestSize.Level1)
+{
+    EventPublish::GetInstance().PushEvent(100, "APP_CRASH", HiSysEvent::EventType::BEHAVIOR, "{\"time\":123}");
+    ASSERT_TRUE(true);
+}

@@ -96,5 +96,17 @@ std::string DataShareUtil::GetBundleNameById(int32_t uid)
     return bundleName;
 }
 
+int32_t DataShareUtil::GetUidByBundleName(const std::string& bundleName)
+{
+    AppExecFwk::BundleInfo info;
+    AppExecFwk::BundleMgrClient client;
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
+        AppExecFwk::Constants::START_USERID)) {
+        HiLog::Error(LABEL, "Failed to query uid from bms, bundleName=%{public}s.", bundleName.c_str());
+    } else {
+        HiLog::Debug(LABEL, "bundleName of uid=%{public}d, bundleName=%{public}s", info.uid, bundleName.c_str());
+    }
+    return info.uid;
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
