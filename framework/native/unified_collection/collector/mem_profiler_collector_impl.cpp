@@ -42,6 +42,8 @@ public:
     virtual void start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
                        int pid, int duration, int sampleInterval) override;
     virtual void stop(int pid) override;
+    virtual void Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
+           int pid, int duration, int sampleInterval) override;
 };
 
 void MemProfilerCollectorImpl::start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
