@@ -34,6 +34,7 @@ const std::string BETACLUB = "BetaClub";
 const std::string OTHER = "Other";
 const uint32_t UNIFIED_SHARE_COUNTS = 20;
 const uint32_t UNIFIED_SPECIAL_XPERF = 3;
+const uint32_t UNIFIED_SPECIAL_RELIABILITY = 3;
 const uint32_t UNIFIED_SPECIAL_OTHER = 5;
 }
 
@@ -151,6 +152,25 @@ protected:
     }
 };
 
+class SpecialReliabilityCleanPolicy : public CleanPolicy {
+public:
+    explicit SpecialReliabilityCleanPolicy(int type) : CleanPolicy(type) {}
+    ~SpecialReliabilityCleanPolicy() override {}
+
+protected:
+    bool IsMine(const std::string &fileName) override
+    {
+        // check Reliability trace
+        size_t posReliability = fileName.find(RELIABILITY);
+        return posReliability != std::string::npos;
+    }
+
+    uint32_t MyThreshold() override
+    {
+        return UNIFIED_SPECIAL_RELIABILITY;
+    }
+};
+
 class SpecialOtherCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialOtherCleanPolicy(int type) : CleanPolicy(type) {}
@@ -180,6 +200,10 @@ std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &ca
     if (caller == TraceCollector::Caller::XPERF) {
         return std::make_shared<SpecialXperfCleanPolicy>(type);
     }
+
+    if (caller == TraceCollector::Caller::RELIABILITY) {
+        return std::make_shared<SpecialReliabilityCleanPolicy>(type);
+    }
     return std::make_shared<SpecialOtherCleanPolicy>(type);
 }
 
@@ -188,10 +212,10 @@ void FileRemove(TraceCollector::Caller &caller)
     std::shared_ptr<CleanPolicy> shareCleaner = GetCleanPolicy(SHARE, caller);
     std::shared_ptr<CleanPolicy> specialCleaner = GetCleanPolicy(SPECIAL, caller);
     switch (caller) {
-        case TraceCollector::Caller::RELIABILITY:
         case TraceCollector::Caller::XPOWER:
             shareCleaner->DoClean();
             break;
+        case TraceCollector::Caller::RELIABILITY:
         case TraceCollector::Caller::XPERF:
             shareCleaner->DoClean();
             specialCleaner->DoClean();
@@ -266,8 +290,8 @@ bool IsTraceExists(const std::string &trace)
     return false;
 }
 
-// Save three traces for xperf
-void CopyXperfToSpecialPath(const std::string &trace, const std::string &traceFile)
+// Save three traces for xperf/Reliability
+void CopyToSpecialPath(const std::string &trace, const std::string &traceFile, const std::string &traceCaller)
 {
     if (!FileUtil::FileExists(UNIFIED_SPECIAL_PATH)) {
         if (!CreateMultiDirectory(UNIFIED_SPECIAL_PATH)) {
@@ -276,7 +300,7 @@ void CopyXperfToSpecialPath(const std::string &trace, const std::string &traceFi
         }
     }
 
-    std::string dst = UNIFIED_SPECIAL_PATH + XPERF + "_" + traceFile;
+    std::string dst = UNIFIED_SPECIAL_PATH + traceCaller + "_" + traceFile;
     FileUtil::CopyFile(trace, dst);
 }
 
@@ -307,9 +331,10 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
         }
 
         std::string traceFile = FileUtil::ExtractFileName(tracePath);
-        // copy xperf trace to */trace/special/, reserve 3 trace in */trace/special/
-        if (EnumToString(caller) == XPERF) {
-            CopyXperfToSpecialPath(tracePath, traceFile);
+        // copy xperf/reliability trace to */trace/special/, reserve 3 trace in */trace/special/
+        std::string traceCaller = EnumToString(caller);
+        if (traceCaller == XPERF || traceCaller == RELIABILITY) {
+            CopyToSpecialPath(tracePath, traceFile, traceCaller);
         }
         const std::string dst = UNIFIED_SHARE_PATH + traceFile;
         // for copy

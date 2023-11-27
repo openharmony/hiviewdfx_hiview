@@ -47,7 +47,7 @@ bool CreateMultiDirectory(const std::string &dirPath);
 const std::string EnumToString(UCollectUtil::TraceCollector::Caller &caller);
 std::vector<std::string> GetUnifiedFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
 bool IsTraceExists(const std::string &trace);
-void CopyXperfToSpecialPath(const std::string &trace, const std::string &revRightStr);
+void CopyToSpecialPath(const std::string &trace, const std::string &revRightStr, const std::string &traceCaller);
 std::vector<std::string> GetUnifiedShareFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
 std::vector<std::string> GetUnifiedSpecialFiles(Hitrace::TraceRetInfo ret,
     UCollectUtil::TraceCollector::Caller &caller);
