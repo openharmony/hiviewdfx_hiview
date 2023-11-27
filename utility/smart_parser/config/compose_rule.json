@@ -15,6 +15,7 @@
     },
     "SYS_FREEZE": {
             "63_SYS_FREEZE_01": {
+                "FIRST_FRAME": "BasicParam.v_first",
                 "PNAME": "BasicParam.v_process",
                 "END_STACK":"MainCallTrace.v_trace"
             }
