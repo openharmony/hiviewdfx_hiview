@@ -63,6 +63,25 @@ void MemProfilerCollectorImpl::stop(int pid)
     NativeMemoryProfilerSaClientManager::Stop(pid);
 }
 
+void MemProfilerCollectorImpl::Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
+           int pid, int duration, int sampleInterval)
+{
+    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+    }
+    std::shared_ptr<NativeMemoryProfilerSaConfig> config = std::make_shared<NativeMemoryProfilerSaConfig>();
+    if (type == Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY) {
+        config->responseLibraryMode_ = true;
+    } else if (type == Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK) {
+        config->responseLibraryMode_ = false;
+    }
+    config->pid_ = pid;
+    config->duration_ = duration;
+    config->statisticsInterval_ = (uint32_t)sampleInterval;
+    NativeMemoryProfilerSaClientManager::DumpData(fd, config);
+}
+
 std::shared_ptr<MemProfilerCollector> MemProfilerCollector::Create()
 {
     static std::shared_ptr<MemProfilerCollector> instance_ = std::make_shared<MemProfilerCollectorImpl>();

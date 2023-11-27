@@ -30,6 +30,8 @@ public:
     virtual void start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
                        int pid, int duration, int sampleInterval) = 0;
     virtual void stop(int pid = 0);
+    virtual void Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
+           int pid, int duration, int sampleInterval) = 0;
     static std::shared_ptr<MemProfilerCollector> Create();
 }; // MemProfilerCollector
 } // UCollectUtil
