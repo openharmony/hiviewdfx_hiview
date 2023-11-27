@@ -40,9 +40,7 @@ private:
     static constexpr int MILLSECONDS = 1000;
     static constexpr int ONE_DAY = 86400 * MILLSECONDS;
     static constexpr char DOMAIN[] = "KERNEL_VENDOR";
-    std::string HISTORY_PATH = "/data/hisi_logs/";
-    std::string logParseConfig_ = "/system/etc/hiview";
-    std::string HISTORY_LOG = "/data/hisi_logs/history.log";
+    bool hisiHistoryPath = false;
 };
 }
 }

@@ -37,6 +37,16 @@ using namespace std;
 REGISTER(BBoxDetectorPlugin)
 DEFINE_LOG_TAG("BBoxDetectorPlugin");
 
+namespace {
+    const std::string HISIPATH = "/data/hisi_logs/";
+    const std::string BBOXPATH = "/data/log/bbox/";
+    const std::string LOGPARSECONFIG = "/system/etc/hiview";
+    const std::vector<std::string> HISTORYLOGLIST = {
+        "/data/hisi_logs/history.log",
+        "/data/log/bbox/history.log"
+    };
+}
+
 void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
@@ -93,7 +103,7 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     sysEvent->SetEventValue("HAPPEN_TIME", times * MILLSECONDS);
 
     WaitForLogs(dynamicPaths);
-    auto eventInfos = SmartParser::Analysis(dynamicPaths, logParseConfig_, name);
+    auto eventInfos = SmartParser::Analysis(dynamicPaths, LOGPARSECONFIG, name);
     Tbox::FilterTrace(eventInfos);
 
     sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
@@ -110,34 +120,50 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
 
 void BBoxDetectorPlugin::StartBootScan()
 {
-    int num = READ_LINE_NUM;
-    string line;
-    ifstream fin(HISTORY_LOG, ios::ate);
-    while (FileUtil::GetLastLine(fin, line) && num > 0) {
-        num--;
-        string name = StringUtil::GetMidSubstr(line, "category [", "]");
-        if (name.empty() || name == "NORMALBOOT") {
-            continue;
+    for (auto historyLog : HISTORYLOGLIST) {
+        int num = READ_LINE_NUM;
+        string line;
+
+        if (FileUtil::FileExists(historyLog) && historyLog.find(HISIPATH) != std::string::npos) {
+            hisiHistoryPath = true;
         }
 
-        string module = StringUtil::GetMidSubstr(line, "core [", "]");
-        string reason = StringUtil::GetMidSubstr(line, "reason [", "]");
-        string bootup_keypoint = StringUtil::GetMidSubstr(line, "bootup_keypoint [", "]");
-        string dynamicPaths = HISTORY_PATH + StringUtil::GetMidSubstr(line, "time [", "]");
-        auto time_now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
-        auto time_event = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time [", "-"),
-                                                                        "%Y%m%d%H%M%S")) * MILLSECONDS;
-        if (abs(time_now - abs(time_event)) > ONE_DAY  || IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
-            continue;
+        ifstream fin(historyLog, ios::ate);
+        while (FileUtil::GetLastLine(fin, line) && num > 0) {
+            num--;
+            string name = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "category [", "]") :
+                StringUtil::GetMidSubstr(line, "category[", "]");
+            if (name.empty() || name == "NORMALBOOT") {
+                continue;
+            }
+            string module = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "core [", "]") :
+                StringUtil::GetMidSubstr(line, "module[", "]");
+            string reason = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "reason [", "]") :
+                StringUtil::GetMidSubstr(line, "event[", "]");
+            string bootup_keypoint = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "bootup_keypoint [", "]") :
+                StringUtil::GetMidSubstr(line, "errdesc[", "]");
+            string dynamicPaths = hisiHistoryPath ? HISIPATH + StringUtil::GetMidSubstr(line, "time [", "]") :
+                BBOXPATH + StringUtil::GetMidSubstr(line, "time[", "]");
+            auto time_now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
+            auto time_event = hisiHistoryPath ?
+                static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time [", "-"),
+                "%Y%m%d%H%M%S")) * MILLSECONDS :
+                static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time[", "-"),
+                "%Y%m%d%H%M%S")) * MILLSECONDS;
+            if (abs(time_now - abs(time_event)) > ONE_DAY  || IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+                continue;
+            }
+            string logPath = hisiHistoryPath ? HISIPATH : BBOXPATH;
+            string subLogPath = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "time [", "]") :
+                StringUtil::GetMidSubstr(line, "time[", "]");
+            int res = HiSysEventWrite(DOMAIN, name, HiSysEvent::EventType::FAULT,
+                "MODULE", module,
+                "REASON", reason,
+                "LOG_PATH", logPath,
+                "SUB_LOG_PATH", subLogPath,
+                "SUMMARY", "bootup_keypoint:" + bootup_keypoint);
+            HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
         }
-        int res = HiSysEventWrite(
-            DOMAIN, name, HiSysEvent::EventType::FAULT,
-            "MODULE", module,
-            "REASON", reason,
-            "LOG_PATH", "/data/hisi_logs/",
-            "SUB_LOG_PATH", StringUtil::GetMidSubstr(line, "time [", "]"),
-            "SUMMARY", "bootup_keypoint:" + bootup_keypoint);
-        HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
     }
 }
 
