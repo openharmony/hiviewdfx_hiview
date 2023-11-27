@@ -82,7 +82,8 @@ void LogSignTools::CalcBase64(uint8_t *input, uint32_t inputLen, std::string &en
     size_t base64Len = static_cast<size_t>(ceil(static_cast<long double>(inputLen) / BASE64_ENCODE_PACKET_LEN) *
     BASE64_ENCODE_LEN_OF_EACH_GROUP_DATA + 1);
     std::unique_ptr<unsigned char[]> base64Str = std::make_unique<unsigned char[]>(base64Len);
-    size_t outLen = EVP_EncodeBlock(reinterpret_cast<uint8_t *>(base64Str.get()), input, inputLen);
+    size_t outLen = static_cast<size_t>(EVP_EncodeBlock(reinterpret_cast<uint8_t *>(base64Str.get()),
+        input, inputLen));
     encodedStr = std::string(reinterpret_cast<char*>(base64Str.get()), outLen);
 }
 
