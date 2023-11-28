@@ -51,7 +51,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest001, TestSize.Level1)
     collector->Start(NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
                      0, DURATION, INTERVAL);
     int time = 0;
-    while(!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+    while (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
@@ -71,7 +71,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest002, TestSize.Level1)
     std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
     collector->Stop(0);
     int time = 0;
-    while(COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }

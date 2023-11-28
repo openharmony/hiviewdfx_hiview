@@ -39,11 +39,9 @@ public:
     virtual ~MemProfilerCollectorImpl() = default;
 
 public:
-    virtual int Start(ProfilerType type,
-                      int pid, int duration, int sampleInterval) override;
-    virtual int Stop(int pid) override;
-    virtual int Start(int fd, ProfilerType type,
-                      int pid, int duration, int sampleInterval) override;
+    int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
+    int Stop(int pid) override;
+    int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
 };
 
 int MemProfilerCollectorImpl::Start(ProfilerType type,
@@ -83,7 +81,8 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     config->pid_ = pid;
     config->duration_ = duration;
     config->sampleInterval_ = (uint32_t)sampleInterval;
-    config->statisticsInterval_ = 300;
+    int fiveMinutes = 300;
+    config->statisticsInterval_ = fiveMinutes;
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
 
