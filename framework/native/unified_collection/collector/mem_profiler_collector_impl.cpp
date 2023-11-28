@@ -39,49 +39,52 @@ public:
     virtual ~MemProfilerCollectorImpl() = default;
 
 public:
-    virtual void start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
+    virtual int Start(ProfilerType type,
                        int pid, int duration, int sampleInterval) override;
-    virtual void stop(int pid) override;
-    virtual void Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
-           int pid, int duration, int sampleInterval) override;
+    virtual int Stop(int pid) override;
+    virtual int Start(int fd, ProfilerType type,
+           int pid, int duration, int sampleInterval, int statisticsInterval) override;
 };
 
-void MemProfilerCollectorImpl::start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
+int MemProfilerCollectorImpl::Start(ProfilerType type,
            int pid, int duration, int sampleInterval)
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     while (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
     }
-    NativeMemoryProfilerSaClientManager::Start(type, pid, duration, sampleInterval);
+    HIVIEW_LOGD("mem_profiler_collector starting");
+    return NativeMemoryProfilerSaClientManager::Start(type, pid, duration, sampleInterval);
 }
 
-void MemProfilerCollectorImpl::stop(int pid)
+int MemProfilerCollectorImpl::Stop(int pid)
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
     while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
     }
-    NativeMemoryProfilerSaClientManager::Stop(pid);
+    HIVIEW_LOGD("mem_profiler_collector stoping");
+    return NativeMemoryProfilerSaClientManager::Stop(pid);
 }
 
-void MemProfilerCollectorImpl::Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
-           int pid, int duration, int sampleInterval)
+int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
+           int pid, int duration, int sampleInterval, int statisticsInterval)
 {
-    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
+    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
     }
     std::shared_ptr<NativeMemoryProfilerSaConfig> config = std::make_shared<NativeMemoryProfilerSaConfig>();
-    if (type == Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY) {
+    if (type == ProfilerType::MEM_PROFILER_LIBRARY) {
         config->responseLibraryMode_ = true;
-    } else if (type == Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK) {
+    } else if (type == ProfilerType::MEM_PROFILER_CALL_STACK) {
         config->responseLibraryMode_ = false;
     }
     config->pid_ = pid;
     config->duration_ = duration;
-    config->statisticsInterval_ = (uint32_t)sampleInterval;
-    NativeMemoryProfilerSaClientManager::DumpData(fd, config);
+    config->sampleInterval_ = (uint32_t)sampleInterval;
+    config->statisticsInterval_ = (uint32_t)statisticsInterval;
+    return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
 
 std::shared_ptr<MemProfilerCollector> MemProfilerCollector::Create()

@@ -21,17 +21,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+using ProfilerType = Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType;
 class MemProfilerCollector {
 public:
     MemProfilerCollector() = default;
     virtual ~MemProfilerCollector() = default;
 
 public:
-    virtual void start(Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
-                       int pid, int duration, int sampleInterval) = 0;
-    virtual void stop(int pid = 0);
-    virtual void Dump(int fd, Developtools::NativeDaemon::NativeMemoryProfilerSaClientManager::NativeMemProfilerType type,
-           int pid, int duration, int sampleInterval) = 0;
+    virtual int Start(ProfilerType type,
+                      int pid, int duration, int sampleInterval) = 0;
+    virtual int Stop(int pid) = 0;
+    virtual int Start(int fd, ProfilerType type,
+           int pid, int duration, int sampleInterval, int statisticsInterval) = 0;
     static std::shared_ptr<MemProfilerCollector> Create();
 }; // MemProfilerCollector
 } // UCollectUtil
