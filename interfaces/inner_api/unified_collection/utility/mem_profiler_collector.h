@@ -32,7 +32,7 @@ public:
                       int pid, int duration, int sampleInterval) = 0;
     virtual int Stop(int pid) = 0;
     virtual int Start(int fd, ProfilerType type,
-           int pid, int duration, int sampleInterval, int statisticsInterval) = 0;
+                      int pid, int duration, int sampleInterval) = 0;
     static std::shared_ptr<MemProfilerCollector> Create();
 }; // MemProfilerCollector
 } // UCollectUtil

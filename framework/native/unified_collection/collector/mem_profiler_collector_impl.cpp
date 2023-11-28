@@ -40,14 +40,14 @@ public:
 
 public:
     virtual int Start(ProfilerType type,
-                       int pid, int duration, int sampleInterval) override;
+                      int pid, int duration, int sampleInterval) override;
     virtual int Stop(int pid) override;
     virtual int Start(int fd, ProfilerType type,
-           int pid, int duration, int sampleInterval, int statisticsInterval) override;
+                      int pid, int duration, int sampleInterval) override;
 };
 
 int MemProfilerCollectorImpl::Start(ProfilerType type,
-           int pid, int duration, int sampleInterval)
+                                    int pid, int duration, int sampleInterval)
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     while (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
@@ -68,7 +68,7 @@ int MemProfilerCollectorImpl::Stop(int pid)
 }
 
 int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
-           int pid, int duration, int sampleInterval, int statisticsInterval)
+                                    int pid, int duration, int sampleInterval)
 {
     OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
@@ -83,7 +83,7 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     config->pid_ = pid;
     config->duration_ = duration;
     config->sampleInterval_ = (uint32_t)sampleInterval;
-    config->statisticsInterval_ = (uint32_t)statisticsInterval;
+    config->statisticsInterval_ = 300;
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
 
