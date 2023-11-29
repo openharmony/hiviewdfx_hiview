@@ -43,6 +43,38 @@ constexpr char BASE_INFO_KEY_SPAN_ID[] = "spanid_";
 constexpr char BASE_INFO_KEY_PARENT_SPAN_ID[] = "pspanid_";
 constexpr char BASE_INFO_KEY_TRACE_FLAG[] = "trace_flag_";
 
+template<typename T>
+inline static constexpr bool isUnsignedNum = std::is_same_v<std::decay_t<T>, std::uint8_t> ||
+    std::is_same_v<std::decay_t<T>, std::uint16_t> || std::is_same_v<std::decay_t<T>, std::uint32_t> ||
+    std::is_same_v<std::decay_t<T>, uint64_t>;
+
+template<typename T>
+inline static constexpr bool isSignedNum = std::is_same_v<std::decay_t<T>, std::int8_t> ||
+    std::is_same_v<std::decay_t<T>, std::int16_t> || std::is_same_v<std::decay_t<T>, std::int32_t> ||
+    std::is_same_v<std::decay_t<T>, int64_t>;
+
+template<typename T>
+inline static constexpr bool isFloatingPointNum = std::is_same_v<std::decay_t<T>, float> ||
+    std::is_same_v<std::decay_t<T>, double>;
+
+template<typename T>
+inline static constexpr bool isString = std::is_same_v<std::decay_t<T>, std::string> ||
+    std::is_same_v<std::decay_t<T>, const char*>;
+
+template<typename T>
+inline static constexpr bool isUnsignedNumArray = std::is_same_v<std::decay_t<T>, std::vector<uint8_t>> ||
+    std::is_same_v<std::decay_t<T>, std::vector<uint16_t>> ||
+    std::is_same_v<std::decay_t<T>, std::vector<uint32_t>> || std::is_same_v<std::decay_t<T>, std::vector<uint64_t>>;
+
+template<typename T>
+inline static constexpr bool isSignedNumArray = std::is_same_v<std::decay_t<T>, std::vector<int8_t>> ||
+    std::is_same_v<std::decay_t<T>, std::vector<int16_t>> ||
+    std::is_same_v<std::decay_t<T>, std::vector<int32_t>> || std::is_same_v<std::decay_t<T>, std::vector<int64_t>>;
+
+template<typename T>
+inline static constexpr bool isFloatingPointNumArray = std::is_same_v<std::decay_t<T>, std::vector<float>> ||
+    std::is_same_v<std::decay_t<T>, std::vector<double>>;
+
 #pragma pack(1)
 struct HiSysEventHeader {
     /* Event domain */
