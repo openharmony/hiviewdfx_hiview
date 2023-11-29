@@ -198,6 +198,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     if (info.id >= MIN_APP_USERID && GetDfxBundleInfo(info.module, bundleInfo)) {
         if (!bundleInfo.versionName.empty()) {
             info.sectionMap["VERSION"] = bundleInfo.versionName;
+            info.sectionMap["VERSION_CODE"] = std::to_string(bundleInfo.versionCode);
         }
 
         if (bundleInfo.isPreInstalled) {
@@ -235,12 +236,22 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
         info.sectionMap["SUMMARY"] = info.summary;
     }
 
+    // parse fingerprint by summary or temp log for native crash
+    AnalysisFaultlog(info, info.parsedLogInfo);
+    info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+}
+
+void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
+{
     if (!info.registers.empty()) {
         info.sectionMap["KEY_THREAD_REGISTERS"] = info.registers;
     }
+
     if (!info.otherThreadInfo.empty()) {
         info.sectionMap["OTHER_THREAD_INFO"] = info.otherThreadInfo;
     }
+
+    info.sectionMap["APPEND_ORIGIN_LOG"] = GetCppCrashTempLogName(info);
 }
 
 bool Faultlogger::VerifiedDumpPermission()
@@ -586,6 +597,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
 
     AddPublicInfo(info);
+    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+        AddCppCrashInfo(info);
+    }
+
     mgr_->SaveFaultLogToFile(info);
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);

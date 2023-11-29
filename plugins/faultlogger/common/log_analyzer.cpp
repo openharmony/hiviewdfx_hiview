@@ -17,6 +17,7 @@
 #include <securec.h>
 
 #include "common_utils.h"
+#include "constants.h"
 #include "faultlog_util.h"
 #include "file_util.h"
 #include "smart_parser.h"
@@ -31,11 +32,13 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
     bool needDelete = false;
     std::string logPath = info.logPath;
     auto eventType = GetFaultNameByType(info.faultLogType, false);
-    if (eventType == "JS_ERROR" && !FileUtil::FileExists(info.logPath) && !info.summary.empty()) {
-        logPath = info.logPath + "tmp";
+    if ((eventType == "JS_ERROR" || eventType == "CPP_CRASH") &&
+        !FileUtil::FileExists(info.logPath) && !info.summary.empty()) {
+        logPath = std::string(FaultLogger::FAULTLOG_BASE_FOLDER) + eventType + std::to_string(info.time);
         FileUtil::SaveStringToFile(logPath, info.summary);
         needDelete = true;
     }
+
     eventInfos = SmartParser::Analysis(logPath, SMART_PARSER_PATH, eventType);
     if (needDelete) {
         FileUtil::RemoveFile(logPath);

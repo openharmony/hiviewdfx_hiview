@@ -40,7 +40,7 @@ static const char *MODULE_VERSION[] = {"VERSION", "Version:"};
 static const char *FAULT_TYPE[] = {"FAULT_TYPE", "Fault type:"};
 static const char *SYSVMTYPE[] = {"SYSVMTYPE", "SYSVMTYPE:"};
 static const char *APPVMTYPE[] = {"APPVMTYPE", "APPVMTYPE:"};
-static const char *FOREGROUND[] = {"FG", "Foreground:"};
+static const char *FOREGROUND[] = {"FOREGROUND", "Foreground:"};
 static const char *LIFETIME[] = {"LIFETIME", "Up time:"};
 static const char *REASON[] = {"REASON", "Reason:"};
 static const char *FAULT_MESSAGE[] = {"FAULT_MESSAGE", "Fault message:"};
@@ -58,35 +58,40 @@ static const char *TRACE_ID[] = {"TRACEID", "Trace-Id:"};
 static const char *SUMMARY[] = {"SUMMARY", "Summary:\n"};
 static const char *TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
 static const char *MEMORY_NEAR_REGISTERS[] = {"MEMORY_NEAR_REGISTERS", "Memory near registers:\n"};
+static const char *PRE_INSTALL[] = {"PRE_INSTALL", "PreInstalled:"};
+static const char *VERSION_CODE[] = {"VERSION_CODE", "VersionCode:"};
+static const char *FINGERPRINT[] = {"fingerPrint", "Fingerprint:"};
+static const char *APPEND_ORIGIN_LOG[] = {"APPEND_ORIGIN_LOG", ""};
 
 auto CPP_CRASH_LOG_SEQUENCE = {
-    DEVICE_INFO,      BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID, MODULE_UID,      FAULT_TYPE,
-    SYSVMTYPE,        APPVMTYPE,  REASON,      FAULT_MESSAGE,  TRACE_ID,   PROCESS_NAME,    KEY_THREAD_INFO,
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, MODULE_NAME, MODULE_VERSION, VERSION_CODE,
+    PRE_INSTALL, FOREGROUND, APPEND_ORIGIN_LOG, MODULE_PID, MODULE_UID, FAULT_TYPE,
+    SYSVMTYPE, APPVMTYPE, REASON, FAULT_MESSAGE, TRACE_ID, PROCESS_NAME, KEY_THREAD_INFO,
     SUMMARY, KEY_THREAD_REGISTERS, OTHER_THREAD_INFO, MEMORY_NEAR_REGISTERS
 };
 
 auto JAVASCRIPT_CRASH_LOG_SEQUENCE = {
-    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME,   MODULE_VERSION, MODULE_PID,
-    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, SYSVMTYPE,      APPVMTYPE,
-    FOREGROUND,  LIFETIME,   REASON,        TRACE_ID, SUMMARY
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, VERSION_CODE,
+    PRE_INSTALL, FOREGROUND, MODULE_PID, MODULE_UID, FAULT_TYPE, FAULT_MESSAGE, SYSVMTYPE, APPVMTYPE,
+    LIFETIME, REASON, TRACE_ID, SUMMARY
 };
 
 auto APP_FREEZE_LOG_SEQUENCE = {
-    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
-    MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, VERSION_CODE,
+    PRE_INSTALL, FOREGROUND, MODULE_PID, MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
     TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
     MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
 };
 
 auto SYS_FREEZE_LOG_SEQUENCE = {
-    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
     MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
     TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
     MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
 };
 
 auto RUST_PANIC_LOG_SEQUENCE = {
-    DEVICE_INFO, BUILD_INFO, TIMESTAMP, MODULE_NAME,   MODULE_VERSION, MODULE_PID,
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
     MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
 };
 
@@ -132,6 +137,9 @@ bool ParseFaultLogLine(const std::list<const char **>& parseList, const std::str
     std::string& multlineName, FaultLogInfo& info)
 {
     for (auto &item : parseList) {
+        if (strlen(item[LOG_MAP_VALUE]) <= 1) {
+            continue;
+        }
         std::string sectionHead = std::string(item[LOG_MAP_VALUE], strlen(item[LOG_MAP_VALUE]) - 1);
         if (line.find(sectionHead) != std::string::npos) {
             if (line.at(line.size() - 1) == ':') {
@@ -199,11 +207,18 @@ void WriteFaultLogToFile(int32_t fd, int32_t logType, std::map<std::string, std:
     for (auto &item : seq) {
         auto value = sections[item[LOG_MAP_KEY]];
         if (!value.empty()) {
-            // Does not require adding an identifier header for Summary section
             std::string keyStr = item[LOG_MAP_KEY];
+            if (keyStr.find(APPEND_ORIGIN_LOG[LOG_MAP_KEY]) != std::string::npos) {
+                if (WriteLogToFile(fd, value)) {
+                    break;
+                }
+            }
+
+            // Does not require adding an identifier header for Summary section
             if (keyStr.find(SUMMARY[LOG_MAP_KEY]) == std::string::npos) {
                 FileUtil::SaveStringToFd(fd, item[LOG_MAP_VALUE]);
             }
+
             if (value.back() != '\n') {
                 value.append("\n");
             }
