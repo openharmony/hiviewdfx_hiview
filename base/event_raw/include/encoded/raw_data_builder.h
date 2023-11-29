@@ -88,22 +88,16 @@ public:
         if (IsBaseInfo(key)) {
             return AppendBaseInfoValue(key, val);
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             return AppendValue(std::make_shared<StringEncodedParam>(key, val));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, float> || std::is_same_v<std::decay_t<T>, double>) {
-            return AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(key,
-                static_cast<double>(val)));
+        if constexpr (isFloatingPointNum<T>) {
+            return AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(key, static_cast<double>(val)));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, bool> || std::is_same_v<std::decay_t<T>, int8_t> ||
-            std::is_same_v<std::decay_t<T>, int16_t> || std::is_same_v<std::decay_t<T>, int32_t> ||
-            std::is_same_v<std::decay_t<T>, int64_t>) {
-            return AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(key,
-                static_cast<int64_t>(val)));
+        if constexpr (std::is_same_v<std::decay_t<T>, bool> || isSignedNum<T>) {
+            return AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(key, static_cast<int64_t>(val)));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> || std::is_same_v<std::decay_t<T>, uint16_t> ||
-            std::is_same_v<std::decay_t<T>, uint32_t> || std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendValue(std::make_shared<UnsignedVarintEncodedParam<uint64_t>>(key,
                 static_cast<uint64_t>(val)));
         }
@@ -114,10 +108,7 @@ private:
     template<typename T>
     RawDataBuilder& UpdateType(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendType(static_cast<int>(val));
         }
         return *this;
@@ -126,10 +117,7 @@ private:
     template<typename T>
     RawDataBuilder& UpdateUid(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendUid(static_cast<uint32_t>(val));
         }
         return *this;
@@ -138,10 +126,7 @@ private:
     template<typename T>
     RawDataBuilder& UpdatePid(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendPid(static_cast<uint32_t>(val));
         }
         return *this;
@@ -150,10 +135,7 @@ private:
     template<typename T>
     RawDataBuilder& UpdateTid(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendTid(static_cast<uint32_t>(val));
         }
         return *this;
@@ -162,14 +144,10 @@ private:
     template<typename T>
     RawDataBuilder& UpdateId(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             return AppendId(val);
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendId(static_cast<uint64_t>(val));
         }
         return *this;
@@ -186,16 +164,12 @@ private:
     template<typename T>
     RawDataBuilder& UpdateTraceId(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             uint64_t traceId = 0;
             TransHexStrToNum(val, traceId);
             return AppendTraceId(traceId);
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendTraceId(static_cast<uint64_t>(val));
         }
         return *this;
@@ -204,16 +178,12 @@ private:
     template<typename T>
     RawDataBuilder& UpdateSpanId(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             uint32_t spanId = 0;
             TransHexStrToNum(val, spanId);
             return AppendSpanId(spanId);
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendSpanId(static_cast<uint32_t>(val));
         }
         return *this;
@@ -222,16 +192,12 @@ private:
     template<typename T>
     RawDataBuilder& UpdatePSpanId(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             uint32_t pSpanId = 0;
             TransHexStrToNum(val, pSpanId);
             return AppendPSpanId(pSpanId);
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendPSpanId(static_cast<uint32_t>(val));
         }
         return *this;
@@ -240,10 +206,7 @@ private:
     template<typename T>
     RawDataBuilder& UpdateTraceFlag(const T val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint16_t> ||
-            std::is_same_v<std::decay_t<T>, std::uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             return AppendTraceFlag(static_cast<uint8_t>(val));
         }
         return *this;
@@ -255,37 +218,26 @@ private:
         if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
             return AppendValue(std::make_shared<StringEncodedArrayParam>(key, val));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, std::vector<float>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<double>>) {
+        if constexpr (isFloatingPointNumArray<T>) {
             std::vector<double> dVector;
             for (auto item : val) {
                 dVector.emplace_back(static_cast<double>(item));
             }
-            return AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(key,
-                dVector));
+            return AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(key, dVector));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, std::vector<bool>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<int8_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<int16_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<int32_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<int64_t>>) {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::vector<bool>> || isSignedNumArray<T>) {
             std::vector<int64_t> i64Vector;
             for (auto item : val) {
                 i64Vector.emplace_back(static_cast<int64_t>(item));
             }
-            return AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(key,
-                i64Vector));
+            return AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(key, i64Vector));
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, std::vector<uint8_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<uint16_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<uint32_t>> ||
-            std::is_same_v<std::decay_t<T>, std::vector<uint64_t>>) {
+        if constexpr (isUnsignedNumArray<T>) {
             std::vector<uint64_t> i64Vector;
             for (auto item : val) {
                 i64Vector.emplace_back(static_cast<uint64_t>(item));
             }
-            return AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(key,
-                i64Vector));
+            return AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(key, i64Vector));
         }
         return *this;
     }
@@ -295,15 +247,13 @@ private:
     {
         std::unordered_map<std::string, std::function<RawDataBuilder&(T)>> appendFuncs = {
             {BASE_INFO_KEY_DOMAIN, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                        std::is_same_v<std::decay_t<T>, const char*>) {
+                    if constexpr (isString<T>) {
                         return this->AppendDomain(val);
                     }
                     return *this;
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_NAME, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                        std::is_same_v<std::decay_t<T>, const char*>) {
+                    if constexpr (isString<T>) {
                         return this->AppendName(val);
                     }
                     return *this;
@@ -316,8 +266,7 @@ private:
                     return *this;
                 }, std::placeholders::_1)},
             {BASE_INFO_KEY_TIME_ZONE, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                        std::is_same_v<std::decay_t<T>, const char*>) {
+                    if constexpr (isString<T>) {
                         return this->AppendTimeZone(val);
                     }
                     return *this;
@@ -332,10 +281,7 @@ private:
             {BASE_INFO_KEY_TRACE_FLAG, std::bind(&RawDataBuilder::UpdateTraceFlag<T>, this, std::placeholders::_1)},
         };
         auto iter = appendFuncs.find(key);
-        if (iter == appendFuncs.end()) {
-            return *this;
-        }
-        return iter->second(val);
+        return (iter == appendFuncs.end()) ? *this : iter->second(val);
     }
 
     template<typename T>
@@ -373,10 +319,7 @@ private:
                 }, std::placeholders::_1, std::placeholders::_2)},
         };
         auto iter = getFuncs.find(encodedParam->GetDataCodedType());
-        if (iter == getFuncs.end()) {
-            return false;
-        }
-        return iter->second(encodedParam, val);
+        return (iter == getFuncs.end()) ? false : iter->second(encodedParam, val);
     }
 
     template<typename T>
@@ -409,8 +352,7 @@ private:
                     return false;
                 }, std::placeholders::_1, std::placeholders::_2)},
             {DataCodedType::DSTRING, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
-                    if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                        std::is_same_v<std::decay_t<T>, const char*>) {
+                    if constexpr (isString<T>) {
                         param->AsString(val);
                         return true;
                     }
@@ -418,10 +360,7 @@ private:
                 }, std::placeholders::_1, std::placeholders::_2)},
         };
         auto iter = getFuncs.find(encodedParam->GetDataCodedType());
-        if (iter == getFuncs.end()) {
-            return GetArrayValueByKey(encodedParam, val);
-        }
-        return iter->second(encodedParam, val);
+        return (iter == getFuncs.end()) ? GetArrayValueByKey(encodedParam, val) : iter->second(encodedParam, val);\
     }
 
     template<typename T, typename V>
@@ -478,10 +417,7 @@ private:
                 std::placeholders::_1)},
         };
         auto iter = parseFuncs.find(key);
-        if (iter == parseFuncs.end()) {
-            return false;
-        }
-        return iter->second(val);
+        return (iter == parseFuncs.end()) ? false : iter->second(val);
     }
 
     template<typename T, typename V>
@@ -491,23 +427,7 @@ private:
             to = from;
             return true;
         }
-        if constexpr (((std::is_same_v<std::decay_t<T>, std::decay_t<int8_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<int16_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<int32_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<int64_t>>) && (
-            std::is_same_v<std::decay_t<V>, std::decay_t<int8_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<int16_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<int32_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<int64_t>>)) || ((
-            std::is_same_v<std::decay_t<T>, std::decay_t<uint8_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<uint16_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<uint32_t>> ||
-            std::is_same_v<std::decay_t<T>, std::decay_t<uint64_t>>) && (
-            std::is_same_v<std::decay_t<V>, std::decay_t<uint8_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<uint16_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<uint32_t>> ||
-            std::is_same_v<std::decay_t<V>, std::decay_t<uint64_t>>
-            ))) {
+        if constexpr ((isSignedNum<T> && isSignedNum<V>) || (isUnsignedNum<T> && isUnsignedNum<V>)) {
             to = static_cast<std::decay_t<T>>(from);
             return true;
         }
@@ -517,15 +437,11 @@ private:
     template<typename T>
     bool ParseTimeZoneFromHeader(T& val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, uint16_t> ||
-            std::is_same_v<std::decay_t<T>, uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             val = static_cast<std::decay_t<T>>(header_.timeZone);
             return true;
         }
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string> ||
-                    std::is_same_v<std::decay_t<T>, const char*>) {
+        if constexpr (isString<T>) {
             val = ParseTimeZone(header_.timeZone);
             return true;
         }
@@ -535,10 +451,7 @@ private:
     template<typename T>
     bool PareTraceFlagFromHeader(T& val)
     {
-        if constexpr (std::is_same_v<std::decay_t<T>, uint8_t> ||
-            std::is_same_v<std::decay_t<T>, uint16_t> ||
-            std::is_same_v<std::decay_t<T>, uint32_t> ||
-            std::is_same_v<std::decay_t<T>, uint64_t>) {
+        if constexpr (isUnsignedNum<T>) {
             val = static_cast<std::decay_t<T>>(traceInfo_.traceFlag);
             return true;
         }
