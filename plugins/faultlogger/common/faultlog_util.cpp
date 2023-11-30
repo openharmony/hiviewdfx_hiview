@@ -155,5 +155,14 @@ time_t GetFileLastAccessTimeStamp(const std::string& fileName)
     }
     return fileInfo.st_atime;
 }
+
+std::string GetCppCrashTempLogName(const FaultLogInfo& info)
+{
+    return std::string(FaultLogger::DEFAULT_FAULTLOG_TEMP_FOLDER) +
+        "cppcrash-" +
+        std::to_string(info.pid) +
+        "-" +
+        std::to_string(info.time);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

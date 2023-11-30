@@ -35,6 +35,7 @@ struct FaultLogInfo {
     std::string otherThreadInfo;
     std::map<std::string, std::string> sectionMap;
     std::list<std::string> additionalLogs;
+    std::map<std::string, std::string> parsedLogInfo;
 };
 
 enum FaultLogType {

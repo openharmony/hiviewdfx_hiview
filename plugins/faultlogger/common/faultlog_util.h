@@ -32,6 +32,7 @@ FaultLogInfo ExtractInfoFromTempFile(const std::string& fileName);
 int32_t GetRawEventIdByType(int32_t logType);
 std::string RegulateModuleNameIfNeed(const std::string& name);
 time_t GetFileLastAccessTimeStamp(const std::string& fileName);
+std::string GetCppCrashTempLogName(const FaultLogInfo& info);
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEWDFX_HIVIEW_FAULTLOGGER_UTIL_H
