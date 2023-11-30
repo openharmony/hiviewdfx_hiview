@@ -286,6 +286,9 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
             } else if (type == "Private_Dirty") {
                 processMemory.privateDirty = value;
                 HIVIEW_LOGD("Private_Dirty=%{public}d", processMemory.privateDirty);
+            } else if (type == "SwapPss") {
+                processMemory.swapPss= value;
+                HIVIEW_LOGD("SwapPss=%{public}d", processMemory.swapPss);
             }
         }
     }
