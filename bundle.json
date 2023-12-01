@@ -39,6 +39,7 @@
                 "device_usage_statistics",
                 "ets_runtime",
                 "faultloggerd",
+                "ffrt",
                 "hidumper",
                 "hilog",
                 "hiprofiler",
