@@ -59,10 +59,10 @@ int MemProfilerCollectorImpl::Start(ProfilerType type,
         time += WAIT_EXIT_MILLS;
     }
     if (time >= FINAL_TIME) {
-        HIVIEW_LOGD("native daemon process not started");
+        HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
-    HIVIEW_LOGD("mem_profiler_collector starting");
+    HIVIEW_LOGI("mem_profiler_collector starting");
     return NativeMemoryProfilerSaClientManager::Start(type, pid, duration, sampleInterval);
 }
 
@@ -75,10 +75,10 @@ int MemProfilerCollectorImpl::Stop(int pid)
         time += WAIT_EXIT_MILLS;
     }
     if (time >= FINAL_TIME) {
-        HIVIEW_LOGD("native daemon process not stopped");
+        HIVIEW_LOGE("native daemon process not stopped");
         return RET_FAIL;
     }
-    HIVIEW_LOGD("mem_profiler_collector stoping");
+    HIVIEW_LOGI("mem_profiler_collector stoping");
     return NativeMemoryProfilerSaClientManager::Stop(pid);
 }
 
@@ -92,7 +92,7 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
         time += WAIT_EXIT_MILLS;
     }
     if (time >= FINAL_TIME) {
-        HIVIEW_LOGD("native daemon process not started");
+        HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
     std::shared_ptr<NativeMemoryProfilerSaConfig> config = std::make_shared<NativeMemoryProfilerSaConfig>();
@@ -106,6 +106,7 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     config->sampleInterval_ = (uint32_t)sampleInterval;
     int fiveMinutes = 300;
     config->statisticsInterval_ = fiveMinutes;
+    HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
 
