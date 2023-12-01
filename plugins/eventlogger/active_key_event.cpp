@@ -19,6 +19,7 @@
 
 #include "event_log_task.h"
 #include "file_util.h"
+#include "ffrt.h"
 #include "logger.h"
 #include "sys_event.h"
 #include "time_util.h"
@@ -29,7 +30,6 @@ DEFINE_LOG_LABEL(0xD002D01, "EventLogger-ActiveKeyEvent");
 ActiveKeyEvent::ActiveKeyEvent()
 {
     triggeringTime_ = 0;
-    eventPool_ = nullptr;
     logStore_ = nullptr;
 }
 
@@ -75,35 +75,29 @@ void ActiveKeyEvent::InitSubscribe(int32_t preKey, int32_t finalKey, int32_t cou
     if (subscribeId < 0) {
         HIVIEW_LOGE("SubscribeKeyEvent failed, %{public}d_%{public}d,"
             "subscribeId: %{public}d option failed.", preKey, finalKey, subscribeId);
-        if (eventPool_ == nullptr) {
-            return;
-        }
-        auto initSubscribe = std::bind(&ActiveKeyEvent::InitSubscribe, this, preKey, finalKey, count);
-        eventPool_->AddTask(initSubscribe, "initSubscribe" + std::to_string(finalKey) +
-            "_" + std::to_string(count), initDelay_ * count);
+        auto task = [this, &preKey, &finalKey, count] {
+            this->InitSubscribe(preKey, finalKey, count);
+            taskOutDeps++;
+        };
+        std::string taskName("initSubscribe" + std::to_string(finalKey) + "_" + std::to_string(count));
+        ffrt::submit(task, {}, {&taskOutDeps}, ffrt::task_attr().name(taskName.c_str()));
     }
     subscribeIds_.emplace_back(subscribeId);
     HIVIEW_LOGI("CombinationKeyInit %{public}d_ %{public}d subscribeId_: %{public}d",
         preKey, finalKey, subscribeId);
 }
 
-void ActiveKeyEvent::Init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore)
+void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
 {
     HIVIEW_LOGI("CombinationKeyInit");
-    eventPool_ = eventPool;
     logStore_ = logStore;
-    
-    if (eventPool_ == nullptr) {
-        InitSubscribe(MMI::KeyEvent::KEYCODE_VOLUME_UP, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0);
-        InitSubscribe(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, MMI::KeyEvent::KEYCODE_POWER, 0);
-        return;
-    }
+
     auto initSubscribeDown = std::bind(&ActiveKeyEvent::InitSubscribe, this,
         MMI::KeyEvent::KEYCODE_VOLUME_UP, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0);
     auto initSubscribePower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
         MMI::KeyEvent::KEYCODE_VOLUME_DOWN, MMI::KeyEvent::KEYCODE_POWER, 0);
-    eventPool_->AddTask(initSubscribeDown, "initSubscribeDown", initDelay_);
-    eventPool_->AddTask(initSubscribePower, "initSubscribePower", initDelay_);
+    ffrt::submit(initSubscribeDown, {}, {}, ffrt::task_attr().name("initSubscribeDown").qos(ffrt::qos_default));
+    ffrt::submit(initSubscribePower, {}, {}, ffrt::task_attr().name("initSubscribePower").qos(ffrt::qos_default));
 }
 
 void ActiveKeyEvent::HitraceCapture()
@@ -172,12 +166,9 @@ void ActiveKeyEvent::CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEven
     }
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
 
-    if (eventPool_ == nullptr) {
-        HitraceCapture();
-    } else {
-        auto hitraceCapture = std::bind(&ActiveKeyEvent::HitraceCapture, this);
-        eventPool_->AddTask(hitraceCapture, "HitraceCapture", 0, EventThreadPool::Priority::HIGH_PRIORITY);
-    }
+    auto hitraceCapture = std::bind(&ActiveKeyEvent::HitraceCapture, this);
+    ffrt::submit(hitraceCapture, {}, {}, ffrt::task_attr().name("HitraceCapture").qos(ffrt::qos_user_initiated));
+
     DumpCapture(fd);
     auto end = ActiveKeyEvent::SystemTimeMillisecond();
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - sysStart) + "ms\n";
@@ -195,11 +186,8 @@ void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEv
     }
     triggeringTime_ = now;
     auto combinationKeyHandle = std::bind(&ActiveKeyEvent::CombinationKeyHandle, this, keyEvent);
-    if (eventPool_ != nullptr) {
-        eventPool_->AddTask(combinationKeyHandle, "ActiveKeyEvent", 0, EventThreadPool::Priority::HIGH_PRIORITY);
-    } else {
-        CombinationKeyHandle(keyEvent);
-    }
+    ffrt::submit(combinationKeyHandle, {}, {},
+        ffrt::task_attr().name("ActiveKeyEvent").qos(ffrt::qos_user_initiated));
 }
 } // namesapce HiviewDFX
 } // namespace OHOS

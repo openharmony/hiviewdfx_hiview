@@ -24,6 +24,7 @@
 
 #include "event.h"
 #include "event_loop.h"
+#include "ffrt.h"
 #include "log_store_ex.h"
 #include "logger.h"
 #include "plugin.h"
@@ -31,7 +32,7 @@
 
 #include "active_key_event.h"
 #include "event_logger_config.h"
-#include "event_thread_pool.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 struct BinderInfo {
@@ -79,8 +80,7 @@ private:
     std::shared_ptr<EventLoop> threadLoop_ = nullptr;
     std::unordered_set<std::shared_ptr<SysEvent>> sysEventSet_;
     int const maxEventPoolCount = 5;
-    std::shared_ptr<EventThreadPool> eventPool_;
-    std::mutex intervalMutex_;
+    ffrt::mutex intervalMutex_;
     std::mutex finishMutex_;
     std::unique_ptr<ActiveKeyEvent> activeKeyEvent_;
     std::string cmdlinePath_ = "/proc/cmdline";
