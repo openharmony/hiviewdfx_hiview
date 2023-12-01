@@ -58,7 +58,7 @@ int MemProfilerCollectorImpl::Start(ProfilerType type,
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time >= FINAL_TIME) {
+    if (time > FINAL_TIME) {
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
@@ -74,7 +74,7 @@ int MemProfilerCollectorImpl::Stop(int pid)
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time >= FINAL_TIME) {
+    if (time > FINAL_TIME) {
         HIVIEW_LOGE("native daemon process not stopped");
         return RET_FAIL;
     }
@@ -91,7 +91,7 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time >= FINAL_TIME) {
+    if (time > FINAL_TIME) {
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
