@@ -13,23 +13,36 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
-#define OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
+#ifndef OHOS_HIVIEWDFX_EVENT_PUBLISH_H
+#define OHOS_HIVIEWDFX_EVENT_PUBLISH_H
 
+#include <mutex>
 #include <string>
+
+#include "event_loop.h"
+#include "hisysevent.h"
+#include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class DataShareUtil {
+class EventPublish : public OHOS::DelayedRefSingleton<EventPublish> {
+public:
+    EventPublish() {};
+    ~EventPublish();
 
 public:
-    static std::string GetSandBoxPathByUid(int32_t uid);
-    static int CopyFile(const char *src, const char *des);
-    static std::string GetBundleNameById(int32_t uid);
-    static int32_t GetUidByBundleName(const std::string& bundleName);
+    void PushEvent(int32_t uid, const std::string& eventName, HiSysEvent::EventType eventType,
+        const std::string& paramJson);
+
+private:
+    void InitLoop();
+    void SendEventToSandBox();
+
+private:
+    std::shared_ptr<EventLoop> looper_;
+    std::mutex mutex_;
 };
+} // namespace HiviewDFX
+} // namespace OHOS
 
-}  // namespace HiviewDFX
-}  // namespace OHOS
-
-#endif  // OHOS_HIVIEWDFX_DATA_SHARE_UTIL_H
+#endif // OHOS_HIVIEWDFX_EVENT_PUBLISH_H
