@@ -32,7 +32,7 @@ DEFINE_LOG_TAG("UCollectUtil-MemProfilerCollector");
 const std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 1000;
-constexpr int FINAL_TIME = 5000;
+constexpr int FINAL_TIME = 3000;
 
 class MemProfilerCollectorImpl : public MemProfilerCollector {
 public:
@@ -58,7 +58,7 @@ int MemProfilerCollectorImpl::Start(ProfilerType type,
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time > FINAL_TIME) {
+    if (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
@@ -74,7 +74,7 @@ int MemProfilerCollectorImpl::Stop(int pid)
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time > FINAL_TIME) {
+    if (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         HIVIEW_LOGE("native daemon process not stopped");
         return RET_FAIL;
     }
@@ -91,7 +91,7 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (time > FINAL_TIME) {
+    if (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
