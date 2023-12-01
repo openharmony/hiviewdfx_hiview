@@ -59,11 +59,14 @@ int CalcFingerprint::ConvertToString(const unsigned char hash[SHA256_DIGEST_LENG
 int CalcFingerprint::CalcFileSha(const string& filePath, char *hash, size_t len)
 {
     if (filePath.empty() || hash == nullptr || !FileUtil::IsLegalPath(filePath)) {
+        HIVIEW_LOGE("invalid param.");
         return EINVAL;
     }
     unsigned char value[SHA256_DIGEST_LENGTH] = {0};
-    if (CalcFileShaOriginal(filePath, value, len) != 0) {
-        return EINVAL;
+    int ret = CalcFileShaOriginal(filePath, value, len);
+    if (ret != 0) {
+        HIVIEW_LOGE("CalcFileShaOriginal failed.");
+        return ret;
     }
     return ConvertToString(value, hash, len);
 }
@@ -77,7 +80,7 @@ int CalcFingerprint::CalcFileShaOriginal(const string& filePath, unsigned char *
 
     if (len < SHA256_DIGEST_LENGTH) {
         HIVIEW_LOGE("hash buf len error.");
-        return EINVAL;
+        return ENOMEM;
     }
 
     FILE *fp = nullptr;
