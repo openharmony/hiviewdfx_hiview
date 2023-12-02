@@ -36,6 +36,7 @@ public:
 
 private:
     void InitLoop();
+    void ResetLoop();
     void SendEventToSandBox();
 
 private:
