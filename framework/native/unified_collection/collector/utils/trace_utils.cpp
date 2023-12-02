@@ -105,12 +105,13 @@ void CleanPolicy::DoClean()
         }
     }
 
-    HIVIEW_LOGD("myFiles size : %{public}d.", myFiles.size());
+    HIVIEW_LOGI("myFiles size : %{public}d, MyThreshold : %{public}d.", myFiles.size(), MyThreshold());
 
     // Clean up old files
     while (myFiles.size() > MyThreshold()) {
         for (const auto &file : myFiles.begin()->second) {
             FileUtil::RemoveFile(file);
+            HIVIEW_LOGI("remove file : %{public}s is deleted.", file.c_str());
         }
         myFiles.erase(myFiles.begin());
     }

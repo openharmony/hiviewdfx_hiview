@@ -55,6 +55,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
 {
     std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
 
+    HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
     std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
     CollectResult<std::vector<std::string>> result;
     // check 1, judge whether need to dump
