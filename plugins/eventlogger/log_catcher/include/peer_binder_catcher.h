@@ -29,7 +29,7 @@ public:
     explicit PeerBinderCatcher();
     ~PeerBinderCatcher() override{};
     bool Initialize(const std::string& perfCmd, int layer, int pid) override;
-    int Catch(int fd) override;
+    int Catch(int fd, int jsonFd) override;
     void Init(std::shared_ptr<SysEvent> event, const std::string& filePath);
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
@@ -45,6 +45,10 @@ private:
         int server;
         int wait;
     };
+    struct OutputBinderInfo {
+        std::string info;
+        int pid;
+    };
     enum {
         LOGGER_BINDER_STACK_ONE = 0,
         LOGGER_BINDER_STACK_ALL = 1,
@@ -55,11 +59,13 @@ private:
     std::string perfCmd_ = "";
     std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
-    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin, int fd) const;
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin,
+        int fd, int jsonFd) const;
     void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::set<int>& pids, int pid) const;
-    std::set<int> GetBinderPeerPids(int fd) const;
+    std::set<int> GetBinderPeerPids(int fd, int jsonFd) const;
     void CatcherStacktrace(int fd, int pid) const;
+    void AddBinderJsonInfo(std::list<OutputBinderInfo> outputBinderInfoList, int jsonFd) const;
 #ifdef HAS_HIPERF
     void ForkToDumpHiperf(const std::set<int>& pids);
     void DoExecHiperf(const std::string& fileName, const std::set<int>& pids);

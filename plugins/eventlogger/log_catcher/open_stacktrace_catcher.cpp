@@ -57,7 +57,7 @@ bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, i
 };
 
 // may block, run in another thread
-int OpenStacktraceCatcher::Catch(int fd)
+int OpenStacktraceCatcher::Catch(int fd, int jsonFd)
 {
     if (pid_ <= 0) {
         return 0;

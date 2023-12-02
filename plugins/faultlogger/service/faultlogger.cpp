@@ -21,6 +21,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -62,6 +63,8 @@
 #include "sys_event_dao.h"
 #include "time_util.h"
 #include "zip_helper.h"
+#include "freeze_json_generator.h"
+#include "freeze_json_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -91,6 +94,7 @@ constexpr int RETRY_DELAY = 10;
 #endif
 constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
+constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -654,6 +658,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         ReportCppCrashToAppEvent(info);
     }
 
+    if (info.faultLogType == FaultLogType::APP_FREEZE) {
+        ReportAppFreezeToAppEvent(info);
+    }
+
     mgr_->SaveFaultLogToFile(info);
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
@@ -821,6 +829,140 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         return true;
     }
     return false;
+}
+
+std::list<std::string> GetDightStrArr(const std::string& target)
+{
+    std::list<std::string> ret;
+    std::string temp = "";
+    for (int i = 0, len = target.size(); i < len; i++) {
+        if (target[i] >= '0' && target[i] <= '9') {
+            temp += target[i];
+            continue;
+        }
+        if (temp.size() != 0) {
+            ret.push_back(temp);
+            temp = "";
+        }
+    }
+    if (temp.size() != 0) {
+        ret.push_back(temp);
+    }
+    ret.push_back("0");
+    return ret;
+}
+
+std::string Faultlogger::GetMemoryStrByPid(long pid) const
+{
+    unsigned long long rss = 0; // statm col=2 *4
+    unsigned long long vss = 0; // statm col = 1 *4
+    unsigned long long sysFreeMem = 0; // meminfo row=2
+    unsigned long long sysAvailMem = 0; // meminfo row=3
+    unsigned long long sysTotalMem = 0; // meminfo row=1
+    std::ifstream statmStream("/proc/" + std::to_string(pid) + "/statm");
+    if (statmStream) {
+        std::string statmLine;
+        std::getline(statmStream, statmLine);
+        HIVIEW_LOGI("/proc/%{public}d/statm : %{public}s", pid, statmLine.c_str());
+        statmStream.close();
+        std::list<std::string> numStrArr = GetDightStrArr(statmLine);
+        auto it = numStrArr.begin();
+        int multiples = 4;
+        vss = multiples * std::stoull(*it);
+        it++;
+        rss = multiples * std::stoull(*it);
+        HIVIEW_LOGI("GET FreezeJson rss=%{public}d, vss=%{public}d.", rss, vss);
+    } else {
+        HIVIEW_LOGE("Fail to open /proc/%{public}d/statm", pid);
+    }
+
+    std::ifstream meminfoStream("/proc/meminfo");
+    if (meminfoStream) {
+        std::string meminfoLine;
+        std::getline(meminfoStream, meminfoLine);
+        HIVIEW_LOGI("/proc/meminfo line1: %{public}s", meminfoLine.c_str());
+        sysTotalMem = std::stoull(GetDightStrArr(meminfoLine).front());
+        std::getline(meminfoStream, meminfoLine);
+        HIVIEW_LOGI("/proc/meminfo line2: %{public}s", meminfoLine.c_str());
+        sysFreeMem = std::stoull(GetDightStrArr(meminfoLine).front());
+        std::getline(meminfoStream, meminfoLine);
+        HIVIEW_LOGI("/proc/meminfo line3: %{public}s", meminfoLine.c_str());
+        sysAvailMem = std::stoull(GetDightStrArr(meminfoLine).front());
+        meminfoStream.close();
+        HIVIEW_LOGI("GET FreezeJson sysFreeMem=%{public}d, sysAvailMem=%{public}d, sysTotalMem=%{public}d.",
+            sysFreeMem, sysAvailMem, sysTotalMem);
+    } else {
+        HIVIEW_LOGE("Fail to open /proc/meminfo");
+    }
+
+    FreezeJsonMemory freezeJsonMemory = FreezeJsonMemory::Builder()
+        .InitRss(rss)
+        .InitVss(vss)
+        .InitSysFreeMem(sysFreeMem)
+        .InitSysAvailMem(sysAvailMem)
+        .InitSysTotalMem(sysTotalMem)
+        .Build();
+    return freezeJsonMemory.JsonStr();
+}
+
+void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
+{
+    HIVIEW_LOGI("Start to report freezeJson !!!");
+
+    std::string jsonFilePath = FreezeJsonUtil::GetFilePath(info.pid, info.id, info.time);
+    if (!FileUtil::FileExists(jsonFilePath)) {
+        HIVIEW_LOGE("Not Exist FreezeJson File: %{public}s.", jsonFilePath.c_str());
+        return;
+    }
+    FreezeJsonUtil::FreezeJsonCollector collector = FreezeJsonUtil::LoadCollectorFromFile(jsonFilePath);
+
+    FreezeJsonException exception = FreezeJsonException::Builder()
+        .InitName(collector.stringId)
+        .InitMessage(collector.message)
+        .Build();
+
+    std::string hilogJsonStr = "";
+    GetHilog(collector.pid, hilogJsonStr);
+    if (hilogJsonStr.length() == 0) {
+        HIVIEW_LOGE("Get FreezeJson hilog is empty");
+    }
+
+    std::string memoryJsonStr = GetMemoryStrByPid(collector.pid);
+
+    std::string foreground = "unknown";
+    if (info.sectionMap.count("FOREGROUND") == 1) {
+        foreground = info.sectionMap.at("FOREGROUND");
+    }
+
+    std::string version = "unknown";
+    if (info.sectionMap.count("VERSION") == 1) {
+        version = info.sectionMap.at("VERSION");
+    }
+
+    FreezeJsonParams freezeJsonParams = FreezeJsonParams::Builder()
+        .InitTime(collector.timestamp)
+        .InitUuid(collector.uuid)
+        .InitFreezeType("AppFreeze")
+        .InitForeground(foreground)
+        .InitBundleVersion(version)
+        .InitBundleName(collector.package_name)
+        .InitProcessName(collector.process_name)
+        .InitPid(collector.pid)
+        .InitUid(collector.uid)
+        .InitException(exception.JsonStr())
+        .InitHilog(hilogJsonStr)
+        .InitEventHandler(collector.event_handler)
+        .InitEventHandlerSize3s(collector.event_handler_3s_size)
+        .InitEventHandlerSize6s(collector.event_handler_6s_size)
+        .InitPeerBinder(collector.peer_binder)
+        .InitThreads(collector.stack)
+        .InitMemory(memoryJsonStr)
+        .Build();
+    EventPublish::GetInstance().PushEvent(info.id, APP_FREEZE_TYPE,
+        HiSysEvent::EventType::FAULT, freezeJsonParams.JsonStr());
+    HIVIEW_LOGI("Report freezeJson Successfully! jsonFilePath : %{public}s", jsonFilePath.c_str());
+
+    FreezeJsonUtil::DelFile(jsonFilePath);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

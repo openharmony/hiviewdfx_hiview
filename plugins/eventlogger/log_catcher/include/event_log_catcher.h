@@ -32,7 +32,7 @@ public:
     virtual bool Initialize(const std::string &strParam1, int intParam1, int intParam2);
     // start catch the log
     // return the bytes that caught
-    virtual int Catch(int fd);
+    virtual int Catch(int fd, int jsonFd);
     // return a string that describe the log catcher
     // should not be longer than 256 bytes
     virtual std::string GetDescription() const;

@@ -106,7 +106,7 @@ bool ShellCatcher::ReadShellToFile(int writeFd, const std::string& cmd)
     return true;
 }
 
-int ShellCatcher::Catch(int fd)
+int ShellCatcher::Catch(int fd, int jsonFd)
 {
     auto originSize = GetFdSize(fd);
     if (catcherCmd_.empty()) {

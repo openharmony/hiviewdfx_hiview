@@ -65,6 +65,7 @@ private:
 
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
         const std::string& logName) const;
+    void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
 
     std::unique_ptr<LogStoreEx> logStore_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
