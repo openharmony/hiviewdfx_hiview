@@ -22,6 +22,7 @@
 
 #include "event.h"
 #include "plugin.h"
+#include "sys_event.h"
 
 #include "faultlog_info.h"
 #include "faultlog_manager.h"
@@ -78,6 +79,11 @@ private:
     volatile bool hasInit_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
     static void HandleNotify(int32_t type, const std::string& fname);
+    void ReportCppCrashToAppEvent(const FaultLogInfo& info) const;
+    bool GetHilog(int32_t pid, std::string& log) const;
+    void DoGetHilogProcess(int32_t pid, int writeFd) const;
+    void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
+    void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
