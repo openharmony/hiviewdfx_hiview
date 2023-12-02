@@ -23,12 +23,6 @@ config("sys_event_service_ohos_public_config") {
 }
 
 ohos_source_set("sys_event_service_ohos_common") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",
@@ -85,12 +79,6 @@ ohos_source_set("sys_event_service_ohos_common") {
 }
 
 ohos_source_set("sys_event_service_ohos") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",

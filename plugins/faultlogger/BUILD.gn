@@ -14,12 +14,6 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 ohos_shared_library("libfaultlogger") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   configs = [ "service/idl:faultlogger_service_impl_config" ]
   public_configs = [ "interfaces/cpp/innerkits:faultlogger_innerkits_config" ]
   deps = [ "interfaces/cpp/innerkits:faultlogger_client_impl" ]
@@ -30,12 +24,6 @@ ohos_shared_library("libfaultlogger") {
 }
 
 ohos_source_set("faultlogger") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   part_name = "hiview"
   deps = [
     "config:faultloggerPipeline",
