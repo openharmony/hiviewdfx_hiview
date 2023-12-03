@@ -28,12 +28,6 @@ if (enable_hiview_usage_event_report_build) {
   }
 
   ohos_source_set("usage_event_report") {
-    branch_protector_ret = "pac_ret"
-    sanitize = {
-      cfi = true
-      cfi_cross_dso = true
-      debug = false
-    }
     configs = [ ":usage_event_report_config" ]
 
     sources = [

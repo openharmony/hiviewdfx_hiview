@@ -29,12 +29,6 @@ config("ucolletciton_source_config") {
 }
 
 ohos_source_set("ucollection_source") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   configs = [
     ":ucolletciton_source_config",
     "$hiview_base:logger_config",

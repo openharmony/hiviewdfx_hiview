@@ -26,12 +26,6 @@ config("hiview_event_report_config") {
 }
 
 ohos_source_set("hiview_event_report") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   sources = [
     "cache/hiview_event_cacher.cpp",
     "event/logger_event.cpp",

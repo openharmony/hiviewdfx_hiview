@@ -20,12 +20,6 @@ config("faultlogger_service_adapter_config") {
 }
 
 ohos_source_set("faultlogger_service_ability") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   part_name = "hiview"
   include_dirs = [
     "//third_party/bounds_checking_function/include",
@@ -51,12 +45,6 @@ ohos_source_set("faultlogger_service_ability") {
 }
 
 ohos_source_set("faultlogger_service") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   part_name = "hiview"
   include_dirs = [
     ".",
@@ -85,7 +73,7 @@ ohos_source_set("faultlogger_service") {
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/jsoncpp:jsoncpp",
-    "//third_party/zlib:shared_libz",
+    "//third_party/zlib:libz",
   ]
 
   external_deps = [

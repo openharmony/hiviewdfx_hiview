@@ -18,12 +18,6 @@ config("faultlogger_common_config") {
 }
 
 ohos_source_set("log_analyzer") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   include_dirs = [
     "//base/hiviewdfx/hiview/utility/smart_parser",
     "//base/hiviewdfx/hiview/utility/common_utils/include",
@@ -45,12 +39,6 @@ ohos_source_set("log_analyzer") {
 }
 
 ohos_source_set("faultlogger_common") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   public_configs = [ ":faultlogger_common_config" ]
   sources = [
     "faultlog_query_result_inner.cpp",
