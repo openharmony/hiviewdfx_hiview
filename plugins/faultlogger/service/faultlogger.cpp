@@ -470,7 +470,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
-    params["uuid"] = sysEvent->GetEventValue("ID");
+    params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
     Json::Value exception;
     exception["name"] = sysEvent->GetEventValue("REASON");
     std::string message = m[1]; // 1: is message
@@ -747,6 +747,9 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     }
     if (info.sectionMap.count("FOREGROUND") == 1) {
         stackInfoObj["foreground"] = info.sectionMap.at("FOREGROUND");
+    }
+    if (info.sectionMap.count("FINGERPRINT") == 1) {
+        stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
 
     std::string log;
