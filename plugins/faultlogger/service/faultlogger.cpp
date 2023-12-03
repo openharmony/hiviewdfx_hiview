@@ -257,6 +257,12 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
     }
 
     info.sectionMap["APPEND_ORIGIN_LOG"] = GetCppCrashTempLogName(info);
+
+    std::string log;
+    GetHilog(info.pid, log);
+    if (log.length() > 0) {
+        info.sectionMap["HILOG"] = log;
+    }
 }
 
 bool Faultlogger::VerifiedDumpPermission()
@@ -752,20 +758,16 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
 
-    std::string log;
-    GetHilog(info.pid, log);
-    if (log.length() == 0) {
-        HIVIEW_LOGE("Get hilog is empty");
-        return;
+    if (info.sectionMap.count("HILOG") == 1) {
+        Json::Value hilog;
+        std::stringstream logStream(info.sectionMap.at("HILOG"));
+        std::string oneLine;
+        while (getline(logStream, oneLine)) {
+            hilog.append(oneLine);
+        }
+        stackInfoObj["hilog"] = hilog;
+        stackInfo.append(Json::FastWriter().write(stackInfoObj));
     }
-    Json::Value hilog;
-    std::stringstream logStream(log);
-    std::string oneLine;
-    while (getline(logStream, oneLine)) {
-        hilog.append(oneLine);
-    }
-    stackInfoObj["hilog"] = hilog;
-    stackInfo.append(Json::FastWriter().write(stackInfoObj));
 }
 
 void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
