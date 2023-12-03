@@ -84,6 +84,8 @@ private:
     void DoGetHilogProcess(int32_t pid, int writeFd) const;
     void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
     void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
+    std::string GetMemoryStrByPid(long pid) const;
+    void ReportAppFreezeToAppEvent(const FaultLogInfo& info) const;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

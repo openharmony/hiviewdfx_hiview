@@ -29,7 +29,7 @@ public:
     explicit DmesgCatcher();
     ~DmesgCatcher() override {};
     bool Initialize(const std::string& packageNam, int isWriteNewFile, int intParam2) override;
-    int Catch(int fd) override;
+    int Catch(int fd, int jsonFd) override;
     bool Init(std::shared_ptr<SysEvent> event);
 
 private:

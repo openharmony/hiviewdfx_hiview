@@ -40,7 +40,7 @@ bool BinderCatcher::Initialize(const std::string& strParam1, int intParam1, int 
     return true;
 };
 
-int BinderCatcher::Catch(int fd)
+int BinderCatcher::Catch(int fd, int jsonFd)
 {
     std::string line;
     int originSize = GetFdSize(fd);

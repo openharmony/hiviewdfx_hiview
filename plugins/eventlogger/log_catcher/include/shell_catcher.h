@@ -27,7 +27,7 @@ public:
     explicit ShellCatcher();
     ~ShellCatcher() override {};
     bool Initialize(const std::string& cmd, int type, int intParam2) override;
-    int Catch(int fd) override;
+    int Catch(int fd, int jsonFd) override;
 
     enum CATCHER_TYPE {
         CATCHER_AMS,

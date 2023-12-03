@@ -52,7 +52,7 @@ bool EventLogCatcher::Initialize(const std::string &strParam1 __UNUSED, int intP
     return true;
 }
 
-int EventLogCatcher::Catch(int fd __UNUSED)
+int EventLogCatcher::Catch(int fd __UNUSED, int jsonFd __UNUSED)
 {
     return 0;
 }

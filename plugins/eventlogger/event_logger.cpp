@@ -23,6 +23,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <mutex>
+#include <vector>
+#include <list>
+#include <regex>
 
 #include "parameter.h"
 
@@ -35,6 +38,8 @@
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
+#include "freeze_json_util.h"
+#include "dfx_json_formatter.h"
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
@@ -132,7 +137,15 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         return;
     }
 
-    std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, event);
+    int jsonFd = -1;
+    bool isAppFreeze = FreezeJsonUtil::IsAppFreeze(event->eventName_);
+    if (isAppFreeze) {
+        std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
+            event->GetEventIntValue("UID"), event->happenTime_);
+        jsonFd = FreezeJsonUtil::GetFd(jsonFilePath);
+    }
+
+    std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, jsonFd, event);
     std::string cmdStr = event->GetValue("eventLog_action");
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmdStr, ",", cmdList);
@@ -149,7 +162,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
     startTimeStr << std::endl;
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
-    WriteCommonHead(fd, event);
+    WriteCommonHead(fd, jsonFd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
@@ -158,6 +171,9 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
+    if (isAppFreeze) {
+        close(jsonFd);
+    }
     UpdateDB(event, logFile);
 
     constexpr int waitTime = 1;
@@ -166,8 +182,55 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
     HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
+bool ParseMsgForEventHandler(const std::string& msg, std::string& message, std::string& eventHandlerStr)
+{
+    std::vector<std::string> lines;
+    StringUtil::SplitStr(msg, "\n", lines, false, true);
+    bool isGetMessage = false;
+    std::string messageStartFlag = "Fault time:";
+    std::string messageEndFlag = "mainHandler dump is:";
+    std::string eventFlag = "Event {";
+    bool isGetEvent = false;
+    std::regex eventStartFlag(".*((Immediate)|(High)|(Low)) priority event queue information:.*");
+    std::regex eventEndFlag(".*Total size of ((Immediate)|(High)|(Low)) events :.*");
+    std::list<std::string> eventHandlerList;
+    for (auto line = lines.begin(); line != lines.end(); line++) {
+        if ((*line).find(messageStartFlag) != std::string::npos) {
+            isGetMessage = true;
+            continue;
+        }
+        if (isGetMessage) {
+            if ((*line).find(messageEndFlag) != std::string::npos) {
+                isGetMessage = false;
+                HIVIEW_LOGI("Get FreezeJson message jsonStr: %{public}s", message.c_str());
+                continue;
+            }
+            message += StringUtil::TrimStr(*line);
+            continue;
+        }
+        if (regex_match(*line, eventStartFlag)) {
+            isGetEvent = true;
+            continue;
+        }
+        if (isGetEvent) {
+            if (regex_match(*line, eventEndFlag)) {
+                isGetEvent = false;
+                continue;
+            }
+            unsigned long pos = (*line).find(eventFlag);
+            if (pos == std::string::npos) {
+                continue;
+            }
+            std::string handlerStr = StringUtil::TrimStr(*line).substr(pos);
+            HIVIEW_LOGI("Get EventHandler str: %{public}s.", handlerStr.c_str());
+            eventHandlerList.push_back(handlerStr);
+        }
+    }
+    eventHandlerStr = FreezeJsonUtil::GetStrByList(eventHandlerList);
+    return true;
+}
 
-bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
+bool EventLogger::WriteCommonHead(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
 {
     std::ostringstream headerStream;
 
@@ -196,7 +259,22 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     headerStream << "MSG = " << msg << std::endl;
 
-    std::string stack = event->GetEventValue("STACK");
+    std::string stack;
+    if (FreezeJsonUtil::IsAppFreeze(event -> eventName_) && jsonFd >= 0) {
+        std::string message;
+        std::string eventHandlerStr;
+        ParseMsgForEventHandler(msg, message, eventHandlerStr);
+        std::string jsonStack = event -> GetEventValue("STACK");
+        DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
+
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "uuid", event->GetEventValue("ID"));
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
+    } else {
+        stack = event->GetEventValue("STACK");
+    }
+
     if (!stack.empty()) {
         headerStream << StringUtil::UnescapeJsonStringValue(stack) << std::endl;
     }

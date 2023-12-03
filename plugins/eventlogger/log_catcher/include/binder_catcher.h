@@ -25,7 +25,7 @@ public:
     explicit BinderCatcher();
     ~BinderCatcher() override{};
     bool Initialize(const std::string& strParam1, int intParam1, int intParam2) override;
-    int Catch(int fd) override;
+    int Catch(int fd, int jsonFd) override;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

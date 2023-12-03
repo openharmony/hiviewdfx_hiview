@@ -29,6 +29,7 @@ ohos_source_set("hiview_utility") {
     "common_utils.cpp",
     "dynamic_module.cpp",
     "file_util.cpp",
+    "freeze_json_util.cpp",
     "memory_util.cpp",
     "parameter_ex.cpp",
     "socket_util.cpp",

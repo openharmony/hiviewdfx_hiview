@@ -123,7 +123,8 @@ void ActiveKeyEvent::DumpCapture(int fd)
 {
     SysEventCreator sysEventCreator("HIVIEWDFX", "ACTIVE_KEY", SysEventCreator::FAULT);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("ActiveKeyEvent", nullptr, sysEventCreator);
-    std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, sysEvent);
+    int noNeedJsonFd = -1;
+    std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, noNeedJsonFd, sysEvent);
     for (const std::string& cmd : CMD_LIST) {
         logTask->AddLog(cmd);
     }

@@ -42,7 +42,7 @@ public:
         TASK_DESTROY = 7,
     };
 
-    EventLogTask(int fd, std::shared_ptr<SysEvent> event);
+    EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     virtual ~EventLogTask() {};
     void AddLog(const std::string &cmd);
     EventLogTask::Status StartCompose();
@@ -52,6 +52,7 @@ private:
     using capture = std::function<void()>;
 
     int targetFd_;
+    int targetJsonFd_;
     std::shared_ptr<SysEvent> event_;
     std::vector<std::shared_ptr<EventLogCatcher>> tasks_;
     uint32_t maxLogSize_;

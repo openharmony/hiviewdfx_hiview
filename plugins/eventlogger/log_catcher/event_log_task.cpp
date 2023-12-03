@@ -37,8 +37,9 @@ const std::string SYSTEM_STACK[] = {
 };
 }
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-EventLogTask");
-EventLogTask::EventLogTask(int fd, std::shared_ptr<SysEvent> event)
+EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     : targetFd_(fd),
+      targetJsonFd_(jsonFd),
       event_(event),
       maxLogSize_(DEFAULT_LOG_SIZE),
       taskLogSize_(0),
@@ -92,6 +93,10 @@ EventLogTask::Status EventLogTask::StartCompose()
     }
 
     auto dupedFd = dup(targetFd_);
+    int dupedJsonFd = -1;
+    if (targetJsonFd_ >= 0) {
+        dupedJsonFd = dup(targetJsonFd_);
+    }
     uint32_t catcherIndex = 0;
     for (auto& catcher : tasks_) {
         catcherIndex++;
@@ -102,7 +107,7 @@ EventLogTask::Status EventLogTask::StartCompose()
         }
 
         AddSeparator(dupedFd, catcher);
-        int curLogSize = catcher->Catch(dupedFd);
+        int curLogSize = catcher->Catch(dupedFd, dupedJsonFd);
         HIVIEW_LOGI("finish catcher: %{public}s, curLogSize: %{public}d", catcher->GetDescription().c_str(), curLogSize);
         if (ShouldStopLogTask(dupedFd, catcherIndex, curLogSize, catcher)) {
             break;

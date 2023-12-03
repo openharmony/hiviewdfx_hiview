@@ -128,7 +128,7 @@ std::string DmesgCatcher::DmesgSaveTofile()
     return realPath;
 }
 
-int DmesgCatcher::Catch(int fd)
+int DmesgCatcher::Catch(int fd, int jsonFd)
 {
     if (needWriteSysrq_ && !WriteSysrq()) {
         return 0;

@@ -25,7 +25,7 @@ public:
     explicit OpenStacktraceCatcher();
     ~OpenStacktraceCatcher() override{};
     bool Initialize(const std::string& packageNam, int pid, int intParam2) override;
-    int Catch(int fd) override;
+    int Catch(int fd, int jsonFd) override;
 
 private:
     int32_t ForkAndDumpStackTrace(int32_t fd);

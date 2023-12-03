@@ -20,6 +20,7 @@
 #include "logger.h"
 #include "string_util.h"
 #include "time_util.h"
+#include "freeze_json_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -130,6 +131,40 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
     oss << FreezeCommon::EVENT_PROCESS_NAME << FreezeCommon::COLON << watchPoint.GetProcessName() << std::endl;
 }
 
+void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const
+{
+    std::ostringstream oss;
+    for (auto node : list) {
+        std::string filePath = FreezeJsonUtil::GetFilePath(node.GetPid(), node.GetUid(), node.GetTimestamp());
+        if (!FileUtil::FileExists(filePath)) {
+            continue;
+        }
+        std::ifstream ifs(filePath, std::ios::in);
+        if (ifs.is_open()) {
+            oss << ifs.rdbuf();
+            ifs.close();
+        }
+        FreezeJsonUtil::DelFile(filePath);
+    }
+
+    std::string mergeFilePath = FreezeJsonUtil::GetFilePath(watchPoint.GetPid(),
+        watchPoint.GetUid(), watchPoint.GetTimestamp());
+    int jsonFd = FreezeJsonUtil::GetFd(mergeFilePath);
+    FileUtil::SaveStringToFd(jsonFd, oss.str());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "domain", watchPoint.GetDomain());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "stringId", watchPoint.GetStringId());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "timestamp", watchPoint.GetTimestamp());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "pid", watchPoint.GetPid());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "uid", watchPoint.GetUid());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "package_name", watchPoint.GetPackageName());
+    FreezeJsonUtil::WriteKeyValue(jsonFd, "process_name", watchPoint.GetProcessName());
+    HIVIEW_LOGI("Get FreezeJson : domain(%{public}s), stringId(%{public}s), timestamp(%{public}d), "
+        "pid(%{public}d), uid(%{public}d), package_name(%{public}s), process_name(%{public}s)",
+        watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str(), watchPoint.GetTimestamp(),
+        watchPoint.GetPid(), watchPoint.GetUid(), watchPoint.GetPackageName().c_str(),
+        watchPoint.GetProcessName().c_str());
+}
+
 std::string Vendor::MergeEventLog(
     const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
     const std::vector<FreezeResult>& result) const
@@ -210,6 +245,10 @@ std::string Vendor::MergeEventLog(
         body << HEADER << std::endl;
         body << ifs.rdbuf();
         ifs.close();
+    }
+
+    if (type == APPFREEZE) {
+        MergeFreezeJsonFile(watchPoint, list);
     }
 
     int fd = logStore_->CreateLogFile(logName);
