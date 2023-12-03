@@ -18,8 +18,8 @@
 
 #include <mutex>
 #include <string>
+#include <thread>
 
-#include "event_loop.h"
 #include "hisysevent.h"
 #include "singleton.h"
 
@@ -28,19 +28,19 @@ namespace HiviewDFX {
 class EventPublish : public OHOS::DelayedRefSingleton<EventPublish> {
 public:
     EventPublish() {};
-    ~EventPublish();
+    ~EventPublish() {};
 
 public:
     void PushEvent(int32_t uid, const std::string& eventName, HiSysEvent::EventType eventType,
         const std::string& paramJson);
 
 private:
-    void InitLoop();
+    void StartSendingThread();
     void SendEventToSandBox();
 
 private:
-    std::shared_ptr<EventLoop> looper_;
     std::mutex mutex_;
+    std::unique_ptr<std::thread> sendingThread_ = nullptr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

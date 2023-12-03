@@ -51,7 +51,7 @@ std::string GetBundleNameById(int32_t uid)
     if (client.GetNameForUid(uid, bundleName) != 0) {
         HIVIEW_LOGE("Failed to query bundleName from bms, uid=%{public}d.", uid);
     } else {
-        HIVIEW_LOGI("bundleName of uid=%{public}d, bundleName=%{public}s", uid, bundleName.c_str());
+        HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", uid, bundleName.c_str());
     }
     return bundleName;
 }
@@ -68,26 +68,20 @@ std::string GetSandBoxPathByUid(int32_t uid)
         .append("/cache/hiappevent");
     return path;
 }
-} // namespace
-
-EventPublish::~EventPublish()
-{
-    if (looper_ != nullptr) {
-        looper_->StopLoop();
-        looper_.reset();
-    }
 }
 
-void EventPublish::InitLoop()
+void EventPublish::StartSendingThread()
 {
-    looper_ = std::make_shared<EventLoop>("event_publish_task");
-    looper_->StartLoop();
-    auto task = std::bind(&EventPublish::SendEventToSandBox, this);
-    looper_->AddTimerEvent(nullptr, nullptr, task, DELAY_TIME, false);
+    if (sendingThread_ == nullptr) {
+        HIVIEW_LOGI("start send thread.");
+        sendingThread_ = std::make_unique<std::thread>(&EventPublish::SendEventToSandBox, this);
+        sendingThread_->detach();
+    }
 }
 
 void EventPublish::SendEventToSandBox()
 {
+    std::this_thread::sleep_for(std::chrono::seconds(DELAY_TIME));
     std::lock_guard<std::mutex> lock(mutex_);
     std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
     std::vector<std::string> files;
@@ -113,13 +107,14 @@ void EventPublish::SendEventToSandBox()
         HIVIEW_LOGI("copy srcPath=%{public}s, desPath=%{public}s.", srcPath.c_str(), desPath.c_str());
         (void)FileUtil::RemoveFile(srcPath);
     }
+    sendingThread_.reset();
 }
 
 void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEvent::EventType eventType,
     const std::string& paramJson)
 {
-    if (eventName.empty() || paramJson.empty()) {
-        HIVIEW_LOGE("empty param.");
+    if (eventName.empty() || paramJson.empty() || uid < 0) {
+        HIVIEW_LOGW("empty param.");
         return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -130,7 +125,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     std::string srcPath = GetTempFilePath(uid);
     std::string desPath = GetSandBoxPathByUid(uid);
     if (!FileUtil::FileExists(desPath)) {
-        HIVIEW_LOGE("PushEvent not exit desPath=%{public}s.", desPath.c_str());
+        HIVIEW_LOGD("PushEvent not exit desPath=%{public}s.", desPath.c_str());
         (void)FileUtil::RemoveFile(srcPath);
         return;
     }
@@ -150,9 +145,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     if (!FileUtil::SaveStringToFile(srcPath, eventStr, false)) {
         HIVIEW_LOGE("failed to persist event to file.");
     }
-    if (looper_ == nullptr) {
-        InitLoop();
-    }
+    StartSendingThread();
 }
 } // namespace HiviewDFX
 } // namespace OHOS

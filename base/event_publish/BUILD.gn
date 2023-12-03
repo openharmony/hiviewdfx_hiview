@@ -18,7 +18,7 @@ config("hiview_event_publish_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
-    "../include",
+    "$hiview_base/include",
     "include",
   ]
 }

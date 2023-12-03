@@ -231,14 +231,10 @@ void DataPublisher::HandleAppStartEvent(std::shared_ptr<OHOS::HiviewDFX::SysEven
     std::string jsonExtraInfo = event->AsJsonStr();
     std::string bundleName = GetBundleNameFromJsonStr(jsonExtraInfo);
     if (bundleName.empty()) {
-        HiLog::Error(LABEL, "bundleName empty.");
+        HiLog::Warn(LABEL, "bundleName empty.");
         return;
     }
     int32_t uid = OHOS::HiviewDFX::DataShareUtil::GetUidByBundleName(bundleName);
-    if (uid == -1) {
-        HiLog::Error(LABEL, "get uid from bms err. uid=%{public}d, bundleName=%{public}s, eventName=%{public}s",
-            uid, bundleName.c_str(), event->eventName_.c_str());
-    }
     EventPublish::GetInstance().PushEvent(uid, event->eventName_, HiSysEvent::EventType::BEHAVIOR, jsonExtraInfo);
 }
 
