@@ -99,10 +99,12 @@ void CpuPerfDump::CheckAndDumpPerfData(std::vector<ProcessCpuStatInfo> &cpuColle
     }
 
     if (sumCpuLoad >= CPU_MONITOR_THRESHOLD_CPULOAD + CPU_MONITOR_THRESHOLD_PRECISION) {
-        std::sort(cpuCollectionInfos.begin(), cpuCollectionInfos.end(), CompareCpuLoad);
+        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + TOP_N_PROCESS,
+                          cpuCollectionInfos.end(), CompareCpuLoad);
     } else if (sumCpuLoad < CPU_MONITOR_THRESHOLD_PRECISION &&
                sumCpuUsage >= CPU_MONITOR_THRESHOLD_CPUUSAGE + CPU_MONITOR_THRESHOLD_PRECISION) {
-        std::sort(cpuCollectionInfos.begin(), cpuCollectionInfos.end(), CompareCpuUsage);
+        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + TOP_N_PROCESS,
+                          cpuCollectionInfos.end(), CompareCpuUsage);
     } else {
         return;
     }

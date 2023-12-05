@@ -24,8 +24,6 @@ enum UcError {
     READ_FAILED = 2,
     WRITE_FAILED = 3,
     PERMISSION_CHECK_FAILED = 4,
-    USAGE_EXCEED_LIMIT = 5,
-    PERF_COLLECT_FAILED = 6,
     // for trace call
     TRACE_IS_OCCUPIED = 1002,
     TRACE_TAG_ERROR = 1003,
@@ -34,6 +32,9 @@ enum UcError {
     TRACE_CALL_ERROR = 1006,
     // control policy
     TRACE_OVER_FLOW = 1100,
+    // for perf call
+    USAGE_EXCEED_LIMIT = 2000,
+    PERF_COLLECT_FAILED = 2001,
 };
 } // UCollect
 
