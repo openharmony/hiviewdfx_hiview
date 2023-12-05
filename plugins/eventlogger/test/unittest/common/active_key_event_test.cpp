@@ -104,7 +104,9 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_003, TestSize.Level3)
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_004, TestSize.Level3)
 {
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->InitSubscribe(OHOS::MMI::KeyEvent::KEYCODE_VOLUME_UP, OHOS::MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 5);
+    std::set<int32_t> preKeys;
+    preKeys.insert(OHOS::MMI::KeyEvent::KEYCODE_VOLUME_UP);
+    activeKeyEvent->InitSubscribe(preKeys, OHOS::MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 5, 500);
 }
 
 /**
