@@ -52,7 +52,7 @@ int64_t ActiveKeyEvent::SystemTimeMillisecond()
     return (int64_t)((t.tv_sec) * TimeUtil::SEC_TO_NANOSEC + t.tv_nsec) / TimeUtil::SEC_TO_MICROSEC;
 }
 
-void ActiveKeyEvent::InitSubscribe(int32_t preKey, int32_t finalKey, int32_t count)
+void ActiveKeyEvent::InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, int32_t count, int32_t holdTime)
 {
     const int32_t maxCount = 5;
     if (++count > maxCount) {
@@ -63,28 +63,25 @@ void ActiveKeyEvent::InitSubscribe(int32_t preKey, int32_t finalKey, int32_t cou
         HIVIEW_LOGE("Invalid key option");
     }
 
-    std::set<int32_t> preKeys;
-    preKeys.insert(preKey);
     keyOption->SetPreKeys(preKeys);
     keyOption->SetFinalKey(finalKey);
     keyOption->SetFinalKeyDown(true);
-    const int holdTime = 500;
     keyOption->SetFinalKeyDownDuration(holdTime);
     auto keyEventCallBack = std::bind(&ActiveKeyEvent::CombinationKeyCallback, this, std::placeholders::_1);
     int32_t subscribeId = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption, keyEventCallBack);
     if (subscribeId < 0) {
-        HIVIEW_LOGE("SubscribeKeyEvent failed, %{public}d_%{public}d,"
-            "subscribeId: %{public}d option failed.", preKey, finalKey, subscribeId);
-        auto task = [this, &preKey, &finalKey, count] {
-            this->InitSubscribe(preKey, finalKey, count);
+        HIVIEW_LOGE("SubscribeKeyEvent failed, finalKey: %{public}d,"
+            "subscribeId: %{public}d option failed.", finalKey, subscribeId);
+        auto task = [this, preKeys, finalKey, count, holdTime] {
+            this->InitSubscribe(preKeys, finalKey, count, holdTime);
             taskOutDeps++;
         };
         std::string taskName("initSubscribe" + std::to_string(finalKey) + "_" + std::to_string(count));
         ffrt::submit(task, {}, {&taskOutDeps}, ffrt::task_attr().name(taskName.c_str()));
     }
     subscribeIds_.emplace_back(subscribeId);
-    HIVIEW_LOGI("CombinationKeyInit %{public}d_ %{public}d subscribeId_: %{public}d",
-        preKey, finalKey, subscribeId);
+    HIVIEW_LOGI("CombinationKeyInit finalKey: %{public}d subscribeId_: %{public}d",
+        finalKey, subscribeId);
 }
 
 void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
@@ -92,12 +89,21 @@ void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
     HIVIEW_LOGI("CombinationKeyInit");
     logStore_ = logStore;
 
+    std::set<int32_t> preDownKeys;
+    preDownKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_UP);
     auto initSubscribeDown = std::bind(&ActiveKeyEvent::InitSubscribe, this,
-        MMI::KeyEvent::KEYCODE_VOLUME_UP, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0);
+        preDownKeys, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0, 500);
+    std::set<int32_t> prePowerKeys;
+    prePowerKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
     auto initSubscribePower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
-        MMI::KeyEvent::KEYCODE_VOLUME_DOWN, MMI::KeyEvent::KEYCODE_POWER, 0);
+        prePowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 500);
+    std::set<int32_t> preOnlyPowerKeys;
+    auto initSubscribeOnlyPower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
+        preOnlyPowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 3000);
     ffrt::submit(initSubscribeDown, {}, {}, ffrt::task_attr().name("initSubscribeDown").qos(ffrt::qos_default));
     ffrt::submit(initSubscribePower, {}, {}, ffrt::task_attr().name("initSubscribePower").qos(ffrt::qos_default));
+    ffrt::submit(initSubscribeOnlyPower, {}, {},
+        ffrt::task_attr().name("initSubscribeOnlyPower").qos(ffrt::qos_default));
 }
 
 void ActiveKeyEvent::HitraceCapture()

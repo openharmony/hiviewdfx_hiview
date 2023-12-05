@@ -34,7 +34,7 @@ public:
     static int64_t SystemTimeMillisecond();
 
 private:
-    void InitSubscribe(int32_t preKey, int32_t finalKey, int32_t count);
+    void InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, int32_t count, int32_t holdTime);
     void CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEvent);
     void CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEvent);
     void HitraceCapture();
