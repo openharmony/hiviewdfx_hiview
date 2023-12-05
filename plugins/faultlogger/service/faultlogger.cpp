@@ -466,7 +466,7 @@ bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
 
 void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
-    std::regex rel("[\\s\\S]*Error message:([\\s\\S]*)SourceCode[\\s\\S]*Stacktrace:([\\s\\S]*)[\\s\\S]*");
+    std::regex rel("[\\s\\S]*Error message: ([\\s\\w]*)[SourceCode]{0}[\\s\\S]*Stacktrace:([\\s\\S]*)[\\s\\S]*");
     std::smatch m;
     std::string summary = sysEvent->GetEventValue("SUMMARY");
     HIVIEW_LOGD("ReportAppEvent:summary:%{public}s.", summary.c_str());
@@ -485,9 +485,10 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     exception["name"] = sysEvent->GetEventValue("REASON");
     std::string message = m[1]; // 1: is message
     std::string stack = m[2]; // 2: is stack
-    message.replace(message.end() - 2, message.end(), ""); // 2: to relace tail '\n' to ""
-    stack.replace(stack.begin(), stack.begin() + 6, ""); // 6: to relace head '\n     ' to ""
-    stack.replace(stack.end() - 2, stack.end(), ""); // 2: to relace tail '\n' to ""
+    if (!stack.empty() && stack.size() >= 8) {
+        stack.replace(stack.begin(), stack.begin() + 6, ""); // 6: to relace head '\n     ' to ""
+        stack.replace(stack.end() - 2, stack.end(), ""); // 2: to relace tail '\n' to ""
+    }
     exception["message"] = message;
     exception["stack"] = stack;
     params["exception"] = exception;
