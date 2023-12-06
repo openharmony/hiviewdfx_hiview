@@ -16,30 +16,32 @@
 
 #include "securec.h"
 
+#include <list>
+#include <map>
+#include <mutex>
+#include <regex>
+#include <sstream>
 #include <sys/epoll.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <mutex>
 #include <vector>
-#include <list>
-#include <regex>
 
 #include "parameter.h"
 
 #include "common_utils.h"
+#include "dfx_json_formatter.h"
 #include "event_source.h"
 #include "file_util.h"
+#include "freeze_json_util.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
-#include "freeze_json_util.h"
-#include "dfx_json_formatter.h"
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
@@ -138,8 +140,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     }
 
     int jsonFd = -1;
-    bool isAppFreeze = FreezeJsonUtil::IsAppFreeze(event->eventName_);
-    if (isAppFreeze) {
+    if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
         std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
             event->GetEventIntValue("UID"), event->happenTime_);
         jsonFd = FreezeJsonUtil::GetFd(jsonFilePath);
@@ -162,7 +163,8 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
     startTimeStr << std::endl;
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
-    WriteCommonHead(fd, jsonFd, event);
+    WriteCommonHead(fd, event);
+    WriteFreezeJsonInfo(fd, jsonFd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
@@ -171,7 +173,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
     close(fd);
-    if (isAppFreeze) {
+    if (jsonFd >= 0) {
         close(jsonFd);
     }
     UpdateDB(event, logFile);
@@ -182,7 +184,8 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
     HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
-bool ParseMsgForEventHandler(const std::string& msg, std::string& message, std::string& eventHandlerStr)
+
+bool ParseMsgForMessageAndEventHandler(const std::string& msg, std::string& message, std::string& eventHandlerStr)
 {
     std::vector<std::string> lines;
     StringUtil::SplitStr(msg, "\n", lines, false, true);
@@ -230,7 +233,57 @@ bool ParseMsgForEventHandler(const std::string& msg, std::string& message, std::
     return true;
 }
 
-bool EventLogger::WriteCommonHead(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
+void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonStr)
+{
+    std::vector<std::string> lines;
+    StringUtil::SplitStr(binderInfo, "\\n", lines, false, true);
+    std::list<std::string> infoList;
+    std::map<std::string, std::string> processNameMap;
+
+    for (auto lineIt = lines.begin(); lineIt != lines.end(); lineIt++) {
+        std::string line = *lineIt;
+        if (line.empty() || line.find("async") != std::string::npos) {
+            continue;
+        }
+
+        if (line.find("context") != line.npos) {
+            break;
+        }
+
+        std::istringstream lineStream(line);
+        std::vector<std::string> strList;
+        std::string tmpstr;
+        while (lineStream >> tmpstr) {
+            strList.push_back(tmpstr);
+        }
+        if (strList.size() != 7) { // 7: vaild array size
+            continue;
+        }
+        // 2: binder peer id
+        std::string pidStr = strList[2].substr(0, strList[2].find(":"));
+        if (pidStr == "") {
+            continue;
+        }
+        if (processNameMap.find(pidStr) == processNameMap.end()) {
+            std::ifstream cmdLineFile("/proc/" + pidStr + "/cmdline");
+            std::string processName;
+            if (cmdLineFile) {
+                std::getline(cmdLineFile, processName);
+                cmdLineFile.close();
+                processName = StringUtil::FormatCmdLine(processName);
+                HIVIEW_LOGI("Get pid(%{public}s ProcessName: %{public}s.)", pidStr.c_str(), processName.c_str());
+                processNameMap[pidStr] = processName;
+            } else {
+                HIVIEW_LOGI("Fail to open /proc/%{public}s/cmdline", pidStr.c_str());
+            }
+        }
+        std::string lineStr = line + "    " + pidStr + FreezeJsonUtil::WrapByParenthesis(processNameMap[pidStr]);
+        infoList.push_back(lineStr);
+    }
+    binderInfoJsonStr = FreezeJsonUtil::GetStrByList(infoList);
+}
+
+bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 {
     std::ostringstream headerStream;
 
@@ -256,30 +309,50 @@ bool EventLogger::WriteCommonHead(int fd, int jsonFd, std::shared_ptr<SysEvent> 
     headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
     headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
     headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
-    std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
-    headerStream << "MSG = " << msg << std::endl;
 
+    FileUtil::SaveStringToFd(fd, headerStream.str());
+    return true;
+}
+
+bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
+{
+    std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     std::string stack;
+    std::string binderInfo;
     if (FreezeJsonUtil::IsAppFreeze(event -> eventName_) && jsonFd >= 0) {
         std::string message;
         std::string eventHandlerStr;
-        ParseMsgForEventHandler(msg, message, eventHandlerStr);
-        std::string jsonStack = event -> GetEventValue("STACK");
-        DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
-
-        FreezeJsonUtil::WriteKeyValue(jsonFd, "uuid", event->GetEventValue("ID"));
+        ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
         FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
-        FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
         FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
+
+        std::string jsonStack = event -> GetEventValue("STACK");
+        unsigned long removeIndex = jsonStack.find("\\n");
+        if (removeIndex != std::string::npos) {
+            jsonStack = jsonStack.substr(0, removeIndex);
+        }
+        DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
+
+        binderInfo = event -> GetEventValue("BINDER_INFO");
+        if (!binderInfo.empty()) {
+            std::string binderInfoJsonStr;
+            ParsePeerBinder(binderInfo, binderInfoJsonStr);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "peer_binder", binderInfoJsonStr);
+        }
     } else {
         stack = event->GetEventValue("STACK");
     }
 
+    std::ostringstream oss;
+    oss << "MSG = " << msg << std::endl;
     if (!stack.empty()) {
-        headerStream << StringUtil::UnescapeJsonStringValue(stack) << std::endl;
+        oss << StringUtil::UnescapeJsonStringValue(stack) << std::endl;
     }
-
-    FileUtil::SaveStringToFd(fd, headerStream.str());
+    if (!binderInfo.empty()) {
+        oss << StringUtil::UnescapeJsonStringValue(binderInfo) << std::endl;
+    }
+    FileUtil::SaveStringToFd(fd, oss.str());
     return true;
 }
 

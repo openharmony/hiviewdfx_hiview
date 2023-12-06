@@ -20,7 +20,8 @@
 #include <map>
 #include <sstream>
 #include <string>
-#include <file_util.h>
+
+#include "file_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -62,9 +63,14 @@ const std::list<std::string> KEY_IN_LOGFILE{
     "package_name",
     "process_name",
     "message",
+    "hilog",
+    "exception",
     "peer_binder",
     "event_handler",
-    "stack"
+    "event_handler_3s_size",
+    "event_handler_6s_size",
+    "stack",
+    "memory",
 };
 
 struct FreezeJsonCollector {
@@ -74,17 +80,22 @@ struct FreezeJsonCollector {
     std::string uuid = "";
     std::string domain = "";
     std::string stringId = "";
+    std::string foreground = "unknown";
+    std::string version = "unknown";
     std::string package_name = "";
     std::string process_name = "";
     std::string message = "";
-    std::string peer_binder = "";
-    std::string event_handler = "";
+    std::string exception = "{}";
+    std::string hilog = "[]";
+    std::string peer_binder = "[]";
+    std::string event_handler = "[]";
     std::string event_handler_3s_size = "";
     std::string event_handler_6s_size = "";
-    std::string stack = "";
+    std::string stack = "[]";
+    std::string memory = "{}";
 };
 
-bool IsAppFreeze(std::string eventName);
+bool IsAppFreeze(const std::string& eventName);
 
 std::string GetFilePath(long pid, long uid, unsigned long long timestamp);
 
@@ -92,7 +103,7 @@ int GetFd(const std::string& filePath);
 
 bool DelFile(const std::string& filePath);
 
-FreezeJsonCollector LoadCollectorFromFile(const std::string& filePath);
+void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jsonCollector);
 
 bool HasBeenWrapped(const std::string& target);
 

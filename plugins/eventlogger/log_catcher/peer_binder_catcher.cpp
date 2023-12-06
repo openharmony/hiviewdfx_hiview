@@ -107,21 +107,6 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
     return logSize_;
 }
 
-std::string FormatCmdLine(const std::string& cmdLine)
-{
-    int startPos = 0;
-    int endPos = cmdLine.size();
-    for (unsigned long i = 0; i < cmdLine.size(); i++) {
-        if (cmdLine[i] == '/') {
-            startPos = i + 1;
-        } else if (cmdLine[i] == '\0') {
-            endPos = i;
-            break;
-        }
-    }
-    return cmdLine.substr(startPos, endPos - startPos);
-}
-
 void PeerBinderCatcher::AddBinderJsonInfo(std::list<OutputBinderInfo> outputBinderInfoList, int jsonFd) const
 {
     if (jsonFd < 0) {
@@ -138,8 +123,7 @@ void PeerBinderCatcher::AddBinderJsonInfo(std::list<OutputBinderInfo> outputBind
         if (cmdLineFile) {
             std::getline(cmdLineFile, processName);
             cmdLineFile.close();
-            processName = FormatCmdLine(processName);
-            HIVIEW_LOGI("Get pid(%{public}d) ProcessName: %{public}s.", pid, processName.c_str());
+            processName = StringUtil::FormatCmdLine(processName);
             processNameMap[pid] = processName;
         } else {
             HIVIEW_LOGE("Fail to open /proc/%{public}d/cmdline", pid);

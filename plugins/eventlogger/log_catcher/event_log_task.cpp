@@ -108,13 +108,16 @@ EventLogTask::Status EventLogTask::StartCompose()
 
         AddSeparator(dupedFd, catcher);
         int curLogSize = catcher->Catch(dupedFd, dupedJsonFd);
-        HIVIEW_LOGI("finish catcher: %{public}s, curLogSize: %{public}d", catcher->GetDescription().c_str(), curLogSize);
+        HIVIEW_LOGI("finish catcher: %{public}s, curLogSize: %{public}d", catcher->GetDescription().c_str(),
+            curLogSize);
         if (ShouldStopLogTask(dupedFd, catcherIndex, curLogSize, catcher)) {
             break;
         }
     }
     close(dupedFd);
-
+    if (dupedJsonFd >= 0) {
+        close(dupedJsonFd);
+    }
     if (status_ == Status::TASK_RUNNING) {
         status_ = Status::TASK_SUCCESS;
     }

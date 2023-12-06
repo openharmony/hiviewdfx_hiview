@@ -90,7 +90,8 @@ private:
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     int Getfile(std::shared_ptr<SysEvent> event, std::string& logFile);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
-    bool WriteCommonHead(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
+    bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
+    bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
