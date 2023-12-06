@@ -40,6 +40,7 @@ private:
     std::vector<pid_t> topNProcs_;
     int64_t systemUpTime_ = 0;
     int64_t lastRecordTime_ = 0;
+    bool isBetaVersion_;
 }; // CpuPerfDump
 } // namespace HiviewDFX
 } // namespace OHOS
