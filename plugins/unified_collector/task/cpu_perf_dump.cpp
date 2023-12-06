@@ -17,6 +17,7 @@
 #include "file_util.h"
 #include "time_util.h"
 #include "logger.h"
+#include "parameter_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -41,6 +42,7 @@ CpuPerfDump::CpuPerfDump()
     }
     systemUpTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     lastRecordTime_ = systemUpTime_;
+    isBetaVersion_ = Parameter::IsBetaVersion();
 }
 
 void CpuPerfDump::DumpTopNCpuProcessPerfData()
@@ -72,6 +74,9 @@ bool CpuPerfDump::CompareCpuUsage(const ProcessCpuStatInfo &info1, const Process
 
 bool CpuPerfDump::CheckRecordInterval()
 {
+    if (!isBetaVersion_) {
+        return false;
+    }
     int64_t nowTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     if (abs(nowTime - systemUpTime_) < DUMP_HIPERF_DELAY_TIME) {
         return false;
@@ -98,12 +103,13 @@ void CpuPerfDump::CheckAndDumpPerfData(std::vector<ProcessCpuStatInfo> &cpuColle
         sumCpuUsage += info.cpuUsage;
     }
 
+    size_t middlePos = (cpuCollectionInfos.size() >= TOP_N_PROCESS) ? TOP_N_PROCESS : cpuCollectionInfos.size();
     if (sumCpuLoad >= CPU_MONITOR_THRESHOLD_CPULOAD + CPU_MONITOR_THRESHOLD_PRECISION) {
-        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + TOP_N_PROCESS,
+        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + middlePos,
                           cpuCollectionInfos.end(), CompareCpuLoad);
     } else if (sumCpuLoad < CPU_MONITOR_THRESHOLD_PRECISION &&
                sumCpuUsage >= CPU_MONITOR_THRESHOLD_CPUUSAGE + CPU_MONITOR_THRESHOLD_PRECISION) {
-        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + TOP_N_PROCESS,
+        std::partial_sort(cpuCollectionInfos.begin(), cpuCollectionInfos.begin() + middlePos,
                           cpuCollectionInfos.end(), CompareCpuUsage);
     } else {
         return;
