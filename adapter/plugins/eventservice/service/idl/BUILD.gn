@@ -84,6 +84,7 @@ ohos_source_set("sys_event_service_ohos") {
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
     "$hiview_base/event_store/include",
+    "$hiview_base/event_threshold/include",
     "$hiview_base/running_status_logger/include",
   ]
 
@@ -100,6 +101,7 @@ ohos_source_set("sys_event_service_ohos") {
     ":sys_event_service_ohos_common",
     "$hiview_base:hiviewbase",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_base/event_threshold:event_threshold_source",
     "$hiview_base/running_status_logger:running_status_logger_source",
   ]
 

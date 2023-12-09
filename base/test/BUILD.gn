@@ -28,6 +28,7 @@ group("unittest") {
     "$hiview_base/event_raw/test:unittest",
     "$hiview_base/event_report/test:unittest",
     "$hiview_base/event_store/test:unittest",
+    "$hiview_base/event_threshold/test:unittest",
     "$hiview_base/logstore/test:unittest",
     "$hiview_base/running_status_logger/test:unittest",
     "$hiview_base/utility/test:unittest",
