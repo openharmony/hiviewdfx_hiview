@@ -59,4 +59,9 @@ declare_args() {
       !defined(global_parts_info.developtools_hiperf)) {
     has_hiperf = false
   }
+  has_hiprofiler = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.developtools_hiprofiler)) {
+    has_hiprofiler = false
+  }
 }

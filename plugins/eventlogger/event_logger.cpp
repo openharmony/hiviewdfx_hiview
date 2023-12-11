@@ -271,7 +271,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
                 std::getline(cmdLineFile, processName);
                 cmdLineFile.close();
                 processName = StringUtil::FormatCmdLine(processName);
-                HIVIEW_LOGI("Get pid(%{public}s ProcessName: %{public}s.)", pidStr.c_str(), processName.c_str());
+                HIVIEW_LOGI("Get pid(%{public}s) ProcessName: %{public}s.", pidStr.c_str(), processName.c_str());
                 processNameMap[pidStr] = processName;
             } else {
                 HIVIEW_LOGI("Fail to open /proc/%{public}s/cmdline", pidStr.c_str());
@@ -326,7 +326,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
         FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
 
-        std::string jsonStack = event -> GetEventValue("STACK");
+        std::string jsonStack = StringUtil::ReplaceStr(event -> GetEventValue("STACK"), "\\\"", "\"");
         unsigned long removeIndex = jsonStack.find("\\n");
         if (removeIndex != std::string::npos) {
             jsonStack = jsonStack.substr(0, removeIndex);

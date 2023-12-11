@@ -29,7 +29,11 @@ ohos_shared_library("libucollection_utility") {
 
   deps = [ "$hiview_framework/native/unified_collection:ucollection_source" ]
 
-  external_deps = [ "hiprofiler:libnative_daemon_client" ]
+  external_deps = []
+
+  if (has_hiprofiler) {
+    external_deps += [ "hiprofiler:libnative_daemon_client" ]
+  }
 
   innerapi_tags = [ "platformsdk" ]
   part_name = "hiview"
