@@ -931,11 +931,12 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     GetHilog(collector.pid, hilogStr);
     if (hilogStr.length() == 0) {
         HIVIEW_LOGE("Get FreezeJson hilog is empty!");
-    }
-    std::stringstream hilogStream(hilogStr);
-    std::string oneLine;
-    while (std::getline(hilogStream, oneLine)) {
-        hilogList.push_back(oneLine);
+    } else {
+        std::stringstream hilogStream(hilogStr);
+        std::string oneLine;
+        while (std::getline(hilogStream, oneLine)) {
+            hilogList.push_back(oneLine);
+        }
     }
     collector.hilog = FreezeJsonUtil::GetStrByList(hilogList);
 
@@ -946,7 +947,7 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     }
 
     if (info.sectionMap.count("VERSION") == 1) {
-        collector.foreground = info.sectionMap.at("VERSION");
+        collector.version = info.sectionMap.at("VERSION");
     }
 
     if (info.sectionMap.count("FINGERPRINT") == 1) {
