@@ -127,14 +127,14 @@ public:
         std::string processName_ = "";
         long pid_ = 0;
         long uid_ = 0;
-        std::string exception_ = "";
-        std::string hilog_ = "";
-        std::string eventHandler_ = "";
+        std::string exception_ = "{}";
+        std::string hilog_ = "[]";
+        std::string eventHandler_ = "[]";
         std::string eventHandlerSize3s_ = "";
         std::string eventHandlerSize6s_ = "";
-        std::string peerBinder_ = "";
-        std::string threads_ = "";
-        std::string memory_ = "";
+        std::string peerBinder_ = "[]";
+        std::string threads_ = "[]";
+        std::string memory_ = "{}";
         friend class FreezeJsonParams;
     };
 

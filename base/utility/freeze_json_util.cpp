@@ -17,19 +17,18 @@
 
 #include <list>
 #include <map>
-#include <sstream>
-#include <fstream>
 #include <fcntl.h>
+#include <fstream>
+#include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "string_util.h"
 #include "file_util.h"
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace FreezeJsonUtil {
-
 bool IncludeWith(std::list<std::string> list, const std::string& target)
 {
     for (auto it = list.begin(); it != list.end(); it++) {
@@ -40,7 +39,7 @@ bool IncludeWith(std::list<std::string> list, const std::string& target)
     return false;
 }
 
-bool IsAppFreeze(std::string eventName)
+bool IsAppFreeze(const std::string& eventName)
 {
     return IncludeWith(APPFREEZE_TYPE_LIST, eventName);
 }
@@ -79,9 +78,8 @@ int CountSubStr(const std::string& str, const std::string& subStr)
     return count;
 }
 
-FreezeJsonCollector FormatCollect(std::map<std::string, std::list<std::string>>& collectMap)
+void FormatCollect(std::map<std::string, std::list<std::string>>& collectMap, FreezeJsonCollector& jsonCollector)
 {
-    FreezeJsonCollector jsonCollector = {0};
     if (!collectMap["timestamp"].empty()) {
         jsonCollector.timestamp = std::stoull(collectMap["timestamp"].front());
     }
@@ -92,11 +90,6 @@ FreezeJsonCollector FormatCollect(std::map<std::string, std::list<std::string>>&
 
     if (!collectMap["uid"].empty()) {
         jsonCollector.uid = std::stol(collectMap["uid"].front());
-    }
-
-    if (!collectMap["uuid"].empty()) {
-        // use the latest uuid
-        jsonCollector.uuid = *(collectMap["uuid"].rbegin());
     }
 
     if (!collectMap["domain"].empty()) {
@@ -141,11 +134,9 @@ FreezeJsonCollector FormatCollect(std::map<std::string, std::list<std::string>>&
         // use the earliest peer_binder
         jsonCollector.stack = collectMap["stack"].front();
     }
-
-    return jsonCollector;
 }
 
-FreezeJsonCollector LoadCollectorFromFile(const std::string& filePath)
+void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jsonCollector)
 {
     std::map<std::string, std::list<std::string>> collectMap;
     std::string lineStr;
@@ -163,7 +154,7 @@ FreezeJsonCollector LoadCollectorFromFile(const std::string& filePath)
         collectMap[key].push_back(value);
     }
     jsonFile.close();
-    return FormatCollect(collectMap);
+    FormatCollect(collectMap, jsonCollector);
 }
 
 bool HasBeenWrapped(const std::string& target)
