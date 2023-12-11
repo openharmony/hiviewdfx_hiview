@@ -43,3 +43,32 @@ ohos_source_set("faultlogger_client_impl") {
     "samgr:samgr_proxy",
   ]
 }
+
+ohos_source_set("faultlogger_client_impl_with_cfi") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  part_name = "hiview"
+  include_dirs = [ "." ]
+
+  public_configs = [ ":faultlogger_innerkits_config" ]
+
+  sources = [
+    "faultlog_info.cpp",
+    "impl/faultlog_query_result.cpp",
+    "impl/faultlog_query_result_impl.cpp",
+    "impl/faultlogger_client.cpp",
+  ]
+
+  deps = [ "$hiview_plugin/faultlogger/service/idl:faultlogger_service_ohos_common_with_cfi" ]
+
+  external_deps = [
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+}

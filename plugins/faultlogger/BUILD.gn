@@ -14,9 +14,15 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 ohos_shared_library("libfaultlogger") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   configs = [ "service/idl:faultlogger_service_impl_config" ]
   public_configs = [ "interfaces/cpp/innerkits:faultlogger_innerkits_config" ]
-  deps = [ "interfaces/cpp/innerkits:faultlogger_client_impl" ]
+  deps = [ "interfaces/cpp/innerkits:faultlogger_client_impl_with_cfi" ]
   innerapi_tags = [ "platformsdk_indirect" ]
   version_script = "interfaces/cpp/innerkits/libfaultlogger.map"
   part_name = "hiview"
