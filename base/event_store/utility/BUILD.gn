@@ -41,8 +41,6 @@ ohos_source_set("event_store_utility_source") {
     "//third_party/jsoncpp:jsoncpp",
   ]
 
-  public_deps = [ "$hiview_base/event_raw:hiview_event_raw_decode" ]
-
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",

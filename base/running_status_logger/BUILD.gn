@@ -44,8 +44,7 @@ ohos_source_set("running_status_logger_source") {
   sources = [ "running_status_logger.cpp" ]
 
   deps = [
-    "$hiview_base/event_raw:hiview_event_raw_decode",
-    "$hiview_base/event_raw:hiview_event_raw_encode",
+    "$hiview_base/event_raw:hiview_event_raw_base",
     "$hiview_base/utility:hiview_utility",
     "//third_party/jsoncpp:jsoncpp",
   ]

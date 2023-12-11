@@ -22,17 +22,20 @@ config("sys_event_service_ohos_public_config") {
   include_dirs = [ "include" ]
 }
 
-ohos_source_set("sys_event_service_ohos_common") {
+ohos_source_set("sys_event_service_ohos") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",
     "//utils/system/safwk/native/include",
-    "$hiview_base/include",
-    "$hiview_base/event_report/include",
     "$hiview_base/event_store/include",
+    "$hiview_base/event_threshold/include",
     "$hiview_base/running_status_logger/include",
-    "//foundation/distributeddatamgr/relational_store/interfaces/inner_api/rdb/include",
-    "//commonlibrary/c_utils/base/include/",
   ]
 
   sources = [
@@ -49,6 +52,7 @@ ohos_source_set("sys_event_service_ohos_common") {
     "src/sys_event_callback_proxy.cpp",
     "src/sys_event_query_rule.cpp",
     "src/sys_event_rule.cpp",
+    "src/sys_event_service_ohos.cpp",
     "src/sys_event_service_stub.cpp",
   ]
 
@@ -59,51 +63,7 @@ ohos_source_set("sys_event_service_ohos_common") {
 
   public_configs = [ ":sys_event_service_ohos_public_config" ]
 
-  deps = [
-    "$hiview_base:hiviewbase",
-    "$hiview_base/event_publish:hiview_event_publish",
-    "$hiview_base/event_store:event_store_source",
-    "$hiview_base/running_status_logger:running_status_logger_source",
-  ]
-
-  external_deps = [
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "hilog:libhilog",
-    "ipc:ipc_single",
-    "relational_store:native_rdb",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-  ]
-}
-
-ohos_source_set("sys_event_service_ohos") {
-  part_name = "hiview"
-  include_dirs = [
-    "$hiview_plugin/eventservice/include",
-    "//utils/system/safwk/native/include",
-    "$hiview_base/event_store/include",
-    "$hiview_base/event_threshold/include",
-    "$hiview_base/running_status_logger/include",
-  ]
-
-  sources = [ "src/sys_event_service_ohos.cpp" ]
-
-  configs = [
-    ":sys_event_service_ohos_private_config",
-    "//third_party/jsoncpp:jsoncpp_public_config",
-  ]
-
-  public_configs = [ ":sys_event_service_ohos_public_config" ]
-
-  deps = [
-    ":sys_event_service_ohos_common",
-    "$hiview_base:hiviewbase",
-    "$hiview_base/event_store:event_store_source",
-    "$hiview_base/event_threshold:event_threshold_source",
-    "$hiview_base/running_status_logger:running_status_logger_source",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",

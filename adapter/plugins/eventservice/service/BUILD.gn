@@ -17,15 +17,23 @@ import("//build/ohos.gni")
 config("sys_event_service_adapter_config") {
   visibility = [ "*:*" ]
 
-  include_dirs = [ "." ]
+  include_dirs = [
+    ".",
+    "$hiview_adapter/plugins/eventservice/service/idl/include",
+  ]
 }
 
-ohos_source_set("sys_event_service_adapter") {
+ohos_shared_library("sys_event_service_adapter") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "hiview"
   include_dirs = [
     "//third_party/bounds_checking_function/include",
-    "$hiview_plugin/eventservice/include",
-    "$hiview_base/event_store/include",
+    "$hiview_adapter/plugins/eventservice/service/idl/include",
   ]
 
   configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
@@ -37,7 +45,7 @@ ohos_source_set("sys_event_service_adapter") {
   deps = [
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
     "$hiview_base:hiviewbase",
-    "$hiview_base/event_store:event_store_source",
+    "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [
