@@ -47,6 +47,35 @@ ohos_source_set("faultlogger_service_ohos_common") {
   ]
 }
 
+ohos_source_set("faultlogger_service_ohos_common_with_cfi") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  part_name = "hiview"
+  sources = [
+    "src/faultlog_info_ohos.cpp",
+    "src/faultlog_query_result_proxy.cpp",
+    "src/faultlog_query_result_stub.cpp",
+    "src/faultlogger_service_proxy.cpp",
+    "src/faultlogger_service_stub.cpp",
+  ]
+
+  configs = [ ":faultlogger_service_ohos_private_config" ]
+
+  all_dependent_configs = [ ":faultlogger_service_impl_config" ]
+
+  deps = [ "$hiview_plugin/faultlogger/common:faultlogger_common_with_cfi" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+}
+
 ohos_source_set("faultlogger_service_impl") {
   part_name = "hiview"
   include_dirs = [ "$hiview_plugin/faultlogger/service" ]

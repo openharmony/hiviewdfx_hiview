@@ -56,3 +56,23 @@ ohos_source_set("faultlogger_common") {
 
   part_name = "hiview"
 }
+
+ohos_source_set("faultlogger_common_with_cfi") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  public_configs = [ ":faultlogger_common_config" ]
+  sources = [
+    "faultlog_query_result_inner.cpp",
+    "faultlog_util.cpp",
+  ]
+
+  deps = [ "$hiview_base:hiviewbase" ]
+
+  external_deps = [ "hilog:libhilog" ]
+
+  part_name = "hiview"
+}
