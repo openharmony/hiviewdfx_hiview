@@ -30,7 +30,10 @@ ohos_source_set("log_store") {
     "log_store_ex.cpp",
   ]
 
-  deps = [ "$hiview_base:hiview_base" ]
+  deps = [
+    "$hiview_base:logger",
+    "$hiview_base/utility:hiview_utility",
+  ]
 
   external_deps = [ "hilog:libhilog" ]
 }

@@ -17,12 +17,16 @@ config("hiview_base_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
-    "include",
-    "utility/include",
-    "event_pool",
-    "event_store/include",
     "$hiview_root/include",
+    "event_pool",
+    "event_publish/include",
+    "event_raw/include",
+    "event_store/include",
+    "event_threshold/include",
+    "include",
     "logstore/include",
+    "running_status_logger/include",
+    "utility/include",
   ]
 
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
@@ -75,15 +79,16 @@ ohos_source_set("hiview_base") {
   deps = [
     ":logger",
     "event_pool:eventpool",
+    "event_publish:hiview_event_publish",
+    "event_raw:hiview_event_raw_base",
+    "event_raw:hiview_event_raw_decode",
+    "event_raw:hiview_event_raw_encode",
     "event_report:hiview_event_report",
+    "event_store:event_store_source",
+    "event_threshold:event_threshold_source",
+    "logstore:log_store",
     "running_status_logger:running_status_logger_source",
     "utility:hiview_utility",
-  ]
-
-  public_deps = [
-    "$hiview_base/event_raw:hiview_event_raw_base",
-    "$hiview_base/event_raw:hiview_event_raw_decode",
-    "$hiview_base/event_raw:hiview_event_raw_encode",
   ]
 
   external_deps = [
@@ -97,16 +102,7 @@ ohos_shared_library("hiviewbase") {
   public_configs = [ ":hiview_base_config" ]
   public_configs += [ "event_report:hiview_event_report_config" ]
 
-  deps = [
-    ":hiview_base",
-    "logstore:log_store",
-  ]
-
-  public_deps = [
-    "$hiview_base/event_raw:hiview_event_raw_base",
-    "$hiview_base/event_raw:hiview_event_raw_decode",
-    "$hiview_base/event_raw:hiview_event_raw_encode",
-  ]
+  deps = [ ":hiview_base" ]
 
   version_script = "libhiviewbase.map"
 

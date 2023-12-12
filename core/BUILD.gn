@@ -39,7 +39,6 @@ ohos_source_set("hiview_core") {
 
   deps = [
     "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
-    "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
     "$hiview_base:hiviewbase",
     "param_update:hiview_param_update",
     "platform_config:hiviewplatform_config",
