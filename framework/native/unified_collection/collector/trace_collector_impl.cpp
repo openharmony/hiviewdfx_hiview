@@ -84,7 +84,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
     result.retCode = TransCodeToUcError(traceRetInfo.errorCode);
     // step3： update db
     controlPolicy->StoreDb();
-    HIVIEW_LOGI("DumpTrace, retCode = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
+    HIVIEW_LOGI("DumpTrace, retCode = %{public}d, data.size = %{public}zu.", result.retCode, result.data.size());
     return result;
 }
 
@@ -105,7 +105,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::TraceOff()
         result.data = ret.outputFiles;
     }
     result.retCode = TransCodeToUcError(ret.errorCode);
-    HIVIEW_LOGI("TraceOff, ret = %{public}d, data.size = %{public}d.", result.retCode, result.data.size());
+    HIVIEW_LOGI("TraceOff, ret = %{public}d, data.size = %{public}zu.", result.retCode, result.data.size());
     return result;
 }
 } // UCollectUtil

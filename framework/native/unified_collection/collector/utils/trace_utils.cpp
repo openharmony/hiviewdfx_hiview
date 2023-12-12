@@ -105,7 +105,7 @@ void CleanPolicy::DoClean()
         }
     }
 
-    HIVIEW_LOGI("myFiles size : %{public}d, MyThreshold : %{public}d.", myFiles.size(), MyThreshold());
+    HIVIEW_LOGI("myFiles size : %{public}zu, MyThreshold : %{public}u.", myFiles.size(), MyThreshold());
 
     // Clean up old files
     while (myFiles.size() > MyThreshold()) {

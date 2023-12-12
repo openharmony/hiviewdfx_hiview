@@ -163,7 +163,7 @@ int64_t TraceFlowController::GetTraceSize(TraceRetInfo ret)
     for (const auto &tracePath : ret.outputFiles) {
         int ret = stat(tracePath.c_str(), &fileInfo);
         if (ret != 0) {
-            HIVIEW_LOGE("file is not exists");
+            HIVIEW_LOGE("%{public}s is not exists, ret = %{public}d.", tracePath.c_str(), ret);
             continue;
         }
         traceSize += fileInfo.st_size;
