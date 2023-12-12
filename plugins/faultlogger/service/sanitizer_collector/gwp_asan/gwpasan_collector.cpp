@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "gwpasan_collector.h"
 
 #include <cstdint>
@@ -22,6 +23,7 @@
 #include <ctime>
 #include <fcntl.h>
 #include <mutex>
+#include <securec.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <vector>
@@ -33,6 +35,8 @@
 #include "hisysevent.h"
 
 static std::stringstream g_asanlog;
+static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LOG_CORE, 0xD002D12, "Sanitizer"};
+
 void WriteGwpAsanLog(char* buf, size_t sz)
 {
     if (buf == nullptr || sz == 0) {
@@ -46,40 +50,41 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         g_asanlog << buf[i];
     }
 
-    auto output = strstr(buf, "End GWP-ASan report");
+    char *output = strstr(buf, "End GWP-ASan report");
     if (output) {
         std::string asanlog = g_asanlog.str();
         // parse log
-        OHOS::HiviewDFX::ReadGwpAsanRecord(asanlog);
+        ReadGwpAsanRecord(asanlog);
         // clear buffer
         g_asanlog.str("");
     }
 }
 
-namespace OHOS {
-namespace HiviewDFX {
-static constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D12, "Sanitizer"};
-
 void ReadGwpAsanRecord(std::string& gwpAsanBuffer)
 {
     GwpAsanCurrInfo currInfo;
+    char bundleName[BUF_SIZE];
     currInfo.description = gwpAsanBuffer;
     currInfo.pid = getpid();
     currInfo.uid = getuid();
     currInfo.errType = "GWP-ASAN";
-    if (currInfo.uid >= 0) {
-        currInfo.procName = GetApplicationNameById(currInfo.uid);
+    if (GetNameByPid(static_cast<pid_t>(currInfo.pid), bundleName) == true) {
+        currInfo.procName = std::string(bundleName);
+    }
+    if (currInfo.uid >= MIN_APP_UID) {
         currInfo.appVersion = GetApplicationVersion(currInfo.uid, currInfo.procName);
+    } else {
+        currInfo.appVersion = "";
     }
     time_t timeNow = time(nullptr);
     uint64_t timeTmp = timeNow;
-    std::string timeStr = GetFormatedTime(timeTmp);
+    std::string timeStr = OHOS::HiviewDFX::GetFormatedTime(timeTmp);
     currInfo.happenTime = std::stoll(timeStr);
 
     // Do upload when data ready
     WriteCollectedData(currInfo);
-    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY, "ADDR_SANITIZER",
-                    HiSysEvent::EventType::FAULT,
+    HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::RELIABILITY, "ADDR_SANITIZER",
+                    OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
                     "MODULE", currInfo.procName,
                     "VERSION", currInfo.appVersion,
                     "REASON", currInfo.errType,
@@ -121,12 +126,11 @@ std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
     fileName.append("-");
     fileName.append(name);
     fileName.append("-");
-    fileName.append(std::to_string(currInfo.uid));
+    fileName.append(std::to_string(currInfo.pid));
     fileName.append("-");
     fileName.append(std::to_string(currInfo.happenTime));
 
     std::string fullName = filePath + fileName;
-
     return fullName;
 }
 
@@ -146,38 +150,48 @@ void WriteCollectedData(const GwpAsanCurrInfo &currInfo)
 int32_t CreateLogFile(const std::string& name)
 {
     int32_t fd = -1;
-    if (!FileUtil::FileExists(name)) {
-        HiLog::Warn(LABEL, "file %{public}s is creating now.", name.c_str());
-    }
+
     fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC);
+    if (fd < 0) {
+        OHOS::HiviewDFX::HiLog::Error(LABEL, "Fail to create %{public}s,  err: %{public}s.",
+            name.c_str(), strerror(errno));
+    }
     return fd;
 }
 
-std::string GetApplicationNameById(int32_t uid)
+bool GetNameByPid(pid_t pid, const char procName[])
 {
-    std::string bundleName;
-    AppExecFwk::BundleMgrClient client;
-    if (client.GetNameForUid(uid, bundleName) != ERR_OK) {
-        HiLog::Warn(LABEL, "Failed to query bundleName from bms, uid:%{public}d.", uid);
-    } else {
-        HiLog::Info(LABEL, "bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
+    char pidPath[BUF_SIZE];
+    char buf[BUF_SIZE];
+    bool ret = false;
+
+    sprintf_s(pidPath, BUF_SIZE, "/proc/%d/status", pid);
+    FILE *fp = fopen(pidPath, "r");
+    if (fp != nullptr) {
+        if (fgets(buf, BUF_SIZE - 1, fp) != nullptr) {
+            if (sscanf_s(buf, "%*s %s", procName, MAX_PROCESS_PATH) == 1) {
+                ret = true;
+            }
+        } else {
+            ret = false;
+        }
+        fclose(fp);
     }
-    return bundleName;
+
+    return ret;
 }
 
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
 {
-    AppExecFwk::BundleInfo info;
-    AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
-                              info, AppExecFwk::Constants::ALL_USERID)) {
-        HiLog::Warn(LABEL, "Failed to query BundleInfo from bms, uid:%{public}d.", uid);
+    OHOS::AppExecFwk::BundleInfo info;
+    OHOS::AppExecFwk::BundleMgrClient client;
+    if (!client.GetBundleInfo(bundleName, OHOS::AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
+        info, OHOS::AppExecFwk::Constants::ALL_USERID)) {
+        OHOS::HiviewDFX::HiLog::Warn(LABEL, "Failed to query BundleInfo from bms, uid:%{public}d.", uid);
         return "";
     } else {
-        HiLog::Info(LABEL, "The version of %{public}s is %{public}s", bundleName.c_str(),
-                    info.versionName.c_str());
+        OHOS::HiviewDFX::HiLog::Info(LABEL, "The version of %{public}s is %{public}s", bundleName.c_str(),
+            info.versionName.c_str());
     }
     return info.versionName;
 }
-} // namespace HiviewDFX
-} // namespace OHOS
