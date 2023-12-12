@@ -150,6 +150,12 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     std::string mergeFilePath = FreezeJsonUtil::GetFilePath(watchPoint.GetPid(),
         watchPoint.GetUid(), watchPoint.GetTimestamp());
     int jsonFd = FreezeJsonUtil::GetFd(mergeFilePath);
+    if (jsonFd < 0) {
+        HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+        return;
+    } else {
+        HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+    }
     FileUtil::SaveStringToFd(jsonFd, oss.str());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "domain", watchPoint.GetDomain());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "stringId", watchPoint.GetStringId());

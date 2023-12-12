@@ -913,7 +913,7 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     FreezeJsonUtil::FreezeJsonCollector collector = {0};
     std::string jsonFilePath = FreezeJsonUtil::GetFilePath(info.pid, info.id, info.time);
     if (!FileUtil::FileExists(jsonFilePath)) {
-        HIVIEW_LOGE("Not Exist FreezeJson File: %{public}s.", jsonFilePath.c_str());
+        HIVIEW_LOGE("Not Exist FreezeJsonFile: %{public}s.", jsonFilePath.c_str());
         return collector;
     }
     FreezeJsonUtil::LoadCollectorFromFile(jsonFilePath, collector);
@@ -984,7 +984,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
         .Build();
     EventPublish::GetInstance().PushEvent(info.id, APP_FREEZE_TYPE,
         HiSysEvent::EventType::FAULT, freezeJsonParams.JsonStr());
-    HIVIEW_LOGI("Report freezeJson Successfully!");
+    HIVIEW_LOGI("Report FreezeJson Successfully!");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
