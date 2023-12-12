@@ -28,6 +28,7 @@
 #include "faultlog_manager.h"
 #include "faultlog_query_result_inner.h"
 #include "faultlogger_plugin.h"
+#include "freeze_json_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -85,6 +86,7 @@ private:
     void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
     void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
     std::string GetMemoryStrByPid(long pid) const;
+    FreezeJsonUtil::FreezeJsonCollector GetFreezeJsonCollector(const FaultLogInfo& info) const;
     void ReportAppFreezeToAppEvent(const FaultLogInfo& info) const;
 };
 }  // namespace HiviewDFX

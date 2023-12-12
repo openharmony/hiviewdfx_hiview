@@ -176,6 +176,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
     if (watchPoint.GetLogPath().empty()) {
+        HIVIEW_LOGW("log path is empty.");
         return;
     }
 
@@ -183,6 +184,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     std::vector<FreezeResult> freezeResultList;
     bool ruleRet = freezeRuleCluster->GetResult(watchPoint, freezeResultList);
     if (!ruleRet) {
+        HIVIEW_LOGW("get rule failed.");
         return;
     }
     long delayTime = 0;
