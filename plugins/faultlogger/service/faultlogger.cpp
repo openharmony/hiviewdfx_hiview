@@ -886,13 +886,10 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
     if (meminfoStream) {
         std::string meminfoLine;
         std::getline(meminfoStream, meminfoLine);
-        HIVIEW_LOGI("/proc/meminfo line1: %{public}s", meminfoLine.c_str());
         sysTotalMem = std::stoull(GetDightStrArr(meminfoLine).front());
         std::getline(meminfoStream, meminfoLine);
-        HIVIEW_LOGI("/proc/meminfo line2: %{public}s", meminfoLine.c_str());
         sysFreeMem = std::stoull(GetDightStrArr(meminfoLine).front());
         std::getline(meminfoStream, meminfoLine);
-        HIVIEW_LOGI("/proc/meminfo line3: %{public}s", meminfoLine.c_str());
         sysAvailMem = std::stoull(GetDightStrArr(meminfoLine).front());
         meminfoStream.close();
         HIVIEW_LOGI("GET FreezeJson sysFreeMem=%{public}d, sysAvailMem=%{public}d, sysTotalMem=%{public}d.",
@@ -911,64 +908,83 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
     return freezeJsonMemory.JsonStr();
 }
 
-void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
+FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const FaultLogInfo& info) const
 {
-    HIVIEW_LOGI("Start to report freezeJson !!!");
-
+    FreezeJsonUtil::FreezeJsonCollector collector = {0};
     std::string jsonFilePath = FreezeJsonUtil::GetFilePath(info.pid, info.id, info.time);
     if (!FileUtil::FileExists(jsonFilePath)) {
         HIVIEW_LOGE("Not Exist FreezeJson File: %{public}s.", jsonFilePath.c_str());
-        return;
+        return collector;
     }
-    FreezeJsonUtil::FreezeJsonCollector collector = FreezeJsonUtil::LoadCollectorFromFile(jsonFilePath);
+    FreezeJsonUtil::LoadCollectorFromFile(jsonFilePath, collector);
+    HIVIEW_LOGI("load FreezeJsonFile.");
+    FreezeJsonUtil::DelFile(jsonFilePath);
 
     FreezeJsonException exception = FreezeJsonException::Builder()
         .InitName(collector.stringId)
         .InitMessage(collector.message)
         .Build();
+    collector.exception = exception.JsonStr();
 
-    std::string hilogJsonStr = "";
-    GetHilog(collector.pid, hilogJsonStr);
-    if (hilogJsonStr.length() == 0) {
-        HIVIEW_LOGE("Get FreezeJson hilog is empty");
+    std::list<std::string> hilogList;
+    std::string hilogStr;
+    GetHilog(collector.pid, hilogStr);
+    if (hilogStr.length() == 0) {
+        HIVIEW_LOGE("Get FreezeJson hilog is empty!");
+    } else {
+        std::stringstream hilogStream(hilogStr);
+        std::string oneLine;
+        while (std::getline(hilogStream, oneLine)) {
+            hilogList.push_back(oneLine);
+        }
     }
+    collector.hilog = FreezeJsonUtil::GetStrByList(hilogList);
 
-    std::string memoryJsonStr = GetMemoryStrByPid(collector.pid);
+    collector.memory = GetMemoryStrByPid(collector.pid);
 
-    std::string foreground = "unknown";
     if (info.sectionMap.count("FOREGROUND") == 1) {
-        foreground = info.sectionMap.at("FOREGROUND");
+        collector.foreground = info.sectionMap.at("FOREGROUND");
     }
 
-    std::string version = "unknown";
     if (info.sectionMap.count("VERSION") == 1) {
-        version = info.sectionMap.at("VERSION");
+        collector.version = info.sectionMap.at("VERSION");
     }
+
+    if (info.sectionMap.count("FINGERPRINT") == 1) {
+        collector.uuid = info.sectionMap.at("FINGERPRINT");
+    }
+
+    return collector;
+}
+
+void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
+{
+    HIVIEW_LOGI("Start to report freezeJson !!!");
+
+    FreezeJsonUtil::FreezeJsonCollector collector = GetFreezeJsonCollector(info);
 
     FreezeJsonParams freezeJsonParams = FreezeJsonParams::Builder()
         .InitTime(collector.timestamp)
         .InitUuid(collector.uuid)
         .InitFreezeType("AppFreeze")
-        .InitForeground(foreground)
-        .InitBundleVersion(version)
+        .InitForeground(collector.foreground)
+        .InitBundleVersion(collector.version)
         .InitBundleName(collector.package_name)
         .InitProcessName(collector.process_name)
         .InitPid(collector.pid)
         .InitUid(collector.uid)
-        .InitException(exception.JsonStr())
-        .InitHilog(hilogJsonStr)
+        .InitException(collector.exception)
+        .InitHilog(collector.hilog)
         .InitEventHandler(collector.event_handler)
         .InitEventHandlerSize3s(collector.event_handler_3s_size)
         .InitEventHandlerSize6s(collector.event_handler_6s_size)
         .InitPeerBinder(collector.peer_binder)
         .InitThreads(collector.stack)
-        .InitMemory(memoryJsonStr)
+        .InitMemory(collector.memory)
         .Build();
     EventPublish::GetInstance().PushEvent(info.id, APP_FREEZE_TYPE,
         HiSysEvent::EventType::FAULT, freezeJsonParams.JsonStr());
-    HIVIEW_LOGI("Report freezeJson Successfully! jsonFilePath : %{public}s", jsonFilePath.c_str());
-
-    FreezeJsonUtil::DelFile(jsonFilePath);
+    HIVIEW_LOGI("Report freezeJson Successfully!");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

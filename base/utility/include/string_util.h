@@ -152,6 +152,8 @@ std::string FindMatchSubString(const std::string& target, const std::string& beg
 
 std::string EscapeJsonStringValue(const std::string &value);
 std::string UnescapeJsonStringValue(const std::string &value);
+
+std::string FormatCmdLine(const std::string& cmdLine);
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS

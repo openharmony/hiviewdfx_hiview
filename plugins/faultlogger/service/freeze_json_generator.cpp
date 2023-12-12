@@ -109,7 +109,7 @@ FreezeJsonMemory FreezeJsonMemory::Builder::Build() const
 
 std::string FreezeJsonMemory::JsonStr() const
 {
-    std::map<std::string, std::string> memoryMap;
+    std::map<std::string, unsigned long long> memoryMap;
     memoryMap[jsonMemoryRss] = rss_;
     memoryMap[jsonMemoryVss] = vss_;
     memoryMap[jsonMemoryPss] = pss_;

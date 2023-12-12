@@ -414,6 +414,21 @@ std::string UnescapeJsonStringValue(const std::string &value)
     }
     return unescapeValue;
 }
+
+std::string FormatCmdLine(const std::string& cmdLine)
+{
+    int startPos = 0;
+    int endPos = cmdLine.size();
+    for (unsigned long i = 0; i < cmdLine.size(); i++) {
+        if (cmdLine[i] == '/') {
+            startPos = i + 1;
+        } else if (cmdLine[i] == '\0') {
+            endPos = i;
+            break;
+        }
+    }
+    return cmdLine.substr(startPos, endPos - startPos);
+}
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS
