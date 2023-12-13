@@ -1,0 +1,9 @@
+Time of Error Occoured: 2023/12/10-19:47:16
+Boot Stage when Error Occoured: BL2_STAGE
+Fault Reason: BL2 core device fault
+Boot Up Time: 13 seconds
+DMD Error No: 0
+is Root: True
+Space Left On Device: 0MB
+inodes Left On Device: 0
+Error Description: Low power, can not show logo.
