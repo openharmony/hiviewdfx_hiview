@@ -140,6 +140,9 @@ void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jso
 {
     std::map<std::string, std::list<std::string>> collectMap;
     std::string lineStr;
+    if (!FileUtil::FileExists(filePath)) {
+        return;
+    }
     std::ifstream jsonFile(filePath);
     while (std::getline(jsonFile, lineStr)) {
         unsigned long pos = lineStr.find(COMMON_EQUAL);

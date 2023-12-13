@@ -150,6 +150,12 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     std::string mergeFilePath = FreezeJsonUtil::GetFilePath(watchPoint.GetPid(),
         watchPoint.GetUid(), watchPoint.GetTimestamp());
     int jsonFd = FreezeJsonUtil::GetFd(mergeFilePath);
+    if (jsonFd < 0) {
+        HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+        return;
+    } else {
+        HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+    }
     FileUtil::SaveStringToFd(jsonFd, oss.str());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "domain", watchPoint.GetDomain());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "stringId", watchPoint.GetStringId());
@@ -158,11 +164,8 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     FreezeJsonUtil::WriteKeyValue(jsonFd, "uid", watchPoint.GetUid());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "package_name", watchPoint.GetPackageName());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "process_name", watchPoint.GetProcessName());
-    HIVIEW_LOGI("Get FreezeJson : domain(%{public}s), stringId(%{public}s), timestamp(%{public}d), "
-        "pid(%{public}d), uid(%{public}d), package_name(%{public}s), process_name(%{public}s)",
-        watchPoint.GetDomain().c_str(), watchPoint.GetStringId().c_str(), watchPoint.GetTimestamp(),
-        watchPoint.GetPid(), watchPoint.GetUid(), watchPoint.GetPackageName().c_str(),
-        watchPoint.GetProcessName().c_str());
+    close(jsonFd);
+    HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
 std::string Vendor::MergeEventLog(

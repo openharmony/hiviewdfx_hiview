@@ -256,7 +256,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
-        if (strList.size() != 7) { // 7: vaild array size
+        if (strList.size() != 7) { // 7: valid array size
             continue;
         }
         // 2: binder peer id
@@ -273,7 +273,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
                 processName = StringUtil::FormatCmdLine(processName);
                 processNameMap[pidStr] = processName;
             } else {
-                HIVIEW_LOGI("Fail to open /proc/%{public}s/cmdline", pidStr.c_str());
+                HIVIEW_LOGE("Fail to open /proc/%{public}s/cmdline", pidStr.c_str());
             }
         }
         std::string lineStr = line + "    " + pidStr + FreezeJsonUtil::WrapByParenthesis(processNameMap[pidStr]);
@@ -317,13 +317,11 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
 {
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     std::string stack;
-    std::string binderInfo;
-    if (FreezeJsonUtil::IsAppFreeze(event -> eventName_) && jsonFd >= 0) {
+    std::string binderInfo = event -> GetEventValue("BINDER_INFO");
+    if (FreezeJsonUtil::IsAppFreeze(event -> eventName_)) {
         std::string message;
         std::string eventHandlerStr;
         ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
-        FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
-        FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
 
         std::string jsonStack = StringUtil::ReplaceStr(event -> GetEventValue("STACK"), "\\\"", "\"");
         unsigned long removeIndex = jsonStack.find("\\n");
@@ -331,10 +329,17 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             jsonStack = jsonStack.substr(0, removeIndex);
         }
         DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
-        FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
 
-        binderInfo = event -> GetEventValue("BINDER_INFO");
-        if (!binderInfo.empty()) {
+        if (jsonFd >= 0) {
+            HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
+        } else {
+            HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+        }
+
+        if (!binderInfo.empty() && jsonFd >= 0) {
             std::string binderInfoJsonStr;
             ParsePeerBinder(binderInfo, binderInfoJsonStr);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "peer_binder", binderInfoJsonStr);
