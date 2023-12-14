@@ -102,5 +102,15 @@
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_pname":"Module name:(.*)"},
             {"namespace":"MainCallTrace", "matchKey":"Thread name:", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
+    },
+    "Rule9":{
+        "DirOrFile":"/data/log/bbox/",
+        "Subcatalog":"\\d{14}-\\d{8}/bootfail_info_\\d{1}",
+        "featureId":"04_BOOTFAIL_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Fault Reason: ", "v_bootfailReason":"Fault Reason: (.*)"},
+            {"namespace":"BasicParam", "matchKey":"Error Description: ", "v_bootfailDetail":"Error Description: (.*)"},
+            {"namespace":"BasicParam", "matchKey":"Error No: 0x", "v_bootfailErrno":"Error No: (0x[0-9a-f]+)"}
+        ]
     }
 }
