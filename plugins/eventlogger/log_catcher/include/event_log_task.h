@@ -81,6 +81,8 @@ private:
     void DmesgCapture();
     void SysrqCapture(bool isWriteNewFile);
     void HitraceCapture();
+    void SCBSessionCapture();
+    void SCBViewParamCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

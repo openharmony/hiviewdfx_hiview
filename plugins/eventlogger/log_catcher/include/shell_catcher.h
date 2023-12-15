@@ -39,6 +39,8 @@ public:
         CATCHER_RS,
         CATCHER_HILOG,
         CATCHER_SNAPSHOT,
+        CATCHER_SCBSESSION,
+        CATCHER_SCBVIEWPARAM,
     };
 private:
     std::string catcherCmd_;

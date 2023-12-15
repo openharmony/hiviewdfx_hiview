@@ -79,6 +79,12 @@ void ShellCatcher::DoChildProcess(int writeFd)
                 path += ".jpeg";
                 ret = execl("/system/bin/snapshot_display", "snapshot_display", "-f", path.c_str(), nullptr);
             }
+            break;
+        case CATCHER_SCBSESSION:
+            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getContainerSession", nullptr);
+            break;
+        case CATCHER_SCBVIEWPARAM:
+            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
         default:
             break;
     }

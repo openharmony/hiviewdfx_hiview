@@ -65,6 +65,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("k:SysRqFile",
         std::bind(&EventLogTask::SysrqCapture, this, true)));
     captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:scbCS", std::bind(&EventLogTask::SCBSessionCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:scbVP", std::bind(&EventLogTask::SCBViewParamCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -330,6 +332,20 @@ void EventLogTask::HitraceCapture()
         HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);
         return;
     }
+}
+
+void EventLogTask::SCBSessionCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("scb_debug SCBScenePanel getContainerSession", ShellCatcher::CATCHER_SCBSESSION, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::SCBViewParamCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, pid_);
+    tasks_.push_back(capture);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
