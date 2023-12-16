@@ -41,6 +41,12 @@ void ReadValue(std::ifstream& in, T& value)
 {
     in.read(reinterpret_cast<char*>(&value), sizeof(T));
 }
+
+uint8_t ParseTypeFromString(const std::string& typeStr)
+{
+    uint32_t typeNum = std::stoul(typeStr);
+    return (typeNum <= 4 && typeNum >= 1) ? (typeNum - 1) : 0; // 4: max value, 1: min value
+}
 }
 
 SysEventDocReader::SysEventDocReader(const std::string& path): EventDocReader(path),
@@ -76,6 +82,7 @@ void SysEventDocReader::InitCommonEventInfo()
         StringUtil::SplitStr(fileName, FILE_NAME_SEPARATOR, eventFields);
         if (eventFields.size() == FILE_NAME_SPLIT_SIZE) {
             comEventInfo_.name = eventFields[EVENT_NAME_INDEX];
+            comEventInfo_.type = ParseTypeFromString(eventFields[EVENT_TYPE_INDEX]);
             comEventInfo_.level = eventFields[EVENT_LEVEL_INDEX];
         }
     }

@@ -26,13 +26,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
-enum class StoreType {
-    FAULT = 1,
-    STATISTIC = 2,
-    SECURITY = 3,
-    BEHAVIOR = 4,
-};
-
 class SysEventDao {
 public:
     /* for internal query */

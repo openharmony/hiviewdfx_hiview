@@ -99,6 +99,7 @@ struct CommonEventInfo {
     std::string name;
     std::string level;
     std::string tag;
+    uint8_t type = 0;
 };
 using CommonEventInfo = struct CommonEventInfo;
 } // EventStore

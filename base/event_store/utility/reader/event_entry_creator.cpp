@@ -158,6 +158,7 @@ std::optional<EventRaw::HiSysEventHeader> EventEntryCreator::BuildRawEventHeader
         .pid = eventHeader_.pid,
         .tid = eventHeader_.tid,
         .id = eventHeader_.id,
+        .type = comEventInfo_.type,
         .isTraceOpened = eventHeader_.isTraceOpened,
     };
     if (comEventInfo_.domain.empty()) {
