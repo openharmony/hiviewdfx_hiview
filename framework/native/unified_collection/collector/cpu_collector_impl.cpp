@@ -54,7 +54,8 @@ public:
 public:
     virtual CollectResult<SysCpuLoad> CollectSysCpuLoad() override;
     virtual CollectResult<SysCpuUsage> CollectSysCpuUsage(bool isNeedUpdate = false) override;
-    virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid) override;
+    virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid,
+        bool isNeedUpdate = false) override;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
@@ -64,7 +65,7 @@ private:
     void InitLastProcCpuTimeInfos();
     std::shared_ptr<ProcessCpuData> FetchProcessCpuData(int32_t pid = INVALID_PID);
     void UpdateCollectionTime();
-    void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem);
+    void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem, uint64_t currTime);
     void CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
         const std::vector<CpuTimeInfo>& currCpuTimeInfos);
     void CalculateProcessCpuStatInfos(
@@ -134,7 +135,7 @@ void CpuCollectorImpl::InitLastProcCpuTimeInfos()
     // init cpu time information for each process in the system
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
-        UpdateLastProcCpuTimeInfo(procCpuItem);
+        UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime_);
         procCpuItem = processCpuData->GetNextProcess();
     }
 }
@@ -156,7 +157,7 @@ void CpuCollectorImpl::UpdateCollectionTime()
     currCollectionTime_ = TimeUtil::GetMilliseconds();
 }
 
-void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem)
+void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem, uint64_t currTime)
 {
     lastProcCpuTimeInfos_[procCpuItem->pid] = {
         .minFlt = procCpuItem->min_flt,
@@ -164,7 +165,7 @@ void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_i
         .uUsageTime = procCpuItem->cpu_usage_utime,
         .sUsageTime = procCpuItem->cpu_usage_stime,
         .loadTime = procCpuItem->cpu_load_time,
-        .collectionTime = currCollectionTime_,
+        .collectionTime = currTime,
     };
 }
 
@@ -268,7 +269,7 @@ void CpuCollectorImpl::CalculateProcessCpuStatInfos(
             processCpuStatInfos.emplace_back(processCpuStatInfo.value());
         }
         if (isNeedUpdate) {
-            UpdateLastProcCpuTimeInfo(procCpuItem);
+            UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime);
         }
         procCpuItem = processCpuData->GetNextProcess();
     }
@@ -324,7 +325,7 @@ bool CpuCollectorImpl::NeedDeleteDeadProcessInfo()
     return clearInterval > maxClearInterval;
 }
 
-CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(int32_t pid)
+CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
 {
     CollectResult<ProcessCpuStatInfo> cpuCollectResult;
     cpuCollectResult.retCode = UCollect::UcError::UNSUPPORT;
@@ -338,12 +339,16 @@ CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(in
     if (procCpuItem == nullptr) {
         return cpuCollectResult;
     }
-    uint64_t lastCollectionTime = currCollectionTime_;
+    uint64_t lastCollectionTime = (lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end())
+        ? lastProcCpuTimeInfos_[pid].collectionTime : 0;
     uint64_t currCollectionTime = TimeUtil::GetMilliseconds();
     auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, lastCollectionTime, currCollectionTime);
     if (processCpuStatInfo.has_value()) {
         cpuCollectResult.retCode = UCollect::UcError::SUCCESS;
         cpuCollectResult.data = processCpuStatInfo.value();
+    }
+    if (isNeedUpdate) {
+        UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime);
     }
     return cpuCollectResult;
 }
