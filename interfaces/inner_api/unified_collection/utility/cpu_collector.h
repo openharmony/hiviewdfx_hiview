@@ -32,7 +32,8 @@ public:
     virtual CollectResult<SysCpuLoad> CollectSysCpuLoad() = 0;
     virtual CollectResult<SysCpuUsage> CollectSysCpuUsage(bool isNeedUpdate = false) = 0;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() = 0;
-    virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid) = 0;
+    virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid,
+        bool isNeedUpdate = false) = 0;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) = 0;
     static std::shared_ptr<CpuCollector> Create();

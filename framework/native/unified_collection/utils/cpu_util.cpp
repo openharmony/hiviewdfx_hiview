@@ -112,7 +112,7 @@ UCollect::UcError CpuUtil::GetCpuTimeInfos(std::vector<CpuTimeInfo>& cpuInfos)
         }
         cpuInfos.emplace_back(cpuInfo);
     }
-    HIVIEW_LOGI("get cpu usage info, size=%{public}zu", cpuInfos.size());
+    HIVIEW_LOGD("get cpu usage info, size=%{public}zu", cpuInfos.size());
     return UCollect::SUCCESS;
 }
 

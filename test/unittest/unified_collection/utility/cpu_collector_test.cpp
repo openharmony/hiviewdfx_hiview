@@ -275,3 +275,27 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest014, TestSize.Level1)
     ASSERT_EQ(firstCollectResult.data[0].startTime, secondCollectResult.data[0].startTime);
     ASSERT_LT(firstCollectResult.data[0].endTime, secondCollectResult.data[0].endTime);
 }
+
+/**
+ * @tc.name: CpuCollectorTest015
+ * @tc.desc: used to test the update function of CpuCollector.CollectProcessCpuStatInfo
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest015, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    constexpr int initPid = 1;
+    auto collectResult = collector->CollectProcessCpuStatInfo(initPid, true);
+    ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+
+    sleep(1); // 1s
+    auto nextCollectResult = collector->CollectProcessCpuStatInfo(initPid, true);
+    ASSERT_TRUE(nextCollectResult.retCode == UcError::SUCCESS);
+
+    std::cout << "first collection startTime=" << collectResult.data.startTime << std::endl;
+    std::cout << "first collection endTime=" << collectResult.data.endTime << std::endl;
+    std::cout << "next collection startTime=" << nextCollectResult.data.startTime << std::endl;
+    std::cout << "next collection endTime=" << nextCollectResult.data.endTime << std::endl;
+    ASSERT_EQ(nextCollectResult.data.startTime, collectResult.data.endTime);
+    ASSERT_GT(nextCollectResult.data.endTime, collectResult.data.endTime);
+}
