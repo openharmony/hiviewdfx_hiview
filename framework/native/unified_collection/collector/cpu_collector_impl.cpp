@@ -308,7 +308,7 @@ void CpuCollectorImpl::TryToDeleteDeadProcessInfo()
     for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
         // if the latest collection operation does not update the process collection time, delete it
         if (it->second.collectionTime != currCollectionTime_) {
-            lastProcCpuTimeInfos_.erase(it++);
+            it = lastProcCpuTimeInfos_.erase(it);
         } else {
             it++;
         }
