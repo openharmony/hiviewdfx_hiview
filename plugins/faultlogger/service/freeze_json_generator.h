@@ -101,7 +101,7 @@ public:
         Builder& InitTime(unsigned long long time);
         Builder& InitUuid(const std::string& uuid);
         Builder& InitFreezeType(const std::string& freezeType);
-        Builder& InitForeground(const std::string& foreground);
+        Builder& InitForeground(bool foreground);
         Builder& InitBundleVersion(const std::string& bundleVersion);
         Builder& InitBundleName(const std::string& bundleName);
         Builder& InitProcessName(const std::string& processName);
@@ -121,7 +121,7 @@ public:
         unsigned long long time_ = 0;
         std::string uuid_ = "";
         std::string freezeType_ = "";
-        std::string foreground_ = "";
+        bool foreground_ = false;
         std::string bundleVersion_ = "";
         std::string bundleName_ = "";
         std::string processName_ = "";
@@ -164,7 +164,7 @@ private:
     unsigned long long time_;
     std::string uuid_;
     std::string freezeType_;
-    std::string foreground_;
+    bool foreground_;
     std::string bundleVersion_;
     std::string bundleName_;
     std::string processName_;

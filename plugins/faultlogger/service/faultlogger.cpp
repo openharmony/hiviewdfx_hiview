@@ -487,7 +487,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["time"] = sysEvent->happenTime_;
     params["crash_type"] = "JsError";
     std::string foreground = sysEvent->GetEventValue("FOREGROUND");
-    if (foreground == "true") {
+    if (foreground == "Yes") {
         params["foreground"] = true;
     } else {
         params["foreground"] = false;
@@ -781,7 +781,7 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     }
     if (info.sectionMap.count("FOREGROUND") == 1) {
         std::string foreground = info.sectionMap.at("FOREGROUND");
-        if (foreground == "true") {
+        if (foreground == "Yes") {
             stackInfoObj["foreground"] = true;
         } else {
             stackInfoObj["foreground"] = false;
@@ -967,7 +967,8 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     collector.memory = GetMemoryStrByPid(collector.pid);
 
     if (info.sectionMap.count("FOREGROUND") == 1) {
-        collector.foreground = info.sectionMap.at("FOREGROUND");
+        std::string foreground = info.sectionMap.at("FOREGROUND");
+        collector.foreground = (foreground == "Yes");
     }
 
     if (info.sectionMap.count("VERSION") == 1) {
