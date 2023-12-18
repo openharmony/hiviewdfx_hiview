@@ -113,7 +113,7 @@ void ProcessStatus::ClearProcessInfos()
     HIVIEW_LOGI("start to clear process cache, size=%{public}zu", processInfos_.size());
     for (auto it = processInfos_.begin(); it != processInfos_.end();) {
         if (!IsValidProcessId(it->first)) {
-            processInfos_.erase(it++);
+            it = processInfos_.erase(it);
         } else {
             it++;
         }

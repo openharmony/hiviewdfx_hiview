@@ -147,25 +147,18 @@ CollectResult<ProcessIo> IoCollectorImpl::CollectProcessIo(int32_t pid)
         if (CommonUtil::ParseTypeAndValue(str, type, value)) {
             if (type == "rchar") {
                 processIO.rchar = value;
-                HIVIEW_LOGD("rchar=%{public}d", processIO.rchar);
             } else if (type == "wchar") {
                 processIO.wchar = value;
-                HIVIEW_LOGD("wchar=%{public}d", processIO.wchar);
             } else if (type == "syscr") {
                 processIO.syscr = value;
-                HIVIEW_LOGD("syscr=%{public}d", processIO.syscr);
             } else if (type == "syscw") {
                 processIO.syscw = value;
-                HIVIEW_LOGD("syscw=%{public}d", processIO.syscw);
             } else if (type == "read_bytes") {
                 processIO.readBytes = value;
-                HIVIEW_LOGD("readBytes=%{public}d", processIO.readBytes);
             } else if (type == "cancelled_write_bytes") {
                 processIO.cancelledWriteBytes = value;
-                HIVIEW_LOGD("cancelledWriteBytes=%{public}d", processIO.cancelledWriteBytes);
             } else if (type == "write_bytes") {
                 processIO.writeBytes = value;
-                HIVIEW_LOGD("writeBytes=%{public}d", processIO.writeBytes);
             }
         }
     }
@@ -297,7 +290,7 @@ void IoCollectorImpl::GetDiskStats(DiskStatsFilter filter, bool isUpdate, std::v
             }
             ++it;
         } else {
-            diskStatsMap_.erase(it++);
+            it = diskStatsMap_.erase(it);
         }
     }
     return;
@@ -545,7 +538,7 @@ void IoCollectorImpl::GetProcIoStats(std::vector<ProcessIoStats>& allProcIoStats
             }
             ++it;
         } else {
-            procIoStatsMap_.erase(it++);
+            it = procIoStatsMap_.erase(it);
         }
     }
 }

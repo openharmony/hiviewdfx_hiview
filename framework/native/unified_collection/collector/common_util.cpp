@@ -14,14 +14,11 @@
  */
 
 #include "common_util.h"
-#include "logger.h"
 #include "file_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-DEFINE_LOG_TAG("UCollectUtil");
-
 template <typename T> bool CommonUtil::StrToNum(const std::string &sString, T &tX)
 {
     std::istringstream iStream(sString);
@@ -35,19 +32,15 @@ bool CommonUtil::ParseTypeAndValue(const std::string &str, std::string &type, in
         type = str.substr(0, typePos);
         std::string valueStr = str.substr(typePos + 1);
         std::string::size_type valuePos = valueStr.find("kB");
-        HIVIEW_LOGD("valuePos=%{public}d", valuePos);
         if (valuePos == std::string::npos) {
             valuePos = valueStr.find("KB");
-            HIVIEW_LOGD("valuePos=%{public}d", valuePos);
         }
         if (valuePos != std::string::npos) {
             valueStr.resize(valuePos);
             StrToNum(valueStr, value);
-            HIVIEW_LOGD("value=%{public}d", value);
             return true;
         } else {
             StrToNum(valueStr, value);
-            HIVIEW_LOGD("value=%{public}d", value);
             return true;
         }
     }
