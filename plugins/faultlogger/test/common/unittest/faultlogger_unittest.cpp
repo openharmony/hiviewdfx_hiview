@@ -86,6 +86,29 @@ static void StartHisyseventListen(std::string domain, std::string eventName)
     HiSysEventManager::AddListener(faultEventListener, sysRules);
 }
 
+static int CheckKeyWordsInFile(const std::string& filePath, std::string *keywords, int length)
+{
+    std::ifstream file;
+    file.open(filePath.c_str(), std::ios::in);
+    std::ostringstream infoStream;
+    infoStream << file.rdbuf();
+    std::string info = infoStream.str();
+    if (info.length() == 0) {
+        std::cout << "file is empty, file:" << filePath << std::endl;
+        return 0;
+    }
+    int matchCount = 0;
+    for (int index = 0; index < length; index++) {
+        if (info.find(keywords[index]) != std::string::npos) {
+            matchCount++;
+        } else {
+            std::cout << "can not find keyword:" << keywords[index] << std::endl;
+        }
+    }
+    file.close();
+    return matchCount;
+}
+
 /**
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
@@ -139,20 +162,21 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
 /**
  * @tc.name: genCppCrashLogTest001
  * @tc.desc: create cpp crash event and send it to faultlogger
+ *           check info which send to appevent
  * @tc.type: FUNC
  * @tc.require: SR000F7UQ6 AR000F4380
  */
-HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Level3)
+HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
 {
     /**
-     * @tc.steps: step1. create a cpp crash event and pass it to faultlogger
-     * @tc.expected: the calling is success and the file has been created
+     * @tc.steps: step1. create a cpp crash event with stackInfo and pass it to faultlogger
+     * @tc.expected: the calling is success and the appevent info test file has been created
      */
     auto plugin = CreateFaultloggerInstance();
     FaultLogInfo info;
     info.time = 1607161163;
     info.id = 0;
-    info.pid = 7497;
+    info.pid = 7496;
     info.faultLogType = 2;
     info.module = "com.example.myapplication";
     info.sectionMap["APPVERSION"] = "1.0";
@@ -161,6 +185,20 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    info.sectionMap["stackInfo"] = R"~({"crash_type":"NativeCrash", "exception":{"frames":
+        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4",
+        "symbol":"test_abc"}, {"buildId":"12345abcde",
+        "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278, "pc":"0000bef3",
+        "symbol":"OHOS::AppExecFwk::EpollIoWaiter::WaitFor(std::__h::unique_lock<std::__h::mutex>&, long long)"}],
+        "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605}, "pid":1605,
+        "threads":[{"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":72, "pc":"000c80b4",
+        "symbol":"ioctl"}, {"buildId":"2349d05884359058d3009e1fe27b15fa", "file":
+        "/system/lib/platformsdk/libipc_core.z.so", "offset":26, "pc":"0002cad7",
+        "symbol":"OHOS::BinderConnector::WriteBinder(unsigned long, void*)"}], "thread_name":"OS_IPC_0_1607",
+        "tid":1607}, {"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":0, "pc":"000fdf4c",
+        "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
+        "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
+        "time":1701863741296, "uid":20010043, "uuid":""})~";
     plugin->AddFaultLog(info);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
@@ -170,6 +208,16 @@ HWTEST_F(FaultloggerUnittest, genCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(size, 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
+
+    // check appevent json info
+    std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
+    ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);
+    ASSERT_GT(FileUtil::GetFileSize(appeventInfofileName), 0ul);
+    string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":",
+        "\"thread_name\":", "\"tid\":" };
+    int length = sizeof(keywords) / sizeof(keywords[0]);
+    int count = CheckKeyWordsInFile(appeventInfofileName, keywords, length);
+    ASSERT_EQ(count, length) << "GenCppCrashLogTest001 check keywords failed";
 }
 
 /**
@@ -665,6 +713,47 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
 
     // check event database
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest001
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ * @tc.require: AR000IHTHV
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::TestSize.Level3)
+{
+    SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("SUMMARY", R"(Error name:TypeError\nError message:Obj is not
+        a Valid object\nSourceCode:\n    get BLOCKSSvalue() {\n        ^\nStacktrace:\n    at
+        anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)");
+    sysEventCreator.SetKeyValue("name_", "JS_ERROR");
+    sysEventCreator.SetKeyValue("happenTime_", 1670248360359);
+    sysEventCreator.SetKeyValue("REASON", "TypeError");
+    sysEventCreator.SetKeyValue("tz_", "+0800");
+    sysEventCreator.SetKeyValue("pid_", 2413);
+    sysEventCreator.SetKeyValue("tid_", 2413);
+    sysEventCreator.SetKeyValue("what_", 3);
+    sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
+    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+    sysEventCreator.SetKeyValue("TYPE", 3);
+    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+
+    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    auto testPlugin = CreateFaultloggerInstance();
+    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+    bool result = testPlugin->OnEvent(event);
+    ASSERT_EQ(result, true);
+
+    std::string keywords[] = {
+        "\"bundle_name\":", "\"bundle_version\":", "\"crash_type\":", "\"exception\":",
+        "\"foreground\":", "\"hilog\":", "\"pid\":", "\"time\":", "\"uid\":", "\"uuid\":"
+    };
+    int length = sizeof(keywords) / sizeof(keywords[0]);
+    std::cout << "length:" << length << std::endl;
+    int count = CheckKeyWordsInFile("/data/test_jsError_info", keywords, length);
+    std::cout << "count:" << count << std::endl;
+    ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001 check keywords failed";
 }
 } // namespace HiviewDFX
 } // namespace OHOS
