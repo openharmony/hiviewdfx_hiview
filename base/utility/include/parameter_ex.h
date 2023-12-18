@@ -35,6 +35,8 @@ uint64_t GetUnsignedInteger(const std::string& key, const uint64_t defaultValue)
 bool GetBoolean(const std::string& key, const bool defaultValue);
 bool SetProperty(const std::string& key, const std::string& defaultValue);
 int WaitParamSync(const char *key, const char *value, int timeout);
+typedef void (*ParameterChgPtr)(const char *key, const char *value, void *context);
+int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *context);
 bool IsBetaVersion();
 DeviceType GetDeviceType();
 };

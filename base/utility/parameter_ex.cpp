@@ -51,6 +51,11 @@ int WaitParamSync(const char *key, const char *value, int timeout)
     return WaitParameter(key, value, timeout);
 }
 
+int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *context)
+{
+    return WatchParameter(keyPrefix, callback, context);
+}
+
 bool IsBetaVersion()
 {
     auto versionType = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");
