@@ -263,7 +263,11 @@ RawDataBuilder& RawDataBuilder::AppendValue(std::shared_ptr<EncodedParam> param)
 std::shared_ptr<EncodedParam> RawDataBuilder::GetValue(const std::string& key)
 {
     std::lock_guard<std::mutex> lock(paramsOptMtx_);
+    auto paramCnt = allParams_.size();
     for (auto iter = allParams_.begin(); iter != allParams_.end(); ++iter) {
+        if (paramCnt != allParams_.size()) {
+            HiLog::Info(LABEL, "count of all params: [%{public}zu, %{public}zu]", paramCnt, allParams_.size());
+        }
         if ((*iter) == nullptr) {
             continue;
         }
