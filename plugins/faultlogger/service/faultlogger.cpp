@@ -17,6 +17,10 @@
 #include <climits>
 #include <cstdint>
 #include <ctime>
+#ifdef UNIT_TEST
+#include <fstream>
+#include <iostream>
+#endif
 #include <memory>
 #include <regex>
 #include <string>
@@ -482,7 +486,12 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     Json::Value params;
     params["time"] = sysEvent->happenTime_;
     params["crash_type"] = "JsError";
-    params["foreground"] = sysEvent->GetEventValue("FOREGROUND");
+    std::string foreground = sysEvent->GetEventValue("FOREGROUND");
+    if (foreground == "true") {
+        params["foreground"] = true;
+    } else {
+        params["foreground"] = false;
+    }
     params["bundle_version"] = sysEvent->GetEventValue("VERSION");
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
     params["pid"] = sysEvent->GetPid();
@@ -490,10 +499,10 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
     Json::Value exception;
     std::string name = m[1];
-    std::string message = m[2];
-    std::string stack = m[3]; // 2: is stack
+    std::string message = m[2]; // 2 is message
+    std::string stack = m[3]; // 3 is stack
     exception["name"] = name;
-    exception["message"] = message; // 1: is message
+    exception["message"] = message;
     exception["stack"] = stack;
     params["exception"] = exception;
     // add hilog
@@ -513,7 +522,15 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportAppEvent: uid:%{public}d, json:%{public}s.",
         sysEvent->GetUid(), paramsStr.c_str());
+#ifdef UNITTEST
+    std::string outputFilePath = "/data/test_jsError_info";
+    if (!FileUtil::FileExists(outputFilePath)) {
+        open(outputFilePath.c_str(), O_CREAT | O_RDWR | O_APPEND, DEFAULT_LOG_FILE_MODE);
+    }
+    FileUtil::SaveStringToFile(outputFilePath, paramsStr, false);
+#else
     EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, paramsStr);
+#endif
 }
 
 bool Faultlogger::ReadyToLoad()
@@ -763,7 +780,12 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
     if (info.sectionMap.count("FOREGROUND") == 1) {
-        stackInfoObj["foreground"] = info.sectionMap.at("FOREGROUND");
+        std::string foreground = info.sectionMap.at("FOREGROUND");
+        if (foreground == "true") {
+            stackInfoObj["foreground"] = true;
+        } else {
+            stackInfoObj["foreground"] = false;
+        }
     }
     if (info.sectionMap.count("FINGERPRINT") == 1) {
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
