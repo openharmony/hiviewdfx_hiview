@@ -158,7 +158,7 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitFreezeType(const std::
     return *this;
 }
 
-FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitForeground(const std::string& foreground)
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitForeground(bool foreground)
 {
     foreground_ = foreground;
     return *this;

@@ -80,7 +80,7 @@ struct FreezeJsonCollector {
     std::string uuid = "";
     std::string domain = "";
     std::string stringId = "";
-    std::string foreground = "unknown";
+    bool foreground = false;
     std::string version = "unknown";
     std::string package_name = "";
     std::string process_name = "";
