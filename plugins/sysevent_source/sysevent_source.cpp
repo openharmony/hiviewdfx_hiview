@@ -46,7 +46,7 @@ std::shared_ptr<PipelineEvent> SysEventParser::Parser(std::shared_ptr<EventRaw::
     HIVIEW_LOGD("parser raw message size=%{public}zu, %{public}s", rawData->GetDataLength(),
         decodedEvent.AsJsonStr().c_str());
     auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawData);
-    HIVIEW_LOGI("parser result domain_=%{public}s eventName_=%{public}s",
+    HIVIEW_LOGD("parser result domain_=%{public}s eventName_=%{public}s",
         baseEvent->domain_.c_str(), baseEvent->eventName_.c_str());
     return baseEvent;
 }

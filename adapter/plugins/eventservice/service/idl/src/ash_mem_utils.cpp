@@ -51,7 +51,7 @@ sptr<Ashmem> AshMemUtils::GetAshmem()
         HiLog::Error(LABEL, "ashmem map failed.");
         return ashmem;
     }
-    HiLog::Info(LABEL, "ashmem init succeed.");
+    HiLog::Debug(LABEL, "ashmem init succeed.");
     return ashmem;
 }
 
@@ -61,7 +61,7 @@ void AshMemUtils::CloseAshmem(sptr<Ashmem> ashmem)
         ashmem->UnmapAshmem();
         ashmem->CloseAshmem();
     }
-    HiLog::Info(LABEL, "ashmem closed.");
+    HiLog::Debug(LABEL, "ashmem closed.");
 }
 
 sptr<Ashmem> AshMemUtils::WriteBulkData(MessageParcel& parcel, const std::vector<std::u16string>& src)
