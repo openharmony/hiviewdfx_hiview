@@ -2,7 +2,7 @@
     "domains": [
         {
             "domain": "WINDOWMANAGER",
-            "include": ["ANIMATION_CALLBACK_TIMEOUT", "WINDOW_ANIMATION_ABNORMAL", "NO_FOCUS_WINDOW"]
+            "include": ["ANIMATION_CALLBACK_TIMEOUT", "WINDOW_ANIMATION_ABNORMAL", "NO_FOCUS_WINDOW", "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN"]
         },{
             "domain": "ACE",
             "include": ["UI_BLOCK_6S", "UI_BLOCK_3S"]
