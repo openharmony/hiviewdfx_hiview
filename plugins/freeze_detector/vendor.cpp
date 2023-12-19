@@ -168,14 +168,9 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
-std::string Vendor::MergeEventLog(
-    const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
-    const std::vector<FreezeResult>& result) const
+void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
+    std::string& logPath, std::string& logName) const
 {
-    if (freezeCommon_ == nullptr) {
-        return "";
-    }
-
     std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
     std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
@@ -183,7 +178,7 @@ std::string Vendor::MergeEventLog(
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
 
-    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? APPFREEZE : SYSFREEZE;
     if (type == SYSFREEZE) {
         processName = stringId;
@@ -194,9 +189,6 @@ std::string Vendor::MergeEventLog(
         processName = stringId;
     }
 
-    std::string retPath;
-    std::string logPath;
-    std::string logName;
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName
             + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
@@ -210,17 +202,12 @@ std::string Vendor::MergeEventLog(
             + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
+}
 
-    if (FileUtil::FileExists(retPath)) {
-        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", retPath.c_str());
-        return retPath;
-    }
-
-    std::ostringstream header;
-    DumpEventInfo(header, TRIGGER_HEADER, watchPoint);
-
+void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
+    bool& isFileExists) const
+{
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
-    std::ostringstream body;
     for (auto node : list) {
         std::string filePath = node.GetLogPath();
         if (filePath == "nolog" || filePath == "") {
@@ -231,9 +218,10 @@ std::string Vendor::MergeEventLog(
         }
 
         if (FileUtil::FileExists(filePath) == false) {
+            isFileExists = false;
             HIVIEW_LOGE("[%{public}s, %{public}s] File:%{public}s does not exist",
                 node.GetDomain().c_str(), node.GetStringId().c_str(), filePath.c_str());
-            return "";
+            return;
         }
 
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
@@ -248,6 +236,37 @@ std::string Vendor::MergeEventLog(
         body << HEADER << std::endl;
         body << ifs.rdbuf();
         ifs.close();
+    }
+}
+
+std::string Vendor::MergeEventLog(
+    const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
+    const std::vector<FreezeResult>& result) const
+{
+    if (freezeCommon_ == nullptr) {
+        return "";
+    }
+
+    std::string type;
+    std::string retPath;
+    std::string logPath;
+    std::string logName;
+    InitLogInfo(watchPoint, type, retPath, logPath, logName);
+
+    if (FileUtil::FileExists(retPath)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", retPath.c_str());
+        return retPath;
+    }
+
+    std::ostringstream header;
+    DumpEventInfo(header, TRIGGER_HEADER, watchPoint);
+
+    std::ostringstream body;
+    bool isFileExists = true;
+    InitLogBody(list, body, isFileExists);
+    if (!isFileExists) {
+        HIVIEW_LOGE("Failed to open the file.");
+        return "";
     }
 
     if (type == APPFREEZE) {
