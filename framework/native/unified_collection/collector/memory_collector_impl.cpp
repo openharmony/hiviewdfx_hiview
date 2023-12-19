@@ -24,6 +24,7 @@
 #include <regex>
 #include <map>
 #include <mutex>
+#include <unistd.h>
 
 #include "common_util.h"
 #include "common_utils.h"
@@ -83,10 +84,12 @@ static std::string GetSavePath(const std::string& preFix, const std::string& ext
         suffix++;
         savePath = ss.str();
     }
-    if (creat(savePath.c_str(), FileUtil::DEFAULT_FILE_MODE) == -1) {
+    int fd = 0;
+    if (fd = creat(savePath.c_str(), FileUtil::DEFAULT_FILE_MODE); fd == -1) {
         HIVIEW_LOGE("create %{public}s failed, errno=%{public}d.", savePath.c_str(), errno);
         return "";
     }
+    close(fd);
     return savePath;
 }
 
