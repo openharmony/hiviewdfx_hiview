@@ -18,7 +18,7 @@
 #include <map>
 #include <string>
 
-constexpr static unsigned MAX_SANITIZERD_TYPE = 20;
+constexpr unsigned MAX_SANITIZERD_TYPE = 20;
 
 namespace OHOS {
 namespace HiviewDFX {

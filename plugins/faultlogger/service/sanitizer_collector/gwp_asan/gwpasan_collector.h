@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef GWPASAN_COLLECTOR_H
 #define GWPASAN_COLLECTOR_H
 
@@ -30,8 +31,6 @@ void WriteGwpAsanLog(char* buf, size_t sz);
 }
 #endif
 
-namespace OHOS {
-namespace HiviewDFX {
 struct GwpAsanCurrInfo {
     /** the time of happening fault */
     uint64_t happenTime;
@@ -50,15 +49,16 @@ struct GwpAsanCurrInfo {
     /** information about faultlog using <key,value> */
     std::map<std::string, std::string> sectionMaps;
 };
+constexpr unsigned BUF_SIZE = 1024;
+constexpr unsigned MAX_PROCESS_PATH = 1024;
+constexpr int MIN_APP_UID = 10000;
 
 void ReadGwpAsanRecord(std::string& gwpAsanBuffer);
-std::string GetApplicationNameById(int32_t uid);
+bool GetNameByPid(pid_t pid, const char procName[]);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
 bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo);
 int32_t CreateLogFile(const std::string& name);
-} // namespace HiviewDFX
-} // namespace OHOSi
 
 #endif // GWPASAN_COLLECTOR_H
