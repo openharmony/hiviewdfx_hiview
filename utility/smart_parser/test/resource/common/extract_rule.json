@@ -57,7 +57,8 @@
         "Subcatalog":"sysfreeze-.*-\\d+-\\d+",
         "featureId":"63_SYS_FREEZE_01",
         "rules":[
-            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)", "v_service_block":"Module name:SERVICE_BLOCK"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_service_block", "matchKey":"SERVICE_BLOCK at ", "v_first":"SERVICE_BLOCK at (.*)"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]

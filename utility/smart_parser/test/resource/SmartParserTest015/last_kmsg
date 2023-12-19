@@ -1,0 +1,1784 @@
+/*
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+<11>[    3.762358] [pid=1][BEGET][ERROR][fstab_mount.c:384]Unsupported file system " none "
+<14>[    3.762478] [pid=1][Init][INFO][init.c:211]Start init second stage.
+<14>[    3.770177] [pid=1][Init][INFO][switch_root.c:186]SwitchRoot to /usr finish
+<6>[    3.775739] [I/xpm_kernel]get_dm_verity_partition_dev: get /system/ dev=187695111:7 success
+<14>[    3.819124] [pid=1][LoopEvent][INFO][le_signal.c:75]LE_AddSignal 17 0
+<14>[    3.819317] [pid=1][LoopEvent][INFO][le_signal.c:75]LE_AddSignal 15 1
+<14>[    3.819747] [pid=1][Init][INFO][init.c:90]Init fd holder socket done
+<11>[    3.820134] [pid=1][BEGET][ERROR][fstab.c:330]Failed to get fstab item from mount point " /misc "
+<14>[    3.820153] [pid=1][BEGET][INFO][fstab.c:511]Mount point not found, try to get path by device name.
+<14>[    3.820954] [pid=1][Init][INFO][init_group_manager.c:201]boot start device.boot.group
+<11>[    3.821055] [pid=1][PARAM][ERROR][param_include.h:75]Invalid current param const.cust.config_dir_layer
+<11>[    3.821266] [pid=1][PARAM][ERROR][param_manager.c:654]Forbid to access const.cust.config_dir_layer label 0 0
+<11>[    3.821284] [pid=1][PARAM][ERROR][param_include.h:75]Invalid current param const.cust.follow_x_rules
+<11>[    3.821404] [pid=1][PARAM][ERROR][param_manager.c:654]Forbid to access const.cust.follow_x_rules label 0 0
+<14>[    3.822546] [pid=1][Init][INFO][init.c:313]Executing hook [0:0] cost [1546]us, return 0.
+<14>[    3.822584] [pid=1][Init][INFO][init.c:313]Executing hook [0:0] cost [10]us, return 0.
+<14>[    3.825288] [pid=1][PLUGIN][INFO][init_eng.c:191]Start eng mode now ...
+<3>[    3.825885] EXT4-fs (mmcblk0p12): VFS: Can't find ext4 filesystem
+<11>[    3.825979] [pid=1][Init][ERROR][init_common_cmds.c:456]Failed to mount for /eng_system, err 22.
+<3>[    3.826422] EXT4-fs (mmcblk0p13): VFS: Can't find ext4 filesystem
+<11>[    3.826481] [pid=1][Init][ERROR][init_common_cmds.c:456]Failed to mount for /eng_chipset, err 22.
+<14>[    3.826500] [pid=1][PLUGIN][INFO][init_eng.c:183]system overlay...
+<14>[    3.826986] [pid=1][PLUGIN][INFO][init_eng.c:185]vendor overlay...
+<14>[    3.827876] [pid=1][PLUGIN][INFO][init_eng_static.c:28]eng_mode enable.
+<14>[    3.827907] [pid=1][Init][INFO][init.c:313]Executing hook [0:0] cost [5305]us, return 0.
+<14>[    3.827936] [pid=1][Init][INFO][init.c:313]Executing hook [0:0] cost [14]us, return 0.
+<14>[    3.827950] [pid=1][PLUGIN][INFO][selinux_static.c:23]Install selinuxadp.
+<14>[    3.832075] [pid=1][PLUGIN][INFO][selinux_adp.c:142]Selinux adapter plug-in init now ...
+<14>[    3.832133] [pid=1][Init][INFO][init.c:313]Executing hook [0:0] cost [4176]us, return 0.
+<14>[    3.832155] [pid=1][PARAM][INFO][param_service.c:371]InitParamService pipe: /dev/unix/socket/paramservice.
+<14>[    3.832263] [pid=1][PARAM][INFO][param_base.c:184]CloseParamWorkSpace 1
+<11>[    3.832323] [pid=1][PARAM][ERROR][param_base.c:344]Invalid workSpace for musl.log.enable
+<11>[    3.832337] [pid=1][PARAM][ERROR][param_base.c:571]Forbid to access parameter musl.log.enable
+<11>[    3.832350] [pid=1][PARAM][ERROR][param_base.c:344]Invalid workSpace for musl.ld.debug.dlclose
+<11>[    3.832362] [pid=1][PARAM][ERROR][param_base.c:571]Forbid to access parameter musl.ld.debug.dlclose
+<11>[    3.832376] [pid=1][PARAM][ERROR][param_base.c:344]Invalid workSpace for debug.hitrace.tags.enableflags
+<11>[    3.832388] [pid=1][PARAM][ERROR][param_base.c:571]Forbid to access parameter debug.hitrace.tags.enableflags
+<14>[    3.835168] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:default_param:s0 index 1 spaceSize: 10485760 onlyRead false
+<14>[    3.835298] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace param_sec_dac index 0 spaceSize: 20480 onlyRead false
+<6>[    3.839997] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<12>[    3.845835] [pid=1][PARAM][WARNING][param_dac.c:250]Invalid user for 'uhdf_driver' gid 3066 uid -1
+<12>[    3.846198] [pid=1][PARAM][WARNING][param_dac.c:250]Invalid user for 'appspawn' gid 6005 uid -1
+<14>[    3.848040] [pid=1][Init][INFO][init_group_manager.c:68]Parse group config /system/etc/device.boot.group.cfg
+<14>[    3.848632] [pid=1][Init][INFO][init.c:410]boot init finish.
+<14>[    3.848660] [pid=1][PLUGIN][INFO][selinux_adp.c:45]LoadSelinuxPolicy 
+<12>[    3.848759] [pid=1][SELINUX][WARNING] No cil file found, load default policy
+<5>[    3.849860] audit: type=1404 audit(1501923605.976:2): enforcing=1 old_enforcing=0 auid=4294967295 ses=4294967295 enabled=1 old-enabled=1 lsm=selinux res=1
+<6>[    3.908933] SELinux:  policy capability network_peer_controls=1
+<6>[    3.909025] SELinux:  policy capability open_perms=1
+<6>[    3.909037] SELinux:  policy capability extended_socket_class=1
+<6>[    3.909046] SELinux:  policy capability always_check_network=0
+<6>[    3.909055] SELinux:  policy capability cgroup_seclabel=0
+<6>[    3.909065] SELinux:  policy capability nnp_nosuid_transition=1
+<6>[    3.909074] SELinux:  policy capability genfs_seclabel_symlinks=0
+<6>[    3.909082] SELinux:  policy capability ioctl_skip_cloexec=0
+<5>[    4.060494] audit: type=1403 audit(1501923606.190:3): auid=4294967295 ses=4294967295 lsm=selinux res=1
+<14>[    4.060860] [pid=1][PLUGIN][INFO][selinux_adp.c:50]main, load_policy success.
+<3>[    4.107016] bbox:[info][blackbox_core.c:267] wait for log part [/data] end!
+<11>[    4.143257] [pid=1][PARAM][ERROR][param_server.c:261]Failed to open file '/sys_prod/etc/param/ohos.para.size' error:2 
+<14>[    4.148399] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:servicectrl_param:s0 index 2 spaceSize: 1024 onlyRead false
+<14>[    4.148704] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:servicectrl_reboot_param:s0 index 3 spaceSize: 1024 onlyRead false
+<14>[    4.148878] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:ohos_boot_param:s0 index 4 spaceSize: 4096 onlyRead false
+<14>[    4.149033] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:bootevent_param:s0 index 5 spaceSize: 4096 onlyRead false
+<14>[    4.149183] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:servicectrl_reboot_param:s0 index 3 spaceSize: 1024 onlyRead false
+<14>[    4.149246] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_public_param:s0 index 7 spaceSize: 30720 onlyRead false
+<14>[    4.149401] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_public_param:s0 index 7 spaceSize: 30720 onlyRead false
+<14>[    4.149460] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_public_param:s0 index 7 spaceSize: 30720 onlyRead false
+<14>[    4.149521] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_init_param:s0 index 10 spaceSize: 40960 onlyRead false
+<14>[    4.149669] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_init_param:s0 index 10 spaceSize: 40960 onlyRead false
+<14>[    4.149731] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_init_param:s0 index 10 spaceSize: 40960 onlyRead false
+<14>[    4.149791] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_appspawn_param:s0 index 13 spaceSize: 1024 onlyRead false
+<14>[    4.149943] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_uevent_param:s0 index 14 spaceSize: 1024 onlyRead false
+<14>[    4.150142] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_private_param:s0 index 15 spaceSize: 1024 onlyRead false
+<14>[    4.150294] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_private_param:s0 index 15 spaceSize: 1024 onlyRead false
+<14>[    4.150354] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:devinfo_private_param:s0 index 15 spaceSize: 1024 onlyRead false
+<14>[    4.150413] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:startup_appspawn_param:s0 index 13 spaceSize: 1024 onlyRead false
+<14>[    4.150479] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:sys_param:s0 index 19 spaceSize: 4096 onlyRead false
+<14>[    4.150632] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:sys_usb_param:s0 index 20 spaceSize: 1024 onlyRead false
+<14>[    4.150810] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:net_param:s0 index 21 spaceSize: 1024 onlyRead false
+<14>[    4.150961] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:net_tcp_param:s0 index 22 spaceSize: 1024 onlyRead false
+<14>[    4.151110] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:const_postinstall_param:s0 index 23 spaceSize: 1024 onlyRead false
+<14>[    4.151263] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:const_postinstall_fstab_param:s0 index 24 spaceSize: 1024 onlyRead false
+<14>[    4.151424] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:const_allow_param:s0 index 25 spaceSize: 1024 onlyRead false
+<14>[    4.151573] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:const_allow_mock_param:s0 index 26 spaceSize: 1024 onlyRead false
+<14>[    4.151724] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:security_param:s0 index 27 spaceSize: 1024 onlyRead false
+<14>[    4.151876] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:hilog_param:s0 index 28 spaceSize: 40960 onlyRead false
+<14>[    4.152031] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:hook_param:s0 index 29 spaceSize: 1024 onlyRead false
+<14>[    4.152201] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:persist_param:s0 index 30 spaceSize: 40960 onlyRead false
+<14>[    4.152352] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:persist_sys_param:s0 index 31 spaceSize: 4096 onlyRead false
+<14>[    4.152507] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:hilog_param:s0 index 28 spaceSize: 40960 onlyRead false
+<14>[    4.152569] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:debug_param:s0 index 33 spaceSize: 1024 onlyRead false
+<14>[    4.152728] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:accessibility_param:s0 index 34 spaceSize: 1024 onlyRead false
+<14>[    4.152916] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:musl_param:s0 index 35 spaceSize: 1024 onlyRead false
+<14>[    4.153066] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:telephony_param:s0 index 36 spaceSize: 1024 onlyRead false
+<14>[    4.153218] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:bootevent_wms_param:s0 index 37 spaceSize: 1024 onlyRead false
+<14>[    4.153406] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:ffrt_param:s0 index 38 spaceSize: 1024 onlyRead false
+<14>[    4.153558] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:hiviewdfx_profiler_param:s0 index 39 spaceSize: 2048 onlyRead false
+<14>[    4.153720] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:hiviewdfx_profiler_param:s0 index 39 spaceSize: 2048 onlyRead false
+<14>[    4.153784] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:dhardware_dm_param:s0 index 41 spaceSize: 1024 onlyRead false
+<14>[    4.153951] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:persist_audio_param:s0 index 42 spaceSize: 1024 onlyRead false
+<14>[    4.154104] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:arkcompiler_param:s0 index 43 spaceSize: 1024 onlyRead false
+<14>[    4.154254] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:arkui_param:s0 index 44 spaceSize: 1024 onlyRead false
+<14>[    4.154405] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:inputmethod_param:s0 index 45 spaceSize: 1024 onlyRead false
+<14>[    4.154555] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:pasteboard_param:s0 index 46 spaceSize: 1024 onlyRead false
+<14>[    4.154706] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:time_param:s0 index 47 spaceSize: 1024 onlyRead false
+<14>[    4.154863] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:accesstoken_perm_param:s0 index 48 spaceSize: 1024 onlyRead false
+<14>[    4.155015] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:bluetooth_param:s0 index 49 spaceSize: 1024 onlyRead false
+<14>[    4.155168] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:bms_param:s0 index 50 spaceSize: 1024 onlyRead false
+<14>[    4.155323] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:developtools_hdc_control_param:s0 index 51 spaceSize: 1024 onlyRead false
+<14>[    4.155477] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:xts_devattest_authresult_param:s0 index 52 spaceSize: 1024 onlyRead false
+<14>[    4.155636] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:distributedsche_param:s0 index 53 spaceSize: 1024 onlyRead false
+<14>[    4.155791] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:samgr_perf_param:s0 index 54 spaceSize: 1024 onlyRead false
+<14>[    4.155941] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:thermal_log_param:s0 index 55 spaceSize: 1024 onlyRead false
+<14>[    4.156105] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:input_pointer_device_param:s0 index 56 spaceSize: 1024 onlyRead false
+<14>[    4.156258] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:const_display_brightness_param:s0 index 57 spaceSize: 1024 onlyRead false
+<14>[    4.156410] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:updater_hdc_param:s0 index 58 spaceSize: 1024 onlyRead false
+<14>[    4.156562] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:updater_flashd_param:s0 index 59 spaceSize: 1024 onlyRead false
+<14>[    4.156758] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:updater_data_param:s0 index 60 spaceSize: 1024 onlyRead false
+<14>[    4.156941] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:usb_setting_param:s0 index 61 spaceSize: 1024 onlyRead false
+<14>[    4.157104] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:useriam_fwkready_param:s0 index 62 spaceSize: 1024 onlyRead false
+<14>[    4.157253] [pid=1][PARAM][INFO][param_base.c:257]AddWorkSpace u:object_r:default_param:s0 index 1 spaceSize: 10485760 onlyRead false
+<11>[    4.157520] [pid=1][PARAM][ERROR][param_server.c:198]Generate default sn now ...
+<14>[    4.157824] [pid=1][PARAM][INFO][param_server.c:311]load parameters from build 
+<14>[    4.157894] [pid=1][PARAM][INFO][param_server.c:297]Load default parameters from /system/etc/param/ohos_const.
+<14>[    4.159501] [pid=1][PARAM][INFO][param_server.c:297]Load default parameters from /chipset/etc/param.
+<14>[    4.161405] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /chipset/etc/param/thermal.para.dac
+<14>[    4.162106] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /chipset/etc/param/usb.para.dac
+<14>[    4.162207] [pid=1][PARAM][INFO][param_server.c:297]Load default parameters from /system/etc/param.
+<12>[    4.180094] [pid=1][PARAM][WARNING][param_dac.c:136]Invalid dac for 'persist.wallpaper.' gid -1 uid -1
+<14>[    4.180149] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/wallpaper.para.dac
+<14>[    4.181180] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 15 success /system/etc/param/hiprofiler.para.dac
+<14>[    4.182306] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 17 success /system/etc/param/audio_config.para.dac
+<14>[    4.183471] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 16 success /system/etc/param/graphic.para.dac
+<14>[    4.184371] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/useriam.para.dac
+<14>[    4.186184] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 18 success /system/etc/param/memmgr.para.dac
+<14>[    4.186928] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/access_token.para.dac
+<14>[    4.187675] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/accessibility.para.dac
+<14>[    4.188276] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 16 success /system/etc/param/hilog.para.dac
+<14>[    4.189087] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 16 success /system/etc/param/hiperf.para.dac
+<14>[    4.190029] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 20 success /system/etc/param/language_config.para.dac
+<14>[    4.190631] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/time.para.dac
+<14>[    4.191243] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/hitrace.para.dac
+<14>[    4.191808] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/devicemanager.para.dac
+<14>[    4.192374] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/wms.para.dac
+<14>[    4.192968] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/edm.para.dac
+<14>[    4.194282] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 19 success /system/etc/param/appfwk.para.dac
+<14>[    4.194899] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/multimodalinput.para.dac
+<14>[    4.195408] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 13 success /system/etc/param/usb_service.para.dac
+<14>[    4.195896] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 15 success /system/etc/param/customization.para.dac
+<14>[    4.196754] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 15 success /system/etc/param/ace_engine.para.dac
+<14>[    4.197323] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/hiview.para.dac
+<14>[    4.197918] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/inputmethod.para.dac
+<14>[    4.198554] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/bms.para.dac
+<14>[    4.199221] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/display.para.dac
+<14>[    4.199822] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 15 success /system/etc/param/ui_appearance.para.dac
+<14>[    4.200527] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/pasteboard.para.dac
+<14>[    4.201100] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 14 success /system/etc/param/musl.para.dac
+<14>[    4.201752] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 15 success /system/etc/param/telephony.para.dac
+<14>[    4.202552] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 16 success /system/etc/param/samgr.para.dac
+<14>[    4.205525] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 29 success /system/etc/param/ohos.para.dac
+<14>[    4.206301] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 1 success /system/etc/param/usb_config.para.dac
+<14>[    4.207796] [pid=1][PARAM][INFO][param_dac.c:157]Load parameter label total 28 success /system/etc/param/hdc.para.dac
+<14>[    4.207932] [pid=1][Init][INFO][init.c:313]Executing hook [30:0] cost [9]us, return 0.
+<14>[    4.207949] [pid=1][PLUGIN][INFO][udid_static.c:21]Begin install udidmodule.
+<14>[    4.212574] [pid=1][BEGET][INFO][udid_adp.c:79]Begin calculate udid
+<14>[    4.212928] [pid=1][PLUGIN][INFO][udid_static.c:24]Begin uninstall udidmodule.
+<14>[    4.213129] [pid=1][PLUGIN][INFO][udid_static.c:27]Uninstall udidmodule finished.
+<14>[    4.213150] [pid=1][Init][INFO][init.c:313]Executing hook [30:0] cost [5198]us, return 0.
+<14>[    4.213170] [pid=1][Init][INFO][init_config.c:108]ohos.boot.reboot_reason 
+<14>[    4.214394] [pid=1][Init][INFO][init_config.c:95]Import /etc/init.usb.cfg  ...
+<14>[    4.214966] [pid=1][Init][INFO][init_config.c:95]Import /vendor/etc/init.rk3568.usb.cfg  ...
+<14>[    4.215683] [pid=1][Init][INFO][init_config.c:95]Import /etc/init.usb.configfs.cfg  ...
+<11>[    4.215743] [pid=1][Init][ERROR][init_utils.c:137]Unexpected config file " /etc/init.usb.configfs.cfg ", check if it exist. if exist, check file size
+<11>[    4.215757] [pid=1][Init][ERROR][init_config.c:56]Failed to read file content /etc/init.usb.configfs.cfg
+<14>[    4.215783] [pid=1][Init][INFO][init_config.c:95]Import /vendor/etc/init.rk3568.cfg  ...
+<14>[    4.216778] [pid=1][Init][INFO][init_config.c:95]Import init.rk3568.usb.cfg  ...
+<11>[    4.216838] [pid=1][Init][ERROR][init_utils.c:137]Unexpected config file " init.rk3568.usb.cfg ", check if it exist. if exist, check file size
+<11>[    4.216852] [pid=1][Init][ERROR][init_config.c:56]Failed to read file content init.rk3568.usb.cfg
+<11>[    4.246402] [pid=1][Init][ERROR][init_utils.c:87]Failed to decode uid for thermal
+<11>[    4.246433] [pid=1][Init][ERROR][init_service_manager.c:852]Failed to get uid for service thermal_protector
+<14>[    4.246449] [pid=1][Init][INFO][init_common_service.c:243]Closing service ' thermal_protector ' fds
+<11>[    4.249450] [pid=1][Init][ERROR][init_service_manager.c:269]Failed to get gid for d-bms
+<12>[    4.249482] [pid=1][Init][WARNING][init_service_manager.c:305]Parse service d-bms gid failed from item "dbms".
+<11>[    4.255814] [pid=1][Init][ERROR][init_service_manager.c:269]Failed to get gid for multimodalinput
+<12>[    4.255849] [pid=1][Init][WARNING][init_service_manager.c:305]Parse service multimodalinput gid failed from item "tp_host".
+<11>[    4.256167] [pid=1][Init][ERROR][init_service_manager.c:269]Failed to get gid for multimodalinput
+<12>[    4.256186] [pid=1][Init][WARNING][init_service_manager.c:305]Parse service multimodalinput gid failed from item "lcd_host".
+<14>[    4.258829] [pid=1][Init][INFO][init_service_socket.c:142]CreateSocket NWebSpawn success
+<14>[    4.261063] [pid=1][Init][INFO][init_service_socket.c:195]Watcher socket fd 12 for service nwebspawn
+<14>[    4.267995] [pid=1][Init][INFO][init_service_socket.c:142]CreateSocket ueventd success
+<11>[    4.280059] [pid=1][Init][ERROR][init_service_manager.c:269]Failed to get gid for faultloggerd
+<12>[    4.280105] [pid=1][Init][WARNING][init_service_manager.c:305]Parse service faultloggerd gid failed from item "faultloggerd".
+<14>[    4.295898] [pid=1][Init][INFO][init.c:426]boot parse config file done.
+<14>[    4.295948] [pid=1][PLUGIN][INFO][seccomp_policy_static.c:48]seccomp enabled.
+<14>[    4.295965] [pid=1][Init][INFO][init.c:313]Executing hook [50:0] cost [20]us, return 0.
+<14>[    4.296391] [pid=1][Init][INFO][init.c:273]boot job pre-init start.
+<14>[    4.296810] [pid=1][Init][INFO][init_service_manager.c:1088]Start service ueventd
+<14>[    4.297450] [pid=1][Init][INFO][init_common_service.c:534]Service ueventd(pid 231) started
+<14>[    4.297673] [pid=1][Init][INFO][init_service_manager.c:1088]Start service watchdog_service
+<11>[    4.297688] [pid=231][Init][ERROR][init_common_service.c:323]Set service ueventd access token failed
+<14>[    4.298436] [pid=1][Init][INFO][init_common_service.c:534]Service watchdog_service(pid 232) started
+<11>[    4.298682] [pid=232][Init][ERROR][init_common_service.c:323]Set service watchdog_service access token failed
+<5>[    4.301084] audit: type=1400 audit(1501923606.430:4): avc:  denied  { read write } for  pid=232 comm="watchdog_servic" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:watchdog_service:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<5>[    4.302630] audit: type=1400 audit(1501923606.430:5): avc:  denied  { read } for  pid=232 comm="watchdog_servic" name="u:object_r:debug_param:s0" dev="tmpfs" ino=73 scontext=u:r:watchdog_service:s0 tcontext=u:object_r:debug_param:s0 tclass=file permissive=0
+<5>[    4.303867] audit: type=1400 audit(1501923606.433:6): avc:  denied  { read } for  pid=232 comm="watchdog_servic" name="u:object_r:debug_param:s0" dev="tmpfs" ino=73 scontext=u:r:watchdog_service:s0 tcontext=u:object_r:debug_param:s0 tclass=file permissive=0
+<14>[    4.304022] [pid=1][Init][INFO][init_cmds.c:295]Mount partitions from fstab file " /vendor/etc/fstab.rk3568 "
+<14>[    4.309386] [pid=231][Init][INFO][param_request.c:53]Can not get log level from param, keep the original loglevel.
+<14>[    4.313184] [pid=231][ueventd][INFO][ueventd_main.c:88]Ueventd started, trigger uevent
+<14>[    4.392541] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0->/dev/block/platform/fe310000.sdhci/mmcblk0
+<14>[    4.394557] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p12->/dev/block/platform/fe310000.sdhci/by-name/eng_system
+<14>[    4.394630] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p12->/dev/block/by-name/eng_system
+<14>[    4.396690] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p9->/dev/block/platform/fe310000.sdhci/by-name/sys-prod
+<14>[    4.396773] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p9->/dev/block/by-name/sys-prod
+<14>[    4.398932] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p10->/dev/block/platform/fe310000.sdhci/by-name/chip-prod
+<14>[    4.399009] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p10->/dev/block/by-name/chip-prod
+<14>[    4.401270] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p7->/dev/block/platform/fe310000.sdhci/by-name/system
+<14>[    4.401322] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p7->/dev/block/by-name/system
+<14>[    4.403273] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p5->/dev/block/platform/fe310000.sdhci/by-name/boot_linux
+<14>[    4.403389] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p5->/dev/block/by-name/boot_linux
+<14>[    4.405382] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot0->/dev/block/platform/fe310000.sdhci/mmcblk0boot0
+<14>[    4.407905] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p3->/dev/block/platform/fe310000.sdhci/by-name/bootctrl
+<14>[    4.407994] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p3->/dev/block/by-name/bootctrl
+<14>[    4.410181] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p1->/dev/block/platform/fe310000.sdhci/by-name/uboot
+<14>[    4.410237] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p1->/dev/block/by-name/uboot
+<14>[    4.412300] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p13->/dev/block/platform/fe310000.sdhci/by-name/eng_chipset
+<14>[    4.412350] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p13->/dev/block/by-name/eng_chipset
+<14>[    4.414582] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p11->/dev/block/platform/fe310000.sdhci/by-name/updater
+<14>[    4.414670] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p11->/dev/block/by-name/updater
+<14>[    4.416890] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p8->/dev/block/platform/fe310000.sdhci/by-name/vendor
+<14>[    4.416957] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p8->/dev/block/by-name/vendor
+<14>[    4.419010] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p6->/dev/block/platform/fe310000.sdhci/by-name/ramdisk
+<14>[    4.419060] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p6->/dev/block/by-name/ramdisk
+<14>[    4.421109] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot1->/dev/block/platform/fe310000.sdhci/mmcblk0boot1
+<14>[    4.423637] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p4->/dev/block/platform/fe310000.sdhci/by-name/resource
+<14>[    4.423735] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p4->/dev/block/by-name/resource
+<14>[    4.425797] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p2->/dev/block/platform/fe310000.sdhci/by-name/misc
+<14>[    4.425864] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p2->/dev/block/by-name/misc
+<14>[    4.427934] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p14->/dev/block/platform/fe310000.sdhci/by-name/userdata
+<14>[    4.428010] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p14->/dev/block/by-name/userdata
+<6>[    4.536743] vendor storage:20190527 ret = -1
+<6>[    4.814155] EXT4-fs (mmcblk0p9): mounted filesystem without journal. Opts: barrier=1
+<14>[    4.814543] [pid=1][BEGET][INFO][fstab_mount.c:422]Mount /dev/block/platform/fe310000.sdhci/by-name/sys-prod to /sys_prod successful
+<6>[    4.819452] EXT4-fs (mmcblk0p10): mounted filesystem without journal. Opts: barrier=1
+<14>[    4.819830] [pid=1][BEGET][INFO][fstab_mount.c:422]Mount /dev/block/platform/fe310000.sdhci/by-name/chip-prod to /chip_prod successful
+<14>[    4.819932] [pid=1][BEGET][INFO][fstab.c:424]StoreFscryptPolicy:store fscrypt policy, 2:aes-256-cts:aes-256-xts
+<14>[    4.820709] [pid=1][BEGET][INFO][fstab_mount.c:82]Execute /system/bin/resize.f2fs begin
+<6>[    4.853462] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<11>[    4.864201] [pid=1][BEGET][ERROR][fstab_mount.c:95]Command /system/bin/resize.f2fs failed with status 255
+<14>[    4.864230] [pid=1][BEGET][INFO][fstab_mount.c:97]Execute /system/bin/resize.f2fs end
+<11>[    4.864306] [pid=1][BEGET][ERROR][fstab_mount.c:394]Failed to resize.f2fs dir /dev/block/platform/fe310000.sdhci/by-name/userdata , ret = 255
+<14>[    4.864395] [pid=1][BEGET][INFO][fstab_mount.c:82]Execute /system/bin/fsck.f2fs begin
+<14>[    5.026851] [pid=1][BEGET][INFO][fstab_mount.c:97]Execute /system/bin/fsck.f2fs end
+<5>[    5.111301] F2FS-fs (mmcblk0p14): Mounted with checkpoint version = 77d4e8e3
+<14>[    5.111817] [pid=1][BEGET][INFO][fstab_mount.c:422]Mount /dev/block/platform/fe310000.sdhci/by-name/userdata to /data successful
+<14>[    5.111889] [pid=1][Init][INFO][init_cmds.c:297]Mount partitions from fstab file " /vendor/etc/fstab.rk3568 " finish ret 0
+<14>[    5.111955] [pid=1][Init][INFO][init_common_cmds.c:769]Execute command "mount_fstab  /vendor/etc/fstab.${ohos.boot.hardware}" took 807 ms
+<14>[    5.118836] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.122141] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.125422] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.128320] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.132403] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.134663] [pid=1][PARAM][INFO][param_persistadp.c:48]LoadPersistParam from file /data/service/el1/startup/parameters/persist_parameters paramNum 28
+<11>[    5.134755] [pid=1][PARAM][ERROR][param_persistadp.c:38]No valid persist parameter file /data/service/el1/startup/parameters/tmp_persist_parameters
+<14>[    5.234349] [pid=1][PLUGIN][INFO][bootchart_static.c:25]bootchart disabled.
+<14>[    5.234402] [pid=1][Init][INFO][init_hook.c:212]Can not get log level from param, keep the original loglevel.
+<14>[    5.234426] [pid=1][PLUGIN][INFO][init_trace_static.c:23]init trace enabled.
+<14>[    5.237426] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<11>[    5.240587] [pid=1][Init][ERROR][init_common_cmds.c:456]Failed to mount for /sys/kernel/debug, err 16.
+<14>[    5.245030] [pid=240][PLUGIN][INFO][init_context.c:204]SubInitMain, sub init u:r:chipset_init:s0[240] enter
+<14>[    5.245162] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_host' in sub init u:r:chipset_init:s0
+<14>[    5.245826] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event1' in sub init u:r:chipset_init:s0
+<14>[    5.246128] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event2' in sub init u:r:chipset_init:s0
+<14>[    5.246414] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event3' in sub init u:r:chipset_init:s0
+<11>[    5.246607] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdf_input_event3, err 2.
+<14>[    5.246859] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event4' in sub init u:r:chipset_init:s0
+<11>[    5.247045] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdf_input_event4, err 2.
+<14>[    5.247188] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event5' in sub init u:r:chipset_init:s0
+<11>[    5.247346] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdf_input_event5, err 2.
+<14>[    5.247456] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  input_user_host input_user_host /dev/hdf_input_event6' in sub init u:r:chipset_init:s0
+<11>[    5.247610] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdf_input_event6, err 2.
+<14>[    5.247708] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /dev/fingerprint' in sub init u:r:chipset_ini
+<11>[    5.247900] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/fingerprint, err 2.
+<14>[    5.248006] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /dev/fingerprinthub' in sub init u:r:chipset_
+<11>[    5.248214] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/fingerprinthub, err 2.
+<14>[    5.248312] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /dev/fingerprinthub_ud' in sub init u:r:chips
+<11>[    5.248518] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/fingerprinthub_ud, err 2.
+<14>[    5.248613] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint' in sub ini
+<11>[    5.248853] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint, err 2.
+<14>[    5.248956] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/irq' in sub
+<11>[    5.249156] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/irq, err 2.
+<14>[    5.249255] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/fingerprint
+<11>[    5.249475] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/fingerprint_chip_info, err 2.
+<14>[    5.249584] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/read_image_
+<11>[    5.249783] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/read_image_flag, err 2.
+<14>[    5.249879] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/nav' in sub
+<11>[    5.250226] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/nav, err 2.
+<14>[    5.250338] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/module_id' 
+<11>[    5.250560] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/module_id, err 2.
+<14>[    5.250655] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/result' in 
+<11>[    5.250857] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/result, err 2.
+<14>[    5.250953] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/irq_enabled
+<11>[    5.251153] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/irq_enabled, err 2.
+<14>[    5.251245] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/module_id_u
+<11>[    5.251440] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/module_id_ud, err 2.
+<14>[    5.251554] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/low_tempera
+<11>[    5.251753] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/low_temperature, err 2.
+<14>[    5.251851] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  fingerprint_auth_host fingerprint_auth_host /sys/devices/platform/fingerprint/ud_fingerpr
+<11>[    5.252050] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/devices/platform/fingerprint/ud_fingerprint_chip_info, err 2.
+<14>[    5.252145] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  hdf_devmgr uhdf_driver /dev/dev_mgr' in sub init u:r:chipset_init:s0
+<14>[    5.252468] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  hdf_devmgr uhdf_driver /dev/hdf_kevent' in sub init u:r:chipset_init:s0
+<14>[    5.252757] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  audio_host audio_host /dev/hdf_audio_render' in sub init u:r:chipset_init:s0
+<14>[    5.253037] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  audio_host audio_host /dev/hdf_audio_capture' in sub init u:r:chipset_init:s0
+<14>[    5.253317] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  audio_host audio_host /dev/hdf_audio_control' in sub init u:r:chipset_init:s0
+<14>[    5.253589] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  sensor_host sensor_host /dev/hdf_sensor_manager_ap' in sub init u:r:chipset_init:s0
+<14>[    5.253863] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  sensor_host sensor_host /dev/sensorhub' in sub init u:r:chipset_init:s0
+<11>[    5.254031] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/sensorhub, err 2.
+<14>[    5.254131] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  sensor_host sensor_host /sys/class/sensors/libsensor_ver' in sub init u:r:chipset_init:s0
+<11>[    5.254294] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/sensors/libsensor_ver, err 2.
+<14>[    5.254401] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  sensor_host sensor_host /dev/ar' in sub init u:r:chipset_init:s0
+<11>[    5.254558] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/ar, err 2.
+<14>[    5.254656] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  sensor_host sensor_host /dev/motionhub' in sub init u:r:chipset_init:s0
+<11>[    5.254824] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/motionhub, err 2.
+<14>[    5.254924] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  vibrator_host vibrator_host /dev/hdf_misc_vibrator' in sub init u:r:chipset_init:s0
+<14>[    5.255173] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  vibrator_host vibrator_host /dev/haptics' in sub init u:r:chipset_init:s0
+<11>[    5.255331] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/haptics, err 2.
+<14>[    5.255427] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /dev/hdf_light' in sub init u:r:chipset_init:s0
+<14>[    5.255675] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/blue/brightness' in sub init u:r:chipset_init:s0
+<14>[    5.256045] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/blue/delay_on' in sub init u:r:chipset_init:s0
+<11>[    5.256231] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/blue/delay_on, err 2.
+<14>[    5.256332] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/blue/delay_off' in sub init u:r:chipset_init:s0
+<11>[    5.256524] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/blue/delay_off, err 2.
+<14>[    5.256654] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/red/brightness' in sub init u:r:chipset_init:s0
+<14>[    5.256986] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/red/delay_on' in sub init u:r:chipset_init:s0
+<11>[    5.257167] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/red/delay_on, err 2.
+<14>[    5.257267] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/red/delay_off' in sub init u:r:chipset_init:s0
+<11>[    5.257442] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/red/delay_off, err 2.
+<14>[    5.257542] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/green/brightness' in sub init u:r:chipset_init:s0
+<14>[    5.257998] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/green/delay_on' in sub init u:r:chipset_init:s0
+<11>[    5.258184] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/green/delay_on, err 2.
+<14>[    5.258287] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  light_host light_host /sys/class/leds/green/delay_off' in sub init u:r:chipset_init:s0
+<11>[    5.258460] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /sys/class/leds/green/delay_off, err 2.
+<14>[    5.258560] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  vendor_mpp_driver vendor_mpp_driver /dev/mpp_service' in sub init u:r:chipset_init:s0
+<14>[    5.258831] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  system vendor_mpp_driver /dev/rga' in sub init u:r:chipset_init:s0
+<14>[    5.259077] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video0' in sub init u:r:chipset_init:s0
+<14>[    5.259342] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video1' in sub init u:r:chipset_init:s0
+<14>[    5.259580] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video2' in sub init u:r:chipset_init:s0
+<14>[    5.259815] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video3' in sub init u:r:chipset_init:s0
+<14>[    5.260077] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video4' in sub init u:r:chipset_init:s0
+<14>[    5.260334] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video5' in sub init u:r:chipset_init:s0
+<14>[    5.260569] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video6' in sub init u:r:chipset_init:s0
+<14>[    5.260806] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video7' in sub init u:r:chipset_init:s0
+<14>[    5.261049] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  camera_host camera_host /dev/video8' in sub init u:r:chipset_init:s0
+<14>[    5.261300] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  wifi wifi_group /dev/hdfwifi' in sub init u:r:chipset_init:s0
+<11>[    5.261418] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdfwifi, err 2.
+<11>[    5.262160] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/snapshot " to 0666, err=2
+<11>[    5.262791] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/cpufreq_interactive/ " to 0755, err=2
+<11>[    5.262839] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/cpufreq_interactive/enable " to 0666, err=2
+<11>[    5.262943] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/fence/ " to 0755, err=2
+<11>[    5.262989] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/fence/enable " to 0666, err=2
+<11>[    5.263205] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_read/ " to 0755, err=2
+<11>[    5.263252] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_write/ " to 0755, err=2
+<11>[    5.263348] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_result/ " to 0755, err=2
+<11>[    5.263399] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_reply/ " to 0755, err=2
+<11>[    5.263565] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_read/enable " to 0666, err=2
+<11>[    5.263619] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_write/enable " to 0666, err=2
+<11>[    5.263669] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_result/enable " to 0666, err=2
+<11>[    5.263716] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_reply/enable " to 0666, err=2
+<11>[    5.263822] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_grow/ " to 0755, err=2
+<11>[    5.263880] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_shrink/ " to 0755, err=2
+<11>[    5.263958] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_grow/enable " to 0666, err=2
+<11>[    5.264006] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_shrink/enable " to 0666, err=2
+<11>[    5.264054] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/ " to 0755, err=2
+<11>[    5.264102] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/lowmemory_kill/ " to 0755, er
+<11>[    5.264151] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/enable " to 0666, err=2
+<11>[    5.264193] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/lowmemory_kill/enable " to 06
+<11>[    5.264242] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/mm_event/ " to 0755, err=2
+<11>[    5.264284] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/mm_event/mm_event_record/ " to 0755, err=2
+<11>[    5.264329] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/mm_event/mm_event_record/enable " to 0666, er
+<11>[    5.264872] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_blocked_reason/ " to 0755, err=2
+<11>[    5.264913] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/ " to 0755, err=2
+<11>[    5.265101] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_blocked_reason/enable " to 0666, 
+<11>[    5.265152] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/enable " to 0666, err
+<11>[    5.265434] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sync/ " to 0755, err=2
+<11>[    5.265474] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sync/enable " to 0666, err=2
+<11>[    5.266581] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/f2fs/f2fs_get_data_block/ " to 0755, err=2
+<11>[    5.266798] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/f2fs/f2fs_get_data_block/enable " to 0666, er
+<11>[    5.267193] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/options/print-tgid " to 0666, err=2
+<11>[    5.267406] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu4/ " to 0755, err=2
+<11>[    5.267452] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu5/ " to 0755, err=2
+<11>[    5.267497] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu6/ " to 0755, err=2
+<11>[    5.267543] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu7/ " to 0755, err=2
+<11>[    5.267590] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu8/ " to 0755, err=2
+<11>[    5.267634] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu9/ " to 0755, err=2
+<11>[    5.267679] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu10/ " to 0755, err=2
+<11>[    5.267724] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu11/ " to 0755, err=2
+<11>[    5.267770] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu12/ " to 0755, err=2
+<11>[    5.267817] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu13/ " to 0755, err=2
+<11>[    5.267863] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu14/ " to 0755, err=2
+<11>[    5.267909] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu15/ " to 0755, err=2
+<11>[    5.268071] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu4/trace " to 0666, err=2
+<11>[    5.268121] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu5/trace " to 0666, err=2
+<11>[    5.268166] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu6/trace " to 0666, err=2
+<11>[    5.268212] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu7/trace " to 0666, err=2
+<11>[    5.268257] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu8/trace " to 0666, err=2
+<11>[    5.268302] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu9/trace " to 0666, err=2
+<11>[    5.268348] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu10/trace " to 0666, err=2
+<11>[    5.268393] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu11/trace " to 0666, err=2
+<11>[    5.268439] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu12/trace " to 0666, err=2
+<11>[    5.268485] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu13/trace " to 0666, err=2
+<11>[    5.268529] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu14/trace " to 0666, err=2
+<11>[    5.268593] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu15/trace " to 0666, err=2
+<11>[    5.268640] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu0/snapshot " to 0666, err=2
+<11>[    5.268687] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu1/snapshot " to 0666, err=2
+<11>[    5.268735] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu2/snapshot " to 0666, err=2
+<11>[    5.268781] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu3/snapshot " to 0666, err=2
+<11>[    5.268826] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu4/snapshot " to 0666, err=2
+<11>[    5.268871] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu5/snapshot " to 0666, err=2
+<11>[    5.268917] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu6/snapshot " to 0666, err=2
+<11>[    5.268964] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu7/snapshot " to 0666, err=2
+<11>[    5.269010] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu8/snapshot " to 0666, err=2
+<11>[    5.269055] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu9/snapshot " to 0666, err=2
+<11>[    5.269101] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu10/snapshot " to 0666, err=2
+<11>[    5.269146] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu11/snapshot " to 0666, err=2
+<11>[    5.269191] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu12/snapshot " to 0666, err=2
+<11>[    5.269237] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu13/snapshot " to 0666, err=2
+<11>[    5.269283] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu14/snapshot " to 0666, err=2
+<11>[    5.269330] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu15/snapshot " to 0666, err=2
+<11>[    5.269378] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu0/snapshot_raw " to 0444, err=2
+<11>[    5.269428] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu1/snapshot_raw " to 0444, err=2
+<11>[    5.269473] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu2/snapshot_raw " to 0444, err=2
+<11>[    5.269521] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu3/snapshot_raw " to 0444, err=2
+<11>[    5.269567] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu4/snapshot_raw " to 0444, err=2
+<11>[    5.269612] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu5/snapshot_raw " to 0444, err=2
+<11>[    5.269657] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu6/snapshot_raw " to 0444, err=2
+<11>[    5.269704] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu7/snapshot_raw " to 0444, err=2
+<11>[    5.269749] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu8/snapshot_raw " to 0444, err=2
+<11>[    5.269798] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu9/snapshot_raw " to 0444, err=2
+<11>[    5.269844] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu10/snapshot_raw " to 0444, err=2
+<11>[    5.269888] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu11/snapshot_raw " to 0444, err=2
+<11>[    5.269934] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu12/snapshot_raw " to 0444, err=2
+<11>[    5.269999] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu13/snapshot_raw " to 0444, err=2
+<11>[    5.270046] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu14/snapshot_raw " to 0444, err=2
+<11>[    5.270100] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu15/snapshot_raw " to 0444, err=2
+<11>[    5.270342] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/snapshot " to 0666, err=2
+<11>[    5.270663] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/cpufreq_interactive/enable " to 0666, err=2
+<11>[    5.270735] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/fence/enable " to 0666, err=2
+<11>[    5.270922] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_read/enable " to 0666, err=2
+<11>[    5.270967] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_write/enable " to 0666, err=2
+<11>[    5.271014] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_result/enable " to 0666, err=2
+<11>[    5.271059] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_reply/enable " to 0666, err=2
+<11>[    5.271134] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/kmem/ion_heap_grow/enable " to 0666, err=2
+<11>[    5.271187] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/kmem/ion_heap_shrink/enable " to 0666, err=2
+<11>[    5.271232] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/lowmemorykiller/enable " to 0666, err=2
+<11>[    5.271279] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/lowmemorykiller/lowmemory_kill/enable " to 0666, er
+<11>[    5.271333] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/mm_event/mm_event_record/enable " to 0666, err=2
+<11>[    5.271599] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sched/sched_blocked_reason/enable " to 0666, err=2
+<11>[    5.271648] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sched/sched_cpu_hotplug/enable " to 0666, err=2
+<11>[    5.271837] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sync/enable " to 0666, err=2
+<11>[    5.272316] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/f2fs/f2fs_get_data_block/enable " to 0666, err=2
+<11>[    5.272587] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/options/print-tgid " to 0666, err=2
+<11>[    5.272764] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu4/trace " to 0666, err=2
+<11>[    5.272810] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu5/trace " to 0666, err=2
+<11>[    5.272854] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu6/trace " to 0666, err=2
+<11>[    5.272899] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu7/trace " to 0666, err=2
+<11>[    5.272943] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu8/trace " to 0666, err=2
+<11>[    5.272987] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu9/trace " to 0666, err=2
+<11>[    5.273033] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu10/trace " to 0666, err=2
+<11>[    5.273077] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu11/trace " to 0666, err=2
+<11>[    5.273122] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu12/trace " to 0666, err=2
+<11>[    5.273164] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu13/trace " to 0666, err=2
+<11>[    5.273208] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu14/trace " to 0666, err=2
+<11>[    5.273251] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu15/trace " to 0666, err=2
+<11>[    5.273317] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu0/snapshot " to 0666, err=2
+<11>[    5.273367] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu1/snapshot " to 0666, err=2
+<11>[    5.273412] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu2/snapshot " to 0666, err=2
+<11>[    5.273457] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu3/snapshot " to 0666, err=2
+<11>[    5.273501] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu4/snapshot " to 0666, err=2
+<11>[    5.273555] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu5/snapshot " to 0666, err=2
+<11>[    5.273599] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu6/snapshot " to 0666, err=2
+<11>[    5.273645] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu7/snapshot " to 0666, err=2
+<11>[    5.273689] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu8/snapshot " to 0666, err=2
+<11>[    5.273733] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu9/snapshot " to 0666, err=2
+<11>[    5.273778] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu10/snapshot " to 0666, err=2
+<11>[    5.273955] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu14/snapshot " to 0666, err=2
+<11>[    5.274000] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu15/snapshot " to 0666, err=2
+<11>[    5.274046] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu0/snapshot_raw " to 0444, err=2
+<11>[    5.274091] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu1/snapshot_raw " to 0444, err=2
+<11>[    5.274139] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu2/snapshot_raw " to 0444, err=2
+<11>[    5.274185] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu3/snapshot_raw " to 0444, err=2
+<11>[    5.274231] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu4/snapshot_raw " to 0444, err=2
+<11>[    5.274276] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu5/snapshot_raw " to 0444, err=2
+<11>[    5.274320] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu6/snapshot_raw " to 0444, err=2
+<11>[    5.274366] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu7/snapshot_raw " to 0444, err=2
+<11>[    5.274410] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu8/snapshot_raw " to 0444, err=2
+<11>[    5.274455] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu9/snapshot_raw " to 0444, err=2
+<11>[    5.274501] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu10/snapshot_raw " to 0444, err=2
+<11>[    5.274546] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu11/snapshot_raw " to 0444, err=2
+<11>[    5.274591] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu12/snapshot_raw " to 0444, err=2
+<11>[    5.274637] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu13/snapshot_raw " to 0444, err=2
+<11>[    5.274682] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu14/snapshot_raw " to 0444, err=2
+<11>[    5.274728] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu15/snapshot_raw " to 0444, err=2
+<11>[    5.276177] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/ftrace/print/enable " to 0666, err=2
+<14>[    5.276576] [pid=1][Init][INFO][init.c:278]boot job pre-init finish diff 980181 us.
+<14>[    5.276762] [pid=1][Init][INFO][init.c:273]boot job init start.
+<14>[    5.278895] [pid=1][BEGET][INFO][sandbox.c:372]Parse sandbox cfg file is /system/etc/sandbox/system-sandbox.json
+<14>[    5.279523] [pid=1][BEGET][INFO][sandbox.c:228]Get src-path is null
+<14>[    5.279740] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/system ' already exist, no need to mkdir
+<12>[    5.280377] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.280454] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/system/sys/kernel/debug ' already exist, no need to mkdir
+<12>[    5.280468] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.280528] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/system/sys/kernel/debug/tracing ' already exist, no need to mkdir
+<12>[    5.280544] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.282281] [pid=1][BEGET][INFO][sandbox.c:372]Parse sandbox cfg file is /system/etc/sandbox/chipset-sandbox.json
+<14>[    5.283071] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/chipset ' already exist, no need to mkdir
+<12>[    5.283485] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.283559] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/chipset/sys/kernel/debug ' already exist, no need to mkdir
+<12>[    5.283574] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.283631] [pid=1][BEGET][INFO][sandbox.c:413]Mount point ' /mnt/sandbox/chipset/sys/kernel/debug/tracing ' already exist, no need to mkdir
+<12>[    5.283646] [pid=1][BEGET][WARNING][sandbox.c:448]Not configure mount rec, must configure mount rec flag.
+<14>[    5.284554] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/lib/libc++.so
+<14>[    5.284657] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/lib/libc.so
+<14>[    5.284790] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/lib/ld-musl-arm.so.1
+<14>[    5.284883] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/etc/ld-musl-namespace-arm.ini
+<14>[    5.284976] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/etc/ld-musl-arm.path
+<14>[    5.285101] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/etc/group
+<14>[    5.285199] [pid=1][BEGET][INFO][init_utils.c:497]Success create /mnt/sandbox/chipset/system/etc/passwd
+<11>[    5.285870] [pid=1][Init][ERROR][init_common_cmds.c:262]Failed to get real path /system/etc/prop.default
+<14>[    5.289288] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<5>[    5.289446] Registered swp emulation handler
+<6>[    5.291808] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<6>[    5.292077] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<6>[    5.292669] hungtask_base set hungtask_enable to enable
+<3>[    5.292762] hungtask_base whitelist is init,appspawn
+<14>[    5.295321] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.297461] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.299543] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.299591] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hilogd
+<14>[    5.300400] [pid=1][Init][INFO][init_common_service.c:534]Service hilogd(pid 241) started
+<14>[    5.301245] [pid=241][Init][INFO][init_service_socket.c:142]CreateSocket hilogInput success
+<14>[    5.301916] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.302871] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.303999] [pid=241][Init][INFO][init_service_socket.c:142]CreateSocket hilogControl success
+<14>[    5.306691] [pid=241][Init][INFO][init_service_socket.c:142]CreateSocket hilogOutput success
+<14>[    5.308321] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<4>[    5.309455] printk: init (241): Attempt to access syslog with CAP_SYS_ADMIN but no CAP_SYSLOG (deprecated).
+<5>[    5.309541] audit: type=1400 audit(1501923607.436:7): avc:  denied  { syslog } for  pid=241 comm="init" capability=34  scontext=u:r:init:s0 tcontext=u:r:init:s0 tclass=capability2 permissive=0
+<5>[    5.309594] audit: type=1400 audit(1501923607.436:8): avc:  denied  { syslog } for  pid=241 comm="init" capability=34  scontext=u:r:init:s0 tcontext=u:r:init:s0 tclass=capability2 permissive=0
+<14>[    5.310558] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<5>[    5.311713] audit: type=1400 audit(1501923607.440:9): avc:  denied  { read write } for  pid=241 comm="hilogd" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:hilogd:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<14>[    5.312775] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.314962] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.315015] [pid=1][Init][INFO][init_service_manager.c:1088]Start service module_update_service
+<14>[    5.315880] [pid=1][Init][INFO][init_common_service.c:534]Service module_update_service(pid 242) started
+<11>[    5.413131] [pid=1][Init][ERROR][init_common_cmds.c:555]Failed unlink -rf err=30.
+<5>[    5.418469] random: module_update_s: uninitialized urandom read (4 bytes read)
+<6>[    5.420023] binder: 242:242 transaction failed 29189/-22, size 0-0 line 3290
+<11>[    5.429044] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/frz/cgroup.proc, err 2.
+<14>[    5.429734] [pid=1][Init][INFO][init.c:278]boot job init finish diff 152967 us.
+<14>[    5.429846] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-1-000 start.
+<14>[    5.429873] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hdf_devmgr
+<14>[    5.431117] [pid=1][Init][INFO][init_common_service.c:534]Service hdf_devmgr(pid 250) started
+<14>[    5.431250] [pid=250][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for hdf_devmgr
+<14>[    5.431390] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hiview
+<14>[    5.432236] [pid=1][Init][INFO][init_common_service.c:534]Service hiview(pid 251) started
+<14>[    5.432530] [pid=1][Init][INFO][init_service_manager.c:1088]Start service storage_daemon
+<14>[    5.433567] [pid=1][Init][INFO][init_common_service.c:534]Service storage_daemon(pid 252) started
+<14>[    5.433870] [pid=1][Init][INFO][init_service_manager.c:1088]Start service appspawn
+<6>[    5.434213] [I/xpm_kernel]get_dm_verity_partition_dev: get /vendor/ dev=187695112:8 success
+<14>[    5.434821] [pid=1][Init][INFO][init_common_service.c:534]Service appspawn(pid 253) started
+<14>[    5.434939] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.435252] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-1-000 finish diff 5320 us.
+<14>[    5.435441] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-1-001 start.
+<14>[    5.435506] [pid=1][Init][INFO][init_service_manager.c:1088]Start service device_manager
+<14>[    5.436529] [pid=1][Init][INFO][init_common_service.c:534]Service device_manager(pid 254) started
+<14>[    5.436977] [pid=1][Init][INFO][init_service_manager.c:1088]Start service storage_manager
+<14>[    5.437585] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.437936] [pid=1][Init][INFO][init_common_service.c:534]Service storage_manager(pid 255) started
+<14>[    5.438250] [pid=1][Init][INFO][init_service_manager.c:1088]Start service samgr
+<14>[    5.439405] [pid=1][Init][INFO][init_common_service.c:534]Service samgr(pid 256) started
+<14>[    5.439749] [pid=1][Init][INFO][init_service_manager.c:1088]Start service param_watcher
+<14>[    5.440858] [pid=1][Init][INFO][init_common_service.c:534]Service param_watcher(pid 257) started
+<14>[    5.441254] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.441320] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-1-001 finish diff 5856 us.
+<14>[    5.441507] [pid=1][Init][INFO][init.c:273]boot job post-init start.
+<12>[    5.441579] [pid=1][PARAM][WARNING][trigger_processor.c:361]Can not find trigger early-fs
+<12>[    5.441624] [pid=1][PARAM][WARNING][trigger_processor.c:361]Can not find trigger fs
+<12>[    5.441676] [pid=1][PARAM][WARNING][trigger_processor.c:361]Can not find trigger firmware_mounts_complete
+<11>[    5.442851] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/cpufreq_interactive/enable " to 0666, err=2
+<11>[    5.442987] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/fence/enable " to 0666, err=2
+<11>[    5.443250] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_read/enable " to 0666, err=2
+<11>[    5.443427] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_write/enable " to 0666, err=2
+<11>[    5.443499] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_result/enable " to 0666, err=2
+<11>[    5.443551] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/i2c/smbus_reply/enable " to 0666, err=2
+<11>[    5.443664] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_grow/enable " to 0666, err=2
+<11>[    5.443721] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/kmem/ion_heap_shrink/enable " to 0666, err=2
+<11>[    5.443774] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/enable " to 0666, err=2
+<11>[    5.443822] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/lowmemorykiller/lowmemory_kill/enable " to 06
+<11>[    5.443875] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/mm_event/mm_event_record/enable " to 0666, er
+<11>[    5.444224] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_blocked_reason/enable " to 0666, 
+<11>[    5.444286] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/enable " to 0666, err
+<11>[    5.444545] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/sync/enable " to 0666, err=2
+<11>[    5.445173] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/events/f2fs/f2fs_get_data_block/enable " to 0666, er
+<14>[    5.445312] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<11>[    5.445548] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/options/print-tgid " to 0666, err=2
+<5>[    5.445597] audit: type=1400 audit(1501923607.573:10): avc:  denied  { read write } for  pid=255 comm="sa_main" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:storage_manager:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<11>[    5.445803] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu4/trace " to 0666, err=2
+<11>[    5.445852] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu5/trace " to 0666, err=2
+<11>[    5.445909] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu6/trace " to 0666, err=2
+<11>[    5.445957] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu7/trace " to 0666, err=2
+<11>[    5.446008] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu8/trace " to 0666, err=2
+<11>[    5.446056] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu9/trace " to 0666, err=2
+<11>[    5.446104] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu10/trace " to 0666, err=2
+<11>[    5.446152] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu11/trace " to 0666, err=2
+<11>[    5.446200] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu12/trace " to 0666, err=2
+<11>[    5.446248] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu13/trace " to 0666, err=2
+<11>[    5.446296] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu14/trace " to 0666, err=2
+<11>[    5.446344] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/debug/tracing/per_cpu/cpu15/trace " to 0666, err=2
+<11>[    5.447024] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/cpufreq_interactive/enable " to 0666, err=2
+<11>[    5.447121] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/fence/enable " to 0666, err=2
+<11>[    5.447323] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_read/enable " to 0666, err=2
+<11>[    5.447380] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_write/enable " to 0666, err=2
+<11>[    5.447438] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_result/enable " to 0666, err=2
+<11>[    5.447488] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/i2c/smbus_reply/enable " to 0666, err=2
+<11>[    5.447575] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/kmem/ion_heap_grow/enable " to 0666, err=2
+<11>[    5.447624] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/kmem/ion_heap_shrink/enable " to 0666, err=2
+<11>[    5.447672] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/lowmemorykiller/enable " to 0666, err=2
+<11>[    5.447720] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/lowmemorykiller/lowmemory_kill/enable " to 0666, er
+<11>[    5.447773] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/mm_event/mm_event_record/enable " to 0666, err=2
+<11>[    5.448076] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sched/sched_blocked_reason/enable " to 0666, err=2
+<11>[    5.448138] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sched/sched_cpu_hotplug/enable " to 0666, err=2
+<11>[    5.448342] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/sync/enable " to 0666, err=2
+<11>[    5.448931] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/events/f2fs/f2fs_get_data_block/enable " to 0666, err=2
+<11>[    5.449241] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/options/print-tgid " to 0666, err=2
+<11>[    5.449465] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu4/trace " to 0666, err=2
+<11>[    5.449520] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu5/trace " to 0666, err=2
+<14>[    5.449532] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<11>[    5.449568] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu6/trace " to 0666, err=2
+<11>[    5.449616] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu7/trace " to 0666, err=2
+<11>[    5.449662] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu8/trace " to 0666, err=2
+<11>[    5.449709] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu9/trace " to 0666, err=2
+<11>[    5.449756] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu10/trace " to 0666, err=2
+<11>[    5.449802] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu11/trace " to 0666, err=2
+<11>[    5.449848] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu12/trace " to 0666, err=2
+<11>[    5.449895] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu13/trace " to 0666, err=2
+<11>[    5.449941] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu14/trace " to 0666, err=2
+<11>[    5.450124] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /sys/kernel/tracing/per_cpu/cpu15/trace " to 0666, err=2
+<14>[    5.451314] [pid=1][Init][INFO][init_service_manager.c:1088]Start service storage_daemon
+<11>[    5.451352] [pid=1][Init][ERROR][init_common_service.c:488]Service storage_daemon already started
+<11>[    5.451496] [pid=1][Init][ERROR][init_common_cmds.c:456]Failed to mount for /config, err 16.
+<14>[    5.452165] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.452752] [pid=1][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.452818] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wifi_hal_service
+<14>[    5.453827] [pid=1][Init][INFO][init_common_service.c:534]Service wifi_hal_service(pid 259) started
+<14>[    5.454371] [pid=1][Init][INFO][init.c:278]boot job post-init finish diff 12826 us.
+<14>[    5.454557] [pid=1][Init][INFO][init.c:273]boot job late-fs start.
+<14>[    5.454923] [pid=1][Init][INFO][init.c:278]boot job late-fs finish diff 345 us.
+<14>[    5.455086] [pid=1][Init][INFO][init.c:273]boot job post-fs-data start.
+<14>[    5.455126] [pid=1][BEGET][INFO][fstab.c:429]LoadFscryptPolicy start
+<14>[    5.455144] [pid=1][BEGET][INFO][fstab.c:444]LoadFscryptPolicy success
+<14>[    5.455235] [pid=1][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/sdc
+<5>[    5.457540] audit: type=1400 audit(1501923607.586:11): avc:  denied  { read write } for  pid=257 comm="sa_main" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:param_watcher:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<14>[    5.458856] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<5>[    5.459865] audit: type=1400 audit(1501923607.586:12): avc:  denied  { open } for  pid=251 comm="init" path="/dev/asanlog" dev="tmpfs" ino=372 scontext=u:r:init:s0 tcontext=u:object_r:dev_asanlog_file:s0 tclass=dir permissive=0
+<14>[    5.460741] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<5>[    5.463538] audit: type=1400 audit(1501923607.590:13): avc:  denied  { read write } for  pid=259 comm="wifi_hal_servic" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:wifi_hal_service:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<14>[    5.468663] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.471980] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.475005] [pid=253][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.478227] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    5.482133] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<6>[    5.483156] [I/kevent] HdfKeventDriverOpen:kevent usecount=1
+<6>[    5.484414] binder: 250:250 transaction failed 29189/-22, size 0-0 line 3290
+<14>[    5.485595] [pid=251][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<5>[    5.486494] audit: type=1400 audit(1501923607.613:14): avc:  denied  { open } for  pid=251 comm="init" path="/dev/asanlog" dev="tmpfs" ino=372 scontext=u:r:init:s0 tcontext=u:object_r:dev_asanlog_file:s0 tclass=dir permissive=0
+<5>[    5.494221] audit: type=1400 audit(1501923607.623:15): avc:  denied  { setattr } for  pid=251 comm="init" name="sysrq-trigger" dev="proc" ino=4026532370 scontext=u:r:init:s0 tcontext=u:object_r:proc_sysrq_trigger_file:s0 tclass=file permissive=0
+<11>[    5.494301] [pid=251][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /proc/sysrq-trigger, err 13.
+<5>[    5.494738] audit: type=1400 audit(1501923607.623:16): avc:  denied  { setattr } for  pid=251 comm="init" name="sysrq-trigger" dev="proc" ino=4026532370 scontext=u:r:init:s0 tcontext=u:object_r:proc_sysrq_trigger_file:s0 tclass=file permissive=0
+<11>[    5.494803] [pid=251][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /proc/sysrq-trigger " to 0660, err=13
+<14>[    5.495427] [pid=251][Init][INFO][init_service_socket.c:142]CreateSocket hisysevent success
+<6>[    5.504939] binder: 250:250 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.520568] binder: 242:242 transaction failed 29189/-22, size 0-0 line 3290
+<5>[    5.522050] random: storage_daemon: uninitialized urandom read (4 bytes read)
+<6>[    5.522757] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.522964] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.523057] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.523129] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.523199] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<6>[    5.523270] binder: 252:252 transaction failed 29189/-22, size 0-0 line 3290
+<5>[    5.533998] random: storage_manager: uninitialized urandom read (4 bytes read)
+<6>[    5.724490] [I/xpm_kernel]test_print_info: /system/lib/chipset-pub-sdk/libxml2.z.so -> type: dm, info: offset=0x43230 size=0xc4cd0
+<6>[    5.724490] 
+<6>[    5.866684] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<6>[    5.891063] [I/xpm_kernel]test_print_info: /system/lib/platformsdk/libwantagent_innerkits.z.so -> type: dm, info: offset=0x13578 size=0x19b38
+<6>[    5.891063] 
+<6>[    6.266719] hungtask_base whitelist[0]-init-1
+<6>[    6.266844] hungtask_base whitelist[1]-appspawn-253
+<5>[    6.833424] random: crng init done
+<5>[    6.833492] random: 5 urandom warning(s) missed due to ratelimiting
+<14>[    6.850896] [pid=1][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/sdc result 0 1
+<14>[    6.850965] [pid=1][Init][INFO][init_common_cmds.c:769]Execute command "init_global_key  /data" took 1395 ms
+<14>[    6.860258] [pid=1][Init][INFO][fscrypt_control.c:220]Fscrypt policy init success
+<14>[    6.860407] [pid=1][Init][INFO][key_control.c:204]version 2 loaded
+<14>[    6.860424] [pid=1][Init][INFO][fscrypt_control.c:238]key path /data/service/el0/storage_daemon/sd, name /key_id
+<14>[    6.860469] [pid=1][Init][INFO][key_control.c:110]enter
+<6>[    6.861525] fscrypt: AES-256-CTS-CBC using implementation "cts-cbc-aes-ce"
+<14>[    6.861638] [pid=1][Init][INFO][key_control.c:78]success
+<14>[    6.871755] [pid=1][Init][INFO][fscrypt_control.c:189]Have been init
+<14>[    6.871873] [pid=1][Init][INFO][key_control.c:204]version 2 loaded
+<14>[    6.871890] [pid=1][Init][INFO][fscrypt_control.c:238]key path /data/service/el0/storage_daemon/sd, name /key_id
+<14>[    6.871944] [pid=1][Init][INFO][key_control.c:110]enter
+<14>[    6.872046] [pid=1][Init][INFO][key_control.c:78]success
+<6>[    6.880062] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x1
+<14>[    6.885820] [pid=1][Init][INFO][fscrypt_control.c:189]Have been init
+<14>[    6.885886] [pid=1][Init][INFO][key_control.c:204]version 2 loaded
+<14>[    6.885941] [pid=1][Init][INFO][fscrypt_control.c:238]key path /data/service/el0/storage_daemon/sd, name /key_id
+<14>[    6.885990] [pid=1][Init][INFO][key_control.c:110]enter
+<14>[    6.886091] [pid=1][Init][INFO][key_control.c:78]success
+<14>[    6.888418] [pid=1][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/sdc
+<6>[    6.930161] fscrypt: AES-256-XTS using implementation "xts-aes-ce"
+<14>[    6.955528] [pid=1][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/sdc result 0 1
+<11>[    7.007091] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/fscklogs/log, err 2.
+<11>[    7.007202] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/fscklogs/log " to 0770, err=2
+<14>[    7.029350] [pid=1][Init][INFO][init_service_manager.c:1088]Start service pulseaudio
+<14>[    7.030172] [pid=1][Init][INFO][init_common_service.c:534]Service pulseaudio(pid 319) started
+<14>[    7.031146] [pid=319][Init][INFO][init_service_socket.c:142]CreateSocket native success
+<11>[    7.038168] [pid=1][Init][ERROR][init_common_cmds.c:353]DoMkDir failed for '/dev/ubsan/', err 13.
+<11>[    7.038381] [pid=1][Init][ERROR][init_common_cmds.c:360]Failed to change owner /dev/ubsan/, err 13.
+<14>[    7.045034] [pid=1][Init][INFO][init_service_manager.c:1088]Start service bluetooth_service
+<14>[    7.045792] [pid=1][Init][INFO][init_common_service.c:534]Service bluetooth_service(pid 320) started
+<14>[    7.049119] [pid=1][Init][INFO][init_service_manager.c:1088]Start service device_usage_stats_service
+<14>[    7.050298] [pid=1][Init][INFO][init_common_service.c:534]Service device_usage_stats_service(pid 321) started
+<14>[    7.061280] [pid=1][Init][INFO][init_service_manager.c:1088]Start service udevd_service
+<14>[    7.062604] [pid=1][Init][INFO][init_common_service.c:534]Service udevd_service(pid 322) started
+<14>[    7.063113] [pid=1][Init][INFO][init_service_manager.c:1088]Start service mmi_uinput_service
+<14>[    7.064646] [pid=1][Init][INFO][init_common_service.c:534]Service mmi_uinput_service(pid 323) started
+<14>[    7.065134] [pid=1][Init][INFO][init_service_manager.c:1088]Start service multimodalinput
+<14>[    7.066210] [pid=1][Init][INFO][init_common_service.c:534]Service multimodalinput(pid 324) started
+<14>[    7.098371] [pid=1][Init][INFO][init_service_manager.c:1088]Start service memmgrservice
+<14>[    7.103833] [pid=1][Init][INFO][init_common_service.c:534]Service memmgrservice(pid 330) started
+<14>[    7.133816] [pid=1][Init][INFO][init_service_manager.c:1088]Start service resource_schedule_service
+<14>[    7.136239] [pid=1][Init][INFO][init_common_service.c:534]Service resource_schedule_service(pid 336) started
+<6>[    7.140573] [I/xpm_kernel]test_print_info: /system/lib/libpulsecore.z.so -> type: dm, info: offset=0x19240 size=0x27480
+<6>[    7.140573] 
+<11>[    7.224457] [pid=1][Init][ERROR][init_common_cmds.c:342]Create directory '/data/updater/log' failed, err=13.
+<11>[    7.224731] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /data/updater/log, err 2.
+<11>[    7.224904] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /data/updater/log " to 0775, err=2
+<14>[    7.291738] [pid=1][Init][INFO][init_service_manager.c:1088]Start service huks_service
+<14>[    7.294704] [pid=1][Init][INFO][init_common_service.c:534]Service huks_service(pid 361) started
+<14>[    7.325442] [pid=1][Init][INFO][init_service_manager.c:1088]Start service deviceauth_service
+<14>[    7.326853] [pid=1][Init][INFO][init_common_service.c:534]Service deviceauth_service(pid 362) started
+<14>[    7.352069] [pid=1][Init][INFO][init_service_manager.c:1088]Start service accessibility
+<14>[    7.353215] [pid=1][Init][INFO][init_common_service.c:534]Service accessibility(pid 363) started
+<14>[    7.353963] [pid=1][Init][INFO][init_service_manager.c:1088]Start service concurrent_task_service
+<14>[    7.367440] [pid=1][Init][INFO][init_common_service.c:534]Service concurrent_task_service(pid 364) started
+<14>[    7.367931] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hdf_devhost
+<11>[    7.367975] [pid=1][Init][ERROR][init_service_manager.c:1093]Cannot find service hdf_devhost.
+<14>[    7.368314] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  system system /dev/hdf_disp' in sub init u:r:chipset_init:s0
+<14>[    7.368884] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  system system /dev/hdf_dsoftbus' in sub init u:r:chipset_init:s0
+<11>[    7.369100] [pid=240][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/hdf_dsoftbus, err 2.
+<14>[    7.369373] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  composer_host composer_host /sys/class/backlight/backlight/brightness' in sub init u:r:ch
+<14>[    7.370413] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/battery 0751 power_host power_host' in sub init u:r:chipset_init:s0
+<14>[    7.373052] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.380286] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/display 0711 power_host power_host' in sub init u:r:chipset_init:s0
+<14>[    7.382897] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.384409] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/thermal 0755 thermal thermal' in sub init u:r:chipset_init:s0
+<11>[    7.388950] [pid=240][Init][ERROR][init_utils.c:87]Failed to decode uid for thermal
+<11>[    7.389104] [pid=240][Init][ERROR][init_common_cmds.c:311]SetOwner invalid uid : thermal.
+<11>[    7.389121] [pid=240][Init][ERROR][init_common_cmds.c:360]Failed to change owner /data/service/el0/thermal, err 0.
+<14>[    7.389136] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<30>[    7.395216] udevd[322]: starting eudev-3.2.10
+<14>[    7.395445] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/thermal/sensor 0755 power_host power_host' in sub init u:r:chipset_init
+<14>[    7.402005] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.402300] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/thermal/cooling 0755 power_host power_host' in sub init u:r:chipset_ini
+<14>[    7.412174] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.412508] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el1/public/pinauth/ 0700 pin_auth_host pin_auth_host' in sub init u:r:chips
+<14>[    7.432512] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.447793] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el1/public/userauth/ 0700 user_auth_host user_auth_host' in sub init u:r:ch
+<14>[    7.451342] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.451640] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  power_host system /sys/power/wake_lock' in sub init u:r:chipset_init:s0
+<14>[    7.466278] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'chown  power_host system /sys/power/wake_unlock' in sub init u:r:chipset_init:s0
+<14>[    7.467193] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el1/public/usb 0770 usb_host usb_host' in sub init u:r:chipset_init:s0
+<14>[    7.475404] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.475861] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'write  /data/service/el1/public/usb/mode device' in sub init u:r:chipset_init:s0
+<14>[    7.487397] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/intellligent_voice 0770 intell_voice_host intell_voice_host' in sub ini
+<14>[    7.492067] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.492378] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /data/service/el0/intellligent_voice/wakeup 0770 intell_voice_host intell_voice_host' in 
+<6>[    7.509224] [SCHED_RTG] config[0] = 1
+<6>[    7.509262] [SCHED_RTG] config[1] = 750
+<6>[    7.509268] [SCHED_RTG] config[2] = 65535
+<6>[    7.509359] [SCHED_RTG] enabled!
+<6>[    7.509499] [SCHED_RTG] parse_create_rtg_grp rtgid=2, type=0, prio=97, threadnum=5, rtnum=5
+<14>[    7.517885] [pid=240][Init][INFO][fscrypt_control.c:395]Fscrypt have not enabled
+<14>[    7.518338] [pid=1][Init][INFO][init.c:278]boot job post-fs-data finish diff 2063217 us.
+<14>[    7.518507] [pid=1][Init][INFO][init.c:273]boot job early-boot start.
+<14>[    7.521218] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wallpaper_service
+<14>[    7.521945] [pid=1][Init][INFO][init_common_service.c:534]Service wallpaper_service(pid 377) started
+<14>[    7.526578] [pid=1][Init][INFO][init_service_manager.c:1088]Start service telephony_sa
+<14>[    7.527661] [pid=1][Init][INFO][init_common_service.c:534]Service telephony_sa(pid 378) started
+<14>[    7.645837] [pid=1][Init][INFO][init_service_manager.c:1088]Start service netmanager
+<14>[    7.654158] [pid=1][Init][INFO][init_common_service.c:534]Service netmanager(pid 394) started
+<14>[    7.655496] [pid=1][Init][INFO][init.c:278]boot job early-boot finish diff 136903 us.
+<14>[    7.656571] [pid=1][Init][INFO][init.c:273]boot job boot start.
+<11>[    7.673548] [pid=1][Init][ERROR][init_common_cmds.c:456]Failed to mount for /config, err 16.
+<6>[    7.748837] file system registered
+<6>[    7.806370] zram0: detected capacity change from 0 to 1073741824
+<14>[    7.806552] [pid=1][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/mkswap
+<6>[    7.893440] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<14>[    7.928825] [pid=1][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/mkswap result 0 1
+<14>[    7.928900] [pid=1][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/swapon
+<6>[    8.036701] Adding 1048572k swap on /dev/block/zram0.  Priority:-2 extents:1 across:1048572k SS
+<14>[    8.038004] [pid=1][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/swapon result 0 1
+<11>[    8.038232] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/ttyAMA2 " to 0777, err=2
+<11>[    8.040509] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/rtkbt_dev " to 0777, err=2
+<11>[    8.040774] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/xt_qtaguid " to 0640, err=2
+<11>[    8.040867] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /proc/net/xt_qtaguid/ctrl " to 0660, err=2
+<11>[    8.040949] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /proc/net/xt_qtaguid/stats " to 0440, err=2
+<11>[    8.041302] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/dri/card1 " to 0666, err=2
+<11>[    8.041454] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/dri/card1, err 2.
+<11>[    8.042059] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/dri/renderD129 " to 0666, err=2
+<11>[    8.042402] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/dri/renderD129, err 2.
+<11>[    8.043051] [pid=1][Init][ERROR][init_common_cmds.c:377]Failed to change mode " /dev/ion " to 0666, err=2
+<11>[    8.043676] [pid=1][Init][ERROR][init_common_cmds.c:323]Failed to change owner for /dev/ion, err 2.
+<14>[    8.047400] [pid=1][Init][INFO][init_service_manager.c:1088]Start service ispserver
+<6>[    8.052422] [SCHED_RTG] already enabled!
+<14>[    8.065449] [pid=1][Init][INFO][init_common_service.c:534]Service ispserver(pid 440) started
+<14>[    8.069536] [pid=1][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/chown
+<14>[    8.092531] [pid=1][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/chown result 0 1
+<14>[    8.092662] [pid=1][Init][INFO][init_service_manager.c:1088]Start service time_service
+<14>[    8.093687] [pid=1][Init][INFO][init_common_service.c:534]Service time_service(pid 442) started
+<6>[    8.112249] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 0
+<6>[    8.112310] [I/HDF_LOG_TAG] TouchGetDevType: enter, devType is 0
+<6>[    8.112349] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 5
+<6>[    8.112361] [I/HDF_LOG_TAG] TouchGetDeviceStrInfo: cmd is 5, the info is gt911
+<6>[    8.112505] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 3
+<6>[    8.112519] [I/HDF_LOG_TAG] TouchGetDeviceStrInfo: cmd is 3, the info is ZIDN45100
+<6>[    8.112620] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 4
+<6>[    8.112633] [I/HDF_LOG_TAG] TouchGetDeviceStrInfo: cmd is 4, the info is zsj
+<6>[    8.112724] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 7
+<3>[    8.112735] [E/HDF_LOG_TAG] TouchGetDeviceAbility: enter
+<6>[    8.112747] [I/HDF_LOG_TAG] TouchGetDeviceAbility: get dev ability succ
+<6>[    8.112774] [I/HDF_LOG_TAG] HdfTouchDispatch: cmd = 6
+<3>[    8.112783] [E/HDF_LOG_TAG] TouchGetDeviceAttr: enter
+<6>[    8.112796] [I/HDF_LOG_TAG] TouchGetDeviceAttr: get dev attr succ
+<6>[    8.115685] input: VSoC touchscreen as /devices/virtual/input/input4
+<6>[    8.163369] gc8034 4-0037: gc8034_s_power(2056) on(1)
+<14>[    8.251971] [pid=1][Init][INFO][init_service_manager.c:1088]Start service updater_sa
+<14>[    8.252698] [pid=1][Init][INFO][init_common_service.c:534]Service updater_sa(pid 455) started
+<14>[    8.272559] [pid=1][Init][INFO][init_service_manager.c:1088]Start service bgtaskmgr_service
+<14>[    8.280246] [pid=1][Init][INFO][init_common_service.c:534]Service bgtaskmgr_service(pid 457) started
+<14>[    8.285907] [pid=1][Init][INFO][init_service_manager.c:1088]Start service msdp_sa
+<14>[    8.293518] [pid=1][Init][INFO][init_common_service.c:534]Service msdp_sa(pid 458) started
+<6>[    8.419389] [I/xpm_kernel]test_print_info: /system/lib/platformsdk/libfile_access_extension_ability_kit.z.so -> type: dm, info: offset=0x15488 size=0x320e8
+<6>[    8.419389] 
+<14>[    8.447551] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'mkdir  /config/usb_gadget/g1/functions/mass_storage.usb' in sub init u:r:chipset_init:s0
+<6>[    8.447808] Mass Storage Function, version: 2009/09/11
+<6>[    8.447858] LUN: removable file: (no medium)
+<14>[    8.466431] [pid=1][Init][INFO][init.c:278]boot job boot finish diff 809855 us.
+<14>[    8.466684] [pid=1][Init][INFO][init.c:273]boot job audio_policy_start start.
+<14>[    8.474089] [pid=1][Init][INFO][init_service_manager.c:1088]Start service audio_policy
+<14>[    8.475405] [pid=1][Init][INFO][init_common_service.c:534]Service audio_policy(pid 482) started
+<14>[    8.476737] [pid=1][Init][INFO][init.c:278]boot job audio_policy_start finish diff 10034 us.
+<11>[    8.478136] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process wifi_hal_service(pid 259) exit with code : 255
+<14>[    8.478251] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:wifi_hal_service pid:259 uid:1010 status:65280.
+<14>[    8.478269] [pid=1][Init][INFO][init_common_service.c:655]Reap service wifi_hal_service, pid 259.
+<14>[    8.490931] [pid=1][Init][INFO][init_common_service.c:534]Service wifi_hal_service(pid 483) started
+<11>[    8.491452] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process Unknown(pid 456) exit with code : 0
+<14>[    8.491485] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:Unknown pid:456 uid:1010 status:0.
+<14>[    8.491932] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 256 key: bootevent.samgr.ready
+<14>[    8.496731] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 257 key: bootevent.param_watcher.started
+<14>[    8.498771] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-000 start.
+<14>[    8.498943] [pid=1][Init][INFO][init_service_manager.c:1088]Start service intell_voice_host
+<14>[    8.500411] [pid=1][Init][INFO][init_common_service.c:534]Service intell_voice_host(pid 485) started
+<14>[    8.500885] [pid=1][Init][INFO][init_service_manager.c:1088]Start service fingerprint_auth_host
+<14>[    8.503542] [pid=485][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for intell_voice_host
+<11>[    8.513441] [pid=485][Init][ERROR][init_service.c:100]service intell_voice_host execv failed! err 13.
+<14>[    8.514380] [pid=1][Init][INFO][init_common_service.c:534]Service fingerprint_auth_host(pid 486) started
+<14>[    8.514843] [pid=1][Init][INFO][init_service_manager.c:1088]Start service user_auth_host
+<14>[    8.515812] [pid=486][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for fingerprint_auth_host
+<14>[    8.515959] [pid=1][Init][INFO][init_common_service.c:534]Service user_auth_host(pid 487) started
+<14>[    8.516351] [pid=1][Init][INFO][init_service_manager.c:1088]Start service pin_auth_host
+<14>[    8.518871] [pid=1][Init][INFO][init_common_service.c:534]Service pin_auth_host(pid 488) started
+<14>[    8.519551] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-000 finish diff 21212 us.
+<11>[    8.520568] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process intell_voice_host(pid 485) exit with code : 127
+<14>[    8.520672] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:intell_voice_host pid:485 uid:3100 status:32512.
+<14>[    8.520689] [pid=1][Init][INFO][init_common_service.c:655]Reap service intell_voice_host, pid 485.
+<14>[    8.526870] [pid=487][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for user_auth_host
+<14>[    8.528453] [pid=1][Init][INFO][init_common_service.c:534]Service intell_voice_host(pid 489) started
+<14>[    8.532066] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-001 start.
+<14>[    8.532241] [pid=1][Init][INFO][init_service_manager.c:1088]Start service face_auth_host
+<14>[    8.533560] [pid=1][Init][INFO][init_common_service.c:534]Service face_auth_host(pid 490) started
+<14>[    8.533971] [pid=1][Init][INFO][init_service_manager.c:1088]Start service codec_host
+<14>[    8.534236] [pid=488][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for pin_auth_host
+<14>[    8.540909] [pid=1][Init][INFO][init_common_service.c:534]Service codec_host(pid 491) started
+<14>[    8.541357] [pid=1][Init][INFO][init_service_manager.c:1088]Start service light_host
+<14>[    8.546864] [pid=490][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for face_auth_host
+<14>[    8.549386] [pid=491][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for codec_host
+<14>[    8.549649] [pid=489][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for intell_voice_host
+<11>[    8.551297] [pid=489][Init][ERROR][init_service.c:100]service intell_voice_host execv failed! err 13.
+<14>[    8.552315] [pid=1][Init][INFO][init_common_service.c:534]Service light_host(pid 492) started
+<14>[    8.552752] [pid=1][Init][INFO][init_service_manager.c:1088]Start service vibrator_host
+<14>[    8.553964] [pid=1][Init][INFO][init_common_service.c:534]Service vibrator_host(pid 493) started
+<14>[    8.554641] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-001 finish diff 22548 us.
+<11>[    8.555016] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process intell_voice_host(pid 489) exit with code : 127
+<14>[    8.555271] [pid=492][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for light_host
+<14>[    8.570107] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:intell_voice_host pid:489 uid:3100 status:32512.
+<14>[    8.570222] [pid=1][Init][INFO][init_common_service.c:655]Reap service intell_voice_host, pid 489.
+<14>[    8.571504] [pid=1][Init][INFO][init_common_service.c:534]Service intell_voice_host(pid 494) started
+<14>[    8.572152] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-002 start.
+<14>[    8.572292] [pid=1][Init][INFO][init_service_manager.c:1088]Start service sensor_host
+<14>[    8.573025] [pid=493][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for vibrator_host
+<14>[    8.575253] [pid=494][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for intell_voice_host
+<11>[    8.583560] [pid=494][Init][ERROR][init_service.c:100]service intell_voice_host execv failed! err 13.
+<14>[    8.583997] [pid=1][Init][INFO][init_common_service.c:534]Service sensor_host(pid 496) started
+<14>[    8.584354] [pid=1][Init][INFO][init_service_manager.c:1088]Start service input_user_host
+<14>[    8.585478] [pid=1][Init][INFO][init_common_service.c:534]Service input_user_host(pid 497) started
+<14>[    8.585854] [pid=1][Init][INFO][init_service_manager.c:1088]Start service camera_host
+<14>[    8.594116] [pid=1][Init][INFO][init_common_service.c:534]Service camera_host(pid 499) started
+<14>[    8.594612] [pid=1][Init][INFO][init_service_manager.c:1088]Start service audio_host
+<14>[    8.595685] [pid=1][Init][INFO][init_common_service.c:534]Service audio_host(pid 500) started
+<14>[    8.596225] [pid=497][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for input_user_host
+<14>[    8.603835] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-002 finish diff 31759 us.
+<11>[    8.604147] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process intell_voice_host(pid 494) exit with code : 127
+<14>[    8.604231] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:intell_voice_host pid:494 uid:3100 status:32512.
+<14>[    8.604247] [pid=1][Init][INFO][init_common_service.c:655]Reap service intell_voice_host, pid 494.
+<14>[    8.605343] [pid=1][Init][INFO][init_common_service.c:534]Service intell_voice_host(pid 502) started
+<14>[    8.606166] [pid=499][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for camera_host
+<14>[    8.608946] [pid=500][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for audio_host
+<14>[    8.610825] [pid=496][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for sensor_host
+<14>[    8.613468] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-003 start.
+<14>[    8.613627] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wifi_host
+<14>[    8.614653] [pid=1][Init][INFO][init_common_service.c:534]Service wifi_host(pid 503) started
+<14>[    8.615000] [pid=1][Init][INFO][init_service_manager.c:1088]Start service power_host
+<14>[    8.616071] [pid=1][Init][INFO][init_common_service.c:534]Service power_host(pid 504) started
+<14>[    8.620243] [pid=502][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for intell_voice_host
+<11>[    8.621648] [pid=502][Init][ERROR][init_service.c:100]service intell_voice_host execv failed! err 13.
+<14>[    8.630647] [pid=1][Init][INFO][init_service_manager.c:1088]Start service usb_host
+<14>[    8.631696] [pid=1][Init][INFO][init_common_service.c:534]Service usb_host(pid 508) started
+<14>[    8.632093] [pid=1][Init][INFO][init_service_manager.c:1088]Start service blue_host
+<14>[    8.633195] [pid=503][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for wifi_host
+<14>[    8.634763] [pid=504][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for power_host
+<14>[    8.656299] [pid=1][Init][INFO][init_common_service.c:534]Service blue_host(pid 509) started
+<14>[    8.657117] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-003 finish diff 51114 us.
+<11>[    8.657416] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process intell_voice_host(pid 502) exit with code : 127
+<14>[    8.658713] [pid=509][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for blue_host
+<14>[    8.670117] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:intell_voice_host pid:502 uid:3100 status:32512.
+<14>[    8.670236] [pid=1][Init][INFO][init_common_service.c:655]Reap service intell_voice_host, pid 502.
+<11>[    8.670419] [pid=1][Init][ERROR][init_common_service.c:704]Service name=intell_voice_host, crash 4 times, no more start.
+<14>[    8.670832] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-004 start.
+<14>[    8.670911] [pid=1][Init][INFO][init_service_manager.c:1088]Start service allocator_host
+<14>[    8.671975] [pid=1][Init][INFO][init_common_service.c:534]Service allocator_host(pid 516) started
+<14>[    8.672405] [pid=1][Init][INFO][init_service_manager.c:1088]Start service composer_host
+<14>[    8.684049] [pid=1][Init][INFO][init_common_service.c:534]Service composer_host(pid 518) started
+<14>[    8.684575] [pid=1][Init][INFO][init_service_manager.c:1088]Start service msdp_sa
+<11>[    8.684611] [pid=1][Init][ERROR][init_common_service.c:488]Service msdp_sa already started
+<14>[    8.684637] [pid=1][Init][INFO][init_service_manager.c:1088]Start service concurrent_task_service
+<11>[    8.684652] [pid=1][Init][ERROR][init_common_service.c:488]Service concurrent_task_service already started
+<14>[    8.685121] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-004 finish diff 14215 us.
+<14>[    8.685630] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-005 start.
+<14>[    8.685678] [pid=1][Init][INFO][init_service_manager.c:1088]Start service accessibility
+<11>[    8.685697] [pid=1][Init][ERROR][init_common_service.c:488]Service accessibility already started
+<14>[    8.685724] [pid=1][Init][INFO][init_service_manager.c:1088]Start service distributeddata
+<14>[    8.686297] [pid=516][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for allocator_host
+<14>[    8.710473] [pid=508][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for usb_host
+<14>[    8.739518] [pid=1][Init][INFO][init_common_service.c:534]Service distributeddata(pid 531) started
+<14>[    8.740339] [pid=1][Init][INFO][init_service_manager.c:1088]Start service netmanager
+<11>[    8.740374] [pid=1][Init][ERROR][init_common_service.c:488]Service netmanager already started
+<14>[    8.740397] [pid=1][Init][INFO][init_service_manager.c:1088]Start service faultloggerd
+<14>[    8.741797] [pid=518][PLUGIN][INFO][init_context_static.c:84]Set selinux context 0 for composer_host
+<6>[    8.741906] purgemm: Sum: 0 pined in 0 pages
+<6>[    8.745335] purgemm: Sum: 0 pined in 0 pages
+<14>[    8.776960] [pid=1][Init][INFO][init_common_service.c:534]Service faultloggerd(pid 534) started
+<14>[    8.778676] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-005 finish diff 93062 us.
+<14>[    8.779167] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-006 start.
+<14>[    8.779219] [pid=1][Init][INFO][init_service_manager.c:1088]Start service bgtaskmgr_service
+<11>[    8.779240] [pid=1][Init][ERROR][init_common_service.c:488]Service bgtaskmgr_service already started
+<14>[    8.779312] [pid=1][Init][INFO][init_service_manager.c:1088]Start service deviceauth_service
+<11>[    8.779330] [pid=1][Init][ERROR][init_common_service.c:488]Service deviceauth_service already started
+<14>[    8.779391] [pid=1][Init][INFO][init_service_manager.c:1088]Start service ui_service
+<14>[    8.780477] [pid=1][Init][INFO][init_common_service.c:534]Service ui_service(pid 536) started
+<14>[    8.816961] [pid=1][Init][INFO][init_service_manager.c:1088]Start service cloudfiledaemon
+<14>[    8.818275] [pid=1][Init][INFO][init_common_service.c:534]Service cloudfiledaemon(pid 540) started
+<14>[    8.819046] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-006 finish diff 39880 us.
+<14>[    8.840280] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-007 start.
+<14>[    8.840474] [pid=1][Init][INFO][init_service_manager.c:1088]Start service accountmgr
+<14>[    8.841762] [pid=1][Init][INFO][init_common_service.c:534]Service accountmgr(pid 542) started
+<14>[    8.842288] [pid=1][Init][INFO][init_service_manager.c:1088]Start service useriam
+<6>[    8.869917] gc8034 4-0037: gc8034_s_power(2056) on(0)
+<14>[    8.873151] [pid=1][Init][INFO][init_common_service.c:534]Service useriam(pid 551) started
+<14>[    8.873522] [pid=1][Init][INFO][init_service_manager.c:1088]Start service camera_service
+<6>[    8.878092] [I/xpm_kernel]test_print_info: /vendor/lib/liblight_stub_1.0.z.so -> type: dm, info: offset=0x3df4 size=0x1c7c
+<6>[    8.878092] 
+<11>[    8.878972] [pid=542][Init][ERROR][init_common_service.c:230]Failed to open realPath: /dev/cpuset/foreground/tasks  /dev/cpuset/foreground/tasks errno:13.
+<11>[    8.879025] [pid=542][Init][ERROR][init_common_service.c:230]Failed to open realPath: (null)  /dev/stune/foreground/tasks errno:2.
+<11>[    8.879081] [pid=542][Init][ERROR][init_common_service.c:230]Failed to open realPath: (null)  /dev/blkio/foreground/tasks errno:2.
+<14>[    8.887698] [pid=1][Init][INFO][init_common_service.c:534]Service camera_service(pid 553) started
+<14>[    8.888214] [pid=1][Init][INFO][init_service_manager.c:1088]Start service resource_schedule_service
+<11>[    8.888252] [pid=1][Init][ERROR][init_common_service.c:488]Service resource_schedule_service already started
+<14>[    8.888590] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-007 finish diff 48293 us.
+<14>[    8.889012] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-008 start.
+<14>[    8.889056] [pid=1][Init][INFO][init_service_manager.c:1088]Start service inputmethod_service
+<6>[    8.906738] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<11>[    8.909177] [pid=534][PLUGIN][ERROR][selinux_adp.c:110]restoreContentRecurse failed for '/dev/unix/socket/faultloggerd.server', err 2.
+<11>[    8.909308] [pid=534][PLUGIN][ERROR][selinux_adp.c:110]restoreContentRecurse failed for '/dev/unix/socket/faultloggerd.crash.server', err 2.
+<6>[    8.909630] gc8034 4-0037: gc8034_s_power(2056) on(1)
+<14>[    8.922036] [pid=531][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/chmod
+<14>[    8.923493] [pid=1][Init][INFO][init_common_service.c:534]Service inputmethod_service(pid 559) started
+<14>[    8.923905] [pid=1][Init][INFO][init_service_manager.c:1088]Start service foundation
+<14>[    8.924960] [pid=1][Init][INFO][init_common_service.c:534]Service foundation(pid 560) started
+<14>[    8.925386] [pid=1][Init][INFO][init_service_manager.c:1088]Start service memmgrservice
+<11>[    8.925420] [pid=1][Init][ERROR][init_common_service.c:488]Service memmgrservice already started
+<14>[    8.925452] [pid=1][Init][INFO][init_service_manager.c:1088]Start service privacy_service
+<14>[    8.931596] [pid=534][Init][INFO][init_service_socket.c:142]CreateSocket faultloggerd.server success
+<14>[    8.947905] [pid=1][Init][INFO][init_common_service.c:534]Service privacy_service(pid 569) started
+<14>[    8.948655] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-008 finish diff 59609 us.
+<14>[    8.949175] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-009 start.
+<14>[    8.949299] [pid=1][Init][INFO][init_service_manager.c:1088]Start service av_session
+<11>[    8.953172] [pid=560][Init][ERROR][init_common_cmds.c:342]Create directory '/data/storage/el1/bundle' failed, err=2.
+<14>[    8.960844] [pid=1][Init][INFO][init_common_service.c:534]Service av_session(pid 572) started
+<14>[    8.961485] [pid=1][Init][INFO][init_service_manager.c:1088]Start service sensors
+<14>[    8.962582] [pid=1][Init][INFO][init_common_service.c:534]Service sensors(pid 573) started
+<11>[    9.011696] [pid=560][Init][ERROR][init_common_cmds.c:342]Create directory '/data/storage/el2/base' failed, err=2.
+<11>[    9.011889] [pid=560][Init][ERROR][init_common_cmds.c:342]Create directory '/data/storage/el2/database' failed, err=2.
+<14>[    9.016760] [pid=534][Init][INFO][init_service_socket.c:142]CreateSocket faultloggerd.crash.server success
+<14>[    9.020426] [pid=1][Init][INFO][init_service_manager.c:1088]Start service bootanimation
+<14>[    9.021660] [pid=1][Init][INFO][init_common_service.c:534]Service bootanimation(pid 581) started
+<14>[    9.022183] [pid=1][Init][INFO][init_service_manager.c:1088]Start service render_service
+<14>[    9.053122] [pid=1][Init][INFO][init_common_service.c:534]Service render_service(pid 589) started
+<14>[    9.054067] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-009 finish diff 104936 us.
+<14>[    9.054252] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 253 key: bootevent.appspawn.started
+<14>[    9.055986] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-010 start.
+<14>[    9.056104] [pid=1][Init][INFO][init_service_manager.c:1088]Start service device_usage_stats_service
+<11>[    9.056125] [pid=1][Init][ERROR][init_common_service.c:488]Service device_usage_stats_service already started
+<14>[    9.056152] [pid=1][Init][INFO][init_service_manager.c:1088]Start service bluetooth_service
+<11>[    9.056166] [pid=1][Init][ERROR][init_common_service.c:488]Service bluetooth_service already started
+<14>[    9.056209] [pid=1][Init][INFO][init_service_manager.c:1088]Start service av_codec_service
+<14>[    9.069841] [pid=1][Init][INFO][init_common_service.c:534]Service av_codec_service(pid 590) started
+<14>[    9.070420] [pid=1][Init][INFO][init_service_manager.c:1088]Start service media_service
+<14>[    9.074603] [pid=531][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/chmod result 0 1
+<14>[    9.074722] [pid=531][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/chown
+<14>[    9.079151] [pid=1][Init][INFO][init_common_service.c:534]Service media_service(pid 593) started
+<6>[    9.091029] [I/kevent] HdfKeventDriverOpen:kevent usecount=2
+<14>[    9.097162] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-010 finish diff 41211 us.
+<14>[    9.097396] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-011 start.
+<14>[    9.097629] [pid=1][Init][INFO][init_service_manager.c:1088]Start service time_service
+<11>[    9.097652] [pid=1][Init][ERROR][init_common_service.c:488]Service time_service already started
+<14>[    9.097762] [pid=1][Init][INFO][init_service_manager.c:1088]Start service accesstoken_service
+<14>[    9.098877] [pid=1][Init][INFO][init_common_service.c:534]Service accesstoken_service(pid 596) started
+<6>[    9.136218] [I/kevent] HdfKeventDriverOpen:kevent usecount=3
+<14>[    9.142393] [pid=1][Init][INFO][init_service_manager.c:1088]Start service netsysnative
+<14>[    9.153410] [pid=1][Init][INFO][init_common_service.c:534]Service netsysnative(pid 603) started
+<14>[    9.153860] [pid=1][Init][INFO][init_service_manager.c:1088]Start service telephony_sa
+<11>[    9.153893] [pid=1][Init][ERROR][init_common_service.c:488]Service telephony_sa already started
+<14>[    9.154193] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-011 finish diff 56705 us.
+<14>[    9.154586] [pid=1][Init][INFO][init.c:273]boot job boot-service:service-2-012 start.
+<14>[    9.154628] [pid=1][Init][INFO][init_service_manager.c:1088]Start service softbus_server
+<14>[    9.217333] [pid=1][Init][INFO][init_common_service.c:534]Service softbus_server(pid 610) started
+<14>[    9.233063] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wallpaper_service
+<11>[    9.233184] [pid=1][Init][ERROR][init_common_service.c:488]Service wallpaper_service already started
+<14>[    9.233223] [pid=1][Init][INFO][init_service_manager.c:1088]Start service ispserver
+<11>[    9.233239] [pid=1][Init][ERROR][init_common_service.c:488]Service ispserver already started
+<14>[    9.233785] [pid=1][Init][INFO][init.c:278]boot job boot-service:service-2-012 finish diff 79158 us.
+<14>[    9.235436] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hdcd
+<6>[    9.283022] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 20
+<6>[    9.283599] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 42
+<14>[    9.301135] [pid=1][Init][INFO][init_common_service.c:534]Service hdcd(pid 615) started
+<14>[    9.302148] [pid=1][Init][INFO][init_service_manager.c:1088]Start service hdcd
+<11>[    9.302304] [pid=1][Init][ERROR][init_common_service.c:488]Service hdcd already started
+<14>[    9.314345] [pid=615][Init][INFO][init_service_socket.c:142]CreateSocket hdcd success
+<14>[    9.343888] [pid=531][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/chown result 0 1
+<14>[    9.343996] [pid=531][Init][INFO][init_common_cmds.c:769]Execute command "syncexec  /system/bin/chown -R ddms:ddms /data/service/el1/public/database/distribute
+<14>[    9.344033] [pid=531][Init][INFO][init_cmds.c:107]Sync exec: /system/bin/chmod
+<14>[    9.374242] [pid=603][Init][INFO][init_service_socket.c:142]CreateSocket dnsproxyd success
+<6>[    9.397428] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 20
+<6>[    9.397710] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 42
+<6>[    9.400353] [I/kevent] HdfKeventDriverOpen:kevent usecount=4
+<7>[    9.404474] [D/HDF_DISP] HdfDrmPanelGetModes
+<6>[    9.432816] [I/kevent] KeventFbNotifierFn:blank=0
+<6>[    9.432823] [I/kevent] KeventFbNotifierFn:receive display on event
+<6>[    9.432909] [I/devmgr_service] DevmgrServicePowerStateChange:wake state 0
+<7>[    9.432914] [D/devhost_service] host(platform_host) set power state=0
+<7>[    9.432926] [D/devhost_service] host(base_host) set power state=0
+<7>[    9.432929] [D/devhost_service] host(light_host) set power state=0
+<7>[    9.432932] [D/devhost_service] host(vibrator_host) set power state=0
+<7>[    9.432936] [D/devhost_service] host(usb_pnp_linux_host) set power state=0
+<7>[    9.432939] [D/devhost_service] host(sensor_host) set power state=0
+<7>[    9.432945] [D/devhost_service] host(camera_host0) set power state=0
+<7>[    9.432947] [D/devhost_service] host(network_host) set power state=0
+<7>[    9.432949] [D/devhost_service] host(input_host) set power state=0
+<6>[    9.432954] [I/HDF_LOG_TAG] HdfTouchDriverDozeResume:called
+<7>[    9.432959] [D/devhost_service] host(display_host) set power state=0
+<7>[    9.432964] [D/devhost_service] host(audio_host) set power state=0
+<7>[    9.432972] [D/devhost_service] host(test_host) set power state=0
+<6>[    9.432976] [I/pm_driver_test] HdfPmTestDozeResume called
+<6>[    9.432980] [I/sample_driver_test] HdfSampleDozeResume:called
+<3>[    9.440024] [AUTH_CTRL] no auth data for this uid=1003
+<6>[    9.440031] hungtask_base whitelist[0]-init-1
+<3>[    9.440054] [SCHED_RTG] do_proc_rtg_ioctl: uid not authorized.
+<6>[    9.440181] hungtask_base whitelist[1]-appspawn-253
+<14>[    9.456525] [pid=531][Init][INFO][init_cmds.c:120]Sync exec: /system/bin/chmod result 0 1
+<11>[    9.458556] [pid=531][Init][ERROR][init_common_service.c:230]Failed to open realPath: (null)  /dev/stune/foreground/tasks errno:2.
+<11>[    9.458621] [pid=531][Init][ERROR][init_common_service.c:230]Failed to open realPath: (null)  /dev/blkio/foreground/tasks errno:2.
+<14>[    9.462862] [pid=603][Init][INFO][init_service_socket.c:142]CreateSocket tunfd success
+<14>[    9.463179] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0->/dev/block/platform/fe310000.sdhci/mmcblk0
+<14>[    9.500884] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p12->/dev/block/platform/fe310000.sdhci/by-name/eng_system
+<14>[    9.501063] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p12->/dev/block/by-name/eng_system
+<6>[    9.506883] [I/kevent] HdfKeventDriverOpen:kevent usecount=5
+<6>[    9.530116] [I/xpm_kernel]test_print_info: /vendor/lib/libaudio_manager_service_1.0.z.so -> type: dm, info: offset=0x2268 size=0x4728
+<6>[    9.530116] 
+<14>[    9.533048] [pid=603][Init][INFO][init_service_socket.c:142]CreateSocket fwmarkd success
+<14>[    9.562765] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 442 key: persist.time.timezone
+<6>[    9.569537] [I/kevent] HdfKeventDriverOpen:kevent usecount=6
+<14>[    9.610604] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p9->/dev/block/platform/fe310000.sdhci/by-name/sys-prod
+<14>[    9.610657] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p9->/dev/block/by-name/sys-prod
+<14>[    9.677338] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p10->/dev/block/platform/fe310000.sdhci/by-name/chip-prod
+<14>[    9.677534] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p10->/dev/block/by-name/chip-prod
+<14>[    9.697704] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p7->/dev/block/platform/fe310000.sdhci/by-name/system
+<14>[    9.697899] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p7->/dev/block/by-name/system
+<14>[    9.725790] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p5->/dev/block/platform/fe310000.sdhci/by-name/boot_linux
+<14>[    9.740697] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p5->/dev/block/by-name/boot_linux
+<14>[    9.743083] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot0->/dev/block/platform/fe310000.sdhci/by-name/IA_FLASH_SD=1
+<14>[    9.769583] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot0->/dev/block/by-name/IA_FLASH_SD=1
+<14>[    9.772234] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p3->/dev/block/platform/fe310000.sdhci/by-name/bootctrl
+<14>[    9.824948] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p3->/dev/block/by-name/bootctrl
+<14>[    9.827887] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p1->/dev/block/platform/fe310000.sdhci/by-name/uboot
+<14>[    9.863517] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p1->/dev/block/by-name/uboot
+<14>[    9.865981] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p13->/dev/block/platform/fe310000.sdhci/by-name/eng_chipset
+<6>[    9.920054] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<14>[    9.921440] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p13->/dev/block/by-name/eng_chipset
+<14>[    9.923857] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p11->/dev/block/platform/fe310000.sdhci/by-name/updater
+<14>[    9.923970] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p11->/dev/block/by-name/updater
+<14>[    9.926011] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p8->/dev/block/platform/fe310000.sdhci/by-name/vendor
+<14>[    9.926082] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p8->/dev/block/by-name/vendor
+<14>[   10.031743] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p6->/dev/block/platform/fe310000.sdhci/by-name/ramdisk
+<14>[   10.031929] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p6->/dev/block/by-name/ramdisk
+<14>[   10.065510] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot1->/dev/block/platform/fe310000.sdhci/by-name/ramdisk
+<14>[   10.065623] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot1->/dev/block/by-name/ramdisk
+<6>[   10.103499] read descriptors
+<6>[   10.103626] read strings
+<14>[   10.104436] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 615 key: sys.usb.ffs.ready
+<14>[   10.105274] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'write  /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration hdc' in sub init u:r:chipse
+<14>[   10.105918] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'symlink  /config/usb_gadget/g1/functions/ffs.hdc /config/usb_gadget/g1/configs/b.1/f1' in sub in
+<14>[   10.106334] [pid=240][PLUGIN][INFO][init_context.c:184]Exec cmd 'write  /config/usb_gadget/g1/UDC ${sys.usb.controller}' in sub init u:r:chipset_init:s0
+<14>[   10.127863] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p4->/dev/block/platform/fe310000.sdhci/by-name/resource
+<14>[   10.128008] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p4->/dev/block/by-name/resource
+<14>[   10.174907] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p2->/dev/block/platform/fe310000.sdhci/by-name/misc
+<14>[   10.175023] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p2->/dev/block/by-name/misc
+<14>[   10.177177] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p14->/dev/block/platform/fe310000.sdhci/by-name/userdata
+<14>[   10.177266] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0p14->/dev/block/by-name/userdata
+<3>[   10.181118] of_dma_request_slave_channel: dma-names property of node '/serial@fe680000' missing or empty
+<4>[   10.181257] dw-apb-uart fe680000.serial: failed to request DMA, use interrupt mode
+<3>[   10.190218] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.190277] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   10.197914] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.197961] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<14>[   10.209905] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot0->/dev/block/platform/fe310000.sdhci/by-name/userdata
+<14>[   10.210099] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot0->/dev/block/by-name/userdata
+<6>[   10.256323] gc8034 4-0037: gc8034_g_mbus_config(2245) enter!
+<6>[   10.275627] gc8034 4-0037: set vb value 0x223
+<6>[   10.283464] gc8034 4-0037: set exposure value 0xe1
+<14>[   10.299071] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot1->/dev/block/platform/fe310000.sdhci/by-name/p1
+<14>[   10.299209] [pid=231][ueventd][INFO][ueventd_device_handler.c:84]symlink /dev/block/mmcblk0boot1->/dev/block/by-name/p1
+<4>[   10.317608] kauditd_printk_skb: 299 callbacks suppressed
+<5>[   10.317615] audit: type=1400 audit(1501923612.446:316): avc:  denied  { read } for  pid=531 comm="distributeddata" name="online" dev="sysfs" ino=4917 scontext=u:r:distributeddata:s0 tcontext=u:object_r:sysfs_devices_system_cpu:s0 tclass=file permissive=0
+<5>[   10.388687] audit: type=1400 audit(1501923612.516:317): avc:  denied  { search } for  pid=560 comm="SaInit3" name="etc" dev="mmcblk0p10" ino=12 scontext=u:r:foundation:s0 tcontext=u:object_r:chip_prod_file:s0 tclass=dir permissive=0
+<5>[   10.388734] audit: type=1400 audit(1501923612.516:318): avc:  denied  { search } for  pid=560 comm="SaInit0" name="etc" dev="mmcblk0p10" ino=12 scontext=u:r:foundation:s0 tcontext=u:object_r:chip_prod_file:s0 tclass=dir permissive=0
+<14>[   10.400342] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 3 pid 256 key: ohos.ctl.start
+<14>[   10.400652] [pid=1][Init][INFO][init_service_manager.c:1088]Start service installs|511#0#load##-1#
+<14>[   10.401512] [pid=1][Init][INFO][init_common_service.c:534]Service installs(pid 784) started
+<14>[   10.418713] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 551 key: bootevent.useriam.fwkready
+<14>[   10.420848] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 3 pid 551 key: bootevent.useriam.fwkready
+<14>[   10.421477] [pid=1][Init][INFO][init_service_manager.c:1088]Start service pinauth
+<14>[   10.422393] [pid=1][Init][INFO][init_common_service.c:534]Service pinauth(pid 788) started
+<5>[   10.477880] audit: type=1400 audit(1501923612.606:319): avc:  denied  { read write } for  pid=784 comm="sa_main" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:installs:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<5>[   10.531719] audit: type=1400 audit(1501923612.660:320): avc:  denied  { read } for  pid=784 comm="installs" name="online" dev="sysfs" ino=4917 scontext=u:r:installs:s0 tcontext=u:object_r:sysfs_devices_system_cpu:s0 tclass=file permissive=0
+<3>[   10.615779] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.615842] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   10.619048] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.619097] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<5>[   10.623229] audit: type=1400 audit(1501923612.750:321): avc:  denied  { read write } for  pid=788 comm="sa_main" path="/dev/console" dev="tmpfs" ino=40 scontext=u:r:pinauth:s0 tcontext=u:object_r:dev_console_file:s0 tclass=chr_file permissive=0
+<5>[   10.623751] audit: type=1400 audit(1501923612.753:322): avc:  denied  { search } for  pid=560 comm="ffrtwk/CPU-2-0" name="etc" dev="mmcblk0p10" ino=12 scontext=u:r:foundation:s0 tcontext=u:object_r:chip_prod_file:s0 tclass=dir permissive=0
+<3>[   10.626067] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.626095] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   10.626760] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   10.626782] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<5>[   10.634353] audit: type=1400 audit(1501923612.763:323): avc:  denied  { getattr } for  pid=457 comm="bgtaskmgr_servi" path="/system/usr/ohos_locale_config/supported_regions.xml" dev="mmcblk0p7" ino=3240 scontext=u:r:bgtaskmgr_service:s0 tcontext=u:object_r:system_usr_file:s0 tclass=file permissive=0
+<5>[   10.638445] audit: type=1400 audit(1501923612.766:324): avc:  denied  { getattr } for  pid=457 comm="bgtaskmgr_servi" path="/system/usr/ohos_locale_config/supported_regions.xml" dev="mmcblk0p7" ino=3240 scontext=u:r:bgtaskmgr_service:s0 tcontext=u:object_r:system_usr_file:s0 tclass=file permissive=0
+<5>[   10.638696] audit: type=1400 audit(1501923612.766:325): avc:  denied  { getattr } for  pid=457 comm="bgtaskmgr_servi" path="/system/usr/ohos_locale_config/supported_regions.xml" dev="mmcblk0p7" ino=3240 scontext=u:r:bgtaskmgr_service:s0 tcontext=u:object_r:system_usr_file:s0 tclass=file permissive=0
+<6>[   10.804706] [I/USB_PNP_NOTIFY] UsbPnpNotifyCallback: action=0x5
+<6>[   10.804753] [I/USB_PNP_NOTIFY] UsbPnpNotifyCallback:700 g_gadgetPnpNotifyType = 30
+<6>[   10.804984] [I/USB_PNP_NOTIFY] GadgetPnpNotifyReportThread: GadgetPnpNotifyReportThread start!
+<14>[   10.807957] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 4 pid 256 key: ohos.ctl.start
+<14>[   10.808124] [pid=1][Init][INFO][init_service_manager.c:1088]Start service usb_service|4201#0#load##-1#
+<14>[   10.808966] [pid=1][Init][INFO][init_common_service.c:534]Service usb_service(pid 817) started
+<6>[   10.815381]  hmdfs: hmdfs_make_bitem() make bundle item = cn.openharmony.inputmethodchoosedialog
+<6>[   10.815669]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.815686]  hmdfs: insert_appid_hash_entry() insert name = cn.openharmony.inputmethodchoosedialog
+<6>[   10.815929]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.815941]  sharefs: insert_appid_hash_entry() insert name = cn.openharmony.inputmethodchoosedialog
+<6>[   10.816049]  hmdfs: hmdfs_make_bitem() make bundle item = cn.openharmony.pasteboarddialog
+<6>[   10.816129]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.816139]  hmdfs: insert_appid_hash_entry() insert name = cn.openharmony.pasteboarddialog
+<6>[   10.816256]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.816266]  sharefs: insert_appid_hash_entry() insert name = cn.openharmony.pasteboarddialog
+<6>[   10.816331]  hmdfs: hmdfs_make_bitem() make bundle item = com.example.kikakeyboard
+<6>[   10.816405]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.816414]  hmdfs: insert_appid_hash_entry() insert name = com.example.kikakeyboard
+<6>[   10.816524]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.816534]  sharefs: insert_appid_hash_entry() insert name = com.example.kikakeyboard
+<6>[   10.816598]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.UserFile.ExternalFileManager
+<6>[   10.816736]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.816747]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.UserFile.ExternalFileManager
+<6>[   10.816885]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.816897]  sharefs: insert_appid_hash_entry() insert name = com.ohos.UserFile.ExternalFileManager
+<6>[   10.816980]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.adminprovisioning
+<6>[   10.817058]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.817069]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.adminprovisioning
+<6>[   10.817199]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.817209]  sharefs: insert_appid_hash_entry() insert name = com.ohos.adminprovisioning
+<6>[   10.817276]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.amsdialog
+<6>[   10.817348]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.817358]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.amsdialog
+<6>[   10.817470]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.817479]  sharefs: insert_appid_hash_entry() insert name = com.ohos.amsdialog
+<6>[   10.817545]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.callui
+<6>[   10.817633]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.817642]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.callui
+<6>[   10.817763]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.817772]  sharefs: insert_appid_hash_entry() insert name = com.ohos.callui
+<6>[   10.817839]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.camera
+<6>[   10.817911]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.817919]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.camera
+<6>[   10.818027]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.818037]  sharefs: insert_appid_hash_entry() insert name = com.ohos.camera
+<6>[   10.818102]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.certmanager
+<6>[   10.818173]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.818182]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.certmanager
+<6>[   10.818290]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.818299]  sharefs: insert_appid_hash_entry() insert name = com.ohos.certmanager
+<6>[   10.818361]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.contacts
+<6>[   10.818433]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.818442]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.contacts
+<6>[   10.818549]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.818558]  sharefs: insert_appid_hash_entry() insert name = com.ohos.contacts
+<6>[   10.818624]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.contactsdataability
+<6>[   10.818697]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.818706]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.contactsdataability
+<6>[   10.818831]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.818842]  sharefs: insert_appid_hash_entry() insert name = com.ohos.contactsdataability
+<6>[   10.818908]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.devicemanagerui
+<6>[   10.818982]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.818991]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.devicemanagerui
+<6>[   10.819123]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.819133]  sharefs: insert_appid_hash_entry() insert name = com.ohos.devicemanagerui
+<6>[   10.819207]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.filepicker
+<6>[   10.819288]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.819298]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.filepicker
+<6>[   10.819422]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.819432]  sharefs: insert_appid_hash_entry() insert name = com.ohos.filepicker
+<6>[   10.819508]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.formrenderservice
+<6>[   10.819586]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.819595]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.formrenderservice
+<6>[   10.819739]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.819751]  sharefs: insert_appid_hash_entry() insert name = com.ohos.formrenderservice
+<6>[   10.819822]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.launcher
+<6>[   10.819903]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.819913]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.launcher
+<6>[   10.820118]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.820132]  sharefs: insert_appid_hash_entry() insert name = com.ohos.launcher
+<6>[   10.820220]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.medialibrary.medialibrarydata
+<6>[   10.820303]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.820315]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.medialibrary.medialibrarydata
+<6>[   10.820452]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.820465]  sharefs: insert_appid_hash_entry() insert name = com.ohos.medialibrary.medialibrarydata
+<6>[   10.820542]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.mms
+<6>[   10.820622]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.820634]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.mms
+<6>[   10.820762]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.820774]  sharefs: insert_appid_hash_entry() insert name = com.ohos.mms
+<6>[   10.820845]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.note
+<6>[   10.820925]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.820935]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.note
+<6>[   10.821074]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.821086]  sharefs: insert_appid_hash_entry() insert name = com.ohos.note
+<6>[   10.821172]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.notificationdialog
+<6>[   10.821252]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.821262]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.notificationdialog
+<6>[   10.821406]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.821418]  sharefs: insert_appid_hash_entry() insert name = com.ohos.notificationdialog
+<6>[   10.821506]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.nweb
+<6>[   10.821604]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.821614]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.nweb
+<6>[   10.821764]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.821777]  sharefs: insert_appid_hash_entry() insert name = com.ohos.nweb
+<6>[   10.821859]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.permissionmanager
+<6>[   10.821944]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.821954]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.permissionmanager
+<6>[   10.822097]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.822111]  sharefs: insert_appid_hash_entry() insert name = com.ohos.permissionmanager
+<6>[   10.822199]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.photos
+<6>[   10.822289]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.822299]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.photos
+<6>[   10.822447]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.822458]  sharefs: insert_appid_hash_entry() insert name = com.ohos.photos
+<6>[   10.822546]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.powerdialog
+<6>[   10.822642]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.822652]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.powerdialog
+<6>[   10.822801]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.822812]  sharefs: insert_appid_hash_entry() insert name = com.ohos.powerdialog
+<6>[   10.822893]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.screenshot
+<6>[   10.822987]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.822997]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.screenshot
+<6>[   10.823126]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.823138]  sharefs: insert_appid_hash_entry() insert name = com.ohos.screenshot
+<6>[   10.823221]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.settings
+<6>[   10.823396]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.823408]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.settings
+<6>[   10.823567]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.823580]  sharefs: insert_appid_hash_entry() insert name = com.ohos.settings
+<6>[   10.823669]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.settings.faceauth
+<6>[   10.823750]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.823760]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.settings.faceauth
+<6>[   10.823897]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.823909]  sharefs: insert_appid_hash_entry() insert name = com.ohos.settings.faceauth
+<6>[   10.823987]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.settingsdata
+<6>[   10.824077]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.824086]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.settingsdata
+<6>[   10.824226]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.824237]  sharefs: insert_appid_hash_entry() insert name = com.ohos.settingsdata
+<6>[   10.824318]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.sharepickerdialog
+<6>[   10.824399]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.824408]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.sharepickerdialog
+<6>[   10.824537]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.824548]  sharefs: insert_appid_hash_entry() insert name = com.ohos.sharepickerdialog
+<6>[   10.824626]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.smartperf
+<6>[   10.824714]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.824723]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.smartperf
+<6>[   10.824856]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.824867]  sharefs: insert_appid_hash_entry() insert name = com.ohos.smartperf
+<6>[   10.824949]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.systemui
+<6>[   10.825057]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.825068]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.systemui
+<6>[   10.825219]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.825231]  sharefs: insert_appid_hash_entry() insert name = com.ohos.systemui
+<6>[   10.825319]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.telephonydataability
+<6>[   10.825413]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.825423]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.telephonydataability
+<6>[   10.825562]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.825575]  sharefs: insert_appid_hash_entry() insert name = com.ohos.telephonydataability
+<6>[   10.825657]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.updateapp
+<6>[   10.825758]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.825768]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.updateapp
+<6>[   10.825914]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.825924]  sharefs: insert_appid_hash_entry() insert name = com.ohos.updateapp
+<6>[   10.826007]  hmdfs: hmdfs_make_bitem() make bundle item = com.ohos.useriam.authwidget
+<6>[   10.826091]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.826101]  hmdfs: insert_appid_hash_entry() insert name = com.ohos.useriam.authwidget
+<6>[   10.826240]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.826251]  sharefs: insert_appid_hash_entry() insert name = com.ohos.useriam.authwidget
+<6>[   10.826329]  hmdfs: hmdfs_make_bitem() make bundle item = com.usb.right
+<6>[   10.826411]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.826420]  hmdfs: insert_appid_hash_entry() insert name = com.usb.right
+<6>[   10.826553]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.826564]  sharefs: insert_appid_hash_entry() insert name = com.usb.right
+<6>[   10.826761]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.backgroundtaskmgr.resources
+<6>[   10.826892]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.826905]  hmdfs: insert_appid_hash_entry() insert name = ohos.backgroundtaskmgr.resources
+<6>[   10.827080]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.827096]  sharefs: insert_appid_hash_entry() insert name = ohos.backgroundtaskmgr.resources
+<6>[   10.827181]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.global.systemres
+<6>[   10.827266]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.827278]  hmdfs: insert_appid_hash_entry() insert name = ohos.global.systemres
+<6>[   10.827408]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.827419]  sharefs: insert_appid_hash_entry() insert name = ohos.global.systemres
+<6>[   10.827503]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.samples.clock
+<6>[   10.827585]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.827595]  hmdfs: insert_appid_hash_entry() insert name = ohos.samples.clock
+<6>[   10.827736]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.827747]  sharefs: insert_appid_hash_entry() insert name = ohos.samples.clock
+<6>[   10.827843]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.samples.distributedcalc
+<6>[   10.827937]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.827946]  hmdfs: insert_appid_hash_entry() insert name = ohos.samples.distributedcalc
+<6>[   10.828082]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.828092]  sharefs: insert_appid_hash_entry() insert name = ohos.samples.distributedcalc
+<6>[   10.828175]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.samples.distributedmusicplayer
+<6>[   10.828261]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.828271]  hmdfs: insert_appid_hash_entry() insert name = ohos.samples.distributedmusicplayer
+<6>[   10.828401]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.828412]  sharefs: insert_appid_hash_entry() insert name = ohos.samples.distributedmusicplayer
+<6>[   10.828490]  hmdfs: hmdfs_make_bitem() make bundle item = ohos.telephony.resources
+<6>[   10.828583]  hmdfs: hmdfs_appid_store() store bundle id
+<6>[   10.828593]  hmdfs: insert_appid_hash_entry() insert name = ohos.telephony.resources
+<6>[   10.828727]  sharefs: sharefs_appid_store() store bundle id
+<6>[   10.828736]  sharefs: insert_appid_hash_entry() insert name = ohos.telephony.resources
+<6>[   10.933748] rk-pcie 3c0800000.pcie: PCIe Linking... LTSSM is 0x0
+<6>[   10.950742] [I/USB_PNP_NOTIFY] UsbPnpNotifyCallback: action=0x5
+<6>[   10.967561] [I/kevent] HdfKeventDriverOpen:kevent usecount=7
+<3>[   10.968459] [E/HDF_AUDIO_KADM] [ControlHostElemUnloadCard][line:168]: get hdmi device fail! hdf_audio_codec_hdmi_dev0
+<6>[   11.000144] android_work: sent uevent USB_STATE=CONNECTED
+<6>[   11.021875] [I/xpm_kernel]test_print_info: /system/lib/libworkschedservice.z.so -> type: dm, info: offset=0x11830 size=0x33320
+<6>[   11.021875] 
+<6>[   11.029784] android_work: sent uevent USB_STATE=CONFIGURED
+<14>[   11.366763] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 5 pid 256 key: ohos.ctl.start
+<14>[   11.366941] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wifi_manager_service|1123#0#load##-1#
+<14>[   11.367866] [pid=1][Init][INFO][init_common_service.c:534]Service wifi_manager_service(pid 861) started
+<3>[   11.583560] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   11.583627] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<14>[   11.615527] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 363 key: accessibility.config.ready
+<6>[   11.761950] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<3>[   11.763062] rockchip-cpuinfo cpuinfo: failed to get id cell: -517
+<6>[   11.768028] rk_gmac-dwmac fe010000.ethernet eth0: PHY [stmmac-1:00] driver [Generic PHY] (irq=POLL)
+<7>[   11.768091] cma: cma_alloc(cma 000000002a0e18ea, count 2, align 1)
+<7>[   11.768933] cma: cma_alloc(): returned 000000000cd4c3b0
+<7>[   11.768989] cma: cma_alloc(cma 000000002a0e18ea, count 2, align 1)
+<7>[   11.770635] cma: cma_alloc(): returned 000000009fa7d981
+<6>[   11.780013] dwmac4: Master AXI performs any burst length
+<6>[   11.780072] rk_gmac-dwmac fe010000.ethernet eth0: No Safety Features support found
+<6>[   11.780109] rk_gmac-dwmac fe010000.ethernet eth0: IEEE 1588-2008 Advanced Timestamp supported
+<6>[   11.780661] rk_gmac-dwmac fe010000.ethernet eth0: registered PTP clock
+<6>[   11.816543] rk_gmac-dwmac fe010000.ethernet eth0: configuring for phy/rgmii link mode
+<6>[   11.823429] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<6>[   11.823747] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<6>[   11.826101] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<3>[   11.827209] rockchip-cpuinfo cpuinfo: failed to get id cell: -517
+<6>[   11.829949] rk_gmac-dwmac fe2a0000.ethernet eth1: PHY [stmmac-0:00] driver [Generic PHY] (irq=POLL)
+<7>[   11.830133] cma: cma_alloc(cma 000000002a0e18ea, count 2, align 1)
+<7>[   11.833839] cma: cma_alloc(): returned 00000000056f0c82
+<7>[   11.833887] cma: cma_alloc(cma 000000002a0e18ea, count 2, align 1)
+<7>[   11.834212] cma: cma_alloc(): returned 00000000ab9be900
+<6>[   11.844049] dwmac4: Master AXI performs any burst length
+<6>[   11.844107] rk_gmac-dwmac fe2a0000.ethernet eth1: No Safety Features support found
+<6>[   11.844139] rk_gmac-dwmac fe2a0000.ethernet eth1: IEEE 1588-2008 Advanced Timestamp supported
+<6>[   11.846395] rk_gmac-dwmac fe2a0000.ethernet eth1: registered PTP clock
+<6>[   11.858748] rk_gmac-dwmac fe2a0000.ethernet eth1: configuring for phy/rgmii link mode
+<6>[   11.869840] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<3>[   11.947004] rk-pcie 3c0800000.pcie: PCIe Link Fail
+<3>[   11.947054] rk-pcie 3c0800000.pcie: failed to initialize host
+<7>[   11.947129] pcie30_3v3: ramp_delay not set
+<7>[   12.368035] cma: cma_alloc(cma 000000002a0e18ea, count 32, align 5)
+<7>[   12.369365] cma: cma_alloc(): returned 00000000ed4dcb78
+<6>[   12.390178] [I/HDF_AUDIO_SAPM] [AudioSapmPowerUpSeqRun][line:989]: Sapm Codec MIC2 Power Up.
+<6>[   12.390606] [I/HDF_AUDIO_SAPM] [AudioSapmPowerUpSeqRun][line:989]: Sapm Codec ADCR Power Up.
+<6>[   12.391005] [I/HDF_AUDIO_SAPM] [AudioSapmPowerUpSeqRun][line:989]: Sapm Codec ADCL Power Up.
+<6>[   12.404231] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 20
+<6>[   12.404412] [I/USB_PNP_NOTIFY] UsbPnpNotifyDispatch: received cmd = 42
+<7>[   12.406897] cma: cma_alloc(cma 000000002a0e18ea, count 32, align 5)
+<7>[   12.411149] cma: cma_alloc(): returned 00000000df410368
+<6>[   12.412317] [I/HDF_AUDIO_SAPM] [AudioSapmPowerDownSeqRun][line:1023]: Sapm Codec ADCL Power Down.
+<6>[   12.421755] [I/HDF_AUDIO_SAPM] [AudioSapmPowerUpSeqRun][line:989]: Sapm Codec ADCL Power Up.
+<14>[   12.434427] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 330 key: persist.resourceschedule.memmgr.eswap.permanently.closed
+<6>[   12.435496] [HYPERHOLD]hyperhold memory overhead = 0.
+<3>[   12.435585] [HYPERHOLD]open file /dev/by-name/hyperhold failed, err = -2!
+<6>[   12.435592] [HYPERHOLD]hyperhold bdev unbinded.
+<3>[   12.435598] [HYPERHOLD]hyperhold enable failed!
+<6>[   12.462424] purgemm: Sum: 0 pined in 0 pages
+<6>[   12.640050] hungtask_base whitelist[0]-init-1
+<6>[   12.640255] hungtask_base whitelist[1]-appspawn-253
+<14>[   12.755100] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 560 key: bootevent.appfwk.ready
+<3>[   12.800591] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/app/el1/bundle/public/com.ohos.nweb/libs/arm/libweb_engine.so signature info failed, errno = 22
+<6>[   12.800678] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923614, "pid": 408, "filename": "/data/app/el1/bundle/public/com.ohos.nweb/libs/arm/libweb_engine.so" }
+<6>[   12.849415] [dhd] CFG80211-ERROR) wl_cfg80211_netdev_notifier_call : wdev null. Do nothing
+<4>[   12.991018] binder_transaction: 3111 callbacks suppressed
+<6>[   12.991025] binder: 593:1000 transaction failed 29201/-1, size 80-8 line 3610
+<3>[   13.036260] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.061437] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.114137] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/app/el1/bundle/public/com.ohos.nweb/libs/arm/libnweb_render.so signature info failed, errno = 22
+<6>[   13.114291] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923615, "pid": 408, "filename": "/data/app/el1/bundle/public/com.ohos.nweb/libs/arm/libnweb_render.so" }
+<6>[   13.139673] Freeing drm_logo memory: 10808K
+<3>[   13.210926] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<6>[   13.215350]  hmdfs: hmdfs_do_load() No file path
+<6>[   13.215504]  hmdfs: hmdfs_do_load() No file path
+<3>[   13.219433] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<6>[   13.238662]  hmdfs: hmdfs_do_load() No file path
+<6>[   13.238734]  hmdfs: hmdfs_do_load() No file path
+<6>[   13.247827] sharefs: mounted on top of /data/service/el2/100/share type f2fs
+<3>[   13.273487] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.294669] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.336568] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.345257] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.364437] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.373670] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.402355] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   13.419234] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   14.240071] bbox:[err][system_adapter.c:180] Get last log from strorage failed!
+<3>[   14.240120] bbox:[err][blackbox_core.c:398] [SYSTEM] failed to get log info!
+<3>[   14.324713] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so signature info failed, errno = 22
+<6>[   14.324770] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923616, "pid": 1054, "filename": "/data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so" }
+<3>[   14.366615] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<14>[   14.475754] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 324 key: input.pointer.device
+<6>[   14.748001] [I/xpm_kernel]test_print_info: /system/lib/module/librouter.z.so -> type: dm, info: offset=0x26b8 size=0xa618
+<6>[   14.748001] 
+<3>[   15.248258] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so signature info failed, errno = 22
+<6>[   15.248395] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923617, "pid": 1094, "filename": "/data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so" }
+<3>[   15.353761] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<6>[   15.473804] binder: undelivered death notification, 00000000f69919c0
+<14>[   15.495222] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 4 pid 560 key: bootevent.wms.fullscreen.ready
+<6>[   15.501268] [QOS_CTRL] same status, no need to switch qos
+<6>[   15.555801] [QOS_CTRL] same status, no need to switch qos
+<3>[   15.572595] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so signature info failed, errno = 22
+<6>[   15.572658] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923617, "pid": 1122, "filename": "/data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so" }
+<3>[   15.650881] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   15.735127] [AUTH_CTRL] no auth data for this uid=20010023
+<3>[   15.735180] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   15.781877] [AUTH_CTRL] no auth data for this uid=20010023, delete failed
+<3>[   15.781927] [AUTH_CTRL] BASIC_AUTH_CTRL_OPERATION failed
+<6>[   15.840107] hungtask_base whitelist[0]-init-1
+<6>[   15.840253] hungtask_base whitelist[1]-appspawn-253
+<14>[   16.031289] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 2 pid 581 key: bootevent.bootanimation.started
+<14>[   16.031597] [pid=1][Init][INFO][bootevent.c:253]All boot events are fired, boot complete now ...
+<14>[   16.038319] [pid=1][BEGET][INFO][init_utils.c:497]Success create /data/service/el0/startup/init/201775-170.bootevent
+<14>[   16.043483] [pid=1][PLUGIN][INFO][startup_time_event.c:105]SysEventInit 16.40026 detailTime len 136 'param_watcher,5:436531,8:493850;samgr,5:435139,8:492247;bo
+<14>[   16.044876] [pid=1][PLUGIN][INFO][init_hook.c:129]CmdClear clear cmd: bootevent
+<14>[   16.045624] [pid=1][PLUGIN][INFO][init_hook.c:229]boot start complete
+<11>[   16.045688] [pid=1][BEGET][ERROR][modulemgr.c:282]Can not find module inittrace
+<11>[   16.045703] [pid=1][BEGET][ERROR][modulemgr.c:282]Can not find module init_bootDetector
+<11>[   16.072036] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process bootanimation(pid 581) exit with code : 0
+<14>[   16.072095] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:bootanimation pid:581 uid:1003 status:0.
+<14>[   16.072110] [pid=1][Init][INFO][init_common_service.c:655]Reap service bootanimation, pid 581.
+<11>[   16.094899] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process module_update_service(pid 242) exit with code : 0
+<14>[   16.094967] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:module_update_service pid:242 uid:6666 status:0.
+<14>[   16.094984] [pid=1][Init][INFO][init_common_service.c:655]Reap service module_update_service, pid 242.
+<4>[   16.109748] kauditd_printk_skb: 87 callbacks suppressed
+<5>[   16.109755] audit: type=1400 audit(1501923618.236:413): avc:  denied  { getattr } for  pid=461 comm="udevd" path="/data/service/el1/public/udev/data/+backlight:backlight" dev="mmcblk0p14" ino=1492 scontext=u:r:udevd:s0 tcontext=u:object_r:data_udev:s0 tclass=file permissive=0
+<5>[   16.114939] audit: type=1400 audit(1501923618.243:414): avc:  denied  { dac_override } for  pid=461 comm="udevd" capability=1  scontext=u:r:udevd:s0 tcontext=u:r:udevd:s0 tclass=capability permissive=0
+<5>[   16.115770] audit: type=1400 audit(1501923618.243:415): avc:  denied  { dac_override } for  pid=461 comm="udevd" capability=1  scontext=u:r:udevd:s0 tcontext=u:r:udevd:s0 tclass=capability permissive=0
+<5>[   16.116234] audit: type=1400 audit(1501923618.243:416): avc:  denied  { getattr } for  pid=461 comm="udevd" path="/data/service/el1/public/udev/data/+backlight:backlight.tmp" dev="mmcblk0p14" ino=1930 scontext=u:r:udevd:s0 tcontext=u:object_r:data_udev:s0 tclass=file permissive=0
+<3>[   16.165007] hungtask_user only accept on off or kick
+<6>[   16.165259] hungtask_user process 560 is kicked
+<5>[   16.172840] audit: type=1400 audit(1501923618.300:417): avc:  denied  { search } for  pid=560 comm="IPC_3_881" name="etc" dev="mmcblk0p10" ino=12 scontext=u:r:foundation:s0 tcontext=u:object_r:chip_prod_file:s0 tclass=dir permissive=0
+<3>[   16.219603] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<5>[   16.287277] audit: type=1400 audit(1501923618.416:418): avc:  denied  { getattr } for  pid=715 comm="udevd" path="/data/service/el1/public/udev/data/+backlight:backlight" dev="mmcblk0p14" ino=1930 scontext=u:r:udevd:s0 tcontext=u:object_r:data_udev:s0 tclass=file permissive=0
+<5>[   16.288505] audit: type=1400 audit(1501923618.416:419): avc:  denied  { dac_override } for  pid=715 comm="udevd" capability=1  scontext=u:r:udevd:s0 tcontext=u:r:udevd:s0 tclass=capability permissive=0
+<5>[   16.288537] audit: type=1400 audit(1501923618.416:420): avc:  denied  { dac_override } for  pid=715 comm="udevd" capability=1  scontext=u:r:udevd:s0 tcontext=u:r:udevd:s0 tclass=capability permissive=0
+<5>[   16.288976] audit: type=1400 audit(1501923618.416:421): avc:  denied  { getattr } for  pid=715 comm="udevd" path="/data/service/el1/public/udev/data/+backlight:backlight.tmp" dev="mmcblk0p14" ino=1932 scontext=u:r:udevd:s0 tcontext=u:object_r:data_udev:s0 tclass=file permissive=0
+<14>[   16.344800] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 3 pid 363 key: accessibility.config.ready
+<5>[   16.416963] audit: type=1400 audit(1501923618.543:422): avc:  denied  { write } for  pid=336 comm="rssDispatcher" name="paramservice" dev="tmpfs" ino=50 scontext=u:r:resource_schedule_service:s0 tcontext=u:object_r:paramservice_socket:s0 tclass=sock_file permissive=0
+<3>[   16.601994]  hmdfs: get_cloud_cache_file() open fail -13
+<14>[   16.733836] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 6 pid 256 key: ohos.ctl.start
+<14>[   16.733973] [pid=1][Init][INFO][init_service_manager.c:1088]Start service deviceprofile|6001#4#usual.event.BOOT_COMPLETED#0#4#
+<14>[   16.734873] [pid=1][Init][INFO][init_common_service.c:534]Service deviceprofile(pid 1188) started
+<3>[   16.742398] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   16.840648] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so signature info failed, errno = 22
+<6>[   16.840743] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923618, "pid": 1180, "filename": "/data/storage/el1/bundle/libs/arm/libtel_telephony_data.z.so" }
+<3>[   16.871580] [E/xpm_kernel]xpm_check_signature_error: xpm get /data/storage/el1/bundle/libs/arm/libmedialibrary_data_extension.z.so signature info failed, errno = 22
+<6>[   16.871637] [I/xpm_kernel]report_security_info: 1011009111: { "event_type": "unkown file format", "timestamp": 1501923619, "pid": 1171, "filename": "/data/storage/el1/bundle/libs/arm/libmedialibrary_data_extension.z.so" }
+<3>[   16.911931] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   16.953354] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   16.997458] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   17.076925] [E/xpm_kernel]xpm_check_prot: xpm region mmap not allow anonymous/exec/write permission
+<3>[   17.279190]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.280035]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.280929]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.282775]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.283725]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.285669]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.286518]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.288701]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.289456]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.291603]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.292366]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.294424]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.295157]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.297218]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.298056]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.300023]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.300945]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.335482]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.335888]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.338576]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.339276]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.340007]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.340764]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.341417]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.342077]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.342867]  hmdfs: get_cloud_cache_file() open fail -2
+<3>[   17.343428]  hmdfs: get_cloud_cache_file() open fail -2
+<6>[   18.673833] [QOS_CTRL] same status, no need to switch qos
+<6>[   19.041202] hungtask_base whitelist[0]-init-1
+<6>[   19.041340] hungtask_base whitelist[1]-appspawn-253
+<14>[   21.614195] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 5 pid 560 key: startup.service.ctl.broker
+<12>[   21.615354] avc:  denied  { set } for parameter=startup.service.ctl.broker pid=560 uid=5523 gid=1000 scontext=u:r:foundation:s0 tcontext=u:object_r:startup_init_param:s0 tclass=parameter_service permissive=0
+<11>[   21.615618] [pid=1][PARAM][ERROR][param_base.c:485]Selinux check name startup.service.ctl.broker in u:object_r:startup_init_param:s0 info [560 5523 1000] resul
+<11>[   21.615693] [pid=1][PARAM][ERROR][param_manager.c:654]Forbid to access startup.service.ctl.broker label 5300 10
+<11>[   21.615733] [pid=1][PARAM][ERROR][param_service.c:142]Forbid to set parameter startup.service.ctl.broker
+<6>[   22.240124] hungtask_base whitelist[0]-init-1
+<6>[   22.240362] hungtask_base whitelist[1]-appspawn-253
+<4>[   22.362890] kauditd_printk_skb: 3 callbacks suppressed
+<5>[   22.362905] audit: type=1400 audit(1501923624.490:426): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.364844] audit: type=1400 audit(1501923624.493:427): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.366216] audit: type=1400 audit(1501923624.493:428): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.367826] audit: type=1400 audit(1501923624.496:429): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.369270] audit: type=1400 audit(1501923624.496:430): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.370833] audit: type=1400 audit(1501923624.500:431): avc:  denied  { read } for  pid=540 comm="cloudfiledaemon" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.374320] audit: type=1400 audit(1501923624.503:432): avc:  denied  { read } for  pid=540 comm="SaOndemand" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.376214] audit: type=1400 audit(1501923624.503:433): avc:  denied  { search } for  pid=540 comm="SaOndemand" name="/" dev="tracefs" ino=1 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:tracefs:s0 tclass=dir permissive=0
+<5>[   22.376477] audit: type=1400 audit(1501923624.503:434): avc:  denied  { read } for  pid=540 comm="SaOndemand" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<5>[   22.378354] audit: type=1400 audit(1501923624.506:435): avc:  denied  { read } for  pid=540 comm="SaOndemand" name="u:object_r:hilog_param:s0" dev="tmpfs" ino=69 scontext=u:r:cloudfiledaemon:s0 tcontext=u:object_r:hilog_param:s0 tclass=file permissive=0
+<6>[   22.503142] hungtask_user process 560 is kicked
+<6>[   25.440154] hungtask_base whitelist[0]-init-1
+<6>[   25.440382] hungtask_base whitelist[1]-appspawn-253
+<6>[   28.640369] hungtask_base whitelist[0]-init-1
+<6>[   28.640649] hungtask_base whitelist[1]-appspawn-253
+<6>[   31.840288] hungtask_base whitelist[0]-init-1
+<6>[   31.840593] hungtask_base whitelist[1]-appspawn-253
+<4>[   32.952059] kauditd_printk_skb: 24 callbacks suppressed
+<5>[   32.952074] audit: type=1400 audit(1501923635.080:460): avc:  denied  { getattr } for  pid=1320 comm="sh" path="/data/local/tmp" dev="mmcblk0p14" ino=98 scontext=u:r:sh:s0 tcontext=u:object_r:data_local_tmp:s0 tclass=dir permissive=1
+<6>[   33.760209] vcc3v3_lcd1_n: disabling
+<6>[   33.760389] pcie30_3v3: disabling
+<6>[   35.040293] hungtask_base whitelist[0]-init-1
+<6>[   35.040582] hungtask_base whitelist[1]-appspawn-253
+<5>[   35.387725] audit: type=1400 audit(1501923637.516:461): avc:  denied  { dac_read_search } for  pid=1320 comm="sh" capability=2  scontext=u:r:sh:s0 tcontext=u:r:sh:s0 tclass=capability permissive=1
+<3>[   36.407498] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   36.407633] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   36.413406] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   36.413555] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<6>[   38.240358] hungtask_base whitelist[0]-init-1
+<6>[   38.240632] hungtask_base whitelist[1]-appspawn-253
+<14>[   40.154494] [pid=240][PLUGIN][INFO][init_context.c:223]Poll sub init timeout, sub init 0 exit
+<11>[   40.157783] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process Unknown(pid 240) exit with code : 127
+<14>[   40.158074] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:Unknown pid:240 uid:0 status:32512.
+<6>[   40.373233] hungtask_user process 560 is kicked
+<6>[   41.440236] hungtask_base whitelist[0]-init-1
+<6>[   41.440537] hungtask_base whitelist[1]-appspawn-253
+<3>[   41.759446] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   41.759578] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<6>[   44.640227] hungtask_base whitelist[0]-init-1
+<6>[   44.640507] hungtask_base whitelist[1]-appspawn-253
+<3>[   46.417150] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   46.417237] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<5>[   46.423462] audit: type=1400 audit(1501923648.546:462): avc:  denied  { getopt } for  pid=589 comm="render_service" scontext=u:r:render_service:s0 tcontext=u:r:render_service:s0 tclass=unix_dgram_socket permissive=0
+<5>[   46.423537] audit: type=1400 audit(1501923648.546:463): avc:  denied  { setopt } for  pid=589 comm="render_service" scontext=u:r:render_service:s0 tcontext=u:r:render_service:s0 tclass=unix_dgram_socket permissive=0
+<5>[   46.423568] audit: type=1400 audit(1501923648.546:464): avc:  denied  { getopt } for  pid=589 comm="render_service" scontext=u:r:render_service:s0 tcontext=u:r:render_service:s0 tclass=unix_dgram_socket permissive=0
+<6>[   46.424970] [I/kevent] KeventFbNotifierFn:blank=4
+<6>[   46.424983] [I/kevent] KeventFbNotifierFn:receive display off event
+<6>[   46.434760] [I/devmgr_service] DevmgrServicePowerStateChange:suspend state 1
+<7>[   46.434778] [D/devhost_service] host(test_host) set power state=1
+<6>[   46.434796] [I/sample_driver_test] HdfSampleDozeSuspend:called
+<6>[   46.434805] [I/pm_driver_test] HdfPmTestDozeSuspend called
+<7>[   46.434815] [D/devhost_service] host(audio_host) set power state=1
+<7>[   46.434832] [D/devhost_service] host(display_host) set power state=1
+<7>[   46.434844] [D/devhost_service] host(input_host) set power state=1
+<6>[   46.434855] [I/HDF_LOG_TAG] HdfTouchDriverDozeSuspend:called
+<6>[   46.435486] [I/HDF_LOG_TAG] HdfTouchDriverDozeSuspend:ret = 0
+<7>[   46.435503] [D/devhost_service] host(network_host) set power state=1
+<7>[   46.435513] [D/devhost_service] host(camera_host0) set power state=1
+<7>[   46.435522] [D/devhost_service] host(sensor_host) set power state=1
+<7>[   46.435533] [D/devhost_service] host(usb_pnp_linux_host) set power state=1
+<7>[   46.435543] [D/devhost_service] host(vibrator_host) set power state=1
+<7>[   46.435553] [D/devhost_service] host(light_host) set power state=1
+<7>[   46.435562] [D/devhost_service] host(base_host) set power state=1
+<7>[   46.435571] [D/devhost_service] host(platform_host) set power state=1
+<3>[   46.458848] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   46.458973] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<6>[   46.469566] hungtask_user process 560 is kicked
+<6>[   47.840285] hungtask_base whitelist[0]-init-1
+<6>[   47.840618] hungtask_base whitelist[1]-appspawn-253
+<6>[   51.040230] hungtask_base whitelist[0]-init-1
+<6>[   51.040498] hungtask_base whitelist[1]-appspawn-253
+<6>[   54.240296] hungtask_base whitelist[0]-init-1
+<6>[   54.240572] hungtask_base whitelist[1]-appspawn-253
+<5>[   55.416249] audit: type=1400 audit(1501923657.543:465): avc:  denied  { dac_read_search } for  pid=1422 comm="ls" capability=2  scontext=u:r:sh:s0 tcontext=u:r:sh:s0 tclass=capability permissive=1
+<5>[   55.417449] audit: type=1400 audit(1501923657.546:466): avc:  denied  { getattr } for  pid=1422 comm="ls" path="/data/device_attest" dev="mmcblk0p14" ino=132 scontext=u:r:sh:s0 tcontext=u:object_r:data_device_attest:s0 tclass=dir permissive=1
+<6>[   57.440235] hungtask_base whitelist[0]-init-1
+<6>[   57.440516] hungtask_base whitelist[1]-appspawn-253
+<3>[   57.875102] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   57.875228] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<3>[   57.878411] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   57.878517] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<5>[   60.527618] audit: type=1400 audit(1501923662.656:467): avc:  denied  { getattr } for  pid=1439 comm="ls" path="/data/log/hiview" dev="mmcblk0p14" ino=24 scontext=u:r:sh:s0 tcontext=u:object_r:hiview_file:s0 tclass=dir permissive=1
+<6>[   60.640295] hungtask_base whitelist[0]-init-1
+<6>[   60.640599] hungtask_base whitelist[1]-appspawn-253
+<6>[   63.843626] hungtask_base whitelist[0]-init-1
+<6>[   63.843895] hungtask_base whitelist[1]-appspawn-253
+<14>[   65.510253] [pid=231][ueventd][INFO][ueventd_main.c:39]poll ueventd socket timeout, ueventd exit
+<11>[   65.513571] [pid=1][Init][ERROR][init_signal_handler.c:47]Child process ueventd(pid 231) exit with code : 0
+<14>[   65.513760] [pid=1][Init][INFO][init_signal_handler.c:56]SigHandler, SIGCHLD received, Service:ueventd pid:231 uid:1004 status:0.
+<14>[   65.513829] [pid=1][Init][INFO][init_common_service.c:655]Reap service ueventd, pid 231.
+<14>[   65.514345] [pid=1][Init][INFO][init_service_socket.c:195]Watcher socket fd 13 for service ueventd
+<6>[   70.373721] hungtask_user process 560 is kicked
+<3>[   71.777307] [AUTH_CTRL] no auth data for this uid=5523
+<3>[   71.777426] [QOS_CTRL] do_qos_ctrl_ioctl: uid not authorized
+<6>[   76.427505] hungtask_user process 560 is kicked
+<5>[   80.894319] audit: type=1400 audit(1501923683.023:468): avc:  denied  { write } for  pid=1320 comm="sh" name="sysrq-trigger" dev="proc" ino=4026532370 scontext=u:r:sh:s0 tcontext=u:object_r:proc_sysrq_trigger_file:s0 tclass=file permissive=1
+<6>[   80.894383] sysrq: Trigger a crash
+<5>[   80.894463] audit: type=1400 audit(1501923683.023:469): avc:  denied  { open } for  pid=1320 comm="sh" path="/proc/sysrq-trigger" dev="proc" ino=4026532370 scontext=u:r:sh:s0 tcontext=u:object_r:proc_sysrq_trigger_file:s0 tclass=file permissive=1
+<0>[   80.894505] Kernel panic - not syncing: sysrq triggered crash
+<4>[   80.899064] CPU: 1 PID: 1320 Comm: sh Not tainted 5.10.163 #2
+<4>[   80.899593] Hardware name: rockchip,rk3568-toybrick-dev-linux-x0 (DT)
+<4>[   80.900182] Stack backtrace:
+<4>[   80.900449]  dump_backtrace+0x0/0x8
+<4>[   80.900801]  show_stack+0x24/0x30
+<4>[   80.901132]  dump_stack+0xc0/0x11c
+<4>[   80.901463]  panic+0x168/0x3e0
+<4>[   80.901771]  sysrq_handle_term+0x0/0x38
+<4>[   80.902135]  __handle_sysrq+0x170/0x1b8
+<4>[   80.902501]  write_sysrq_trigger+0xb4/0xe0
+<4>[   80.902891]  proc_reg_write+0x90/0x1a0
+<4>[   80.903260]  vfs_write+0x14c/0x410
+<4>[   80.903587]  ksys_write+0x84/0xf4
+<4>[   80.903912]  __arm64_sys_write+0x28/0x34
+<4>[   80.904289]  el0_svc_common+0x134/0x22c
+<4>[   80.904658]  el0_svc_compat+0x1c/0x28
+<4>[   80.905009]  el0_sync_compat_handler+0xc0/0xf0
+<4>[   80.905431]  el0_sync_compat+0x184/0x1c0
+<2>[   80.905808] SMP: stopping secondary CPUs
+<4>[   80.906297] PMU CRU:
+<4>[   80.906542] 00000000: 00006064 00001481 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.907333] 00000020: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.908122] 00000040: 00002063 00001481 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.908910] 00000060: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.909698] 00000080: 00000001 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.910485] 000000a0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.911273] 000000c0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.912061] 000000e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.912850] 00000100: 00000080 0040b71b 00000001 00000001 00000800 00000000 00000001 00000009
+<4>[   80.913628] 00000120: 0000050f 00008888 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.914415] 00000140: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.915192] 00000160: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.915980] 00000180: 00000000 000000c3 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.916757] 000001a0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.917545] 000001c0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.918331] 000001e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.919119] 00000200: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.919905] 00000220: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.920680] 00000240: 00040020 00000000
+<4>[   80.921033] CRU:
+<4>[   80.921233] 00000000: 00002044 00001481 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.922020] 00000020: 00004082 00001441 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.922810] 00000040: 00002063 00001441 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.923585] 00000060: 0000107d 00001443 00000000 00000007 00007f00 00000000 00000000 00000000
+<4>[   80.924372] 00000080: 00002064 00001441 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.925160] 000000a0: 00004064 00001441 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.925937] 000000c0: 00005455 00000000 00000000 00000000 00640064 00000000 00000000 00000103
+<4>[   80.926724] 000000e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.927501] 00000100: 000000c0 00000000 00000001 00000101 00000202 00000111 00004155 00000011
+<4>[   80.928288] 00000120: 00000053 00000100 00000001 00008000 00010001 00008000 00010001 00000401
+<4>[   80.929076] 00000140: 01885091 00008401 01885091 00008000 00010001 00008000 00010001 00004000
+<4>[   80.929863] 00000160: 00010001 0000000b 00000000 00000010 00001031 00001c30 00000520 00000000
+<4>[   80.930640] 00000180: 00000220 00000000 00000310 0000c043 0000c0c0 00003100 00000001 00000000
+<4>[   80.931426] 000001a0: 00000407 00000003 00000103 00002100 00000203 00000003 00000000 00000103
+<4>[   80.932213] 000001c0: 00000003 00000303 00000001 00001725 0000200b 00000000 0000200b 00000000
+<4>[   80.933000] 000001e0: 0000200b 00000000 0000200b 00000000 0000200b 00000000 0000200b 00000000
+<4>[   80.933777] 00000200: 0000200b 00000000 0000200b 00000000 0000200b 00000000 00000303 00000203
+<4>[   80.934564] 00000220: 00001500 00000000 0000001f 00000302 00000705 00000f0b 0000013b 00000303
+<4>[   80.935341] 00000240: 00000f07 00002713 00001f09 00008000 00010001 00003b2f 00000101 00000302
+<4>[   80.936128] 00000260: 00000704 0000130f 00001f27 00000000 00000000 00000000 00000000 00000000
+<4>[   80.936916] 00000280: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.937702] 000002a0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.938488] 000002c0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.939274] 000002e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.940059] 00000300: 00000000 00000600 00000009 00000000 00000000 00000000 00000022 0000c223
+<4>[   80.940845] 00000320: 00000000 00000000 00000000 00000000 00000000 0000001f 00000000 00000000
+<4>[   80.941632] 00000340: 00000000 00000003 00000004 00000000 00001400 00000000 00001033 0000f1f3
+<4>[   80.942407] 00000360: 000001c3 000001f3 00000000 00000000 00000090 00000900 000003d3 00000000
+<4>[   80.943194] 00000380: 00000400 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.943981] 000003a0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.944769] 000003c0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.945555] 000003e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.946342] 00000400: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.947129] 00000420: 00000000 00000000 00000002 00000002 00000000 00000000 00000000 00000000
+<4>[   80.947915] 00000440: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.948701] 00000460: 00000000 00000000 00000400 00000000 00000000 00000000 00000000 00000000
+<4>[   80.949489] 00000480: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.950276] 000004a0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.951062] 000004c0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.951840] 000004e0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.952627] 00000500: 00040020 00000000 00040020 00000000 00040020 00000000 00040020 00000000
+<4>[   80.953405] 00000520: 00040020 00000000 00040020 00000000 00040020 00000000 00040020 00000000
+<4>[   80.954191] 00000540: 00040020 00000000 00040020 00000000 00000000 00000000 00000000 00000000
+<4>[   80.954979] 00000560: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>[   80.955745] 00000580: 00000002 00000000

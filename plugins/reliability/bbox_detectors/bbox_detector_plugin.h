@@ -35,7 +35,7 @@ private:
     void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
     bool IsEventProcessed(const std::string& name, const std::string& key, const std::string& value);
 
-    static constexpr int SECONDS = 10;
+    static constexpr int SECONDS = 60;
     static constexpr int READ_LINE_NUM = 5;
     static constexpr int MILLSECONDS = 1000;
     static constexpr int ONE_DAY = 86400 * MILLSECONDS;

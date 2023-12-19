@@ -57,6 +57,10 @@
             <option name="push" value="SmartParserTest012/test_extract_rule.json -> /data/test/test_data/SmartParser/SmartParserTest012" src="res"/>
             <option name="push" value="SmartParserTest013/bootfail_info_0 -> /data/test/test_data/SmartParser/SmartParserTest013" src="res"/>
             <option name="push" value="SmartParserTest013/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest013" src="res"/>
+            <option name="push" value="SmartParserTest014/last_kmsg -> /data/test/test_data/SmartParser/SmartParserTest014" src="res"/>
+            <option name="push" value="SmartParserTest014/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest014" src="res"/>
+            <option name="push" value="SmartParserTest015/last_kmsg -> /data/test/test_data/SmartParser/SmartParserTest015" src="res"/>
+            <option name="push" value="SmartParserTest015/trace.txt -> /data/test/test_data/SmartParser/SmartParserTest015" src="res"/>
         </preparer>
     </target>
 </configuration>
