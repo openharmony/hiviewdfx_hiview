@@ -15,6 +15,7 @@
 import faultlogger from '@ohos.faultLogger'
 import hiSysEvent from '@ohos.hiSysEvent'
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
+import faultloggerTestNapi from "libfaultlogger_test_napi.so"
 
 describe("FaultlogJsTest", function () {
     beforeAll(function() {
@@ -60,6 +61,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API8 检验函数参数输入错误时程序是否会崩溃
      * @tc.require: AR000GICT2
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
     it('FaultlogJsException_001', 0, async function (done) {
         console.info("---------------------------FaultlogJsException_001----------------------------------");
@@ -93,6 +97,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
      it('FaultlogJsException_002', 0, function () {
         console.info("---------------------------FaultlogJsException_002----------------------------------");
@@ -115,6 +122,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
      it('FaultlogJsException_003', 0, function () {
         console.info("---------------------------FaultlogJsException_003----------------------------------");
@@ -137,6 +147,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
      it('FaultlogJsException_004', 0, function () {
         console.info("---------------------------FaultlogJsException_004----------------------------------");
@@ -159,6 +172,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验函数参数输入错误时程序是否会崩溃并校验错误码
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
     it('FaultlogJsException_005', 0, function () {
         console.info("---------------------------FaultlogJsException_005----------------------------------");
@@ -181,36 +197,27 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验promise同步方式获取faultlog日志
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
      it('FaultlogJsTest_005', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_005----------------------------------");
         try {
+            const res = faultloggerTestNapi.triggerCppCrash();
+            console.info("FaultlogJsTest_005 res:" + res);
             let now = Date.now();
-            console.info("FaultlogJsTest_005 2 + " + now);
-            let module = "com.ohos.hiviewtest.faultlogjs";
-            const loopTimes = 10;
-            for (let i = 0; i < loopTimes; i++) {
-                console.info("--------FaultlogJsTest_005 3 + " + i + "----------");
-                faultlogger.addFaultLog(i - 200,
-                    faultlogger.FaultType.CPP_CRASH, module, "faultloggertestsummary05 " + i);
-                await msleep(300);
-            }
-            await msleep(1000);
+            console.info("FaultlogJsTest_005 now:" + now);
+            await msleep(3000); // 3000: sleep 3000ms
 
-            console.info("--------FaultlogJsTest_005 4" + "----------");
+            console.info("--------FaultlogJsTest_005 start query ----------");
             let ret = await faultlogger.query(faultlogger.FaultType.CPP_CRASH);
-            console.info("FaultlogJsTest_005 ret == " + ret.length);
-            expect(ret.length).assertEqual(loopTimes);
-            for (let i = 0; i < loopTimes; i++) {
-                console.info("faultloggertestsummary05 " + i + " fullLog.length " + ret[i].fullLog.length);
-                console.info(ret[i].fullLog);
-                if (ret[i].fullLog.indexOf("faultloggertestsummary05 " + (loopTimes - 1 - i)) != -1) {
-                    console.info("FaultlogJsTest_005 " + ret[i].fullLog.length);
-                    expect(true).assertTrue();
-                } else {
-                    expect(false).assertTrue();
-                }
-            }
+            console.info("FaultlogJsTest_005 query ret length:" + ret.length);
+            expect(ret.length).assertLarger(0);
+            console.info("FaultlogJsTest_005 check reason, index:" + (ret[0].reason.indexOf("Signal:SIGABRT")));
+            expect(ret[0].reason.indexOf("Signal:SIGABRT") != -1).assertTrue();
+            console.info("FaultlogJsTest_005 check fullLog, index:" + ret[0].fullLog.indexOf("Fault thread Info"));
+            expect(ret[0].fullLog.indexOf("Fault thread Info") != -1).assertTrue();
             done();
             return;
         } catch (err) {
@@ -229,6 +236,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验通过回调方式获取faultlog日志
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
     it('FaultlogJsTest_006', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_006----------------------------------");
@@ -283,6 +293,9 @@ describe("FaultlogJsTest", function () {
      * @tc.desc: API9 检验通过回调方式获取faultlog日志的顺序
      * @tc.require: issueI5VRCC
      * @tc.author:
+     * @tc.type: Function
+     * @tc.size: MediumTest
+     * @tc.level: Level 0
      */
     it('FaultlogJsTest_007', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_007----------------------------------");
