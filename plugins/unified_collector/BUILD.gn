@@ -19,6 +19,7 @@ config("unified_collector_config") {
     "include",
     "storage/include",
     "task/include",
+    "$hiview_framework/native/unified_collection/collector/inner_include",
     "$hiview_framework/native/unified_collection/process/include",
   ]
 }
