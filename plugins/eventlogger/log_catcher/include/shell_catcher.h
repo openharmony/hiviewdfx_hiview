@@ -41,12 +41,14 @@ public:
         CATCHER_SNAPSHOT,
         CATCHER_SCBSESSION,
         CATCHER_SCBVIEWPARAM,
+        CATCHER_LIGHT_HILOG,
     };
 private:
     std::string catcherCmd_;
     int pid_;
     CATCHER_TYPE catcherType_;
 
+    int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
 };
