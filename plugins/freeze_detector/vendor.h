@@ -38,6 +38,10 @@ public:
     bool Init();
     std::string GetTimeString(unsigned long long timestamp) const;
     void DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const;
+    void InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
+        std::string& logPath, std::string& logName) const;
+    void InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
+        bool& isFileExists) const;
     std::string MergeEventLog(
         const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
         const std::vector<FreezeResult>& result) const;

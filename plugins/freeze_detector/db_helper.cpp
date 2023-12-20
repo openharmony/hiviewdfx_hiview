@@ -25,29 +25,9 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FreezeDetector");
-void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
-    const std::string& watchPackage, const FreezeResult& result)
+void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult& result,
+    EventStore::ResultSet& set, std::map<std::string, WatchPoint>& resultMap)
 {
-    if (freezeCommon_ == nullptr) {
-        return;
-    }
-    if (start > end) {
-        return;
-    }
-
-    auto eventQuery = EventStore::SysEventDao::BuildQuery(result.GetDomain(), {result.GetStringId()});
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    (*eventQuery).Select(selections)
-        .Where(EventStore::EventCol::TS, EventStore::Op::GE, static_cast<int64_t>(start))
-        .And(EventStore::EventCol::TS, EventStore::Op::LE, static_cast<int64_t>(end));
-
-    EventStore::ResultSet set = eventQuery->Execute();
-    if (set.GetErrCode() != 0) {
-        HIVIEW_LOGE("failed to select event from db, error:%{public}d.", set.GetErrCode());
-        return;
-    }
-
-    std::map<std::string, WatchPoint> resultMap;
     while (set.HasNext()) {
         auto record = set.Next();
         std::string key = record->domain_ + "-" + record->eventName_;
@@ -86,6 +66,33 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
             resultMap.insert(std::pair<std::string, WatchPoint>(key, watchPoint));
         }
     }
+}
+
+void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
+    const std::string& watchPackage, const FreezeResult& result)
+{
+    if (freezeCommon_ == nullptr) {
+        return;
+    }
+    if (start > end) {
+        return;
+    }
+
+    auto eventQuery = EventStore::SysEventDao::BuildQuery(result.GetDomain(), {result.GetStringId()});
+    std::vector<std::string> selections { EventStore::EventCol::TS };
+    (*eventQuery).Select(selections)
+        .Where(EventStore::EventCol::TS, EventStore::Op::GE, static_cast<int64_t>(start))
+        .And(EventStore::EventCol::TS, EventStore::Op::LE, static_cast<int64_t>(end));
+
+    EventStore::ResultSet set = eventQuery->Execute();
+    if (set.GetErrCode() != 0) {
+        HIVIEW_LOGE("failed to select event from db, error:%{public}d.", set.GetErrCode());
+        return;
+    }
+
+    std::map<std::string, WatchPoint> resultMap;
+    GetResultMap(watchPackage, result, set, resultMap);
+
     std::map<std::string, WatchPoint>::iterator it;
     for (it = resultMap.begin(); it != resultMap.end(); it++) {
         list.push_back(it->second);

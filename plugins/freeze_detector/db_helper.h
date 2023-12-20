@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#include "sys_event_dao.h"
 #include "freeze_common.h"
 #include "watch_point.h"
 
@@ -29,6 +30,8 @@ class DBHelper {
 public:
     explicit DBHelper(std::shared_ptr<FreezeCommon> fc) : freezeCommon_(fc) {};
     ~DBHelper() {};
+    void GetResultMap(const std::string& watchPackage, const FreezeResult& result,
+        EventStore::ResultSet& set, std::map<std::string, WatchPoint>& resultMap);
     void SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
         const std::string& watchPackage, const FreezeResult& result);
 private:
