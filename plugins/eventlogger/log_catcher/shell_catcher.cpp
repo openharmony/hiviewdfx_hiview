@@ -37,6 +37,37 @@ bool ShellCatcher::Initialize(const std::string& cmd, int type, int catcherPid)
     return true;
 }
 
+int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
+{
+    int ret = -1;
+    switch (catcherType_) {
+        case CATCHER_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
+            break;
+        case CATCHER_LIGHT_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid_).c_str(),
+                nullptr);
+            break;
+        case CATCHER_SNAPSHOT:
+            {
+                std::string path = "/data/log/eventlog/snapshot_display_";
+                path += TimeUtil::TimestampFormatToDate(TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC,
+                    "%Y%m%d%H%M%S");
+                path += ".jpeg";
+                ret = execl("/system/bin/snapshot_display", "snapshot_display", "-f", path.c_str(), nullptr);
+            }
+            break;
+        case CATCHER_SCBSESSION:
+            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getContainerSession", nullptr);
+            break;
+        case CATCHER_SCBVIEWPARAM:
+            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
+        default:
+            break;
+    }
+    return ret;
+}
+
 void ShellCatcher::DoChildProcess(int writeFd)
 {
     if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
@@ -68,24 +99,8 @@ void ShellCatcher::DoChildProcess(int writeFd)
         case CATCHER_RS:
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "RenderService", "-a", "allInfo", nullptr);
             break;
-        case CATCHER_HILOG:
-            ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
-            break;
-        case CATCHER_SNAPSHOT:
-            {
-                std::string path = "/data/log/eventlog/snapshot_display_";
-                path += TimeUtil::TimestampFormatToDate(TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC,
-                    "%Y%m%d%H%M%S");
-                path += ".jpeg";
-                ret = execl("/system/bin/snapshot_display", "snapshot_display", "-f", path.c_str(), nullptr);
-            }
-            break;
-        case CATCHER_SCBSESSION:
-            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getContainerSession", nullptr);
-            break;
-        case CATCHER_SCBVIEWPARAM:
-            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
         default:
+            ret = CaDoInChildProcesscatcher(writeFd);
             break;
     }
     if (ret < 0) {

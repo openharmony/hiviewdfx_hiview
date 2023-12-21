@@ -78,6 +78,7 @@ private:
     void RSUsageCapture();
     void Screenshot();
     void HilogCapture();
+    void LightHilogCapture();
     void DmesgCapture();
     void SysrqCapture(bool isWriteNewFile);
     void HitraceCapture();

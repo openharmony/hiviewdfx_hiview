@@ -59,6 +59,7 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:rs", std::bind(&EventLogTask::RSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:ss", std::bind(&EventLogTask::Screenshot, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("t", std::bind(&EventLogTask::LightHilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq",
         std::bind(&EventLogTask::SysrqCapture, this, false)));
@@ -290,6 +291,13 @@ void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::LightHilogCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hilog -z 100 -P", ShellCatcher::CATCHER_LIGHT_HILOG, pid_);
     tasks_.push_back(capture);
 }
 
