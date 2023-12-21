@@ -18,6 +18,7 @@ ohos_js_unittest("FaultlogJsTest") {
   module_out_path = module_output_path
   hap_profile = "./config.json"
   certificate_profile = "//base/hiviewdfx/hiview/plugins/faultlogger/interfaces/js/test/unittest/faultlogjs.p7b"
+  shared_libraries = [ "./cpp:faultlogger_test_napi" ]
 }
 
 group("unittest") {
