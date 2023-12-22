@@ -167,6 +167,7 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
+        HIVIEW_LOGI("strList size: %{public}zu", strList.size());
 
         auto stringSplit = [](const std::string& str, uint16_t index) -> std::string {
             std::vector<std::string> strings;
@@ -179,7 +180,7 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
 
         if (strList.size() == 7) { // 7: valid array size
             BinderInfo info = {0};
-            OutputBinderInfo outputInfo = {0};
+            OutputBinderInfo outputInfo;
             // 2: binder peer id,
             std::string server = stringSplit(strList[2], 0);
             // 0: binder local id,
@@ -187,6 +188,8 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
             // 5: binder wait time, s
             std::string wait = stringSplit(strList[5], 1);
             if (server == "" || client == "" || wait == "") {
+                HIVIEW_LOGI("server:%{public}s, client:%{public}s, wait:%{public}s",
+                    server.c_str(), client.c_str(), wait.c_str());
                 continue;
             }
             info.server = std::strtol(server.c_str(), nullptr, DECIMAL);
@@ -197,6 +200,8 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
             outputInfo.info = line;
             outputInfo.pid = info.server;
             outputBinderInfoList.push_back(outputInfo);
+        } else {
+            HIVIEW_LOGI("strList size: %{public}zu, line: %{public}s", strList.size(), line.c_str());
         }
         if (line.find("context") != line.npos) {
             findBinderHeader = true;
