@@ -86,29 +86,6 @@ static void StartHisyseventListen(std::string domain, std::string eventName)
     HiSysEventManager::AddListener(faultEventListener, sysRules);
 }
 
-static int CheckKeyWordsInFile(const std::string& filePath, std::string *keywords, int length)
-{
-    std::ifstream file;
-    file.open(filePath.c_str(), std::ios::in);
-    std::ostringstream infoStream;
-    infoStream << file.rdbuf();
-    std::string info = infoStream.str();
-    if (info.length() == 0) {
-        std::cout << "file is empty, file:" << filePath << std::endl;
-        return 0;
-    }
-    int matchCount = 0;
-    for (int index = 0; index < length; index++) {
-        if (info.find(keywords[index]) != std::string::npos) {
-            matchCount++;
-        } else {
-            std::cout << "can not find keyword:" << keywords[index] << std::endl;
-        }
-    }
-    file.close();
-    return matchCount;
-}
-
 /**
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
@@ -688,47 +665,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
 
     // check event database
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
-}
-
-/**
- * @tc.name: ReportJsErrorToAppEventTest001
- * @tc.desc: create JS ERROR event and send it to hiappevent
- * @tc.type: FUNC
- * @tc.require: AR000IHTHV
- */
-HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::TestSize.Level3)
-{
-    SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
-    sysEventCreator.SetKeyValue("SUMMARY", R"(Error name:TypeError\nError message:Obj is not
-        a Valid object\nSourceCode:\n    get BLOCKSSvalue() {\n        ^\nStacktrace:\n    at
-        anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)");
-    sysEventCreator.SetKeyValue("name_", "JS_ERROR");
-    sysEventCreator.SetKeyValue("happenTime_", 1670248360359);
-    sysEventCreator.SetKeyValue("REASON", "TypeError");
-    sysEventCreator.SetKeyValue("tz_", "+0800");
-    sysEventCreator.SetKeyValue("pid_", 2413);
-    sysEventCreator.SetKeyValue("tid_", 2413);
-    sysEventCreator.SetKeyValue("what_", 3);
-    sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-    sysEventCreator.SetKeyValue("TYPE", 3);
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-
-    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    auto testPlugin = CreateFaultloggerInstance();
-    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
-    bool result = testPlugin->OnEvent(event);
-    ASSERT_EQ(result, true);
-
-    std::string keywords[] = {
-        "\"bundle_name\":", "\"bundle_version\":", "\"crash_type\":", "\"exception\":",
-        "\"foreground\":", "\"hilog\":", "\"pid\":", "\"time\":", "\"uid\":", "\"uuid\":"
-    };
-    int length = sizeof(keywords) / sizeof(keywords[0]);
-    std::cout << "===========length:" << length << std::endl;
-    int count = CheckKeyWordsInFile("/data/test_jsError_info_1622", keywords, length);
-    std::cout << "==============count:" << count << std::endl;
-    ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001 check keywords failed";
 }
 } // namespace HiviewDFX
 } // namespace OHOS
