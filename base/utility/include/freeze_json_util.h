@@ -22,6 +22,7 @@
 #include <string>
 
 #include "file_util.h"
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -114,7 +115,7 @@ std::string WrapByQuote(const T& wrapped)
         if (HasBeenWrapped(wrapped)) {
             return wrapped;
         }
-        return COMMON_QUOTE + wrapped + COMMON_QUOTE;
+        return COMMON_QUOTE + StringUtil::EscapeJsonStringValue(wrapped) + COMMON_QUOTE;
     }
 
     if constexpr (std::is_same_v<std::decay_t<T>, bool>) {

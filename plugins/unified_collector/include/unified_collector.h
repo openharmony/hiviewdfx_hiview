@@ -33,6 +33,7 @@ private:
     void InitWorkLoop();
     void InitWorkPath();
     void RunCpuCollectionTask();
+    void RegisterWorker();
     void RunIoCollectionTask();
     void IoCollectionTask();
 
