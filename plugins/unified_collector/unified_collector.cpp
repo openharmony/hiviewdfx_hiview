@@ -12,8 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <functional>
 #include "unified_collector.h"
 
+#include "collector_worker.h"
 #include "file_util.h"
 #include "io_collector.h"
 #include "logger.h"
@@ -26,6 +28,7 @@ namespace HiviewDFX {
 REGISTER(UnifiedCollector);
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
+using OHOS::HiviewDFX::TraceWorker;
 namespace {
 const std::unordered_map<std::string, ProcessState> APP_STATES = {
     {"APP_FOREGROUND", FOREGROUND},
@@ -79,6 +82,7 @@ void UnifiedCollector::Init()
     InitWorkLoop();
     InitWorkPath();
     RunCpuCollectionTask();
+    RegisterWorker();
     RunIoCollectionTask();
 }
 
@@ -117,6 +121,23 @@ void UnifiedCollector::RunCpuCollectionTask()
         std::bind(&CpuCollectionTask::Collect, cpuCollectionTask_.get()),
         taskInterval,
         true);
+}
+
+void UnifiedCollector::RegisterWorker()
+{
+    if (workLoop_ == nullptr) {
+        HIVIEW_LOGE("workLoop is null");
+        return;
+    }
+    auto worker = [=](UcollectionTask task) {
+        workLoop_->AddTimerEvent(
+            nullptr,
+            nullptr,
+            task,
+            0,
+            false);
+    };
+    TraceWorker::GetInstance().RegisterCollectorWorker(worker);
 }
 
 void UnifiedCollector::RunIoCollectionTask()

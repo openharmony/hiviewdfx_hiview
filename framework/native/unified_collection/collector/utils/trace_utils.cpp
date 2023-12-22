@@ -16,10 +16,13 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "collector_worker.h"
 #include "file_util.h"
-#include "trace_utils.h"
 #include "logger.h"
 #include "string_util.h"
+#include "trace_utils.h"
+
+using OHOS::HiviewDFX::TraceWorker;
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -279,16 +282,12 @@ std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Calle
     }
 }
 
-bool IsTraceExists(const std::string &trace)
+void CopyFile(const std::string &src, const std::string &dst)
 {
-    std::vector<std::string> files;
-    FileUtil::GetDirFiles(UNIFIED_SHARE_PATH, files);
-    for (const auto &file : files) {
-        std::string traceFile = FileUtil::ExtractFileName(trace);
-        size_t posMatch = file.find(traceFile);
-        return posMatch != std::string::npos;
+    int ret = FileUtil::CopyFile(src, dst);
+    if (ret != 0) {
+        HIVIEW_LOGE("copy file failed, file is %{public}s.", src.c_str());
     }
-    return false;
 }
 
 // Save three traces for xperf/Reliability
@@ -302,7 +301,10 @@ void CopyToSpecialPath(const std::string &trace, const std::string &traceFile, c
     }
 
     std::string dst = UNIFIED_SPECIAL_PATH + traceCaller + "_" + traceFile;
-    FileUtil::CopyFile(trace, dst);
+    UcollectionTask traceTask = [=]() {
+        CopyFile(trace, dst);
+    };
+    TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
 }
 
 /*
@@ -326,11 +328,6 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
 
     std::vector<std::string> files;
     for (const auto &tracePath : ret.outputFiles) {
-        // check trace exists or not
-        if (IsTraceExists(tracePath)) {
-            continue;
-        }
-
         std::string traceFile = FileUtil::ExtractFileName(tracePath);
         // copy xperf/reliability trace to */trace/special/, reserve 3 trace in */trace/special/
         std::string traceCaller = EnumToString(caller);
@@ -339,7 +336,10 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
         }
         const std::string dst = UNIFIED_SHARE_PATH + traceFile;
         // for copy
-        FileUtil::CopyFile(tracePath, dst);
+        UcollectionTask traceTask = [=]() {
+            CopyFile(tracePath, dst);
+        };
+        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
         files.push_back(dst);
         HIVIEW_LOGI("trace file : %{public}s.", dst.c_str());
     }
@@ -375,7 +375,10 @@ std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, TraceCollector
         const std::string dst = UNIFIED_SPECIAL_PATH + EnumToString(caller) + "_" + traceFile;
 
         // for copy
-        FileUtil::CopyFile(trace, dst);
+        UcollectionTask traceTask = [=]() {
+            CopyFile(trace, dst);
+        };
+        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
         files.push_back(dst);
         HIVIEW_LOGI("trace file : %{public}s.", dst.c_str());
     }
