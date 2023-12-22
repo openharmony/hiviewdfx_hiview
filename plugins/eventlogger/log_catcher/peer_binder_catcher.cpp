@@ -180,7 +180,7 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
 
         if (strList.size() == 7) { // 7: valid array size
             BinderInfo info = {0};
-            OutputBinderInfo outputInfo = {0};
+            OutputBinderInfo outputInfo;
             // 2: binder peer id,
             std::string server = stringSplit(strList[2], 0);
             // 0: binder local id,

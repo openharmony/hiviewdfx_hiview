@@ -46,8 +46,8 @@ private:
         int wait;
     };
     struct OutputBinderInfo {
-        std::string info;
-        int pid;
+        std::string info = "";
+        int pid = 0;
     };
     enum {
         LOGGER_BINDER_STACK_ONE = 0,
