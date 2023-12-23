@@ -59,7 +59,6 @@ ohos_source_set("ucollection_source") {
   }
 
   deps = [
-    "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
     "collector/device_client:collect_device_client",
   ]
