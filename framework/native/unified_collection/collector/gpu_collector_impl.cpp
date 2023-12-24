@@ -12,13 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "gpu_collector.h"
 
-#include "common_util.h"
-#include "logger.h"
-#include "file_util.h"
+#include "gpu_collector_impl.h"
 
 #include <sstream>
+
+#include "common_util.h"
+#include "file_util.h"
+#include "logger.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 
@@ -26,21 +27,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
-
-class GpuCollectorImpl : public GpuCollector {
-public:
-    GpuCollectorImpl() = default;
-    virtual ~GpuCollectorImpl() = default;
-
-public:
-    virtual CollectResult<GpuFreq> CollectGpuFrequency() override;
-    virtual CollectResult<SysGpuLoad> CollectSysGpuLoad() override;
-};
-
-std::shared_ptr<GpuCollector> GpuCollector::Create()
-{
-    return std::make_shared<GpuCollectorImpl>();
-}
 
 inline int32_t GetValue(const std::string& fileName)
 {

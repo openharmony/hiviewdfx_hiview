@@ -20,6 +20,7 @@ config("ucolletciton_source_config") {
     "calculator/include",
     "collector/inner_include",
     "process/include",
+    "decorator/include",
     "utils/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
@@ -50,6 +51,16 @@ ohos_source_set("ucollection_source") {
     "collector/utils/trace_manager.cpp",
     "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
+    "decorator/cpu_decorator.cpp",
+    "decorator/decorator.cpp",
+    "decorator/gpu_decorator.cpp",
+    "decorator/io_decorator.cpp",
+    "decorator/mem_profiler_decorator.cpp",
+    "decorator/memory_decorator.cpp",
+    "decorator/network_decorator.cpp",
+    "decorator/perf_decorator.cpp",
+    "decorator/trace_decorator.cpp",
+    "decorator/unified_collection_stat.cpp",
     "process/process_status.cpp",
     "utils/cpu_util.cpp",
   ]
@@ -66,6 +77,7 @@ ohos_source_set("ucollection_source") {
 
   external_deps = [
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "hitrace:hitrace_dump",
     "init:libbegetutil",
     "relational_store:native_rdb",

@@ -20,6 +20,7 @@ config("unified_collector_config") {
     "storage/include",
     "task/include",
     "$hiview_framework/native/unified_collection/process/include",
+    "$hiview_framework/native/unified_collection/decorator/include",
   ]
 }
 

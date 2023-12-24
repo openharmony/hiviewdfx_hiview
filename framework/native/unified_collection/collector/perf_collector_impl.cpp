@@ -12,14 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include "perf_collector_impl.h"
+
 #ifdef HAS_HIPERF
 #include <fstream>
 #include <atomic>
 #include <ctime>
 
-#include "logger.h"
-#include "perf_collector.h"
 #include "hiperf_client.h"
+#include "logger.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 using namespace OHOS::Developtools::HiPerf::HiperfClient;
@@ -31,24 +33,6 @@ constexpr uint8_t MAX_PERF_USE_COUNT = 5;
 constexpr int DEFAULT_PERF_RECORD_TIME = 5;
 constexpr int DEFAULT_PERF_RECORD_FREQUENCY = 100;
 const std::string DEFAULT_PERF_RECORD_CALLGRAPH = "fp";
-class PerfCollectorImpl : public PerfCollector {
-public:
-    PerfCollectorImpl();
-    virtual ~PerfCollectorImpl() = default;
-    virtual CollectResult<bool> StartPerf(const std::string &logDir) override;
-    void SetSelectPids(const std::vector<pid_t> &selectPids) override;
-    void SetTargetSystemWide(bool enable) override;
-    void SetTimeStopSec(int timeStopSec) override;
-    void SetFrequency(int frequency) override;
-    void SetOffCPU(bool offCPU) override;
-    void SetOutputFilename(const std::string &outputFilename) override;
-private:
-    static std::atomic<uint8_t> inUseCount_;
-    static uint8_t limitUseCount_;
-    RecordOption opt_;
-    void IncreaseUseCount();
-    void DecreaseUseCount();
-};
 
 std::atomic<uint8_t> PerfCollectorImpl::inUseCount_(0);
 uint8_t PerfCollectorImpl::limitUseCount_ = MAX_PERF_USE_COUNT;
@@ -99,11 +83,6 @@ void PerfCollectorImpl::IncreaseUseCount()
 void PerfCollectorImpl::DecreaseUseCount()
 {
     inUseCount_.fetch_sub(1);
-}
-
-std::shared_ptr<PerfCollector> PerfCollector::Create()
-{
-    return std::make_shared<PerfCollectorImpl>();
 }
 
 CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)

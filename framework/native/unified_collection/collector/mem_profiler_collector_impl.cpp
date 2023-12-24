@@ -13,11 +13,13 @@
  * limitations under the License.
  */
 
+#include "mem_profiler_collector_impl.h"
+
 #include <memory>
 #include <thread>
 #include <common.h>
+
 #include "logger.h"
-#include "mem_profiler_collector.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"
 #include "parameters.h"
@@ -28,26 +30,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-MemProfilerCollector");
-
 const std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 1000;
 constexpr int FINAL_TIME = 3000;
-
-class MemProfilerCollectorImpl : public MemProfilerCollector {
-public:
-    MemProfilerCollectorImpl() = default;
-    virtual ~MemProfilerCollectorImpl() = default;
-
-public:
-    int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
-    int Stop(int pid) override;
-    int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
-    enum ErrorType {
-        RET_FAIL = -1,
-        RET_SUCC = 0,
-    };
-};
 
 int MemProfilerCollectorImpl::Start(ProfilerType type,
                                     int pid, int duration, int sampleInterval)
@@ -109,13 +95,6 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
-
-std::shared_ptr<MemProfilerCollector> MemProfilerCollector::Create()
-{
-    static std::shared_ptr<MemProfilerCollector> instance_ = std::make_shared<MemProfilerCollectorImpl>();
-    return instance_;
-}
-
 } // UCollectUtil
 } // HiViewDFX
 } // OHOS
