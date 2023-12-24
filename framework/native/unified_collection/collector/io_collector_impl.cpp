@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "io_collector.h"
 
-#include <mutex>
+#include "io_collector_impl.h"
+
 #include <regex>
 #include <unordered_map>
 
@@ -55,57 +55,6 @@ const std::string PROC_IO_STATS_FILE_PREFIX = "proc_io_stats_";
 const std::string SYS_IO_STATS_FILE_PREFIX = "sys_io_stats_";
 const std::string PROC_DISKSTATS = "/proc/diskstats";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
-}
-
-class IoCollectorImpl : public IoCollector {
-public:
-    IoCollectorImpl();
-    virtual ~IoCollectorImpl() = default;
-
-public:
-    virtual CollectResult<ProcessIo> CollectProcessIo(int32_t pid) override;
-    virtual CollectResult<std::string> CollectRawDiskStats() override;
-    virtual CollectResult<std::vector<DiskStats>> CollectDiskStats(
-        DiskStatsFilter filter = DefaultDiskStatsFilter, bool isUpdate = false) override;
-    virtual CollectResult<std::string> ExportDiskStats(DiskStatsFilter filter = DefaultDiskStatsFilter) override;
-    virtual CollectResult<std::vector<EMMCInfo>> CollectEMMCInfo() override;
-    virtual CollectResult<std::string> ExportEMMCInfo() override;
-    virtual CollectResult<std::vector<ProcessIoStats>> CollectAllProcIoStats(bool isUpdate = false) override;
-    virtual CollectResult<std::string> ExportAllProcIoStats() override;
-    virtual CollectResult<SysIoStats> CollectSysIoStats() override;
-    virtual CollectResult<std::string> ExportSysIoStats() override;
-
-private:
-    void InitDiskData();
-    void GetDiskStats(DiskStatsFilter filter, bool isUpdate, std::vector<DiskStats>& diskStats);
-    void CalculateDiskStats(uint64_t period, bool isUpdate);
-    void CalculateDeviceDiskStats(const DiskData& currData, const std::string& deviceName, uint64_t period);
-    void CalculateEMMCInfo(std::vector<EMMCInfo>& mmcInfos);
-    void ReadEMMCInfo(const std::string& path, std::vector<EMMCInfo>& mmcInfos);
-    std::string GetEMMCPath(const std::string& path);
-    void InitProcIoData();
-    void GetProcIoStats(std::vector<ProcessIoStats>& allProcIoStats, bool isUpdate);
-    void CalculateAllProcIoStats(uint64_t period, bool isUpdate);
-    void CalculateProcIoStats(const ProcessIo& currData, int32_t pid, uint64_t period);
-    bool ProcIoStatsFilter(const ProcessIoStats& stats);
-    int32_t GetProcStateInCollectionPeriod(int32_t pid);
-    std::string CreateExportFileName(const std::string& filePrefix);
-
-private:
-    std::mutex collectDiskMutex_;
-    std::mutex collectProcIoMutex_;
-    std::mutex exportFileMutex_;
-    uint64_t preCollectDiskTime_ = 0;
-    uint64_t preCollectProcIoTime_ = 0;
-    uint64_t currCollectProcIoTime_ = 0;
-    std::unordered_map<std::string, DiskStatsDevice> diskStatsMap_;
-    std::unordered_map<int32_t, ProcessIoStatsInfo> procIoStatsMap_;
-};
-
-std::shared_ptr<IoCollector> IoCollector::Create()
-{
-    static std::shared_ptr<IoCollector> instance_ = std::make_shared<IoCollectorImpl>();
-    return instance_;
 }
 
 IoCollectorImpl::IoCollectorImpl()

@@ -17,8 +17,9 @@
 
 #include <memory>
 
-#include "plugin.h"
 #include "cpu_collection_task.h"
+#include "plugin.h"
+#include "unified_collection_stat.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -35,7 +36,9 @@ private:
     void RunCpuCollectionTask();
     void RegisterWorker();
     void RunIoCollectionTask();
+    void RunUCollectionStatTask();
     void IoCollectionTask();
+    void UCollectionStatTask();
 
 private:
     std::string workPath_;

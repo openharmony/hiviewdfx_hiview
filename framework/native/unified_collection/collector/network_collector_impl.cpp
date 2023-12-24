@@ -12,9 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "network_collector.h"
-#include "wifi_device.h"
+
+#include "network_collector_impl.h"
+
 #include "logger.h"
+#include "wifi_device.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 
@@ -22,21 +24,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
-
-class NetworkCollectorImpl : public NetworkCollector {
-public:
-    NetworkCollectorImpl() = default;
-    virtual ~NetworkCollectorImpl() = default;
-
-public:
-    virtual CollectResult<NetworkRate> CollectRate() override;
-    virtual CollectResult<NetworkPackets> CollectSysPackets() override;
-};
-
-std::shared_ptr<NetworkCollector> NetworkCollector::Create()
-{
-    return std::make_shared<NetworkCollectorImpl>();
-}
 
 inline bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
 {

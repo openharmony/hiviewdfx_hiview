@@ -22,6 +22,7 @@
 #include "plugin_factory.h"
 #include "process_status.h"
 #include "sys_event.h"
+#include "unified_collection_stat.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -84,6 +85,7 @@ void UnifiedCollector::Init()
     RunCpuCollectionTask();
     RegisterWorker();
     RunIoCollectionTask();
+    RunUCollectionStatTask();
 }
 
 void UnifiedCollector::InitWorkLoop()
@@ -157,5 +159,22 @@ void UnifiedCollector::IoCollectionTask()
     (void)ioCollector->CollectDiskStats([](const DiskStats &stats) { return false; }, true);
     (void)ioCollector->CollectAllProcIoStats(true);
 }
-}  // namespace HiviewDFX
-}  // namespace OHOS
+
+void UnifiedCollector::RunUCollectionStatTask()
+{
+    if (workLoop_ == nullptr) {
+        HIVIEW_LOGE("workLoop is null");
+        return;
+    }
+    auto statTask = std::bind(&UnifiedCollector::UCollectionStatTask, this);
+    const uint64_t taskInterval = 600; // 600s
+    workLoop_->AddTimerEvent(nullptr, nullptr, statTask, taskInterval, true);
+}
+
+void UnifiedCollector::UCollectionStatTask()
+{
+    UnifiedCollectionStat stat;
+    stat.Report();
+}
+} // namespace HiviewDFX
+} // namespace OHOS

@@ -12,11 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include "trace_collector_impl.h"
+
 #include <memory>
 #include <mutex>
 
 #include "logger.h"
-#include "trace_collector.h"
 #include "trace_flow_controller.h"
 #include "trace_manager.h"
 #include "trace_utils.h"
@@ -33,22 +35,6 @@ namespace UCollectUtil {
 namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_dumpTraceMutex;
-}
-
-class TraceCollectorImpl : public TraceCollector {
-public:
-    TraceCollectorImpl() = default;
-    virtual ~TraceCollectorImpl() = default;
-
-public:
-    virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
-    virtual CollectResult<int32_t> TraceOn() override;
-    virtual CollectResult<std::vector<std::string>> TraceOff() override;
-};
-
-std::shared_ptr<TraceCollector> TraceCollector::Create()
-{
-    return std::make_shared<TraceCollectorImpl>();
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)

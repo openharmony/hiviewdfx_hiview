@@ -12,7 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "memory_collector.h"
+
+#include "memory_collector_impl.h"
 
 #include <csignal>
 #include <fstream>
@@ -29,9 +30,9 @@
 #include "common_util.h"
 #include "common_utils.h"
 #include "file_util.h"
-#include "time_util.h"
-#include "string_util.h"
 #include "logger.h"
+#include "string_util.h"
+#include "time_util.h"
 
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
@@ -44,27 +45,6 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
 
 std::mutex g_memMutex;
-
-class MemoryCollectorImpl : public MemoryCollector {
-public:
-    MemoryCollectorImpl() = default;
-    virtual ~MemoryCollectorImpl() = default;
-
-public:
-    virtual CollectResult<ProcessMemory> CollectProcessMemory(int32_t pid) override;
-    virtual CollectResult<SysMemory> CollectSysMemory() override;
-    virtual CollectResult<std::string> CollectRawMemInfo() override;
-    virtual CollectResult<std::vector<ProcessMemory>> CollectAllProcessMemory() override;
-    virtual CollectResult<std::string> ExportAllProcessMemory() override;
-    virtual CollectResult<std::string> CollectRawSlabInfo() override;
-    virtual CollectResult<std::string> CollectRawPageTypeInfo() override;
-    virtual CollectResult<std::string> CollectRawDMA() override;
-    virtual CollectResult<std::vector<AIProcessMem>> CollectAllAIProcess() override;
-    virtual CollectResult<std::string> ExportAllAIProcess() override;
-    virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) override;
-    virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
-    virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
-};
 
 static std::string GetCurrTimestamp()
 {
@@ -255,11 +235,6 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     }
     result.retCode = UcError::SUCCESS;
     return result;
-}
-
-std::shared_ptr<MemoryCollector> MemoryCollector::Create()
-{
-    return std::make_shared<MemoryCollectorImpl>();
 }
 
 CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t pid)
