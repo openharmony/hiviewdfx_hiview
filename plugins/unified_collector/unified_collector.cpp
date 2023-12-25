@@ -14,6 +14,7 @@
  */
 #include "unified_collector.h"
 
+#include "ffrt.h"
 #include "file_util.h"
 #include "io_collector.h"
 #include "logger.h"
@@ -27,6 +28,7 @@ namespace HiviewDFX {
 REGISTER(UnifiedCollector);
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
+using namespace std::literals::chrono_literals;
 namespace {
 const std::unordered_map<std::string, ProcessState> APP_STATES = {
     {"APP_FOREGROUND", FOREGROUND},
@@ -103,22 +105,21 @@ void UnifiedCollector::InitWorkPath()
 
 void UnifiedCollector::RunCpuCollectionTask()
 {
-    if (workLoop_ == nullptr) {
-        HIVIEW_LOGE("workLoop is null");
-        return;
-    }
     if (workPath_.empty()) {
         HIVIEW_LOGE("workPath is null");
         return;
     }
+    auto task = std::bind(&UnifiedCollector::CpuCollectionFfrtTask, this);
+    ffrt::submit(task, {}, {}, ffrt::task_attr().name("UC_CPU").qos(ffrt::qos_default));
+}
+
+void UnifiedCollector::CpuCollectionFfrtTask()
+{
     cpuCollectionTask_ = std::make_shared<CpuCollectionTask>(workPath_);
-    const uint64_t taskInterval = 10; // 10s
-    workLoop_->AddTimerEvent(
-        nullptr,
-        nullptr,
-        std::bind(&CpuCollectionTask::Collect, cpuCollectionTask_.get()),
-        taskInterval,
-        true);
+    while (true) {
+        ffrt::this_task::sleep_for(10s); // 10s: collect period
+        cpuCollectionTask_->Collect();
+    }
 }
 
 void UnifiedCollector::RunIoCollectionTask()

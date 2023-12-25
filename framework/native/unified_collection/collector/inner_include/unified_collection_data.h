@@ -56,6 +56,8 @@ struct UcollectionTraceStorage {
     int64_t reliability_size = 0;
 };
 
+#define PROCESS_TOTAL_COUNT 2500
+
 #define IOCTRL_COLLECT_ALL_PROC_CPU_MAGIC 1
 #define IOCTRL_COLLECT_THE_PROC_CPU_MAGIC 1
 #define IOCTRL_SET_CPU_DMIPS_MAGIC 1

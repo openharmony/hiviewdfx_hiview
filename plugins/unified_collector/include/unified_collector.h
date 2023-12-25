@@ -34,6 +34,7 @@ private:
     void InitWorkLoop();
     void InitWorkPath();
     void RunCpuCollectionTask();
+    void CpuCollectionFfrtTask();
     void RegisterWorker();
     void RunIoCollectionTask();
     void RunUCollectionStatTask();
