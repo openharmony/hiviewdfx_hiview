@@ -324,7 +324,7 @@
         "OHOS::HiviewDFX::EventStore::ResultSet::HasNext() const";
         "OHOS::HiviewDFX::EventStore::ResultSet::Next()";
         "OHOS::HiviewDFX::EventStore::SysEventQuery::And(OHOS::HiviewDFX::EventStore::Cond const&)";
-        "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, unsigned int, long long)";
+        "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, unsigned int, long long, long long)";
         "OHOS::HiviewDFX::EventStore::SysEventQuery::Where(OHOS::HiviewDFX::EventStore::Cond const&)";
         "OHOS::HiviewDFX::EventStore::SysEventQuery::Order(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, bool)";
         "OHOS::HiviewDFX::RunningStatusLogger::FormatTimeStamp(bool)";
@@ -332,7 +332,7 @@
         "OHOS::HiviewDFX::EventThreshold::EventThresholdManager::GetInstance()";
         "OHOS::HiviewDFX::EventThreshold::EventThresholdManager::GetDefaultQueryRuleLimit()";
         "OHOS::HiviewDFX::EventThreshold::EventThresholdManager::GetQueryRuleLimit(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::EventThreshold::ProcessType)";
-        "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, unsigned int, long)";
+        "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, unsigned int, long, long)";
     };
   local:
     *;

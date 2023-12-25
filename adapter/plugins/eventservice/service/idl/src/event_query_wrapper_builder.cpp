@@ -354,7 +354,7 @@ void TimeStampEventQueryWrapper::BuildQuery()
         .And(EventStore::EventCol::TS, EventStore::Op::LT, argument.endTime);
     auto queryRule = queryRules.front();
     query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
-        queryRule.eventType, INVALID_SEQ);
+        queryRule.eventType, INVALID_SEQ, INVALID_SEQ);
     query->Where(whereCond);
     BuildCondition(queryRule.condition);
     Order();
@@ -385,7 +385,7 @@ void SeqEventQueryWrapper::BuildQuery()
             .And(EventStore::EventCol::SEQ, EventStore::Op::LT, argument.toSeq);
     auto queryRule = queryRules.front();
     query = EventStore::SysEventDao::BuildQuery(queryRule.domain, queryRule.eventList,
-        queryRule.eventType, argument.toSeq);
+        queryRule.eventType, argument.toSeq, argument.fromSeq);
     query->Where(whereCond);
     BuildCondition(queryRule.condition);
     Order();

@@ -36,11 +36,11 @@ std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& domain
 }
 
 std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& domain,
-    const std::vector<std::string>& names, uint32_t type, int64_t toSeq)
+    const std::vector<std::string>& names, uint32_t type, int64_t toSeq, int64_t fromSeq)
 {
-    HIVIEW_LOGD("query domain=%{public}s, names.size=%{public}zu, type=%{public}u, seq=%{public}" PRId64,
-        domain.c_str(), names.size(), type, toSeq);
-    return std::make_shared<SysEventQueryWrapper>(domain, names, type, toSeq);
+    HIVIEW_LOGD("query domain=%{public}s, names.size=%{public}zu, type=%{public}u, toSeq=%{public}" PRId64
+        ",  fromSeq=%{public}" PRId64, domain.c_str(), names.size(), type, toSeq, fromSeq);
+    return std::make_shared<SysEventQueryWrapper>(domain, names, type, toSeq, fromSeq);
 }
 
 int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)

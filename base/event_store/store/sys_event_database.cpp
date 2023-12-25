@@ -14,6 +14,7 @@
  */
 #include "sys_event_database.h"
 
+#include <sstream>
 #include <unordered_map>
 
 #include "event_store_config.h"
@@ -37,7 +38,11 @@ constexpr size_t INDEX_LIMIT_QUEUE = 2;
 
 int64_t GetFileSeq(const std::string& file)
 {
-    return std::stoll(file.substr(file.rfind(FILE_NAME_DELIMIT_STR) + 1)); // 1 next char
+    std::stringstream ss;
+    ss << file.substr(file.rfind(FILE_NAME_DELIMIT_STR) + 1);
+    long long seq = 0;
+    ss >> seq;
+    return seq;
 }
 
 std::string GetFileDomain(const std::string& file)
@@ -250,11 +255,13 @@ void SysEventDatabase::GetQueryFiles(const SysEventQueryArg& queryArg, FileQueue
         return;
     }
 
-    for (auto& queryDir : queryDirs) {
+    for (const auto& queryDir : queryDirs) {
         std::vector<std::string> files;
         FileUtil::GetDirFiles(queryDir, files);
-        for (auto& file : files) {
-            if (IsContainQueryArg(file, queryArg)) {
+        sort(files.begin(), files.end(), CompareFileGreaterFunc);
+        std::unordered_map<std::string, long long> nameSeqMap;
+        for (const auto& file : files) {
+            if (IsContainQueryArg(file, queryArg, nameSeqMap)) {
                 queryFiles.emplace(file);
                 HIVIEW_LOGD("add query file=%{public}s", file.c_str());
             }
@@ -274,7 +281,8 @@ void SysEventDatabase::GetQueryDirsByDomain(const std::string& domain, std::vect
     }
 }
 
-bool SysEventDatabase::IsContainQueryArg(const std::string file, const SysEventQueryArg& queryArg)
+bool SysEventDatabase::IsContainQueryArg(const std::string& file, const SysEventQueryArg& queryArg,
+    std::unordered_map<std::string, long long>& nameSeqMap)
 {
     if (queryArg.names.empty() && queryArg.type == 0 && queryArg.toSeq == INVALID_VALUE_INT) {
         return true;
@@ -286,16 +294,24 @@ bool SysEventDatabase::IsContainQueryArg(const std::string file, const SysEventQ
         HIVIEW_LOGE("invalid file name, file=%{public}s", fileName.c_str());
         return false;
     }
+    std::string eventName = splitStrs[EVENT_NAME_INDEX];
+    std::string eventType = splitStrs[EVENT_TYPE_INDEX];
+    long long eventSeq = std::stoll(splitStrs[EVENT_SEQ_INDEX]);
+    auto iter = nameSeqMap.find(eventName);
+    if (iter != nameSeqMap.end() && iter->second <= queryArg.fromSeq) {
+        return false;
+    }
+    nameSeqMap[eventName] = eventSeq;
     if (!queryArg.names.empty() && !std::any_of(queryArg.names.begin(), queryArg.names.end(),
-        [&splitStrs] (auto& item) {
-            return item == splitStrs[EVENT_NAME_INDEX];
+        [&eventName] (auto& item) {
+            return item == eventName;
         })) {
         return false;
     }
-    if (queryArg.type != 0 && splitStrs[EVENT_TYPE_INDEX] != StringUtil::ToString(queryArg.type)) {
+    if (queryArg.type != 0 && eventType != StringUtil::ToString(queryArg.type)) {
         return false;
     }
-    if (queryArg.toSeq != INVALID_VALUE_INT && std::stoll(splitStrs[EVENT_SEQ_INDEX]) >= queryArg.toSeq) {
+    if (queryArg.toSeq != INVALID_VALUE_INT && eventSeq >= queryArg.toSeq) {
         return false;
     }
     return true;

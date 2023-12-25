@@ -107,7 +107,7 @@ public:
     SysEventQueryWrapper(const std::string& domain, const std::vector<std::string>& names)
         : SysEventQuery(domain, names) {}
     SysEventQueryWrapper(const std::string& domain, const std::vector<std::string>& names,
-        uint32_t type, int64_t toSeq) : SysEventQuery(domain, names, type, toSeq) {}
+        uint32_t type, int64_t toSeq, int64_t fromSeq) : SysEventQuery(domain, names, type, toSeq, fromSeq) {}
     ~SysEventQueryWrapper() {}
 
 public:

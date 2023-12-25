@@ -33,7 +33,7 @@ public:
 
     /* for external query */
     static std::shared_ptr<SysEventQuery> BuildQuery(const std::string& domain,
-        const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
+        const std::vector<std::string>& names, uint32_t type, int64_t toSeq, int64_t fromSeq);
 
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
 

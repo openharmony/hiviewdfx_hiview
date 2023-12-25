@@ -429,11 +429,11 @@ void ResultSet::Set(int code, bool has)
 }
 
 SysEventQuery::SysEventQuery(const std::string& domain, const std::vector<std::string>& names)
-    : SysEventQuery(domain, names, 0, INVALID_VALUE_INT)
+    : SysEventQuery(domain, names, 0, INVALID_VALUE_INT, INVALID_VALUE_INT)
 {}
 
 SysEventQuery::SysEventQuery(const std::string& domain, const std::vector<std::string>& names,
-    uint32_t type, int64_t toSeq) : queryArg_(domain, names, type, toSeq)
+    uint32_t type, int64_t toSeq, int64_t fromSeq) : queryArg_(domain, names, type, toSeq, fromSeq)
 {}
 
 SysEventQuery &SysEventQuery::Select(const std::vector<std::string> &eventCols)

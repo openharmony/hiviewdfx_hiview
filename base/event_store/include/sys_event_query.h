@@ -222,15 +222,17 @@ struct SysEventQueryArg {
     std::vector<std::string> names;
     uint32_t type;
     int64_t toSeq;
+    int64_t fromSeq;
 
-    SysEventQueryArg() : SysEventQueryArg("", {}, 0, INVALID_VALUE_INT) {}
+    SysEventQueryArg() : SysEventQueryArg("", {}, 0, INVALID_VALUE_INT, INVALID_VALUE_INT) {}
     SysEventQueryArg(const std::string& domain, const std::vector<std::string>& names,
-        uint32_t type, int64_t toSeq)
+        uint32_t type, int64_t toSeq, int64_t fromSeq)
     {
         this->domain = domain;
         this->names.assign(names.begin(), names.end());
         this->type = type;
         this->toSeq = toSeq;
+        this->fromSeq = fromSeq;
     }
     ~SysEventQueryArg() {}
 };
@@ -271,7 +273,8 @@ public:
 
 protected:
     SysEventQuery();
-    SysEventQuery(const std::string& domain, const std::vector<std::string>& names, uint32_t type, int64_t toSeq);
+    SysEventQuery(const std::string& domain, const std::vector<std::string>& names, uint32_t type, int64_t toSeq,
+        int64_t fromSeq);
 
 private:
     void BuildDocQuery(DocQuery &docQuery) const;
