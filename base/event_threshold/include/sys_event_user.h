@@ -31,8 +31,8 @@ struct Configs {
 
 class SysEventUser {
 public:
-    SysEventUser(const std::string& name, ProcessType type) : name_(name), type_(type) {}
-    SysEventUser() : name_(""), type_(ProcessType::HAP) {}
+    SysEventUser(const std::string& name, ProcessType type) : name_(name), type_(type), configs_({0}) {}
+    SysEventUser() : name_(""), type_(ProcessType::HAP), configs_({0}) {}
 
 public:
     void SetName(std::string& name);

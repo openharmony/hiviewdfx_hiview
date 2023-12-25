@@ -318,6 +318,41 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_010, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: TestEventDaoQuery_011
+ * @tc.desc: compare two result sets from different queries
+ * @tc.type: FUNC
+ * @tc.require: issueI8QSH0
+ */
+HWTEST_F(SysEventDaoTest, TestEventDaoQuery_011, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. create pipeline event and set event id
+     * @tc.steps: step2. invoke OnEvent func
+     * @tc.expected: all ASSERT_TRUE work through.
+     */
+    std::string jsonStr1 = R"~({"domain_":"DEMO","name_":"SYS_EVENT_DAO_TEST","type_":1,"tz_":8,"time_":162027129100,
+        "pid_":1201,"tid_":1201,"uid_":1201,"KEY_INT":-200,"KEY_DOUBLE":2.2,"KEY_STR":"abc"})~";
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
+    sysEvent->SetLevel(TEST_LEVEL);
+    constexpr int64_t testSeq = 1;
+    sysEvent->SetEventSeq(testSeq);
+    int retCode = EventStore::SysEventDao::Insert(sysEvent);
+    ASSERT_TRUE(retCode == 0);
+
+    auto sysEventQuery1 = EventStore::SysEventDao::BuildQuery("DEMO", {"SYS_EVENT_DAO_TEST"});
+    EventStore::ResultSet resultSet1 = sysEventQuery1->Execute();
+    auto sysEventQuery2 = EventStore::SysEventDao::BuildQuery("DEMO", {"SYS_EVENT_DAO_TEST"}, 1,
+        std::numeric_limits<int64_t>::max(), 10); // 10 is a test value
+    EventStore::ResultSet resultSet2 = sysEventQuery2->Execute();
+
+    while (resultSet1.HasNext() && resultSet2.HasNext()) {
+        EventStore::ResultSet::RecordIter it1 = resultSet1.Next();
+        EventStore::ResultSet::RecordIter it2 = resultSet2.Next();
+        ASSERT_TRUE(it1->GetSeq() == it2->GetSeq());
+    }
+}
+
+/**
  * @tc.name: FieldValueTest_01
  * @tc.desc: test the constructor function of FieldValue.
  * @tc.type: FUNC

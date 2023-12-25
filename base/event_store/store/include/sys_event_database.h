@@ -54,7 +54,8 @@ private:
     uint64_t GetMaxSize(int type);
     void GetQueryFiles(const SysEventQueryArg& queryArg, FileQueue& queryFiles);
     void GetQueryDirsByDomain(const std::string& domain, std::vector<std::string>& queryDirs);
-    bool IsContainQueryArg(const std::string file, const SysEventQueryArg& queryArg);
+    bool IsContainQueryArg(const std::string& file, const SysEventQueryArg& queryArg,
+        std::unordered_map<std::string, long long>& nameSeqMap);
     int QueryByFiles(SysEventQuery& query, EntryQueue& entries, FileQueue& queryFiles);
 
     EventQuotaMap quotaMap_;
