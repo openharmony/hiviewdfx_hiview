@@ -72,11 +72,7 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::map<std::string, std::string> eventInfos;
-    if (info.parsedLogInfo.empty()) {
-        AnalysisFaultlog(info, eventInfos);
-    } else {
-        eventInfos.swap(info.parsedLogInfo);
-    }
+    AnalysisFaultlog(info, eventInfos);
 
     HiSysEventWrite(
         HiSysEvent::Domain::RELIABILITY,
