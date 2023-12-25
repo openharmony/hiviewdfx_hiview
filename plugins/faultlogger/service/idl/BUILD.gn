@@ -35,10 +35,7 @@ ohos_source_set("faultlogger_service_ohos_common") {
 
   all_dependent_configs = [ ":faultlogger_service_impl_config" ]
 
-  deps = [
-    "$hiview_base:logger",
-    "$hiview_plugin/faultlogger/common:faultlogger_common",
-  ]
+  deps = [ "$hiview_plugin/faultlogger/common:faultlogger_common" ]
 
   external_deps = [
     "c_utils:utils",

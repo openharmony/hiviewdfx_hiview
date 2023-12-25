@@ -29,7 +29,6 @@ ohos_source_set("log_analyzer") {
 
   deps = [
     ":faultlogger_common",
-    "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
@@ -46,7 +45,7 @@ ohos_source_set("faultlogger_common") {
   ]
 
   deps = [
-    "$hiview_base:logger",
+    "$hiview_base:hiviewbase",
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_base/utility:hiview_utility",
