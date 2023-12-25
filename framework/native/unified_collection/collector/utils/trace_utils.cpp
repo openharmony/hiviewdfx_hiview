@@ -16,11 +16,11 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "collector_worker.h"
 #include "file_util.h"
 #include "logger.h"
 #include "string_util.h"
 #include "trace_utils.h"
+#include "trace_worker.h"
 
 using OHOS::HiviewDFX::TraceWorker;
 
