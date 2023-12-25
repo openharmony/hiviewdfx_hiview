@@ -66,8 +66,10 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("k:SysRqFile",
         std::bind(&EventLogTask::SysrqCapture, this, true)));
     captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:scbCS", std::bind(&EventLogTask::SCBSessionCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:scbVP", std::bind(&EventLogTask::SCBViewParamCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:scbCS",
+        std::bind(&EventLogTask::SCBSessionCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:scbVP",
+        std::bind(&EventLogTask::SCBViewParamCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
