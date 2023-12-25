@@ -19,6 +19,7 @@
 #include "file_util.h"
 #include "logger.h"
 #include "time_util.h"
+#include "unified_collection_data.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -104,8 +105,7 @@ std::string ProcessStatus::GetProcessName(int32_t pid)
 
 bool ProcessStatus::NeedClearProcessInfos()
 {
-    constexpr size_t maxSizeOfProcessNames = 1000;
-    return processInfos_.size() > maxSizeOfProcessNames;
+    return processInfos_.size() > PROCESS_TOTAL_COUNT;
 }
 
 void ProcessStatus::ClearProcessInfos()

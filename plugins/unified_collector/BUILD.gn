@@ -41,6 +41,7 @@ ohos_source_set("unified_collector") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hisysevent:libhisysevent",
     "relational_store:native_rdb",
   ]

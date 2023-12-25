@@ -74,6 +74,11 @@ bool IsDbFile(const std::string& dbFilePath)
     return dbFileExt == "db";
 }
 
+bool IsValidProcess(const ProcessCpuStatInfo& cpuCollectionInfo)
+{
+    return (cpuCollectionInfo.pid > 0) && (!cpuCollectionInfo.procName.empty());
+}
+
 bool IsValidCpuLoad(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
     constexpr double storeFilteringThresholdOfCpuLoad = 0.0005; // 0.05%
@@ -93,6 +98,16 @@ bool IsValidCpuUsage(const ProcessCpuStatInfo& cpuCollectionInfo)
 
 bool NeedStoreInDb(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
+    if (!IsValidProcess(cpuCollectionInfo)) {
+        static uint32_t invalidProcNum = 0;
+        invalidProcNum++;
+        constexpr uint32_t logLimitNum = 1000;
+        if (invalidProcNum % logLimitNum == 0) {
+            HIVIEW_LOGW("invalid process num=%{public}u, pid=%{public}d, name=%{public}s",
+                invalidProcNum, cpuCollectionInfo.pid, cpuCollectionInfo.procName.c_str());
+        }
+        return false;
+    }
     return IsValidCpuLoad(cpuCollectionInfo)
         || (IsInvalidCpuLoad(cpuCollectionInfo) && IsValidCpuUsage(cpuCollectionInfo));
 }

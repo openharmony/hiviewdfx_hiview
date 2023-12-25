@@ -19,7 +19,6 @@
 #include "securec.h"
 
 #define PROCESS_ONLY_ONE_COUNT 1
-#define PROCESS_TOTAL_COUNT 1000
 namespace OHOS {
 namespace HiviewDFX {
 ProcessCpuData::ProcessCpuData(): entry_(nullptr), current_(0)
