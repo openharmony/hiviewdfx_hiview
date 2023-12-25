@@ -28,6 +28,11 @@ constexpr int32_t MAX_FILE_NUM = 10000;
 int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos)
 {
     HIVIEW_LOGI("start list.");
+    auto remote = Remote();
+    if (remote == nullptr) {
+        HIVIEW_LOGE("remote service is null.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
     MessageParcel data;
     if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
         || !data.WriteString(logType)) {
@@ -36,7 +41,7 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(
+    int32_t res = remote->SendRequest(
         static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST), data, reply, option);
     if (res != ERR_OK) {
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);
@@ -76,6 +81,11 @@ int32_t HiviewServiceAbilityProxy::Move(const std::string& logType, const std::s
 int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
     const std::string& logType, const std::string& logName, const std::string& dest, bool isMove)
 {
+    auto remote = Remote();
+    if (remote == nullptr) {
+        HIVIEW_LOGE("remote service is null.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
     MessageParcel data;
     if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
         || !data.WriteString(logType) || !data.WriteString(logName) || !data.WriteString(dest)) {
@@ -84,7 +94,7 @@ int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(
+    int32_t res = remote->SendRequest(
         isMove ? static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE) :
         static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY), data, reply, option);
     if (res != ERR_OK) {
@@ -101,6 +111,11 @@ int32_t HiviewServiceAbilityProxy::CopyOrMoveFile(
 
 int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std::string& logName)
 {
+    auto remote = Remote();
+    if (remote == nullptr) {
+        HIVIEW_LOGE("remote service is null.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
     MessageParcel data;
     if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor())
         || !data.WriteString(logType) || !data.WriteString(logName)) {
@@ -109,7 +124,7 @@ int32_t HiviewServiceAbilityProxy::Remove(const std::string& logType, const std:
     }
     MessageParcel reply;
     MessageOption option;
-    int32_t res = Remote()->SendRequest(
+    int32_t res = remote->SendRequest(
         static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE), data, reply, option);
     if (res != ERR_OK) {
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);

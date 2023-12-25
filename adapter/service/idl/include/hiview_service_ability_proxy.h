@@ -53,6 +53,10 @@ private:
         HiviewServiceInterfaceCode requestCode, std::function<bool(MessageParcel&)> parcelHandler)
     {
         auto traceRet = CollectResultParcelable<T>::Init();
+        auto remote = Remote();
+        if (remote == nullptr) {
+            return traceRet;
+        }
         MessageParcel data;
         if (!data.WriteInterfaceToken(HiviewServiceAbilityProxy::GetDescriptor()) ||
             (parcelHandler == nullptr) || !parcelHandler(data)) {
@@ -60,7 +64,7 @@ private:
         }
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = Remote()->SendRequest(static_cast<uint32_t>(requestCode), data, reply, option);
+        int32_t ret = remote->SendRequest(static_cast<uint32_t>(requestCode), data, reply, option);
         if (ret == TraceErrCode::ERR_OK) {
             std::unique_ptr<CollectResultParcelable<T>> readParcel(reply.ReadParcelable<CollectResultParcelable<T>>());
             if (readParcel == nullptr) {
