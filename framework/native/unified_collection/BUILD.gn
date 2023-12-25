@@ -46,11 +46,11 @@ ohos_source_set("ucollection_source") {
     "collector/network_collector_impl.cpp",
     "collector/perf_collector_impl.cpp",
     "collector/trace_collector_impl.cpp",
-    "collector/utils/collector_worker.cpp",
     "collector/utils/trace_flow_controller.cpp",
     "collector/utils/trace_manager.cpp",
     "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
+    "collector/utils/trace_worker.cpp",
     "decorator/cpu_decorator.cpp",
     "decorator/decorator.cpp",
     "decorator/gpu_decorator.cpp",
@@ -75,6 +75,7 @@ ohos_source_set("ucollection_source") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_dump",

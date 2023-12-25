@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_WORKER_H
-#define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_WORKER_H
+#ifndef FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_TRACE_WORKER_H
+#define FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_TRACE_WORKER_H
 
 #include <functional>
 #include <string>
@@ -28,15 +28,13 @@ public:
     static TraceWorker& GetInstance();
 
 public:
-    void RegisterCollectorWorker(UcollectionWorker ucollectionWorker);
     void HandleUcollectionTask(UcollectionTask ucollectionTask);
 
 private:
     TraceWorker() {};
     ~TraceWorker() {};
-    static void DefaultWorker(UcollectionTask task);
     static TraceWorker traceWorker_;
 };
 } // HiViewDFX
 } // OHOS
-#endif // FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_WORKER_H
+#endif // FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_TRACE_WORKER_H

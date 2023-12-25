@@ -12,38 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "collector_worker.h"
+#include "ffrt.h"
 #include "logger.h"
+#include "trace_worker.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 TraceWorker TraceWorker::traceWorker_;
-static UcollectionWorker g_worker = nullptr;
 
 TraceWorker& TraceWorker::GetInstance()
 {
     return traceWorker_;
 }
 
-void TraceWorker::DefaultWorker(UcollectionTask task)
-{
-    task();
-}
-
-void TraceWorker::RegisterCollectorWorker(UcollectionWorker ucollectionWorker)
-{
-    g_worker = ucollectionWorker;
-}
-
 void TraceWorker::HandleUcollectionTask(UcollectionTask ucollectionTask)
 {
-    if (g_worker == nullptr) {
-        DefaultWorker(ucollectionTask);
-        HIVIEW_LOGI("g_worker is null.");
-        return;
-    }
-    g_worker(ucollectionTask);
+    ffrt::submit(ucollectionTask, {}, {}, ffrt::task_attr().name("UC_TRACE").qos(ffrt::qos_default));
 }
 } // HiViewDFX
 } // OHOS
