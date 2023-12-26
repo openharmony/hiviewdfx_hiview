@@ -146,11 +146,24 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
     std::ifstream& fin, int fd, int jsonFd) const
 {
     std::map<int, std::list<BinderInfo>> manager;
+    FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
+    std::list<OutputBinderInfo> outputBinderInfoList;
+
+    BinderInfoParser(fin, fd, manager, outputBinderInfoList);
+    AddBinderJsonInfo(outputBinderInfoList, jsonFd);
+
+    FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");
+    HIVIEW_LOGI("manager size: %{public}zu", manager.size());
+    return manager;
+}
+
+void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
+    std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList) const
+{
     const int DECIMAL = 10;
     std::string line;
     bool findBinderHeader = false;
-    FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
-    std::list<OutputBinderInfo> outputBinderInfoList;
     while (getline(fin, line)) {
         FileUtil::SaveStringToFd(fd, line + "\n");
         if (findBinderHeader) {
@@ -207,10 +220,6 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
             findBinderHeader = true;
         }
     }
-    AddBinderJsonInfo(outputBinderInfoList, jsonFd);
-    FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");
-    HIVIEW_LOGI("manager size: %{public}zu", manager.size());
-    return manager;
 }
 
 std::set<int> PeerBinderCatcher::GetBinderPeerPids(int fd, int jsonFd) const

@@ -220,7 +220,7 @@ bool ParseMsgForMessageAndEventHandler(const std::string& msg, std::string& mess
                 isGetEvent = false;
                 continue;
             }
-            unsigned long pos = (*line).find(eventFlag);
+            std::string::size_type pos = (*line).find(eventFlag);
             if (pos == std::string::npos) {
                 continue;
             }
@@ -324,9 +324,9 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
 
         std::string jsonStack = StringUtil::ReplaceStr(event -> GetEventValue("STACK"), "\\\"", "\"");
-        unsigned long removeIndex = jsonStack.find("\\n");
+        std::string::size_type removeIndex = jsonStack.find("\\n");
         if (removeIndex != std::string::npos) {
-            jsonStack = jsonStack.substr(0, removeIndex);
+            jsonStack.resize(removeIndex);
         }
         DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
 
@@ -485,14 +485,14 @@ void EventLogger::OnLoad()
         auto plugin = context->GetPluginByName("FreezeDetectorPlugin");
         HIVIEW_LOGE("plugin plugin %{public}s.", plugin->GetName().c_str());
         context->AddDispatchInfo(plugin, {}, eventNames, {}, {});
+
+        auto ptr = std::static_pointer_cast<EventLogger>(shared_from_this());
+        context->RegisterUnorderedEventListener(ptr);
+        AddListenerInfo(Event::MessageType::PLUGIN_MAINTENANCE);
     }
 
     GetCmdlineContent();
     GetRebootReasonConfig();
-
-    auto ptr = std::static_pointer_cast<EventLogger>(shared_from_this());
-    context->RegisterUnorderedEventListener(ptr);
-    AddListenerInfo(Event::MessageType::PLUGIN_MAINTENANCE);
 }
 
 void EventLogger::OnUnload()
@@ -526,6 +526,12 @@ void EventLogger::ProcessRebootEvent()
     }
 
     auto event = std::make_shared<SysEvent>("EventLogger", nullptr, "");
+
+    if (event == nullptr) {
+        HIVIEW_LOGW("event is null.");
+        return;
+    }
+
     event->domain_ = DOMAIN_LONGPRESS;
     event->eventName_ = STRINGID_LONGPRESS;
     event->happenTime_ = TimeUtil::GetMilliseconds();
@@ -542,7 +548,7 @@ void EventLogger::ProcessRebootEvent()
     event->SetEventValue("MSG", STRINGID_LONGPRESS);
 
     auto context = GetHiviewContext();
-    if (event != nullptr && context != nullptr) {
+    if (context != nullptr) {
         auto seq = context->GetPipelineSequenceByName("EventloggerPipeline");
         event->SetPipelineInfo("EventloggerPipeline", seq);
         event->OnContinue();
@@ -555,11 +561,11 @@ std::string EventLogger::GetRebootReason() const
     std::string reset = "";
     if (GetMatchString(cmdlineContent_, reboot, REBOOT_REASON + PATTERN_WITHOUT_SPACE) &&
         GetMatchString(cmdlineContent_, reset, NORMAL_RESET_TYPE + PATTERN_WITHOUT_SPACE)) {
-            for (auto reason : rebootReasons_) {
-                if (reason == reboot || reason == reset) {
-                    HIVIEW_LOGI("get reboot reason: LONG_PRESS.");
-                    return LONG_PRESS;
-                }
+            if (std::any_of(rebootReasons_.begin(), rebootReasons_.end(), [&reboot, &reset](auto& reason) {
+                return (reason == reboot || reason == reset);
+            })) {
+                HIVIEW_LOGI("get reboot reason: LONG_PRESS.");
+                return LONG_PRESS;
             }
         }
     return "";

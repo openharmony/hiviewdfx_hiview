@@ -99,10 +99,10 @@ bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
         return true;
     }
 
-    for (auto res : result) {
-        if (res.GetAction() == "or") {
-            return (list.size() >= minMatchNum);
-        }
+    if (std::any_of(result.begin(), result.end(), [&list](auto& res) {
+        return res.GetAction() == "or";
+    })) {
+        return list.size() >= minMatchNum;
     }
 
     if (list.size() == result.size()) {
