@@ -69,8 +69,7 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
 std::string Vendor::GetTimeString(unsigned long long timestamp) const
 {
     struct tm tm;
-    time_t ts;
-    ts = timestamp / FreezeCommon::MILLISECOND; // ms
+    time_t ts = timestamp / FreezeCommon::MILLISECOND; // ms
     localtime_r(&ts, &tm);
     char buf[TIME_STRING_LEN] = {0};
 
@@ -88,8 +87,8 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
     
-    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? APPFREEZE : SYSFREEZE;
+    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
+        APPFREEZE : SYSFREEZE;
     if (type == SYSFREEZE) {
         processName = stringId;
     } else if (processName == "" && packageName != "") {
@@ -103,12 +102,12 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
-    info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
+        FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = processName;
     info.reason = stringId;
-    info.summary = type + ": " + processName + " " + stringId
-        + " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
+    info.summary = type + ": " + processName + " " + stringId +
+        " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
     info.logPath = logPath;
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
@@ -171,15 +170,14 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
 void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
     std::string& logPath, std::string& logName) const
 {
-    std::string domain = watchPoint.GetDomain();
     std::string stringId = watchPoint.GetStringId();
     std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
 
-    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? APPFREEZE : SYSFREEZE;
+    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
+        APPFREEZE : SYSFREEZE;
     if (type == SYSFREEZE) {
         processName = stringId;
     } else if (processName == "" && packageName != "") {
@@ -190,16 +188,16 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     }
 
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
-        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName
-            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + processName
-            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     } else {
-        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + processName
-            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + processName
-            + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
 }

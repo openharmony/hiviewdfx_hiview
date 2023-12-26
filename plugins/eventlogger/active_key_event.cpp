@@ -61,6 +61,7 @@ void ActiveKeyEvent::InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, 
     std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
     if (keyOption == nullptr) {
         HIVIEW_LOGE("Invalid key option");
+        return;
     }
 
     keyOption->SetPreKeys(preKeys);

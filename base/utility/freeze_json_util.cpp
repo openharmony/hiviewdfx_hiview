@@ -121,8 +121,8 @@ void FormatCollect(std::map<std::string, std::list<std::string>>& collectMap, Fr
     if (!collectMap["event_handler"].empty()) {
         // use the latest peer_binder
         jsonCollector.event_handler = *(collectMap["event_handler"].rbegin());
-        std::string flag = "Event {";
         if (collectMap["event_handler"].size() != 1) {
+            std::string flag = "Event {";
             jsonCollector.event_handler_3s_size =
                 std::to_string(CountSubStr(*(collectMap["event_handler"].begin()), flag));
             jsonCollector.event_handler_6s_size =
@@ -145,7 +145,7 @@ void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jso
     }
     std::ifstream jsonFile(filePath);
     while (std::getline(jsonFile, lineStr)) {
-        unsigned long pos = lineStr.find(COMMON_EQUAL);
+        std::string::size_type pos = lineStr.find(COMMON_EQUAL);
         if (pos == std::string::npos) {
             continue;
         }

@@ -45,7 +45,7 @@ void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult&
         pid = pid ? pid : record->GetPid();
         long uid = record->GetEventIntValue(FreezeCommon::EVENT_UID);
         uid = uid ? uid : record->GetUid();
-        long tid = std::strtoul(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
+        long tid = std::strtol(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
 
         WatchPoint watchPoint = WatchPoint::Builder()
             .InitSeq(record->GetSeq()).InitDomain(result.GetDomain()).InitStringId(result.GetStringId())
@@ -94,7 +94,7 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
     GetResultMap(watchPackage, result, set, resultMap);
 
     std::map<std::string, WatchPoint>::iterator it;
-    for (it = resultMap.begin(); it != resultMap.end(); it++) {
+    for (it = resultMap.begin(); it != resultMap.end(); ++it) {
         list.push_back(it->second);
     }
 

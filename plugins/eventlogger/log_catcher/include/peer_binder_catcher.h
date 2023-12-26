@@ -61,6 +61,9 @@ private:
     std::shared_ptr<SysEvent> event_ = nullptr;
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin,
         int fd, int jsonFd) const;
+    void BinderInfoParser(std::ifstream& fin, int fd,
+        std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
+        std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList) const;
     void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::set<int>& pids, int pid) const;
     std::set<int> GetBinderPeerPids(int fd, int jsonFd) const;
