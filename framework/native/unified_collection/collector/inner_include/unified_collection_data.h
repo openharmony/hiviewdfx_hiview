@@ -49,13 +49,6 @@ struct ucollection_cpu_dmips {
     char dmips[];
 };
 
-struct UcollectionTraceStorage {
-    int64_t system_time = 0;
-    int64_t xperf_size = 0;
-    int64_t xpower_size = 0;
-    int64_t reliability_size = 0;
-};
-
 #define PROCESS_TOTAL_COUNT 2500
 
 #define IOCTRL_COLLECT_ALL_PROC_CPU_MAGIC 1
