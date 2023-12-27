@@ -51,7 +51,7 @@ static napi_value List(napi_env env, napi_callback_info info)
         return result;
     }
     std::vector<HiviewFileInfo> fileInfos;
-    int32_t retCode = HiviewServiceAgent::List(logType, fileInfos);
+    int32_t retCode = HiviewServiceAgent::GetInstance().List(logType, fileInfos);
     HiLog::Info(LABEL, "retCode: %{public}u.", retCode);
     if (retCode == 0) {
         return HiviewNapiUtil::GenerateFileInfoResult(env, fileInfos);
@@ -144,7 +144,7 @@ static napi_value Remove(napi_env env, napi_callback_info info)
         || !HiviewNapiUtil::ParseStringValue(env, "logName", params[LOG_NAME_INDEX], logName)) {
         return result;
     }
-    int32_t retCode = HiviewServiceAgent::Remove(logType, logName);
+    int32_t retCode = HiviewServiceAgent::GetInstance().Remove(logType, logName);
     if (retCode != 0) {
         HiLog::Info(LABEL, "retCode: %{public}u.", retCode);
         HiviewNapiUtil::ThrowErrorByCode(env, retCode);

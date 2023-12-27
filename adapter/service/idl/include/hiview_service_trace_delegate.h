@@ -20,7 +20,7 @@
 
 #include "collect_result.h"
 #include "hiview_service_ability_proxy.h"
-#include "iremote_broker.h"
+#include "hiview_service_agent.h"
 #include "parcel.h"
 
 
@@ -47,7 +47,7 @@ private:
         if (proxyHandler == nullptr) {
             return ret;
         }
-        auto service = GetRemoteService();
+        auto service = HiviewServiceAgent::GetInstance().GetRemoteService();
         if (service == nullptr) {
             return ret;
         }
@@ -55,8 +55,6 @@ private:
         auto traceRet = proxyHandler(proxy);
         return traceRet.result_;
     }
-
-    static sptr<IRemoteObject> GetRemoteService();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

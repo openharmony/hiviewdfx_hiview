@@ -31,6 +31,12 @@ namespace {
 DEFINE_LOG_TAG("HiviewServiceAgent");
 }
 
+HiviewServiceAgent& HiviewServiceAgent::GetInstance()
+{
+    static HiviewServiceAgent hiviewServiceAgent;
+    return hiviewServiceAgent;
+}
+
 int32_t HiviewServiceAgent::List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos)
 {
     auto service = GetRemoteService();
@@ -81,11 +87,45 @@ int32_t HiviewServiceAgent::Remove(const std::string& logType, const std::string
 
 sptr<IRemoteObject> HiviewServiceAgent::GetRemoteService()
 {
+    std::lock_guard<std::mutex> proxyGuard(proxyMutex_);
+    if (hiviewServiceAbilityProxy_ != nullptr) {
+        return hiviewServiceAbilityProxy_;
+    }
+    HIVIEW_LOGI("refresh remote service instance.");
     auto abilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (abilityManager == nullptr) {
         return nullptr;
     }
-    return abilityManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
+    hiviewServiceAbilityProxy_ = abilityManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
+    if (hiviewServiceAbilityProxy_ == nullptr) {
+        HIVIEW_LOGE("get hiview ability failed.");
+        return nullptr;
+    }
+    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new HiviewServiceDeathRecipient(*this));
+    if (deathRecipient_ == nullptr) {
+        HIVIEW_LOGE("create service deathrecipient failed.");
+        hiviewServiceAbilityProxy_ = nullptr;
+        return nullptr;
+    }
+    hiviewServiceAbilityProxy_->AddDeathRecipient(deathRecipient_);
+    return hiviewServiceAbilityProxy_;
+}
+
+void HiviewServiceAgent::ProcessDeathObserver(const wptr<IRemoteObject>& remote)
+{
+    std::lock_guard<std::mutex> proxyGuard(proxyMutex_);
+    if (hiviewServiceAbilityProxy_ == nullptr) {
+        HIVIEW_LOGW("hiview remote service died and local instance is null.");
+        return;
+    }
+    if (hiviewServiceAbilityProxy_ == remote.promote()) {
+        hiviewServiceAbilityProxy_->RemoveDeathRecipient(deathRecipient_);
+        hiviewServiceAbilityProxy_ = nullptr;
+        deathRecipient_ = nullptr;
+        HIVIEW_LOGW("hiview remote service died.");
+    } else {
+        HIVIEW_LOGW("unknown service died.");
+    }
 }
 
 bool HiviewServiceAgent::CheckAndCreateHiviewDir(const std::string& destDir)

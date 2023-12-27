@@ -77,14 +77,5 @@ CollectResult<int32_t> HiViewServiceTraceDelegate::Recover()
     };
     return TraceCalling<int32_t>(proxyHandler);
 }
-
-sptr<IRemoteObject> HiViewServiceTraceDelegate::GetRemoteService()
-{
-    auto abilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (abilityManager == nullptr) {
-        return nullptr;
-    }
-    return abilityManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
-}
 } // namespace HiviewDFX
 } // namespace OHOS
