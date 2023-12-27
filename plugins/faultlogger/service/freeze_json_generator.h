@@ -28,7 +28,7 @@ public:
         Builder() {};
         ~Builder() {};
         Builder& InitName(const std::string& name);
-        Builder& InitMessage(const std::string& name);
+        Builder& InitMessage(const std::string& message);
         FreezeJsonException Build() const;
     
     private:
