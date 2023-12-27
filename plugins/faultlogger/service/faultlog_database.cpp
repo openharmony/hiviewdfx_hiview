@@ -48,18 +48,17 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
     }
     auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, rawData);
     HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", sysEvent->AsJsonStr().c_str());
+    constexpr int64_t DEFAULT_INT_VALUE = 0;
     info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
-    if (info.time == 0) {
-        info.time = sysEvent->GetEventIntValue("HAPPEN_TIME");
+    if (info.time == DEFAULT_INT_VALUE) {
+        info.time = sysEvent->GetEventIntValue("HAPPEN_TIME") != DEFAULT_INT_VALUE?
+                    sysEvent->GetEventIntValue("HAPPEN_TIME") : sysEvent->GetEventIntValue("time_");
     }
-    info.pid = sysEvent->GetEventIntValue("PID");
-    if (info.pid == 0) {
-        info.pid = sysEvent->GetEventIntValue("pid_");
-    }
-    info.id = sysEvent->GetEventIntValue("UID");
-    if (info.id == 0) {
-        info.id = sysEvent->GetEventIntValue("uid_");
-    }
+    info.pid = sysEvent->GetEventIntValue("PID") != DEFAULT_INT_VALUE?
+               sysEvent->GetEventIntValue("PID") : sysEvent->GetEventIntValue("pid_");
+
+    info.id = sysEvent->GetEventIntValue("UID") != DEFAULT_INT_VALUE?
+               sysEvent->GetEventIntValue("UID") : sysEvent->GetEventIntValue("uid_");
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
@@ -86,7 +85,7 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
         "SUMMARY", info.summary,
         "LOG_PATH", info.logPath,
         "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
-        "HAPPEN_TIME", std::to_string(info.time),
+        "HAPPEN_TIME", info.time,
         "HITRACE_TIME", info.sectionMap.find("HITRACE_TIME") != info.sectionMap.end()?
                         info.sectionMap.at("HITRACE_TIME") : "",
         "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end()?
@@ -115,14 +114,16 @@ std::list<std::shared_ptr<EventStore::SysEventQuery>> CreateQueries(
     }
     if (faultType != FaultLogType::JS_CRASH) {
         std::string faultName = GetFaultNameByType(faultType, false);
-        std::vector<std::string> faultNames = { faultName };
+        std::vector<std::vector<std::string>> faultNames = { {faultName} };
         if (faultType == FaultLogType::ALL) {
-            faultNames = { "CPP_CRASH", "APP_FREEZE", "SYS_FREEZE", "RUST_PANIC" };
+            faultNames = { {"CPP_CRASH"}, {"APP_FREEZE"}, {"SYS_FREEZE"}, {"RUST_PANIC"} };
         }
-        auto query = EventStore::SysEventDao::BuildQuery(HiSysEvent::Domain::RELIABILITY, faultNames);
-        query->And(upperCaseCond);
-        query->Select(QUERY_ITEMS).Order("time_", false);
-        queries.push_back(query);
+        for (auto name : faultNames) {
+            auto query = EventStore::SysEventDao::BuildQuery(HiSysEvent::Domain::RELIABILITY, name);
+            query->And(upperCaseCond);
+            query->Select(QUERY_ITEMS).Order("time_", false);
+            queries.push_back(query);
+        }
     }
     return queries;
 }
@@ -153,11 +154,18 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
                 continue;
             }
             queryResult.push_back(info);
-            if (queryResult.size() == static_cast<size_t>(maxNum)) {
-                return queryResult;
-            }
         }
     }
+    if (queries.size() > 1) {
+        queryResult.sort(
+            [](const FaultLogInfo& a, const FaultLogInfo& b) {
+            return a.time > b.time;
+        });
+        if (queryResult.size() > static_cast<size_t>(maxNum)) {
+            queryResult.resize(maxNum);
+        }
+    }
+
     return queryResult;
 }
 
