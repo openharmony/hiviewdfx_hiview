@@ -26,7 +26,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class IoDecorator : public IoCollector, public UCDecorator {
 public:
-    IoDecorator();
+    IoDecorator(std::shared_ptr<IoCollector> collector) : ioCollector_(collector) {};
     virtual ~IoDecorator() = default;
 
 public:

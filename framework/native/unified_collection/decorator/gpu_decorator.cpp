@@ -15,42 +15,21 @@
 
 #include "gpu_decorator.h"
 
-#include "gpu_collector_impl.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string GPU_COLLECTOR_NAME = "GpuCollector";
 StatInfoWrapper GpuDecorator::statInfoWrapper_;
 
-std::shared_ptr<GpuCollector> GpuCollector::Create()
-{
-    std::shared_ptr<GpuDecorator> instance = std::make_shared<GpuDecorator>();
-    return instance;
-}
-
-GpuDecorator::GpuDecorator()
-{
-    gpuCollector_ = std::make_shared<GpuCollectorImpl>();
-}
-
 CollectResult<GpuFreq> GpuDecorator::CollectGpuFrequency()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<GpuFreq> result = gpuCollector_->CollectGpuFrequency();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName = GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&GpuCollector::CollectGpuFrequency, gpuCollector_.get());
+    return Invoke(task, statInfoWrapper_, GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 CollectResult<SysGpuLoad> GpuDecorator::CollectSysGpuLoad()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<SysGpuLoad> result = gpuCollector_->CollectSysGpuLoad();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName = GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&GpuCollector::CollectSysGpuLoad, gpuCollector_.get());
+    return Invoke(task, statInfoWrapper_, GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void GpuDecorator::SaveStatCommonInfo()

@@ -16,7 +16,6 @@
 #include "trace_decorator.h"
 
 #include "file_util.h"
-#include "trace_collector_impl.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,44 +32,22 @@ const std::string UC_HITRACE_TRAFFIC_STAT_ITEM =
 StatInfoWrapper TraceDecorator::statInfoWrapper_;
 TraceStatWrapper TraceDecorator::traceStatWrapper_;
 
-std::shared_ptr<TraceCollector> TraceCollector::Create()
-{
-    std::shared_ptr<TraceDecorator> instance = std::make_shared<TraceDecorator>();
-    return instance;
-}
-
-TraceDecorator::TraceDecorator()
-{
-    traceCollector_ = std::make_shared<TraceCollectorImpl>();
-}
-
 CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(TraceCollector::Caller &caller)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<std::string>> result = traceCollector_->DumpTrace(caller);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    traceStatWrapper_.UpdateTraceStatInfo(startTime, endTime, caller, result);
-    return result;
+    auto task = std::bind(&TraceCollector::DumpTrace, traceCollector_.get(), caller);
+    return Invoke(task, traceStatWrapper_, caller);
 }
 
 CollectResult<int32_t> TraceDecorator::TraceOn()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<int32_t> result = traceCollector_->TraceOn();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&TraceCollector::TraceOn, traceCollector_.get());
+    return UCDecorator::Invoke(task, statInfoWrapper_, TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<std::string>> TraceDecorator::TraceOff()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<std::string>> result = traceCollector_->TraceOff();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&TraceCollector::TraceOff, traceCollector_.get());
+    return UCDecorator::Invoke(task, statInfoWrapper_, TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void TraceDecorator::SaveStatSpecialInfo()
@@ -149,7 +126,6 @@ void TraceStatWrapper::UpdateAPIStatInfo(const TraceStatItem& item)
     statInfo.totalCall += 1;
     statInfo.failCall += ((item.isCallSucc || item.isOverCall) ? 0 : 1);
     statInfo.overCall += (item.isOverCall ? 1 : 0);
-    statInfo.totalTimeSpend += item.latency;
     statInfo.totalTimeSpend += item.latency;
     if (statInfo.maxLatency < item.latency) {
         statInfo.maxLatency = item.latency;

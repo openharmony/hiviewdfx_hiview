@@ -24,7 +24,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class PerfDecorator : public PerfCollector, public UCDecorator {
 public:
-    PerfDecorator();
+    PerfDecorator(std::shared_ptr<PerfCollector> collector) : perfCollector_(collector) {};
     virtual ~PerfDecorator() = default;
     virtual CollectResult<bool> StartPerf(const std::string &logDir) override;
     void SetSelectPids(const std::vector<pid_t> &selectPids) override;

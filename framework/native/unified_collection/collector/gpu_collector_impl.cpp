@@ -19,6 +19,7 @@
 
 #include "common_util.h"
 #include "file_util.h"
+#include "gpu_decorator.h"
 #include "logger.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
@@ -27,6 +28,10 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
+std::shared_ptr<GpuCollector> GpuCollector::Create()
+{
+    return std::make_shared<GpuDecorator>(std::make_shared<GpuCollectorImpl>());
+}
 
 inline int32_t GetValue(const std::string& fileName)
 {

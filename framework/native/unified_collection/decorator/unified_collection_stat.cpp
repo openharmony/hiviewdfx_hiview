@@ -23,18 +23,22 @@
 #include "cpu_decorator.h"
 #include "gpu_decorator.h"
 #include "io_decorator.h"
+#ifdef HAS_HIPROFILER
 #include "mem_profiler_decorator.h"
+#endif
 #include "memory_decorator.h"
 #include "network_decorator.h"
+#ifdef HAS_HIPERF
 #include "perf_decorator.h"
+#endif
 #include "trace_decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-UCStat");
-const std::string UC_STAT_DATE = "Date";
-const std::string UC_API_STAT_TITLE = "API statistics";
+const std::string UC_STAT_DATE = "Date:";
+const std::string UC_API_STAT_TITLE = "API statistics:";
 const std::string UC_API_STAT_ITEM =
     "API TotalCall FailCall AvgLatency(us) MaxLatency(us) TotalTimeSpent(us)";
 
@@ -65,12 +69,16 @@ void UnifiedCollectionStat::SaveAllStatInfo()
     CpuDecorator::SaveStatCommonInfo();
     GpuDecorator::SaveStatCommonInfo();
     IoDecorator::SaveStatCommonInfo();
-    MemProfilerDecorator::SaveStatCommonInfo();
     MemoryDecorator::SaveStatCommonInfo();
     NetworkDecorator::SaveStatCommonInfo();
-    PerfDecorator::SaveStatCommonInfo();
     TraceDecorator::SaveStatCommonInfo();
-    
+#ifdef HAS_HIPROFILER
+    MemProfilerDecorator::SaveStatCommonInfo();
+#endif
+#ifdef HAS_HIPERF
+    PerfDecorator::SaveStatCommonInfo();
+#endif
+
     TraceDecorator::SaveStatSpecialInfo();
     
     int32_t ret = HiSysEventWrite(
@@ -88,11 +96,15 @@ void UnifiedCollectionStat::ResetAllStatInfo()
     CpuDecorator::ResetStatInfo();
     GpuDecorator::ResetStatInfo();
     IoDecorator::ResetStatInfo();
-    MemProfilerDecorator::ResetStatInfo();
     MemoryDecorator::ResetStatInfo();
     NetworkDecorator::ResetStatInfo();
-    PerfDecorator::ResetStatInfo();
     TraceDecorator::ResetStatInfo();
+#ifdef HAS_HIPROFILER
+    MemProfilerDecorator::ResetStatInfo();
+#endif
+#ifdef HAS_HIPERF
+    PerfDecorator::ResetStatInfo();
+#endif
 }
 } // namespace UCollectUtil
 } // namespace HiviewDFX

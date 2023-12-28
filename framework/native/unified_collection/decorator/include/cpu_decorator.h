@@ -24,7 +24,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class CpuDecorator : public CpuCollector, public UCDecorator {
 public:
-    CpuDecorator();
+    CpuDecorator(std::shared_ptr<CpuCollector> collector) : cpuCollector_(collector) {};
     virtual ~CpuDecorator() = default;
 
 public:

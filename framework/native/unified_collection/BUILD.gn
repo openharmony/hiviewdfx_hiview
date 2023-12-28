@@ -55,7 +55,6 @@ ohos_source_set("ucollection_source") {
     "decorator/decorator.cpp",
     "decorator/gpu_decorator.cpp",
     "decorator/io_decorator.cpp",
-    "decorator/mem_profiler_decorator.cpp",
     "decorator/memory_decorator.cpp",
     "decorator/network_decorator.cpp",
     "decorator/perf_decorator.cpp",
@@ -66,7 +65,10 @@ ohos_source_set("ucollection_source") {
   ]
 
   if (has_hiprofiler) {
-    sources += [ "collector/mem_profiler_collector_impl.cpp" ]
+    sources += [
+      "collector/mem_profiler_collector_impl.cpp",
+      "decorator/mem_profiler_decorator.cpp",
+    ]
   }
 
   deps = [
@@ -83,12 +85,14 @@ ohos_source_set("ucollection_source") {
     "wifi:wifi_sdk",
   ]
 
+  cflags = []
   if (has_hiprofiler) {
+    cflags += [ "-DHAS_HIPROFILER" ]
     external_deps += [ "hiprofiler:libnative_daemon_client" ]
   }
 
   if (has_hiperf) {
-    cflags = [ "-DHAS_HIPERF" ]
+    cflags += [ "-DHAS_HIPERF" ]
     external_deps += [ "hiperf:hiperf_client" ]
   }
   part_name = "hiview"

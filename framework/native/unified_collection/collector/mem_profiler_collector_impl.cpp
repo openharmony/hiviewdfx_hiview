@@ -15,11 +15,12 @@
 
 #include "mem_profiler_collector_impl.h"
 
+#include <common.h>
 #include <memory>
 #include <thread>
-#include <common.h>
 
 #include "logger.h"
+#include "mem_profiler_decorator.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"
 #include "parameters.h"
@@ -95,6 +96,14 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
+
+std::shared_ptr<MemProfilerCollector> MemProfilerCollector::Create()
+{
+    static std::shared_ptr<MemProfilerCollector> instance_ =
+        std::make_shared<MemProfilerDecorator>(std::make_shared<MemProfilerCollectorImpl>());
+    return instance_;
+}
+
 } // UCollectUtil
 } // HiViewDFX
 } // OHOS
