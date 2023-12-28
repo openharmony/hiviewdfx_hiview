@@ -323,9 +323,9 @@ void Faultlogger::Dump(int fd, const std::vector<std::string> &cmds)
         return;
     }
 
-    HIVIEW_LOGI("DumpRequest: detail:%d, list:%d, file:%s, name:%s, time:%ld",
-                request.requestDetail, request.requestList, request.fileName.c_str(), request.moduleName.c_str(),
-                request.time);
+    HIVIEW_LOGI("DumpRequest: detail:%d, list:%d, file:%s, name:%s, time:%lld",
+        request.requestDetail, request.requestList, request.fileName.c_str(), request.moduleName.c_str(),
+        static_cast<long long>(request.time));
     Dump(fd, request);
 }
 
@@ -385,14 +385,14 @@ bool Faultlogger::JudgmentRateLimiting(std::shared_ptr<Event> event)
     if (it != eventTagTime_.end()) {
         if ((now - it->second) < interval) {
             HIVIEW_LOGW("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-                interval:%{public}ld There's not enough interval",
+                interval:%{public}d There's not enough interval",
                 sysEvent->eventId_, sysEvent->eventName_.c_str(), eventPid.c_str(), interval);
             return false;
         }
     }
     eventTagTime_[eventPid] = now;
     HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-        interval:%{public}ld normal interval",
+        interval:%{public}d normal interval",
         sysEvent->eventId_, sysEvent->eventName_.c_str(), eventPid.c_str(), interval);
     return true;
 }
@@ -893,7 +893,7 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
     if (statmStream) {
         std::string statmLine;
         std::getline(statmStream, statmLine);
-        HIVIEW_LOGI("/proc/%{public}d/statm : %{public}s", pid, statmLine.c_str());
+        HIVIEW_LOGI("/proc/%{public}ld/statm : %{public}s", pid, statmLine.c_str());
         statmStream.close();
         std::list<std::string> numStrArr = GetDightStrArr(statmLine);
         auto it = numStrArr.begin();
@@ -901,9 +901,9 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         vss = multiples * std::stoull(*it);
         it++;
         rss = multiples * std::stoull(*it);
-        HIVIEW_LOGI("GET FreezeJson rss=%{public}d, vss=%{public}d.", rss, vss);
+        HIVIEW_LOGI("GET FreezeJson rss=%{public}llu, vss=%{public}llu.", rss, vss);
     } else {
-        HIVIEW_LOGE("Fail to open /proc/%{public}d/statm", pid);
+        HIVIEW_LOGE("Fail to open /proc/%{public}ld/statm", pid);
     }
 
     std::ifstream meminfoStream("/proc/meminfo");
@@ -916,7 +916,7 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         std::getline(meminfoStream, meminfoLine);
         sysAvailMem = std::stoull(GetDightStrArr(meminfoLine).front());
         meminfoStream.close();
-        HIVIEW_LOGI("GET FreezeJson sysFreeMem=%{public}d, sysAvailMem=%{public}d, sysTotalMem=%{public}d.",
+        HIVIEW_LOGI("GET FreezeJson sysFreeMem=%{public}llu, sysAvailMem=%{public}llu, sysTotalMem=%{public}llu.",
             sysFreeMem, sysAvailMem, sysTotalMem);
     } else {
         HIVIEW_LOGE("Fail to open /proc/meminfo");

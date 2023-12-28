@@ -44,6 +44,8 @@ ohos_source_set("hiview_utility") {
     defines += [ "USE_JEMALLOC_DFX_INTF" ]
   }
 
+  deps = [ "$hiview_base:logger" ]
+
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",

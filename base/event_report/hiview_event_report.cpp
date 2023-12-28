@@ -14,19 +14,16 @@
  */
 #include "hiview_event_report.h"
 
-#include "hilog/log.h"
 #include "hiview_event_common.h"
 #include "hiview_event_cacher.h"
+#include "logger.h"
 #include "plugin_fault_event_factory.h"
 #include "plugin_load_event_factory.h"
 #include "plugin_unload_event_factory.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-const HiLogLabel LABEL = { LOG_CORE, LABEL_DOMAIN, "HiView-HiviewEventReport" };
-}
-
+DEFINE_LOG_LABEL(LABEL_DOMAIN, "HiView-HiviewEventReport");
 void HiviewEventReport::ReportPluginLoad(const std::string &name, uint32_t result)
 {
     auto factory = std::make_unique<PluginLoadEventFactory>();
@@ -34,7 +31,7 @@ void HiviewEventReport::ReportPluginLoad(const std::string &name, uint32_t resul
     event->Update(PluginEventSpace::KEY_OF_PLUGIN_NAME, name);
     event->Update(PluginEventSpace::KEY_OF_RESULT, result);
     event->Report();
-    HiLog::Info(LABEL, "report plugin load event=%{public}s", event->ToJsonString().c_str());
+    HIVIEW_LOGI("report plugin load event=%{public}s", event->ToJsonString().c_str());
 }
 
 void HiviewEventReport::ReportPluginUnload(const std::string &name, uint32_t result)
@@ -44,7 +41,7 @@ void HiviewEventReport::ReportPluginUnload(const std::string &name, uint32_t res
     event->Update(PluginEventSpace::KEY_OF_PLUGIN_NAME, name);
     event->Update(PluginEventSpace::KEY_OF_RESULT, result);
     event->Report();
-    HiLog::Info(LABEL, "report plugin unload event=%{public}s", event->ToJsonString().c_str());
+    HIVIEW_LOGI("report plugin unload event=%{public}s", event->ToJsonString().c_str());
 }
 
 void HiviewEventReport::ReportPluginFault(const std::string &name, const std::string &reason)
@@ -54,7 +51,7 @@ void HiviewEventReport::ReportPluginFault(const std::string &name, const std::st
     event->Update(PluginFaultEventSpace::KEY_OF_PLUGIN_NAME, name);
     event->Update(PluginFaultEventSpace::KEY_OF_REASON, reason);
     event->Report();
-    HiLog::Info(LABEL, "report plugin fault event=%{public}s", event->ToJsonString().c_str());
+    HIVIEW_LOGI("report plugin fault event=%{public}s", event->ToJsonString().c_str());
 }
 
 void HiviewEventReport::ReportPluginStats()
@@ -63,14 +60,14 @@ void HiviewEventReport::ReportPluginStats()
     HiviewEventCacher::GetInstance().GetPluginStatsEvents(events);
     for (auto event : events) {
         event->Report();
-        HiLog::Info(LABEL, "report plugin stat event=%{public}s", event->ToJsonString().c_str());
+        HIVIEW_LOGI("report plugin stat event=%{public}s", event->ToJsonString().c_str());
     }
     HiviewEventCacher::GetInstance().ClearPluginStatsEvents();
 }
 
 void HiviewEventReport::UpdatePluginStats(const std::string &name, const std::string &procName, uint32_t procTime)
 {
-    HiLog::Debug(LABEL, "UpdatePluginStats pluginName=%{public}s, procName=%{public}s, time=%{public}d",
+    HIVIEW_LOGD("UpdatePluginStats pluginName=%{public}s, procName=%{public}s, time=%{public}d",
         name.c_str(), procName.c_str(), procTime);
     HiviewEventCacher::GetInstance().UpdatePluginStatsEvent(name, procName, procTime);
 }

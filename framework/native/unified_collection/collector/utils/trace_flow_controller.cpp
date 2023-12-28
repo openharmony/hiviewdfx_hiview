@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <chrono>
+#include <cinttypes>
 #include <ctime>
 #include <sys/stat.h>
 #include <vector>
@@ -52,9 +53,10 @@ void CreateTracePath(const std::string &filePath)
 void TraceFlowController::InitTraceDb()
 {
     ucollectionTraceStorage_ = QueryDb();
-    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}d, xpowerSize:%{public}d, reliabilitySize:%{public}d",
-        ucollectionTraceStorage_.systemTime.c_str(), ucollectionTraceStorage_.xperfSize,
-        ucollectionTraceStorage_.xpowerSize, ucollectionTraceStorage_.reliabilitySize);
+    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}" PRId64 ", xpowerSize:%{public}" PRId64
+        ", reliabilitySize:%{public}" PRId64, ucollectionTraceStorage_.systemTime.c_str(),
+        ucollectionTraceStorage_.xperfSize, ucollectionTraceStorage_.xpowerSize,
+        ucollectionTraceStorage_.reliabilitySize);
 }
 
 void TraceFlowController::InitTraceStorage()
@@ -100,7 +102,7 @@ bool TraceFlowController::NeedDump(TraceCollector::Caller &caller)
 bool TraceFlowController::NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret)
 {
     int64_t traceSize = GetTraceSize(ret);
-    HIVIEW_LOGI("start to upload , systemTime = %{public}s, traceSize = %{public}d.",
+    HIVIEW_LOGI("start to upload , systemTime = %{public}s, traceSize = %{public}" PRId64 ".",
         ucollectionTraceStorage_.systemTime.c_str(), traceSize);
     switch (caller) {
         case TraceCollector::Caller::RELIABILITY:
@@ -150,9 +152,10 @@ bool TraceFlowController::IsLowerLimit(int64_t nowSize, int64_t traceSize, int64
 
 void TraceFlowController::StoreDb()
 {
-    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}d, xpowerSize:%{public}d, reliabilitySize:%{public}d",
-        ucollectionTraceStorage_.systemTime.c_str(), ucollectionTraceStorage_.xperfSize,
-        ucollectionTraceStorage_.xpowerSize, ucollectionTraceStorage_.reliabilitySize);
+    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}" PRId64 ", xpowerSize:%{public}" PRId64
+        ", reliabilitySize:%{public}" PRId64, ucollectionTraceStorage_.systemTime.c_str(),
+        ucollectionTraceStorage_.xperfSize, ucollectionTraceStorage_.xpowerSize,
+        ucollectionTraceStorage_.reliabilitySize);
     traceStorage_->Store(ucollectionTraceStorage_);
 }
 

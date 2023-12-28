@@ -16,28 +16,28 @@
 #include "sys_event_callback_proxy.h"
 
 #include "errors.h"
-#include "hilog/log.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventCallbackProxy" };
+DEFINE_LOG_TAG("HiView-SysEventCallbackProxy");
 void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16string& eventName, uint32_t eventType,
     const std::u16string& eventDetail)
 {
     auto remote = Remote();
     if (remote == nullptr) {
-        HiLog::Error(LABEL, "SysEventService Remote is NULL.");
+        HIVIEW_LOGE("SysEventService Remote is NULL.");
         return;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(SysEventCallbackProxy::GetDescriptor())) {
-        HiLog::Error(LABEL, "write descriptor failed.");
+        HIVIEW_LOGE("write descriptor failed.");
         return;
     }
     bool ret = data.WriteString16(domain) && data.WriteString16(eventName) &&
         data.WriteUint32(eventType) && data.WriteString16(eventDetail);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write params failed.");
+        HIVIEW_LOGE("parcel write params failed.");
         return;
     }
     MessageParcel reply;
@@ -45,7 +45,7 @@ void SysEventCallbackProxy::Handle(const std::u16string& domain, const std::u16s
     int32_t res = remote->SendRequest(
         static_cast<uint32_t>(SysEventCallbackInterfaceCode::HANDLE), data, reply, option);
     if (res != ERR_OK) {
-        HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
+        HIVIEW_LOGE("send request failed, error is %{public}d.", res);
     }
 }
 } // namespace HiviewDFX

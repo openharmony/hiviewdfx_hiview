@@ -26,6 +26,8 @@ ohos_source_set("hiview_event_raw_base") {
     "base/raw_data_base_def.cpp",
   ]
 
+  deps = [ "$hiview_base:logger" ]
+
   public_configs = [ ":hiview_event_raw_base_config" ]
 
   external_deps = [
@@ -52,7 +54,10 @@ ohos_source_set("hiview_event_raw_decode") {
 
   public_configs = [ ":hiview_event_raw_decode_config" ]
 
-  deps = [ "$hiview_base/event_raw:hiview_event_raw_base" ]
+  deps = [
+    "$hiview_base:logger",
+    "$hiview_base/event_raw:hiview_event_raw_base",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -84,7 +89,10 @@ ohos_source_set("hiview_event_raw_encode") {
     "hilog:libhilog",
   ]
 
-  deps = [ "$hiview_base/event_raw:hiview_event_raw_base" ]
+  deps = [
+    "$hiview_base:logger",
+    "$hiview_base/event_raw:hiview_event_raw_base",
+  ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

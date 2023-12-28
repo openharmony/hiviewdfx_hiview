@@ -35,4 +35,6 @@ ohos_source_set("hiviewplatform_config") {
     ":hiview_platform_config",
     "$hiview_base:hiviewbase",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

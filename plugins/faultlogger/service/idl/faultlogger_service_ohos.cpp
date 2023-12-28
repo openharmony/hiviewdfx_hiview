@@ -110,7 +110,7 @@ void FaultloggerServiceOhos::AddFaultLog(const FaultLogInfoOhos& info)
     int32_t uid = IPCSkeleton::GetCallingUid();
     HIVIEW_LOGD("info.uid:%{public}d uid:%{public}d info.pid:%{public}d", info.uid, uid, info.pid);
     if (((uid != static_cast<int32_t>(getuid()))) && (uid != info.uid)) {
-        HIVIEW_LOGW("Fail to add fault log, mismatch uid:%{public}d(%{public})", uid, info.uid);
+        HIVIEW_LOGW("Fail to add fault log, mismatch uid:%{public}d(%{public}d)", uid, info.uid);
         return;
     }
 

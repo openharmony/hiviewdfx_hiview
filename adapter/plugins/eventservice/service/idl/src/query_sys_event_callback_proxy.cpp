@@ -17,32 +17,32 @@
 
 #include "ash_mem_utils.h"
 #include "errors.h"
-#include "hilog/log.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-QuerySysEventCallbackProxy" };
+DEFINE_LOG_TAG("HiView-QuerySysEventCallbackProxy");
 void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysEvent, const std::vector<int64_t>& seq)
 {
     auto remote = Remote();
     if (remote == nullptr) {
-        HiLog::Error(LABEL, "SysEventService Remote is NULL.");
+        HIVIEW_LOGE("SysEventService Remote is NULL.");
         return;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(QuerySysEventCallbackProxy::GetDescriptor())) {
-        HiLog::Error(LABEL, "write descriptor failed.");
+        HIVIEW_LOGE("write descriptor failed.");
         return;
     }
     auto ashMemory = AshMemUtils::WriteBulkData(data, sysEvent);
     if (ashMemory == nullptr) {
-        HiLog::Error(LABEL, "write sys event failed.");
+        HIVIEW_LOGE("write sys event failed.");
         return;
     }
     allAshMemories.emplace_back(ashMemory);
     auto ret = data.WriteInt64Vector(seq);
     if (!ret) {
-        HiLog::Error(LABEL, "write sys seq failed.");
+        HIVIEW_LOGE("write sys seq failed.");
         return;
     }
     MessageParcel reply;
@@ -50,7 +50,7 @@ void QuerySysEventCallbackProxy::OnQuery(const std::vector<std::u16string>& sysE
     int32_t res = remote->SendRequest(
         static_cast<uint32_t>(QuerySysEventCallbackInterfaceCode::ON_QUERY), data, reply, option);
     if (res != ERR_OK) {
-        HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
+        HIVIEW_LOGE("send request failed, error is %{public}d.", res);
     }
 }
 
@@ -58,22 +58,22 @@ void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total, int64
 {
     auto remote = Remote();
     if (remote == nullptr) {
-        HiLog::Error(LABEL, "SysEventService Remote is NULL.");
+        HIVIEW_LOGE("SysEventService Remote is NULL.");
         return;
     }
     MessageParcel data;
     if (!data.WriteInterfaceToken(QuerySysEventCallbackProxy::GetDescriptor())) {
-        HiLog::Error(LABEL, "write descriptor failed.");
+        HIVIEW_LOGE("write descriptor failed.");
         return;
     }
     bool ret = data.WriteInt32(reason) && data.WriteInt32(total);
     if (!ret) {
-        HiLog::Error(LABEL, "write params failed.");
+        HIVIEW_LOGE("write params failed.");
         return;
     }
     ret = data.WriteInt64(seq);
     if (!ret) {
-        HiLog::Error(LABEL, "write seq failed.");
+        HIVIEW_LOGE("write seq failed.");
         return;
     }
     MessageParcel reply;
@@ -81,7 +81,7 @@ void QuerySysEventCallbackProxy::OnComplete(int32_t reason, int32_t total, int64
     int32_t res = remote->SendRequest(
         static_cast<uint32_t>(QuerySysEventCallbackInterfaceCode::ON_COMPLETE), data, reply, option);
     if (res != ERR_OK) {
-        HiLog::Error(LABEL, "send request failed, error is %{public}d.", res);
+        HIVIEW_LOGE("send request failed, error is %{public}d.", res);
     }
 }
 

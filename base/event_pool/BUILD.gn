@@ -28,5 +28,8 @@ ohos_source_set("eventpool") {
 
   deps = [ "../utility:hiview_utility" ]
 
-  external_deps = [ "c_utils:utils" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
 }

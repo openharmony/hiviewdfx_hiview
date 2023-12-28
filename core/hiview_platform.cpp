@@ -702,7 +702,7 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
     auto count = target.use_count();
     // two counts for 1.current ref 2.map holder ref
     if (count > 2) {
-        HIVIEW_LOGW("Plugin %{public}s has more refs(%l{public}d), may caused by unfinished task. unload failed.",
+        HIVIEW_LOGW("Plugin %{public}s has more refs(%{public}ld), may caused by unfinished task. unload failed.",
             name.c_str(), count);
         HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_IN_USE);
         return;

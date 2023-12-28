@@ -20,9 +20,9 @@
 
 #include "common_utils.h"
 #include "data_publisher.h"
-#include "hilog/log.h"
 #include "hiview_event_common.h"
 #include "ipc_skeleton.h"
+#include "logger.h"
 #include "ret_code.h"
 #include "string_ex.h"
 
@@ -30,8 +30,8 @@ using namespace OHOS::HiviewDFX::BaseEventSpace;
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-SysEventQueryBuilder");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventQueryBuilder" };
 constexpr char LOGIC_AND_COND[] = "and";
 constexpr int64_t INVALID_SEQ = -1;
 constexpr int64_t TRANS_DEFAULT_CNT = 0;
@@ -97,7 +97,7 @@ bool ConditionParser::ParseLogicCondition(const Json::Value& root, const std::st
     EventStore::Cond& condition)
 {
     if (!root.isMember(logic) || !root[logic].isArray()) {
-        HiLog::Error(LABEL, "ParseLogicCondition err1.");
+        HIVIEW_LOGE("ParseLogicCondition err1.");
         return false;
     }
 
@@ -159,21 +159,21 @@ bool ConditionParser::ParseQueryCondition(const std::string& condStr, EventStore
     std::unique_ptr<Json::CharReader> const reader(jsonRBuilder.newCharReader());
     JSONCPP_STRING errs;
     if (!reader->parse(condStr.data(), condStr.data() + condStr.size(), &root, &errs)) {
-        HiLog::Error(LABEL, "failed to parse condition string: %{public}s.", condStr.c_str());
+        HIVIEW_LOGE("failed to parse condition string: %{public}s.", condStr.c_str());
         return false;
     }
     std::string version;
     if (!ParseJsonString(root, "version", version)) {
-        HiLog::Error(LABEL, "failed to parser version.");
+        HIVIEW_LOGE("failed to parser version.");
         return false;
     }
     const std::set<std::string> versionSet = { "V1" }; // set is used for future expansion
     if (versionSet.find(version) == versionSet.end()) {
-        HiLog::Error(LABEL, "version is invalid.");
+        HIVIEW_LOGE("version is invalid.");
         return false;
     }
     if (!ParseQueryConditionJson(root, condition)) {
-        HiLog::Error(LABEL, "condition is invalid.");
+        HIVIEW_LOGE("condition is invalid.");
         return false;
     }
     return true;
@@ -189,7 +189,7 @@ void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCa
 
     while (!IsQueryComplete() && NeedStartNextQuery()) {
         BuildQuery();
-        HiLog::Debug(LABEL, "execute query: beginTime=%{public}" PRId64
+        HIVIEW_LOGD("execute query: beginTime=%{public}" PRId64
             ", endTime=%{public}" PRId64 ", maxEvents=%{public}d, fromSeq=%{public}" PRId64
             ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", argument.beginTime, argument.endTime,
             argument.maxEvents, argument.fromSeq, argument.toSeq, queryLimit);
@@ -265,13 +265,13 @@ void BaseEventQueryWrapper::BuildCondition(const std::string& condition)
     if (this->parser.ParseCondition(condition, extraCond)) {
         query->And(extraCond);
     } else {
-        HiLog::Info(LABEL, "invalid query condition=%{public}s", condition.c_str());
+        HIVIEW_LOGI("invalid query condition=%{public}s", condition.c_str());
     }
 }
 
 void BaseEventQueryWrapper::SetQueryArgument(QueryArgument argument)
 {
-    HiLog::Debug(LABEL, "set argument: beginTime=%{public} " PRId64
+    HIVIEW_LOGD("set argument: beginTime=%{public} " PRId64
         ", endTime=%{public} " PRId64 ", maxEvents=%{public}d, fromSeq=%{public} " PRId64
         ", toSeq=%{public} " PRId64 ".", argument.beginTime, argument.endTime,
         argument.maxEvents, argument.fromSeq, argument.toSeq);
@@ -315,7 +315,7 @@ bool BaseEventQueryWrapper::IsQueryComplete() const
 
 void BaseEventQueryWrapper::SetEventTotalCount(int64_t totalCount)
 {
-    HiLog::Debug(LABEL, "SetEventTotalCount: %{public}" PRId64 ".", totalCount);
+    HIVIEW_LOGD("SetEventTotalCount: %{public}" PRId64 ".", totalCount);
     totalEventCnt = totalCount;
 }
 
@@ -394,7 +394,7 @@ void SeqEventQueryWrapper::BuildQuery()
 void SeqEventQueryWrapper::SetMaxSequence(int64_t maxSeq)
 {
     this->maxSeq = maxSeq;
-    HiLog::Debug(LABEL, "argument.toSeq is %{public}" PRId64 ", maxSeq is %{public}" PRId64 ".",
+    HIVIEW_LOGD("argument.toSeq is %{public}" PRId64 ", maxSeq is %{public}" PRId64 ".",
         argument.toSeq, maxSeq);
     argument.toSeq = std::min(argument.toSeq, maxSeq);
 }
@@ -410,7 +410,7 @@ void SeqEventQueryWrapper::Order()
 EventQueryWrapperBuilder& EventQueryWrapperBuilder::Append(const std::string& domain, const std::string& eventName,
     uint32_t eventType, const std::string& extraInfo)
 {
-    HiLog::Debug(LABEL, "builder append domain=%{public}s, name=%{public}s, type=%{public}u, condition=%{public}s.",
+    HIVIEW_LOGD("builder append domain=%{public}s, name=%{public}s, type=%{public}u, condition=%{public}s.",
         domain.c_str(), eventName.c_str(), eventType, extraInfo.c_str());
     auto& queryRules = this->queryWrapper->GetSysEventQueryRules();
     // if the query rules are the same group, combine them
@@ -458,7 +458,7 @@ std::shared_ptr<BaseEventQueryWrapper> EventQueryWrapperBuilder::CreateQueryWrap
 
 void EventQueryWrapperBuilder::InitQueryWrapper(const QueryArgument& argument)
 {
-    HiLog::Debug(LABEL, "init link list of query wrapper with argument: beginTime=%{public} " PRId64
+    HIVIEW_LOGD("init link list of query wrapper with argument: beginTime=%{public} " PRId64
         ", endTime=%{public} " PRId64 ", maxEvents=%{public}d, fromSeq=%{public} " PRId64
         ", toSeq=%{public} " PRId64 ".", argument.beginTime, argument.endTime,
         argument.maxEvents, argument.fromSeq, argument.toSeq);

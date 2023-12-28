@@ -24,10 +24,10 @@
 #include "data_publisher.h"
 #include "event_query_wrapper_builder.h"
 #include "event_threshold_manager.h"
-#include "hilog/log.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "logger.h"
 #include "ret_code.h"
 #include "running_status_log_util.h"
 #include "string_ex.h"
@@ -39,8 +39,8 @@ using namespace OHOS::HiviewDFX::EventStore;
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-SysEventService");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventService" };
 constexpr pid_t HID_ROOT = 0;
 constexpr pid_t HID_SHELL = 2000;
 constexpr pid_t HID_OHOS = 1000;
@@ -65,7 +65,7 @@ bool MatchContent(int type, const string& rule, const string& match)
                 return rule.empty() || regex_search(match, result, pattern);
             }
         default:
-            HiLog::Error(LABEL, "invalid rule type %{public}d.", type);
+            HIVIEW_LOGE("invalid rule type %{public}d.", type);
             return false;
     }
 }
@@ -94,7 +94,7 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
         if (IsMatchedRule(rule, domain, eventName, tag, eventType)) {
             string logFormat("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, ");
             logFormat.append("tag is %{public}s, eventType is %{public}u for matched");
-            HiLog::Debug(LABEL, logFormat.c_str(),
+            HIVIEW_LOGD(logFormat.c_str(),
                 rule.ruleType, rule.domain.empty() ? "empty" : rule.domain.c_str(),
                 rule.eventName.empty() ? "empty" : rule.eventName.c_str(),
                 rule.tag.empty() ? "empty" : rule.tag.c_str(), eventType);
@@ -154,16 +154,16 @@ void SysEventServiceOhos::StartService(SysEventServiceBase *service,
     GetSysEventService(service);
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        HiLog::Error(LABEL, "failed to find SystemAbilityManager.");
+        HIVIEW_LOGE("failed to find SystemAbilityManager.");
         return;
     }
     if (instance == nullptr) {
-        HiLog::Error(LABEL, "SysEventServiceOhos service is null.");
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
         return;
     }
     int ret = samgr->AddSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID, instance);
     if (ret != 0) {
-        HiLog::Error(LABEL, "failed to add sys event service ability.");
+        HIVIEW_LOGE("failed to add sys event service ability.");
     }
 }
 
@@ -189,12 +189,12 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
     for (auto listener = registeredListeners_.begin(); listener != registeredListeners_.end(); ++listener) {
         SysEventCallbackPtrOhos callback = iface_cast<ISysEventCallback>(listener->first);
         if (callback == nullptr) {
-            HiLog::Error(LABEL, "interface is null, no need to match rules.");
+            HIVIEW_LOGE("interface is null, no need to match rules.");
             continue;
         }
         bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_,
             event->GetTag(), event->eventType_);
-        HiLog::Debug(LABEL, "pid %{public}d rules match %{public}s.", listener->second.first,
+        HIVIEW_LOGD("pid %{public}d rules match %{public}s.", listener->second.first,
             isMatched ? "success" : "fail");
         if (isMatched) {
             callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_),
@@ -212,19 +212,19 @@ void SysEventServiceOhos::UpdateEventSeq(int64_t seq)
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
     if (remote == nullptr) {
-        HiLog::Error(LABEL, "remote is null");
+        HIVIEW_LOGE("remote is null");
         return;
     }
     auto remoteObject = remote.promote();
     if (remoteObject == nullptr) {
-        HiLog::Error(LABEL, "object in remote is null.");
+        HIVIEW_LOGE("object in remote is null.");
         return;
     }
     lock_guard<mutex> lock(mutex_);
     if (debugModeCallback_ != nullptr) {
         CallbackObjectOhos callbackObject = debugModeCallback_->AsObject();
         if (callbackObject == remoteObject && isDebugMode_) {
-            HiLog::Error(LABEL, "quit debugmode.");
+            HIVIEW_LOGE("quit debugmode.");
             auto event = std::make_shared<Event>("SysEventSource");
             event->messageType_ = Event::ENGINE_SYSEVENT_DEBUG_MODE;
             event->SetValue("DEBUGMODE", "false");
@@ -235,7 +235,7 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
     auto listener = registeredListeners_.find(remoteObject);
     if (listener != registeredListeners_.end()) {
         listener->first->RemoveDeathRecipient(deathRecipient_);
-        HiLog::Error(LABEL, "pid %{public}d has died and remove listener.", listener->second.first);
+        HIVIEW_LOGE("pid %{public}d has died and remove listener.", listener->second.first);
         registeredListeners_.erase(listener);
     }
 }
@@ -271,16 +271,16 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
-        HiLog::Error(LABEL, "subscribe fail, sys event service is null.");
+        HIVIEW_LOGE("subscribe fail, sys event service is null.");
         return ERR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
-        HiLog::Error(LABEL, "subscribe fail, callback is null.");
+        HIVIEW_LOGE("subscribe fail, callback is null.");
         return ERR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
-        HiLog::Error(LABEL, "subscribe fail, object in callback is null.");
+        HIVIEW_LOGE("subscribe fail, object in callback is null.");
         return ERR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
@@ -289,15 +289,15 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     pair<int32_t, SysEventRuleGroupOhos> rulesPair(pid, rules);
     if (registeredListeners_.find(callbackObject) != registeredListeners_.end()) {
         registeredListeners_[callbackObject] = rulesPair;
-        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
+        HIVIEW_LOGD("uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
         return IPC_CALL_SUCCEED;
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
-        HiLog::Error(LABEL, "subscribe fail, can not add death recipient.");
+        HIVIEW_LOGE("subscribe fail, can not add death recipient.");
         return ERR_ADD_DEATH_RECIPIENT;
     }
     registeredListeners_.insert(make_pair(callbackObject, rulesPair));
-    HiLog::Debug(LABEL, "uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
+    HIVIEW_LOGD("uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
         uid, pid, registeredListeners_.size());
     return IPC_CALL_SUCCEED;
 }
@@ -309,36 +309,36 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
-        HiLog::Error(LABEL, "sys event service is null.");
+        HIVIEW_LOGE("sys event service is null.");
         return ERR_REMOTE_SERVICE_IS_NULL;
     }
     if (callback == nullptr) {
-        HiLog::Error(LABEL, "callback is null.");
+        HIVIEW_LOGE("callback is null.");
         return ERR_LISTENER_NOT_EXIST;
     }
     CallbackObjectOhos callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
-        HiLog::Error(LABEL, "object in callback is null.");
+        HIVIEW_LOGE("object in callback is null.");
         return ERR_LISTENER_STATUS_INVALID;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
     lock_guard<mutex> lock(mutex_);
     if (registeredListeners_.empty()) {
-        HiLog::Debug(LABEL, "has no any listeners.");
+        HIVIEW_LOGD("has no any listeners.");
         return ERR_LISTENERS_EMPTY;
     }
     auto registeredListener = registeredListeners_.find(callbackObject);
     if (registeredListener != registeredListeners_.end()) {
         if (!callbackObject->RemoveDeathRecipient(deathRecipient_)) {
-            HiLog::Error(LABEL, "uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
+            HIVIEW_LOGE("uid %{public}d pid %{public}d listener can not remove death recipient.", uid, pid);
             return ERR_ADD_DEATH_RECIPIENT;
         }
         registeredListeners_.erase(registeredListener);
-        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
+        HIVIEW_LOGD("uid %{public}d pid %{public}d has found listener and removes it.", uid, pid);
         return IPC_CALL_SUCCEED;
     } else {
-        HiLog::Debug(LABEL, "uid %{public}d pid %{public}d has not found listener.", uid, pid);
+        HIVIEW_LOGD("uid %{public}d pid %{public}d has not found listener.", uid, pid);
         return ERR_LISTENER_NOT_EXIST;
     }
 }
@@ -367,7 +367,7 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
                     return true;
                 }
                 auto eventType = this->GetTypeByDomainAndName(rule.domain, eventName);
-                HiLog::Debug(LABEL, "event type configured with domain[%{public}s] and name[%{public}s] "
+                HIVIEW_LOGD("event type configured with domain[%{public}s] and name[%{public}s] "
                     " is %{public}u, and event type in query rule is %{public}u.",
                     rule.domain.c_str(), eventName.c_str(), eventType, rule.eventType);
                 if ((!rule.domain.empty() && !eventName.empty() && eventType == INVALID_EVENT_TYPE) ||
@@ -414,18 +414,18 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
     auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
     auto buildRet = BuildEventQuery(queryWrapperBuilder, rules);
     if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
-        HiLog::Warn(LABEL, "invalid query rule, exit sys event querying.");
+        HIVIEW_LOGW("invalid query rule, exit sys event querying.");
         callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
         return ERR_QUERY_RULE_INVALID;
     }
     if (queryArgument.maxEvents == 0) {
-        HiLog::Warn(LABEL, "query count is 0, query complete directly.");
+        HIVIEW_LOGW("query count is 0, query complete directly.");
         callback->OnComplete(IPC_CALL_SUCCEED, 0, curSeq.load(std::memory_order_acquire));
         return IPC_CALL_SUCCEED;
     }
     auto queryWrapper = queryWrapperBuilder->Build();
     if (queryWrapper == nullptr) {
-        HiLog::Warn(LABEL, "query wrapper build failed.");
+        HIVIEW_LOGW("query wrapper build failed.");
         callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
         return ERR_QUERY_RULE_INVALID;
     }
@@ -455,7 +455,7 @@ int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callbac
         return ERR_NO_PERMISSION;
     }
     if (mode == isDebugMode_) {
-        HiLog::Error(LABEL, "same config, no need set");
+        HIVIEW_LOGE("same config, no need set");
         return ERR_DEBUG_MODE_SET_REPEAT;
     }
     auto event = std::make_shared<Event>("SysEventSource");
@@ -463,7 +463,7 @@ int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callbac
     event->SetValue("DEBUGMODE", mode ? "true" : "false");
     gISysEventNotify_(event);
 
-    HiLog::Debug(LABEL, "set debug mode %{public}s", mode ? "true" : "false");
+    HIVIEW_LOGD("set debug mode %{public}s", mode ? "true" : "false");
     debugModeCallback_ = callback;
     isDebugMode_ = mode;
     return IPC_CALL_SUCCEED;
@@ -472,7 +472,7 @@ int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callbac
 int SysEventServiceOhos::Dump(int32_t fd, const std::vector<std::u16string> &args)
 {
     if (fd < 0) {
-        HiLog::Error(LABEL, "invalid fd.");
+        HIVIEW_LOGE("invalid fd.");
         return -1;
     }
     dprintf(fd, "%s\n", "Hiview SysEventService");
@@ -483,7 +483,7 @@ void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
     auto service = SysEventServiceOhos::GetInstance();
     if (service == nullptr) {
-        HiLog::Error(LABEL, "SysEventServiceOhos service is null.");
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
         return;
     }
     service->OnRemoteDied(remote);
@@ -547,23 +547,23 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
     auto lastTimeStamp = dataPublisher_->GetTimeStampByUid(uid);
     int64_t currentTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     if (std::abs(currentTime - lastTimeStamp) < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
-        HiLog::Debug(LABEL, "forbid export, time frequency limit < 1 h.");
+        HIVIEW_LOGD("forbid export, time frequency limit < 1 h.");
         return ERR_EXPORT_FREQUENCY_OVER_LIMIT;
     }
 
     auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
     auto buildRet = BuildEventQuery(queryWrapperBuilder, rules);
     if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
-        HiLog::Warn(LABEL, "invalid query rule, exit sys event exporting.");
+        HIVIEW_LOGW("invalid query rule, exit sys event exporting.");
         return ERR_QUERY_RULE_INVALID;
     }
     if (queryArgument.maxEvents == 0) {
-        HiLog::Warn(LABEL, "export count is 0, export complete directly.");
+        HIVIEW_LOGW("export count is 0, export complete directly.");
         return currentTime;
     }
     auto queryWrapper = queryWrapperBuilder->Build();
     if (queryWrapper == nullptr) {
-        HiLog::Warn(LABEL, "export wrapper build failed.");
+        HIVIEW_LOGW("export wrapper build failed.");
         return ERR_QUERY_RULE_INVALID;
     }
     queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
@@ -574,7 +574,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
 void SysEventServiceOhos::SetWorkLoop(std::shared_ptr<EventLoop> looper)
 {
     if (looper == nullptr) {
-        HiLog::Warn(LABEL, "SetWorkLoop failed, looper is null.");
+        HIVIEW_LOGW("SetWorkLoop failed, looper is null.");
         return;
     }
     dataPublisher_->SetWorkLoop(looper);

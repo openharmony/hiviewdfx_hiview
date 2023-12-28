@@ -26,9 +26,6 @@
 #include <utility>
 #include <vector>
 
-#include "hilog/log.h"
-#include "json/json.h"
-
 #include "data_publisher_sys_event_callback.h"
 #include "data_share_common.h"
 #include "data_share_dao.h"
@@ -40,6 +37,7 @@
 #include "hisysevent.h"
 #include "hiview_event_common.h"
 #include "iquery_base_callback.h"
+#include "json/json.h"
 #include "logger.h"
 #include "ret_code.h"
 #include "string_util.h"
@@ -51,17 +49,15 @@ using namespace OHOS::HiviewDFX::BaseEventSpace;
 
 namespace OHOS {
 namespace HiviewDFX {
-
+DEFINE_LOG_TAG("HiView-DataPublisher");
 namespace {
-constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataPublisher"};
-
 std::string GetBundleNameFromJsonStr(const std::string& jsonInfo)
 {
     std::string bundleName = "";
     Json::Value root;
     Json::Reader reader;
     if (!reader.parse(jsonInfo, root)) {
-        HiLog::Error(LABEL, "failed to parse jsonInfo.");
+        HIVIEW_LOGE("failed to parse jsonInfo.");
         return bundleName;
     }
     if (root[BUNDLE_NAME].isString()) {
@@ -82,7 +78,7 @@ int32_t DataPublisher::AddSubscriber(int32_t uid, const std::vector<std::string>
     std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
     auto ret = dataShareDao->GetEventListByUid(uid, events);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "query DB failed.");
+        HIVIEW_LOGE("query DB failed.");
         return ret;
     }
     std::vector<std::string> oldEventList;
@@ -96,7 +92,7 @@ int32_t DataPublisher::AddSubscriber(int32_t uid, const std::vector<std::string>
     auto newEvents = StringUtil::ConvertVectorToStr(eventList, ";");
     ret = dataShareDao->SaveSubscriberInfo(uid, newEvents);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "query DB failed.");
+        HIVIEW_LOGE("query DB failed.");
         return ret;
     }
     return IPC_CALL_SUCCEED;
@@ -108,11 +104,11 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
     std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
     auto ret = dataShareDao->GetEventListByUid(uid, events);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to get events by uid");
+        HIVIEW_LOGE("failed to get events by uid");
         return ERR_REMOVE_SUBSCRIBE;
     }
     if (events.empty()) {
-        HiLog::Error(LABEL, "events list is empty");
+        HIVIEW_LOGE("events list is empty");
         return ERR_REMOVE_SUBSCRIBE;
     }
     std::vector<std::string> eventList;
@@ -122,7 +118,7 @@ int32_t DataPublisher::RemoveSubscriber(int32_t uid)
     }
     ret = dataShareDao->DeleteSubscriberInfo(uid);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to delete subscriberInfo");
+        HIVIEW_LOGE("failed to delete subscriberInfo");
         return ERR_REMOVE_SUBSCRIBE;
     }
     return IPC_CALL_SUCCEED;
@@ -134,7 +130,7 @@ void DataPublisher::InitSubscriber()
     std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
     int ret = dataShareDao->GetTotalSubscriberInfo(uidToEventsMap);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to get total subscriberInfo");
+        HIVIEW_LOGE("failed to get total subscriberInfo");
         return;
     }
     for (auto it = uidToEventsMap.begin(); it != uidToEventsMap.end(); ++it) {
@@ -156,7 +152,7 @@ void DataPublisher::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event
         return;
     }
     if (!CreateHiviewTempDir()) {
-        HiLog::Error(LABEL, "failed to create resourceFile.");
+        HIVIEW_LOGE("failed to create resourceFile.");
         return;
     }
     int64_t timestamp = static_cast<int64_t>(TimeUtil::GetMilliseconds());
@@ -166,7 +162,7 @@ void DataPublisher::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent> &event
         auto task = std::bind(&DataPublisher::HandleSubscribeTask, this, event, srcPath, timeStr);
         looper_->AddTimerEvent(nullptr, nullptr, task, DELAY_TIME, false);
     } else {
-        HiLog::Warn(LABEL, "looper_ is null, call the subscribe function directly.");
+        HIVIEW_LOGW("looper_ is null, call the subscribe function directly.");
         HandleSubscribeTask(event, srcPath, timeStr);
     }
 }
@@ -176,7 +172,7 @@ void DataPublisher::HandleSubscribeTask(std::shared_ptr<OHOS::HiviewDFX::SysEven
 {
     std::string eventJson = event->AsJsonStr();
     if (!FileUtil::SaveStringToFile(srcPath, eventJson + ",", true)) {
-        HiLog::Error(LABEL, "failed to persist eventJson to file.");
+        HIVIEW_LOGE("failed to persist eventJson to file.");
         return;
     }
     std::set<int> uidSet = eventRelationMap_[event->eventName_];
@@ -192,10 +188,10 @@ void DataPublisher::HandleSubscribeTask(std::shared_ptr<OHOS::HiviewDFX::SysEven
             .append(FILE_SUFFIX);
         auto res = OHOS::HiviewDFX::DataShareUtil::CopyFile(srcPath.c_str(), desPath.c_str());
         if (res == -1) {
-            HiLog::Error(LABEL, "failed to move file to desPath.");
+            HIVIEW_LOGE("failed to move file to desPath.");
         }
         if (chmod(desPath.c_str(), FileUtil::FILE_PERM_666)) {
-            HiLog::Error(LABEL, "Failed to chmod socket.");
+            HIVIEW_LOGE("Failed to chmod socket.");
         }
     }
 }
@@ -214,12 +210,12 @@ void DataPublisher::HandleAppUninstallEvent(std::shared_ptr<OHOS::HiviewDFX::Sys
     std::shared_ptr<DataShareDao> dataShareDao = GetDataShareDao();
     auto ret = dataShareDao->GetUidByBundleName(bundleName, uid);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to query from DB.");
+        HIVIEW_LOGE("failed to query from DB.");
         return;
     }
     ret = RemoveSubscriber(uid);
     if (ret != DB_SUCC) {
-        HiLog::Error(LABEL, "failed to remove from DB.");
+        HIVIEW_LOGE("failed to remove from DB.");
     }
 }
 
@@ -231,7 +227,7 @@ void DataPublisher::HandleAppStartEvent(std::shared_ptr<OHOS::HiviewDFX::SysEven
     std::string jsonExtraInfo = event->AsJsonStr();
     std::string bundleName = GetBundleNameFromJsonStr(jsonExtraInfo);
     if (bundleName.empty()) {
-        HiLog::Warn(LABEL, "bundleName empty.");
+        HIVIEW_LOGW("bundleName empty.");
         return;
     }
     int32_t uid = OHOS::HiviewDFX::DataShareUtil::GetUidByBundleName(bundleName);
@@ -241,7 +237,7 @@ void DataPublisher::HandleAppStartEvent(std::shared_ptr<OHOS::HiviewDFX::SysEven
 void DataPublisher::SetWorkLoop(std::shared_ptr<EventLoop> looper)
 {
     if (looper == nullptr) {
-        HiLog::Warn(LABEL, "SetWorkLoop failed, looper is null.");
+        HIVIEW_LOGW("SetWorkLoop failed, looper is null.");
         return;
     }
     looper_ = looper;
@@ -256,13 +252,13 @@ void DataPublisher::AddExportTask(std::shared_ptr<BaseEventQueryWrapper> queryWr
         uidTimeStampMap_[uid] = timestamp;
     }
     if (!CreateHiviewTempDir()) {
-        HiLog::Error(LABEL, "failed to create resourceFile.");
+        HIVIEW_LOGE("failed to create resourceFile.");
         return;
     }
     std::string timeStr = std::to_string(timestamp);
     std::string srcPath = TEMP_EXPORT_SRC_DIR;
     if (!FileUtil::RemoveFile(srcPath)) {
-        HiLog::Error(LABEL, "failed to remove resourceFile.");
+        HIVIEW_LOGE("failed to remove resourceFile.");
     }
     std::string desPath = OHOS::HiviewDFX::DataShareUtil::GetSandBoxPathByUid(uid);
     desPath.append(DOMAIN_PATH);
@@ -286,7 +282,7 @@ void DataPublisher::AddExportTask(std::shared_ptr<BaseEventQueryWrapper> queryWr
 bool DataPublisher::CreateHiviewTempDir()
 {
     if (!FileUtil::FileExists(PATH_DIR) && !FileUtil::ForceCreateDirectory(PATH_DIR)) {
-        HiLog::Error(LABEL, "failed to create events dir.");
+        HIVIEW_LOGE("failed to create events dir.");
         return false;
     }
     return true;

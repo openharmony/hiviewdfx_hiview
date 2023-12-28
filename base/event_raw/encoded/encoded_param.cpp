@@ -15,17 +15,14 @@
 
 #include "encoded/encoded_param.h"
 
-#include "hilog/log.h"
 #include "encoded/raw_data_encoder.h"
+#include "logger.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-EncodedParam" };
-}
-
+DEFINE_LOG_TAG("HiView-EncodedParam");
 EncodedParam::EncodedParam(const std::string& key)
 {
     key_ = key;
@@ -97,7 +94,7 @@ bool EncodedParam::Encode()
 bool EncodedParam::EncodeKey()
 {
     if (!RawDataEncoder::StringValueEncoded(rawData_, key_)) {
-        HiLog::Error(LABEL, "The key of customized value encoded failded.");
+        HIVIEW_LOGE("The key of customized value encoded failded.");
         return false;
     }
     return true;
