@@ -61,9 +61,10 @@ bool PeerBinderCatcher::Initialize(const std::string& perfCmd, int layer, int pi
     return true;
 }
 
-void PeerBinderCatcher::Init(std::shared_ptr<SysEvent> event, const std::string& filePath)
+void PeerBinderCatcher::Init(std::shared_ptr<SysEvent> event, const std::string& filePath, std::set<int>& catchedPids)
 {
     event_ = event;
+    catchedPids_ = catchedPids;
     if ((filePath != "") && FileUtil::FileExists(filePath)) {
         binderPath_ = filePath;
     }
@@ -93,9 +94,11 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
 #endif
     std::string pidStr = "";
     for (auto pidTemp : pids) {
-        if (pidTemp != pid_) {
+        if (pidTemp != pid_ && (catchedPids_.count(pidTemp) == 0)) {
             CatcherStacktrace(fd, pidTemp);
             pidStr += "," + std::to_string(pidTemp);
+        } else {
+            HIVIEW_LOGI("Stack of pid %{public}d is catched.", pidTemp);
         }
     }
 
