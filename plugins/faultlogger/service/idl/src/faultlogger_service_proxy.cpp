@@ -20,12 +20,12 @@
 
 #include "faultlog_info_ohos.h"
 #include "faultlog_query_result_proxy.h"
-#include "hilog/log_cpp.h"
+#include "logger.h"
 #include "hiviewfaultlogger_ipc_interface_code.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = {LOG_CORE, 0xD002D10, "FaultLoggerProxy"};
+DEFINE_LOG_TAG("FaultLoggerProxy");
 void FaultLoggerServiceProxy::AddFaultLog(const FaultLogInfoOhos& info)
 {
     sptr<IRemoteObject> remote = Remote();
@@ -81,7 +81,7 @@ sptr<IRemoteObject> FaultLoggerServiceProxy::QuerySelfFaultLog(int32_t faultType
 
     sptr<IRemoteObject> remoteObject = reply.ReadRemoteObject();
     if (remoteObject == nullptr) {
-        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to transfer Result.");
+        HIVIEW_LOGE("Failed to transfer Result.");
     }
     return remoteObject;
 }

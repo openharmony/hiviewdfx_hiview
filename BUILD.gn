@@ -99,7 +99,10 @@ ohos_executable("hiview") {
 
   deps += plugin_static_deps
 
-  external_deps = [ "hidumper:hidumperservice_cpu_source" ]
+  external_deps = [
+    "hidumper:hidumperservice_cpu_source",
+    "hilog:libhilog",
+  ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

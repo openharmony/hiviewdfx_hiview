@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-#include "hilog/log.h"
 #include "hiview_file_info.h"
 #include "hiview_napi_adapter.h"
 #include "hiview_napi_util.h"
 #include "hiview_service_agent.h"
+#include "logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_LABEL(0xD002D03, "NAPI_HIVIEW_JS");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D03, "NAPI_HIVIEW_JS" };
 constexpr size_t LOG_TYPE_INDEX = 0;
 constexpr size_t LOG_NAME_INDEX = 1;
 constexpr size_t DEST_DIR_INDEX = 2;
@@ -43,7 +43,7 @@ static napi_value List(napi_env env, napi_callback_info info)
     napi_get_undefined(env, &result);
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
     if (paramNum < listParamNum) {
-        HiLog::Error(LABEL, "num of params is invalid: %{public}zu", paramNum);
+        HIVIEW_LOGE("num of params is invalid: %{public}zu", paramNum);
         return result;
     }
     std::string logType;
@@ -52,7 +52,7 @@ static napi_value List(napi_env env, napi_callback_info info)
     }
     std::vector<HiviewFileInfo> fileInfos;
     int32_t retCode = HiviewServiceAgent::GetInstance().List(logType, fileInfos);
-    HiLog::Info(LABEL, "retCode: %{public}u.", retCode);
+    HIVIEW_LOGI("retCode: %{public}u.", retCode);
     if (retCode == 0) {
         return HiviewNapiUtil::GenerateFileInfoResult(env, fileInfos);
     } else {
@@ -63,7 +63,7 @@ static napi_value List(napi_env env, napi_callback_info info)
 
 static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isMove)
 {
-    HiLog::Info(LABEL, isMove ? "call move" : "call copy");
+    HIVIEW_LOGI(isMove ? "call move" : "call copy");
     constexpr size_t maxParamNum = 4;
     constexpr size_t paramNumWithoutCallback = 3;
     size_t paramNum = maxParamNum;
@@ -72,7 +72,7 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     if (paramNum < paramNumWithoutCallback) {
-        HiLog::Error(LABEL, "num of params is invalid %{public}zu.", paramNum);
+        HIVIEW_LOGE("num of params is invalid %{public}zu.", paramNum);
         return result;
     }
     std::string logType;
@@ -84,14 +84,14 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
         return result;
     }
     if (!HiviewNapiUtil::CheckDirPath(destDir)) {
-        HiLog::Error(LABEL, "dest param is invalid: %{public}s", destDir.c_str());
+        HIVIEW_LOGE("dest param is invalid: %{public}s", destDir.c_str());
         HiviewNapiUtil::ThrowParamContentError(env, "dest");
         return result;
     }
     HiviewFileParams* hiviewFileParams = new(std::nothrow) HiviewFileParams(logType, logName, destDir);
     if (paramNum == maxParamNum) {
         if (!HiviewNapiUtil::IsMatchType(env, params[paramNumWithoutCallback], napi_function)) {
-            HiLog::Error(LABEL, "no valid function param");
+            HIVIEW_LOGE("no valid function param");
             HiviewNapiUtil::ThrowParamTypeError(env, "callback", "function");
             delete hiviewFileParams;
             return result;
@@ -135,7 +135,7 @@ static napi_value Remove(napi_env env, napi_callback_info info)
     napi_get_undefined(env, &result);
     NAPI_CALL(env, napi_get_cb_info(env, info, &paramNum, params, nullptr, nullptr));
     if (paramNum < removeParamNum) {
-        HiLog::Error(LABEL, "num of params is invalid: %{public}zu", paramNum);
+        HIVIEW_LOGE("num of params is invalid: %{public}zu", paramNum);
         return result;
     }
     std::string logType;
@@ -146,7 +146,7 @@ static napi_value Remove(napi_env env, napi_callback_info info)
     }
     int32_t retCode = HiviewServiceAgent::GetInstance().Remove(logType, logName);
     if (retCode != 0) {
-        HiLog::Info(LABEL, "retCode: %{public}u.", retCode);
+        HIVIEW_LOGI("retCode: %{public}u.", retCode);
         HiviewNapiUtil::ThrowErrorByCode(env, retCode);
     }
     return result;

@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <algorithm>
+#include <cinttypes>
 #include <cmath>
 
 #include "file_util.h"
@@ -151,8 +152,8 @@ void TraceStorage::GetResultItems(UcollectionTraceStorage &traceStorage)
         resultSet->GetLong(1, traceStorage.xperfSize);       // 1 means xperf_size field
         resultSet->GetLong(2, traceStorage.xpowerSize);      // 2 means xpower_size field
         resultSet->GetLong(3, traceStorage.reliabilitySize); // 3 means reliability_size field
-        HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}d, xpowerSize:%{public}d, reliabilitySize:%{public}d",
-            traceStorage.systemTime.c_str(), traceStorage.xperfSize,
+        HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}" PRId64 " , xpowerSize:%{public}" PRId64
+            ", reliabilitySize:%{public}" PRId64, traceStorage.systemTime.c_str(), traceStorage.xperfSize,
             traceStorage.xpowerSize, traceStorage.reliabilitySize);
     }
 }

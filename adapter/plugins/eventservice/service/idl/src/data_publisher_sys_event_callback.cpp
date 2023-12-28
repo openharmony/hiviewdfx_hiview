@@ -18,20 +18,15 @@
 #include <unistd.h>
 
 #include "errors.h"
-#include "hilog/log.h"
-
 #include "data_share_common.h"
 #include "data_share_util.h"
 #include "file_util.h"
+#include "logger.h"
 #include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DataPublisherSysEventCallback" };
-}  // namespace
-
+DEFINE_LOG_TAG("HiView-DataPublisherSysEventCallback");
 void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& sysEvent,
     const std::vector<int64_t>& seq)
 {
@@ -57,7 +52,7 @@ void DataPublisherSysEventCallback::OnQuery(const std::vector<std::u16string>& s
         }
         std::string str = convert.to_bytes(iter);
         if (!FileUtil::SaveStringToFile(srcPath_, str + ",", false)) {
-            HiLog::Error(LABEL, "failed to persist iter to file");
+            HIVIEW_LOGE("failed to persist iter to file");
         }
         totalJsonSize_ += eventJsonSize;
     }
@@ -74,13 +69,13 @@ void DataPublisherSysEventCallback::HandleEventFile(const std::string &srcPath, 
 {
     auto res = OHOS::HiviewDFX::DataShareUtil::CopyFile(srcPath.c_str(), desPath.c_str());
     if (res == -1) {
-        HiLog::Error(LABEL, "failed to move file to desPath.");
+        HIVIEW_LOGE("failed to move file to desPath.");
     }
     if (!FileUtil::RemoveFile(srcPath)) {
-        HiLog::Error(LABEL, "failed to remove resourceFile.");
+        HIVIEW_LOGE("failed to remove resourceFile.");
     }
     if (chmod(desPath.c_str(), FileUtil::FILE_PERM_666)) {
-        HiLog::Error(LABEL, "Failed to chmod socket.");
+        HIVIEW_LOGE("Failed to chmod socket.");
     }
 }
 } // namespace HiviewDFX

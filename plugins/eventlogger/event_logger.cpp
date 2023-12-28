@@ -16,6 +16,7 @@
 
 #include "securec.h"
 
+#include <cinttypes>
 #include <list>
 #include <map>
 #include <mutex>
@@ -88,7 +89,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     long pid = sysEvent->GetEventIntValue("PID");
     pid = pid ? pid : sysEvent->GetPid();
-    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}d", sysEvent->domain_.c_str(),
+    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", sysEvent->domain_.c_str(),
         sysEvent->eventName_.c_str(), pid);
 
     if (sysEvent->GetValue("eventLog_action").empty()) {
@@ -389,7 +390,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     if (it != eventTagTime_.end()) {
         if ((now - it->second) < interval) {
             HIVIEW_LOGE("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-                interval:%{public}ld There's not enough interval",
+                interval:%{public}" PRId32 " There's not enough interval",
                 event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
             intervalMutex_.unlock();
             return false;
@@ -397,7 +398,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     }
     eventTagTime_[tagTimeName] = now;
     HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
-        interval:%{public}ld normal interval",
+        interval:%{public}" PRId32 " normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
     intervalMutex_.unlock();
     return true;

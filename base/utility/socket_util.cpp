@@ -15,15 +15,15 @@
 
 #include "socket_util.h"
 
-#include "hilog/log.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_LABEL(0xD002D03, "HIVIEWSOCKET");
 namespace SocketUtil {
-static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D03, "HIVIEWSOCKET" };
 int GetExistingSocketServer(const char *, int)
 {
-    HiLog::Error(LABEL, "get empty socket");
+    HIVIEW_LOGE("get empty socket");
     return -1;
 }
 } // namespace SocketUtil

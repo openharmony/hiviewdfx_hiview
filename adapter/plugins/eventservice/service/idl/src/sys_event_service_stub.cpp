@@ -16,21 +16,21 @@
 #include "sys_event_service_stub.h"
 
 #include "errors.h"
-#include "hilog/log.h"
+#include "logger.h"
 #include "memory_util.h"
 #include "parcelable_vector_rw.h"
 #include "query_argument.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-SysEventServiceStub" };
+DEFINE_LOG_TAG("HiView-SysEventServiceStub");
 int32_t SysEventServiceStub::HandleAddSysEventListener(MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     std::vector<SysEventRule> rules;
     bool ret = ReadVectorFromParcel(data, rules);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel read rules failed.");
+        HIVIEW_LOGE("parcel read rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
@@ -40,7 +40,7 @@ int32_t SysEventServiceStub::HandleAddSysEventListener(MessageParcel& data,
     sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(remoteObject);
     ret = reply.WriteInt32(AddListener(rules, callback));
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write return-value of AddListener failed.");
+        HIVIEW_LOGE("parcel write return-value of AddListener failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -55,12 +55,12 @@ int32_t SysEventServiceStub::HandleRemoveSysEventListener(MessageParcel& data,
     }
     sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(remoteObject);
     if (callback == nullptr) {
-        HiLog::Error(LABEL, "parcel read callback failed.");
+        HIVIEW_LOGE("parcel read callback failed.");
         return ERR_FLATTEN_OBJECT;
     }
     bool ret = reply.WriteInt32(RemoveListener(callback));
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write return-value of RemoveListener failed.");
+        HIVIEW_LOGE("parcel write return-value of RemoveListener failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -71,24 +71,24 @@ int32_t SysEventServiceStub::HandleQueryEvent(MessageParcel& data,
 {
     std::unique_ptr<QueryArgument> queryArgument(data.ReadParcelable<QueryArgument>());
     if (queryArgument == nullptr) {
-        HiLog::Error(LABEL, "parcel read query arguments failed.");
+        HIVIEW_LOGE("parcel read query arguments failed.");
         return ERR_FLATTEN_OBJECT;
     }
     std::vector<SysEventQueryRule> queryRules;
     auto ret = ReadVectorFromParcel(data, queryRules);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel read query rules failed.");
+        HIVIEW_LOGE("parcel read query rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IRemoteObject> remoteObject = data.ReadRemoteObject();
     if (remoteObject == nullptr) {
-        HiLog::Error(LABEL, "parcel read query callback failed.");
+        HIVIEW_LOGE("parcel read query callback failed.");
         return ERR_FLATTEN_OBJECT;
     }
     sptr<IQuerySysEventCallback> callback = iface_cast<IQuerySysEventCallback>(remoteObject);
     ret = reply.WriteInt32(Query(*queryArgument, queryRules, callback));
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write return-value of QuerySysEvent failed.");
+        HIVIEW_LOGE("parcel write return-value of QuerySysEvent failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -105,12 +105,12 @@ int32_t SysEventServiceStub::HandleSetDebugMode(MessageParcel& data,
     bool mode = false;
     bool ret = data.ReadBool(mode);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel read mode failed.");
+        HIVIEW_LOGE("parcel read mode failed.");
         return ERR_FLATTEN_OBJECT;
     }
     ret = reply.WriteInt32(SetDebugMode(callback, mode));
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write return-value of SetDebugMode failed.");
+        HIVIEW_LOGE("parcel write return-value of SetDebugMode failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -122,12 +122,12 @@ int32_t SysEventServiceStub::HandleAddSubscriber(MessageParcel &data,
     std::vector<SysEventQueryRule> queryRules;
     auto ret = ReadVectorFromParcel(data, queryRules);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel read export rules failed.");
+        HIVIEW_LOGE("parcel read export rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
     ret = reply.WriteInt64(AddSubscriber(queryRules));
     if (!ret) {
-        HiLog::Error(LABEL, "write return-value of AddSubscriber failed.");
+        HIVIEW_LOGE("write return-value of AddSubscriber failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -138,7 +138,7 @@ int32_t SysEventServiceStub::HandleRemoveSubscriber(
 {
     auto ret = reply.WriteInt32(RemoveSubscriber());
     if (!ret) {
-        HiLog::Error(LABEL, "write return-value of RemoveSubscriber failed.");
+        HIVIEW_LOGE("write return-value of RemoveSubscriber failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -149,18 +149,18 @@ int32_t SysEventServiceStub::HandleExportEvent(MessageParcel& data,
 {
     std::unique_ptr<QueryArgument> queryArgument(data.ReadParcelable<QueryArgument>());
     if (queryArgument == nullptr) {
-        HiLog::Error(LABEL, "parcel read export arguments failed.");
+        HIVIEW_LOGE("parcel read export arguments failed.");
         return ERR_FLATTEN_OBJECT;
     }
     std::vector<SysEventQueryRule> queryRules;
     auto ret = ReadVectorFromParcel(data, queryRules);
     if (!ret) {
-        HiLog::Error(LABEL, "parcel read export rules failed.");
+        HIVIEW_LOGE("parcel read export rules failed.");
         return ERR_FLATTEN_OBJECT;
     }
     ret = reply.WriteInt64(Export(*queryArgument, queryRules));
     if (!ret) {
-        HiLog::Error(LABEL, "parcel write return-value of ExportSysEvent failed.");
+        HIVIEW_LOGE("parcel write return-value of ExportSysEvent failed.");
         return ERR_FLATTEN_OBJECT;
     }
     return ERR_OK;
@@ -170,12 +170,12 @@ int32_t SysEventServiceStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
     MessageParcel& reply, MessageOption& option)
 {
     if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
-        HiLog::Warn(LABEL, "Failed to optimize memory for current thread");
+        HIVIEW_LOGW("Failed to optimize memory for current thread");
     }
     std::u16string descripter = SysEventServiceStub::GetDescriptor();
     std::u16string remoteDescripter = data.ReadInterfaceToken();
     if (descripter != remoteDescripter) {
-        HiLog::Error(LABEL, "read descriptor failed.");
+        HIVIEW_LOGE("read descriptor failed.");
         return ERR_INVALID_VALUE;
     }
     switch (code) {

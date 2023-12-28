@@ -14,6 +14,7 @@
  */
 #include "napi_faultlogger.h"
 
+#include <cinttypes>
 #include <sstream>
 #include <unistd.h>
 
@@ -123,7 +124,7 @@ static void FaultLogCompleteCallback(napi_env env, napi_status status, void *dat
             NapiUtil::SetPropertyStringUtf8(env, info, "fullLog", infoItem.fullLog);
             napi_set_element(env, callbackValue, i, info);
             ++i;
-            HIVIEW_LOGI("add element when resovled pid = %{public}d, uid = %{public}d, ts = %{public}ld",
+            HIVIEW_LOGI("add element when resovled pid = %{public}d, uid = %{public}d, ts = %{public}" PRId64,
                 infoItem.pid, infoItem.uid, infoItem.ts);
         }
     } else {

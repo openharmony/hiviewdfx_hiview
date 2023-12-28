@@ -15,15 +15,12 @@
 
 #include "encoded/raw_data_encoder.h"
 
-#include "hilog/log.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawDataEncoder" };
-}
-
+DEFINE_LOG_TAG("HiView-RawDataEncoder");
 uint8_t RawDataEncoder::EncodedTag(uint8_t type)
 {
     return (type << (TAG_BYTE_OFFSET + 1));
@@ -36,7 +33,7 @@ bool RawDataEncoder::StringValueEncoded(RawData& data, const std::string& val)
     }
     if (!data.Append(reinterpret_cast<uint8_t*>(const_cast<char*>(val.c_str())),
         val.length())) {
-        HiLog::Error(LABEL, "string value copy failed.");
+        HIVIEW_LOGE("string value copy failed.");
         return false;
     }
     return true;

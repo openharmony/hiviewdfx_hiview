@@ -32,6 +32,7 @@ ohos_shared_library("libasan_logger") {
   ]
 
   deps = [
+    "$hiview_base:logger",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",

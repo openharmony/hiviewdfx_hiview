@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include "hilog/log.h"
+#include "logger.h"
 #include "rdb_errno.h"
 #include "rdb_helper.h"
 
@@ -31,11 +31,7 @@ using namespace OHOS::HiviewDFX::SubscribeStore;
 
 namespace OHOS {
 namespace HiviewDFX {
-
-namespace {
-constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataShareStore"};
-}  // namespace
-
+DEFINE_LOG_TAG("HiView-DataShareStore");
 int DataShareStoreCallback::OnCreate(NativeRdb::RdbStore &rdbStore)
 {
     std::vector<std::pair<std::string, std::string>> fields = {{EventTable::FIELD_UID, SQL_INT_TYPE},
@@ -44,7 +40,7 @@ int DataShareStoreCallback::OnCreate(NativeRdb::RdbStore &rdbStore)
         {EventTable::FIELD_EVENTLIST, SQL_TEXT_TYPE}};
     std::string sql = SqlUtil::GenerateCreateSql(EventTable::TABLE, fields);
     if (int ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to create events table, ret=%{public}d", ret);
+        HIVIEW_LOGE("failed to create events table, ret=%{public}d", ret);
         return ret;
     }
     return NativeRdb::E_OK;
@@ -52,7 +48,7 @@ int DataShareStoreCallback::OnCreate(NativeRdb::RdbStore &rdbStore)
 
 int DataShareStoreCallback::OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion)
 {
-    HiLog::Debug(LABEL, "OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
+    HIVIEW_LOGD("OnUpgrade, oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
     return NativeRdb::E_OK;
 }
 
@@ -71,12 +67,12 @@ int DataShareStore::DropTable(const std::string &tableName)
 {
     auto dbStore = GetDbStore();
     if (dbStore == nullptr) {
-        HiLog::Error(LABEL, "failed to drop table %{public}s, db is null", tableName.c_str());
+        HIVIEW_LOGE("failed to drop table %{public}s, db is null", tableName.c_str());
         return DB_FAILED;
     }
     std::string sql = SqlUtil::GenerateDropSql(tableName);
     if (int ret = dbStore->ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to drop table %{public}s, ret=%{public}d", tableName.c_str(), ret);
+        HIVIEW_LOGE("failed to drop table %{public}s, ret=%{public}d", tableName.c_str(), ret);
         return DB_FAILED;
     }
     return DB_SUCC;
@@ -85,11 +81,11 @@ int DataShareStore::DropTable(const std::string &tableName)
 std::shared_ptr<NativeRdb::RdbStore> DataShareStore::CreateDbStore()
 {
     if (dirPath_.empty()) {
-        HiLog::Error(LABEL, "failed to create db store, path is empty");
+        HIVIEW_LOGE("failed to create db store, path is empty");
         return nullptr;
     }
     if (!FileUtil::FileExists(dirPath_) && !FileUtil::ForceCreateDirectory(dirPath_)) {
-        HiLog::Error(LABEL, "failed to create database dir.");
+        HIVIEW_LOGE("failed to create database dir.");
         return nullptr;
     }
     int ret = NativeRdb::E_OK;
@@ -97,7 +93,7 @@ std::shared_ptr<NativeRdb::RdbStore> DataShareStore::CreateDbStore()
     DataShareStoreCallback callback;
     auto dbStore = NativeRdb::RdbHelper::GetRdbStore(config, 1, callback, ret);
     if (ret != NativeRdb::E_OK || dbStore == nullptr) {
-        HiLog::Error(LABEL, "failed to create db store, ret=%{public}d", ret);
+        HIVIEW_LOGE("failed to create db store, ret=%{public}d", ret);
         return nullptr;
     }
     return dbStore;
@@ -110,7 +106,7 @@ int DataShareStore::DestroyDbStore()
     }
     dbStore_ = nullptr;
     if (int ret = NativeRdb::RdbHelper::DeleteRdbStore(dirPath_ + DATABASE_NAME); ret != NativeRdb::E_OK) {
-        HiLog::Error(LABEL, "failed to destroy db store, ret=%{public}d", ret);
+        HIVIEW_LOGE("failed to destroy db store, ret=%{public}d", ret);
         return DB_FAILED;
     }
     return DB_SUCC;

@@ -21,14 +21,14 @@
 #include <unordered_map>
 
 #include "base/raw_data_base_def.h"
-#include "hilog/log.h"
 #include "decoded/raw_data_decoder.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
+DEFINE_LOG_TAG("HiView-DecodedEvent");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-DecodedEvent" };
 constexpr size_t MAX_BLOCK_SIZE = 384 * 1024; // 384K
 
 std::string TransUInt64ToFixedLengthStr(uint64_t src)
@@ -51,7 +51,7 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     }
     size_t blockSize = static_cast<size_t>(*(reinterpret_cast<int32_t*>(src)));
     if (blockSize < GetValidDataMinimumByteCount() || blockSize > MAX_BLOCK_SIZE) {
-        HiLog::Error(LABEL, "size of raw data is %{public}zu, which is invalid.", blockSize);
+        HIVIEW_LOGE("size of raw data is %{public}zu, which is invalid.", blockSize);
         return;
     }
     rawData_ = new(std::nothrow) uint8_t[blockSize];
@@ -60,7 +60,7 @@ DecodedEvent::DecodedEvent(uint8_t* src)
     }
     auto ret = memcpy_s(rawData_, blockSize, src, blockSize);
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Decode memory copy failed, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Decode memory copy failed, ret is %{public}d.", ret);
         delete[] rawData_;
         return;
     }
@@ -293,7 +293,7 @@ void DecodedEvent::ParseCustomizedParams(const size_t maxLen)
     while (paramCnt > 0) {
         auto decodedParam = ParseCustomizedParam(maxLen);
         if (decodedParam == nullptr || !(decodedParam->DecodeValue())) {
-            HiLog::Error(LABEL, "Value of customized parameter is decoded failed.");
+            HIVIEW_LOGE("Value of customized parameter is decoded failed.");
             isValid_ = false;
             return;
         }

@@ -17,14 +17,14 @@
 
 #include <new>
 
-#include "hilog/log.h"
+#include "logger.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
+DEFINE_LOG_TAG("HiView-RawData");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawData" };
 constexpr size_t EXPAND_BUF_SIZE = 128;
 }
 
@@ -49,7 +49,7 @@ RawData::RawData(uint8_t* data, size_t dataLen)
     }
     auto ret = memcpy_s(data_, dataLen, data, dataLen);
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to copy RawData in constructor, ret is %{public}d.", ret);
         return;
     }
     capacity_ = dataLen;
@@ -68,7 +68,7 @@ RawData::RawData(const RawData& data)
     }
     auto ret = memcpy_s(data_, dataLen, data.GetData(), dataLen);
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to copy RawData in constructor, ret is %{public}d.", ret);
         return;
     }
     capacity_ = dataLen;
@@ -90,7 +90,7 @@ RawData& RawData::operator=(const RawData& data)
     }
     auto ret = memcpy_s(tmpData, dataLen, data.GetData(), dataLen);
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to copy RawData in constructor, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to copy RawData in constructor, ret is %{public}d.", ret);
         delete[] tmpData;
         return *this;
     }
@@ -139,7 +139,7 @@ bool RawData::IsEmpty()
 bool RawData::Update(uint8_t* data, size_t len, size_t pos)
 {
     if (data == nullptr || pos > len_) {
-        HiLog::Error(LABEL, "Invalid memory operation: length is %{public}zu, pos is %{public}zu, "
+        HIVIEW_LOGE("Invalid memory operation: length is %{public}zu, pos is %{public}zu, "
             "len_ is %{public}zu", len, pos, len_);
         return false;
     }
@@ -153,7 +153,7 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
         }
         ret = memcpy_s(resizedData, len_, data_, len_);
         if (ret != EOK) {
-            HiLog::Error(LABEL, "Failed to expand capacity of raw data, ret is %{public}d.", ret);
+            HIVIEW_LOGE("Failed to expand capacity of raw data, ret is %{public}d.", ret);
             delete[] resizedData;
             return false;
         }
@@ -166,7 +166,7 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
     // append new data
     ret = memcpy_s(data_ + pos, len, data, len);
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to append new data, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to append new data, ret is %{public}d.", ret);
         return false;
     }
     if ((pos + len) > len_) {

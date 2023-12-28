@@ -21,14 +21,14 @@
 #include <vector>
 
 #include "file_util.h"
-#include "hilog/log.h"
 #include "hiview_global.h"
+#include "logger.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-RunningStatusLogger");
 namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D08, "HiView-Running-Status-Logger" };
 constexpr size_t BUF_SIZE = 2000;
 char errMsg[BUF_SIZE] = { 0 };
 }
@@ -39,10 +39,10 @@ void RunningStatusLogger::Log(const std::string& logInfo)
         std::lock_guard<std::mutex> lock(writingMutex);
         logWritingTasks.emplace(logInfo, [this] (const std::string& logInfo) {
             std::string destFile = this->GetLogWroteDestFile(logInfo);
-            HiLog::Debug(LABEL, "writing \"%{public}s\" into %{public}s.", logInfo.c_str(), destFile.c_str());
+            HIVIEW_LOGD("writing \"%{public}s\" into %{public}s.", logInfo.c_str(), destFile.c_str());
             if (!FileUtil::SaveStringToFile(destFile, logInfo + "\n", false)) {
                 strerror_r(errno, errMsg, BUF_SIZE);
-                HiLog::Error(LABEL, "failed to persist log to file, error=%{public}d, msg=%{public}s",
+                HIVIEW_LOGE("failed to persist log to file, error=%{public}d, msg=%{public}s",
                     errno, errMsg);
             }
             this->ImmediateWrite(true);
@@ -65,7 +65,7 @@ std::string RunningStatusLogger::FormatTimeStamp(bool simpleMode)
 std::string RunningStatusLogger::GenerateNewestFileName(const std::string& suffix)
 {
     std::string newFileName = GetLogDir() + "runningstatus_" + FormatTimeStamp(true) + suffix;
-    HiLog::Debug(LABEL, "create new log file: %{public}s.", newFileName.c_str());
+    HIVIEW_LOGD("create new log file: %{public}s.", newFileName.c_str());
     return newFileName;
 }
 
@@ -79,10 +79,10 @@ std::string RunningStatusLogger::GetLogDir()
     std::string logDestDir = workPath + "sys_event/";
     if (!FileUtil::FileExists(logDestDir)) {
         if (FileUtil::ForceCreateDirectory(logDestDir, FileUtil::FILE_PERM_770)) {
-            HiLog::Debug(LABEL, "create listener log directory %{public}s succeed.", logDestDir.c_str());
+            HIVIEW_LOGD("create listener log directory %{public}s succeed.", logDestDir.c_str());
         } else {
             logDestDir = workPath;
-            HiLog::Warn(LABEL, "create listener log directory %{public}s failed, use default directory %{public}s.",
+            HIVIEW_LOGW("create listener log directory %{public}s failed, use default directory %{public}s.",
                 logDestDir.c_str(), workPath.c_str());
         }
     }
@@ -101,7 +101,7 @@ std::string RunningStatusLogger::GetLogWroteDestFile(const std::string& content)
     if (allLogFiles.back().find(FormatTimeStamp(true)) == std::string::npos) {
         if ((allLogFiles.size() == logFileCntLimit) && !FileUtil::RemoveFile(allLogFiles.front())) {
             strerror_r(errno, errMsg, BUF_SIZE);
-            HiLog::Error(LABEL, "failed to delete oldest log file, error=%{public}d, msg=%{public}s",
+            HIVIEW_LOGE("failed to delete oldest log file, error=%{public}d, msg=%{public}s",
                 errno, errMsg);
         }
         return GenerateNewestFileName("_01");
@@ -121,7 +121,7 @@ std::string RunningStatusLogger::GetLogWroteDestFile(const std::string& content)
     index += 1;
     if ((allLogFiles.size() == logFileCntLimit) && !FileUtil::RemoveFile(allLogFiles.front())) {
         strerror_r(errno, errMsg, BUF_SIZE);
-        HiLog::Error(LABEL, "failed to delete oldest log file, error=%{public}d, msg=%{public}s",
+        HIVIEW_LOGE("failed to delete oldest log file, error=%{public}d, msg=%{public}s",
             errno, errMsg);
     }
     return GenerateNewestFileName(std::string(((index < decimal) ? "_0" : "_")).append(std::to_string(index)));

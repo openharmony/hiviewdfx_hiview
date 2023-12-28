@@ -16,11 +16,11 @@
 
 #include <unistd.h>
 
-#include "hilog/log_cpp.h"
 #include "hisysevent.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "logger.h"
 #include "refbase.h"
 #include "system_ability_definition.h"
 
@@ -33,8 +33,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = {LOG_CORE, 0xD002D10, "FaultloggerClient"};
-
+DEFINE_LOG_TAG("FaultloggerClient");
 std::string GetPrintableStr(const std::string& str)
 {
     size_t index = 0;
@@ -52,11 +51,11 @@ bool CheckFaultloggerStatus()
 {
     sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (serviceManager == nullptr) {
-        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find samgr, exit.");
+        HIVIEW_LOGE("Failed to find samgr, exit.");
         return false;
     }
     if (serviceManager->CheckSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID) == nullptr) {
-        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find faultlogger service, exit.");
+        HIVIEW_LOGE("Failed to find faultlogger service, exit.");
         return false;
     }
     return true;
@@ -66,13 +65,13 @@ sptr<FaultLoggerServiceProxy> GetFaultloggerService()
 {
     sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (serviceManager == nullptr) {
-        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find samgr, exit.");
+        HIVIEW_LOGE("Failed to find samgr, exit.");
         return nullptr;
     }
 
     auto service = serviceManager->CheckSystemAbility(DFX_FAULT_LOGGER_ABILITY_ID);
     if (service == nullptr) {
-        OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, "Failed to find faultlogger service, exit.");
+        HIVIEW_LOGE("Failed to find faultlogger service, exit.");
         return nullptr;
     }
 
@@ -84,7 +83,7 @@ void AddFaultLog(const FaultLogInfoInner &info)
 {
     auto service = GetFaultloggerService();
     if (service == nullptr) {
-        OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, "Fail to get service.");
+        HIVIEW_LOGI("Fail to get service.");
         return;
     }
 
@@ -108,7 +107,7 @@ void AddFaultLog(int64_t time, int32_t logType, const std::string &module, const
 {
     auto service = GetFaultloggerService();
     if (service == nullptr) {
-        OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, "Fail to get service.");
+        HIVIEW_LOGI("Fail to get service.");
         return;
     }
 
@@ -127,13 +126,13 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
 {
     auto service = GetFaultloggerService();
     if (service == nullptr) {
-        OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, "Fail to get service.");
+        HIVIEW_LOGI("Fail to get service.");
         return nullptr;
     }
 
     auto result = service->QuerySelfFaultLog(static_cast<int32_t>(faultType), maxNum);
     if (result == nullptr) {
-        OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, "Fail to query result.");
+        HIVIEW_LOGI("Fail to query result.");
         return nullptr;
     }
 

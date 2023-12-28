@@ -20,16 +20,13 @@
 #include <sstream>
 #include <vector>
 
-#include "hilog/log.h"
 #include "decoded/decoded_event.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
-namespace {
-constexpr HiLogLabel LABEL = { LOG_CORE, 0xD002D10, "HiView-RawDataBuilder" };
-}
-
+DEFINE_LOG_TAG("HiView-RawDataBuilder");
 RawDataBuilder::RawDataBuilder(std::shared_ptr<EventRaw::RawData> rawData)
 {
     if (rawData == nullptr) {
@@ -57,13 +54,13 @@ RawDataBuilder::RawDataBuilder(const std::string& domain, const std::string& nam
 bool RawDataBuilder::BuildHeader(std::shared_ptr<RawData> dest)
 {
     if (!dest->Append(reinterpret_cast<uint8_t*>(&header_), sizeof(struct HiSysEventHeader))) {
-        HiLog::Error(LABEL, "Event header copy failed.");
+        HIVIEW_LOGE("Event header copy failed.");
         return false;
     }
     // append trace info
     if (header_.isTraceOpened == 1 &&
         !dest->Append(reinterpret_cast<uint8_t*>(&traceInfo_), sizeof(struct TraceInfo))) {
-        HiLog::Error(LABEL, "Trace info copy failed.");
+        HIVIEW_LOGE("Trace info copy failed.");
         return false;
     }
     return true;
@@ -84,27 +81,27 @@ std::shared_ptr<RawData> RawDataBuilder::Build()
     int32_t blockSize = 0;
     auto rawData = std::make_shared<RawData>();
     if (!rawData->Append(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t))) {
-        HiLog::Error(LABEL, "Block size copy failed.");
+        HIVIEW_LOGE("Block size copy failed.");
         return nullptr;
     }
     if (!BuildHeader(rawData)) {
-        HiLog::Error(LABEL, "Header of sysevent build failed.");
+        HIVIEW_LOGE("Header of sysevent build failed.");
         return nullptr;
     }
     // append parameter count
     int32_t paramCnt = static_cast<int32_t>(allParams_.size());
     if (!rawData->Append(reinterpret_cast<uint8_t*>(&paramCnt), sizeof(int32_t))) {
-        HiLog::Error(LABEL, "Parameter count copy failed.");
+        HIVIEW_LOGE("Parameter count copy failed.");
         return rawData;
     }
     if (!BuildCustomizedParams(rawData)) {
-        HiLog::Error(LABEL, "Customized paramters of sysevent build failed.");
+        HIVIEW_LOGE("Customized paramters of sysevent build failed.");
         return rawData;
     }
     // update block size
     blockSize = static_cast<int32_t>(rawData->GetDataLength());
     if (!rawData->Update(reinterpret_cast<uint8_t*>(&blockSize), sizeof(int32_t), 0)) {
-        HiLog::Error(LABEL, "Failed to update block size.");
+        HIVIEW_LOGE("Failed to update block size.");
     }
     return rawData;
 }
@@ -123,7 +120,7 @@ RawDataBuilder& RawDataBuilder::AppendDomain(const std::string& domain)
 {
     auto ret = memcpy_s(header_.domain, MAX_DOMAIN_LENGTH, domain.c_str(), domain.length());
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to copy event domain, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to copy event domain, ret is %{public}d.", ret);
     }
     auto resetPos = std::min(domain.length(), static_cast<size_t>(MAX_DOMAIN_LENGTH));
     header_.domain[resetPos] = '\0';
@@ -134,7 +131,7 @@ RawDataBuilder& RawDataBuilder::AppendName(const std::string& name)
 {
     auto ret = memcpy_s(header_.name, MAX_EVENT_NAME_LENGTH, name.c_str(), name.length());
     if (ret != EOK) {
-        HiLog::Error(LABEL, "Failed to copy event name, ret is %{public}d.", ret);
+        HIVIEW_LOGE("Failed to copy event name, ret is %{public}d.", ret);
     }
     auto resetPos = std::min(name.length(), static_cast<size_t>(MAX_EVENT_NAME_LENGTH));
     header_.name[resetPos] = '\0';
@@ -266,7 +263,7 @@ std::shared_ptr<EncodedParam> RawDataBuilder::GetValue(const std::string& key)
     auto paramCnt = allParams_.size();
     for (auto iter = allParams_.begin(); iter != allParams_.end(); ++iter) {
         if (paramCnt != allParams_.size()) {
-            HiLog::Info(LABEL, "count of all params: [%{public}zu, %{public}zu]", paramCnt, allParams_.size());
+            HIVIEW_LOGI("count of all params: [%{public}zu, %{public}zu]", paramCnt, allParams_.size());
         }
         if ((*iter) == nullptr) {
             continue;

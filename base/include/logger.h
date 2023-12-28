@@ -18,6 +18,7 @@
 #include <cinttypes>
 #include <cstdarg>
 #include <string>
+#include "hilog/log.h"
 #include "i_logger.h"
 
 #define PUBLIC "{public}"
@@ -32,20 +33,15 @@
     static const char *logLabelTag = name
 
 #define HIVIEW_LOGD(format, ...) \
-    OHOS::HiviewDFX::Logger::GetInstance().Print(0, logLabelDomain, logLabelTag, \
-        "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_DEBUG, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
 #define HIVIEW_LOGI(format, ...) \
-    OHOS::HiviewDFX::Logger::GetInstance().Print(1, logLabelDomain, logLabelTag, \
-        "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_INFO, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
 #define HIVIEW_LOGW(format, ...) \
-    OHOS::HiviewDFX::Logger::GetInstance().Print(2, logLabelDomain, logLabelTag, \
-        "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_WARN, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
 #define HIVIEW_LOGE(format, ...) \
-    OHOS::HiviewDFX::Logger::GetInstance().Print(3, logLabelDomain, logLabelTag, \
-        "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_ERROR, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
 #define HIVIEW_LOGF(format, ...) \
-    OHOS::HiviewDFX::Logger::GetInstance().Print(4, logLabelDomain, logLabelTag, \
-        "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_FATAL, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
 
 
 namespace OHOS::HiviewDFX {

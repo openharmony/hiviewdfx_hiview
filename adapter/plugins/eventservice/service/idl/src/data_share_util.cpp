@@ -24,13 +24,12 @@
 #include <sys/sendfile.h>
 
 #include "file_util.h"
-#include "hilog/log.h"
+#include "logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-
+DEFINE_LOG_TAG("HiView-DataShareUtil");
 namespace {
-constexpr HiLogLabel LABEL = {LOG_CORE, 0xD002D10, "HiView-DataShareUtil"};
 constexpr int VALUE_MOD = 200000;
 }  // namespace
 
@@ -51,21 +50,21 @@ int DataShareUtil::CopyFile(const char *src, const char *des)
 {
     int src_fd = open(src, O_RDONLY);
     if (src_fd == -1) {
-        HiLog::Error(LABEL, "failed to open source file, src=%{public}s", src);
+        HIVIEW_LOGE("failed to open source file, src=%{public}s", src);
         return -1;
     }
 
     int dest_fd = open(des, O_WRONLY | O_CREAT, S_IWUSR);
     if (dest_fd == -1) {
         perror("open");
-        HiLog::Error(LABEL, "failed to open destination file, des=%{public}s", des);
+        HIVIEW_LOGE("failed to open destination file, des=%{public}s", des);
         close(src_fd);
         return -1;
     }
 
     struct stat st;
     if (fstat(src_fd, &st) == -1) {
-        HiLog::Error(LABEL, "failed to get source file size");
+        HIVIEW_LOGE("failed to get source file size");
         close(dest_fd);
         close(src_fd);
         return -1;
@@ -74,7 +73,7 @@ int DataShareUtil::CopyFile(const char *src, const char *des)
     off_t offset = 0;
     ssize_t ret = sendfile(dest_fd, src_fd, &offset, st.st_size);
     if (ret == -1) {
-        HiLog::Error(LABEL, "failed to sendfile");
+        HIVIEW_LOGE("failed to sendfile");
         close(dest_fd);
         close(src_fd);
         return -1;
@@ -89,9 +88,9 @@ std::string DataShareUtil::GetBundleNameById(int32_t uid)
     std::string bundleName;
     AppExecFwk::BundleMgrClient client;
     if (client.GetNameForUid(uid, bundleName) != ERR_OK) {
-        HiLog::Error(LABEL, "Failed to query bundleName from bms, uid:%{public}d.", uid);
+        HIVIEW_LOGE("Failed to query bundleName from bms, uid:%{public}d.", uid);
     } else {
-        HiLog::Error(LABEL, "bundleName of uid:%{public}d, bundleName is %{public}s", uid, bundleName.c_str());
+        HIVIEW_LOGE("bundleName of uid:%{public}d, bundleName is %{public}s", uid, bundleName.c_str());
     }
     return bundleName;
 }
@@ -102,9 +101,9 @@ int32_t DataShareUtil::GetUidByBundleName(const std::string& bundleName)
     AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
         AppExecFwk::Constants::ALL_USERID)) {
-        HiLog::Error(LABEL, "Failed to query uid from bms, bundleName=%{public}s.", bundleName.c_str());
+        HIVIEW_LOGE("Failed to query uid from bms, bundleName=%{public}s.", bundleName.c_str());
     } else {
-        HiLog::Debug(LABEL, "bundleName of uid=%{public}d, bundleName=%{public}s", info.uid, bundleName.c_str());
+        HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", info.uid, bundleName.c_str());
     }
     return info.uid;
 }

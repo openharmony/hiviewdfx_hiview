@@ -20,7 +20,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
-
 bool RawDataDecoder::FloatingNumberDecoded(uint8_t* rawData, const size_t maxLen, size_t& pos, double& dest)
 {
     if (rawData == nullptr || pos >= maxLen) {

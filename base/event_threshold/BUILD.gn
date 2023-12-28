@@ -45,6 +45,7 @@ ohos_source_set("event_threshold_source") {
   ]
 
   deps = [
+    "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
     "//third_party/jsoncpp:jsoncpp",
   ]

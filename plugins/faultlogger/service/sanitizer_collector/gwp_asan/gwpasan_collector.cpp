@@ -31,11 +31,12 @@
 #include "bundle_mgr_client.h"
 #include "faultlog_util.h"
 #include "file_util.h"
-#include "hilog/log.h"
+#include "logger.h"
 #include "hisysevent.h"
 
+DEFINE_LOG_LABEL(0xD002D12, "Sanitizer");
+
 static std::stringstream g_asanlog;
-static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LOG_CORE, 0xD002D12, "Sanitizer"};
 
 void WriteGwpAsanLog(char* buf, size_t sz)
 {
@@ -46,7 +47,7 @@ void WriteGwpAsanLog(char* buf, size_t sz)
     static std::mutex sMutex;
     std::lock_guard<std::mutex> lock(sMutex);
     // append to buffer
-    for (int i = 0; i < sz; i++) {
+    for (size_t i = 0; i < sz; i++) {
         g_asanlog << buf[i];
     }
 
@@ -153,7 +154,7 @@ int32_t CreateLogFile(const std::string& name)
 
     fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC);
     if (fd < 0) {
-        OHOS::HiviewDFX::HiLog::Error(LABEL, "Fail to create %{public}s,  err: %{public}s.",
+        HIVIEW_LOGE("Fail to create %{public}s,  err: %{public}s.",
             name.c_str(), strerror(errno));
     }
     return fd;
@@ -187,10 +188,10 @@ std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
     OHOS::AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, OHOS::AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
         info, OHOS::AppExecFwk::Constants::ALL_USERID)) {
-        OHOS::HiviewDFX::HiLog::Warn(LABEL, "Failed to query BundleInfo from bms, uid:%{public}d.", uid);
+        HIVIEW_LOGW("Failed to query BundleInfo from bms, uid:%{public}d.", uid);
         return "";
     } else {
-        OHOS::HiviewDFX::HiLog::Info(LABEL, "The version of %{public}s is %{public}s", bundleName.c_str(),
+        HIVIEW_LOGI("The version of %{public}s is %{public}s", bundleName.c_str(),
             info.versionName.c_str());
     }
     return info.versionName;

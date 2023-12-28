@@ -15,6 +15,7 @@
 #include "platform_monitor.h"
 
 #include <algorithm>
+#include <cinttypes>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -389,7 +390,7 @@ void PlatformMonitor::Breaking()
         return;
     }
 
-    HIVIEW_LOGE("break as event reach critical size %{public}u", SysEvent::totalSize_.load());
+    HIVIEW_LOGE("break as event reach critical size %{public}" PRId64, SysEvent::totalSize_.load());
     breakTimestamp_ = TimeUtil::GenerateTimestamp();
     ReportBreakProfile();
     int64_t recoveryBenchMark = static_cast<int64_t>(totalSizeBenchMark_ * 0.8); // 0.8 of total size will recover
@@ -402,7 +403,7 @@ void PlatformMonitor::Breaking()
     breakCount_++;
     recoverTimestamp_ = TimeUtil::GenerateTimestamp();
     breakDuration_ += recoverTimestamp_ - breakTimestamp_;
-    HIVIEW_LOGW("recover after break duration %{public}ld", breakDuration_);
+    HIVIEW_LOGW("recover after break duration %{public}" PRIu64, breakDuration_);
     ReportRecoverProfile();
 }
 
