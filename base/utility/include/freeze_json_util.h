@@ -39,7 +39,7 @@ const std::string COMMON_RIGHT_SQUARE_BREAKET = "]";
 const std::string COMMON_LEFT_PARENTHESIS = "(";
 const std::string COMMON_RIGHT_PARENTHESIS = ")";
 const std::string COMMON_EQUAL = " = ";
-const unsigned int DEFAULT_LOG_FILE_MODE = 0664;
+const unsigned int DEFAULT_LOG_FILE_MODE = 0644;
 
 // base/hiviewdfx/hiview/plugins/freeze_detector/config/freeze_rules.xml
 const std::list<std::string> APPFREEZE_TYPE_LIST{
