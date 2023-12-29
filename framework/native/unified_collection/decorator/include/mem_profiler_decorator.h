@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEMPROFILER_DECORATOR_H
-#define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEMPROFILER_DECORATOR_H
+#ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEM_PROFILER_DECORATOR_H
+#define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEM_PROFILER_DECORATOR_H
 
 #include "mem_profiler_collector.h"
 #include "decorator.h"
@@ -24,10 +24,8 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class MemProfilerDecorator : public MemProfilerCollector, public UCDecorator {
 public:
-    MemProfilerDecorator();
+    MemProfilerDecorator(std::shared_ptr<MemProfilerCollector> collector) : memProfilerCollector_(collector) {};
     virtual ~MemProfilerDecorator() = default;
-
-public:
     int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
     int Stop(int pid) override;
     int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
@@ -43,4 +41,4 @@ private:
 } // namespace UCollectUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEMPROFILER_DECORATOR_H
+#endif // HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEM_PROFILER_DECORATOR_H

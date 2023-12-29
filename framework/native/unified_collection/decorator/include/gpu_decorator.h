@@ -24,7 +24,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class GpuDecorator : public GpuCollector, public UCDecorator {
 public:
-    GpuDecorator();
+    GpuDecorator(std::shared_ptr<GpuCollector> collector) : gpuCollector_(collector) {};
     virtual ~GpuDecorator() = default;
 
 public:

@@ -15,73 +15,40 @@
 
 #include "cpu_decorator.h"
 
-#include "cpu_collector_impl.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string CPU_COLLECTOR_NAME = "CpuCollector";
 StatInfoWrapper CpuDecorator::statInfoWrapper_;
 
-std::shared_ptr<CpuCollector> CpuCollector::Create()
-{
-    static std::shared_ptr<CpuDecorator> instance_ = std::make_shared<CpuDecorator>();
-    return instance_;
-}
-
-CpuDecorator::CpuDecorator()
-{
-    cpuCollector_ = std::make_shared<CpuCollectorImpl>();
-}
-
 CollectResult<SysCpuLoad> CpuDecorator::CollectSysCpuLoad()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<SysCpuLoad> result = cpuCollector_->CollectSysCpuLoad();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&CpuCollector::CollectSysCpuLoad, cpuCollector_.get());
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<SysCpuUsage>  CpuDecorator::CollectSysCpuUsage(bool isNeedUpdate)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<SysCpuUsage> result = cpuCollector_->CollectSysCpuUsage(isNeedUpdate);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&CpuCollector::CollectSysCpuUsage, cpuCollector_.get(), isNeedUpdate);
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<ProcessCpuStatInfo> CpuDecorator::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<ProcessCpuStatInfo> result = cpuCollector_->CollectProcessCpuStatInfo(pid, isNeedUpdate);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfo, cpuCollector_.get(), pid, isNeedUpdate);
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<CpuFreq>> CpuDecorator::CollectCpuFrequency()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<CpuFreq>> result = cpuCollector_->CollectCpuFrequency();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&CpuCollector::CollectCpuFrequency, cpuCollector_.get());
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<ProcessCpuStatInfo>> CpuDecorator::CollectProcessCpuStatInfos(bool isNeedUpdate)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<ProcessCpuStatInfo>> result = cpuCollector_->CollectProcessCpuStatInfos(isNeedUpdate);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfos, cpuCollector_.get(), isNeedUpdate);
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void CpuDecorator::SaveStatCommonInfo()

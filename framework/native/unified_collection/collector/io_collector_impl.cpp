@@ -27,6 +27,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "io_calculator.h"
+#include "io_decorator.h"
 #include "logger.h"
 #include "process_status.h"
 #include "string_util.h"
@@ -55,6 +56,12 @@ const std::string PROC_IO_STATS_FILE_PREFIX = "proc_io_stats_";
 const std::string SYS_IO_STATS_FILE_PREFIX = "sys_io_stats_";
 const std::string PROC_DISKSTATS = "/proc/diskstats";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
+}
+
+std::shared_ptr<IoCollector> IoCollector::Create()
+{
+    static std::shared_ptr<IoCollector> instance_ = std::make_shared<IoDecorator>(std::make_shared<IoCollectorImpl>());
+    return instance_;
 }
 
 IoCollectorImpl::IoCollectorImpl()

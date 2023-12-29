@@ -15,43 +15,22 @@
 
 #include "network_decorator.h"
 
-#include "network_collector_impl.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string NET_COLLECTOR_NAME = "NetworkCollector";
 StatInfoWrapper NetworkDecorator::statInfoWrapper_;
 
-std::shared_ptr<NetworkCollector> NetworkCollector::Create()
-{
-    std::shared_ptr<NetworkDecorator> instance = std::make_shared<NetworkDecorator>();
-    return instance;
-}
-
-NetworkDecorator::NetworkDecorator()
-{
-    networkCollector_ = std::make_shared<NetworkCollectorImpl>();
-}
-
 CollectResult<NetworkRate> NetworkDecorator::CollectRate()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<NetworkRate> result = networkCollector_->CollectRate();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = NET_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&NetworkCollector::CollectRate, networkCollector_.get());
+    return Invoke(task, statInfoWrapper_, NET_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<NetworkPackets> NetworkDecorator::CollectSysPackets()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<NetworkPackets> result = networkCollector_->CollectSysPackets();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = NET_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&NetworkCollector::CollectSysPackets, networkCollector_.get());
+    return Invoke(task, statInfoWrapper_, NET_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void NetworkDecorator::SaveStatCommonInfo()

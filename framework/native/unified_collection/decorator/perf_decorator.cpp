@@ -12,10 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifdef HAS_HIPERF
 #include "perf_decorator.h"
-
-#include "perf_collector_impl.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -23,25 +21,10 @@ namespace UCollectUtil {
 const std::string PERF_COLLECTOR_NAME = "PerfCollector";
 StatInfoWrapper PerfDecorator::statInfoWrapper_;
 
-std::shared_ptr<PerfCollector> PerfCollector::Create()
-{
-    std::shared_ptr<PerfDecorator> instance = std::make_shared<PerfDecorator>();
-    return instance;
-}
-
-PerfDecorator::PerfDecorator()
-{
-    perfCollector_ = std::make_shared<PerfCollectorImpl>();
-}
-
 CollectResult<bool> PerfDecorator::StartPerf(const std::string &logDir)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<bool> result = perfCollector_->StartPerf(logDir);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&PerfCollector::StartPerf, perfCollector_.get(), logDir);
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void PerfDecorator::SetSelectPids(const std::vector<pid_t> &selectPids)
@@ -91,3 +74,4 @@ void PerfDecorator::ResetStatInfo()
 } // namespace UCollectUtil
 } // namespace HiviewDFX
 } // namespace OHOS
+#endif // HAS_HIPERF

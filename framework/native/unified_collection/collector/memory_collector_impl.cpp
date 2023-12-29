@@ -15,22 +15,24 @@
 
 #include "memory_collector_impl.h"
 
+
 #include <csignal>
-#include <fstream>
-#include <string_ex.h>
 #include <dlfcn.h>
-#include <securec.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <regex>
+#include <fstream>
 #include <map>
 #include <mutex>
+#include <regex>
+#include <securec.h>
+#include <string_ex.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "common_util.h"
 #include "common_utils.h"
 #include "file_util.h"
 #include "logger.h"
+#include "memory_decorator.h"
 #include "string_util.h"
 #include "time_util.h"
 
@@ -235,6 +237,11 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     }
     result.retCode = UcError::SUCCESS;
     return result;
+}
+
+std::shared_ptr<MemoryCollector> MemoryCollector::Create()
+{
+    return std::make_shared<MemoryDecorator>(std::make_shared<MemoryCollectorImpl>());
 }
 
 CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t pid)

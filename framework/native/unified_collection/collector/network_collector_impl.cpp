@@ -16,6 +16,7 @@
 #include "network_collector_impl.h"
 
 #include "logger.h"
+#include "network_decorator.h"
 #include "wifi_device.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
@@ -24,6 +25,11 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
+
+std::shared_ptr<NetworkCollector> NetworkCollector::Create()
+{
+    return std::make_shared<NetworkDecorator>(std::make_shared<NetworkCollectorImpl>());
+}
 
 inline bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
 {

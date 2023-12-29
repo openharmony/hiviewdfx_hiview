@@ -16,12 +16,13 @@
 #include "perf_collector_impl.h"
 
 #ifdef HAS_HIPERF
-#include <fstream>
 #include <atomic>
 #include <ctime>
+#include <fstream>
 
 #include "hiperf_client.h"
 #include "logger.h"
+#include "perf_decorator.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 using namespace OHOS::Developtools::HiPerf::HiperfClient;
@@ -83,6 +84,11 @@ void PerfCollectorImpl::IncreaseUseCount()
 void PerfCollectorImpl::DecreaseUseCount()
 {
     inUseCount_.fetch_sub(1);
+}
+
+std::shared_ptr<PerfCollector> PerfCollector::Create()
+{
+    return std::make_shared<PerfDecorator>(std::make_shared<PerfCollectorImpl>());
 }
 
 CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)

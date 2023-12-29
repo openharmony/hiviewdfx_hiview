@@ -15,124 +15,71 @@
 
 #include "io_decorator.h"
 
-#include "io_collector_impl.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string IO_COLLECTOR_NAME = "IoCollector";
 StatInfoWrapper IoDecorator::statInfoWrapper_;
 
-std::shared_ptr<IoCollector> IoCollector::Create()
-{
-    static std::shared_ptr<IoDecorator> instance_ = std::make_shared<IoDecorator>();
-    return instance_;
-}
-
-IoDecorator::IoDecorator()
-{
-    ioCollector_ = std::make_shared<IoCollectorImpl>();
-}
-
 CollectResult<ProcessIo> IoDecorator::CollectProcessIo(int32_t pid)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<ProcessIo> result = ioCollector_->CollectProcessIo(pid);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectProcessIo, ioCollector_.get(), pid);
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::CollectRawDiskStats()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::string> result = ioCollector_->CollectRawDiskStats();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectRawDiskStats, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<DiskStats>> IoDecorator::CollectDiskStats(
     DiskStatsFilter filter, bool isUpdate)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<DiskStats>> result = ioCollector_->CollectDiskStats(filter, isUpdate);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectDiskStats, ioCollector_.get(), filter, isUpdate);
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportDiskStats(DiskStatsFilter filter)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::string> result = ioCollector_->ExportDiskStats(filter);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::ExportDiskStats, ioCollector_.get(), filter);
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<EMMCInfo>> IoDecorator::CollectEMMCInfo()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<EMMCInfo>> result = ioCollector_->CollectEMMCInfo();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectEMMCInfo, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportEMMCInfo()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::string> result = ioCollector_->ExportEMMCInfo();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::ExportEMMCInfo, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<ProcessIoStats>> IoDecorator::CollectAllProcIoStats(bool isUpdate)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::vector<ProcessIoStats>> result = ioCollector_->CollectAllProcIoStats(isUpdate);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectAllProcIoStats, ioCollector_.get(), isUpdate);
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportAllProcIoStats()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::string> result = ioCollector_->ExportAllProcIoStats();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::ExportAllProcIoStats, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<SysIoStats> IoDecorator::CollectSysIoStats()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<SysIoStats> result = ioCollector_->CollectSysIoStats();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::CollectSysIoStats, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportSysIoStats()
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    CollectResult<std::string> result = ioCollector_->ExportSysIoStats();
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = IO_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result.retCode == UCollect::UcError::SUCCESS);
-    return result;
+    auto task = std::bind(&IoCollector::ExportSysIoStats, ioCollector_.get());
+    return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 void IoDecorator::SaveStatCommonInfo()

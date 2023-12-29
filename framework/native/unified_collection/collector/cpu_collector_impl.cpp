@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "cpu_decorator.h"
 #include "logger.h"
 #include "process_status.h"
 #include "time_util.h"
@@ -111,6 +112,13 @@ void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_i
 void CpuCollectorImpl::UpdateClearTime()
 {
     clearTime_ = TimeUtil::GetMilliseconds();
+}
+
+std::shared_ptr<CpuCollector> CpuCollector::Create()
+{
+    static std::shared_ptr<CpuCollector> instance_ =
+        std::make_shared<CpuDecorator>(std::make_shared<CpuCollectorImpl>());
+    return instance_;
 }
 
 CollectResult<SysCpuLoad> CpuCollectorImpl::CollectSysCpuLoad()

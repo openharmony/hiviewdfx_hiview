@@ -24,7 +24,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class MemoryDecorator : public MemoryCollector, public UCDecorator {
 public:
-    MemoryDecorator();
+    MemoryDecorator(std::shared_ptr<MemoryCollector> collector) : memoryCollector_(collector) {};
     virtual ~MemoryDecorator() = default;
 
 public:

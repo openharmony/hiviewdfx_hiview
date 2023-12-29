@@ -106,16 +106,24 @@ private:
 
 class TraceDecorator : public TraceCollector, public UCDecorator {
 public:
-    TraceDecorator();
+    TraceDecorator(std::shared_ptr<TraceCollector> collector) : traceCollector_(collector) {};
     virtual ~TraceDecorator() = default;
-
-public:
     virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
     virtual CollectResult<int32_t> TraceOn() override;
     virtual CollectResult<std::vector<std::string>> TraceOff() override;
     static void SaveStatSpecialInfo();
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
+
+private:
+    template <typename T> auto Invoke(T task, TraceStatWrapper& traceStatWrapper, TraceCollector::Caller& caller)
+    {
+        uint64_t startTime = TimeUtil::GenerateTimestamp();
+        auto result = task();
+        uint64_t endTime = TimeUtil::GenerateTimestamp();
+        traceStatWrapper.UpdateTraceStatInfo(startTime, endTime, caller, result);
+        return result;
+    }
 
 private:
     std::shared_ptr<TraceCollector> traceCollector_;

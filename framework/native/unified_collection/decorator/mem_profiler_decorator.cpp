@@ -15,55 +15,34 @@
 
 #include "mem_profiler_decorator.h"
 
-#include "mem_profiler_collector_impl.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string MEM_PROFILER_COLLECTOR_NAME = "MemProfilerCollector";
 StatInfoWrapper MemProfilerDecorator::statInfoWrapper_;
 
-std::shared_ptr<MemProfilerCollector> MemProfilerCollector::Create()
-{
-    static std::shared_ptr<MemProfilerDecorator> instance_ = std::make_shared<MemProfilerDecorator>();
-    return instance_;
-}
-
-MemProfilerDecorator::MemProfilerDecorator()
-{
-    memProfilerCollector_ = std::make_shared<MemProfilerCollectorImpl>();
-}
-
 int MemProfilerDecorator::Start(ProfilerType type, int pid, int duration, int sampleInterval)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    int result = memProfilerCollector_->Start(type, pid, duration, sampleInterval);
+    auto task = std::bind(
+        static_cast<int(MemProfilerCollector::*)(ProfilerType, int, int, int)>(&MemProfilerCollector::Start),
+        memProfilerCollector_.get(), type, pid, duration, sampleInterval);
     // has same func name, rename it with num "-1"
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1";
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result == 0);
-    return result;
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1");
 }
 
 int MemProfilerDecorator::Stop(int pid)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    int result = memProfilerCollector_->Stop(pid);
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__;
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result == 0);
-    return result;
+    auto task = std::bind(&MemProfilerCollector::Stop, memProfilerCollector_.get(), pid);
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 int MemProfilerDecorator::Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval)
 {
-    uint64_t startTime = TimeUtil::GenerateTimestamp();
-    int result = memProfilerCollector_->Start(fd, type, pid, duration, sampleInterval);
+    auto task = std::bind(
+        static_cast<int(MemProfilerCollector::*)(int, ProfilerType, int, int, int)>(&MemProfilerCollector::Start),
+        memProfilerCollector_.get(), fd, type, pid, duration, sampleInterval);
     // has same func name, rename it with num "-2"
-    uint64_t endTime = TimeUtil::GenerateTimestamp();
-    const std::string classFuncName  = MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2";
-    statInfoWrapper_.UpdateStatInfo(startTime, endTime, classFuncName, result == 0);
-    return result;
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
 void MemProfilerDecorator::SaveStatCommonInfo()

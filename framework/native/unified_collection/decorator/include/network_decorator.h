@@ -24,7 +24,7 @@ namespace HiviewDFX {
 namespace UCollectUtil {
 class NetworkDecorator : public NetworkCollector, public UCDecorator {
 public:
-    NetworkDecorator();
+    NetworkDecorator(std::shared_ptr<NetworkCollector> collector) : networkCollector_(collector) {};
     virtual ~NetworkDecorator() = default;
 
 public:

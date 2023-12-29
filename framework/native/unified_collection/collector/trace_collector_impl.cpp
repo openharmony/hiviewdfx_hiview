@@ -19,6 +19,7 @@
 #include <mutex>
 
 #include "logger.h"
+#include "trace_decorator.h"
 #include "trace_flow_controller.h"
 #include "trace_manager.h"
 #include "trace_utils.h"
@@ -35,6 +36,11 @@ namespace UCollectUtil {
 namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_dumpTraceMutex;
+}
+
+std::shared_ptr<TraceCollector> TraceCollector::Create()
+{
+    return std::make_shared<TraceDecorator>(std::make_shared<TraceCollectorImpl>());
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)

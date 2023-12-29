@@ -66,6 +66,21 @@ class UCDecorator {
 public:
     UCDecorator() {};
     virtual ~UCDecorator() = default;
+    template <typename T> auto Invoke(T task, StatInfoWrapper& statInfoWrapper,
+        const std::string& classFuncName)
+    {
+        uint64_t startTime = TimeUtil::GenerateTimestamp();
+        auto result = task();
+        uint64_t endTime = TimeUtil::GenerateTimestamp();
+        bool isCallSucc;
+        if constexpr (std::is_same_v<std::decay_t<decltype(result)>, int>) {
+            isCallSucc = (result == UCollect::UcError::SUCCESS);
+        } else {
+            isCallSucc = (result.retCode == UCollect::UcError::SUCCESS);
+        }
+        statInfoWrapper.UpdateStatInfo(startTime, endTime, classFuncName, isCallSucc);
+        return result;
+    }
 
 public:
     static void WriteLinesToFile(const std::vector<std::string>& stats, bool addBlankLine);
