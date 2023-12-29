@@ -190,7 +190,7 @@ static void DoClearFiles(const std::string& filePrefix)
 
     size_t len = fileLists.size();
     if (len <= MAX_FILE_SAVE_SIZE) {
-        HIVIEW_LOGI("%{public}d files with same prefix %{public}s.", len, filePrefix.c_str());
+        HIVIEW_LOGI("%{public}zu files with same prefix %{public}s.", len, filePrefix.c_str());
         return;
     }
     // clear more than 10 old files

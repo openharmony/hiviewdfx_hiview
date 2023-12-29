@@ -65,7 +65,7 @@ void EventThreadPool::AddTask(Task task, const std::string &name, uint64_t delay
     taskQueue_.ShrinkIfNeedLocked();
     cvSync_.notify_all();
     if (taskQueue_.size() > 1000) { // 1000: 积压超过1000条预警
-        HIVIEW_LOGW("%{public}s AddTask. runTask size is %{public}d", name_.c_str(), taskQueue_.size());
+        HIVIEW_LOGW("%{public}s AddTask. runTask size is %{public}zu", name_.c_str(), taskQueue_.size());
     }
 }
 
@@ -116,7 +116,7 @@ void EventThreadPool::TaskCallback()
             task = taskEvent.task_;
             taskQueue_.pop();
             if (task == nullptr) {
-                HIVIEW_LOGW("task == nullptr. %{public}s runTask size is %{public}d", name.c_str(), taskQueue_.size());
+                HIVIEW_LOGW("task == nullptr. %{public}s runTask size is %{public}zu", name.c_str(), taskQueue_.size());
                 continue;
             }
             Thread::SetThreadDescription(taskEvent.name_);

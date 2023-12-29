@@ -14,6 +14,8 @@
  */
 #include "sys_event_doc_reader.h"
 
+#include <cinttypes>
+
 #include "event_entry_creator.h"
 #include "logger.h"
 #include "string_util.h"
@@ -151,7 +153,7 @@ int SysEventDocReader::ReadPages(const DocQuery& query, EntryQueue& entries, int
         if (ReadContent(&content, contentSize) != DOC_STORE_SUCCESS) {
             pageIndex++;
             if (SeekgPage(pageIndex) != DOC_STORE_SUCCESS) {
-                HIVIEW_LOGI("end to seekg the next page index=%{public}zu, file=%{public}s",
+                HIVIEW_LOGI("end to seekg the next page index=%{public}" PRIu32 ", file=%{public}s",
                     pageIndex, docPath_.c_str());
                 break;
             }
