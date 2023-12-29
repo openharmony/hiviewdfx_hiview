@@ -17,15 +17,14 @@
 #include <ctime>
 #include <string>
 
-#include <sys/wait.h>
-#include <unistd.h>
-
-#include "securec.h"
-
 #include "common_utils.h"
 #include "file_util.h"
 #include "log_catcher_utils.h"
 #include "logger.h"
+#include "securec.h"
+#include <sys/wait.h>
+#include <unistd.h>
+
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-OpenStacktraceCatcher");
@@ -40,8 +39,12 @@ bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, i
         description_ = "OpenStacktraceCatcher -- pid is null, packageName is null\n";
         return false;
     }
-    pid_ = pid;
     packageName_ = packageNam;
+    if (pid > 0) {
+        pid_ = pid;
+    } else {
+        pid_ = CommonUtils::GetPidByName(packageNam);
+    }
 
     if (pid_ <= 0) {
         description_ = "OpenStacktraceCatcher -- packageName is " + packageName_ + " pid is null\n";
@@ -53,7 +56,7 @@ bool OpenStacktraceCatcher::Initialize(const std::string& packageNam, int pid, i
     }
 
     description_ = "OpenStacktraceCatcher -- pid==" + std::to_string(pid_) + " packageName is " + packageName_ + "\n";
-    return EventLogCatcher::Initialize(packageNam, pid, intParam);
+    return EventLogCatcher::Initialize(packageName_, pid_, intParam);
 };
 
 // may block, run in another thread

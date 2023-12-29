@@ -16,24 +16,24 @@
 
 #include <unistd.h>
 
-#include "securec.h"
-
-#include "common_utils.h"
-#include "logger.h"
-#include "string_util.h"
-#include "parameter_ex.h"
-
 #include "binder_catcher.h"
-#include "open_stacktrace_catcher.h"
-#include "peer_binder_catcher.h"
+#include "common_utils.h"
 #include "dmesg_catcher.h"
+#include "logger.h"
+#include "open_stacktrace_catcher.h"
+#include "parameter_ex.h"
+#include "peer_binder_catcher.h"
+#include "securec.h"
 #include "shell_catcher.h"
+#include "string_util.h"
 #include "trace_collector.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
 const std::string SYSTEM_STACK[] = {
     "foundation",
+    "render_service",
 };
 }
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-EventLogTask");
@@ -83,6 +83,7 @@ void EventLogTask::AddLog(const std::string &cmd)
         return;
     }
     PeerBinderCapture(cmd);
+    catchedPids_.clear();
 }
 
 EventLogTask::Status EventLogTask::StartCompose()
@@ -193,6 +194,14 @@ void EventLogTask::AddSeparator(int fd, std::shared_ptr<EventLogCatcher> catcher
     }
 }
 
+void EventLogTask::RecordCatchedPids(const std::string& packageName)
+{
+    int pid = CommonUtils::GetPidByName(packageName);
+    if (pid > 0) {
+        catchedPids_.insert(pid);
+    }
+}
+
 EventLogTask::Status EventLogTask::GetTaskStatus() const
 {
     return status_;
@@ -215,6 +224,7 @@ void EventLogTask::SystemStackCapture()
     for (auto packageName : SYSTEM_STACK) {
         auto capture = std::make_shared<OpenStacktraceCatcher>();
         capture->Initialize(packageName, 0, 0);
+        RecordCatchedPids(packageName);
         tasks_.push_back(capture);
     }
 }
@@ -242,7 +252,7 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
     auto capture = std::make_shared<PeerBinderCatcher>();
     capture->Initialize(cmdList[PeerBinderCatcher::BP_CMD_PERF_TYPE_INDEX],
         StringUtil::StrToInt(cmdList[PeerBinderCatcher::BP_CMD_LAYER_INDEX]), pid_);
-    capture->Init(event_, "");
+    capture->Init(event_, "", catchedPids_);
     tasks_.push_back(capture);
     return true;
 }

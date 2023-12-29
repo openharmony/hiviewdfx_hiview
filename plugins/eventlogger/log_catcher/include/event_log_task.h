@@ -60,10 +60,12 @@ private:
     volatile Status status_;
     std::map<std::string, capture> captureList_;
     int pid_;
+    std::set<int> catchedPids_;
 
     bool ShouldStopLogTask(int fd, uint32_t curTaskIndex, int curLogSize, std::shared_ptr<EventLogCatcher> catcher);
     void AddStopReason(int fd, std::shared_ptr<EventLogCatcher> catcher, const std::string& reason);
     void AddSeparator(int fd, std::shared_ptr<EventLogCatcher> catcher) const;
+    void RecordCatchedPids(const std::string& packageName);
 
     void AppStackCapture();
     void SystemStackCapture();

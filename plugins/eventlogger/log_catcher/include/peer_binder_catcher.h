@@ -30,7 +30,7 @@ public:
     ~PeerBinderCatcher() override{};
     bool Initialize(const std::string& perfCmd, int layer, int pid) override;
     int Catch(int fd, int jsonFd) override;
-    void Init(std::shared_ptr<SysEvent> event, const std::string& filePath);
+    void Init(std::shared_ptr<SysEvent> event, const std::string& filePath, std::set<int>& catchedPids);
 
     static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
     static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/proc/transaction_proc";
@@ -59,6 +59,7 @@ private:
     std::string perfCmd_ = "";
     std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
     std::shared_ptr<SysEvent> event_ = nullptr;
+    std::set<int> catchedPids_ = {0};
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin,
         int fd, int jsonFd) const;
     void BinderInfoParser(std::ifstream& fin, int fd,
