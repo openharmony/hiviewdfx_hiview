@@ -12,15 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifdef HAS_HIPERF
 #include "perf_collector_impl.h"
 
-#ifdef HAS_HIPERF
 #include <atomic>
 #include <ctime>
 #include <fstream>
 
-#include "hiperf_client.h"
 #include "logger.h"
 #include "perf_decorator.h"
 
