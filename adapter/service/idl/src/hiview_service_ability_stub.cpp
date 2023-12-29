@@ -201,7 +201,7 @@ int32_t HiviewServiceAbilityStub::HandleListRequest(MessageParcel& data, Message
     auto fileNum = fileInfos.size();
     const size_t listFileNumMax = 1200;
     if (fileNum > listFileNumMax) {
-        HIVIEW_LOGW("File info list size: %{public}d, keep the first %{public}d", fileNum, listFileNumMax);
+        HIVIEW_LOGW("File info list size: %{public}zu, keep the first %{public}zu", fileNum, listFileNumMax);
         fileNum = listFileNumMax;
     }
     if (!reply.WriteInt32(fileNum)) {

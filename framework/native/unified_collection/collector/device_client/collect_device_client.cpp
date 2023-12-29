@@ -67,11 +67,11 @@ int CollectDeviceClient::Open()
 
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 {
-    HIVIEW_LOGI("send IOCTRL_COLLECT_ALL_PROC_CPU, cmd=%{public}u", IOCTRL_COLLECT_ALL_PROC_CPU);
+    HIVIEW_LOGI("send IOCTRL_COLLECT_ALL_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_ALL_PROC_CPU);
     std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>();
     int ret = ioctl(fd_, IOCTRL_COLLECT_ALL_PROC_CPU, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_ALL_PROC_CPU cmd=%{public}d, ret=%{public}d",
+        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_ALL_PROC_CPU cmd=%{public}zu, ret=%{public}d",
             IOCTRL_COLLECT_ALL_PROC_CPU, ret);
         return data;
     }
@@ -80,11 +80,11 @@ std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData(int pid)
 {
-    HIVIEW_LOGI("send IOCTRL_COLLECT_THE_PROC_CPU, cmd=%{public}u", IOCTRL_COLLECT_THE_PROC_CPU);
+    HIVIEW_LOGI("send IOCTRL_COLLECT_THE_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_THE_PROC_CPU);
     std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>(pid);
     int ret = ioctl(fd_, IOCTRL_COLLECT_THE_PROC_CPU, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_THE_PROC_CPU cmd=%{public}d, ret=%{public}d",
+        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_THE_PROC_CPU cmd=%{public}zu, ret=%{public}d",
             IOCTRL_COLLECT_THE_PROC_CPU, ret);
         return data;
     }
@@ -110,11 +110,11 @@ int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
         dmips->dmips[ii] = dmipVals[ii];
     }
 
-    HIVIEW_LOGI("send IOCTRL_SET_CPU_DMIPS, cmd=%{public}u", IOCTRL_SET_CPU_DMIPS);
+    HIVIEW_LOGI("send IOCTRL_SET_CPU_DMIPS, cmd=%{public}zu", IOCTRL_SET_CPU_DMIPS);
     int f = GetDeviceFd(false);
     int ret = ioctl(f, IOCTRL_SET_CPU_DMIPS, dmips);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_SET_CPU_DMIPS cmd=%{public}u, ret=%{public}d", IOCTRL_SET_CPU_DMIPS, ret);
+        HIVIEW_LOGI("ioctl IOCTRL_SET_CPU_DMIPS cmd=%{public}zu, ret=%{public}d", IOCTRL_SET_CPU_DMIPS, ret);
         free(dmips);
         return -1;
     } else {
