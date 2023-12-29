@@ -41,8 +41,6 @@ private:
     bool IsSMTEnabled();
     uint64_t GetMaxStCpuLoad();
     uint64_t GetMaxStCpuLoadWithSMT();
-    void GetCpuMaxFrequencies(std::unordered_map<uint32_t, uint64_t>& cpuMaxFreqs);
-    uint64_t GetPerCpuMaxFrequency(uint32_t cpuIndex);
 
 private:
     uint32_t numOfCpuCores_ = 0;

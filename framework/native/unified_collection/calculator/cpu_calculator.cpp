@@ -58,7 +58,7 @@ void CpuCalculator::InitCpuDmipses()
             HIVIEW_LOGE("failed to get cpu capacity content from file=%{public}s", cpuCapacityFileContent.c_str());
             return;
         }
-        uint32_t dmipse = StringUtil::StringToUl(cpuCapacityFileContent) / 10; // 10: adapt char type of kernel
+        uint32_t dmipse = StringUtil::StringToUl(cpuCapacityFileContent);
         cpuDmipses_.emplace_back(dmipse);
         HIVIEW_LOGI("get cpu=%{public}u capacity value=%{public}u", i, dmipse);
     }
@@ -78,73 +78,23 @@ bool CpuCalculator::IsSMTEnabled()
 
 uint64_t CpuCalculator::GetMaxStCpuLoad()
 {
-    std::unordered_map<uint32_t, uint64_t> cpuMaxFreqs;
-    GetCpuMaxFrequencies(cpuMaxFreqs);
-
     uint64_t maxStCpuLoadSum = 0;
     for (uint32_t cpuCoreIndex = 0; cpuCoreIndex < numOfCpuCores_; cpuCoreIndex++) {
-        uint64_t perMaxStCpuLoad = 0;
-        if (cpuCoreIndex >= cpuMaxFreqs.size() || cpuCoreIndex >= cpuDmipses_.size()) {
+        if (cpuCoreIndex >= cpuDmipses_.size()) {
             HIVIEW_LOGW("failed to get max st load from cpu=%{public}u", cpuCoreIndex);
             continue;
         }
-        perMaxStCpuLoad = cpuMaxFreqs[cpuCoreIndex] * cpuDmipses_[cpuCoreIndex];
-        maxStCpuLoadSum += perMaxStCpuLoad;
+        maxStCpuLoadSum += cpuDmipses_[cpuCoreIndex];
     }
     return maxStCpuLoadSum;
 }
 
 uint64_t CpuCalculator::GetMaxStCpuLoadWithSMT()
 {
-    std::unordered_map<uint32_t, uint64_t> cpuMaxFreqs;
-    GetCpuMaxFrequencies(cpuMaxFreqs);
-
-    // When smt is enable, only physical core information needs to be collected
-    const std::vector<uint32_t> cpuCoreListWithSMT = { 0, 1, 2, 3, 4, 6, 8, 10 };
-    uint64_t maxStCpuLoadSum = 0;
-    for (auto cpuCoreIndex : cpuCoreListWithSMT) {
-        uint64_t perMaxStCpuLoad = 0;
-        if (cpuCoreIndex >= cpuMaxFreqs.size() || cpuCoreIndex >= cpuDmipses_.size()) {
-            HIVIEW_LOGW("failed to get max st load from cpu=%{public}u", cpuCoreIndex);
-            continue;
-        }
-        perMaxStCpuLoad = cpuMaxFreqs[cpuCoreIndex] * cpuDmipses_[cpuCoreIndex];
-
-        // After SMT is enabled, the dmipses calculation method of big-core and medium-core is changed
-        constexpr uint32_t littleCpuCoreEndNum = 3;
-        if (cpuCoreIndex > littleCpuCoreEndNum) {
-            constexpr double smtCpuExpansionMultiple = 1.3;
-            perMaxStCpuLoad *= smtCpuExpansionMultiple;
-        }
-        maxStCpuLoadSum += perMaxStCpuLoad;
-    }
+    constexpr uint32_t capDiscountInMt = 65;
+    uint64_t maxStCpuLoadSum = GetMaxStCpuLoad();
+    maxStCpuLoadSum = maxStCpuLoadSum * capDiscountInMt / 100; // 100: %
     return maxStCpuLoadSum;
-}
-
-void CpuCalculator::GetCpuMaxFrequencies(std::unordered_map<uint32_t, uint64_t>& cpuMaxFreqs)
-{
-    for (uint32_t i = 0; i < numOfCpuCores_; i++) {
-        cpuMaxFreqs[i] = GetPerCpuMaxFrequency(i);
-    }
-}
-
-uint64_t CpuCalculator::GetPerCpuMaxFrequency(uint32_t cpuIndex)
-{
-    std::string cpuFreqFilePath = SYS_CPU_DIR_PREFIX + std::to_string(cpuIndex) +
-        "/cpufreq/scaling_available_frequencies";
-    std::string cpuFreqFileContent = FileUtil::GetFirstLine(cpuFreqFilePath);
-    if (cpuFreqFileContent.empty()) {
-        HIVIEW_LOGE("failed to get cpu frequency content from file=%{public}s", cpuFreqFileContent.c_str());
-        return 0;
-    }
-    auto cpuFreqs = StringUtil::SplitStr(cpuFreqFileContent);
-    if (cpuFreqs.empty()) {
-        HIVIEW_LOGE("cpu frequency content is null, from file=%{public}s", cpuFreqFileContent.c_str());
-        return 0;
-    }
-    uint64_t maxCpuFreq = StringUtil::StringToUl(cpuFreqs.back());
-    HIVIEW_LOGI("get cpu=%{public}u max frequency value=%{public}" PRIu64, cpuIndex, maxCpuFreq);
-    return maxCpuFreq;
 }
 
 double CpuCalculator::CalculateCpuLoad(uint64_t currCpuLoad, uint64_t lastCpuLoad, uint64_t statPeriod)
@@ -158,8 +108,10 @@ double CpuCalculator::CalculateCpuLoad(uint64_t currCpuLoad, uint64_t lastCpuLoa
         HIVIEW_LOGW("invalid num of max cpu load unit");
         return 0;
     }
+    constexpr uint64_t millToNano = 1000000;
+    constexpr uint64_t maxCpuLoadScale = 1024;
+    uint64_t maxCpuLoadOfSystemInStatPeriod = statPeriod * millToNano * maxCpuLoadUnit_ / maxCpuLoadScale;
     uint64_t cpuLoadInStatPeriod = currCpuLoad - lastCpuLoad;
-    uint64_t maxCpuLoadOfSystemInStatPeriod = statPeriod * maxCpuLoadUnit_;
     return ((cpuLoadInStatPeriod * 1.0) / maxCpuLoadOfSystemInStatPeriod);
 }
 
