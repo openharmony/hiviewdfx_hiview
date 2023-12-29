@@ -56,6 +56,9 @@ int GetFd(const std::string& filePath)
     if (!FileUtil::FileExists(LOGGER_FREEZEJSON_LOG_PATH)) {
         FileUtil::ForceCreateDirectory(LOGGER_FREEZEJSON_LOG_PATH);
     }
+    if (!FileUtil::FileExists(filePath)) {
+        return -1;
+    }
     return open(filePath.c_str(), O_CREAT | O_RDWR | O_APPEND, DEFAULT_LOG_FILE_MODE);
 }
 
@@ -162,7 +165,7 @@ void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jso
 
 bool HasBeenWrapped(const std::string& target)
 {
-    int minLen = 2;
+    std::string::size_type minLen = 2;
     if (target.size() < minLen) {
         return false;
     }
