@@ -50,8 +50,9 @@ ohos_unittest("PlatformConfigTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  resource_config_file = "$hiview_test/resource/ohos_test.xml"
   external_deps = [ "hilog:libhilog" ]
+
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
 
 ohos_unittest("PluginPlatformTest") {
@@ -78,8 +79,9 @@ ohos_unittest("PluginPlatformTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  resource_config_file = "$hiview_test/resource/ohos_test.xml"
   external_deps = [ "hilog:libhilog" ]
+
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
 
 ohos_unittest("PluginBundleTest") {
@@ -97,8 +99,9 @@ ohos_unittest("PluginBundleTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  resource_config_file = "$hiview_test/resource/ohos_test.xml"
   external_deps = [ "hilog:libhilog" ]
+
+  resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
 
 ohos_unittest("EventDispatchQueueTest") {
@@ -112,6 +115,8 @@ ohos_unittest("EventDispatchQueueTest") {
     "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
@@ -128,6 +133,8 @@ ohos_unittest("HiviewPlatformConfigTest") {
     "../platform_config:hiviewplatform_config",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("EventJsonParserTest") {
@@ -141,4 +148,6 @@ ohos_unittest("EventJsonParserTest") {
     "$hiview_core:hiview_core",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

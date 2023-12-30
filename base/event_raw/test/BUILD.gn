@@ -48,6 +48,8 @@ ohos_unittest("EventRawBaseTest") {
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 config("event_raw_encoded_and_decoded_config_test") {
@@ -74,4 +76,6 @@ ohos_unittest("EventRawEncodedAndDecodedTest") {
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

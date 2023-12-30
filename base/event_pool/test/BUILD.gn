@@ -39,4 +39,6 @@ ohos_unittest("EventPoolTest") {
     "../:eventpool",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

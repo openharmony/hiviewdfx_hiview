@@ -54,7 +54,10 @@ ohos_source_set("sysevent_source") {
     "$hiview_core:hiview_core",
   ]
 
-  external_deps = [ "init:libbegetutil" ]
+  external_deps = [
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
 }
 
 group("unittest") {

@@ -92,9 +92,8 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
 {
     return any_of(rules.begin(), rules.end(), [domain, eventName, tag, eventType] (auto& rule) {
         if (IsMatchedRule(rule, domain, eventName, tag, eventType)) {
-            string logFormat("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, ");
-            logFormat.append("tag is %{public}s, eventType is %{public}u for matched");
-            HIVIEW_LOGD(logFormat.c_str(),
+            HIVIEW_LOGD("rule type is %{public}d, domain is %{public}s, eventName is %{public}s, "
+                "tag is %{public}s, eventType is %{public}u for matched",
                 rule.ruleType, rule.domain.empty() ? "empty" : rule.domain.c_str(),
                 rule.eventName.empty() ? "empty" : rule.eventName.c_str(),
                 rule.tag.empty() ? "empty" : rule.tag.c_str(), eventType);

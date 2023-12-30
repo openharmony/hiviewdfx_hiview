@@ -34,7 +34,7 @@ ohos_shared_library("libucollection_client") {
     "$hiview_interfaces/inner_api/unified_collection/client/src:ucollection_client_source",
   ]
 
-  external_deps = []
+  external_deps = [ "hilog:libhilog" ]
 
   innerapi_tags = [ "platformsdk" ]
 

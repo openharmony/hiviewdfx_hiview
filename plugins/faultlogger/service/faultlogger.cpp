@@ -752,7 +752,7 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
         HIVIEW_LOGE("stackInfo is empty");
         return;
     }
-    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}d", info.pid, stackInfo.length());
+    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}zu", info.pid, stackInfo.length());
     EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo);
 }
 

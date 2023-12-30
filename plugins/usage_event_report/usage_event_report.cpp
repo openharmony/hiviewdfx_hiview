@@ -83,7 +83,7 @@ void UsageEventReport::Init()
         std::vector<std::shared_ptr<LoggerEvent>> pluginStatEvents;
         cacher.GetPluginStatsEvents(pluginStatEvents);
         HiviewEventCacher::GetInstance().AddPluginStatsEvent(pluginStatEvents);
-        HIVIEW_LOGI("get plugin stats event=%{public}d", pluginStatEvents.size());
+        HIVIEW_LOGI("get plugin stats event=%{public}zu", pluginStatEvents.size());
 
         // get last report time from db if any
         if (auto event = cacher.GetSysUsageEvent(LAST_SYS_USAGE_TABLE); event != nullptr) {

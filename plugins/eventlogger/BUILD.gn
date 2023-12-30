@@ -43,6 +43,7 @@ ohos_source_set("eventlogger") {
   external_deps = [
     "faultloggerd:libbacktrace_local",
     "ffrt:libffrt",
+    "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
   ]

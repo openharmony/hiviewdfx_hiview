@@ -46,4 +46,6 @@ ohos_unittest("LogStoreUnitTest") {
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

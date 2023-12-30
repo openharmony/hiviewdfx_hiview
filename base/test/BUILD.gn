@@ -54,6 +54,8 @@ ohos_unittest("EventLoopTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("PluginFactoryTest") {
@@ -69,6 +71,8 @@ ohos_unittest("PluginFactoryTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("AuditLogParserTest") {
@@ -81,6 +85,8 @@ ohos_unittest("AuditLogParserTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("PluginPipelineTest") {
@@ -102,6 +108,8 @@ ohos_unittest("PluginPipelineTest") {
     "$hiview_test/plugins/examples/event_source_example:event_source_example",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("SysEventTest") {
@@ -114,6 +122,8 @@ ohos_unittest("SysEventTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("PluginTest") {
@@ -126,6 +136,8 @@ ohos_unittest("PluginTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("EventBaseTest") {
@@ -138,4 +150,6 @@ ohos_unittest("EventBaseTest") {
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

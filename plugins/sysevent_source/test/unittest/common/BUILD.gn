@@ -36,6 +36,8 @@ ohos_unittest("SysEventStatTest") {
     "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("EventServerTest") {
@@ -51,4 +53,6 @@ ohos_unittest("EventServerTest") {
     "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }

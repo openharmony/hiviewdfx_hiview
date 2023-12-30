@@ -24,6 +24,8 @@ ohos_shared_library("bundleplugintest") {
     "bundle_plugin_example3:bundle_plugin_example3",
   ]
 
+  external_deps = [ "hilog:libhilog" ]
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

@@ -65,7 +65,7 @@ bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     if (eventLoggerConfig_.find(sysEvent->eventName_) == eventLoggerConfig_.end()) {
         return false;
     }
-    HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+    HIVIEW_LOGD("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
         sysEvent->AsJsonStr().c_str());
 
     EventLoggerConfig::EventLoggerConfigData& configOut = eventLoggerConfig_[sysEvent->eventName_];
@@ -103,7 +103,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     std::unique_lock<std::mutex> lck(finishMutex_);
     sysEventSet_.insert(sysEvent);
     auto task = [this, sysEvent]() {
-        HIVIEW_LOGD("event time:%{public}llu jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        HIVIEW_LOGD("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
@@ -452,7 +452,7 @@ void EventLogger::CheckEventOnContinue()
             ++eventIter;
         }
     }
-    HIVIEW_LOGI("event size:%{public}d", sysEventSet_.size());
+    HIVIEW_LOGI("event size:%{public}zu", sysEventSet_.size());
 }
 
 void EventLogger::OnLoad()
