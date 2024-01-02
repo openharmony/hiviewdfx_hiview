@@ -226,7 +226,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
             UCollectUtil::FOREGROUND) {
             info.sectionMap["FOREGROUND"] = "Yes";
         } else if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
-            UCollectUtil::BACKGROUND){
+            UCollectUtil::BACKGROUND) {
             int64_t lastFgTime = static_cast<int64_t>(UCollectUtil::ProcessStatus::GetInstance()
                 .GetProcessLastForegroundTime(info.pid));
             if (lastFgTime > info.time) {
@@ -753,6 +753,12 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
         return;
     }
     HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}d", info.pid, stackInfo.length());
+#ifdef UNIT_TEST
+    std::string outputFilePath = "/data/test_cppcrash_info_" + std::to_string(info.pid);
+    std::ofstream outFile(outputFilePath);
+    outFile << stackInfo << std::endl;
+    outFile.close();
+#endif
     EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo);
 }
 
@@ -799,8 +805,8 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
             hilog.append(oneLine);
         }
         stackInfoObj["hilog"] = hilog;
-        stackInfo.append(Json::FastWriter().write(stackInfoObj));
     }
+    stackInfo.append(Json::FastWriter().write(stackInfoObj));
 }
 
 void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
@@ -865,7 +871,7 @@ std::list<std::string> GetDightStrArr(const std::string& target)
 {
     std::list<std::string> ret;
     std::string temp = "";
-    for (int i = 0, len = target.size(); i < len; i++) {
+    for (size_t i = 0, len = target.size(); i < len; i++) {
         if (target[i] >= '0' && target[i] <= '9') {
             temp += target[i];
             continue;
@@ -884,7 +890,7 @@ std::list<std::string> GetDightStrArr(const std::string& target)
 
 std::string Faultlogger::GetMemoryStrByPid(long pid) const
 {
-    unsigned long long rss = 0; // statm col=2 *4
+    unsigned long long rss = 0; // statm col = 2 *4
     unsigned long long vss = 0; // statm col = 1 *4
     unsigned long long sysFreeMem = 0; // meminfo row=2
     unsigned long long sysAvailMem = 0; // meminfo row=3
@@ -897,7 +903,7 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         statmStream.close();
         std::list<std::string> numStrArr = GetDightStrArr(statmLine);
         auto it = numStrArr.begin();
-        int multiples = 4;
+        unsigned long long multiples = 4;
         vss = multiples * std::stoull(*it);
         it++;
         rss = multiples * std::stoull(*it);
@@ -959,7 +965,7 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
         std::stringstream hilogStream(hilogStr);
         std::string oneLine;
         while (std::getline(hilogStream, oneLine)) {
-            hilogList.push_back(oneLine);
+            hilogList.push_back(StringUtil::EscapeJsonStringValue(oneLine));
         }
     }
     collector.hilog = FreezeJsonUtil::GetStrByList(hilogList);

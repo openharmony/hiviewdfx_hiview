@@ -417,9 +417,9 @@ std::string UnescapeJsonStringValue(const std::string &value)
 
 std::string FormatCmdLine(const std::string& cmdLine)
 {
-    int startPos = 0;
-    int endPos = cmdLine.size();
-    for (unsigned long i = 0; i < cmdLine.size(); i++) {
+    size_t startPos = 0;
+    size_t endPos = cmdLine.size();
+    for (size_t i = 0; i < cmdLine.size(); i++) {
         if (cmdLine[i] == '/') {
             startPos = i + 1;
         } else if (cmdLine[i] == '\0') {
