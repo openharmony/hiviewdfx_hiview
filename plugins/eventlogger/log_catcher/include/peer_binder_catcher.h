@@ -65,6 +65,7 @@ private:
     void BinderInfoParser(std::ifstream& fin, int fd,
         std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
         std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList) const;
+    void GetFileToList(std::string line, std::vector<std::string>& strList) const;
     void ParseBinderCallChain(std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::set<int>& pids, int pid) const;
     std::set<int> GetBinderPeerPids(int fd, int jsonFd) const;

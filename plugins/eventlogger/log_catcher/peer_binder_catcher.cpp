@@ -160,6 +160,17 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
     return manager;
 }
 
+void PeerBinderCatcher::GetFileToList(std::string line,
+    std::vector<std::string>& strList) const
+{
+    std::istringstream lineStream(line);
+    std::string tmpstr;
+    while (lineStream >> tmpstr) {
+        strList.push_back(tmpstr);
+    }
+    HIVIEW_LOGI("strList size: %{public}zu", strList.size());
+}
+
 void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
     std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList) const
@@ -177,14 +188,8 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
             continue;
         }
 
-        std::istringstream lineStream(line);
         std::vector<std::string> strList;
-        std::string tmpstr;
-        while (lineStream >> tmpstr) {
-            strList.push_back(tmpstr);
-        }
-        HIVIEW_LOGI("strList size: %{public}zu", strList.size());
-
+        GetFileToList(line, strList);
         auto stringSplit = [](const std::string& str, uint16_t index) -> std::string {
             std::vector<std::string> strings;
             StringUtil::SplitStr(str, ":", strings);
