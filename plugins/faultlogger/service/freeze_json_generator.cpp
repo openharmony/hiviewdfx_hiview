@@ -253,7 +253,6 @@ std::string FreezeJsonParams::JsonStr() const
     std::list<std::string> list;
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsTime, time_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsUuid, uuid_));
-    list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsFreezeType, freezeType_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsForeground, foreground_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersion, bundleVersion_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleName, bundleName_));
