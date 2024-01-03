@@ -69,7 +69,7 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
 std::string Vendor::GetTimeString(unsigned long long timestamp) const
 {
     struct tm tm;
-    time_t ts = timestamp / FreezeCommon::MILLISECOND; // ms
+    time_t ts = static_cast<long long>(timestamp) / FreezeCommon::MILLISECOND; // ms
     localtime_r(&ts, &tm);
     char buf[TIME_STRING_LEN] = {0};
 
