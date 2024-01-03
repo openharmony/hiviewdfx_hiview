@@ -23,7 +23,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-DEFINE_LOG_TAG("UCollectUtil-CpuCalculator");
+DEFINE_LOG_TAG("CpuCalculator");
 namespace {
 uint32_t CalcSysCpuTotalTime(const CpuTimeInfo& cpuTimeInfo)
 {

@@ -30,13 +30,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-DEFINE_LOG_TAG("UCollectUtil-CpuCollector");
+DEFINE_LOG_TAG("CpuCollector");
 CpuCollectorImpl::CpuCollectorImpl()
 {
     if (InitDeviceClient()) {
         InitLastProcCpuTimeInfos();
     }
-    UpdateClearTime();
 
     // init sys cpu usage infos
     (void)CollectSysCpuUsage(true);
@@ -70,14 +69,15 @@ void CpuCollectorImpl::InitLastProcCpuTimeInfos()
     if (processCpuData == nullptr) {
         return;
     }
-    UpdateCollectionTime();
 
     // init cpu time information for each process in the system
+    CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo();
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
-        UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime_);
+        UpdateLastProcCpuTimeInfo(procCpuItem, calcTimeInfo);
         procCpuItem = processCpuData->GetNextProcess();
     }
+    UpdateCollectionTime(calcTimeInfo);
 }
 
 std::shared_ptr<ProcessCpuData> CpuCollectorImpl::FetchProcessCpuData(int32_t pid)
@@ -91,13 +91,14 @@ std::shared_ptr<ProcessCpuData> CpuCollectorImpl::FetchProcessCpuData(int32_t pi
         : deviceClient_->FetchProcessCpuData(pid);
 }
 
-void CpuCollectorImpl::UpdateCollectionTime()
+void CpuCollectorImpl::UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo)
 {
-    lastCollectionTime_ = currCollectionTime_;
-    currCollectionTime_ = TimeUtil::GetMilliseconds();
+    lastCollectionTime_ = calcTimeInfo.endTime;
+    lastCollectionMonoTime_ = calcTimeInfo.endMonoTime;
 }
 
-void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem, uint64_t currTime)
+void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem,
+    const CalculationTimeInfo& calcTimeInfo)
 {
     lastProcCpuTimeInfos_[procCpuItem->pid] = {
         .minFlt = procCpuItem->min_flt,
@@ -105,13 +106,9 @@ void CpuCollectorImpl::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_i
         .uUsageTime = procCpuItem->cpu_usage_utime,
         .sUsageTime = procCpuItem->cpu_usage_stime,
         .loadTime = procCpuItem->cpu_load_time,
-        .collectionTime = currTime,
+        .collectionTime = calcTimeInfo.endTime,
+        .collectionMonoTime = calcTimeInfo.endMonoTime,
     };
-}
-
-void CpuCollectorImpl::UpdateClearTime()
-{
-    clearTime_ = TimeUtil::GetMilliseconds();
 }
 
 std::shared_ptr<CpuCollector> CpuCollector::Create()
@@ -183,9 +180,7 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuCollectorImpl::CollectProcessC
     if (processCpuData == nullptr) {
         return cpuCollectResult;
     }
-    if (isNeedUpdate) {
-        UpdateCollectionTime();
-    }
+
     CalculateProcessCpuStatInfos(cpuCollectResult.data, processCpuData, isNeedUpdate);
     HIVIEW_LOGI("collect process cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
         cpuCollectResult.data.size(), isNeedUpdate);
@@ -201,69 +196,74 @@ void CpuCollectorImpl::CalculateProcessCpuStatInfos(
     std::shared_ptr<ProcessCpuData> processCpuData,
     bool isNeedUpdate)
 {
-    uint64_t lastCollectionTime = isNeedUpdate ? lastCollectionTime_ : currCollectionTime_;
-    uint64_t currCollectionTime = isNeedUpdate ? currCollectionTime_ : TimeUtil::GetMilliseconds();
+    CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo();
+    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startMonoTime=%{public}" PRIu64
+        ", endMonoTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
+        calcTimeInfo.endTime, calcTimeInfo.startMonoTime, calcTimeInfo.endMonoTime, calcTimeInfo.period);
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
-        auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, lastCollectionTime, currCollectionTime);
+        auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, calcTimeInfo);
         if (processCpuStatInfo.has_value()) {
             processCpuStatInfos.emplace_back(processCpuStatInfo.value());
         }
         if (isNeedUpdate) {
-            UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime);
+            UpdateLastProcCpuTimeInfo(procCpuItem, calcTimeInfo);
         }
         procCpuItem = processCpuData->GetNextProcess();
     }
+
+    if (isNeedUpdate) {
+        UpdateCollectionTime(calcTimeInfo);
+    }
+}
+
+CalculationTimeInfo CpuCollectorImpl::InitCalculationTimeInfo()
+{
+    CalculationTimeInfo calcTimeInfo = {
+        .startTime = lastCollectionTime_,
+        .endTime = TimeUtil::GetMilliseconds(),
+        .startMonoTime = lastCollectionMonoTime_,
+        .endMonoTime = TimeUtil::GetSteadyClockTimeMs(),
+    };
+    calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
+        ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
+    return calcTimeInfo;
 }
 
 std::optional<ProcessCpuStatInfo> CpuCollectorImpl::CalculateProcessCpuStatInfo(
-    const ucollection_process_cpu_item* procCpuItem, uint64_t startTime, uint64_t endTime)
+    const ucollection_process_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo)
 {
     if (lastProcCpuTimeInfos_.find(procCpuItem->pid) == lastProcCpuTimeInfos_.end()) {
         return std::nullopt;
     }
     ProcessCpuStatInfo processCpuStatInfo;
-    processCpuStatInfo.startTime = startTime;
-    processCpuStatInfo.endTime = endTime;
+    processCpuStatInfo.startTime = calcTimeInfo.startTime;
+    processCpuStatInfo.endTime = calcTimeInfo.endTime;
     processCpuStatInfo.pid = procCpuItem->pid;
     processCpuStatInfo.minFlt = procCpuItem->min_flt;
     processCpuStatInfo.majFlt = procCpuItem->maj_flt;
     processCpuStatInfo.procName = ProcessStatus::GetInstance().GetProcessName(procCpuItem->pid);
-    uint64_t collectionPeriod = endTime > startTime ? (endTime - startTime) : 0;
     processCpuStatInfo.cpuLoad = cpuCalculator_.CalculateCpuLoad(procCpuItem->cpu_load_time,
-        lastProcCpuTimeInfos_[procCpuItem->pid].loadTime, collectionPeriod);
+        lastProcCpuTimeInfos_[procCpuItem->pid].loadTime, calcTimeInfo.period);
     processCpuStatInfo.uCpuUsage = cpuCalculator_.CalculateCpuUsage(procCpuItem->cpu_usage_utime,
-        lastProcCpuTimeInfos_[procCpuItem->pid].uUsageTime, collectionPeriod);
+        lastProcCpuTimeInfos_[procCpuItem->pid].uUsageTime, calcTimeInfo.period);
     processCpuStatInfo.sCpuUsage = cpuCalculator_.CalculateCpuUsage(procCpuItem->cpu_usage_stime,
-        lastProcCpuTimeInfos_[procCpuItem->pid].sUsageTime, collectionPeriod);
+        lastProcCpuTimeInfos_[procCpuItem->pid].sUsageTime, calcTimeInfo.period);
     processCpuStatInfo.cpuUsage = processCpuStatInfo.uCpuUsage + processCpuStatInfo.sCpuUsage;
     return std::make_optional<ProcessCpuStatInfo>(processCpuStatInfo);
 }
 
 void CpuCollectorImpl::TryToDeleteDeadProcessInfo()
 {
-    if (!NeedDeleteDeadProcessInfo()) {
-        return;
-    }
-    HIVIEW_LOGI("start to delete dead process, size=%{public}zu", lastProcCpuTimeInfos_.size());
     for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
         // if the latest collection operation does not update the process collection time, delete it
-        if (it->second.collectionTime != currCollectionTime_) {
+        if (it->second.collectionTime != lastCollectionTime_) {
             it = lastProcCpuTimeInfos_.erase(it);
         } else {
             it++;
         }
     }
-    UpdateClearTime();
     HIVIEW_LOGI("end to delete dead process, size=%{public}zu", lastProcCpuTimeInfos_.size());
-}
-
-bool CpuCollectorImpl::NeedDeleteDeadProcessInfo()
-{
-    constexpr uint64_t maxClearInterval = 3600 * 1000; // ms per hour
-    uint64_t clearInterval = clearTime_ > currCollectionTime_ ?
-        (clearTime_ - currCollectionTime_) : (currCollectionTime_ - clearTime_);
-    return clearInterval > maxClearInterval;
 }
 
 CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
@@ -280,18 +280,32 @@ CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(in
     if (procCpuItem == nullptr) {
         return cpuCollectResult;
     }
-    uint64_t lastCollectionTime = (lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end())
-        ? lastProcCpuTimeInfos_[pid].collectionTime : 0;
-    uint64_t currCollectionTime = TimeUtil::GetMilliseconds();
-    auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, lastCollectionTime, currCollectionTime);
+
+    CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo(pid);
+    auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, calcTimeInfo);
     if (processCpuStatInfo.has_value()) {
         cpuCollectResult.retCode = UCollect::UcError::SUCCESS;
         cpuCollectResult.data = processCpuStatInfo.value();
     }
     if (isNeedUpdate) {
-        UpdateLastProcCpuTimeInfo(procCpuItem, currCollectionTime);
+        UpdateLastProcCpuTimeInfo(procCpuItem, calcTimeInfo);
     }
     return cpuCollectResult;
+}
+
+CalculationTimeInfo CpuCollectorImpl::InitCalculationTimeInfo(int32_t pid)
+{
+    CalculationTimeInfo calcTimeInfo = {
+        .startTime = lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()
+            ? lastProcCpuTimeInfos_[pid].collectionTime : 0,
+        .endTime = TimeUtil::GetMilliseconds(),
+        .startMonoTime = lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()
+            ? lastProcCpuTimeInfos_[pid].collectionMonoTime : 0,
+        .endMonoTime = TimeUtil::GetSteadyClockTimeMs(),
+    };
+    calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
+        ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
+    return calcTimeInfo;
 }
 } // UCollectUtil
 } // HiViewDFX

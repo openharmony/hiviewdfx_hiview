@@ -36,6 +36,20 @@ struct ProcessCpuTimeInfo {
     uint64_t sUsageTime = 0;
     uint64_t loadTime = 0;
     uint64_t collectionTime = 0;
+    uint64_t collectionMonoTime = 0;
+};
+
+struct CalculationTimeInfo {
+    // calculation time, using system clock.
+    uint64_t startTime = 0;
+    uint64_t endTime = 0;
+
+    // calculation time, using steady clock.
+    uint64_t startMonoTime = 0;
+    uint64_t endMonoTime = 0;
+
+    // calculation period, using steady clock.
+    uint64_t period = 0;
 };
 
 class CpuCollectorImpl : public CpuCollector {
@@ -55,9 +69,12 @@ public:
 private:
     bool InitDeviceClient();
     void InitLastProcCpuTimeInfos();
+    CalculationTimeInfo InitCalculationTimeInfo();
+    CalculationTimeInfo InitCalculationTimeInfo(int32_t pid);
     std::shared_ptr<ProcessCpuData> FetchProcessCpuData(int32_t pid = INVALID_PID);
-    void UpdateCollectionTime();
-    void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem, uint64_t currTime);
+    void UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo);
+    void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem,
+        const CalculationTimeInfo& calcTimeInfo);
     void CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
         const std::vector<CpuTimeInfo>& currCpuTimeInfos);
     void CalculateProcessCpuStatInfos(
@@ -65,17 +82,14 @@ private:
         std::shared_ptr<ProcessCpuData> processCpuData,
         bool isNeedUpdate);
     std::optional<ProcessCpuStatInfo> CalculateProcessCpuStatInfo(
-        const ucollection_process_cpu_item* procCpuItem, uint64_t startTime, uint64_t endTime);
-    void UpdateClearTime();
+        const ucollection_process_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
     void TryToDeleteDeadProcessInfo();
-    bool NeedDeleteDeadProcessInfo();
 
 private:
     std::mutex collectMutex_;
     uint64_t lastSysCpuUsageTime_ = 0;
-    uint64_t currCollectionTime_ = 0;
     uint64_t lastCollectionTime_ = 0;
-    uint64_t clearTime_ = 0;
+    uint64_t lastCollectionMonoTime_ = 0;
     std::unique_ptr<CollectDeviceClient> deviceClient_;
     /* map<pid, ProcessCpuTimeInfo> */
     std::unordered_map<int32_t, ProcessCpuTimeInfo> lastProcCpuTimeInfos_;

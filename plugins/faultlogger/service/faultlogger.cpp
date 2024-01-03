@@ -226,7 +226,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
             UCollectUtil::FOREGROUND) {
             info.sectionMap["FOREGROUND"] = "Yes";
         } else if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
-            UCollectUtil::BACKGROUND){
+            UCollectUtil::BACKGROUND) {
             int64_t lastFgTime = static_cast<int64_t>(UCollectUtil::ProcessStatus::GetInstance()
                 .GetProcessLastForegroundTime(info.pid));
             if (lastFgTime > info.time) {
@@ -753,6 +753,12 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
         return;
     }
     HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}zu", info.pid, stackInfo.length());
+#ifdef UNIT_TEST
+    std::string outputFilePath = "/data/test_cppcrash_info_" + std::to_string(info.pid);
+    std::ofstream outFile(outputFilePath);
+    outFile << stackInfo << std::endl;
+    outFile.close();
+#endif
     EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo);
 }
 
@@ -799,8 +805,8 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
             hilog.append(oneLine);
         }
         stackInfoObj["hilog"] = hilog;
-        stackInfo.append(Json::FastWriter().write(stackInfoObj));
     }
+    stackInfo.append(Json::FastWriter().write(stackInfoObj));
 }
 
 void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
