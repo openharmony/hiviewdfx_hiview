@@ -26,6 +26,8 @@ ohos_shared_library("bundletest") {
     "event_source_example:event_source_example",
   ]
 
+  external_deps = [ "hilog:libhilog" ]
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }

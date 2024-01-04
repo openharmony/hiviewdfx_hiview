@@ -317,7 +317,7 @@ int EventServer::OpenDevs()
         HIVIEW_LOGE("can not open any device");
         return -1;
     }
-    HIVIEW_LOGI("has open %{public}u devices", devs_.size());
+    HIVIEW_LOGI("has open %{public}zu devices", devs_.size());
     return 0;
 }
 
@@ -345,7 +345,7 @@ int EventServer::AddToMonitor(int pollFd, struct epoll_event pollEvents[])
         HIVIEW_LOGE("can not monitor any device");
         return -1;
     }
-    HIVIEW_LOGI("monitor devices %{public}u", devs_.size());
+    HIVIEW_LOGI("monitor devices %{public}zu", devs_.size());
     return 0;
 }
 

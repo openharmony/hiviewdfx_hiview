@@ -248,8 +248,8 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
         size_t count = static_cast<size_t>((st.st_size - offset) > SSIZE_MAX ? SSIZE_MAX : st.st_size - offset);
         ssize_t ret = sendfile(destFd, srcFd, &offset, count);
         if (ret < 0 || offset > st.st_size) {
-            HIVIEW_LOGE("sendfile fail, ret:%{public}d, offset:%{public}lld, size:%{public}lld",
-                ret, offset, st.st_size);
+            HIVIEW_LOGE("sendfile fail, ret:%{public}zd, offset:%{public}lld, size:%{public}lld",
+                ret, static_cast<long long>(offset), static_cast<long long>(st.st_size));
             close(srcFd);
             close(destFd);
             return ERR_DEFAULT;

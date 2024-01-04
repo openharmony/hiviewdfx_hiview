@@ -752,7 +752,7 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
         HIVIEW_LOGE("stackInfo is empty");
         return;
     }
-    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}d", info.pid, stackInfo.length());
+    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}zu", info.pid, stackInfo.length());
 #ifdef UNIT_TEST
     std::string outputFilePath = "/data/test_cppcrash_info_" + std::to_string(info.pid);
     std::ofstream outFile(outputFilePath);

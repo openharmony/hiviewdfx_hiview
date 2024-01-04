@@ -63,7 +63,11 @@ static napi_value List(napi_env env, napi_callback_info info)
 
 static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isMove)
 {
-    HIVIEW_LOGI(isMove ? "call move" : "call copy");
+    if (isMove) {
+        HIVIEW_LOGI("call move");
+    } else {
+        HIVIEW_LOGI("call copy");
+    }
     constexpr size_t maxParamNum = 4;
     constexpr size_t paramNumWithoutCallback = 3;
     size_t paramNum = maxParamNum;

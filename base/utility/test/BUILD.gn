@@ -48,6 +48,8 @@ ohos_unittest("BaseUtilityUnitTest") {
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("SystemServiceOhosUnitTest") {
@@ -65,6 +67,7 @@ ohos_unittest("SystemServiceOhosUnitTest") {
   ]
 
   external_deps = [
+    "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
   ]
@@ -85,6 +88,7 @@ ohos_unittest("AdapterUtilityOhosTest") {
   ]
 
   external_deps = [
+    "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
   ]

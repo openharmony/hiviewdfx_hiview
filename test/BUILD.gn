@@ -29,6 +29,8 @@ ohos_unittest("HiviewPlatformModuleTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 config("HolisticPlatformTest_config") {
@@ -66,6 +68,8 @@ ohos_unittest("HolisticPlatformTest") {
     "//third_party/googletest:gtest_main",
   ]
 
+  external_deps = [ "hilog:libhilog" ]
+
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }
 
@@ -80,7 +84,10 @@ ohos_unittest("ReportXPowerEventTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "init:libbegetutil" ]
+  external_deps = [
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
 }
 
 if (!defined(ohos_lite)) {
