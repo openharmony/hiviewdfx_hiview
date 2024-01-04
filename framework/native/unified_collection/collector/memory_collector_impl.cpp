@@ -452,7 +452,7 @@ CollectResult<std::string> MemoryCollectorImpl::CollectRawSmaps(int32_t pid)
 static std::string GetNewestSnapshotPath(const std::string& path)
 {
     std::string latestFilePath;
-    time_t newestFileTime;
+    time_t newestFileTime = 0;
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
         return "";
