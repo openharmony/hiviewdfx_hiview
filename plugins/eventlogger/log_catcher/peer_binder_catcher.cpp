@@ -218,7 +218,7 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
             info.wait = std::strtol(wait.c_str(), nullptr, DECIMAL);
             HIVIEW_LOGI("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
             manager[info.client].push_back(info);
-            outputInfo.info = line;
+            outputInfo.info = StringUtil::TrimStr(line);
             outputInfo.pid = info.server;
             outputBinderInfoList.push_back(outputInfo);
         } else {
