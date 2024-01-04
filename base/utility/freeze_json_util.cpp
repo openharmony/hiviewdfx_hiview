@@ -56,7 +56,7 @@ int GetFd(const std::string& filePath)
     if (!FileUtil::FileExists(LOGGER_FREEZEJSON_LOG_PATH)) {
         FileUtil::ForceCreateDirectory(LOGGER_FREEZEJSON_LOG_PATH);
     }
-    if (!FileUtil::FileExists(filePath)) {
+    if (!FileUtil::IsLegalPath(filePath)) {
         return -1;
     }
     return open(filePath.c_str(), O_CREAT | O_RDWR | O_APPEND, DEFAULT_LOG_FILE_MODE);
