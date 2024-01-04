@@ -17,7 +17,9 @@
 #include "logger.h"
 #include "usage_event_report_service.h"
 
+namespace {
 DEFINE_LOG_TAG("HiView-UsageReportMain");
+}
 
 int main(int argc __UNUSED, char* argv[] __UNUSED)
 {

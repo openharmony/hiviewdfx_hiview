@@ -80,12 +80,12 @@ struct ProcessIoStats {
 };
 
 struct SysIoStats {
-    double rcharRate;
-    double wcharRate;
-    double syscrRate;
-    double syscwRate;
-    double readBytesRate;
-    double writeBytesRate;
+    double rcharRate = 0.0;
+    double wcharRate = 0.0;
+    double syscrRate = 0.0;
+    double syscwRate = 0.0;
+    double readBytesRate = 0.0;
+    double writeBytesRate = 0.0;
 };
 
 struct ProcessIoStatsInfo {
