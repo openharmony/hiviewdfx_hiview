@@ -111,9 +111,9 @@ void TraceStatWrapper::UpdateAPIStatInfo(const TraceStatItem& item)
     if (traceStatInfos_.find(item.caller) == traceStatInfos_.end()) {
         TraceStatInfo statInfo = {
             .caller = item.caller,
-            .totalCall = 1,
             .failCall = (item.isCallSucc || item.isOverCall) ? 0 : 1,
             .overCall = item.isOverCall ? 1 : 0,
+            .totalCall = 1,
             .avgLatency = item.latency,
             .maxLatency = item.latency,
             .totalTimeSpend = item.latency,
