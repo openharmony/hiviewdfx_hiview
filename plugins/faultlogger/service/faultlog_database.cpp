@@ -119,7 +119,7 @@ std::list<std::shared_ptr<EventStore::SysEventQuery>> CreateQueries(
         std::string faultName = GetFaultNameByType(faultType, false);
         std::vector<std::vector<std::string>> faultNames = { {faultName} };
         if (faultType == FaultLogType::ALL) {
-            faultNames = { {"CPP_CRASH"}, {"APP_FREEZE"}, {"SYS_FREEZE"}, {"RUST_PANIC"} };
+            faultNames = { {"CPP_CRASH"}, {"APP_FREEZE"}};
         }
         for (auto name : faultNames) {
             auto query = EventStore::SysEventDao::BuildQuery(HiSysEvent::Domain::RELIABILITY, name);
@@ -136,7 +136,7 @@ std::list<FaultLogInfo> FaultLogDatabase::GetFaultInfoList(const std::string& mo
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::list<FaultLogInfo> queryResult;
-    if (faultType < FaultLogType::ALL || faultType > FaultLogType::RUST_PANIC) {
+    if (faultType < FaultLogType::ALL || faultType > FaultLogType::APP_FREEZE) {
         HIVIEW_LOGE("Unsupported fault type, please check it!");
         return queryResult;
     }

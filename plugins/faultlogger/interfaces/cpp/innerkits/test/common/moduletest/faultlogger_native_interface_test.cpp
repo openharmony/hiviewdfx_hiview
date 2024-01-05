@@ -265,45 +265,6 @@ HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest006, testing::ext:
     }
 }
 
-static void SendRustPanicEvent()
-{
-    HiSysEventWrite(HiSysEvent::Domain::RELIABILITY,
-        "RUST_PANIC",
-        HiSysEvent::EventType::FAULT,
-        "MODULE", "test_rust_module",
-        "REASON", "file:panic_maker/main.rs line:42 msg:panic in main thread",
-        "PID", 666, // 666 : test pid
-        "TID", 666, // 666 : test tid
-        "UID", getuid(),
-        "SUMMARY", "Test rust panic summary log");
-}
-
-/**
- * @tc.name: QuerySelfFaultLogTest007
- * @tc.desc: query rust panic log
- * @tc.type: FUNC
- * @tc.require: issueI6HM7C
- */
-HWTEST_F(FaultloggerNativeInterfaceTest, QuerySelfFaultLogTest007, testing::ext::TestSize.Level3)
-{
-    const int maxQueryCount = 1;
-    SendRustPanicEvent();
-    sleep(3); // 3 : wait for event saving
-    auto results = QuerySelfFaultLog(FaultLogType::RUST_PANIC, maxQueryCount);
-    ASSERT_NE(nullptr, results);
-    while (results->HasNext()) {
-        auto result = results->Next();
-        if (result != nullptr) {
-            ASSERT_EQ(result->GetId(), getuid());
-            ASSERT_EQ(result->GetProcessId(), 666); // 666 : test pid
-            ASSERT_EQ(result->GetFaultReason(), "file:panic_maker/main.rs line:42 msg:panic in main thread");
-            ASSERT_EQ(result->GetFaultSummary(), "Test rust panic summary log");
-            GTEST_LOG_(INFO) << "finish check rust panic log";
-            break;
-        }
-    }
-}
-
 /**
  * @tc.name: FaultlogInfoTest001
  * @tc.desc: create faultloginfo object and check the getter&setter func
