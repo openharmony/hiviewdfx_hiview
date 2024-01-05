@@ -96,7 +96,7 @@
     },
     "Rule9":{
         "DirOrFile":"/data/log/bbox/",
-        "Subcatalog":"\\d{14}-\\d{8}/bootfail_info_\\d{1}",
+        "Subcatalog":"\\d{14}-\\d{8}/bootfail_info_0@|@\\d{14}-\\d{8}/bootfail_info_1@|@\\d{14}-\\d{8}/bootfail_info_2@|@\\d{14}-\\d{8}/bootfail_info_3@|@\\d{14}-\\d{8}/bootfail_info_4@|@\\d{14}-\\d{8}/bootfail_info_5@|@\\d{14}-\\d{8}/bootfail_info_6@|@\\d{14}-\\d{8}/bootfail_info_7@|@\\d{14}-\\d{8}/bootfail_info_8@|@\\d{14}-\\d{8}/bootfail_info_9",
         "featureId":"04_BOOTFAIL_00",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Fault Reason: ", "v_bootfailReason":"Fault Reason: (.*)"},
