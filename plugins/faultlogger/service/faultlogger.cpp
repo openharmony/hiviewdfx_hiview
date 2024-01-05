@@ -639,7 +639,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
         return nullptr;
     }
 
-    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::RUST_PANIC)) {
+    if ((faultType < FaultLogType::ALL) || (faultType > FaultLogType::APP_FREEZE)) {
         HIVIEW_LOGW("Unsupported fault type");
         return nullptr;
     }

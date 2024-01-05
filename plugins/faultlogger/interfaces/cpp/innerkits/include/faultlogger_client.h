@@ -118,7 +118,7 @@ void AddFaultLog(const FaultLogInfoInner &info);
  *
  * @param time  the time of happening fault(unix timestamp of Milliseconds)
  * @param logType  the type of fault log.
- * eg: NO_SPECIFIC,CPP_CRASH,JS_CRASH,APP_FREEZE,SYS_FREEZE,RUST_PANIC
+ * eg: CPP_CRASH,JS_CRASH,APP_FREEZE,SYS_FREEZE,RUST_PANIC
  * @param module name of module which happened fault
  * @param summary the summary of fault information
 */
@@ -131,7 +131,7 @@ void AddFaultLog(int64_t time, int32_t logType, const std::string &module, const
  * which belong to current pid and uid from event database
  *
  * @param faultType type of fault log.
- * eg: NO_SPECIFIC,CPP_CRASH,JS_CRASH,APP_FREEZE,SYS_FREEZE,RUST_PANIC
+ * eg: NO_SPECIFIC,CPP_CRASH,JS_CRASH,APP_FREEZE
  * @param maxNum max number of faultlog entries
  * @return when success query return unique_ptr of FaultLogQueryResult, otherwise return nullptr
 */
