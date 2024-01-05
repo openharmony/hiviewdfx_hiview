@@ -33,15 +33,15 @@
     static const char *logLabelTag = name
 
 #define HIVIEW_LOGD(format, ...) \
-    HILOG_IMPL(LOG_CORE, LOG_DEBUG, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_DEBUG, logLabelDomain, logLabelTag, "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
 #define HIVIEW_LOGI(format, ...) \
-    HILOG_IMPL(LOG_CORE, LOG_INFO, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_INFO, logLabelDomain, logLabelTag, "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
 #define HIVIEW_LOGW(format, ...) \
-    HILOG_IMPL(LOG_CORE, LOG_WARN, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_WARN, logLabelDomain, logLabelTag, "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
 #define HIVIEW_LOGE(format, ...) \
-    HILOG_IMPL(LOG_CORE, LOG_ERROR, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_ERROR, logLabelDomain, logLabelTag, "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
 #define HIVIEW_LOGF(format, ...) \
-    HILOG_IMPL(LOG_CORE, LOG_FATAL, logLabelDomain, logLabelTag, format, ##__VA_ARGS__)
+    HILOG_IMPL(LOG_CORE, LOG_FATAL, logLabelDomain, logLabelTag, "%" PUBLIC "s: " format, __func__, ##__VA_ARGS__)
 
 
 namespace OHOS::HiviewDFX {
