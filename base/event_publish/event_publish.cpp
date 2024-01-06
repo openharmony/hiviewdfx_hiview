@@ -49,7 +49,7 @@ std::string GetBundleNameById(int32_t uid)
     std::string bundleName;
     AppExecFwk::BundleMgrClient client;
     if (client.GetNameForUid(uid, bundleName) != 0) {
-        HIVIEW_LOGE("Failed to query bundleName from bms, uid=%{public}d.", uid);
+        HIVIEW_LOGW("Failed to query bundleName from bms, uid=%{public}d.", uid);
     } else {
         HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", uid, bundleName.c_str());
     }

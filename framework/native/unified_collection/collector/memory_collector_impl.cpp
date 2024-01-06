@@ -349,7 +349,7 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcess
             HIVIEW_LOGE("load string from %{public}s failed.", adjPath.c_str());
             continue;
         }
-        procMemory.adj = std::stoi(adj);
+        procMemory.adj = static_cast<int32_t>(std::strtol(adj.c_str(), nullptr, 0));
 
         procMemoryVec.emplace_back(procMemory);
     }
