@@ -206,7 +206,7 @@ void SysEventDatabase::UpdateClearMap()
         std::string name = splitNames[EVENT_NAME_INDEX];
         std::string domainNameStr = GetFileDomain(file) + name;
         nameLimitMap[domainNameStr]++;
-        int type = std::stoi(splitNames[EVENT_TYPE_INDEX]);
+        int type = std::strtol(splitNames[EVENT_TYPE_INDEX].c_str(), nullptr, 0);
         uint64_t fileSize = FileUtil::GetFileSize(file);
         if (clearMap_.find(type) == clearMap_.end()) {
             FileQueue fileQueue(CompareFileGreaterFunc);
@@ -296,7 +296,7 @@ bool SysEventDatabase::IsContainQueryArg(const std::string& file, const SysEvent
     }
     std::string eventName = splitStrs[EVENT_NAME_INDEX];
     std::string eventType = splitStrs[EVENT_TYPE_INDEX];
-    long long eventSeq = std::stoll(splitStrs[EVENT_SEQ_INDEX]);
+    long long eventSeq = std::strtoll(splitStrs[EVENT_SEQ_INDEX].c_str(), nullptr, 0);
     auto iter = nameSeqMap.find(eventName);
     if (iter != nameSeqMap.end() && iter->second <= queryArg.fromSeq) {
         return false;
