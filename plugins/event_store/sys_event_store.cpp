@@ -87,9 +87,6 @@ bool SysEventStore::OnEvent(std::shared_ptr<Event>& event)
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent->preserve_) {
         sysEventDbMgr_->SaveToStore(sysEvent);
-    } else {
-        HIVIEW_LOGI("do not preserve domain is %{public}s, eventName is %{public}s",
-            event->domain_.c_str(), event->eventName_.c_str());
     }
     return true;
 }
