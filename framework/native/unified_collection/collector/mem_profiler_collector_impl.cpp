@@ -89,9 +89,9 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
         config->responseLibraryMode_ = false;
     }
     config->pid_ = pid;
-    config->duration_ = duration;
+    config->duration_ = (uint32_t)duration;
     config->sampleInterval_ = (uint32_t)sampleInterval;
-    int fiveMinutes = 300;
+    uint32_t fiveMinutes = 300;
     config->statisticsInterval_ = fiveMinutes;
     HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);

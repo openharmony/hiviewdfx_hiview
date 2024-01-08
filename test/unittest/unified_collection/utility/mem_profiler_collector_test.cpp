@@ -25,7 +25,7 @@ using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 using namespace OHOS::Developtools::NativeDaemon;
 
-const std::string NATIVE_DAEMON_NAME("native_daemon");
+const static std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 50;
 constexpr int FINAL_TIME = 1000;
