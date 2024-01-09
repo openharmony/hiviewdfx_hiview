@@ -108,9 +108,7 @@ double CpuCalculator::CalculateCpuLoad(uint64_t currCpuLoad, uint64_t lastCpuLoa
         HIVIEW_LOGW("invalid num of max cpu load unit");
         return 0;
     }
-    constexpr uint64_t millToNano = 1000000;
-    constexpr uint64_t maxCpuLoadScale = 1024;
-    uint64_t maxCpuLoadOfSystemInStatPeriod = statPeriod * millToNano * maxCpuLoadUnit_ / maxCpuLoadScale;
+    uint64_t maxCpuLoadOfSystemInStatPeriod = statPeriod * maxCpuLoadUnit_;
     uint64_t cpuLoadInStatPeriod = currCpuLoad - lastCpuLoad;
     return ((cpuLoadInStatPeriod * 1.0) / maxCpuLoadOfSystemInStatPeriod);
 }
