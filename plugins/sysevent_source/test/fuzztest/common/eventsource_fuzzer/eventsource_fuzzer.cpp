@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 
 #include "sysevent_source.h"
+#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -60,6 +61,8 @@ Initializer g_initializer;
 
 static void SysEventSourceDumpTest(const uint8_t* data, size_t size)
 {
+    HiviewPlatform platform;
+    (void)platform.IsReady();
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
     g_eventSource.Dump(g_fd, {strData});
     g_eventSource.Dump(g_fd, {strData, strData});

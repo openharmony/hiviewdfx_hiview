@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "hiview_service.h"
+#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -57,6 +58,8 @@ Initializer g_initializer;
 
 static void HiviewServiceDumpFuzzTest(const uint8_t* data, size_t size)
 {
+    HiviewPlatform platform;
+    (void)platform.IsReady();
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
     g_hiviewService.DumpRequestDispatcher(g_fd, {});
     g_hiviewService.DumpRequestDispatcher(g_fd, {strData});
