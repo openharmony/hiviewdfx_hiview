@@ -331,10 +331,10 @@ CollectResult<std::string> IoCollectorImpl::ExportDiskStats(DiskStatsFilter filt
         HIVIEW_LOGE("create fileName=%{public}s failed.", fileName.c_str());
         return result;
     }
-    dprintf(fd, "%-13s%20s%20s%20s%20s%12s%12s%12s\n", "device", "sectorReadRate/s", "sectorWriteRate/s",
+    dprintf(fd, "%-13s\t%20s\t%20s\t%20s\t%20s\t%12s\t%12s\t%12s\n", "device", "sectorReadRate/s", "sectorWriteRate/s",
         "operReadRate/s", "operWriteRate/s", "readTime", "writeTime", "ioWait");
     for (auto &stats : diskStats) {
-        dprintf(fd, "%-13s%12.2f%12.2f%12.2f%12.2f%12.4f%12.4f%12" PRIu64 "\n",
+        dprintf(fd, "%-13s\t%12.2f\t%12.2f\t%12.2f\t%12.2f\t%12.4f\t%12.4f\t%12" PRIu64 "\n",
             stats.deviceName.c_str(), stats.sectorReadRate, stats.sectorWriteRate, stats.operReadRate,
             stats.operWriteRate, stats.readTimeRate, stats.writeTimeRate, stats.ioWait);
     }
@@ -462,9 +462,9 @@ CollectResult<std::string> IoCollectorImpl::ExportEMMCInfo()
         HIVIEW_LOGE("open file=%{public}s failed.", fileName.c_str());
         return result;
     }
-    dprintf(fd, "%-15s%15s%15s%15s%15s\n", "name", "manfid", "csd", "type", "capacity(GB)");
+    dprintf(fd, "%-15s\t%15s\t%15s\t%15s\t%15s\n", "name", "manfid", "csd", "type", "capacity(GB)");
     for (auto &mmcInfo : mmcInfos) {
-        dprintf(fd, "%-15s%-12s%-35s%-12s%12.2f\n", mmcInfo.name.c_str(), mmcInfo.manfid.c_str(),
+        dprintf(fd, "%-15s\t%-12s\t%-35s\t%-12s\t%12.2f\n", mmcInfo.name.c_str(), mmcInfo.manfid.c_str(),
             mmcInfo.csd.c_str(), mmcInfo.type.c_str(), static_cast<double>(mmcInfo.size) / EMMC_INFO_SIZE_RATIO);
     }
     close(fd);
@@ -599,10 +599,10 @@ CollectResult<std::string> IoCollectorImpl::ExportAllProcIoStats()
         HIVIEW_LOGE("open file=%{public}s failed.", fileName.c_str());
         return result;
     }
-    dprintf(fd, "%-13s%12s%12s%12s%12s%12s%12s%20s%20s\n", "pid", "pname", "fg/bg",
+    dprintf(fd, "%-13s\t%12s\t%12s\t%12s\t%12s\t%12s\t%12s\t%20s\t%20s\n", "pid", "pname", "fg/bg",
         "rchar/s", "wchar/s", "syscr/s", "syscw/s", "readBytes/s", "writeBytes/s");
     for (auto &procIoStats : allProcIoStats) {
-        dprintf(fd, "%-12d%12s%12d%12.2f%12.2f%12.2f%12.2f%12.2f%12.2f\n",
+        dprintf(fd, "%-12d\t%12s\t%12d\t%12.2f\t%12.2f\t%12.2f\t%12.2f\t%12.2f\t%12.2f\n",
             procIoStats.pid, procIoStats.name.c_str(), procIoStats.ground, procIoStats.rcharRate, procIoStats.wcharRate,
             procIoStats.syscrRate, procIoStats.syscwRate, procIoStats.readBytesRate, procIoStats.writeBytesRate);
     }
@@ -650,10 +650,10 @@ CollectResult<std::string> IoCollectorImpl::ExportSysIoStats()
         HIVIEW_LOGE("open file=%{public}s failed.", fileName.c_str());
         return result;
     }
-    dprintf(fd, "%-12s%12s%12s%12s%20s%20s\n",
+    dprintf(fd, "%-12s\t%12s\t%12s\t%12s\t%20s\t%20s\n",
         "rchar/s", "wchar/s", "syscr/s", "syscw/s", "readBytes/s", "writeBytes/s");
     auto &sysIoStats = collectSysIoStatsResult.data;
-    dprintf(fd, "%-12.2f%12.2f%12.2f%12.2f%12.2f%12.2f\n", sysIoStats.rcharRate, sysIoStats.wcharRate,
+    dprintf(fd, "%-12.2f\t%12.2f\t%12.2f\t%12.2f\t%12.2f\t%12.2f\n", sysIoStats.rcharRate, sysIoStats.wcharRate,
         sysIoStats.syscrRate, sysIoStats.syscwRate, sysIoStats.readBytesRate, sysIoStats.writeBytesRate);
     close(fd);
 
