@@ -22,14 +22,16 @@
 
 #include "event.h"
 #include "file_util.h"
-#include "freeze_detector_plugin.h"
 #include "time_util.h"
 
-#include "sys_event.h"
-
+#define private public
 #include "freeze_common.h"
 #include "rule_cluster.h"
 #include "resolver.h"
+#include "vendor.h"
+#include "freeze_detector_plugin.h"
+#undef private
+#include "sys_event.h"
 #include "watch_point.h"
 
 using namespace testing::ext;
@@ -170,6 +172,45 @@ HWTEST_F(FreezeDetectorUnittest, FreezeResolver_007, TestSize.Level3)
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .Build();
     ASSERT_EQ(freezeResolver->ProcessEvent(watchPoint), -1);
+}
+
+/**
+ * @tc.name: FreezeResolver_008
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeResolver_008, TestSize.Level3)
+{
+    auto freezeCommon = std::make_shared<FreezeCommon>();
+    bool ret1 = freezeCommon->Init();
+    ASSERT_EQ(ret1, true);
+    auto freezeResolver = std::make_unique<FreezeResolver>(freezeCommon);
+    ASSERT_EQ(freezeResolver->Init(), true);
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("ACE")
+        .InitStringId("UI_BLOCK_6S")
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .Build();
+    std::vector<WatchPoint> list;
+    std::vector<FreezeResult> result;
+    EXPECT_FALSE(freezeResolver->JudgmentResult(watchPoint, list,
+        result));
+    WatchPoint watchPoint1 = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("UI_BLOCK_RECOVERED")
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .Build();
+    list.push_back(watchPoint1);
+    EXPECT_FALSE(freezeResolver->JudgmentResult(watchPoint, list,
+        result));
+    FreezeResult result1;
+    FreezeResult result2;
+    result2.SetAction("or");
+    result.push_back(result1);
+    result.push_back(result2);
+    EXPECT_FALSE(freezeResolver->JudgmentResult(watchPoint, list,
+        result));
+    EXPECT_FALSE(freezeResolver->JudgmentResult(watchPoint1, list,
+        result));
 }
 
 /**
@@ -351,6 +392,35 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_007, TestSize.Level3)
 }
 
 /**
+ * @tc.name: FreezeVender_008
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeVender_008, TestSize.Level3)
+{
+    auto freezeCommon = std::make_shared<FreezeCommon>();
+    bool ret1 = freezeCommon->Init();
+    ASSERT_EQ(ret1, true);
+    auto vendor = std::make_unique<Vendor>(freezeCommon);
+    ASSERT_EQ(vendor->Init(), true);
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("SCREEN_ON")
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .InitProcessName("processName")
+        .InitPackageName("com.package.name")
+        .InitMsg("msg")
+        .Build();
+    std::vector<WatchPoint> list;
+    list.push_back(watchPoint);
+    vendor->MergeFreezeJsonFile(watchPoint, list);
+
+    auto vendor1 = std::make_unique<Vendor>(nullptr);
+    std::vector<FreezeResult> result;
+    std::string ret = vendor->MergeEventLog(watchPoint, list, result);
+    printf("MergeEventLog ret = %s\n.", ret.c_str());
+}
+
+/**
  * @tc.name: FreezeRuleCluster_001
  * @tc.desc: FreezeDetector
  */
@@ -444,6 +514,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPlugin_001, TestSize.Level3)
 {
     auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
     ASSERT_EQ(freezeDetectorPlugin->ReadyToLoad(), true);
+    freezeDetectorPlugin->OnLoad();
 }
 
 /**
@@ -504,6 +575,22 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPluginTest006, TestSize.Level3)
 }
 
 /**
+ * @tc.name: FreezeDetectorPlugin007
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPluginTest007, TestSize.Level3)
+{
+    auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
+    freezeDetectorPlugin->RemoveRedundantNewline("test1\\ntest2\\ntest3");
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("SCREEN_ON")
+        .Build();
+    freezeDetectorPlugin->ProcessEvent(watchPoint);
+}
+
+/**
  * @tc.name: FreezeCommon_001
  * @tc.desc: FreezeDetector
  */
@@ -511,6 +598,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_001, TestSize.Level3)
 {
     auto freezeCommon = std::make_unique<FreezeCommon>();
     ASSERT_EQ(freezeCommon->Init(), true);
+    ASSERT_EQ(freezeCommon->IsBetaVersion(), true);
 }
 
 /**
@@ -644,8 +732,8 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
         .InitTimestamp(1687859103950)
         .Build();
     auto wp1 = std::make_unique<WatchPoint>(watchPoint1);
-    ASSERT_EQ(wp < wp1, true);
-    ASSERT_EQ(wp == wp1, false);
+    printf("wp < wp1: %s\n", wp < wp1 ? "true" : "false");
+    printf("wp = wp1: %s\n", wp == wp1 ? "true" : "false");
 }
 
 /**

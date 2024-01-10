@@ -53,7 +53,9 @@ group("unittest") {
   testonly = true
   deps = [
     "config/test:EventloggerConfigTest",
+    "log_catcher/test:EventloggerCatcherTest",
     "test:ActiveKeyEventTest",
+    "test:EventLoggerTest",
     "test:EventloggerPluginTest",
   ]
 }

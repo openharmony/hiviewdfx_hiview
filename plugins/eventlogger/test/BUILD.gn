@@ -74,3 +74,24 @@ ohos_unittest("ActiveKeyEventTest") {
     "input:libmmi-client",
   ]
 }
+
+ohos_unittest("EventLoggerTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/event_logger_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_core:hiview_core",
+    "$hiview_eventlogger:eventlogger",
+    "$hiview_eventlogger/config:eventlogger_config",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "input:libmmi-client",
+  ]
+}
