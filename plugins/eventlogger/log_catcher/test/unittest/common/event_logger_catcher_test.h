@@ -26,8 +26,8 @@ public:
     int GetFdSize(int32_t fd);
     std::string GetFormatTime(unsigned long timestamp);
     int JudgmentsFileSize(int minQuantity, const std::string sender);
-    int StartCreate(const std::string sender, const std::string name, const std::string action,
-        int pid, const std::string packageName, int interval, int minQuantity = 500);
+    int StartCreate(const std::string action, int pid,
+        const std::string packageName, int interval, int minQuantity = 500);
 private:
     std::string path_ = "/data/test/log";
     std::string logFile_ = "";
