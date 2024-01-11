@@ -118,7 +118,9 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
     std::string logFile = info.logPath;
     if (logFile != "" && FileUtil::FileExists(logFile)) {
         if (!FileUtil::RemoveFile(logFile)) {
-            HIVIEW_LOGW("remove logFile %{public}s filed.", logFile.c_str());
+            HIVIEW_LOGW("remove logFile %{public}s failed.", logFile.c_str());
+        } else {
+            HIVIEW_LOGI("remove logFile %{public}s.", logFile.c_str());
         }
     }
     store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, info.faultLogType, info.module),
