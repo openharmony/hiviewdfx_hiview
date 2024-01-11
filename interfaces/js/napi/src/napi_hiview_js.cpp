@@ -20,6 +20,7 @@
 #include "logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -87,6 +88,8 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
         || !HiviewNapiUtil::ParseStringValue(env, "dest", params[DEST_DIR_INDEX], destDir)) {
         return result;
     }
+    HIVIEW_LOGI("type:%{public}s, name:%{public}s, dir: %{public}s",
+        logType.c_str(), StringUtil::HideSnInfo(logName).c_str(), destDir.c_str());
     if (!HiviewNapiUtil::CheckDirPath(destDir)) {
         HIVIEW_LOGE("dest param is invalid: %{public}s", destDir.c_str());
         HiviewNapiUtil::ThrowParamContentError(env, "dest");
@@ -148,6 +151,7 @@ static napi_value Remove(napi_env env, napi_callback_info info)
         || !HiviewNapiUtil::ParseStringValue(env, "logName", params[LOG_NAME_INDEX], logName)) {
         return result;
     }
+    HIVIEW_LOGI("type: %{public}s, name: %{public}s", logType.c_str(), StringUtil::HideSnInfo(logName).c_str());
     int32_t retCode = HiviewServiceAgent::GetInstance().Remove(logType, logName);
     if (retCode != 0) {
         HIVIEW_LOGI("retCode: %{public}u.", retCode);

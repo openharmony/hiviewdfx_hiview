@@ -429,6 +429,23 @@ std::string FormatCmdLine(const std::string& cmdLine)
     }
     return cmdLine.substr(startPos, endPos - startPos);
 }
+
+std::string HideSnInfo(const std::string& str)
+{
+    if (str.empty()) {
+        return "";
+    }
+    std::string patternSn = R"(_([-=+$a-zA-Z0-9\[\)\>]{12,50})_)";
+    std::regex pattern(patternSn);
+    std::smatch result;
+    if (regex_search(str, result, pattern)) {
+        const size_t regexSize = 2;
+        if (result.size() == regexSize) {
+            return StringUtil::ReplaceStr(str, result[1].str(), "******");
+        }
+    }
+    return str;
+}
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS

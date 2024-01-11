@@ -154,6 +154,8 @@ std::string EscapeJsonStringValue(const std::string &value);
 std::string UnescapeJsonStringValue(const std::string &value);
 
 std::string FormatCmdLine(const std::string& cmdLine);
+
+std::string HideSnInfo(const std::string& str);
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS
