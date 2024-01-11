@@ -27,7 +27,7 @@ constexpr int32_t MAX_FILE_NUM = 10000;
 
 int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos)
 {
-    HIVIEW_LOGI("start list.");
+    HIVIEW_LOGI("type = %{public}s.", logType.c_str());
     auto remote = Remote();
     if (remote == nullptr) {
         HIVIEW_LOGE("remote service is null.");
