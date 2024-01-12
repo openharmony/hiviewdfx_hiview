@@ -155,6 +155,7 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     } else {
         HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
     }
+    HIVIEW_LOGI("MergeFreezeJsonFile oss size: %{public}zu.", oss.str().size());
     FileUtil::SaveStringToFd(jsonFd, oss.str());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "domain", watchPoint.GetDomain());
     FreezeJsonUtil::WriteKeyValue(jsonFd, "stringId", watchPoint.GetStringId());
@@ -262,6 +263,7 @@ std::string Vendor::MergeEventLog(
     std::ostringstream body;
     bool isFileExists = true;
     InitLogBody(list, body, isFileExists);
+    HIVIEW_LOGI("After Init --body size: %{public}zu.", body.str().size());
     if (!isFileExists) {
         HIVIEW_LOGE("Failed to open the file.");
         return "";
