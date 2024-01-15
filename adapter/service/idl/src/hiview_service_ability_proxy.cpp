@@ -67,14 +67,12 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
 int32_t HiviewServiceAbilityProxy::Copy(const std::string& logType, const std::string& logName,
     const std::string& dest)
 {
-    HIVIEW_LOGI("start copy.");
     return CopyOrMoveFile(logType, logName, dest, false);
 }
 
 int32_t HiviewServiceAbilityProxy::Move(const std::string& logType, const std::string& logName,
     const std::string& dest)
 {
-    HIVIEW_LOGI("start move.");
     return CopyOrMoveFile(logType, logName, dest, true);
 }
 

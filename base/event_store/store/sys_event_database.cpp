@@ -335,7 +335,7 @@ int SysEventDatabase::QueryByFiles(SysEventQuery& sysEventQuery, EntryQueue& ent
             break;
         }
     }
-    HIVIEW_LOGI("query end, limit=%{public}d, totalNum=%{public}d", sysEventQuery.limit_, totalNum);
+    HIVIEW_LOGD("query end, limit=%{public}d, totalNum=%{public}d", sysEventQuery.limit_, totalNum);
     return DOC_STORE_SUCCESS;
 }
 } // EventStore

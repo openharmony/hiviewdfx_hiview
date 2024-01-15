@@ -100,8 +100,6 @@ HiviewServiceAbility::~HiviewServiceAbility()
 
 void HiviewServiceAbility::StartServiceAbility(int sleepS)
 {
-    HIVIEW_LOGI("called");
-
     sptr<ISystemAbilityManager> serviceManager;
 
     int retryTimeout = MAXRETRYTIMEOUT;

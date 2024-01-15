@@ -47,7 +47,7 @@ bool SysEventDocLruCache::Add(const LruCacheKey& key, const LruCacheValue& value
     lruList_.push_front(key);
     auto valuePair = LruCacheValuePair(lruList_.begin(), value);
     lruCache_.insert(std::make_pair(key, valuePair));
-    HIVIEW_LOGI("put sysEventDoc domain=%{public}s, name=%{public}s", key.first.c_str(), key.second.c_str());
+    HIVIEW_LOGD("put sysEventDoc domain=%{public}s, name=%{public}s", key.first.c_str(), key.second.c_str());
 
     if (lruList_.size() > capacity_) {
         return Remove(lruList_.back());
