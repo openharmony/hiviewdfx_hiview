@@ -225,7 +225,6 @@ void HiviewService::PrintUsage(int fd) const
 
 int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::string& destFilePath)
 {
-    HIVIEW_LOGI("start");
     int srcFd = open(srcFilePath.c_str(), O_RDONLY);
     if (srcFd == -1) {
         HIVIEW_LOGE("failed to open source file, src=%{public}s", srcFilePath.c_str());
@@ -260,19 +259,16 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
     if (chmod(destFilePath.c_str(), S_IRUSR | S_IWUSR | S_IROTH)) {
         HIVIEW_LOGI("Failed to chmod file.");
     }
-    HIVIEW_LOGI("end");
     return 0;
 }
 
 int32_t HiviewService::Copy(const std::string& srcFilePath, const std::string& destFilePath)
 {
-    HIVIEW_LOGI("copy file");
     return CopyFile(srcFilePath, destFilePath);
 }
 
 int32_t HiviewService::Move(const std::string& srcFilePath, const std::string& destFilePath)
 {
-    HIVIEW_LOGI("move file");
     int copyResult = CopyFile(srcFilePath, destFilePath);
     if (copyResult != 0) {
         HIVIEW_LOGW("copy file failed, result: %{public}d", copyResult);
