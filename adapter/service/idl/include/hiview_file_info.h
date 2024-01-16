@@ -20,12 +20,11 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct HiviewFileInfo : public Parcelable {
+struct HiviewFileInfo {
     HiviewFileInfo(std::string name, time_t mtime, uint64_t size)
         : name(name), mtime(mtime), size(size) {};
-
-    bool Marshalling(Parcel& outParcel) const override;
-    static HiviewFileInfo* Unmarshalling(Parcel &inParcel);
+    void* GetData(uint32_t& dataSize) const;
+    static HiviewFileInfo ParseData(const char* data, const uint32_t dataSize);
 
     std::string name;
     time_t mtime;

@@ -87,5 +87,6 @@ ohos_unittest("AdapterUtilityOhosTest") {
   external_deps = [
     "init:libbeget_proxy",
     "init:libbegetutil",
+    "ipc:ipc_single",
   ]
 }

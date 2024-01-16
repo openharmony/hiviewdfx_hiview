@@ -26,6 +26,7 @@ ohos_source_set("hiview_utility") {
   public_configs = [ ":hiview_utils_config" ]
 
   sources = [
+    "ash_memory_utils.cpp",
     "common_utils.cpp",
     "dynamic_module.cpp",
     "file_util.cpp",

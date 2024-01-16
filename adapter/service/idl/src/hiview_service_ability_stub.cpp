@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "accesstoken_kit.h"
+#include "ash_memory_utils.h"
 #include "client/trace_collector.h"
 #include "errors.h"
 #include "hiview_err_code.h"
@@ -29,6 +30,8 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
+const std::string ASH_MEM_NAME = "HiviewLogLibrary SharedMemory";
+constexpr uint32_t ASH_MEM_SIZE = 107 * 5000; // 535k
 
 const std::unordered_map<uint32_t, std::string> ALL_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
@@ -198,21 +201,24 @@ int32_t HiviewServiceAbilityStub::HandleListRequest(MessageParcel& data, Message
     if (ret != ERR_OK) {
         return ret;
     }
-    auto fileNum = fileInfos.size();
-    const size_t listFileNumMax = 1200;
-    if (fileNum > listFileNumMax) {
-        HIVIEW_LOGW("File info list size: %{public}zu, keep the first %{public}zu", fileNum, listFileNumMax);
-        fileNum = listFileNumMax;
-    }
-    if (!reply.WriteInt32(fileNum)) {
-        HIVIEW_LOGE("write result failed, ret: %{public}d", ret);
+    HIVIEW_LOGW("file list num:%{public}d", fileInfos.size());
+    sptr<Ashmem> ashmem = AshMemoryUtils::GetAshmem(ASH_MEM_NAME, ASH_MEM_SIZE);
+    if (ashmem == nullptr) {
+        HIVIEW_LOGE("ge ashmem failed.");
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
-    for (size_t i = 0; i < fileNum; ++i) {
-        if (!reply.WriteParcelable(&fileInfos[i])) {
-            HIVIEW_LOGE("write file info failed.");
-            return HiviewNapiErrCode::ERR_DEFAULT;
-        }
+    std::vector<uint32_t> allSize;
+    if (!AshMemoryUtils::WriteBulkData<HiviewFileInfo>(fileInfos, ashmem, ASH_MEM_SIZE, allSize)) {
+        HIVIEW_LOGE("WriteBulkData failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
+    if (!reply.WriteUInt32Vector(allSize)) {
+        HIVIEW_LOGE("write size failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
+    if (!reply.WriteAshmem(ashmem)) {
+        HIVIEW_LOGE("write ashmem failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
     }
     return ERR_OK;
 }
