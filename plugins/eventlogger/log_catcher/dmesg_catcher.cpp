@@ -107,7 +107,7 @@ std::string DmesgCatcher::DmesgSaveTofile()
         return fullPath;
     }
     std::string realPath;
-    if (!FileUtil::PathToRealPath(fullPath,realPath)) {
+    if (!FileUtil::PathToRealPath(fullPath, realPath)) {
         HIVIEW_LOGI("Fail to verify realpath %s.", fullPath.c_str());
         return "";
     }
