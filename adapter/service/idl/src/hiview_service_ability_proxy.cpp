@@ -15,6 +15,7 @@
 
 #include "hiview_service_ability_proxy.h"
 
+#include "ash_memory_utils.h"
 #include "collect_result.h"
 #include "logger.h"
 
@@ -22,7 +23,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiviewServiceAbilityProxy");
-constexpr int32_t MAX_FILE_NUM = 10000;
 }
 
 int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos)
@@ -47,20 +47,25 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
         HIVIEW_LOGE("send request failed, error is %{public}d.", res);
         return res;
     }
-    int32_t fileCount = 0;
-    if (!reply.ReadInt32(fileCount) || fileCount > MAX_FILE_NUM) {
-        HIVIEW_LOGE("read file count failed, count: %{public}d", fileCount);
+    std::vector<uint32_t> allSize;
+    if (!reply.ReadUInt32Vector(&allSize)) {
+        HIVIEW_LOGE("read size error.");
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
-    for (int32_t i = 0; i < fileCount; ++i) {
-        std::unique_ptr<HiviewFileInfo> fileInfoPtr(reply.ReadParcelable<HiviewFileInfo>());
-        if (!fileInfoPtr) {
-            HIVIEW_LOGE("read file info failed.");
-            fileInfos.clear();
-            return HiviewNapiErrCode::ERR_DEFAULT;
-        }
-        fileInfos.push_back(*fileInfoPtr);
+    sptr<Ashmem> ashmem = reply.ReadAshmem();
+    if (ashmem == nullptr) {
+        HIVIEW_LOGE("read ashmem failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
     }
+    if (!ashmem->MapReadAndWriteAshmem()) {
+        HIVIEW_LOGE("map ash failed.");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
+    if (!AshMemoryUtils::ReadBulkData<HiviewFileInfo>(ashmem, allSize, fileInfos)) {
+        HIVIEW_LOGE("ReadBulkData failed");
+        return HiviewNapiErrCode::ERR_DEFAULT;
+    }
+    HIVIEW_LOGW("file list num:%{public}d", fileInfos.size());
     return ERR_OK;
 }
 

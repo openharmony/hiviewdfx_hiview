@@ -20,8 +20,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "ash_memory_utils.h"
 #include "common_utils.h"
 #include "file_util.h"
+#include "securec.h"
 #include "socket_util.h"
 #include "time_util.h"
 
@@ -53,6 +55,39 @@ std::string GenerateLogFileName(std::string& testCaseName, int index)
 {
     return GetLogDir(testCaseName) + "testFile" + std::to_string(index);
 }
+
+struct AshMemTestStruct {
+    explicit AshMemTestStruct(std::string data) : data(data) {};
+
+    void* GetData(uint32_t& dataSize) const
+    {
+        auto dataLen = data.length() + 1;
+        char* buff = reinterpret_cast<char *>(malloc(dataLen));
+        if (buff == nullptr) {
+            return nullptr;
+        }
+        auto ret = memset_s(buff, dataLen, 0, dataLen);
+        if (ret != EOK) {
+            return nullptr;
+        }
+
+        ret = memcpy_s(buff, dataLen, data.c_str(), data.length());
+        if (ret != EOK) {
+            return nullptr;
+        }
+        dataSize = dataLen;
+        return buff;
+    }
+
+    static AshMemTestStruct ParseData(const char* dataInput, const uint32_t dataSize)
+    {
+        if (dataInput == nullptr || dataInput[dataSize - 1] != 0) {
+            return AshMemTestStruct("");
+        }
+        return AshMemTestStruct(dataInput);
+    }
+    std::string data;
+};
 }
 
 void AdapterUtilityOhosTest::SetUpTestCase() {}
@@ -390,6 +425,31 @@ HWTEST_F(AdapterUtilityOhosTest, FileUtilOhosTest013, testing::ext::TestSize.Lev
     (void)FileUtil::RenameFile(GenerateLogFileName(caseName, SUFFIX_0),
         GenerateLogFileName(caseName, SUFFIX_1));
     ASSERT_TRUE(true);
+}
+
+HWTEST_F(AdapterUtilityOhosTest, AshMemoryUtilsOhosTest001, testing::ext::TestSize.Level3)
+{
+    std::vector<AshMemTestStruct> dataIn = {
+        AshMemTestStruct("testData1"),
+        AshMemTestStruct("testData2"),
+        AshMemTestStruct("testData3"),
+        AshMemTestStruct("testData4"),
+    };
+    const uint32_t memSize = 256;
+    auto ashmem = AshMemoryUtils::GetAshmem("ashMemTest", memSize);
+    if (ashmem == nullptr) {
+        ASSERT_TRUE(false);
+    }
+    std::vector<uint32_t> allSize;
+    bool retIn = AshMemoryUtils::WriteBulkData<AshMemTestStruct>(dataIn, ashmem, memSize, allSize);
+    ASSERT_TRUE(retIn);
+    std::vector<AshMemTestStruct> dataOut;
+    bool retOut = AshMemoryUtils::ReadBulkData<AshMemTestStruct>(ashmem, allSize, dataOut);
+    ASSERT_TRUE(retOut);
+    ASSERT_TRUE(dataIn.size() == dataOut.size());
+    for (size_t i = 0; i < dataIn.size(); i++) {
+        ASSERT_EQ(dataIn[i].data, dataOut[i].data);
+    }
 }
 }
 }
