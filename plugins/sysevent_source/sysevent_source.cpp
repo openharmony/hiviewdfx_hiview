@@ -166,7 +166,7 @@ static void ShowUsage(int fd, const std::vector<std::string>& cmds)
 
 void SysEventSource::Dump(int fd, const std::vector<std::string>& cmds)
 {
-    if (cmds.size() >= 2) { // args from the second item
+    if (cmds.size() >= 2) { // 2：args from the second item
         std::string arg1 = cmds[1];
         if (arg1 == "sum") {
             sysEventStat_->StatSummary(fd);

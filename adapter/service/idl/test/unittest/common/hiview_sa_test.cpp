@@ -88,8 +88,6 @@ HWTEST_F(HiviewSATest, CommonTest002, testing::ext::TestSize.Level3)
         printf("hidumper -s 1201 fail!\r\n");
         FAIL();
     }
-
-
 }
 }
 }

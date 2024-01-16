@@ -384,11 +384,11 @@ HWTEST_F(EventRawEncodedTest, RawDataBuilderJsonParserTest002, testing::ext::Tes
  */
 HWTEST_F(EventRawEncodedTest, RawDataBuilderJsonParserTest003, testing::ext::TestSize.Level1)
 {
-    std::string rawSysEventStr = R"~({"domain_":"KERNEL_VENDOR","name_":"POWER_KEY",
-        "type_":1,"time_":1502603794820,"tz_":"+0800","pid_":1751,"tid_":1751,"uid_":0,
-        "id_":"17835276947892625495","trace_flag_":3,"traceid_":"a92ab1ea12c7144",
-        "spanid_":"0","pspanid_":"0","key1":"-300","key2":[-300, 300],
-        "key3":3.4,"key4":"[3.4,-3.4]","info_":"","level_":"CRITICAL","seq_":972})~";
+    std::string rawSysEventStr = R"~({"domain_":"KERNEL_VENDOR", "name_":"POWER_KEY",
+        "type_":1, "time_":1502603794820, "tz_":"+0800", "pid_":1751, "tid_":1751, "uid_":0,
+        "id_":"17835276947892625495", "trace_flag_":3, "traceid_":"a92ab1ea12c7144",
+        "spanid_":"0", "pspanid_":"0", "key1":"-300", "key2":[-300, 300],
+        "key3":3.4, "key4":"[3.4,-3.4]", "info_":"", "level_":"CRITICAL", "seq_":972})~";
     auto parser = std::make_shared<RawDataBuilderJsonParser>(rawSysEventStr);
     ASSERT_TRUE(parser != nullptr);
     auto eventBuilder = parser->Parse();
