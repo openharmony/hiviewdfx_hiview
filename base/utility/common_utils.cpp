@@ -106,7 +106,7 @@ bool IsTheProcessExist(pid_t pid)
 {
     int ret = syscall(SYS_tgkill, pid, pid, 0);
     if (ret != 0 && errno == ESRCH) {
-         return false;
+        return false;
     }
     return true;
 }

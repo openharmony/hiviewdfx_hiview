@@ -239,9 +239,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse003, testing::ext::TestSize.Level3)
     /**
      * @tc.steps: step1. create base sys event
      */
-    std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0})~";
+    std::string jsonStr = R"~({"domain_":"DEMO", "name_":"VALUE_PARSE001", "type_":1, "tz_":"+0800",
+        "time_":1620271291188, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10",
+        "pspanid_":"20", "trace_flag_":4, "FLOAT_VAL1":-1.0, "FLOAT_VAL2":1.0})~";
 
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     ASSERT_TRUE(sysEvent != nullptr);
@@ -262,9 +262,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse004, testing::ext::TestSize.Level3)
     /**
      * @tc.steps: step1. create base sys event
      */
-    std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":-6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0,)~";
+    std::string jsonStr = R"~({"domain_":"DEMO", "name_":"VALUE_PARSE001", "type_":1, "tz_":"+0800",
+        "time_":1620271291188, "pid_":6527, "tid_":-6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10",
+        "pspanid_":"20", "trace_flag_":4, "FLOAT_VAL1":-1.0, "FLOAT_VAL2":1.0,)~";
     jsonStr.append(R"~("FLOAT_VAL3":)~");
     jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<int64_t>::min()) * SCALE_FACTOR)));
     jsonStr.append(R"~("FLOAT_VAL4":)~");
@@ -308,9 +308,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse005, testing::ext::TestSize.Level3)
     /**
      * @tc.steps: step1. create base sys event
      */
-    std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0,)~";
+    std::string jsonStr = R"~({"domain_":"DEMO", "name_":"VALUE_PARSE001", "type_":1, "tz_":"+0800",
+        "time_":1620271291188, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10",
+        "pspanid_":"20", "trace_flag_":4, "FLOAT_VAL1":-1.0, "FLOAT_VAL2":1.0,)~";
     jsonStr.append(R"~("FLOAT_VAL3":)~");
     jsonStr.append(std::to_string((static_cast<double>(std::numeric_limits<uint64_t>::min()) * SCALE_FACTOR)));
     jsonStr.append(R"~("FLOAT_VAL4":)~");
@@ -354,9 +354,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse006, testing::ext::TestSize.Level3)
     /**
      * @tc.steps: step1. create base sys event
      */
-    std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0})~";
+    std::string jsonStr = R"~({"domain_":"DEMO", "name_":"VALUE_PARSE001", "type_":1, "tz_":"+0800",
+        "time_":1620271291188, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10",
+        "pspanid_":"20", "trace_flag_":4, "FLOAT_VAL1":-1.0, "FLOAT_VAL2":1.0})~";
 
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     ASSERT_TRUE(sysEvent != nullptr);
@@ -389,9 +389,9 @@ HWTEST_F(SysEventTest, TestSysEventValueParse007, testing::ext::TestSize.Level3)
     /**
      * @tc.steps: step1. create base sys event
      */
-    std::string jsonStr = R"~({"domain_":"DEMO","name_":"VALUE_PARSE001","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,
-        "FLOAT_VAL1":-1.0,"FLOAT_VAL2":1.0})~";
+    std::string jsonStr = R"~({"domain_":"DEMO", "name_":"VALUE_PARSE001", "type_":1, "tz_":"+0800",
+        "time_":1620271291188, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10",
+        "pspanid_":"20", "trace_flag_":4, "FLOAT_VAL1":-1.0, "FLOAT_VAL2":1.0})~";
 
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     ASSERT_TRUE(sysEvent != nullptr);

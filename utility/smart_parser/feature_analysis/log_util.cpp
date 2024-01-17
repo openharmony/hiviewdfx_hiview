@@ -128,7 +128,8 @@ bool LogUtil::IsTestModel(const string& sourceFile, const string& name,
         HIVIEW_LOGI("test dir exist.");
         std::string sourceFileName = StringUtil::GetRrightSubstr(sourceFile, "/");
         std::string dirOrFileName = StringUtil::GetRrightSubstr(name, "/");
-        std::string fileName = pattern.find("/") != std::string::npos ? StringUtil::GetRrightSubstr(pattern, "/") : pattern;
+        std::string fileName = pattern.find("/") != std::string::npos ?
+            StringUtil::GetRrightSubstr(pattern, "/") : pattern;
         smatch result;
         if (regex_match(sourceFileName, result, regex(dirOrFileName)) ||
             regex_match(sourceFileName, result, regex(fileName))) {

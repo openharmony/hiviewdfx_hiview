@@ -184,5 +184,5 @@ bool DomainRule::FindEvent(const std::string &eventName) const
         return eventlist.find(eventName) == eventlist.end();
     }
 }
-}// namespace HiviewDFX
-}// namespace OHOS
+} // namespace HiviewDFX
+} // namespace OHOS
