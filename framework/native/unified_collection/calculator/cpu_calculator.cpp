@@ -91,9 +91,20 @@ uint64_t CpuCalculator::GetMaxStCpuLoad()
 
 uint64_t CpuCalculator::GetMaxStCpuLoadWithSMT()
 {
-    constexpr uint32_t capDiscountInMt = 65;
-    uint64_t maxStCpuLoadSum = GetMaxStCpuLoad();
-    maxStCpuLoadSum = maxStCpuLoadSum * capDiscountInMt / 100; // 100: %
+    uint64_t maxStCpuLoadSum = 0;
+    for (uint32_t cpuCoreIndex = 0; cpuCoreIndex < numOfCpuCores_; cpuCoreIndex++) {
+        if (cpuCoreIndex >= cpuDmipses_.size()) {
+            HIVIEW_LOGW("failed to get max st load with smt from cpu=%{public}u", cpuCoreIndex);
+            continue;
+        }
+        uint32_t tmpDmipse = cpuDmipses_[cpuCoreIndex];
+        constexpr uint32_t maxIndexOfSmallCore = 3; // small cores do not support smt
+        if (cpuCoreIndex > maxIndexOfSmallCore) {
+            constexpr uint32_t capDiscount = 65;
+            tmpDmipse = tmpDmipse * capDiscount / 100; // 100: %
+        }
+        maxStCpuLoadSum += tmpDmipse;
+    }
     return maxStCpuLoadSum;
 }
 
