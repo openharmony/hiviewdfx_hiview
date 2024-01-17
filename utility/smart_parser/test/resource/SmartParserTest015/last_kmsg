@@ -1409,10 +1409,8 @@
 <6>[   10.950742] [I/USB_PNP_NOTIFY] UsbPnpNotifyCallback: action=0x5
 <6>[   10.967561] [I/kevent] HdfKeventDriverOpen:kevent usecount=7
 <3>[   10.968459] [E/HDF_AUDIO_KADM] [ControlHostElemUnloadCard][line:168]: get hdmi device fail! hdf_audio_codec_hdmi_dev0
-<6>[   11.000144] android_work: sent uevent USB_STATE=CONNECTED
 <6>[   11.021875] [I/xpm_kernel]test_print_info: /system/lib/libworkschedservice.z.so -> type: dm, info: offset=0x11830 size=0x33320
 <6>[   11.021875] 
-<6>[   11.029784] android_work: sent uevent USB_STATE=CONFIGURED
 <14>[   11.366763] [pid=1][PARAM][INFO][param_service.c:173]Handle set param msgId 5 pid 256 key: ohos.ctl.start
 <14>[   11.366941] [pid=1][Init][INFO][init_service_manager.c:1088]Start service wifi_manager_service|1123#0#load##-1#
 <14>[   11.367866] [pid=1][Init][INFO][init_common_service.c:534]Service wifi_manager_service(pid 861) started
