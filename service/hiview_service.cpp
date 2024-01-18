@@ -305,6 +305,7 @@ CollectResult<int32_t> HiviewService::OpenSnapshotTrace(const std::vector<std::s
 
 CollectResult<std::vector<std::string>> HiviewService::DumpSnapshotTrace(UCollectUtil::TraceCollector::Caller caller)
 {
+    HIVIEW_LOGI("caller[%{public}d] dump trace in snapshot mode.", static_cast<int32_t>(caller));
     CollectResult<std::vector<std::string>> dumpRet = traceCollector_->DumpTrace(caller);
     if (dumpRet.retCode != UCollect::UcError::SUCCESS) {
         HIVIEW_LOGE("failed to dump the trace in snapshort mode.");
