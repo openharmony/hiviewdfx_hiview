@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -24,11 +24,16 @@ config("hiview_event_publish_config") {
 }
 
 ohos_source_set("hiview_event_publish") {
-  sources = [ "event_publish.cpp" ]
+  sources = [
+    "app_event_handler.cpp",
+    "app_event_publisher_factory.cpp",
+    "event_publish.cpp",
+  ]
 
   public_configs = [ ":hiview_event_publish_config" ]
 
   external_deps = [
+    "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
   ]

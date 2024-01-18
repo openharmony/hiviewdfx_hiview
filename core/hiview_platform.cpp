@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,8 @@
 #include <fstream>
 #include <functional>
 
+#include "app_event_publisher.h"
+#include "app_event_publisher_factory.h"
 #include "audit.h"
 #include "common_utils.h"
 #include "defines.h"
@@ -392,6 +394,12 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
         (std::static_pointer_cast<PluginProxy>(plugin))->SetPluginConfig(pluginInfo);
     } else {
         plugin = registInfo->getPluginObject();
+    }
+
+    // app event publisher
+    if (AppEventPublisherFactory::IsPublisher(pluginInfo.name)) {
+        auto appEventHandler = std::make_shared<AppEventHandler>();
+        (std::static_pointer_cast<AppEventPublisher>(plugin))->AddAppEventHandler(appEventHandler);
     }
 
     // Initialize plugin parameters
