@@ -324,12 +324,17 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         std::string eventHandlerStr;
         ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
 
-        std::string jsonStack = StringUtil::ReplaceStr(event -> GetEventValue("STACK"), "\\\"", "\"");
-        std::string::size_type removeIndex = jsonStack.find("\\n");
-        if (removeIndex != std::string::npos) {
-            jsonStack.resize(removeIndex);
+        std::string jsonStack = event->GetEventValue("STACK");
+        if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
+            jsonStack = StringUtil::ReplaceStr(jsonStack, "\\\"", "\"");
+            std::string::size_type removeIndex = jsonStack.find("\\n");
+            if (removeIndex != std::string::npos) {
+                jsonStack.resize(removeIndex);
+            }
+            DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
+        } else {
+            stack = jsonStack;
         }
-        DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
 
         if (jsonFd >= 0) {
             HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
