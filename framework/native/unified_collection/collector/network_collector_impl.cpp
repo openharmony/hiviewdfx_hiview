@@ -31,7 +31,7 @@ std::shared_ptr<NetworkCollector> NetworkCollector::Create()
     return std::make_shared<NetworkDecorator>(std::make_shared<NetworkCollectorImpl>());
 }
 
-inline bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
+bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
 {
     std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
     if (wifiDevicePtr == nullptr) {
