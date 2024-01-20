@@ -55,7 +55,7 @@ int32_t FaultloggerServiceOhos::Dump(int32_t fd, const std::vector<std::u16strin
     std::vector<std::string> cmdList;
     for (auto arg : args) {
         for (auto c : arg) {
-            if (!isalnum(c) && c != '-' && c != ' ') {
+            if (!isalnum(c) && c != '-' && c != ' ' && c != '_' && c != '.') {
                 dprintf(fd, "string arg contain invalid char:%c.\n", c);
                 return -1;
             }
