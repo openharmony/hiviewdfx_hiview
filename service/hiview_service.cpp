@@ -243,15 +243,15 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
         return ERR_DEFAULT;
     }
     off_t offset = 0;
-    int retryTimes = 0;
+    int cycleNum = 0;
     while (offset < st.st_size) {
         size_t count = static_cast<size_t>((st.st_size - offset) > SSIZE_MAX ? SSIZE_MAX : st.st_size - offset);
         ssize_t ret = sendfile(destFd, srcFd, &offset, count);
-        if (retryTimes > 0) {
-            HIVIEW_LOGI("sendfile retryTimes: %{public}d, ret:%{public}zd, offset:%{public}lld, size:%{public}lld",
-                retryTimes, ret, static_cast<long long>(offset), static_cast<long long>(st.st_size));
+        if (cycleNum > 0) {
+            HIVIEW_LOGI("sendfile cycle num:%{public}d, ret:%{public}zd, offset:%{public}lld, size:%{public}lld",
+                cycleNum, ret, static_cast<long long>(offset), static_cast<long long>(st.st_size));
         }
-        retryTimes++;
+        cycleNum++;
         if (ret < 0 || offset > st.st_size) {
             HIVIEW_LOGE("sendfile fail, ret:%{public}zd, offset:%{public}lld, size:%{public}lld",
                 ret, static_cast<long long>(offset), static_cast<long long>(st.st_size));
