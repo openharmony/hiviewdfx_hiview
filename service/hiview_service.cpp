@@ -236,7 +236,7 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
         close(srcFd);
         return ERR_DEFAULT;
     }
-    int destFd = open(destFilePath.c_str(), O_WRONLY | O_CREAT, S_IWUSR);
+    int destFd = open(destFilePath.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IROTH);
     if (destFd == -1) {
         HIVIEW_LOGE("failed to open destination file, des=%{public}s", destFilePath.c_str());
         close(srcFd);
@@ -246,9 +246,9 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
     while (offset < st.st_size) {
         size_t count = static_cast<size_t>((st.st_size - offset) > SSIZE_MAX ? SSIZE_MAX : st.st_size - offset);
         ssize_t ret = sendfile(destFd, srcFd, &offset, count);
+        HIVIEW_LOGE("sendfile ret:%{public}zd, offset:%{public}lld, size:%{public}lld, count:%{public}lld",
+            ret, static_cast<long long>(offset), static_cast<long long>(st.st_size), static_cast<long long>(count));
         if (ret < 0 || offset > st.st_size) {
-            HIVIEW_LOGE("sendfile fail, ret:%{public}zd, offset:%{public}lld, size:%{public}lld",
-                ret, static_cast<long long>(offset), static_cast<long long>(st.st_size));
             close(srcFd);
             close(destFd);
             return ERR_DEFAULT;
@@ -256,9 +256,6 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
     }
     close(srcFd);
     close(destFd);
-    if (chmod(destFilePath.c_str(), S_IRUSR | S_IWUSR | S_IROTH)) {
-        HIVIEW_LOGI("Failed to chmod file.");
-    }
     return 0;
 }
 
