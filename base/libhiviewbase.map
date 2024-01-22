@@ -335,6 +335,10 @@
         "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, unsigned int, long, long)";
         "OHOS::HiviewDFX::EventStore::SysEventDao::BuildQuery(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&)";
         "OHOS::HiviewDFX::EventStore::SysEventQuery::Select(std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&)";
+        "OHOS::HiviewDFX::AppEventPublisherFactory::RegisterPublisher(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::AppEventPublisherFactory::UnregisterPublisher(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::AppEventPublisherFactory::IsPublisher(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::AppLaunchInfo const&)";
     };
   local:
     *;
