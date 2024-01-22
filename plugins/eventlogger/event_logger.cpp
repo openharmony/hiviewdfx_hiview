@@ -331,7 +331,9 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             if (removeIndex != std::string::npos) {
                 jsonStack.resize(removeIndex);
             }
-            DfxJsonFormatter::FormatJsonStack(jsonStack, stack);
+            if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
+                stack = jsonStack;
+            }
         } else {
             stack = jsonStack;
         }

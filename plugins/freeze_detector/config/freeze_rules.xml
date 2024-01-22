@@ -136,7 +136,7 @@
         <event window="0" domain="AAFWK" stringid="THREAD_BLOCK_6S">	<!-- THREAD_BLOCK_6S -->
           <result code="0" scope="app" samePackage="true"/>
         </event>
-        <event window="-12" domain="AAFWK" stringid="THREAD_BLOCK_3S">	<!-- THREAD_BLOCK_3S -->
+        <event window="-14" domain="AAFWK" stringid="THREAD_BLOCK_3S">	<!-- THREAD_BLOCK_3S -->
           <result code="0" scope="app" samePackage="true"/>
         </event>
       </links>
