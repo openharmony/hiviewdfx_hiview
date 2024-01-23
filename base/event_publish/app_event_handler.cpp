@@ -57,7 +57,7 @@ int AppEventHandler::PostEvent(const AppLaunchInfo& event)
     jsonStr << "\"" << "start_type" << "\":" << event.startType << ",";
     jsonStr << "\"" << "icon_input_time" << "\":" << event.iconInputTime << ",";
     jsonStr << "\"" << "animation_finish_time" << "\":" << event.animationFinishTime << ",";
-    jsonStr << "\"" << "extent_time" << "\":" << event.extentTime;
+    jsonStr << "\"" << "extend_time" << "\":" << event.extendTime;
     jsonStr << "}" << std::endl;
     EventPublish::GetInstance().PushEvent(uid, "APP_LAUNCH", HiSysEvent::EventType::BEHAVIOR, jsonStr.str());
     return 0;
