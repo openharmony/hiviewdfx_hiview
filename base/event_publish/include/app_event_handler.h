@@ -34,7 +34,7 @@ public:
         int32_t startType = 0;
         uint64_t iconInputTime = 0;
         uint64_t animationFinishTime = 0;
-        uint64_t extentTime = 0;
+        uint64_t extendTime = 0;
     };
 
     int PostEvent(const AppLaunchInfo& event);
