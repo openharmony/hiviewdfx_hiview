@@ -51,7 +51,7 @@ private:
 
 class BaseEventQueryWrapper {
 public:
-    BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query) : query(query) {}
+    BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query) : query_(query) {}
     virtual ~BaseEventQueryWrapper() {}
 
 public:
@@ -77,19 +77,26 @@ protected:
     virtual void Order() = 0;
     void BuildCondition(const std::string& condition);
 
+private:
+    void FinishEventQuery(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, int32_t queryResult);
+    void TransportCachedEvents(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback);
+
 protected:
-    QueryArgument argument;
-    int32_t queryLimit = 0;
-    int64_t maxSeq = 0;
-    int64_t totalEventCnt = 0;
-    int64_t transportedEventCnt = 0;
-    int32_t ignoredEventCnt = 0;
-    std::shared_ptr<EventStore::SysEventQuery> query = nullptr;
-    std::vector<SysEventQueryRule> queryRules;
+    QueryArgument argument_;
+    int32_t queryLimit_ = 0;
+    int64_t maxSeq_ = 0;
+    int64_t totalEventCnt_ = 0;
+    int64_t transportedEventCnt_ = 0;
+    int32_t ignoredEventCnt_ = 0;
+    std::shared_ptr<EventStore::SysEventQuery> query_ = nullptr;
+    std::vector<SysEventQueryRule> queryRules_;
 
 private:
-    bool isFirstPartialQuery = true;
-    ConditionParser parser;
+    bool isFirstPartialQuery_ = true;
+    ConditionParser parser_;
+    std::vector<std::u16string> cachedEvents_;
+    std::vector<int64_t> cachedSeqs_;
+    int64_t cachedEventTotalSize_ = 0;
 };
 
 class TimeStampEventQueryWrapper final : public BaseEventQueryWrapper {
@@ -132,7 +139,7 @@ private:
     void InitQueryWrapper(const QueryArgument& argument);
 
 private:
-   std::shared_ptr<BaseEventQueryWrapper> queryWrapper = nullptr;
+   std::shared_ptr<BaseEventQueryWrapper> queryWrapper_ = nullptr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

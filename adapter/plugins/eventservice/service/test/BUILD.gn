@@ -40,6 +40,7 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
 
   sources = [
     "unittest/common/data_share_test.cpp",
+    "unittest/common/event_query_wrapper_builder_test.cpp",
     "unittest/common/sys_event_service_ohos_test.cpp",
   ]
 
