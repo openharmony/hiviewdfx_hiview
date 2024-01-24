@@ -829,5 +829,28 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest019, TestSize.Level1)
         EXPECT_STREQ(trace[num++].c_str(), line.c_str());
     }
 }
+
+/**
+ * @tc.name: SmartParserTest020
+ * @tc.desc: process BOOTFAIL fault, this case match test_compose_rule.json and test_extract_rule.json.
+ *           1. fault log should can be read;
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: jincong
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest020, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest013/bootfail_info_x";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), false);
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "BOOTFAIL");
+    ASSERT_EQ(eventInfos.empty(), true);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
