@@ -326,11 +326,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
 
         std::string jsonStack = event->GetEventValue("STACK");
         if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
-            jsonStack = StringUtil::ReplaceStr(jsonStack, "\\\"", "\"");
-            std::string::size_type removeIndex = jsonStack.find("\\n");
-            if (removeIndex != std::string::npos) {
-                jsonStack.resize(removeIndex);
-            }
+            jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
             if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
                 stack = jsonStack;
             }
