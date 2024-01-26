@@ -127,6 +127,7 @@ group("hiview_test_package") {
   deps = [
     "$hiview_adapter:moduletest",
     "$hiview_adapter:unittest",
+    "adapter/service/idl:unittest",
     "base/test:unittest",
     "core/test:unittest",
     "interfaces/js/napi/test:unittest",
