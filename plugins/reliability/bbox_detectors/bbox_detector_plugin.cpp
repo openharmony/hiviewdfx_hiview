@@ -56,7 +56,7 @@ void BBoxDetectorPlugin::OnLoad()
     if (eventloop != nullptr) {
         eventloop->AddTimerEvent(nullptr, nullptr, [&]() {
             StartBootScan();
-        }, SECONDS, false); // delay 10s
+        }, SECONDS, false); // delay 60s
     }
 #endif
 }
@@ -100,9 +100,9 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
         return;
     }
 #endif
-    auto times = static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetRleftSubstr(timeStr, "-"),
-                                                               "%Y%m%d%H%M%S"));
-    sysEvent->SetEventValue("HAPPEN_TIME", times * MILLSECONDS);
+    auto happenTime_ = static_cast<uint64_t>(Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
+        "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})"));
+    sysEvent->SetEventValue("HAPPEN_TIME", happenTime_);
 
     WaitForLogs(dynamicPaths);
     auto eventInfos = SmartParser::Analysis(dynamicPaths, LOGPARSECONFIG, name);
@@ -133,43 +133,32 @@ void BBoxDetectorPlugin::StartBootScan()
         ifstream fin(historyLog, ios::ate);
         while (FileUtil::GetLastLine(fin, line) && num > 0) {
             num--;
-            string name = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "category [", "]") :
-                StringUtil::GetMidSubstr(line, "category[", "]");
+            std::map<std::string, std::string> historyMap = GetValueFromHistory(line);
+            string name = historyMap["category"];
             if (name.empty() || name == "NORMALBOOT") {
                 continue;
             }
-            string module = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "core [", "]") :
-                StringUtil::GetMidSubstr(line, "module[", "]");
-            string reason = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "reason [", "]") :
-                StringUtil::GetMidSubstr(line, "event[", "]");
-            string bootup_keypoint = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "bootup_keypoint [", "]") :
-                StringUtil::GetMidSubstr(line, "errdesc[", "]");
-            string dynamicPaths = hisiHistoryPath ? HISIPATH + StringUtil::GetMidSubstr(line, "time [", "]") :
-                BBOXPATH + StringUtil::GetMidSubstr(line, "time[", "]");
+            if (name.find(":") != std::string::npos) {
+                name = StringUtil::GetRleftSubstr(name, ":");
+            }
             auto time_now = static_cast<int64_t>(TimeUtil::GetMilliseconds());
             auto time_event = hisiHistoryPath ?
                 static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time [", "-"),
                 "%Y%m%d%H%M%S")) * MILLSECONDS :
                 static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time[", "-"),
                 "%Y%m%d%H%M%S")) * MILLSECONDS;
-            if (abs(time_now - abs(time_event)) > ONE_DAY  || IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+            if (abs(time_now - abs(time_event)) > ONE_DAY  ||
+                IsEventProcessed(name, "LOG_PATH", historyMap["dynamicPaths"])) {
                 continue;
             }
-            string logPath = hisiHistoryPath ? HISIPATH : BBOXPATH;
-            string subLogPath = hisiHistoryPath ? StringUtil::GetMidSubstr(line, "time [", "]") :
-                StringUtil::GetMidSubstr(line, "time[", "]");
-            int res = HiSysEventWrite(DOMAIN, name, HiSysEvent::EventType::FAULT,
-                "MODULE", module,
-                "REASON", reason,
-                "LOG_PATH", logPath,
-                "SUB_LOG_PATH", subLogPath,
-                "SUMMARY", "bootup_keypoint:" + bootup_keypoint);
+            auto happenTime_ = GetHappenTime(line, hisiHistoryPath);
+            int res = CheckAndHiSysEventWrite(name, historyMap, happenTime_);
             HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
         }
     }
 }
 
-bool BBoxDetectorPlugin::IsEventProcessed (const std::string& name, const std::string& key, const std::string& value)
+bool BBoxDetectorPlugin::IsEventProcessed(const std::string& name, const std::string& key, const std::string& value)
 {
     auto sysEventQuery = EventStore::SysEventDao::BuildQuery("KERNEL_VENDOR", {name});
     std::vector<std::string> selections { EventStore::EventCol::TS };
@@ -178,7 +167,60 @@ bool BBoxDetectorPlugin::IsEventProcessed (const std::string& name, const std::s
     if (resultSet.HasNext()) {
         return true;
     }
+
     return false;
+}
+
+uint64_t BBoxDetectorPlugin::GetHappenTime(std::string& line, bool hisiHistoryPath)
+{
+    auto happenTime_ = hisiHistoryPath ?
+        static_cast<uint64_t>(Tbox::GetHappenTime(StringUtil::GetMidSubstr(line, "time [", "-"),
+            "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})")) :
+        static_cast<uint64_t>(Tbox::GetHappenTime(StringUtil::GetMidSubstr(line, "time[", "-"),
+            "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})"));
+
+    return happenTime_;
+}
+
+int BBoxDetectorPlugin::CheckAndHiSysEventWrite(std::string& name, std::map<std::string, std::string>& historyMap,
+    uint64_t& happenTime_)
+{
+    int res = HiSysEventWrite(DOMAIN, name, HiSysEvent::EventType::FAULT,
+        "MODULE", historyMap["module"],
+        "REASON", historyMap["reason"],
+        "LOG_PATH", historyMap["logPath"],
+        "SUB_LOG_PATH", historyMap["subLogPath"],
+        "HAPPEN_TIME", happenTime_,
+        "SUMMARY", "bootup_keypoint:" + historyMap["bootup_keypoint"]);
+    if (res == 0 || (res < 0 && name.find("UNKNOWNS") != std::string::npos)) {
+        return res;
+    } else if (res < 0) {
+        name = "UNKNOWNS";
+        CheckAndHiSysEventWrite(name, historyMap, happenTime_);
+    }
+
+    return res;
+}
+
+std::map<std::string, std::string> BBoxDetectorPlugin::GetValueFromHistory(std::string& line)
+{
+    std::map<std::string, std::string> historyMap = {
+        {"category", hisiHistoryPath ? StringUtil::GetMidSubstr(line, "category [", "]") :
+            StringUtil::GetMidSubstr(line, "category[", "]")},
+        {"module", hisiHistoryPath ? StringUtil::GetMidSubstr(line, "core [", "]") :
+            StringUtil::GetMidSubstr(line, "module[", "]")},
+        {"reason", hisiHistoryPath ? StringUtil::GetMidSubstr(line, "reason [", "]") :
+            StringUtil::GetMidSubstr(line, "event[", "]")},
+        {"bootup_keypoint", hisiHistoryPath ? StringUtil::GetMidSubstr(line, "bootup_keypoint [", "]") :
+            StringUtil::GetMidSubstr(line, "errdesc[", "]")},
+        {"dynamicPaths", hisiHistoryPath ? HISIPATH + StringUtil::GetMidSubstr(line, "time [", "]") :
+            BBOXPATH + StringUtil::GetMidSubstr(line, "time[", "]")},
+        {"logPath", hisiHistoryPath ? HISIPATH : BBOXPATH},
+        {"subLogPath", hisiHistoryPath ? StringUtil::GetMidSubstr(line, "time [", "]") :
+            StringUtil::GetMidSubstr(line, "time[", "]")}
+    };
+
+    return historyMap;
 }
 }
 }

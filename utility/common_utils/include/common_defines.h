@@ -28,6 +28,7 @@ static constexpr auto SMART_PARSER_PATH = "/system/etc/hiview/";
 // buffer size
 static const int HAS_LEN = 128;
 static const int MAX_BUFFER_SIZE = 8 * 1024 * 1024; // 8:8M
+static const int HAPPEN_TIME_DEFAULT = 0;
 
 enum FingerPrintMode {
     FP_FILE = 0,
