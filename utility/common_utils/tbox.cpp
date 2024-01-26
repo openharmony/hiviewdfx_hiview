@@ -20,6 +20,7 @@
 #include "calc_fingerprint.h"
 #include "file_util.h"
 #include "log_parse.h"
+#include "securec.h"
 #include "string_util.h"
 #include "time_util.h"
 
@@ -162,6 +163,39 @@ bool Tbox::WaitForDoneFile(const std::string& file, unsigned int timeout)
         remainedTime = (remainedTime > duration) ? (remainedTime - duration) : 0;
     }
     return false;
+}
+
+int64_t Tbox::GetHappenTime(const string& src, const string& regex)
+{
+    int64_t happenTime = HAPPEN_TIME_DEFAULT;
+    std::regex recordRegex(regex);
+    struct tm tmHappenTime;
+    (void)memset_s(&tmHappenTime, sizeof(struct tm), 0, sizeof(struct tm));
+    std::smatch matches;
+    if (!std::regex_match(src, matches, recordRegex)) {
+        HIVIEW_LOGE("unmatch event:%{public}s, skip", src.c_str());
+        return happenTime;
+    }
+
+    string timeStr;
+    for (size_t i = 1; i < matches.size(); ++i) {
+        timeStr += matches[i].str();
+    }
+    strptime(timeStr.c_str(), "%Y%m%d%H%M%S", &tmHappenTime);
+    happenTime = mktime(&tmHappenTime);
+    //if the HappenTime is 1970, return as original information
+    if (tmHappenTime.tm_year == 70) { // 70: The number of years since the HappenTime in 1900
+        return happenTime;
+    }
+
+    time_t now = time(nullptr);
+    struct tm result;
+    gmtime_r(&now, &result);
+    double offset = difftime(now, mktime(&result)); // zone offset with second. Example, 1 zone is 3600 sec
+    if (difftime(now, happenTime) > offset) {
+        happenTime = timegm(&tmHappenTime);
+    }
+    return happenTime;
 }
 }
 }
