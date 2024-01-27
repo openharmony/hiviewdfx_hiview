@@ -127,3 +127,8 @@ ohos_source_set("hiview_service_impl_for_js") {
 
   subsystem_name = "hiviewdfx"
 }
+
+group("unittest") {
+  testonly = true
+  deps = [ "test:unittest" ]
+}
