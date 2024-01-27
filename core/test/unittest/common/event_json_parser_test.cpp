@@ -47,13 +47,21 @@ void EventJsonParserTest::TearDown() {}
 HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Level0)
 {
     printf("start EventJsonParserTest001\n");
-    constexpr char JSON_STR[] = "{\"domain_\":\"HIVIEWDFX\",\"name_\":\"PLUGIN_LOAD\",\"type_\":4,\
-        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
-    auto sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, JSON_STR);
     std::string defFile = "/system/etc/hiview/hisysevent.def";
     std::vector<std::string> defFiles;
     defFiles.emplace_back(defFile);
     auto sysEventParser = std::make_unique<EventJsonParser>(defFiles);
+
+    std::shared_ptr<SysEvent> sysEvent = nullptr;
+    ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
+    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"type_\":4,\
+        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, invalidJsonStr);
+    ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
+    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"name_\":\"PLUGIN_LOAD\",\"type_\":4,\
+        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, jsonStr);
+
     ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));
     ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("abc", "abc") == "");
     ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("DEMO", "abc") == "");
