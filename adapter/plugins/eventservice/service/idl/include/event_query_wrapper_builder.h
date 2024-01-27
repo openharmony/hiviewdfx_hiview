@@ -78,6 +78,7 @@ protected:
     void BuildCondition(const std::string& condition);
 
 private:
+    void ClearCachedEvents();
     void FinishEventQuery(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, int32_t queryResult);
     void TransportCachedEvents(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback);
 

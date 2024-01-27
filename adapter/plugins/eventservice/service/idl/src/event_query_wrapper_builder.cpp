@@ -217,18 +217,22 @@ void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCa
     FinishEventQuery(eventQueryCallback, queryResult);
 }
 
+void BaseEventQueryWrapper::ClearCachedEvents()
+{
+    std::vector<std::u16string> tmpCachedEvents;
+    cachedEvents_.swap(tmpCachedEvents); // free memories allocated for cached events immediately
+    std::vector<int64_t> tmpCachedSeqs;
+    cachedSeqs_.swap(tmpCachedSeqs); // free memories allocated for cached events' sequence immediately
+    cachedEventTotalSize_ = 0;
+}
+
 void BaseEventQueryWrapper::FinishEventQuery(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback,
     int32_t queryResult)
 {
     if (callback == nullptr) {
         return;
     }
-    if (!cachedEvents_.empty()) {
-        callback->OnQuery(cachedEvents_, cachedSeqs_);
-        cachedEvents_.clear();
-        cachedSeqs_.clear();
-        cachedEventTotalSize_ = 0;
-    }
+    TransportCachedEvents(callback);
     callback->OnComplete(queryResult, totalEventCnt_, maxSeq_);
 }
 
@@ -237,19 +241,16 @@ void BaseEventQueryWrapper::TransportCachedEvents(const OHOS::sptr<OHOS::HiviewD
     if (callback == nullptr) {
         return;
     }
-    callback->OnQuery(cachedEvents_, cachedSeqs_);
-    cachedEvents_.clear();
-    cachedSeqs_.clear();
-    cachedEventTotalSize_ = 0;
+    if (!cachedEvents_.empty()) {
+        callback->OnQuery(cachedEvents_, cachedSeqs_);
+        ClearCachedEvents();
+    }
 }
 
 void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::ResultSet& result,
     const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, std::pair<int64_t, int32_t>& details)
 {
-    std::vector<std::u16string> events;
-    std::vector<int64_t> seqs;
     OHOS::HiviewDFX::EventStore::ResultSet::RecordIter iter;
-    int32_t transTotalJsonSize = 0;
     while (result.HasNext() && argument_.maxEvents > 0) {
         iter = result.Next();
         auto eventJsonStr = iter->AsJsonStr();
@@ -262,28 +263,16 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             details.second++;
             continue;
         }
-        // the number of returned events may be greater than the limit
-        if (eventJsonSize + transTotalJsonSize > MAX_TRANS_BUF || events.size() >=
-            static_cast<size_t>(queryLimit_)) {
+        if (cachedEvents_.size() >= queryLimit_ ||
+            cachedEventTotalSize_ + eventJsonSize >= MAX_TRANS_BUF) {
             TransportCachedEvents(callback);
-            callback->OnQuery(events, seqs);
-            events.clear();
-            seqs.clear();
-            transTotalJsonSize = 0;
         }
-        events.push_back(curJson);
-        seqs.push_back(iter->GetSeq());
+        cachedEvents_.push_back(curJson);
+        cachedSeqs_.push_back(iter->GetSeq());
+        cachedEventTotalSize_ += eventJsonSize;
         details.first++;
-        transTotalJsonSize += eventJsonSize;
         argument_.maxEvents--;
     }
-    if (cachedEvents_.size() + events.size() > MAX_QUERY_EVENTS ||
-        cachedEventTotalSize_ + transTotalJsonSize > MAX_TRANS_BUF) {
-        TransportCachedEvents(callback);
-    }
-    cachedEvents_.insert(cachedEvents_.end(), events.begin(), events.end());
-    cachedSeqs_.insert(cachedSeqs_.end(), seqs.begin(), seqs.end());
-    cachedEventTotalSize_ += transTotalJsonSize;
 }
 
 void BaseEventQueryWrapper::BuildCondition(const std::string& condition)
