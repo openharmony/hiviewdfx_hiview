@@ -146,11 +146,6 @@ bool EventJsonParser::GetPreserveByDomainAndName(const std::string& domain, cons
 
 bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
 {
-    if (event == nullptr) {
-        HIVIEW_LOGD("sysevent is null.");
-        return false;
-    }
-
     if (!CheckEventValidity(event)) {
         HIVIEW_LOGD("domain_ or name_ not found in the event json string.");
         return false;
@@ -217,6 +212,7 @@ bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::share
 bool EventJsonParser::CheckEventValidity(std::shared_ptr<SysEvent> event) const
 {
     if (event == nullptr) {
+        HIVIEW_LOGD("sysevent is null.");
         return false;
     }
     return !(event->domain_.empty()) && !(event->eventName_.empty());
@@ -380,9 +376,6 @@ void EventJsonParser::WriteSeqToFile(int64_t seq) const
 
 bool EventJsonParser::SaveStringToFile(const std::string& filePath, const std::string& content) const
 {
-    if (content.empty()) {
-        return true;
-    }
     std::ofstream file;
     file.open(filePath.c_str(), std::ios::in | std::ios::out);
     if (!file.is_open()) {
