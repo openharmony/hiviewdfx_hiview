@@ -93,6 +93,8 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         sysEvent->eventName_.c_str(), pid);
 
     if (sysEvent->GetValue("eventLog_action").empty()) {
+        HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld, eventLog_action is empty.",
+            sysEvent->eventName_.c_str(), pid);
         UpdateDB(sysEvent, "nolog");
         return true;
     }
@@ -299,8 +301,6 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     long uid = event->GetEventIntValue("UID");
     uid = uid ? uid : event->GetUid();
     headerStream << "UID = " << uid << std::endl;
-    long tid = event->GetTid();
-    headerStream << "TID = " << tid << std::endl;
     if (event->GetEventValue("MODULE_NAME") != "") {
         headerStream << "MODULE_NAME = " << event->GetEventValue("MODULE_NAME") << std::endl;
     } else {
