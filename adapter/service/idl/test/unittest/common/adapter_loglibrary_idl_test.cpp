@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "accesstoken_kit.h"
+#include "adapter_loglibrary_test_tools.h"
 #include "file_util.h"
 #include "hiview_service_ability_proxy.h"
 #include "hiview_service_agent.h"
@@ -31,41 +32,6 @@ namespace {
 const std::string DEST_PATH = "";
 const std::string SOURCE_PATH = "/data/log/logpack/remotelog/";
 const std::string LOG_TYPE = "REMOTELOG";
-
-void CreateDir(const std::string& dir)
-{
-    if (!FileUtil::FileExists(dir)) {
-        FileUtil::ForceCreateDirectory(dir, FileUtil::FILE_PERM_770);
-    }
-}
-
-void NativeToken(const char* permList[], int permSize)
-{
-    uint64_t tokenId;
-    NativeTokenInfoParams tokenInfo = {
-        .dcapsNum = 0,
-        .permsNum = permSize,
-        .aclsNum = 0,
-        .dcaps = nullptr,
-        .perms = permList,
-        .acls = nullptr,
-        .aplStr = "system_basic",
-    };
-
-    tokenInfo.processName = "AdapterLoglibraryIdlTest";
-    tokenId = GetAccessTokenId(&tokenInfo);
-    SetSelfTokenID(tokenId);
-    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
-}
-
-void ApplyPermissionAccess()
-{
-    const char* permList[] = {
-        "ohos.permission.WRITE_HIVIEW_SYSTEM",
-        "ohos.permission.READ_HIVIEW_SYSTEM",
-    };
-    NativeToken(permList, 2); // 2 is the size of the array which consists of required permissions.
-}
 }
 void AdapterLoglibraryIdlTest::SetUpTestCase() {}
 
@@ -73,9 +39,9 @@ void AdapterLoglibraryIdlTest::TearDownTestCase() {}
 
 void AdapterLoglibraryIdlTest::SetUp()
 {
-    ApplyPermissionAccess();
-    CreateDir(SOURCE_PATH);
-    CreateDir(DEST_PATH);
+    AdapterLoglibraryTestTools::ApplyPermissionAccess();
+    AdapterLoglibraryTestTools::CreateDir(SOURCE_PATH);
+    AdapterLoglibraryTestTools::CreateDir(DEST_PATH);
 }
 
 void AdapterLoglibraryIdlTest::TearDown() {}
