@@ -27,6 +27,7 @@
 #include <string_ex.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/resource.h>
 
 #include "common_util.h"
 #include "common_utils.h"
@@ -562,6 +563,18 @@ CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
         }
     }
     result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
+{
+    CollectResult<MemoryLimit> result;
+    MemoryLimit& memoryLimit = result.data;
+    struct rlimit rlim;
+    getrlimit(RLIMIT_RSS, &rlim);
+    memoryLimit.rssLimit = rlim.rlim_cur;
+    getrlimit(RLIMIT_AS, &rlim);
+    memoryLimit.vssLimit = rlim.rlim_cur;
     return result;
 }
 } // UCollectUtil
