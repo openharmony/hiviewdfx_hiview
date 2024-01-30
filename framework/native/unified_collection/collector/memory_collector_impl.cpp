@@ -57,6 +57,11 @@ static std::string GetCurrTimestamp()
 static std::string GetSavePath(const std::string& preFix, const std::string& ext)
 {
     std::lock_guard<std::mutex> lock(g_memMutex);   // lock when get save path
+    if ((!FileUtil::FileExists(MEMINFO_SAVE_DIR)) &&
+        (!FileUtil::ForceCreateDirectory(MEMINFO_SAVE_DIR, FileUtil::FILE_PERM_755))) {
+        HIVIEW_LOGE("create %{public}s dir failed.", MEMINFO_SAVE_DIR.c_str());
+        return "";
+    }
     std::string timeStamp = GetCurrTimestamp();
     std::string savePath = MEMINFO_SAVE_DIR + "/" + preFix + timeStamp + ext;
     int suffix = 0;
@@ -215,12 +220,6 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
         return result;
     }
 
-    if ((!FileUtil::FileExists(MEMINFO_SAVE_DIR)) &&
-        (!FileUtil::ForceCreateDirectory(MEMINFO_SAVE_DIR, FileUtil::FILE_PERM_755))) {
-        HIVIEW_LOGE("create %{public}s dir failed.", MEMINFO_SAVE_DIR.c_str());
-        result.retCode = UcError::WRITE_FAILED;
-        return result;
-    }
     result.data = GetSavePath(preFix, ".txt");
     if (result.data.empty()) {
         result.retCode = UcError::WRITE_FAILED;
