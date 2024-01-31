@@ -570,11 +570,14 @@ CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
 {
     CollectResult<MemoryLimit> result;
     MemoryLimit& memoryLimit = result.data;
+
     struct rlimit rlim;
     getrlimit(RLIMIT_RSS, &rlim);
     memoryLimit.rssLimit = rlim.rlim_cur;
     getrlimit(RLIMIT_AS, &rlim);
     memoryLimit.vssLimit = rlim.rlim_cur;
+
+    result.retCode = UcError::SUCCESS;
     return result;
 }
 } // UCollectUtil

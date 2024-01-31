@@ -218,3 +218,16 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest013, TestSize.Level1)
     std::cout << "collect processvss result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
+
+/**
+ * @tc.name: MemoryCollectorTest014
+ * @tc.desc: used to test MemoryCollector.CollectMemoryLimit
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest014, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    CollectResult<uint64_t> data = collector->CollectMemoryLimit();
+    std::cout << "collect memoryLimit result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
