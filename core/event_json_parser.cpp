@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -147,24 +147,27 @@ bool EventJsonParser::GetPreserveByDomainAndName(const std::string& domain, cons
 bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
 {
     if (!CheckEventValidity(event)) {
-        HIVIEW_LOGD("domain_ or name_ not found in the event json string.");
+        HIVIEW_LOGI("invalid event or event with empty domain or empty name.");
         return false;
     }
 
     auto baseInfo = GetDefinedBaseInfoByDomainName(event->domain_, event->eventName_);
     if (baseInfo.type == INVALID_EVENT_TYPE) {
-        HIVIEW_LOGD("type defined for domain: %{public}s, name: %{public}s is invalid.",
-            event->domain_.c_str(), event->eventName_.c_str());
+        HIVIEW_LOGI("type defined for event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
+            event->domain_.c_str(), event->eventName_.c_str(), event->GetEventUintValue("time_"));
         return false;
     }
     if (!CheckBaseInfoValidity(baseInfo, event)) {
-        HIVIEW_LOGD("failed to verify the base info of the event.");
+        HIVIEW_LOGI("failed to verify the base info of event[%{public}s|%{public}s|%{public}" PRIu64 "].",
+            event->domain_.c_str(), event->eventName_.c_str(), event->GetEventUintValue("time_"));
         return false;
     }
 
     auto curSysEventId = GenerateHash(event->AsJsonStr());
     if (filter_.IsDuplicateEvent(curSysEventId)) {
-        HIVIEW_LOGD("duplicate sys event, ignore it directly.");
+        HIVIEW_LOGI(
+            "ignore duplicate event[%{public}s|%{public}s|%{public}" PRIu64 "].", event->domain_.c_str(),
+            event->eventName_.c_str(), event->GetEventUintValue("time_"));
         return false; // ignore duplicate sys event
     }
 
@@ -212,7 +215,6 @@ bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::share
 bool EventJsonParser::CheckEventValidity(std::shared_ptr<SysEvent> event) const
 {
     if (event == nullptr) {
-        HIVIEW_LOGD("sysevent is null.");
         return false;
     }
     return !(event->domain_.empty()) && !(event->eventName_.empty());
