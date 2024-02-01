@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,7 +44,11 @@ public:
     static bool ParseTypeAndValue(const std::string &str, std::string &type, int32_t &value);
     static bool StartWith(const std::string& str, const std::string& sub);
     static bool EndWith(const std::string& str, const std::string& sub);
-}; // MemoryCollector
+    static void GetDirRegexFiles(const std::string& path, const std::string& pattern, std::vector<std::string>& files);
+    static int GetFileNameNum(const std::string& fileName, const std::string& ext);
+    static std::string CreateExportFile(const std::string& path, int32_t maxFileNum, const std::string& prefix,
+        const std::string& ext);
+}; // CommonUtil
 } // UCollectUtil
 } // HiviewDFX
 } // OHOS

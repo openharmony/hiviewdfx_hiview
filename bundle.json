@@ -145,7 +145,8 @@
                             "utility/mem_profiler_collector.h",
                             "utility/memory_collector.h",
                             "utility/network_collector.h",
-                            "utility/trace_collector.h"
+                            "utility/trace_collector.h",
+                            "utility/wm_collector.h"
                         ]
                     }
                 },

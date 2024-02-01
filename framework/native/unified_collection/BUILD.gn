@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -51,6 +51,7 @@ ohos_source_set("ucollection_source") {
     "collector/utils/trace_storage.cpp",
     "collector/utils/trace_utils.cpp",
     "collector/utils/trace_worker.cpp",
+    "collector/wm_collector_impl.cpp",
     "decorator/cpu_decorator.cpp",
     "decorator/decorator.cpp",
     "decorator/gpu_decorator.cpp",
@@ -60,6 +61,7 @@ ohos_source_set("ucollection_source") {
     "decorator/perf_decorator.cpp",
     "decorator/trace_decorator.cpp",
     "decorator/unified_collection_stat.cpp",
+    "decorator/wm_decorator.cpp",
     "process/process_status.cpp",
     "utils/cpu_util.cpp",
   ]
