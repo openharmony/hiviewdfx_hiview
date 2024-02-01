@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -109,7 +109,9 @@ SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
     rawData_ = rawData;
     builder_ = std::make_shared<EventRaw::RawDataBuilder>(rawData);
     totalCount_.fetch_add(1);
-    totalSize_.fetch_add(AsJsonStr().length());
+    if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
+        totalSize_.fetch_add(*(reinterpret_cast<int32_t*>(rawData_->GetData())));
+    }
     InitialMembers();
 }
 
@@ -126,7 +128,9 @@ SysEvent::~SysEvent()
     if (totalCount_ > 0) {
         totalCount_.fetch_sub(1);
     }
-    totalSize_.fetch_sub(AsJsonStr().length());
+    if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
+        totalSize_.fetch_sub(*(reinterpret_cast<int32_t*>(rawData_->GetData())));
+    }
     if (totalSize_ < 0) {
         totalSize_.store(0);
     }
