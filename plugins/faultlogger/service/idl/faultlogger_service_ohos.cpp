@@ -127,7 +127,6 @@ void FaultloggerServiceOhos::AddFaultLog(const FaultLogInfoOhos& info)
         outInfo.logPath = info.logPath;
     }
     outInfo.registers = info.registers;
-    outInfo.otherThreadInfo = info.otherThreadInfo;
     outInfo.sectionMap = info.sectionMaps;
     service->AddFaultLog(outInfo);
 }

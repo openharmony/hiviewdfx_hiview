@@ -56,10 +56,6 @@ bool FaultLogInfoOhos::Marshalling(Parcel& parcel) const
         return false;
     }
 
-    if (!parcel.WriteString(otherThreadInfo)) {
-        return false;
-    }
-
     uint32_t size = sectionMaps.size();
     if (!parcel.WriteUint32(size)) {
         return false;
@@ -116,10 +112,6 @@ FaultLogInfoOhos* FaultLogInfoOhos::Unmarshalling(Parcel& parcel)
     }
 
     if (!parcel.ReadString(ret->registers)) {
-        goto error;
-    }
-
-    if (!parcel.ReadString(ret->otherThreadInfo)) {
         goto error;
     }
 
