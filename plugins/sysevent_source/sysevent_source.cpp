@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,17 +38,7 @@ std::shared_ptr<PipelineEvent> SysEventParser::Parser(std::shared_ptr<EventRaw::
         HIVIEW_LOGI("raw data of sys event is null");
         return nullptr;
     }
-    EventRaw::DecodedEvent decodedEvent(rawData->GetData());
-    if (!decodedEvent.IsValid()) {
-        HIVIEW_LOGE("failed to decode the raw data of event.");
-        return nullptr;
-    }
-    HIVIEW_LOGD("parser raw message size=%{public}zu, %{public}s", rawData->GetDataLength(),
-        decodedEvent.AsJsonStr().c_str());
-    auto baseEvent = std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawData);
-    HIVIEW_LOGD("parser result domain_=%{public}s eventName_=%{public}s",
-        baseEvent->domain_.c_str(), baseEvent->eventName_.c_str());
-    return baseEvent;
+    return std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawData);
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
@@ -126,7 +116,6 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
         return false;
     }
     if (!sysEventParser_->HandleEventJson(sysEvent)) {
-        HIVIEW_LOGI("HandleEventJson fail");
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }

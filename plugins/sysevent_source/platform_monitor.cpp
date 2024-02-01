@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -270,7 +270,9 @@ void PlatformMonitor::ReportCycleProfile()
     if (sysEvent == nullptr) {
         return;
     }
-    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
+    HIVIEW_LOGI(
+        "report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
+        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
     HIVIEW_LOGI("report performance profile have done");
 }
@@ -368,7 +370,9 @@ void PlatformMonitor::ReportBreakProfile()
     eventCreator.SetKeyValue("TOP_DOMAIN", domains);
     eventCreator.SetKeyValue("TOP_DOMAIN_COUNT", domainCounts);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
+    HIVIEW_LOGI(
+        "report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
+        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 
@@ -379,7 +383,9 @@ void PlatformMonitor::ReportRecoverProfile()
     SysEventCreator eventCreator("HIVIEWDFX", "RECOVER", SysEventCreator::BEHAVIOR);
     eventCreator.SetKeyValue("DURATION", duration);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report=%{public}s", sysEvent->AsJsonStr().c_str());
+    HIVIEW_LOGI(
+        "report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
+        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
     HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
 }
 
