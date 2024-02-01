@@ -227,7 +227,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest013, TestSize.Level1)
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest014, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<uint64_t> data = collector->CollectMemoryLimit();
+    CollectResult<MemoryLimit> data = collector->CollectMemoryLimit();
     std::cout << "collect memoryLimit result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
 }
