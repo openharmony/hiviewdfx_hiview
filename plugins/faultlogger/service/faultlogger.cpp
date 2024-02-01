@@ -260,10 +260,6 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
         info.sectionMap["KEY_THREAD_REGISTERS"] = info.registers;
     }
 
-    if (!info.otherThreadInfo.empty()) {
-        info.sectionMap["OTHER_THREAD_INFO"] = info.otherThreadInfo;
-    }
-
     info.sectionMap["APPEND_ORIGIN_LOG"] = GetCppCrashTempLogName(info);
 
     std::string log;
