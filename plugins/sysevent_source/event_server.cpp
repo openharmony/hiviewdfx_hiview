@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -221,11 +221,9 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
             HIVIEW_LOGE("length of data received from client is invalid.");
             break;
         }
-        HIVIEW_LOGD("length of data received from client is %{public}d.", dataByteCnt);
         EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
-        std::string eventJsonStr = event.AsJsonStr();
-        HIVIEW_LOGD("receive from client %{private}s", eventJsonStr.c_str());
         if (!g_extraSocketPath.empty()) {
+            std::string eventJsonStr = event.AsJsonStr();
             TransferEvent(eventJsonStr);
         }
         for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
@@ -286,11 +284,9 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
         HIVIEW_LOGE("length of data received from kernel is invalid.");
         return -1;
     }
-    HIVIEW_LOGD("length of data received from kernel is %{public}d.", dataByteCnt);
     EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
-    std::string eventJsonStr = event.AsJsonStr();
-    HIVIEW_LOGD("receive data from kernel %{private}s", eventJsonStr.c_str());
     if (!g_extraSocketPath.empty()) {
+        std::string eventJsonStr = event.AsJsonStr();
         TransferEvent(eventJsonStr);
     }
     for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {

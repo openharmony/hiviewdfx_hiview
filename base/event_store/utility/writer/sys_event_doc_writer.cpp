@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -177,7 +177,8 @@ int SysEventDocWriter::WriteContent(const std::shared_ptr<SysEvent>& sysEvent, u
     out_.write(reinterpret_cast<char*>(content), contentSize);
     delete[] content;
     out_.flush();
-    HIVIEW_LOGD("write content size=%{public}u, file=%{public}s", contentSize, docPath_.c_str());
+    HIVIEW_LOGI("write content size=%{public}u, eventTime=%{public}" PRIu64 ", file=%{public}s", contentSize,
+        sysEvent->GetEventUintValue("time_"), docPath_.c_str());
     return DOC_STORE_SUCCESS;
 }
 
