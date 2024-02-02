@@ -91,6 +91,7 @@ void AddFaultLog(const FaultLogInfoInner &info)
     infoOhos.time = info.time;
     infoOhos.uid = info.id;
     infoOhos.pid = info.pid;
+    infoOhos.pipeFd = info.pipeFd;
     infoOhos.faultLogType = info.faultLogType;
     infoOhos.module = GetPrintableStr(info.module);
     infoOhos.reason = info.reason;
