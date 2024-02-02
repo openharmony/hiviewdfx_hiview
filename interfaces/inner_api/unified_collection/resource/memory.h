@@ -38,6 +38,8 @@ struct ProcessMemory {
     int32_t adj;            // /proc/$pid/oom_score_adj
     int32_t sharedDirty;   //process Shared_Dirty
     int32_t privateDirty;  //process Private_Dirty
+    int32_t sharedClean;   //process Shared_Clean
+    int32_t privateClean;  //process Private_Clean
 };
 
 extern "C" {
