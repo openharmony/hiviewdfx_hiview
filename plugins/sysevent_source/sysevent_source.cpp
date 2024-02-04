@@ -112,6 +112,7 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
 {
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent == nullptr || sysEventParser_ == nullptr) {
+        HIVIEW_LOGE("event or event parser is null.");
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
@@ -119,6 +120,8 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
+    HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
+        sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), sysEvent->GetEventSeq());
     sysEvent->SetTag(sysEventParser_->GetTagByDomainAndName(sysEvent->domain_, sysEvent->eventName_));
     sysEvent->eventType_ = sysEventParser_->GetTypeByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
     sysEvent->preserve_ = sysEventParser_->GetPreserveByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
