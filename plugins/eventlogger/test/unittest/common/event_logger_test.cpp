@@ -22,7 +22,8 @@
 #include "event.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
-
+namespace OHOS {
+namespace HiviewDFX {
 void EventLoggerTest::SetUp()
 {
     printf("SetUp.\n");
@@ -145,3 +146,5 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_005, TestSize.Level3)
     bool ret = eventLogger->CanProcessRebootEvent(*(event.get()));
     EXPECT_EQ(ret, true);
 }
+} // namespace HiviewDFX
+} // namespace OHOS
