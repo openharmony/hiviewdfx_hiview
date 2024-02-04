@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,7 @@
 #include "perf_decorator.h"
 #endif
 #include "trace_decorator.h"
+#include "wm_decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -78,9 +79,10 @@ void UnifiedCollectionStat::SaveAllStatInfo()
 #ifdef HAS_HIPERF
     PerfDecorator::SaveStatCommonInfo();
 #endif
+    WmDecorator::SaveStatCommonInfo();
 
     TraceDecorator::SaveStatSpecialInfo();
-    
+
     int32_t ret = HiSysEventWrite(
         HiSysEvent::Domain::HIVIEWDFX,
         "UC_API_STAT",
@@ -99,6 +101,7 @@ void UnifiedCollectionStat::ResetAllStatInfo()
     MemoryDecorator::ResetStatInfo();
     NetworkDecorator::ResetStatInfo();
     TraceDecorator::ResetStatInfo();
+    WmDecorator::ResetStatInfo();
 #ifdef HAS_HIPROFILER
     MemProfilerDecorator::ResetStatInfo();
 #endif
