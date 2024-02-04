@@ -18,7 +18,8 @@
 #include <sys/types.h>
 
 #include <gtest/gtest.h>
-
+namespace OHOS {
+namespace HiviewDFX {
 class EventloggerCatcherTest : public testing::Test {
 public:
     void SetUp();
@@ -39,4 +40,6 @@ private:
 
     bool isSelinuxEnabled_ = false;
 };
+} // namesapce HiviewDFX
+} // namespace OHOS
 #endif // EVENT_LOGGER_CATCHER_TEST_H
