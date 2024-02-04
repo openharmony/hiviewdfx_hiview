@@ -199,7 +199,7 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
             return "";
         };
 
-        if (strList.size() == 7) { // 7: valid array size
+        if (strList.size() >= 7) { // 7: valid array size
             BinderInfo info = {0};
             OutputBinderInfo outputInfo;
             // 2: binder peer id,
