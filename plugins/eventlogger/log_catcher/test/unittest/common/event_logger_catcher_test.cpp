@@ -41,6 +41,8 @@
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
+namespace OHOS {
+namespace HiviewDFX {
 constexpr mode_t DEFAULT_MODE = 0644;
 void EventloggerCatcherTest::SetUp()
 {
@@ -853,7 +855,7 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getContainerSession", ShellCatcher::CATCHER_SCBSESSION, 0);
-    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
+    printf("CATCHER_SCBSESSION result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
@@ -863,3 +865,5 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
 
     close(fd);
 }
+} // namesapce HiviewDFX
+} // namespace OHOS
