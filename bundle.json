@@ -13,7 +13,6 @@
         "name": "hiview",
         "subsystem": "hiviewdfx",
         "syscap": [
-            "SystemCapability.HiviewDFX.Hiview",
             "SystemCapability.HiviewDFX.Hiview.FaultLogger",
             "SystemCapability.HiviewDFX.Hiview.LogLibrary"
         ],
