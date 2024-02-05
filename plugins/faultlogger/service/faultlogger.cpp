@@ -99,6 +99,7 @@ constexpr int RETRY_DELAY = 10;
 constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
+constexpr int MAX_PIPE_SIZE = 1024 * 1024;
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -760,39 +761,39 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
 
 void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const
 {
-    if (info.sectionMap.count("stackInfo") == 0) {
-        HIVIEW_LOGE("stackInfo is not exist");
+    if (info.pipeFd == -1) {
+        HIVIEW_LOGE("invalid fd");
         return;
     }
-    std::string stackInfoOriginal = info.sectionMap.at("stackInfo");
-    if (stackInfoOriginal.length() == 0) {
-        HIVIEW_LOGE("stackInfo original is empty");
+    ssize_t nread = -1;
+    char *buffer = new char[MAX_PIPE_SIZE];
+    do {
+        nread = read(info.pipeFd, buffer, MAX_PIPE_SIZE);
+    } while (nread == -1 && errno == EINTR);
+    close(info.pipeFd);
+    if (nread <= 0) {
+        HIVIEW_LOGE("read pipe failed");
+        delete []buffer;
         return;
     }
-
+    std::string stackInfoOriginal(buffer, nread);
+    delete []buffer;
     Json::Reader reader;
     Json::Value stackInfoObj;
     if (!reader.parse(stackInfoOriginal, stackInfoObj)) {
         HIVIEW_LOGE("parse stackInfo failed");
         return;
     }
-
     stackInfoObj["bundle_name"] = info.module;
     if (info.sectionMap.count("VERSION") == 1) {
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
     if (info.sectionMap.count("FOREGROUND") == 1) {
-        std::string foreground = info.sectionMap.at("FOREGROUND");
-        if (foreground == "Yes") {
-            stackInfoObj["foreground"] = true;
-        } else {
-            stackInfoObj["foreground"] = false;
-        }
+        stackInfoObj["foreground"] = (info.sectionMap.at("FOREGROUND") == "Yes") ? true : false;
     }
     if (info.sectionMap.count("FINGERPRINT") == 1) {
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
-
     if (info.sectionMap.count("HILOG") == 1) {
         Json::Value hilog;
         std::stringstream logStream(info.sectionMap.at("HILOG"));

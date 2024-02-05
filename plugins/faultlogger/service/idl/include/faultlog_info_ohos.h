@@ -28,6 +28,7 @@ public:
     int64_t time {0};
     int32_t uid {-1};
     int32_t pid {-1};
+    int32_t pipeFd {-1};
     int32_t faultLogType {0};
     // the fd from service will be closed in the application class
     // be careful about it
