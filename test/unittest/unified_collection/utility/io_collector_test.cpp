@@ -12,7 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 
 #include "io_collector.h"
@@ -31,6 +33,27 @@ public:
     static void SetUpTestCase() {};
     static void TearDownTestCase() {};
 };
+
+namespace {
+bool CheckFormat(const std::string &fileName, std::regex &reg1, std::regex &reg2)
+{
+    std::ifstream file;
+    file.open(fileName.c_str());
+    if (!file.is_open()) {
+        return false;
+    }
+    std::string line;
+    getline(file, line);
+    while (getline(file, line)) {
+        if (!regex_match(line, reg1) || !regex_match(line, reg2)) {
+            file.close();
+            return false;
+        }
+    }
+    file.close();
+    return true;
+}
+}
 
 /**
  * @tc.name: IoCollectorTest001
@@ -87,10 +110,18 @@ HWTEST_F(IoCollectorTest, IoCollectorTest004, TestSize.Level1)
     std::cout << "export disk stats result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
 
+    std::regex reg1("^\\w{1,}(\\s{1,}\\d{1,}\\.\\d{2}){4}(\\s{1,}\\d{1,}\\.\\d{4}){2}\\s{1,}\\d{1,}$");
+    std::regex reg2("^[\\w\\s]{13,}([\\s\\d\\.]{13}){4}([\\s\\d\\.]{13}){2}[\\s\\d]{13}$");
+    bool flag = CheckFormat(result.data, reg1, reg2);
+    ASSERT_TRUE(flag);
+
     sleep(3);
     auto nextResult = collect->ExportDiskStats();
     std::cout << "export disk stats nextResult " << nextResult.retCode << std::endl;
     ASSERT_TRUE(nextResult.retCode == UcError::SUCCESS);
+
+    flag = CheckFormat(nextResult.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
 
 /**
@@ -111,6 +142,11 @@ HWTEST_F(IoCollectorTest, IoCollectorTest005, TestSize.Level1)
     auto nextResult = collect->ExportDiskStats();
     std::cout << "export disk stats nextResult " << nextResult.retCode << std::endl;
     ASSERT_TRUE(nextResult.retCode == UcError::SUCCESS);
+
+    std::regex reg1("^\\w{1,}(\\s{1,}\\d{1,}\\.\\d{2}){4}(\\s{1,}\\d{1,}\\.\\d{4}){2}\\s{1,}\\d{1,}$");
+    std::regex reg2("^[\\w\\s]{13,}([\\s\\d\\.]{13}){4}([\\s\\d\\.]{13}){2}[\\s\\d]{13}$");
+    bool flag = CheckFormat(nextResult.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
 
 /**
@@ -137,6 +173,11 @@ HWTEST_F(IoCollectorTest, IoCollectorTest007, TestSize.Level1)
     auto result = collect->ExportEMMCInfo();
     std::cout << "export emmc info result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    std::regex reg1("^[\\w\\.]{1,}\\s{1,}\\w{1,}\\s{1,}[\\w\\s]{1,}\\w{1,}\\s{1,}\\d{1,}\\.\\d{2}$");
+    std::regex reg2("^[\\w\\.\\s]{15,}([\\w\\s]{10}){3}[\\s\\d\\.]{12}$");
+    bool flag = CheckFormat(result.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
 
 /**
@@ -163,6 +204,11 @@ HWTEST_F(IoCollectorTest, IoCollectorTest009, TestSize.Level1)
     auto result = collect->ExportAllProcIoStats();
     std::cout << "export all proc io stats result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    std::regex reg1("^\\d{1,}\\s{1,}[\\w\\.:-]{1,}\\s{1,}\\d{1,}(\\s{1,}\\d{1,}\\.\\d{2}){6}$");
+    std::regex reg2("^[\\d\\s]{12}[\\s\\w\\.:-]{13,}[\\s\\d]{13}([\\s\\d\\.]{13}){6}$");
+    bool flag = CheckFormat(result.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
 
 /**
@@ -177,10 +223,18 @@ HWTEST_F(IoCollectorTest, IoCollectorTest010, TestSize.Level1)
     std::cout << "export all proc io stats result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
 
+    std::regex reg1("^\\d{1,}\\s{1,}[\\w\\.:-]{1,}\\s{1,}\\d{1,}(\\s{1,}\\d{1,}\\.\\d{2}){6}$");
+    std::regex reg2("^[\\d\\s]{12}[\\s\\w\\.:-]{13,}[\\s\\d]{13}([\\s\\d\\.]{13}){6}$");
+    bool flag = CheckFormat(result.data, reg1, reg2);
+    ASSERT_TRUE(flag);
+
     sleep(3);
     auto nextResult = collect->ExportAllProcIoStats();
     std::cout << "export all proc io stats nextResult " << nextResult.retCode << std::endl;
     ASSERT_TRUE(nextResult.retCode == UcError::SUCCESS);
+
+    flag = CheckFormat(nextResult.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
 
 /**
@@ -207,4 +261,9 @@ HWTEST_F(IoCollectorTest, IoCollectorTest012, TestSize.Level1)
     auto result = collect->ExportSysIoStats();
     std::cout << "export sys io stats result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+
+    std::regex reg1("^\\d{1,}\\.\\d{2}(\\s{1,}\\d{1,}\\.\\d{2}){5}$");
+    std::regex reg2("^[\\d\\s\\.]{12}([\\d\\s\\.]{13}){5}$");
+    bool flag = CheckFormat(result.data, reg1, reg2);
+    ASSERT_TRUE(flag);
 }
