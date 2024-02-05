@@ -177,8 +177,8 @@ int SysEventDocWriter::WriteContent(const std::shared_ptr<SysEvent>& sysEvent, u
     out_.write(reinterpret_cast<char*>(content), contentSize);
     delete[] content;
     out_.flush();
-    HIVIEW_LOGI("write content size=%{public}u, eventTime=%{public}" PRIu64 ", file=%{public}s", contentSize,
-        sysEvent->GetEventUintValue("time_"), docPath_.c_str());
+    HIVIEW_LOGD("write content size=%{public}u, seq=%{public}" PRId64 ", file=%{public}s", contentSize,
+        sysEvent->GetEventSeq(), docPath_.c_str());
     return DOC_STORE_SUCCESS;
 }
 
