@@ -18,7 +18,9 @@
 #include <memory>
 #include <string>
 
+#include "event_thread_pool.h"
 #include "log_store_ex.h"
+
 #include "input_manager.h"
 
 namespace OHOS {
@@ -30,7 +32,7 @@ public:
     ActiveKeyEvent& operator=(const ActiveKeyEvent&) = delete;
     ActiveKeyEvent(const ActiveKeyEvent&) = delete;
 
-    void Init(std::shared_ptr<LogStoreEx> logStore);
+    void Init(std::shared_ptr<EventThreadPool> eventPool, std::shared_ptr<LogStoreEx> logStore);
     static int64_t SystemTimeMillisecond();
 
 private:
@@ -43,9 +45,9 @@ private:
 
     const uint64_t initDelay_ = 5000;
     std::list<int32_t> subscribeIds_;
+    std::shared_ptr<EventThreadPool> eventPool_;
     std::shared_ptr<LogStoreEx> logStore_;
     uint64_t triggeringTime_;
-    uint8_t taskOutDeps = 0;
 
     static const inline std::string CMD_LIST[] = {
         "cmd:w",
