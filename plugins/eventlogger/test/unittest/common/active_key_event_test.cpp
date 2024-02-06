@@ -52,12 +52,14 @@ void ActiveKeyEventTest::TearDownTestCase()
  */
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_001, TestSize.Level3)
 {
+    std::shared_ptr<EventThreadPool> eventPool = std::make_shared<EventThreadPool>(5, "EventThreadPool");
+    EXPECT_TRUE(eventPool != nullptr);
     std::string logStorePath = "/data/log/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->Init(logStoreEx);
+    activeKeyEvent->Init(eventPool, logStoreEx);
     activeKeyEvent->triggeringTime_ = 0;
     auto keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyHandle(keyEvent);
@@ -70,12 +72,14 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_001, TestSize.Level3)
  */
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_002, TestSize.Level3)
 {
+    std::shared_ptr<EventThreadPool> eventPool = nullptr;
+    EXPECT_TRUE(eventPool == nullptr);
     std::string logStorePath = "/data/log/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->Init(logStoreEx);
+    activeKeyEvent->Init(eventPool, logStoreEx);
     activeKeyEvent->triggeringTime_ = 0;
     auto keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
@@ -93,7 +97,9 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_003, TestSize.Level3)
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->Init(logStoreEx);
+    std::set<int32_t> preKeys;
+    preKeys.insert(OHOS::MMI::KeyEvent::KEYCODE_VOLUME_UP);
+    activeKeyEvent->InitSubscribe(preKeys, OHOS::MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 5, 500);
 }
 
 /**
@@ -104,6 +110,9 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_003, TestSize.Level3)
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_004, TestSize.Level3)
 {
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
+    activeKeyEvent->triggeringTime_ = (uint64_t)ActiveKeyEvent::SystemTimeMillisecond();
+    std::shared_ptr<OHOS::MMI::KeyEvent> keyEvent = OHOS::MMI::KeyEvent::Create();
+    activeKeyEvent->CombinationKeyCallback(keyEvent);
     std::set<int32_t> preKeys;
     preKeys.insert(OHOS::MMI::KeyEvent::KEYCODE_VOLUME_UP);
     activeKeyEvent->InitSubscribe(preKeys, OHOS::MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 5, 500);
@@ -116,7 +125,9 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_004, TestSize.Level3)
  */
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_005, TestSize.Level3)
 {
+    std::shared_ptr<EventThreadPool> eventPool = std::make_shared<EventThreadPool>(5, "EventThreadPool");
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
+    activeKeyEvent->eventPool_ = eventPool;
     activeKeyEvent->triggeringTime_ = (uint64_t)ActiveKeyEvent::SystemTimeMillisecond();
     std::shared_ptr<OHOS::MMI::KeyEvent> keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
@@ -129,9 +140,47 @@ static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_005, TestSize.Level3)
  */
 static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_006, TestSize.Level3)
 {
+    std::shared_ptr<EventThreadPool> eventPool = nullptr;
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
+    activeKeyEvent->eventPool_ = eventPool;
     activeKeyEvent->triggeringTime_ = 0;
     auto keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
+}
+
+/**
+ * @tc.name: ActiveKeyEventTest_007
+ * @tc.desc: ActiveKeyEventTest CombinationKeyCallback
+ * @tc.type: FUNC
+ */
+static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_007, TestSize.Level3)
+{
+    std::shared_ptr<EventThreadPool> eventPool = std::make_shared<EventThreadPool>(5, "EventThreadPool");
+    std::string logStorePath = "/data/log/test/";
+    std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
+    logStoreEx->Init();
+    std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
+    activeKeyEvent->Init(eventPool, logStoreEx);
+    activeKeyEvent->triggeringTime_ = 0;
+    auto keyEvent = OHOS::MMI::KeyEvent::Create();
+    activeKeyEvent->CombinationKeyCallback(keyEvent);
+}
+
+/**
+ * @tc.name: ActiveKeyEventTest_008
+ * @tc.desc: ActiveKeyEventTest CombinationKeyHandle
+ * @tc.type: FUNC
+ */
+static HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_008, TestSize.Level3)
+{
+    std::shared_ptr<EventThreadPool> eventPool = nullptr;
+    std::string logStorePath = "/data/log/test/";
+    std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
+    logStoreEx->Init();
+    std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
+    activeKeyEvent->Init(eventPool, logStoreEx);
+    activeKeyEvent->triggeringTime_ = 0;
+    auto keyEvent = OHOS::MMI::KeyEvent::Create();
+    activeKeyEvent->CombinationKeyHandle(keyEvent);
 }
 

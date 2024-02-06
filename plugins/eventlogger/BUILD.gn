@@ -17,7 +17,6 @@ config("event_logger_config") {
   include_dirs = [
     ".",
     "include",
-    "../interface/kits",
     "$hiview_plugin/freeze_detector",
   ]
 }
@@ -42,7 +41,6 @@ ohos_source_set("eventlogger") {
 
   external_deps = [
     "faultloggerd:libbacktrace_local",
-    "ffrt:libffrt",
     "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
