@@ -717,6 +717,11 @@ void Faultlogger::StartBootScan()
     time_t now = time(nullptr);
     FileUtil::GetDirFiles(TEMP_LOG_PATH, files);
     for (const auto& file : files) {
+        // if file type is not cppcrash, skip!
+        if (file.find("cppcrash") == std::string::npos) {
+            HIVIEW_LOGI("Skip this file(%{public}s) that the type is not cppcrash.", file.c_str());
+            continue;
+        }
         time_t lastAccessTime = GetFileLastAccessTimeStamp(file);
         if (now > lastAccessTime && now - lastAccessTime > FORTYEIGHT_HOURS) {
             HIVIEW_LOGI("Skip this file(%{public}s) that were created 48 hours ago.", file.c_str());
