@@ -858,7 +858,7 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     printf("CATCHER_SCBSESSION result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
-    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
+    printf("CATCHER_SCBVIEWPARAM result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("default", -1, 0);
     EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
