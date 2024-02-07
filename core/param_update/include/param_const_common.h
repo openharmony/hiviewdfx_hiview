@@ -25,7 +25,7 @@ namespace HiviewDFX {
     const std::string SUB_TYPE = "CHINA";
     const std::string CONFIG_UPDATED_ACTION = "usual.event.DUE_SA_CFG_UPDATED";
     const std::string CFG_PATH = "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/CHINA";
-    const std::string PUBKEY_PATH = "/data/system/hiview/hwkey_param_service.pem";
+    const std::string PUBKEY_PATH = "/system/etc/hiview/hwkey_param_upgrade_hiviewdfx_v1.pem";
     const std::string LOCAL_CFG_PATH = "/system/etc/hiview";
     const std::string CLOUD_CFG_PATH = "/data/system/hiview";
 }
