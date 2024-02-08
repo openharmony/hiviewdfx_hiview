@@ -14,6 +14,9 @@
  */
 #include <iostream>
 
+#include "accesstoken_kit.h"
+#include "nativetoken_kit.h"
+#include "token_setproc.h"
 #include "wm_collector.h"
 
 #include <gtest/gtest.h>
@@ -22,6 +25,39 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
+namespace {
+void NativeTokenGet(const char* perms[], int size)
+{
+    uint64_t tokenId;
+    NativeTokenInfoParams infoInstance = {
+        .dcapsNum = 0,
+        .permsNum = size,
+        .aclsNum = 0,
+        .dcaps = nullptr,
+        .perms = perms,
+        .acls = nullptr,
+        .aplStr = "system_basic",
+    };
+
+    infoInstance.processName = "UCollectionUtilityUnitTest";
+    tokenId = GetAccessTokenId(&infoInstance);
+    SetSelfTokenID(tokenId);
+    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+}
+
+void EnablePermissionAccess()
+{
+    const char* perms[] = {
+        "ohos.permission.DUMP",
+    };
+    NativeTokenGet(perms, 1); // 1 is the size of the array which consists of required permissions.
+}
+
+void DisablePermissionAccess()
+{
+    NativeTokenGet(nullptr, 0); // empty permission array.
+}
+}
 
 class WmCollectorTest : public testing::Test {
 public:
@@ -38,10 +74,12 @@ public:
 */
 HWTEST_F(WmCollectorTest, WmCollectorTest001, TestSize.Level1)
 {
+    EnablePermissionAccess();
     std::shared_ptr<WmCollector> collector = WmCollector::Create();
     auto result = collector->ExportWindowsInfo();
     std::cout << "export windows info result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+    DisablePermissionAccess();
 }
 
 /**
@@ -51,8 +89,10 @@ HWTEST_F(WmCollectorTest, WmCollectorTest001, TestSize.Level1)
 */
 HWTEST_F(WmCollectorTest, WmCollectorTest002, TestSize.Level1)
 {
+    EnablePermissionAccess();
     std::shared_ptr<WmCollector> collector = WmCollector::Create();
     auto result = collector->ExportWindowsMemory();
     std::cout << "export windows memory result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+    DisablePermissionAccess();
 }
