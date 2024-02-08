@@ -17,6 +17,7 @@ group("unittest") {
   testonly = true
   deps = [
     ":AuditLogParserTest",
+    ":DispatchConfigTest",
     ":EventBaseTest",
     ":EventLoopTest",
     ":PluginFactoryTest",
@@ -145,6 +146,20 @@ ohos_unittest("EventBaseTest") {
   configs = [ ":unittest_config" ]
 
   sources = [ "unittest/common/event_base_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiview_base",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [ "hilog:libhilog" ]
+}
+
+ohos_unittest("DispatchConfigTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [ "unittest/common/dispatch_config_test.cpp" ]
 
   deps = [
     "$hiview_base:hiview_base",
