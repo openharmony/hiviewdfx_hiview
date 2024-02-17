@@ -463,6 +463,10 @@ void EventLogger::OnLoad()
     SetVersion("1.0");
     logStore_->SetMaxSize(MAX_FOLDER_SIZE);
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
+    LogStoreEx::LogFileComparator comparator = [this](const LogFile &lhs, const LogFile &rhs) {
+        return rhs < lhs;
+    };
+    logStore_->SetLogFileComparator(comparator);
     logStore_->Init();
     threadLoop_ = GetWorkLoop();
 
