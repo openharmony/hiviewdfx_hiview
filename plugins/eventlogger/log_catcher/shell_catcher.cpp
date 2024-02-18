@@ -45,7 +45,7 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
             break;
         case CATCHER_LIGHT_HILOG:
-            ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid_).c_str(),
+            ret = execl("/system/bin/hilog", "hilog", "-z", "1000", "-P", std::to_string(pid_).c_str(),
                 nullptr);
             break;
         case CATCHER_SNAPSHOT:

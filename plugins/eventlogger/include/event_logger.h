@@ -43,7 +43,7 @@ struct BinderInfo {
 
 class EventLogger : public EventListener, public Plugin {
 public:
-    EventLogger() : logStore_(std::make_shared<LogStoreEx>(LOGGER_EVENT_LOG_PATH, false)),
+    EventLogger() : logStore_(std::make_shared<LogStoreEx>(LOGGER_EVENT_LOG_PATH, true)),
         startTime_(time(nullptr)) {};
     ~EventLogger() {};
     bool OnEvent(std::shared_ptr<Event> &event) override;

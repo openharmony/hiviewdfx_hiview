@@ -309,7 +309,7 @@ void EventLogTask::HilogCapture()
 void EventLogTask::LightHilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hilog -z 100 -P", ShellCatcher::CATCHER_LIGHT_HILOG, pid_);
+    capture->Initialize("hilog -z 1000 -P", ShellCatcher::CATCHER_LIGHT_HILOG, pid_);
     tasks_.push_back(capture);
 }
 
