@@ -211,8 +211,8 @@ std::future<bool> EventLoop::AddEventForResult(std::shared_ptr<EventHandler> han
     return result;
 }
 
-uint64_t EventLoop::AddTimerEvent(std::shared_ptr<EventHandler> handler, std::shared_ptr<Event> event, const Task &task,
-    uint64_t interval, bool repeat)
+uint64_t EventLoop::AddTimerEvent(std::shared_ptr<EventHandler> handler, std::shared_ptr<Event> event,
+    const Task &task, uint64_t interval, bool repeat)
 {
     if (needQuit_) {
         return 0;
@@ -241,6 +241,8 @@ uint64_t EventLoop::AddTimerEvent(std::shared_ptr<EventHandler> handler, std::sh
     loopEvent.task = task;
     std::lock_guard<std::mutex> lock(queueMutex_);
     pendingEvents_.push(std::move(loopEvent));
+    HIVIEW_LOGI("task[%{public}" PRIu64 "|%{public}d] has been pushed into task queue.", interval,
+        static_cast<int>(repeat));
     ResetTimerIfNeedLocked();
     return now;
 }
