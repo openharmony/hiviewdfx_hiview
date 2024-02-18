@@ -36,6 +36,8 @@ ohos_shared_library("libucollection_client") {
 
   external_deps = [ "hilog:libhilog" ]
 
+  version_script = "libucollectionclient.map"
+
   innerapi_tags = [ "platformsdk" ]
 
   part_name = "hiview"

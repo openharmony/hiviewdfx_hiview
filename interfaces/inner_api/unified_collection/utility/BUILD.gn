@@ -31,6 +31,8 @@ ohos_shared_library("libucollection_utility") {
 
   external_deps = [ "hilog:libhilog" ]
 
+  version_script = "libucollectionutility.map"
+
   if (has_hiprofiler) {
     external_deps += [ "hiprofiler:libnative_daemon_client" ]
   }

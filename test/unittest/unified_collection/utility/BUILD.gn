@@ -32,6 +32,8 @@ ohos_unittest("UCollectionUtilityUnitTest") {
   configs = [ ":ucollection_utility_test_config" ]
 
   sources = [
+    "$hiview_framework/native/unified_collection/collector/utils/trace_manager.cpp",
+    "$hiview_framework/native/unified_collection/collector/utils/trace_utils.cpp",
     "cpu_collector_test.cpp",
     "gpu_collector_test.cpp",
     "io_collector_test.cpp",
@@ -49,6 +51,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
   cflags_cc = []
 
   deps = [
+    "$hiview_base/utility:hiview_utility",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "//third_party/googletest:gtest_main",
   ]
@@ -57,6 +60,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
+    "hilog:libhilog",
     "hitrace:hitrace_dump",
     "init:libbegetutil",
     "wifi:wifi_sdk",
