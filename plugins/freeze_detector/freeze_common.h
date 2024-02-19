@@ -45,6 +45,7 @@ public:
     static const inline std::string HIREACE_TIME = "HITRACE_TIME";
     static const inline std::string SYSRQ_TIME = "SYSRQ_TIME";
     static const inline std::string SYSEVENT_PIPELINE = "SysEventPipeline";
+    static const inline std::string DISPLAY_POWER_INFO = "DisplayPowerInfo:";
 
     FreezeCommon();
     ~FreezeCommon();

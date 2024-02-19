@@ -15,12 +15,14 @@
 
 #include "vendor.h"
 
+#include "display_power_mgr_client.h"
 #include "faultlogger_client.h"
 #include "file_util.h"
+#include "freeze_json_util.h"
 #include "logger.h"
 #include "string_util.h"
 #include "time_util.h"
-#include "freeze_json_util.h"
+
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -106,8 +108,10 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
         FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = processName;
     info.reason = stringId;
+    std::string disPlayPowerInfo = GetDisPlayPowerInfo();
     info.summary = type + ": " + processName + " " + stringId +
         " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
+    info.summary += FreezeCommon::DISPLAY_POWER_INFO + disPlayPowerInfo;
     info.logPath = logPath;
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
@@ -295,6 +299,44 @@ bool Vendor::Init()
     logStore_->SetMinKeepingFileNumber(MAX_FILE_NUM);
     logStore_->Init();
     return true;
+}
+
+std::string Vendor::GetDisPlayPowerInfo() const
+{
+    std::string disPlayPowerInfo;
+    uint32_t brightness = OHOS::DisplayPowerMgr::DisplayPowerMgrClient::GetInstance().GetDeviceBrightness();
+    disPlayPowerInfo =  "brightness:" + StringUtil::ToString(brightness);
+
+    OHOS::PowerMgr::PowerState powerState = OHOS::PowerMgr::PowerMgrClient::GetInstance().GetState();
+    disPlayPowerInfo += ", powerState:" + GetPowerStateString(powerState) + "\n";
+    return disPlayPowerInfo;
+}
+
+std::string Vendor::GetPowerStateString(OHOS::PowerMgr::PowerState state) const
+{
+    switch (state) {
+        case OHOS::PowerMgr::PowerState::AWAKE:
+            return std::string("AWAKE");
+        case OHOS::PowerMgr::PowerState::FREEZE:
+            return std::string("FREEZE");
+        case OHOS::PowerMgr::PowerState::INACTIVE:
+            return std::string("INACTIVE");
+        case OHOS::PowerMgr::PowerState::STAND_BY:
+            return std::string("STAND_BY");
+        case OHOS::PowerMgr::PowerState::DOZE:
+            return std::string("DOZE");
+        case OHOS::PowerMgr::PowerState::SLEEP:
+            return std::string("SLEEP");
+        case OHOS::PowerMgr::PowerState::HIBERNATE:
+            return std::string("HIBERNATE");
+        case OHOS::PowerMgr::PowerState::SHUTDOWN:
+            return std::string("SHUTDOWN");
+        case OHOS::PowerMgr::PowerState::UNKNOWN:
+            return std::string("UNKNOWN");
+        default:
+            break;
+    }
+    return std::string("UNKNOWN");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
