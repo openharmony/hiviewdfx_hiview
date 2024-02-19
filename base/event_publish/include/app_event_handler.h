@@ -30,6 +30,10 @@ public:
         std::string processName;
     };
 
+    struct AbilityInfo {
+        std::string abilityName;
+    };
+
     struct AppLaunchInfo : public BundleInfo, public ProcessInfo {
         int32_t startType = 0;
         uint64_t iconInputTime = 0;
@@ -37,7 +41,21 @@ public:
         uint64_t extendTime = 0;
     };
 
+    struct ScrollJankInfo : public BundleInfo, public ProcessInfo, public AbilityInfo {
+        uint64_t beginTime = 0;
+        uint64_t duration = 0;
+        int32_t totalAppFrames = 0;
+        int32_t totalAppMissedFrames = 0;
+        uint64_t maxAppFrametime = 0;
+        int32_t maxAppSeqFrames = 0;
+        int32_t totalRenderFrames = 0;
+        int32_t totalRenderMissedFrames = 0;
+        uint64_t maxRenderFrametime = 0;
+        int32_t maxRenderSeqFrames = 0;
+    };
+
     int PostEvent(const AppLaunchInfo& event);
+    int PostEvent(const ScrollJankInfo& event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
