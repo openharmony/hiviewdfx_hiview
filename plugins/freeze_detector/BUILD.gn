@@ -41,7 +41,11 @@ ohos_source_set("freeze_detector") {
 
   configs = [ ":freeze_detector_config" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "display_manager:displaymgr",
+    "hilog:libhilog",
+    "power_manager:powermgr_client",
+  ]
 
   deps = [
     "$hiview_base:hiviewbase",
