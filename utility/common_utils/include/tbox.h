@@ -38,6 +38,8 @@ public:
     static bool HasCausedBy(const std::string& line);
     static void FilterTrace(std::map<std::string, std::string>& eventInfo, std::string eventType = "");
     static bool WaitForDoneFile(const std::string& file, unsigned int timeout);
+    //get fault happen time
+    static int64_t GetHappenTime(const std::string& src, const std::string& regex);
 
 public:
     static const std::string ARRAY_STR;

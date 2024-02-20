@@ -281,5 +281,52 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest005, testing::ext::TestSize.Level3)
                  "/system/lib64/libeventhandler.z.so(OHOS::AppExecFwk::EventQueue::WaitUntilLocked)");
     EXPECT_STREQ(eventInfos["LAST_FRAME"].c_str(), "/system/bin/appspawn");
 }
+
+/* @tc.name: TboxTest006
+ * @tc.desc: Test WaitForDoneFile method of class Tbox
+ * @tc.type: FUNC
+ * @tc.require: issueI8Z9FF
+ */
+HWTEST_F(UtilityCommonUtilsTest, TboxTest006, testing::ext::TestSize.Level3)
+{
+    std::string timeStr = "197001060319";
+
+    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+
+    ASSERT_TRUE(!happenTime_);
+}
+
+/* @tc.name: TboxTest007
+ * @tc.desc: Test WaitForDoneFile method of class Tbox
+ * @tc.type: FUNC
+ * @tc.require: issueI8Z9FF
+ */
+HWTEST_F(UtilityCommonUtilsTest, TboxTest007, testing::ext::TestSize.Level3)
+{
+    std::string timeStr = "19700106031950";
+
+    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+
+    ASSERT_EQ(happenTime_, 415190);
+}
+
+/* @tc.name: TboxTest008
+ * @tc.desc: Test WaitForDoneFile method of class Tbox
+ * @tc.type: FUNC
+ * @tc.require: issueI8Z9FF
+ */
+HWTEST_F(UtilityCommonUtilsTest, TboxTest008, testing::ext::TestSize.Level3)
+{
+    std::string timeStr = "20240217034255";
+    int64_t timeStrtoTm = 1708112575;
+    int64_t offset = 28800;
+    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+
+    if (happenTime_ - timeStrtoTm > offset) {
+        ASSERT_EQ(happenTime_ - timeStrtoTm, offset);
+    } else {
+        ASSERT_TRUE(happenTime_);
+    }
+}
 }
 }
