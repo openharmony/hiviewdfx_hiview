@@ -455,11 +455,10 @@ std::string SysEvent::AsJsonStr()
     if (builder_ == nullptr) {
         return "";
     }
-    auto rawData = builder_->Build(); // update
-    if (rawData == nullptr) {
+    rawData_ = builder_->Build(); // update
+    if (rawData_ == nullptr) {
         return "";
     }
-    rawData_ = rawData;
     EventRaw::DecodedEvent event(rawData_->GetData());
 
     std::string jsonStr = event.AsJsonStr();
@@ -480,12 +479,11 @@ uint8_t* SysEvent::AsRawData()
     if (builder_ == nullptr) {
         return nullptr;
     }
-    auto rawData = builder_->Build();
-    if (rawData != nullptr) {
-        rawData_ = rawData;
-        return rawData_->GetData();
+    rawData_ = builder_->Build();
+    if (rawData_ == nullptr) {
+        return nullptr;
     }
-    return nullptr;
+    return rawData_->GetData();
 }
 
 std::string SysEvent::EscapeJsonStringValue(const std::string& src)
