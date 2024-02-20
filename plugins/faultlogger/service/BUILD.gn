@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -87,5 +87,46 @@ ohos_source_set("faultlogger_service") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+  ]
+}
+
+ohos_source_set("faultlogger_service_fuzz_src") {
+  part_name = "hiview"
+  include_dirs = [
+    ".",
+    "$hiview_plugin/faultlogger/common",
+    "$hiview_plugin/faultlogger/service/sanitizer_collector",
+  ]
+  defines = [ "UNIT_TEST" ]
+
+  sources = [
+    "faultlog_database.cpp",
+    "faultlog_formatter.cpp",
+    "faultlog_manager.cpp",
+    "faultlogger.cpp",
+    "freeze_json_generator.cpp",
+    "sanitizer_collector/zip_helper.cpp",
+  ]
+
+  deps = [
+    ":faultlogger_service_ability",
+    "$hiview_base:hiviewbase",
+    "$hiview_framework/native/unified_collection:ucollection_source",
+    "$hiview_plugin/faultlogger/common:faultlogger_common",
+    "$hiview_plugin/faultlogger/common:log_analyzer",
+    "//third_party/bounds_checking_function:libsec_shared",
+    "//third_party/jsoncpp:jsoncpp",
+    "//third_party/zlib:libz",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "ipc:ipc_single",
   ]
 }
