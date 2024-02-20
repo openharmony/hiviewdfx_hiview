@@ -47,6 +47,7 @@ private:
     static const int DEFAULT_TIME_WINDOW = 30;
     static const int MINUTES_IN_HOUR = 60;
     static const int minMatchNum = 2;
+    static const int defaultHours = 10;
 
     bool ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const;
