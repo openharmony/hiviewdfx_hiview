@@ -34,6 +34,10 @@ private:
     void WaitForLogs(const std::string& logDir);
     void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
     bool IsEventProcessed(const std::string& name, const std::string& key, const std::string& value);
+    static uint64_t GetHappenTime(std::string& line, bool hisiHistoryPath);
+    int CheckAndHiSysEventWrite(std::string& name, std::map<std::string, std::string>& historyMap,
+        uint64_t& happenTime_);
+    std::map<std::string, std::string> GetValueFromHistory(std::string& line);
 
     static constexpr int SECONDS = 60;
     static constexpr int READ_LINE_NUM = 5;

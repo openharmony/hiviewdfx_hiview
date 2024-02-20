@@ -846,6 +846,7 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest020, TestSize.Level1)
      */
     std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest013/bootfail_info_x";
     ASSERT_EQ(FileUtil::FileExists(faultFile), false);
+
     /**
      * @tc.steps: step2. smart parser process crash fault log
      */
