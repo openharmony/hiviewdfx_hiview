@@ -83,7 +83,6 @@ ohos_source_set("ucollection_source") {
     "hitrace:hitrace_dump",
     "init:libbegetutil",
     "relational_store:native_rdb",
-    "wifi:wifi_sdk",
   ]
 
   cflags = []
@@ -96,6 +95,13 @@ ohos_source_set("ucollection_source") {
     cflags += [ "-DHAS_HIPERF" ]
     external_deps += [ "hiperf:hiperf_client" ]
   }
+
+  defines = []
+  if (is_wifi_enable) {
+    external_deps += [ "wifi:wifi_sdk" ]
+    defines += [ "COMMUNICATION_WIFI_ENABLE" ]
+  }
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
