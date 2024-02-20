@@ -569,5 +569,59 @@ HWTEST_F(SysEventTest, TestSysEventValueParse011, testing::ext::TestSize.Level3)
     ASSERT_TRUE(sysEvent->GetEventStringArrayValue("EMPTY_ARRAY", dest8));
     ASSERT_TRUE(dest8.empty());
 }
+
+/**
+ * @tc.name: TestSysEventTranslation01
+ * @tc.desc: Test translation from sys event to json string
+ * @tc.type: FUNC
+ * @tc.require: issueI91RBZ
+ */
+HWTEST_F(SysEventTest, TestSysEventTranslation01, testing::ext::TestSize.Level3)
+{
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, GetOriginTestString());
+    ASSERT_TRUE(sysEvent != nullptr);
+    auto jsonStrOrigin = sysEvent->AsJsonStr();
+    auto jsonStrBeforeValueAppend = sysEvent->AsJsonStr();
+    ASSERT_EQ(jsonStrOrigin, jsonStrBeforeValueAppend);
+    sysEvent->SetEventValue("TEST_KEY", "test value1");
+    auto jsonStrAfterValueAppend = sysEvent->AsJsonStr();
+    auto foundRet = jsonStrBeforeValueAppend.find("\"TEST_KEY\":\"test value1\"");
+    ASSERT_TRUE(foundRet == std::string::npos);
+    foundRet = jsonStrAfterValueAppend.find("\"TEST_KEY\":\"test value1\"");
+    ASSERT_TRUE(foundRet != std::string::npos);
+    sysEvent->SetEventValue("TEST_KEY", "test value2");
+    jsonStrAfterValueAppend = sysEvent->AsJsonStr();
+    foundRet = jsonStrAfterValueAppend.find("\"TEST_KEY\":\"test value1\"");
+    ASSERT_TRUE(foundRet == std::string::npos);
+    foundRet = jsonStrAfterValueAppend.find("\"TEST_KEY\":\"test value2\"");
+    ASSERT_TRUE(foundRet != std::string::npos);
+}
+
+/**
+ * @tc.name: TestSysEventTranslation02
+ * @tc.desc: Test translation from sys event to binary raw data
+ * @tc.type: FUNC
+ * @tc.require: issueI91RBZ
+ */
+HWTEST_F(SysEventTest, TestSysEventTranslation02, testing::ext::TestSize.Level3)
+{
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, GetOriginTestString());
+    ASSERT_TRUE(sysEvent != nullptr);
+    auto rawData = sysEvent->AsRawData();
+    int32_t dataLength = *(reinterpret_cast<int32_t*>(rawData));
+    ASSERT_TRUE(rawData != nullptr);
+    auto rawDataBeforeValueAppend = sysEvent->AsRawData();
+    ASSERT_TRUE(rawDataBeforeValueAppend != nullptr);
+    ASSERT_EQ(dataLength, *(reinterpret_cast<int32_t*>(rawDataBeforeValueAppend)));
+    sysEvent->SetEventValue("TEST_KEY", "test value1");
+    auto rawDataAfterValueAppend = sysEvent->AsRawData();
+    ASSERT_TRUE(rawDataAfterValueAppend != nullptr);
+    int32_t dataLengthAfterValueAppend = *(reinterpret_cast<int32_t*>(rawDataAfterValueAppend));
+    ASSERT_NE(dataLength, dataLengthAfterValueAppend);
+    sysEvent->SetEventValue("TEST_KEY", "test value123");
+    auto rawDataAfterValueAppendNew = sysEvent->AsRawData();
+    int32_t dataLengthAfterValueAppendNew = *(reinterpret_cast<int32_t*>(rawDataAfterValueAppendNew));
+    ASSERT_NE(dataLengthAfterValueAppend, dataLengthAfterValueAppendNew);
+}
 } // HiviewDFX
 } // OHOS
