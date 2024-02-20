@@ -53,10 +53,14 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_001",
         nullptr, jsonStr);
+    sysEvent->SetEventValue("PACKAGE_NAME", "");
+    sysEvent->SetEventValue("MODULE_NAME", "");
     EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
     sysEvent->SetEventValue("PACKAGE_NAME", "EventLoggerTest");
     EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
-    auto event = std::make_shared<Event>("EventLoggerTest_001", "event");
+    sysEvent->SetEventValue("PID", 0);
+    sysEvent->SetEventValue("eventLog_action", "");
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     EXPECT_EQ(eventLogger->OnEvent(event), true);
 }
 
@@ -69,10 +73,15 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_002",
+    std::string testName = "EventLoggerTest_002";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
-    sysEvent->SetEventValue("NAME", "EventLoggerTest_002");
-    sysEvent->SetEventValue("MODULE_NAME", "");
+    sysEvent->SetEventValue("EVENTNAME", testName);
+    sysEvent->SetEventValue("MODULE_NAME", testName);
+    sysEvent->SetEventValue("PACKAGE_NAME", testName);
+    sysEvent->SetEventValue("PROCESS_NAME", testName);
+    sysEvent->SetEventValue("eventLog_action", "pb:1");
+    sysEvent->SetEventValue("eventLog_interval", 1);
     sysEvent->SetEventValue("STACK", "TEST\\nTEST\\nTEST");
     sysEvent->SetEventValue("MSG", "TEST\\nTEST\\nTEST");
     EXPECT_EQ(eventLogger->WriteCommonHead(1, sysEvent), true);
@@ -107,6 +116,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
     EXPECT_EQ(ret, true);
     ret = eventLogger->UpdateDB(sysEvent, "nolog");
     EXPECT_EQ(ret, true);
+    eventLogger->OnLoad();
     eventLogger->OnUnload();
 }
 
