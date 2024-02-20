@@ -312,7 +312,7 @@ std::string Vendor::GetDisPlayPowerInfo() const
     return disPlayPowerInfo;
 }
 
-std::string Vendor::GetPowerStateString(OHOS::PowerMgr::PowerState state) const
+std::string Vendor::GetPowerStateString(OHOS::PowerMgr::PowerState state)
 {
     switch (state) {
         case OHOS::PowerMgr::PowerState::AWAKE:

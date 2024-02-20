@@ -150,14 +150,14 @@ std::string FreezeResolver::GetTimeZone() const
     timeZone = (hour >= 0) ? "+" : "-";
 
     int absHour = std::abs(hour);
-    if (absHour < 10) {
+    if (absHour < defaultHours) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absHour));
 
     int minute = (-tz.tz_minuteswest) % MINUTES_IN_HOUR;
     int absMinute = std::abs(minute);
-    if (absMinute < 10) {
+    if (absMinute < defaultHours) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absMinute));

@@ -111,7 +111,7 @@ std::string EventloggerCatcherTest::GetFormatTime(unsigned long timestamp)
     localtime_r(&ts, &tm);
     char buf[strLen];
 
-    (void)memset_s(buf, strLen, 0, strLen);
+    (void)memset_s(buf, sizeof(buf), 0, strLen);
     strftime(buf, strLen - 1, "%Y%m%d%H%M%S", &tm);
     return std::string(buf, strlen(buf));
 }
