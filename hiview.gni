@@ -64,4 +64,10 @@ declare_args() {
       !defined(global_parts_info.developtools_hiprofiler)) {
     has_hiprofiler = false
   }
+
+  is_wifi_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.communication_wifi)) {
+    is_wifi_enable = false
+  }
 }

@@ -19,7 +19,9 @@
 #include "network_collector.h"
 #include "token_setproc.h"
 #include "network_collector.h"
+#ifdef COMMUNICATION_WIFI_ENABLE
 #include "wifi_device.h"
+#endif
 
 #include <gtest/gtest.h>
 
@@ -63,6 +65,7 @@ void DisablePermissionAccess()
 
 bool IsWifiEnabled()
 {
+#ifdef COMMUNICATION_WIFI_ENABLE
     std::shared_ptr<OHOS::Wifi::WifiDevice> wifiDevicePtr =
         OHOS::Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
     if (wifiDevicePtr == nullptr) {
@@ -76,6 +79,9 @@ bool IsWifiEnabled()
     OHOS::Wifi::WifiLinkedInfo linkInfo;
     int ret = wifiDevicePtr->GetLinkedInfo(linkInfo);
     return ret == OHOS::Wifi::WIFI_OPT_SUCCESS;
+#else
+    return false;
+#endif
 }
 }
 
