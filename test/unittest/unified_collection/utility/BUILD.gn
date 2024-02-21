@@ -63,7 +63,6 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "hilog:libhilog",
     "hitrace:hitrace_dump",
     "init:libbegetutil",
-    "wifi:wifi_sdk",
   ]
 
   if (has_hiprofiler) {
@@ -72,5 +71,11 @@ ohos_unittest("UCollectionUtilityUnitTest") {
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
+  }
+
+  defines = []
+  if (is_wifi_enable) {
+    external_deps += [ "wifi:wifi_sdk" ]
+    defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
 }

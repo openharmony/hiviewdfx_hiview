@@ -17,7 +17,9 @@
 
 #include "logger.h"
 #include "network_decorator.h"
+#ifdef COMMUNICATION_WIFI_ENABLE
 #include "wifi_device.h"
+#endif
 
 using namespace OHOS::HiviewDFX::UCollect;
 
@@ -31,6 +33,7 @@ std::shared_ptr<NetworkCollector> NetworkCollector::Create()
     return std::make_shared<NetworkDecorator>(std::make_shared<NetworkCollectorImpl>());
 }
 
+#ifdef COMMUNICATION_WIFI_ENABLE
 bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
 {
     std::shared_ptr<Wifi::WifiDevice> wifiDevicePtr = Wifi::WifiDevice::GetInstance(OHOS::WIFI_DEVICE_SYS_ABILITY_ID);
@@ -50,10 +53,12 @@ bool GetNetworkInfo(Wifi::WifiLinkedInfo& linkInfo)
         return true;
     }
 }
+#endif
 
 CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
 {
     CollectResult<NetworkRate> result;
+#ifdef COMMUNICATION_WIFI_ENABLE
     Wifi::WifiLinkedInfo linkInfo;
     if (GetNetworkInfo(linkInfo)) {
         NetworkRate& networkRate = result.data;
@@ -68,12 +73,14 @@ CollectResult<NetworkRate> NetworkCollectorImpl::CollectRate()
         HIVIEW_LOGE("IsWifiActive failed");
         result.retCode = UcError::UNSUPPORT;
     }
+#endif
     return result;
 }
 
 CollectResult<NetworkPackets> NetworkCollectorImpl::CollectSysPackets()
 {
     CollectResult<NetworkPackets> result;
+#ifdef COMMUNICATION_WIFI_ENABLE
     Wifi::WifiLinkedInfo linkInfo;
     if (GetNetworkInfo(linkInfo)) {
         NetworkPackets& networkPackets = result.data;
@@ -88,6 +95,7 @@ CollectResult<NetworkPackets> NetworkCollectorImpl::CollectSysPackets()
         HIVIEW_LOGE("IsWifiActive failed");
         result.retCode = UcError::UNSUPPORT;
     }
+#endif
     return result;
 }
 } // UCollectUtil
