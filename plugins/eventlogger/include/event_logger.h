@@ -78,11 +78,9 @@ private:
     std::unordered_map<int, std::string> fileMap_;
     std::unordered_map<std::string, EventLoggerConfig::EventLoggerConfigData> eventLoggerConfig_;
     std::shared_ptr<EventLoop> threadLoop_ = nullptr;
-    std::unordered_set<std::shared_ptr<SysEvent>> sysEventSet_;
     int const maxEventPoolCount = 5;
     std::shared_ptr<EventThreadPool> eventPool_;
     std::mutex intervalMutex_;
-    std::mutex finishMutex_;
     std::unique_ptr<ActiveKeyEvent> activeKeyEvent_;
     std::string cmdlinePath_ = "/proc/cmdline";
     std::string cmdlineContent_ = "";
@@ -96,7 +94,7 @@ private:
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
-    void CheckEventOnContinue();
+    void CheckEventOnContinue(std::shared_ptr<SysEvent> event);
     bool CanProcessRebootEvent(const Event& event);
     void ProcessRebootEvent();
     std::string GetRebootReason() const;
