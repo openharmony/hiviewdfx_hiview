@@ -28,6 +28,34 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
+// eg: 123   ab-cd   456 789 0   -123
+//     123   ab cd   0   0   0   0
+const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.:/-]{1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
+const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
+// eg: Total dmabuf size of ab.cd: 12345 bytes
+//     ab.cd    12  34  567  890  123   ef   gh   ijk
+const std::regex RAW_DMA1("^[\\w:\\.]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
+const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w:\\.]{1,}(: )\\d{1,}( bytes)$");
+// eg: ab(cd):      12345 kB
+//     ab:              - kB
+const std::regex RAW_MEM_INFO1("^[\\w()]{1,}:\\s{1,}\\d{1,}( kB)?$");
+const std::regex RAW_MEM_INFO2("^[\\w()]{1,}:\\s{1,}- kB$");
+// eg: Node     0, zone     abc, type   def  0  0  0  0  0  0  0  0  0  0  0
+//     ab  cd  efg  hi    jk     lmn  opq     rst   uvw     xyz
+const std::string RAW_PAGE_TYPE_STR1("^(Node)\\s{1,}\\d{1,}(, zone)\\s{1,}\\w{1,}((, type)\\s{1,}\\w{1,})?");
+const std::string RAW_PAGE_TYPE_STR2("(\\s{1,}\\d{1,}){5,} $");
+const std::regex RAW_PAGE_TYPE_INFO1(RAW_PAGE_TYPE_STR1 + RAW_PAGE_TYPE_STR2);
+const std::regex RAW_PAGE_TYPE_INFO2("^(\\w{1,}\\s{1,}){5,}$");
+// eg: abc   12    34    5  678    9 : tunables    1    2    3 : slabdata      4      5      6
+//     abc - version: 1.2
+//     #name       <ab> <cd> <ef> <hi> <jk> : tunables <lmn> <opq> <rst> : slabdata <uv> <wx> <yz>
+const std::string RAW_SLAB_STR1("^[\\w\\[\\]:>-]{1,}(\\s{1,}\\d{1,}){5}( : tunables)(\\s{1,}\\d{1,}){3}");
+const std::string RAW_SLAB_STR2("( : slabdata)(\\s{1,}\\d{1,}){3}(\\s{1,}\\w{1,})?$");
+const std::regex RAW_SLAB_INFO1(RAW_SLAB_STR1 + RAW_SLAB_STR2);
+const std::string RAW_SLAB_STR3("^(\\w{1,} - version: )[\\d\\.]{1,}|# ?name\\s{1,}");
+const std::string RAW_SLAB_STR4("( <\\w{1,}>){5} : tunables( <\\w{1,}>){3} : slabdata( <\\w{1,}>){3,}$");
+const std::regex RAW_SLAB_INFO2(RAW_SLAB_STR3 + RAW_SLAB_STR4);
+
 class MemoryCollectorTest : public testing::Test {
 public:
     void SetUp() {};
@@ -44,7 +72,7 @@ bool HasValidAILibrary()
     return handle != nullptr;
 }
 
-bool CheckFormat(const std::string &fileName, std::regex &reg1, std::regex &reg2, std::regex &reg3, int cnt)
+bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std::regex &reg2, int cnt)
 {
     std::ifstream file;
     file.open(fileName.c_str());
@@ -56,7 +84,13 @@ bool CheckFormat(const std::string &fileName, std::regex &reg1, std::regex &reg2
         getline(file, line);
     }
     while (getline(file, line)) {
-        if (!((regex_match(line, reg1) && regex_match(line, reg2)) || regex_match(line, reg3))) {
+        if (line.size() > 0 && line[line.size() - 1] == '\r') {
+            line.erase(line.size() - 1, 1);
+        }
+        if (line.size() == 0) {
+            continue;
+        }
+        if (!(regex_match(line, reg1) || regex_match(line, reg2))) {
             file.close();
             return false;
         }
@@ -103,11 +137,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest003, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawMemInfo();
     std::cout << "collect raw memory info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-
-    std::regex reg1("^[\\w()]{1,}:\\s{1,}\\d{1,}$");
-    std::regex reg2("^[\\w\\s:()]{24,}$");
-    std::regex reg3("^[\\w()]{1,}:\\s{1,}\\d{1,} kB$");
-    bool flag = CheckFormat(data.data, reg1, reg2, reg3, 0);    //0: don't skip the first line
+    bool flag = CheckFormat(data.data, RAW_MEM_INFO1, RAW_MEM_INFO2, 0);    // 0: don't skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -135,11 +165,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest005, TestSize.Level1)
     CollectResult<std::string> data = collector->ExportAllProcessMemory();
     std::cout << "export all process memory result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-
-    std::regex reg1("^\\d{1,}\\s{1,}[\\w\\.:-]{1,}(\\s{1,}\\d{1,}){3}\\s{1,}[\\d-]{1,}$");
-    std::regex reg2("^[\\w\\s\\.:-]{1,}$");
-    std::regex reg3("^used to take a place$");
-    bool flag = CheckFormat(data.data, reg1, reg2, reg3, 1);    //1: skip the first line
+    bool flag = CheckFormat(data.data, ALL_PROC_MEM1, ALL_PROC_MEM2, 1);    // 1: skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -154,14 +180,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest006, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawSlabInfo();
     std::cout << "collect raw slab info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-
-    std::string first = "^[\\w\\[\\]-]{1,}(\\s{1,}\\d{1,}){5}( : tunables)(\\s{1,}\\d{1,}){3}";
-    std::string second = "( : slabdata)(\\s{1,}\\d{1,}){3}$";
-    std::string regStr = first + second;
-    std::regex reg1(regStr);
-    std::regex reg2("^[\\w\\s:\\[\\]-]{1,}$");
-    std::regex reg3("^(\\w{1,} - version: )[\\d\\.]{1,}|(#name)[\\s\\w<>:]{1,}$");
-    bool flag = CheckFormat(data.data, reg1, reg2, reg3, 0);    //0: don't skip the first line
+    bool flag = CheckFormat(data.data, RAW_SLAB_INFO1, RAW_SLAB_INFO2, 0);    // 0: don't skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -176,11 +195,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest007, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawPageTypeInfo();
     std::cout << "collect raw pagetype info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-
-    std::regex reg1("^(Node)\\s{1,}\\d{1,}(, zone)\\s{1,}\\w{1,}(, type)\\s{1,}\\w{1,}(\\s{1,}\\d{1,}){21} $");
-    std::regex reg2("^(Node)[\\s\\d]{5,}(, zone)[\\s\\w]{9,}(, type)[\\s\\w]{13}([\\s\\d]{7}){21} $");
-    std::regex reg3("^used to take a place$");
-    bool flag = CheckFormat(data.data, reg1, reg2, reg3, 4);    //4: skip the first four lines
+    bool flag = CheckFormat(data.data, RAW_PAGE_TYPE_INFO1, RAW_PAGE_TYPE_INFO2, 4);    // 4: skip the first four lines
     ASSERT_TRUE(flag);
 }
 
@@ -195,11 +210,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest008, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawDMA();
     std::cout << "collect raw DMA result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-
-    std::regex reg1("^[\\w:\\.]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
-    std::regex reg2("^[\\w:\\.\\s]{17}([\\d\\s]{17}){5}[\\s\\w]{1,}$");
-    std::regex reg3("^(Total dmabuf size of )[\\w:]{1,}(: )\\d{1,}( bytes)$");
-    bool flag = CheckFormat(data.data, reg1, reg2, reg3, 2);    //2: skip the first two lines
+    bool flag = CheckFormat(data.data, RAW_DMA1, RAW_DMA2, 2);    // 2: skip the first two lines
     ASSERT_TRUE(flag);
 }
 
