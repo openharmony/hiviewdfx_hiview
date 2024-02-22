@@ -460,8 +460,8 @@ private:
 
     bool BuildHeader(std::shared_ptr<RawData> dest);
     bool BuildCustomizedParams(std::shared_ptr<RawData> dest);
-    void InitValueParams(std::vector<std::shared_ptr<DecodedParam>> params);
-    void InitArrayValueParams(std::vector<std::shared_ptr<DecodedParam>> params);
+    void InitValueParams(const std::vector<std::shared_ptr<DecodedParam>>& params);
+    void InitArrayValueParams(const std::vector<std::shared_ptr<DecodedParam>>& params);
 
 private:
     struct HiSysEventHeader header_ = {
