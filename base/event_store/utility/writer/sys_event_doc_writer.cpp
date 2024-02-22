@@ -53,9 +53,7 @@ SysEventDocWriter::SysEventDocWriter(const std::string& path): EventDocWriter(pa
 
 SysEventDocWriter::~SysEventDocWriter()
 {
-    if (out_.is_open()) {
-        out_.close();
-    }
+    out_.close();
 }
 
 int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
