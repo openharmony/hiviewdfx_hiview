@@ -681,11 +681,6 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     AddPublicInfo(info);
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
-        ReportCppCrashToAppEvent(info);
-    }
-
-    if (info.faultLogType == FaultLogType::APP_FREEZE) {
-        ReportAppFreezeToAppEvent(info);
     }
 
     mgr_->SaveFaultLogToFile(info);
@@ -700,6 +695,14 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.module.c_str(),
                 info.reason.c_str(),
                 info.summary.c_str());
+
+    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+        ReportCppCrashToAppEvent(info);
+    }
+
+    if (info.faultLogType == FaultLogType::APP_FREEZE) {
+        ReportAppFreezeToAppEvent(info);
+    }
 }
 
 void Faultlogger::OnUnorderedEvent(const Event &msg)
@@ -787,6 +790,7 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     }
 
     stackInfoObj["bundle_name"] = info.module;
+    stackInfoObj["external_log"] = info.logPath;
     if (info.sectionMap.count("VERSION") == 1) {
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
