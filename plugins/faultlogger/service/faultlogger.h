@@ -82,7 +82,7 @@ private:
     static void HandleNotify(int32_t type, const std::string& fname);
     void ReportCppCrashToAppEvent(const FaultLogInfo& info) const;
     bool GetHilog(int32_t pid, std::string& log) const;
-    void DoGetHilogProcess(int32_t pid, int writeFd) const;
+    int DoGetHilogProcess(int32_t pid, int writeFd) const;
     void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
     void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
     std::string GetMemoryStrByPid(long pid) const;

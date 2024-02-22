@@ -814,22 +814,22 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     stackInfo.append(Json::FastWriter().write(stackInfoObj));
 }
 
-void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
+int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
 {
     HIVIEW_LOGD("Start do get hilog process, pid:%{public}d", pid);
     if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
         dup2(writeFd, STDERR_FILENO) == -1) {
         HIVIEW_LOGE("dup2 writeFd fail");
-        _exit(-1);
+        return -1;
     }
 
     int ret = -1;
     ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid).c_str(), nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
-        syscall(SYS_close, writeFd);
-        _exit(-1);
+        return ret;
     }
+    return 0;
 }
 
 bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
@@ -845,7 +845,9 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         return false;
     } else if (childPid == 0) {
         syscall(SYS_close, fds[0]);
-        DoGetHilogProcess(pid, fds[1]);
+        int rc = DoGetHilogProcess(pid, fds[1]);
+        syscall(SYS_close, fds[1]);
+        exit(rc);
     } else {
         syscall(SYS_close, fds[1]);
 
