@@ -100,10 +100,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     sysEvent->OnPending();
-    sysEvent->SetEventValue("Finish", "0");
 
-    std::unique_lock<std::mutex> lck(finishMutex_);
-    sysEventSet_.insert(sysEvent);
     auto task = [this, sysEvent]() {
         HIVIEW_LOGD("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
@@ -112,7 +109,11 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         }
         this->StartLogCollect(sysEvent);
     };
+    HIVIEW_LOGI("before add task to eventpool, eventName=%{public}s, pid=%{public}ld",
+        sysEvent->eventName_.c_str(), pid);
     eventPool_->AddTask(task, "eventlogger");
+    HIVIEW_LOGI("after add task to eventpool, eventName=%{public}s, pid=%{public}ld",
+        sysEvent->eventName_.c_str(), pid);
     return true;
 }
 
@@ -182,8 +183,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     UpdateDB(event, logFile);
 
     constexpr int waitTime = 1;
-    event->SetEventValue("Finish", "1");
-    auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this);
+    auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this, event);
     threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
     HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
@@ -439,21 +439,10 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
     return true;
 }
 
-void EventLogger::CheckEventOnContinue()
+void EventLogger::CheckEventOnContinue(std::shared_ptr<SysEvent> event)
 {
-    std::unique_lock<std::mutex> lck(finishMutex_);
-    for (auto eventIter = sysEventSet_.begin(); eventIter != sysEventSet_.end();) {
-        std::shared_ptr<SysEvent> event = *eventIter;
-        if (event->GetEventValue("Finish") == "1") {
-            event->ResetPendingStatus();
-            event->OnContinue();
-            eventIter = sysEventSet_.erase(eventIter);
-            HIVIEW_LOGI("event %{public}s sonContinue", event->eventName_.c_str());
-        } else {
-            ++eventIter;
-        }
-    }
-    HIVIEW_LOGI("event size:%{public}zu", sysEventSet_.size());
+    event->ResetPendingStatus();
+    event->OnContinue();
 }
 
 void EventLogger::OnLoad()
