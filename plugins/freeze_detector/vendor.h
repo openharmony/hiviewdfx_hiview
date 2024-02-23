@@ -72,7 +72,7 @@ private:
         const std::string& logName) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
     std::string GetDisPlayPowerInfo() const;
-    std::string GetPowerStateString(OHOS::PowerMgr::PowerState state) const;
+    static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
 
     std::unique_ptr<LogStoreEx> logStore_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
