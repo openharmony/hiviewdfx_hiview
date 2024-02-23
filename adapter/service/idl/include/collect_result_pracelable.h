@@ -32,6 +32,9 @@ struct CollectResultParcelable : public Parcelable {
         if constexpr (std::is_same_v<std::decay_t<T>, int32_t>) {
             result_.data = result.data;
         }
+        if constexpr (std::is_same_v<std::decay_t<T>, double>) {
+            result_.data = result.data;
+        }
         if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
             result_.data.insert(result_.data.begin(), result.data.begin(), result.data.end());
         }
@@ -44,6 +47,9 @@ struct CollectResultParcelable : public Parcelable {
         }
         if constexpr (std::is_same_v<std::decay_t<T>, int32_t>) {
             return outParcel.WriteInt32(result_.data);
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, double>) {
+            return outParcel.WriteDouble(result_.data);
         }
         if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
             return outParcel.WriteStringVector(result_.data);
@@ -60,6 +66,11 @@ struct CollectResultParcelable : public Parcelable {
         T data;
         if constexpr (std::is_same_v<std::decay_t<T>, int32_t>) {
             if (!inParcel.ReadInt32(data)) {
+                return nullptr;
+            }
+        }
+        if constexpr (std::is_same_v<std::decay_t<T>, double>) {
+            if (!inParcel.ReadDouble(data)) {
                 return nullptr;
             }
         }

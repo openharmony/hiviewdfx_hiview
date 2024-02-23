@@ -28,6 +28,7 @@ ohos_unittest("UCollectionClientUnitTest") {
   configs = [ ":ucollection_client_test_config" ]
 
   sources = [
+    "cpu_collector_client_test.cpp",
     "gpu_collector_client_test.cpp",
     "io_collector_client_test.cpp",
     "memory_collector_client_test.cpp",

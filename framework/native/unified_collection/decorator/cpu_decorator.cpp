@@ -33,6 +33,12 @@ CollectResult<SysCpuUsage>  CpuDecorator::CollectSysCpuUsage(bool isNeedUpdate)
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+CollectResult<double> CpuDecorator::GetSysCpuUsage()
+{
+    auto task = std::bind(&CpuCollector::GetSysCpuUsage, cpuCollector_.get());
+    return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 CollectResult<ProcessCpuStatInfo> CpuDecorator::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
 {
     auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfo, cpuCollector_.get(), pid, isNeedUpdate);

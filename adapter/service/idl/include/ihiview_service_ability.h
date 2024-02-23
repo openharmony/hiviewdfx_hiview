@@ -42,6 +42,7 @@ public:
     virtual CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() = 0;
     virtual CollectResultParcelable<int32_t> CloseTrace() = 0;
     virtual CollectResultParcelable<int32_t> RecoverTrace() = 0;
+    virtual CollectResultParcelable<double> GetSysCpuUsage() = 0;
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.HiviewDFX.IHiviewServiceAbility");

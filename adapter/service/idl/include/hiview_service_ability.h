@@ -54,6 +54,7 @@ public:
     CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() override;
     CollectResultParcelable<int32_t> CloseTrace() override;
     CollectResultParcelable<int32_t> RecoverTrace() override;
+    CollectResultParcelable<double> GetSysCpuUsage() override;
 
 protected:
     void OnDump() override;
