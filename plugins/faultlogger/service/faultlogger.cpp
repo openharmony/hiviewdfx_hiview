@@ -1007,6 +1007,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
         .InitBundleVersion(collector.version)
         .InitBundleName(collector.package_name)
         .InitProcessName(collector.process_name)
+        .InitExternalLog(info.logPath)
         .InitPid(collector.pid)
         .InitUid(collector.uid)
         .InitException(collector.exception)

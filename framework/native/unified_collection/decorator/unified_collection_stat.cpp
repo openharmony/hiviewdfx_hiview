@@ -22,6 +22,7 @@
 
 #include "cpu_decorator.h"
 #include "gpu_decorator.h"
+#include "hilog_decorator.h"
 #include "io_decorator.h"
 #ifdef HAS_HIPROFILER
 #include "mem_profiler_decorator.h"
@@ -69,6 +70,7 @@ void UnifiedCollectionStat::SaveAllStatInfo()
     UCDecorator::WriteLinesToFile({UC_API_STAT_TITLE, UC_API_STAT_ITEM}, false);
     CpuDecorator::SaveStatCommonInfo();
     GpuDecorator::SaveStatCommonInfo();
+    HilogDecorator::SaveStatCommonInfo();
     IoDecorator::SaveStatCommonInfo();
     MemoryDecorator::SaveStatCommonInfo();
     NetworkDecorator::SaveStatCommonInfo();
@@ -97,6 +99,7 @@ void UnifiedCollectionStat::ResetAllStatInfo()
 {
     CpuDecorator::ResetStatInfo();
     GpuDecorator::ResetStatInfo();
+    HilogDecorator::ResetStatInfo();
     IoDecorator::ResetStatInfo();
     MemoryDecorator::ResetStatInfo();
     NetworkDecorator::ResetStatInfo();

@@ -24,6 +24,7 @@ enum UcError {
     READ_FAILED = 2,
     WRITE_FAILED = 3,
     PERMISSION_CHECK_FAILED = 4,
+    SYSTEM_ERROR = 5,
     // for trace call
     TRACE_IS_OCCUPIED = 1002,
     TRACE_TAG_ERROR = 1003,

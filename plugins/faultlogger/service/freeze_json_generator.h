@@ -105,6 +105,7 @@ public:
         Builder& InitBundleVersion(const std::string& bundleVersion);
         Builder& InitBundleName(const std::string& bundleName);
         Builder& InitProcessName(const std::string& processName);
+        Builder& InitExternalLog(const std::string& externalLog);
         Builder& InitPid(long pid);
         Builder& InitUid(long uid);
         Builder& InitException(const std::string& exception);
@@ -125,6 +126,7 @@ public:
         std::string bundleVersion_ = "";
         std::string bundleName_ = "";
         std::string processName_ = "";
+        std::string externalLog_ = "";
         long pid_ = 0;
         long uid_ = 0;
         std::string exception_ = "{}";
@@ -150,6 +152,7 @@ private:
     static const inline std::string jsonParamsBundleVersion = "bundle_version";
     static const inline std::string jsonParamsBundleName = "bundle_name";
     static const inline std::string jsonParamsProcessName = "process_name";
+    static const inline std::string jsonParamsExternalLog = "external_log";
     static const inline std::string jsonParamsPid = "pid";
     static const inline std::string jsonParamsUid = "uid";
     static const inline std::string jsonParamsException = "exception";
@@ -168,6 +171,7 @@ private:
     std::string bundleVersion_;
     std::string bundleName_;
     std::string processName_;
+    std::string externalLog_ = "";
     long pid_ = 0;
     long uid_ = 0;
     std::string exception_;
