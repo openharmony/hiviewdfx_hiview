@@ -36,6 +36,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "$hiview_framework/native/unified_collection/collector/utils/trace_utils.cpp",
     "cpu_collector_test.cpp",
     "gpu_collector_test.cpp",
+    "hilog_collector_test.cpp",
     "io_collector_test.cpp",
     "memory_collector_test.cpp",
     "network_collector_test.cpp",
