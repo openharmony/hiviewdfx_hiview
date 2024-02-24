@@ -15,6 +15,8 @@
 #include "faultlog_formatter.h"
 
 #include <cstdint>
+#include <unistd.h>
+
 #include <fstream>
 #include <list>
 #include <sstream>
@@ -314,6 +316,26 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
         FileUtil::SaveStringToFd(fd, "\n");
     }
     return true;
+}
+
+void LimitCppCrashLog(int32_t fd, int32_t logType)
+{
+    if ((fd < 0) || (logType != FaultLogType::CPP_CRASH)) {
+        return;
+    }
+    constexpr int maxLogSize = 512 * 1024;
+    off_t  endPos = lseek(fd, 0, SEEK_END);
+    if ((endPos == -1) || (endPos < maxLogSize)) {
+        return;
+    }
+
+    if (ftruncate(fd, maxLogSize) < 0) {
+        return;
+    }
+    endPos = lseek(fd, maxLogSize, SEEK_SET);
+    if (endPos != -1) {
+        FileUitl::SaveStringToFd(fd, "\ncpp crash log is limit output.\n");
+    }
 }
 } // namespace FaultLogger
 } // namespace HiviewDFX
