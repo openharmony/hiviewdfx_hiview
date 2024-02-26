@@ -15,12 +15,11 @@
 #include "faultlog_formatter.h"
 
 #include <cstdint>
-#include <unistd.h>
-
 #include <fstream>
 #include <list>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
 #include "faultlog_info.h"
 #include "faultlog_util.h"
