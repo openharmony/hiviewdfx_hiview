@@ -113,6 +113,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
         FileUtil::SaveStringToFd(fd, "\nHiLog:\n");
         FileUtil::SaveStringToFd(fd, info.sectionMap["HILOG"]);
     }
+    FaultLogger::LimitCppCrashLog(fd, info.faultLogType);
     close(fd);
 
     std::string logFile = info.logPath;
