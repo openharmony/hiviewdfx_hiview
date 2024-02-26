@@ -684,10 +684,6 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         ReportCppCrashToAppEvent(info);
     }
 
-    if (info.faultLogType == FaultLogType::APP_FREEZE) {
-        ReportAppFreezeToAppEvent(info);
-    }
-
     mgr_->SaveFaultLogToFile(info);
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
@@ -700,6 +696,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.module.c_str(),
                 info.reason.c_str(),
                 info.summary.c_str());
+
+    if (info.faultLogType == FaultLogType::APP_FREEZE) {
+        ReportAppFreezeToAppEvent(info);
+    }
 }
 
 void Faultlogger::OnUnorderedEvent(const Event &msg)
