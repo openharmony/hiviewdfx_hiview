@@ -168,12 +168,8 @@ static bool ReadMemFromAILib(AIProcessMem memInfos[], int len, int& realSize)
     int memInfoSize = len;
     int ret = aiFunc(memInfos, memInfoSize, &realSize);
     HIVIEW_LOGI("exec %{public}s, ret=%{public}d.", interface.c_str(), ret);
-    if (realSize < 0) {
-        dlclose(handle);
-        return false;
-    }
     dlclose(handle);
-    return true;
+    return (realSize >= 0) && (ret == 0);
 }
 
 static void DoClearFiles(const std::string& filePrefix)
