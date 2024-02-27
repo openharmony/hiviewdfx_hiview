@@ -40,6 +40,11 @@ struct ProcessMemory {
     int32_t privateDirty;  //process Private_Dirty
 };
 
+struct MemoryLimit {
+    uint64_t rssLimit;
+    uint64_t vssLimit;
+};
+
 extern "C" {
 const int HIAI_MAX_QUERIED_USER_MEMINFO_LIMIT = 256;
 

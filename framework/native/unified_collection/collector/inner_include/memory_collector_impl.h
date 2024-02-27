@@ -40,6 +40,7 @@ public:
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) override;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
     virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
+    virtual CollectResult<MemoryLimit> CollectMemoryLimit() override;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

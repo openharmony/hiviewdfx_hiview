@@ -25,6 +25,7 @@
 #include <regex>
 #include <securec.h>
 #include <string_ex.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -556,6 +557,30 @@ CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
             HIVIEW_LOGD("GetVss error! pid = %d", pid);
         }
     }
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
+{
+    CollectResult<MemoryLimit> result;
+    result.retCode = UcError::READ_FAILED;
+    MemoryLimit& memoryLimit = result.data;
+
+    struct rlimit rlim;
+    int err = getrlimit(RLIMIT_RSS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get rss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.rssLimit = rlim.rlim_cur;
+
+    err = getrlimit(RLIMIT_AS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get vss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.vssLimit = rlim.rlim_cur;
     result.retCode = UcError::SUCCESS;
     return result;
 }
