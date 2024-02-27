@@ -1,0 +1,8 @@
+{
+    "domains": [
+        {
+            "domain": "KERNEL_VENDOR",
+            "include": ["SLUB_OBJ", "LOWMEM", "CMA"]
+        }
+    ]
+}
