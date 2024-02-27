@@ -853,5 +853,77 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest020, TestSize.Level1)
     auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "BOOTFAIL");
     ASSERT_EQ(eventInfos.empty(), true);
 }
+
+/**
+ * @tc.name: SmartParserTest021
+ * @tc.desc: process SENSORHUBCRASH fault, this case match test_compose_rule.json and test_extract_rule.json.
+ *           1. fault log should can be read;
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: jincong
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest021, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest016/history.log";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "SENSORHUBCRASH");
+    ASSERT_EQ(eventInfos.empty(), false);
+}
+
+/**
+ * @tc.name: SmartParserTest022
+ * @tc.desc: process MODEMCRASH fault, this case match test_compose_rule.json and test_extract_rule.json.
+ *           1. fault log should can be read;
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: jincong
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest022, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest017/reset.log";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "MODEMCRASH");
+    ASSERT_EQ(eventInfos.empty(), false);
+}
+
+/**
+ * @tc.name: SmartParserTest023
+ * @tc.desc: process PANIC fault, this case match test_compose_rule.json and test_extract_rule.json.
+ *           1. fault log should can be read;
+ *           2. compose_rule.json and extract_rule.json. should match the json file in perforce.
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author: jincong
+ */
+HWTEST_F(SmartParserModuleTest, SmartParserTest023, TestSize.Level1)
+{
+    /**
+     * @tc.steps: step1. Set taskSheet fault log path and eventid.
+     */
+    std::string faultFile = LogUtil::SMART_PARSER_TEST_DIR + "/SmartParserTest018/last_kmsg";
+    ASSERT_EQ(FileUtil::FileExists(faultFile), true);
+
+    /**
+     * @tc.steps: step2. smart parser process crash fault log
+     */
+    auto eventInfos = SmartParser::Analysis(faultFile, TEST_CONFIG, "PANIC");
+    ASSERT_EQ(eventInfos.empty(), false);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

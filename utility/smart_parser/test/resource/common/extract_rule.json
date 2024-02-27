@@ -113,5 +113,33 @@
             {"namespace":"BasicParam", "matchKey":"Error Description: ", "v_bootfailDetail":"Error Description: (.*)"},
             {"namespace":"BasicParam", "matchKey":"Error No: 0x", "v_bootfailErrno":"Error No: (0x[0-9a-f]+)"}
         ]
+    },
+    "Rule10":{
+        "DirOrFile":"/data/log/sensorhub-log/",
+        "Subcatalog":"history.log",
+        "featureId":"03_SENSORHUBCRASH_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"time", "v_first":"@L@time \\[\\d{14}-\\d{8}\\],([0-9a-zA-Z]+, [0-9a-zA-Z]+), "}
+        ]
+    },
+    "Rule11":{
+        "DirOrFile":"/data/hisi_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/cp_log/reset.log",
+        "featureId":"03_MODEMCRASH_00,MODEM_REBOOTSYS",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"brief:", "v_first":"brief:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"task_name:", "v_second":"task_name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"modid:", "v_last":"modid:(.*)"}
+        ]
+    },
+    "Rule12":{
+        "DirOrFile":"/data/hisi_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/last_kmsg",
+        "featureId":"04_PANIC_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"qtp_rsp", "v_cause":"dfx_qic\\]:(.*)", "v_last":"(qtp_rsp.*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"MID(Master id)", "v_first":"(MID\\(Master id\\).*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"qic_addr", "v_second":"(qic_addr.*)"}
+        ]
     }
 }

@@ -1,0 +1,8 @@
+brief:DRV
+cmpnt:DRV
+reset_reason:syserr
+task_name:no care,this is test
+modid:0x0
+reboot_int:0x0
+voice:no
+reset_core:UNKNOW
