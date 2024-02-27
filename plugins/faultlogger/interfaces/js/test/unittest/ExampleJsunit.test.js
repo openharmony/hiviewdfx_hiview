@@ -216,8 +216,8 @@ describe("FaultlogJsTest", function () {
             expect(ret.length).assertLarger(0);
             console.info("FaultlogJsTest_005 check reason, index:" + (ret[0].reason.indexOf("Signal:SIGABRT")));
             expect(ret[0].reason.indexOf("Signal:SIGABRT") != -1).assertTrue();
-            console.info("FaultlogJsTest_005 check fullLog, index:" + ret[0].fullLog.indexOf("Fault thread Info"));
-            expect(ret[0].fullLog.indexOf("Fault thread Info") != -1).assertTrue();
+            console.info("FaultlogJsTest_005 check fullLog, index:" + ret[0].fullLog.indexOf("Fault thread info"));
+            expect(ret[0].fullLog.indexOf("Fault thread info") != -1).assertTrue();
             done();
             return;
         } catch (err) {

@@ -204,7 +204,7 @@ static bool WriteNewFile(const int32_t fd, const T_SANITIZERD_PARAMS *params)
             "Process name:" + params->procName + "\n" +
             "Reason:" + std::string(SANITIZERD_TYPE_STR[params->type][ORISANITIZERTYPE]) + ":" +
             params->errType + "\n" +
-            "Fault thread Info:\n" +
+            "Fault thread info:\n" +
             params->description);
 
     close(fd);

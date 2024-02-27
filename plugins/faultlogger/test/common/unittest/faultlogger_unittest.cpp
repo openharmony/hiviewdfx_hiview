@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <regex>
 #include "sys_event.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -39,6 +40,7 @@
 #include "hisysevent_manager.h"
 #include "hiview_global.h"
 #include "hiview_platform.h"
+#include "json/json.h"
 #include "log_analyzer.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
@@ -69,6 +71,93 @@ public:
         plugin->OnLoad();
         return plugin;
     }
+
+    static void CheckSumarryParseResult(std::string& info, int& matchCount)
+    {
+        Json::Reader reader;
+        Json::Value appEvent;
+        if (!(reader.parse(info, appEvent))) {
+            matchCount--;
+        }
+        auto exception = appEvent["exception"];
+        GTEST_LOG_(INFO) << "========name:" << exception["name"];
+        if (exception["name"] == "" || exception["name"] == "none") {
+            matchCount--;
+        }
+        GTEST_LOG_(INFO) << "========message:" << exception["message"];
+        if (exception["message"] == "" || exception["message"] == "none") {
+            matchCount--;
+        }
+        GTEST_LOG_(INFO) << "========stack:" << exception["stack"];
+        if (exception["stack"] == "" || exception["stack"] == "none") {
+            matchCount--;
+        }
+    }
+
+    static int CheckKeyWordsInFile(const std::string& filePath, std::string *keywords, int length, bool isJsError)
+    {
+        std::ifstream file;
+        file.open(filePath.c_str(), std::ios::in);
+        std::ostringstream infoStream;
+        infoStream << file.rdbuf();
+        std::string info = infoStream.str();
+        if (info.length() == 0) {
+            std::cout << "file is empty, file:" << filePath << std::endl;
+            return 0;
+        }
+        int matchCount = 0;
+        for (int index = 0; index < length; index++) {
+            if (info.find(keywords[index]) != std::string::npos) {
+                matchCount++;
+            } else {
+                std::cout << "can not find keyword:" << keywords[index] << std::endl;
+            }
+        }
+        if (isJsError) {
+            CheckSumarryParseResult(info, matchCount);
+        }
+        file.close();
+        return matchCount;
+    }
+
+    static void ReportJsErrorToAppEventTestCommon(std::string summmay, std::string name,
+        std::shared_ptr<Faultlogger> plugin)
+    {
+        SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
+        sysEventCreator.SetKeyValue("SUMMARY", summmay);
+        sysEventCreator.SetKeyValue("name_", "JS_ERROR");
+        sysEventCreator.SetKeyValue("happenTime_", 1670248360359); // 1670248360359 : Simulate happenTime_ value
+        sysEventCreator.SetKeyValue("REASON", "TypeError");
+        sysEventCreator.SetKeyValue("tz_", "+0800");
+        sysEventCreator.SetKeyValue("pid_", 2413); // 2413 : Simulate pid_ value
+        sysEventCreator.SetKeyValue("tid_", 2413); // 2413 : Simulate tid_ value
+        sysEventCreator.SetKeyValue("what_", 3); // 3 : Simulate what_ value
+        sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
+        sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+        sysEventCreator.SetKeyValue("TYPE", 3); // 3 : Simulate TYPE value
+        sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+
+        auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+        std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+        bool result = plugin->OnEvent(event);
+        ASSERT_EQ(result, true);
+
+        std::string keywords[] = {
+            "\"bundle_name\":", "\"bundle_version\":", "\"crash_type\":", "\"exception\":",
+            "\"foreground\":", "\"hilog\":", "\"pid\":", "\"time\":", "\"uid\":", "\"uuid\":",
+            "\"name\":", "\"message\":", "\"stack\":"
+        };
+        int length = sizeof(keywords) / sizeof(keywords[0]);
+        std::cout << "length:" << length << std::endl;
+        std::string oldFileName = "/data/test_jsError_info";
+        int count = CheckKeyWordsInFile(oldFileName, keywords, length, true);
+        std::cout << "count:" << count << std::endl;
+        ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001-"+name+" check keywords failed";
+        if (FileUtil::FileExists(oldFileName)) {
+            std::string NewFileName = oldFileName + "_" + name;
+            rename(oldFileName.c_str(), NewFileName.c_str());
+        }
+    }
 };
 
 static void InitHiviewContext()
@@ -84,29 +173,6 @@ static void StartHisyseventListen(std::string domain, std::string eventName)
     ListenerRule tagRule(domain, eventName, RuleType::WHOLE_WORD);
     std::vector<ListenerRule> sysRules = {tagRule};
     HiSysEventManager::AddListener(faultEventListener, sysRules);
-}
-
-static int CheckKeyWordsInFile(const std::string& filePath, std::string *keywords, int length)
-{
-    std::ifstream file;
-    file.open(filePath.c_str(), std::ios::in);
-    std::ostringstream infoStream;
-    infoStream << file.rdbuf();
-    std::string info = infoStream.str();
-    if (info.length() == 0) {
-        std::cout << "file is empty, file:" << filePath << std::endl;
-        return 0;
-    }
-    int matchCount = 0;
-    for (int index = 0; index < length; index++) {
-        if (info.find(keywords[index]) != std::string::npos) {
-            matchCount++;
-        } else {
-            std::cout << "can not find keyword:" << keywords[index] << std::endl;
-        }
-    }
-    file.close();
-    return matchCount;
 }
 
 /**
@@ -216,7 +282,7 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":",
         "\"thread_name\":", "\"tid\":" };
     int length = sizeof(keywords) / sizeof(keywords[0]);
-    int count = CheckKeyWordsInFile(appeventInfofileName, keywords, length);
+    int count = CheckKeyWordsInFile(appeventInfofileName, keywords, length, false);
     ASSERT_EQ(count, length) << "GenCppCrashLogTest001 check keywords failed";
 }
 
@@ -632,7 +698,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     faultEventListener->SetKeyWords(keyWords);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
-        "Fault thread Info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
+        "Fault thread info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-101-" + std::to_string(now), content));
     auto plugin = CreateFaultloggerInstance();
     plugin->StartBootScan();
@@ -660,7 +726,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     time_t now = time(nullptr);
     std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
-        "Fault thread Info:\nTid:102, Name:BootScanUnittest\n";
+        "Fault thread info:\nTid:102, Name:BootScanUnittest\n";
     std::string fileName = "/data/log/faultlog/temp/cppcrash-102-" + std::to_string(now);
     ASSERT_TRUE(FileUtil::SaveStringToFile(fileName, content));
     auto plugin = CreateFaultloggerInstance();
@@ -689,7 +755,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
         "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
     std::string content = std::string("Pid:111\nUid:0\nProcess name:BootScanUnittest\n") +
         "Reason:unittest for StartBootScan\n" +
-        "Fault thread Info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
+        "Fault thread info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
         "Registers:\n" + regs +
         "Other thread info:\n" + otherThreadInfo +
         "Memory near registers:\nr1(/data/xxxxx):\n    0097cd34 47886849\n    0097cd38 96059d05\n\n" +
@@ -716,44 +782,73 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: FaultloggerTest004
+ * @tc.desc: Test calling Faultlogger.StartBootScan Func, for full cpp crash log limit
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
+    time_t now = time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
+    std::string timeStr = GetFormatedTime(now);
+    std::string regs = "r0:00000019 r1:0097cd3c\nr4:f787fd2c\nfp:f787fd18 ip:7fffffff pc:0097c982\n";
+    std::string otherThreadInfo =
+        "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
+    std::string content = std::string("Pid:111\nUid:0\nProcess name:BootScanUnittest\n") +
+        "Reason:unittest for StartBootScan\n" +
+        "Fault thread info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
+        "Registers:\n" + regs +
+        "Other thread info:\n" + otherThreadInfo +
+        "Memory near registers:\nr1(/data/xxxxx):\n    0097cd34 47886849\n    0097cd38 96059d05\n\n" +
+        "Maps:\n96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
+    // let content more than 512k, trigger loglimit
+    for (int i = 0; i < 10000; i++) {
+        content += regs;
+    }
+    std::string tmpLogFileName = "/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now);
+    GTEST_LOG_(INFO) << "========tmpLogFileName:" << tmpLogFileName;
+    bool saveFile = FileUtil::SaveStringToFile(tmpLogFileName, content);
+    GTEST_LOG_(INFO) << "========saveFile:" << saveFile;
+    ASSERT_TRUE(saveFile);
+    auto plugin = CreateFaultloggerInstance();
+    plugin->StartBootScan();
+
+    // check faultlog file content
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    GTEST_LOG_(INFO) << "========fileName:" << fileName;
+    ASSERT_TRUE(FileUtil::FileExists(fileName));
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
+    ASSERT_LT(FileUtil::GetFileSize(fileName), 514 * 1024ul);
+
+    // check event database
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
+}
+
+/**
  * @tc.name: ReportJsErrorToAppEventTest001
  * @tc.desc: create JS ERROR event and send it to hiappevent
  * @tc.type: FUNC
- * @tc.require: AR000IHTHV
  */
 HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::TestSize.Level3)
 {
-    SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
-    sysEventCreator.SetKeyValue("SUMMARY", R"(Error name:TypeError\nError message:Obj is not
-        a Valid object\nSourceCode:\n    get BLOCKSSvalue() {\n        ^\nStacktrace:\n    at
-        anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)");
-    sysEventCreator.SetKeyValue("name_", "JS_ERROR");
-    sysEventCreator.SetKeyValue("happenTime_", 1670248360359);
-    sysEventCreator.SetKeyValue("REASON", "TypeError");
-    sysEventCreator.SetKeyValue("tz_", "+0800");
-    sysEventCreator.SetKeyValue("pid_", 2413);
-    sysEventCreator.SetKeyValue("tid_", 2413);
-    sysEventCreator.SetKeyValue("what_", 3);
-    sysEventCreator.SetKeyValue("PACKAGE_NAME", "com.ohos.systemui");
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-    sysEventCreator.SetKeyValue("TYPE", 3);
-    sysEventCreator.SetKeyValue("VERSION", "1.0.0");
-
-    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    auto testPlugin = CreateFaultloggerInstance();
-    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
-    bool result = testPlugin->OnEvent(event);
-    ASSERT_EQ(result, true);
-
-    std::string keywords[] = {
-        "\"bundle_name\":", "\"bundle_version\":", "\"crash_type\":", "\"exception\":",
-        "\"foreground\":", "\"hilog\":", "\"pid\":", "\"time\":", "\"uid\":", "\"uuid\":"
-    };
-    int length = sizeof(keywords) / sizeof(keywords[0]);
-    std::cout << "length:" << length << std::endl;
-    int count = CheckKeyWordsInFile("/data/test_jsError_info", keywords, length);
-    std::cout << "count:" << count << std::endl;
-    ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001 check keywords failed";
+    remove("/data/test_jsError_info");
+    auto plugin = CreateFaultloggerInstance();
+    std::string summaryHasErrorCodeAndSourceCode = R"~(Error name:TypeErrorError message:Obj is not a Valid object
+        Error code:\n    get BLO\nSourceCode:CKSSvalue() {\n        ^\nStacktrace:\n    at anonymous
+        (entry/src/main/ets/pages/index.ets:76:10))~";
+    ReportJsErrorToAppEventTestCommon(summaryHasErrorCodeAndSourceCode, "summaryHasErrorCodeAndSourceCode", plugin);
+    std::string summaryHasSourceCode = R"~(Error name:TypeError\naaaError message:Obj is not a Valid object\nSourceCode:
+        CKSSvalue(){\n        ^\nStacktrace:aaaa\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
+    ReportJsErrorToAppEventTestCommon(summaryHasSourceCode, "summaryHasSourceCode", plugin);
+    std::string summaryHasErrorCode = R"~(Error name:TypeError\nError message:Obj is not a Valid object\n
+        Error code:\n    get BLOStacktrace:\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
+    ReportJsErrorToAppEventTestCommon(summaryHasErrorCode, "summaryHasErrorCode", plugin);
+    std::string summaryNoErrorCodeAndSourceCode = R"~(Error name:TypeError\nError message:Obj is not a Valid object\n
+        Stacktrace:\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
+    ReportJsErrorToAppEventTestCommon(summaryNoErrorCodeAndSourceCode, "summaryNoErrorCodeAndSourceCode", plugin);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

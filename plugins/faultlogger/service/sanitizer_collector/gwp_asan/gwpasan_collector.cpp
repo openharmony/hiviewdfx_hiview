@@ -107,7 +107,7 @@ bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo)
         "Pid:" + std::to_string(currInfo.pid) + "\n" +
         "Uid:" + std::to_string(currInfo.uid) + "\n" +
         "Process name:" + currInfo.procName + "\n" +
-        "Fault thread Info:\n" + currInfo.description);
+        "Fault thread info:\n" + currInfo.description);
 
     close(fd);
     return true;
