@@ -588,6 +588,7 @@ CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
     result.retCode = UcError::SUCCESS;
     return result;
 }
+
 } // UCollectUtil
 } // HiViewDFX
 } // OHOS
