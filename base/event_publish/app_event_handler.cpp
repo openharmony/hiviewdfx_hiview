@@ -149,6 +149,7 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
     AddObjectToJsonString("memory", jsonStr);
     AddValueToJsonString("pss", event.pss, jsonStr);
     AddValueToJsonString("rss", event.rss, jsonStr);
+    AddValueToJsonString("vss", event.vss, jsonStr);
     AddValueToJsonString("sys_avail_mem", event.avaliableMem, jsonStr);
     AddValueToJsonString("sys_free_mem", event.freeMem, jsonStr);
     AddValueToJsonString("sys_total_mem", event.totalMem, jsonStr, true);
