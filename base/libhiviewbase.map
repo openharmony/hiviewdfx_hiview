@@ -341,6 +341,7 @@
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::AppLaunchInfo const&)";
         "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::EventPublish>::instance_";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ScrollJankInfo const&)";
+        "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ResourceOverLimitInfo const&)";
     };
   local:
     *;
