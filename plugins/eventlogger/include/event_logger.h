@@ -70,7 +70,7 @@ private:
     };
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
-    static constexpr int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
+    static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
 
     std::shared_ptr<LogStoreEx> logStore_;
     uint64_t startTime_;

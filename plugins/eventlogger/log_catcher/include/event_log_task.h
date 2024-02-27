@@ -86,6 +86,7 @@ private:
     void HitraceCapture();
     void SCBSessionCapture();
     void SCBViewParamCapture();
+    void SCBWMSCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS
