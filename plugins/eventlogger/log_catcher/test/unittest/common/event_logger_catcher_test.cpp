@@ -37,6 +37,7 @@
 #include "event_logger.h"
 #include "event_log_catcher.h"
 #include "sys_event.h"
+#include "hisysevent.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -855,15 +856,47 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getContainerSession", ShellCatcher::CATCHER_SCBSESSION, 0);
-    printf("CATCHER_SCBSESSION result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+    printf("CATCHER_SCBSESSION result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
-    printf("CATCHER_SCBVIEWPARAM result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+    printf("CATCHER_SCBVIEWPARAM result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("default", -1, 0);
     EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
 
     close(fd);
+}
+
+/**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: GET_DISPLAY_SNAPSHOT test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
+{
+    int windowId = 4;
+    int ret = HiSysEventWrite(HiSysEvent::Domain::WINDOW_MANAGER,
+        "GET_DISPLAY_SNAPSHOT",
+        HiSysEvent::EventType::STATISTIC,
+        "FOCUS_WINDOW", windowId);
+    printf("HiSysEventWrite: %d\n", ret);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: CREATE_VIRTUAL_SCREEN test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
+{
+    int windowId = 4;
+    int ret = HiSysEventWrite(HiSysEvent::Domain::WINDOW_MANAGER,
+        "CREATE_VIRTUAL_SCREEN",
+        HiSysEvent::EventType::STATISTIC,
+        "FOCUS_WINDOW", windowId);
+    printf("HiSysEventWrite: %d\n", ret);
+    EXPECT_EQ(ret, 0);
 }
 } // namesapce HiviewDFX
 } // namespace OHOS
