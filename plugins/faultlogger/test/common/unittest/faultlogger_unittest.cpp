@@ -716,6 +716,42 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: FaultloggerTest004
+ * @tc.desc: Test calling Faultlogger.StartBootScan Func, for full cpp crash log limit
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
+{
+    InitHiviewContext();
+    StartHisyseventListen("RELIABILITY", "CPP_CRASH");
+    time_t now = time(nullptr);
+    std::vector<std::string> keyWords = { std::to_string(now) };
+    faultEventListener->SetKeyWords(keyWords);
+    std::string timeStr = GetFormatedTime(now);
+    std::string fillMapsContent = "96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
+    std::string content = std::string("Pid:114\nUid:0\nProcess name:BootScanUnittest\n") +
+        "Reason:unittest for StartBootScan\n" +
+        "Fault thread Info:\nTid:114, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
+        "Maps:\n"
+    // let content more than 512k, trigger loglimit
+    for (int i = 0; i < 10000; i++) {
+        content += fillMapsContent;
+    }
+    ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now), content));
+    auto plugin = CreateFaultloggerInstance();
+    plugin->StartBootScan();
+
+    // check faultlog file content
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    ASSERT_TRUE(FileUtil::FileExists(fileName));
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
+    ASSERT_LT(FileUtil::GetFileSize(fileName), 514 * 1024ul);
+
+    // check event database
+    ASSERT_TRUE(faultEventListener->CheckKeyWords());
+}
+
+/**
  * @tc.name: ReportJsErrorToAppEventTest001
  * @tc.desc: create JS ERROR event and send it to hiappevent
  * @tc.type: FUNC
