@@ -204,5 +204,14 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::RecoverTrace()
     return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE,
         parcelHandler);
 }
+
+CollectResultParcelable<double> HiviewServiceAbilityProxy::GetSysCpuUsage()
+{
+    auto parcelHandler = [] (MessageParcel& data) {
+        return true;
+    };
+    return SendTraceRequest<double>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE,
+        parcelHandler);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

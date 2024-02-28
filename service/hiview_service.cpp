@@ -38,6 +38,7 @@ constexpr int32_t ERR_DEFAULT = -1;
 HiviewService::HiviewService()
 {
     traceCollector_ = UCollectUtil::TraceCollector::Create();
+    cpuCollector_ = UCollectUtil::CpuCollector::Create();
 }
 
 void HiviewService::StartService()
@@ -375,6 +376,15 @@ CollectResult<int32_t> HiviewService::RecoverTrace()
     CollectResult<int32_t> ret;
     ret.retCode = UCollect::UcError(recoverRet);
     return ret;
+}
+
+CollectResult<double> HiviewService::GetSysCpuUsage()
+{
+    CollectResult<double> cpuUsageRet = cpuCollector_->GetSysCpuUsage();
+    if (cpuUsageRet.retCode != UCollect::UcError::SUCCESS) {
+        HIVIEW_LOGE("failed to collect system cpu usage");
+    }
+    return cpuUsageRet;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

@@ -148,6 +148,20 @@ CollectResult<SysCpuUsage> CpuCollectorImpl::CollectSysCpuUsage(bool isNeedUpdat
     return result;
 }
 
+CollectResult<double> CpuCollectorImpl::GetSysCpuUsage()
+{
+    auto sysCpuUsage = CollectSysCpuUsage();
+    double retValue = 0;
+    if (!sysCpuUsage.data.cpuInfos.empty()) {
+        auto &totalCpuUsageInfo = sysCpuUsage.data.cpuInfos.at(0);
+        retValue += (totalCpuUsageInfo.userUsage + totalCpuUsageInfo.niceUsage + totalCpuUsageInfo.systemUsage);
+    }
+    CollectResult<double> result = {};
+    result.retCode = UCollect::UcError::SUCCESS;
+    result.data = retValue;
+    return result;
+}
+
 void CpuCollectorImpl::CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
     const std::vector<CpuTimeInfo>& currCpuTimeInfos)
 {
