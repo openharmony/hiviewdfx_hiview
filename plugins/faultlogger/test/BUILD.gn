@@ -22,6 +22,7 @@ config("hiview_faultlogger_test_config") {
     "$hiview_core",
     "$hiview_faultlogger/service/",
     "$hiview_faultlogger/service/sanitizer_collector/",
+    "$hiview_faultlogger/service/sanitizer_collector/gwp_asan",
     "$hiview_faultlogger/service/idl/include/",
     "common",
     "common/unittest",
@@ -92,6 +93,20 @@ ohos_unittest("FaultloggerClientUnittest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_faultlogger:libfaultlogger",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
+ohos_unittest("AsanUnittest") {
+  module_out_path = module_output_path
+
+  configs = [ ":hiview_faultlogger_test_config" ]
+
+  sources = [ "common/unittest/asan_unittest.cpp" ]
+
+  deps = [
+    "$hiview_faultlogger:libfaultlogger",
+    "$hiview_faultlogger/service/sanitizer_collector/gwp_asan:libasan_logger",
     "//third_party/googletest:gtest_main",
   ]
 }

@@ -53,7 +53,7 @@ constexpr unsigned BUF_SIZE = 1024;
 constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr int MIN_APP_UID = 10000;
 
-void ReadGwpAsanRecord(std::string& gwpAsanBuffer);
+void ReadGwpAsanRecord(std::string& gwpAsanBuffer, std::string& errType);
 bool GetNameByPid(pid_t pid, const char procName[]);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
