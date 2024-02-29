@@ -270,6 +270,12 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
             } else if (type == "SwapPss") {
                 processMemory.swapPss= value;
                 HIVIEW_LOGD("SwapPss=%{public}d", processMemory.swapPss);
+            } else if (type == "Shared_Clean") {
+                processMemory.sharedClean= value;
+                HIVIEW_LOGD("Shared_Clean=%{public}d", processMemory.sharedClean);
+            } else if (type == "Private_Clean") {
+                processMemory.privateClean= value;
+                HIVIEW_LOGD("Private_Clean=%{public}d", processMemory.privateClean);
             }
         }
     }
