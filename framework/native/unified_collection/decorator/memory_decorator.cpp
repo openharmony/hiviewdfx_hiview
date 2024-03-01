@@ -98,6 +98,12 @@ CollectResult<uint64_t> MemoryDecorator::CollectProcessVss(int32_t pid)
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+CollectResult<MemoryLimit> MemoryDecorator::CollectMemoryLimit()
+{
+    auto task = std::bind(&MemoryCollector::CollectMemoryLimit, memoryCollector_.get());
+    return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 void MemoryDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

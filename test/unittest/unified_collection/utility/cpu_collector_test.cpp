@@ -299,3 +299,16 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest015, TestSize.Level1)
     ASSERT_EQ(nextCollectResult.data.startTime, collectResult.data.endTime);
     ASSERT_GT(nextCollectResult.data.endTime, collectResult.data.endTime);
 }
+
+/**
+ * @tc.name: CpuCollectorTest016
+ * @tc.desc: used to test the function of CpuCollector.GetSysCpuUsage;
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest016, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto collectResult = collector->GetSysCpuUsage();
+    ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(collectResult.data >= 0 && collectResult.data <= 1);
+}

@@ -43,6 +43,7 @@ public:
     CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() override;
     CollectResultParcelable<int32_t> CloseTrace() override;
     CollectResultParcelable<int32_t> RecoverTrace() override;
+    CollectResultParcelable<double> GetSysCpuUsage() override;
 
 private:
     int32_t CopyOrMoveFile(

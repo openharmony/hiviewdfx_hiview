@@ -25,6 +25,7 @@
 #include <regex>
 #include <securec.h>
 #include <string_ex.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -168,12 +169,8 @@ static bool ReadMemFromAILib(AIProcessMem memInfos[], int len, int& realSize)
     int memInfoSize = len;
     int ret = aiFunc(memInfos, memInfoSize, &realSize);
     HIVIEW_LOGI("exec %{public}s, ret=%{public}d.", interface.c_str(), ret);
-    if (realSize < 0) {
-        dlclose(handle);
-        return false;
-    }
     dlclose(handle);
-    return true;
+    return (realSize >= 0) && (ret == 0);
 }
 
 static void DoClearFiles(const std::string& filePrefix)
@@ -273,6 +270,12 @@ CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t p
             } else if (type == "SwapPss") {
                 processMemory.swapPss= value;
                 HIVIEW_LOGD("SwapPss=%{public}d", processMemory.swapPss);
+            } else if (type == "Shared_Clean") {
+                processMemory.sharedClean= value;
+                HIVIEW_LOGD("Shared_Clean=%{public}d", processMemory.sharedClean);
+            } else if (type == "Private_Clean") {
+                processMemory.privateClean= value;
+                HIVIEW_LOGD("Private_Clean=%{public}d", processMemory.privateClean);
             }
         }
     }
@@ -560,6 +563,30 @@ CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
             HIVIEW_LOGD("GetVss error! pid = %d", pid);
         }
     }
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
+{
+    CollectResult<MemoryLimit> result;
+    result.retCode = UcError::READ_FAILED;
+    MemoryLimit& memoryLimit = result.data;
+
+    struct rlimit rlim;
+    int err = getrlimit(RLIMIT_RSS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get rss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.rssLimit = rlim.rlim_cur;
+
+    err = getrlimit(RLIMIT_AS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get vss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.vssLimit = rlim.rlim_cur;
     result.retCode = UcError::SUCCESS;
     return result;
 }
