@@ -41,7 +41,6 @@ const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
 const std::size_t DELAY_MILLISEC = 3;
 const std::size_t LENGTH = 10;
-
 using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
