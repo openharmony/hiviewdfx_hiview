@@ -34,6 +34,15 @@ public:
         std::string abilityName;
     };
 
+    struct MemoryInfo {
+        uint64_t pss = 0;
+        uint64_t rss = 0;
+        uint64_t vss = 0;
+        uint64_t avaliableMem = 0;
+        uint64_t freeMem = 0;
+        uint64_t totalMem = 0;
+    };
+
     struct AppLaunchInfo : public BundleInfo, public ProcessInfo {
         int32_t startType = 0;
         uint64_t iconInputTime = 0;
@@ -54,8 +63,15 @@ public:
         int32_t maxRenderSeqFrames = 0;
     };
 
+    struct ResourceOverLimitInfo : public BundleInfo, public MemoryInfo {
+        int32_t pid = 0;
+        int32_t uid = 0;
+        std::string resourceType;
+    };
+
     int PostEvent(const AppLaunchInfo& event);
     int PostEvent(const ScrollJankInfo& event);
+    int PostEvent(const ResourceOverLimitInfo& event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

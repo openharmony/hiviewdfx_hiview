@@ -56,6 +56,11 @@ void AddValueToJsonString(const std::string& key, const T& value, std::stringstr
     }
 }
 
+void AddObjectToJsonString(const std::string& name, std::stringstream& jsonStr)
+{
+    jsonStr << "\"" << name << "\":{";
+}
+
 void AddTimeToJsonString(std::stringstream& jsonStr)
 {
     auto time = TimeUtil::GetMilliseconds();
@@ -125,6 +130,31 @@ int AppEventHandler::PostEvent(const ScrollJankInfo& event)
     AddValueToJsonString("max_render_seq_frames", event.maxRenderSeqFrames, jsonStr, true);
     jsonStr << std::endl;
     EventPublish::GetInstance().PushEvent(uid, "SCROLL_JANK", HiSysEvent::EventType::FAULT, jsonStr.str());
+    return 0;
+}
+
+int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
+{
+    if (event.bundleName.empty()) {
+        HIVIEW_LOGW("bundleName empty.");
+        return -1;
+    }
+    std::stringstream jsonStr;
+    jsonStr << "{";
+    AddTimeToJsonString(jsonStr);
+    AddBundleInfoToJsonString(event, jsonStr);
+    AddValueToJsonString("pid", event.pid, jsonStr);
+    AddValueToJsonString("uid", event.uid, jsonStr);
+    AddValueToJsonString("resource_type", event.resourceType, jsonStr);
+    AddObjectToJsonString("memory", jsonStr);
+    AddValueToJsonString("pss", event.pss, jsonStr);
+    AddValueToJsonString("rss", event.rss, jsonStr);
+    AddValueToJsonString("vss", event.vss, jsonStr);
+    AddValueToJsonString("sys_avail_mem", event.avaliableMem, jsonStr);
+    AddValueToJsonString("sys_free_mem", event.freeMem, jsonStr);
+    AddValueToJsonString("sys_total_mem", event.totalMem, jsonStr, true);
+    jsonStr << "}" << std::endl;
+    EventPublish::GetInstance().PushEvent(event.uid, "RESOURCE_OVERLIMIT", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;
 }
 } // namespace HiviewDFX
