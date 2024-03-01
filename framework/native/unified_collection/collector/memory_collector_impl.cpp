@@ -579,14 +579,14 @@ CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
         HIVIEW_LOGE("get rss limit error! err = %{public}d", err);
         return result;
     }
-    memoryLimit.rssLimit = rlim.rlim_cur / 1024;
+    memoryLimit.rssLimit = rlim.rlim_cur >> 10;
 
     err = getrlimit(RLIMIT_AS, &rlim);
     if (err != 0) {
         HIVIEW_LOGE("get vss limit error! err = %{public}d", err);
         return result;
     }
-    memoryLimit.vssLimit = rlim.rlim_cur / 1024;
+    memoryLimit.vssLimit = rlim.rlim_cur >> 10;
     result.retCode = UcError::SUCCESS;
     return result;
 }
