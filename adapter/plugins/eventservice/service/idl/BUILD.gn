@@ -71,10 +71,10 @@ ohos_source_set("sys_event_service_ohos") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "hisysevent:libhisysevent",
   ]
 }

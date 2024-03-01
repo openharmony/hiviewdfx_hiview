@@ -37,7 +37,7 @@ ohos_source_set("hiview_event_publish") {
     "hisysevent:libhisysevent",
   ]
 
-  public_configs = [ ":hiview_event_publish_config",  ]
+  public_configs = [ ":hiview_event_publish_config" ]
 
   deps = [
     "$hiview_base:logger",
