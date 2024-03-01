@@ -40,12 +40,26 @@ int32_t GetUidByBundleName(const std::string& bundleName)
     return info.uid;
 }
 
+std::string CovertVectorToStr(const std::vector<uint64_t>& vec)
+{
+    if (vec.empty()) {
+        return "";
+    }
+    std::stringstream ss;
+    ss << "\"[";
+    std::copy(vec.begin(), vec.end() - 1, std::ostream_iterator<int>(ss, ","));
+    ss << vec.back() << "]\"";
+    return ss.str();
+}
+
 template <typename T>
 void AddValueToJsonString(const std::string& key, const T& value, std::stringstream& jsonStr, bool isLastValue = false)
 {
     jsonStr << "\"" << key << "\":";
     if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
         jsonStr << "\"" << value << "\"";
+    } else if constexpr (std::is_same_v<std::decay_t<T>, std::vector<uint64_t>>) {
+        jsonStr << CovertVectorToStr(value);
     } else {
         jsonStr << value;
     }
@@ -127,5 +141,64 @@ int AppEventHandler::PostEvent(const ScrollJankInfo& event)
     EventPublish::GetInstance().PushEvent(uid, "SCROLL_JANK", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;
 }
+
+int AppEventHandler::PostEvent(const CpuHighLoadInfo& event)
+{
+    if (event.bundleName.empty()) {
+        HIVIEW_LOGW("bundleName empty");
+        return -1;
+    }
+    int32_t uid = GetUidByBundleName(event.bundleName);
+    std::stringstream jsonStr;
+    jsonStr << "{";
+    AddTimeToJsonString(jsonStr);
+    AddBundleInfoToJsonString(event, jsonStr);
+    AddValueToJsonString("foreground", event.foreground, jsonStr);
+    AddValueToJsonString("usage", event.usage, jsonStr);
+    AddValueToJsonString("begin_time", event.beginTime, jsonStr);
+    AddValueToJsonString("end_time", event.endTime, jsonStr, true);
+    jsonStr << std::endl;
+    EventPublish::GetInstance().PushEvent(uid, "CPU_USAGE_HIGH", HiSysEvent::EventType::FAULT, jsonStr.str());
+    return 0;
+}
+
+int AppEventHandler::PostEvent(const PowerConsumptionInfo& event)
+{
+    if (event.bundleName.empty()) {
+        HIVIEW_LOGW("bundleName empty");
+        return -1;
+    }
+    int32_t uid = GetUidByBundleName(event.bundleName);
+    std::stringstream jsonStr;
+    jsonStr << "{";
+    AddTimeToJsonString(jsonStr);
+    AddBundleInfoToJsonString(event, jsonStr);
+    AddValueToJsonString("begin_time", event.beginTime, jsonStr);
+    AddValueToJsonString("end_time", event.endTime, jsonStr);
+    AddValueToJsonString("foreground_usage", event.usage.foregroundValue, jsonStr);
+    AddValueToJsonString("background_usage", event.usage.backgroundValue, jsonStr);
+    AddValueToJsonString("cpu_foreground_energy", event.cpuEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("cpu_background_energy", event.cpuEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("gpu_foreground_energy", event.gpuEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("gpu_background_energy", event.gpuEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("ddr_foreground_energy", event.ddrEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("ddr_background_energy", event.ddrEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("display_foreground_energy", event.displayEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("display_background_energy", event.displayEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("audio_foreground_energy", event.audioEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("audio_background_energy", event.audioEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("modem_foreground_energy", event.modemEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("modem_background_energy", event.modemEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("rom_foreground_energy", event.romEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("rom_background_energy", event.romEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("wifi_foreground_energy", event.wifiEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("wifi_background_energy", event.wifiEnergy.backgroundValue, jsonStr);
+    AddValueToJsonString("others_foreground_energy", event.othersEnergy.foregroundValue, jsonStr);
+    AddValueToJsonString("others_background_energy", event.othersEnergy.backgroundValue, jsonStr, true);
+    jsonStr << std::endl;
+    EventPublish::GetInstance().PushEvent(uid, "BATTERY_USAGE", HiSysEvent::EventType::STATISTIC, jsonStr.str());
+    return 0;
+}
+
 } // namespace HiviewDFX
 } // namespace OHOS

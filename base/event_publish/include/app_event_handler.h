@@ -34,6 +34,12 @@ public:
         std::string abilityName;
     };
 
+    struct TimeInfo {
+        uint64_t time = 0;
+        uint64_t beginTime = 0;
+        uint64_t endTime = 0;
+    };
+
     struct AppLaunchInfo : public BundleInfo, public ProcessInfo {
         int32_t startType = 0;
         uint64_t iconInputTime = 0;
@@ -54,8 +60,33 @@ public:
         int32_t maxRenderSeqFrames = 0;
     };
 
+    struct CpuHighLoadInfo : public BundleInfo, public TimeInfo {
+        bool foreground = false;
+        uint64_t usage = 0;
+    };
+
+    struct DataPair {
+        std::vector<uint64_t> foregroundValue = std::vector<uint64_t>(24); // 24 : statistics per hour
+        std::vector<uint64_t> backgroundValue = std::vector<uint64_t>(24); // 24 : statistics per hour
+    };
+
+    struct PowerConsumptionInfo : public BundleInfo, public TimeInfo {
+        DataPair usage;
+        DataPair cpuEnergy;
+        DataPair gpuEnergy;
+        DataPair ddrEnergy;
+        DataPair displayEnergy;
+        DataPair audioEnergy;
+        DataPair modemEnergy;
+        DataPair romEnergy;
+        DataPair wifiEnergy;
+        DataPair othersEnergy;
+    };
+
     int PostEvent(const AppLaunchInfo& event);
     int PostEvent(const ScrollJankInfo& event);
+    int PostEvent(const CpuHighLoadInfo& event);
+    int PostEvent(const PowerConsumptionInfo& event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
