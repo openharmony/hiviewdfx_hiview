@@ -40,7 +40,7 @@
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
 const std::size_t DELAY_MILLISEC = 3;
-const std::size_t LENGTH = 10;
+const std::size_t BYTE_2_KB_SHIFT_BITS = 10;
 using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
@@ -580,14 +580,14 @@ CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
         HIVIEW_LOGE("get rss limit error! err = %{public}d", err);
         return result;
     }
-    memoryLimit.rssLimit = rlim.rlim_cur >> LENGTH;
+    memoryLimit.rssLimit = rlim.rlim_cur >> BYTE_2_KB_SHIFT_BITS;
 
     err = getrlimit(RLIMIT_AS, &rlim);
     if (err != 0) {
         HIVIEW_LOGE("get vss limit error! err = %{public}d", err);
         return result;
     }
-    memoryLimit.vssLimit = rlim.rlim_cur >> LENGTH;
+    memoryLimit.vssLimit = rlim.rlim_cur >> BYTE_2_KB_SHIFT_BITS;
     result.retCode = UcError::SUCCESS;
     return result;
 }
