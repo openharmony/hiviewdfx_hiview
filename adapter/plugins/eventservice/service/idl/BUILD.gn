@@ -75,5 +75,6 @@ ohos_source_set("sys_event_service_ohos") {
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "hisysevent:libhisysevent",
   ]
 }
