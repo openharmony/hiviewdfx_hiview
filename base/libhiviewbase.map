@@ -343,6 +343,7 @@
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ScrollJankInfo const&)";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::CpuHighLoadInfo const&)";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::PowerConsumptionInfo const&)";
+        "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ResourceOverLimitInfo const&)";
     };
   local:
     *;

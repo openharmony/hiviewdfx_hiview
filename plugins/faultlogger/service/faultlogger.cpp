@@ -197,6 +197,49 @@ std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, s
     }
     return value->second;
 }
+
+void ParseJsErrorSummary(std::string& summary, std::string& name, std::string& message, std::string& stack)
+{
+    std::string leftStr = StringUtil::GetLeftSubstr(summary, "Error message:");
+    std::string rightStr = StringUtil::GetRightSubstr(summary, "Error message:");
+    name = StringUtil::GetRightSubstr(leftStr, "Error name:");
+    stack = StringUtil::GetRightSubstr(rightStr, "Stacktrace:");
+
+    leftStr = StringUtil::GetLeftSubstr(rightStr, "Stacktrace:");
+    do {
+        if (leftStr.find("Error code:") != std::string::npos) {
+            leftStr = StringUtil::GetLeftSubstr(leftStr, "Error code:");
+            break;
+        }
+        if (leftStr.find("SourceCode:") != std::string::npos) {
+            leftStr = StringUtil::GetLeftSubstr(leftStr, "SourceCode:");
+            break;
+        }
+    } while (false);
+    message = leftStr;
+}
+
+void FillJsErrorParams(std::string summary, Json::Value &params)
+{
+    Json::Value exception;
+    std::string name = "";
+    std::string message = "";
+    std::string stack = "";
+    do {
+        if (summary == "") {
+            break;
+        }
+        ParseJsErrorSummary(summary, name, message, stack);
+        name.erase(name.find_last_not_of(R"(\n)") + 1);
+        message.erase(message.find_last_not_of(R"(\n)") + 1);
+        stack.erase(stack.find_last_not_of(R"(\n)") + 1);
+        stack.erase(0, stack.find_first_not_of(R"(\n    )"));
+    } while (false);
+    exception["name"] = name;
+    exception["message"] = message;
+    exception["stack"] = stack;
+    params["exception"] = exception;
+}
 } // namespace
 
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
@@ -470,19 +513,9 @@ bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
 
 void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
-    std::smatch m;
     std::string summary = sysEvent->GetEventValue("SUMMARY");
-    std::string relStr = "[\\s\\S]*Error name:([\\s\\S]*)Error message:([\\s\\S]*)";
-    if (summary.find("Error code:") != std::string::npos) {
-        relStr += "Error code:[\\s\\S]*";
-    }
-    if (summary.find("SourceCode:") != std::string::npos) {
-        relStr += "SourceCode:[\\s\\S]*";
-    }
-    relStr += "Stacktrace:([\\s\\S]*)";
-    std::regex rel(relStr);
     HIVIEW_LOGD("ReportAppEvent:summary:%{public}s.", summary.c_str());
-    std::regex_search(summary, m, rel);
+
     Json::Value params;
     params["time"] = sysEvent->happenTime_;
     params["crash_type"] = "JsError";
@@ -497,14 +530,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
-    Json::Value exception;
-    std::string name = m[1];
-    std::string message = m[2]; // 2 is message
-    std::string stack = m[3]; // 3 is stack
-    exception["name"] = name;
-    exception["message"] = message;
-    exception["stack"] = stack;
-    params["exception"] = exception;
+    FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
     GetHilog(sysEvent->GetPid(), log);
