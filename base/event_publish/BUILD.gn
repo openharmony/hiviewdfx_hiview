@@ -30,13 +30,14 @@ ohos_source_set("hiview_event_publish") {
     "event_publish.cpp",
   ]
 
-  public_configs = [ ":hiview_event_publish_config" ]
-
   external_deps = [
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
   ]
+
+  public_configs = [ ":hiview_event_publish_config" ]
 
   deps = [
     "$hiview_base:logger",
