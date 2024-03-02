@@ -34,6 +34,12 @@ public:
         std::string abilityName;
     };
 
+    struct TimeInfo {
+        uint64_t time = 0;
+        uint64_t beginTime = 0;
+        uint64_t endTime = 0;
+    };
+
     struct MemoryInfo {
         uint64_t pss = 0;
         uint64_t rss = 0;
@@ -63,6 +69,29 @@ public:
         int32_t maxRenderSeqFrames = 0;
     };
 
+    struct CpuUsageHighInfo : public BundleInfo, public TimeInfo {
+        bool isForeground = false;
+        uint64_t usage = 0;
+    };
+
+    struct UsageStatInfo {
+        std::vector<uint64_t> fgUsages = std::vector<uint64_t>(24); // 24 : statistics per hour, fg : foreground
+        std::vector<uint64_t> bgUsages = std::vector<uint64_t>(24); // 24 : statistics per hour, bg : background
+    };
+
+    struct BatteryUsageInfo : public BundleInfo, public TimeInfo {
+        UsageStatInfo usage;
+        UsageStatInfo cpuEnergy;
+        UsageStatInfo gpuEnergy;
+        UsageStatInfo ddrEnergy;
+        UsageStatInfo displayEnergy;
+        UsageStatInfo audioEnergy;
+        UsageStatInfo modemEnergy;
+        UsageStatInfo romEnergy;
+        UsageStatInfo wifiEnergy;
+        UsageStatInfo othersEnergy;
+    };
+
     struct ResourceOverLimitInfo : public BundleInfo, public MemoryInfo {
         int32_t pid = 0;
         int32_t uid = 0;
@@ -71,6 +100,8 @@ public:
 
     int PostEvent(const AppLaunchInfo& event);
     int PostEvent(const ScrollJankInfo& event);
+    int PostEvent(const CpuUsageHighInfo& event);
+    int PostEvent(const BatteryUsageInfo& event);
     int PostEvent(const ResourceOverLimitInfo& event);
 };
 } // namespace HiviewDFX
