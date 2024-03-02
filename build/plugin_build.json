@@ -28,6 +28,10 @@
             "path": "plugins/reliability/bbox_detectors",
             "name": "bbox_detector"
         },
+        "FaultDetectorManager": {
+            "path": "plugins/reliability/leak_detectors",
+            "name": "leak_detector"
+        },
         "SysEventDispatcher": {
             "path": "plugins/sys_dispatcher",
             "name": "sys_dispatcher"
@@ -68,6 +72,9 @@
                     "BBoxDetectorPlugin": {
                         "loadtime": 0
                     },
+                    "FaultDetectorManager": {
+                        "loadtime": 0
+                    },
                     "SysEventDispatcher": {
                         "loadtime": 0
                     },
@@ -94,6 +101,11 @@
                         "BBoxDetectorPlugin",
                         "SysEventDispatcher",
                         "SysEventStore"
+                    ],
+                    "LeakDetectorPipeline": [
+                        "FaultDetectorManager",
+                        "SysEventDispatcher",
+                        "SysEventStore"
                     ]
                 },
                 "pipelinegroups": {
@@ -101,6 +113,7 @@
                         "EventloggerPipeline",
                         "faultloggerPipeline",
                         "BBoxDetectorPipeline",
+                        "LeakDetectorPipeline",
                         "SysEventPipeline"
                     ]
                 },
@@ -112,6 +125,7 @@
                         "FreezeDetectorPlugin": "freeze_detector",
                         "UsageEventReport": "usage_event_report",
                         "BBoxDetectorPlugin": "bbox_detector",
+                        "FaultDetectorManager": "leak_detector",
                         "SysEventDispatcher": "sys_dispatcher"
                     }
                 }
