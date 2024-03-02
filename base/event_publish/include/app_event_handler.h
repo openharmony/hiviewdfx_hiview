@@ -69,27 +69,27 @@ public:
         int32_t maxRenderSeqFrames = 0;
     };
 
-    struct CpuHighLoadInfo : public BundleInfo, public TimeInfo {
-        bool foreground = false;
+    struct CpuUsageHighInfo : public BundleInfo, public TimeInfo {
+        bool isForeground = false;
         uint64_t usage = 0;
     };
 
-    struct DataPair {
-        std::vector<uint64_t> foregroundValue = std::vector<uint64_t>(24); // 24 : statistics per hour
-        std::vector<uint64_t> backgroundValue = std::vector<uint64_t>(24); // 24 : statistics per hour
+    struct UsageStatInfo {
+        std::vector<uint64_t> fgUsages = std::vector<uint64_t>(24); // 24 : statistics per hour, fg : foreground
+        std::vector<uint64_t> bgUsages = std::vector<uint64_t>(24); // 24 : statistics per hour, bg : background
     };
 
-    struct PowerConsumptionInfo : public BundleInfo, public TimeInfo {
-        DataPair usage;
-        DataPair cpuEnergy;
-        DataPair gpuEnergy;
-        DataPair ddrEnergy;
-        DataPair displayEnergy;
-        DataPair audioEnergy;
-        DataPair modemEnergy;
-        DataPair romEnergy;
-        DataPair wifiEnergy;
-        DataPair othersEnergy;
+    struct BatteryUsageInfo : public BundleInfo, public TimeInfo {
+        UsageStatInfo usage;
+        UsageStatInfo cpuEnergy;
+        UsageStatInfo gpuEnergy;
+        UsageStatInfo ddrEnergy;
+        UsageStatInfo displayEnergy;
+        UsageStatInfo audioEnergy;
+        UsageStatInfo modemEnergy;
+        UsageStatInfo romEnergy;
+        UsageStatInfo wifiEnergy;
+        UsageStatInfo othersEnergy;
     };
 
     struct ResourceOverLimitInfo : public BundleInfo, public MemoryInfo {
@@ -100,8 +100,8 @@ public:
 
     int PostEvent(const AppLaunchInfo& event);
     int PostEvent(const ScrollJankInfo& event);
-    int PostEvent(const CpuHighLoadInfo& event);
-    int PostEvent(const PowerConsumptionInfo& event);
+    int PostEvent(const CpuUsageHighInfo& event);
+    int PostEvent(const BatteryUsageInfo& event);
     int PostEvent(const ResourceOverLimitInfo& event);
 };
 } // namespace HiviewDFX

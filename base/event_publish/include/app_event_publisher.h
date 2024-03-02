@@ -16,6 +16,7 @@
 #define HIVIEW_BASE_APP_EVENT_PUBLISHER_H
 
 #include "app_event_handler.h"
+#include "plugin.h"
 
 namespace OHOS {
 namespace HiviewDFX {
