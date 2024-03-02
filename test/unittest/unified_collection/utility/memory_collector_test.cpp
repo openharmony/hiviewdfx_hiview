@@ -108,9 +108,12 @@ bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std:
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest001, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<ProcessMemory> data = collector->CollectProcessMemory(1000);
+    CollectResult<ProcessMemory> data = collector->CollectProcessMemory(1); // init process id
     std::cout << "collect process memory result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    data = collector->CollectProcessMemory(-1); // invalid process id
+    std::cout << "collect process memory result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::READ_FAILED);
 }
 
 /**
