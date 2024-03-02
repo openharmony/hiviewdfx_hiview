@@ -15,6 +15,8 @@
 #include "event_logger_test.h"
 
 #include "common_utils.h"
+#include "hisysevent.h"
+#include "hiview_platform.h"
 
 #define private public
 #include "event_logger.h"
@@ -155,6 +157,47 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_005, TestSize.Level3)
     event->messageType_ = Event::MessageType::PLUGIN_MAINTENANCE;
     bool ret = eventLogger->CanProcessRebootEvent(*(event.get()));
     EXPECT_EQ(ret, true);
+}
+
+/**
+ * @tc.name: EventLoggerTest_006
+ * @tc.desc: Loging aging test
+ * @tc.type: FUNC
+ */
+static HWTEST_F(EventLoggerTest, EventLoggerTest_006, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    eventLogger->OnLoad();
+    HiSysEventWrite(HiSysEvent::Domain::AAFWK, "THREAD_BLOCK_3S", HiSysEvent::EventType::FAULT,
+        "MODULE", "foundation", "MSG", "test remove");
+    sleep(3);
+    HiSysEventWrite(HiSysEvent::Domain::AAFWK, "THREAD_BLOCK_6S", HiSysEvent::EventType::FAULT,
+        "MODULE", "foundation", "MSG", "test remove");
+    sleep(3);
+    HiSysEventWrite(HiSysEvent::Domain::AAFWK, "LIFECYCLE_HALF_TIMEOUT", HiSysEvent::EventType::FAULT,
+        "MODULE", "foundation", "MSG", "test remove");
+    std::vector<LogFile> logFileList = eventLogger->logStore_->GetLogFiles();
+    auto beforeSize = static_cast<long>(logFileList.size());
+    printf("Before-- logFileList num: %ld\n", beforeSize);
+    auto iter = logFileList.begin();
+    while (iter != logFileList.end()) {
+        auto beforeIter = iter;
+        iter++;
+        EXPECT_TRUE(beforeIter < iter);
+    }
+    auto folderSize = FileUtil::GetFolderSize(EventLogger::LOGGER_EVENT_LOG_PATH);
+    uint32_t maxSize = 10240; // test value
+    eventLogger->logStore_->SetMaxSize(maxSize);
+    eventLogger->logStore_->ClearOldestFilesIfNeeded();
+    auto size = FileUtil::GetFolderSize(EventLogger::LOGGER_EVENT_LOG_PATH);
+    auto listSize = static_cast<long>(eventLogger->logStore_->GetLogFiles().size());
+    printf("After-- logFileList num: %lu\n", listSize);
+    if (listSize == beforeSize) {
+        EXPECT_TRUE(size == folderSize);
+    } else {
+        EXPECT_TRUE(size < folderSize);
+    }
+    eventLogger->OnUnload();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
