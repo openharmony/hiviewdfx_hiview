@@ -421,6 +421,47 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_008, TestSize.Level3)
 }
 
 /**
+ * @tc.name: FreezeVender_009
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeVender_009, TestSize.Level3)
+{
+    auto vendor1 = std::make_unique<Vendor>(nullptr);
+    EXPECT_EQ(vendor1->Init(), false);
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("SCREEN_ON")
+        .InitTimestamp(TimeUtil::GetMilliseconds())
+        .InitProcessName("processName")
+        .InitPackageName("com.package.name")
+        .InitMsg("msg")
+        .Build();
+    vendor1->SendFaultLog(watchPoint, "test", "test");
+
+    auto freezeCommon = std::make_shared<FreezeCommon>();
+    bool ret1 = freezeCommon->Init();
+    EXPECT_EQ(ret1, true);
+    auto vendor = std::make_unique<Vendor>(freezeCommon);
+    EXPECT_EQ(vendor->Init(), true);
+    std::string ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::FREEZE);
+    EXPECT_EQ(ret, "FREEZE");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::INACTIVE);
+    EXPECT_EQ(ret, "INACTIVE");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::STAND_BY);
+    EXPECT_EQ(ret, "STAND_BY");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::DOZE);
+    EXPECT_EQ(ret, "DOZE");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::SLEEP);
+    EXPECT_EQ(ret, "SLEEP");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::HIBERNATE);
+    EXPECT_EQ(ret, "HIBERNATE");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::SHUTDOWN);
+    EXPECT_EQ(ret, "SHUTDOWN");
+    ret = vendor->GetPowerStateString(OHOS::PowerMgr::PowerState::UNKNOWN);
+    EXPECT_EQ(ret, "UNKNOWN");
+}
+
+/**
  * @tc.name: FreezeRuleCluster_001
  * @tc.desc: FreezeDetector
  */
@@ -722,6 +763,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("KERNEL_VENDOR")
         .InitStringId("SCREEN_ON")
+        .InitMsg("Test")
         .InitTimestamp(1687859103947)
         .Build();
     auto wp = std::make_unique<WatchPoint>(watchPoint);
@@ -732,8 +774,13 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
         .InitTimestamp(1687859103950)
         .Build();
     auto wp1 = std::make_unique<WatchPoint>(watchPoint1);
-    printf("wp < wp1: %s\n", wp < wp1 ? "true" : "false");
-    printf("wp = wp1: %s\n", wp == wp1 ? "true" : "false");
+    bool ret = wp < wp1;
+    printf("wp < wp1: %s\n", ret ? "true" : "false");
+    ret = wp == wp1;
+    printf("wp = wp1: %s\n", ret ? "true" : "false");
+    std::string result = wp->GetMsg();
+    EXPECT_TRUE(!wp->GetMsg().empty());
+    EXPECT_TRUE(wp1->GetMsg().empty());
 }
 
 /**
