@@ -85,7 +85,9 @@ private:
 
 private:
     ffrt::mutex dumpStateMtx_;
+#ifdef HAS_HIPROFILER
     std::shared_ptr<UCollectUtil::MemProfilerCollector> memProfilerCollector_;
+#endif
 };
 
 class NativeLeakReportState : public FaultStateBase {

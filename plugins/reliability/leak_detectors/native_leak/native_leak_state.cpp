@@ -282,7 +282,9 @@ ErrCode NativeLeakJudgeState::ChangeNextState(shared_ptr<FaultInfoBase> &monitor
 
 NativeLeakDumpState::NativeLeakDumpState()
 {
+#ifdef HAS_HIPROFILER
     memProfilerCollector_ = UCollectUtil::MemProfilerCollector::Create();
+#endif
 }
 
 ErrCode NativeLeakDumpState::StateProcess(shared_ptr<FaultInfoBase> &monitorInfo, FaultDetectorBase &detectorObj)
@@ -394,6 +396,8 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
 
 void NativeLeakDumpState::DumpStackInfo(shared_ptr<NativeLeakInfo> &userMonitorInfo)
 {
+#ifdef HAS_HIPROFILER
+    HIVIEW_LOGW("HAS_HIPROFILER defined, is going to dump stack info.");
     string logFilePath = userMonitorInfo->GetLogFilePath();
     auto fd = open(logFilePath.c_str(), O_CREAT | O_RDWR, HIPROFILER_LOG_FILE_MODE);
     if (fd < 0) {
@@ -411,6 +415,9 @@ void NativeLeakDumpState::DumpStackInfo(shared_ptr<NativeLeakInfo> &userMonitorI
     ffrt::this_task::sleep_for(microseconds(WAIT_TO_DUMP_PROFILER_MEM * US_PER_SECOND));
     close(fd);
     HIVIEW_LOGI("process %{public}s WRITE STACK STATISITICS FINISHED", userMonitorInfo->GetProcessName().c_str());
+#else
+    HIVIEW_LOGW("HAS_HIPROFILER not define, will not dump stack info.");
+#endif
 }
 
 void NativeLeakDumpState::DumpUserMemInfo(shared_ptr<NativeLeakInfo> &userMonitorInfo)

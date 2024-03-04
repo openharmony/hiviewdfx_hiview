@@ -62,6 +62,10 @@ ohos_source_set("leak_detector") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
+
+  if (has_hiprofiler) {
+    cflags = [ "-DHAS_HIPROFILER" ]
+  }
 }
 
 group("unittest") {
