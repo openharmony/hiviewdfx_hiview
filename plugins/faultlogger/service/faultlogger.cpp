@@ -525,6 +525,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         params["foreground"] = false;
     }
+    params["external_log"] = sysEvent->GetEventValue("LOG_PATH");
     params["bundle_version"] = sysEvent->GetEventValue("VERSION");
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
     params["pid"] = sysEvent->GetPid();
