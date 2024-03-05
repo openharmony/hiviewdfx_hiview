@@ -32,6 +32,7 @@
 #include "faultlogger.h"
 #undef private
 #include "faultevent_listener.h"
+#include "faultlog_formatter.h"
 #include "faultlog_info_ohos.h"
 #include "faultlogger_adapter.h"
 #include "faultlogger_service_ohos.h"
@@ -745,7 +746,11 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
     ASSERT_TRUE(FileUtil::FileExists(fileName));
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
-    ASSERT_LT(FileUtil::GetFileSize(fileName), 514 * 1024ul);
+    if (FaultLogger::IsFaultLogLimit()) {
+        ASSERT_LT(FileUtil::GetFileSize(fileName), 514 * 1024ul);
+    } else {
+        ASSERT_GT(FileUtil::GetFileSize(fileName), 512 * 1024ul);
+    }
 
     // check event database
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
