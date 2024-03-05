@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <fstream>
 #include <list>
+#include "parameters.h"
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -317,9 +318,19 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
     return true;
 }
 
+bool IsFaultLogLimit()
+{
+    std::string isDev = OHOS::system::GetParameter("const.security.developermode.state", "");
+    std::string isBeta = OHOS::system::GetParameter("const.logsystemverison.type", "");
+    if ((isDev == "true") || (isBeta == "user")) {
+        return false;
+    }
+    return true;
+}
+
 void LimitCppCrashLog(int32_t fd, int32_t logType)
 {
-    if ((fd < 0) || (logType != FaultLogType::CPP_CRASH)) {
+    if ((fd < 0) || (logType != FaultLogType::CPP_CRASH) || !IsFaultLogLimit()) {
         return;
     }
     constexpr int maxLogSize = 512 * 1024;
