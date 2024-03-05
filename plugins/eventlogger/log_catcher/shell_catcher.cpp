@@ -45,8 +45,6 @@ void ShellCatcher::SetEvent(std::shared_ptr<SysEvent> event)
 int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
 {
     int ret = -1;
-    int32_t windowId = 0;
-    std::string cmd = "";
     switch (catcherType_) {
         case CATCHER_HILOG:
             ret = execl("/system/bin/hilog", "hilog", "-x", nullptr);
@@ -61,8 +59,8 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
                     HIVIEW_LOGI("event is null");
                     break;
                 }
-                windowId = event_->GetEventIntValue("FOCUS_WINDOW");
-                cmd = "-w " + std::to_string(windowId) + " -default";
+                int32_t windowId = event_->GetEventIntValue("FOCUS_WINDOW");
+                std::string cmd = "-w " + std::to_string(windowId) + " -default";
                 ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a",
                     cmd.c_str(), nullptr);
             }

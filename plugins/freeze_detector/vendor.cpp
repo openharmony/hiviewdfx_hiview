@@ -301,7 +301,7 @@ bool Vendor::Init()
     return true;
 }
 
-std::string Vendor::GetDisPlayPowerInfo() const
+std::string Vendor::GetDisPlayPowerInfo()
 {
     std::string disPlayPowerInfo;
     uint32_t brightness = OHOS::DisplayPowerMgr::DisplayPowerMgrClient::GetInstance().GetDeviceBrightness();

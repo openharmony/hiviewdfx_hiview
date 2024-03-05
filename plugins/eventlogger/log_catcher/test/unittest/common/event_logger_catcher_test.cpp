@@ -467,6 +467,7 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->SCBSessionCapture();
     logTask->SCBViewParamCapture();
     logTask->LightHilogCapture();
+    logTask->SCBWMSCapture();
     printf("task size: %d\n", static_cast<int>(logTask->tasks_.size()));
     EXPECT_EQ(logTask->PeerBinderCapture("Test"), false);
     EXPECT_EQ(logTask->PeerBinderCapture("pb"), false);
@@ -852,6 +853,9 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     shellCatcher->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
+    shellCatcher->Initialize("hilog -z", ShellCatcher::CATCHER_LIGHT_HILOG, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
+
     shellCatcher->Initialize("snapshot_display -f", ShellCatcher::CATCHER_SNAPSHOT, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
@@ -860,6 +864,16 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
     printf("CATCHER_SCBVIEWPARAM result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+
+    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
+    EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
+
+    auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("ShellCatcherTest", nullptr, jsonStr);
+    event->SetValue("FOCUS_WINDOW", 4); // 4 test value
+    shellCatcher->SetEvent(event);
+    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
+    printf("CATCHER_SCBWMS result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("default", -1, 0);
     EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
