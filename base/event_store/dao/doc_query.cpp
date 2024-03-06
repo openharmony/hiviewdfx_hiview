@@ -72,21 +72,21 @@ bool DocQuery::IsContainCond(const Cond& cond, const FieldValue& value) const
     }
 }
 
-bool DocQuery::IsContainInnerCond(const DocEventHeader& eventHeader, const Cond& cond) const
+bool DocQuery::IsContainInnerCond(const InnerFieldStruct& innerField, const Cond& cond) const
 {
     FieldValue value;
     if (cond.col_ == EventCol::SEQ) {
-        value = eventHeader.seq;
+        value = innerField.seq;
     } else if (cond.col_ == EventCol::TS) {
-        value = static_cast<int64_t>(eventHeader.timestamp);
+        value = static_cast<int64_t>(innerField.ts);
     } else if (cond.col_ == EventCol::TZ) {
-        value = static_cast<int64_t>(eventHeader.timeZone);
+        value = static_cast<int64_t>(innerField.tz);
     } else if (cond.col_ == EventCol::UID) {
-        value = static_cast<int64_t>(eventHeader.uid);
+        value = static_cast<int64_t>(innerField.uid);
     } else if (cond.col_ == EventCol::PID) {
-        value = static_cast<int64_t>(eventHeader.pid);
+        value = static_cast<int64_t>(innerField.pid);
     } else if (cond.col_ == EventCol::TID) {
-        value = static_cast<int64_t>(eventHeader.tid);
+        value = static_cast<int64_t>(innerField.tid);
     } else {
         return false;
     }
@@ -98,9 +98,9 @@ bool DocQuery::IsContainInnerConds(uint8_t* content) const
     if (innerConds_.empty()) {
         return true;
     }
-    auto eventHeader = *(reinterpret_cast<DocEventHeader*>(content + BLOCK_SIZE));
-    return std::all_of(innerConds_.begin(), innerConds_.end(), [this, &eventHeader] (auto& cond) {
-        return IsContainInnerCond(eventHeader, cond);
+    InnerFieldStruct innerField = *(reinterpret_cast<InnerFieldStruct*>(content + BLOCK_SIZE));
+    return std::all_of(innerConds_.begin(), innerConds_.end(), [this, &innerField] (auto& cond) {
+        return IsContainInnerCond(innerField, cond);
     });
 }
 
