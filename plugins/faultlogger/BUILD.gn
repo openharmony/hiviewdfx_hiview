@@ -24,7 +24,10 @@ ohos_shared_library("libfaultlogger") {
   public_configs = [ "interfaces/cpp/innerkits:faultlogger_innerkits_config" ]
   deps = [ "interfaces/cpp/innerkits:faultlogger_client_impl_with_cfi" ]
   external_deps = [ "hilog:libhilog" ]
-  innerapi_tags = [ "platformsdk_indirect" ]
+  innerapi_tags = [
+    "chipsetsdk_indirect",
+    "platformsdk_indirect",
+  ]
   version_script = "interfaces/cpp/innerkits/libfaultlogger.map"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
