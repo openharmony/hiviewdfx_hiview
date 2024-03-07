@@ -186,8 +186,6 @@ enum EncodeType: int8_t {
     INVALID = 4,
 };
 
-constexpr size_t HISYSEVENT_HEADER_SIZE = sizeof(struct HiSysEventHeader);
-
 int ParseTimeZone(const std::string& tzStr);
 std::string ParseTimeZone(const uint8_t tzVal);
 size_t GetValidDataMinimumByteCount();
