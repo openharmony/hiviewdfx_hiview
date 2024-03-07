@@ -312,3 +312,55 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest016, TestSize.Level1)
     ASSERT_TRUE(collectResult.retCode == UcError::SUCCESS);
     ASSERT_TRUE(collectResult.data >= 0 && collectResult.data <= 1);
 }
+
+/**
+ * @tc.name: CpuCollectorTest017
+ * @tc.desc: used to test the function of CreateThreadStatInfoCollector with self pid;
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest017, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto threadCollector = collector->CreateThreadCollector(getpid());
+    sleep(1);
+    auto collectResult1 = threadCollector->CollectThreadStatInfos();
+    ASSERT_TRUE(collectResult1.retCode == UcError::SUCCESS);
+    sleep(1);
+    auto collectResult2 = threadCollector->CollectThreadStatInfos(true);
+    ASSERT_TRUE(collectResult2.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(collectResult2.data.size() >= 1);
+    ASSERT_TRUE(collectResult2.data[0].cpuUsage >= 0);
+    ASSERT_TRUE(collectResult1.data[0].startTime == collectResult2.data[0].startTime);
+    sleep(1);
+    auto collectResult3 = threadCollector->CollectThreadStatInfos();
+    ASSERT_TRUE(collectResult3.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(collectResult3.data.size() >= 1);
+    ASSERT_TRUE(collectResult3.data[0].cpuUsage >= 0);
+    ASSERT_TRUE(collectResult2.data[0].endTime == collectResult3.data[0].startTime);
+}
+
+/**
+ * @tc.name: CpuCollectorTest018
+ * @tc.desc: used to test the function of CreateThreadStatInfoCollector with other pid;
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest018, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector = CpuCollector::Create();
+    auto threadCollector = collector->CreateThreadCollector(1);
+    sleep(1);
+    auto collectResult1 = threadCollector->CollectThreadStatInfos(true);
+    ASSERT_TRUE(collectResult1.retCode == UcError::SUCCESS);
+    sleep(1);
+    auto collectResult2 = threadCollector->CollectThreadStatInfos(false);
+    ASSERT_TRUE(collectResult2.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(collectResult2.data.size() >= 1);
+    ASSERT_TRUE(collectResult2.data[0].cpuUsage >= 0);
+    ASSERT_TRUE(collectResult1.data[0].endTime == collectResult2.data[0].startTime);
+    sleep(1);
+    auto collectResult3 = threadCollector->CollectThreadStatInfos();
+    ASSERT_TRUE(collectResult3.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(collectResult3.data.size() >= 1);
+    ASSERT_TRUE(collectResult3.data[0].cpuUsage >= 0);
+    ASSERT_TRUE(collectResult2.data[0].startTime == collectResult3.data[0].startTime);
+}

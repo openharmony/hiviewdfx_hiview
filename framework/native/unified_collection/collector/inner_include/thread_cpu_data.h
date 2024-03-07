@@ -12,22 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HIVIEW_THREAD_CPU_DATA_H
+#define HIVIEW_THREAD_CPU_DATA_H
 
-#include "hiview_service_cpu_delegate.h"
-#include "hiview_service_ability_proxy.h"
-#include "hiview_service_agent.h"
+#include "unified_collection_data.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-CollectResult<double> HiViewServiceCpuDelegate::GetSysCpuUsage()
-{
-    auto service = HiviewServiceAgent::GetInstance().GetRemoteService();
-    if (!service) {
-        CollectResult<double> ret;
-        return ret;
-    }
-    HiviewServiceAbilityProxy proxy(service);
-    return proxy.GetSysCpuUsage().result_;
-}
-}
-}
+class ThreadCpuData {
+public:
+    ThreadCpuData(int magic, int pid, uint32_t thread_count);
+    ~ThreadCpuData();
+    struct ucollection_thread_cpu_item* GetNextThread();
+
+private:
+    void Init(int magic, uint32_t totalCount, int pid);
+
+    friend class CollectDeviceClient;
+    struct ucollection_thread_cpu_entry *entry_;
+    int current_;
+};
+} // HiviewDFX
+} // OHOS
+#endif //HIVIEW_THREAD_CPU_DATA_H

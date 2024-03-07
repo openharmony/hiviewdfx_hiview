@@ -41,6 +41,12 @@ enum UcError {
 
 template<typename T> class CollectResult {
 public:
+    CollectResult()
+    {
+        retCode = UCollect::UcError::UNSUPPORT;
+        data = {};
+    }
+
     UCollect::UcError retCode;
     T data;
 };

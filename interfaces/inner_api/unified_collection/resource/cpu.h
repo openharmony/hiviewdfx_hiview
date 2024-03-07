@@ -62,6 +62,16 @@ struct ProcessCpuStatInfo {
     double cpuUsage = 0;
     std::string procName;
 };
+
+struct ThreadCpuStatInfo {
+    uint64_t startTime = 0;
+    uint64_t endTime = 0;
+    int32_t tid = 0;
+    double cpuLoad = 0;
+    double uCpuUsage = 0;
+    double sCpuUsage = 0;
+    double cpuUsage = 0;
+};
 } // HiviewDFX
 } // OHOS
 #endif // INTERFACES_INNER_API_UNIFIED_COLLECTION_RESOURCE_CPU_H
