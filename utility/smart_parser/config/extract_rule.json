@@ -136,5 +136,33 @@
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
+    },
+    "Rule13":{
+        "DirOrFile":"/data/log/sensorhub-log/",
+        "Subcatalog":"history.log",
+        "featureId":"03_SENSORHUBCRASH_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"time", "v_first":"@L@time \\[\\d{14}-\\d{8}\\],([0-9a-zA-Z]+, [0-9a-zA-Z]+), "}
+        ]
+    },
+    "Rule14":{
+        "DirOrFile":"/data/hisi_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/cp_log/reset.log",
+        "featureId":"03_MODEMCRASH_00,03_MODEM_REBOOTSYS_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"brief:", "v_first":"brief:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"task_name:", "v_second":"task_name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"modid:", "v_last":"modid:(.*)"}
+        ]
+    },
+    "Rule15":{
+        "DirOrFile":"/data/hisi_logs/",
+        "Subcatalog":"\\d{14}-\\d{8}/ap_log/dmesg-ramoops-0",
+        "featureId":"04_PANIC_00",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"qtp_rsp", "v_cause":"dfx_qic\\]:(.*)", "v_last":"(qtp_rsp.*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"MID(Master id)", "v_first":"(MID\\(Master id\\).*)"},
+            {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"qic_addr", "v_second":"(qic_addr.*)"}
+        ]
     }
 }

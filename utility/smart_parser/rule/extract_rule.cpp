@@ -187,6 +187,7 @@ bool ExtractRule::IsMatchPath(const string& sourceFile, const string& name, cons
         }
         desPath = out.substr(0, out.size() - 1);
         if (LogUtil::FileExist(desPath)) {
+            HIVIEW_LOGI("desPath is %{public}s.\n", desPath.c_str());
             return true;
         }
     }
