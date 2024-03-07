@@ -36,6 +36,8 @@ public:
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
+    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) override;
+
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 

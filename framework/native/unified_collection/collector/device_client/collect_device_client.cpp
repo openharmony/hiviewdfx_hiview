@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,10 +52,10 @@ int CollectDeviceClient::GetDeviceFd(bool readOnly)
     }
 
     if (f < 0) {
-        HIVIEW_LOGI("Cannot open file=%{public}s, readOnly=%{public}d", UNIFIED_COLLECTION_DEVICE, readOnly);
+        HIVIEW_LOGE("Cannot open file=%{public}s, readOnly=%{public}d", UNIFIED_COLLECTION_DEVICE, readOnly);
         return -1;
     }
-    HIVIEW_LOGI("open ucollection device readOnly=%{public}d successful", readOnly);
+    HIVIEW_LOGD("open ucollection device readOnly=%{public}d successful", readOnly);
     return f;
 }
 
@@ -67,11 +67,11 @@ int CollectDeviceClient::Open()
 
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 {
-    HIVIEW_LOGI("send IOCTRL_COLLECT_ALL_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_ALL_PROC_CPU);
+    HIVIEW_LOGD("send IOCTRL_COLLECT_ALL_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_ALL_PROC_CPU);
     std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>();
     int ret = ioctl(fd_, IOCTRL_COLLECT_ALL_PROC_CPU, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_ALL_PROC_CPU cmd=%{public}zu, ret=%{public}d",
+        HIVIEW_LOGE("ioctl IOCTRL_COLLECT_ALL_PROC_CPU cmd=%{public}zu, ret=%{public}d",
             IOCTRL_COLLECT_ALL_PROC_CPU, ret);
         return data;
     }
@@ -80,49 +80,56 @@ std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData(int pid)
 {
-    HIVIEW_LOGI("send IOCTRL_COLLECT_THE_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_THE_PROC_CPU);
+    HIVIEW_LOGD("send IOCTRL_COLLECT_THE_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_THE_PROC_CPU);
     std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>(pid);
     int ret = ioctl(fd_, IOCTRL_COLLECT_THE_PROC_CPU, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_COLLECT_THE_PROC_CPU cmd=%{public}zu, ret=%{public}d",
+        HIVIEW_LOGE("ioctl IOCTRL_COLLECT_THE_PROC_CPU cmd=%{public}zu, ret=%{public}d",
             IOCTRL_COLLECT_THE_PROC_CPU, ret);
         return data;
     }
     return data;
 }
 
-int CollectDeviceClient::SetDmips(const std::vector<char> &dmipVals)
+int CollectDeviceClient::GetThreadCount(int pid)
 {
-    if (dmipVals.empty()) {
+    HIVIEW_LOGD("send IOCTRL_COLLECT_THREAD_COUNT, cmd=%{public}zu", IOCTRL_COLLECT_THREAD_COUNT);
+    struct ucollection_process_thread_count threadCount {pid, 0};
+    int ret = ioctl(fd_, IOCTRL_COLLECT_THREAD_COUNT, &threadCount);
+    if (ret < 0) {
+        HIVIEW_LOGE("ioctl IOCTRL_COLLECT_PROC_THREAD_COUNT cmd=%{public}zu, ret=%{public}d",
+                    IOCTRL_COLLECT_THREAD_COUNT, ret);
         return 0;
     }
-    size_t totalSize = sizeof(struct ucollection_cpu_dmips) + sizeof(char) * dmipVals.size();
-    struct ucollection_cpu_dmips *dmips = (struct ucollection_cpu_dmips *)malloc(totalSize);
-    if (dmips == nullptr) {
-        HIVIEW_LOGW("dmips is nullptr");
-        return -1;
-    }
-    memset_s(dmips, totalSize, 0, totalSize);
+    return threadCount.thread_count;
+}
 
-    dmips->magic = IOCTRL_SET_CPU_DMIPS_MAGIC;
-    dmips->total_count = static_cast<int>(dmipVals.size());
-    for (int ii = 0; ii < dmips->total_count; ii++) {
-        dmips->dmips[ii] = dmipVals[ii];
-    }
+std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadCpuData(int pid)
+{
+    HIVIEW_LOGD("send IOCTRL_COLLECT_THE_THREAD, cmd=%{public}zu", IOCTRL_COLLECT_THE_THREAD);
+    return FetchThreadData(IOCTRL_COLLECT_THE_THREAD, pid);
+}
 
-    HIVIEW_LOGI("send IOCTRL_SET_CPU_DMIPS, cmd=%{public}zu", IOCTRL_SET_CPU_DMIPS);
-    int f = GetDeviceFd(false);
-    int ret = ioctl(f, IOCTRL_SET_CPU_DMIPS, dmips);
+std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchSelfThreadCpuData(int pid)
+{
+    HIVIEW_LOGD("send IOCTRL_COLLECT_APP_THREAD, cmd=%{public}zu", IOCTRL_COLLECT_APP_THREAD);
+    return FetchThreadData(IOCTRL_COLLECT_APP_THREAD, pid);
+}
+
+std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadData(unsigned int magic, int pid)
+{
+    int threadCount = GetThreadCount(pid);
+    if (threadCount <= 0) {
+        HIVIEW_LOGE("ioctl GetThreadCount error");
+        return nullptr;
+    }
+    auto data = std::make_shared<ThreadCpuData>(magic, pid, threadCount);
+    int ret = ioctl(fd_, magic, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGI("ioctl IOCTRL_SET_CPU_DMIPS cmd=%{public}zu, ret=%{public}d", IOCTRL_SET_CPU_DMIPS, ret);
-        free(dmips);
-        return -1;
-    } else {
-        close(f);
-        HIVIEW_LOGI("set cpu dmips successful");
+        HIVIEW_LOGE("ioctl FetchThreadData cmd=%{public}u, ret=%{public}d", magic, ret);
+        return data;
     }
-    free(dmips);
-    return 0;
+    return data;
 }
 } // HiviewDFX
 } // OHOS

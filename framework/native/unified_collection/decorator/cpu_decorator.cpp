@@ -57,6 +57,11 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuDecorator::CollectProcessCpuSt
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+std::shared_ptr<ThreadCollector> CpuDecorator::CreateThreadCollector(int pid)
+{
+    return cpuCollector_->CreateThreadCollector(pid);
+}
+
 void CpuDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
