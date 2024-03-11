@@ -45,6 +45,7 @@ public:
         CATCHER_SCBVIEWPARAM,
         CATCHER_LIGHT_HILOG,
         CATCHER_SCBWMS,
+        CATCHER_DAM,
     };
 private:
     std::string catcherCmd_;

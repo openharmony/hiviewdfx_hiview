@@ -72,6 +72,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
         std::bind(&EventLogTask::SCBViewParamCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbWMS",
         std::bind(&EventLogTask::SCBWMSCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:dam",
+        std::bind(&EventLogTask::DumpAppMapCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -377,6 +379,13 @@ void EventLogTask::SCBWMSCapture()
     std::string cmd = "hidumper -s WindowManagerService -a " +
         std::to_string(event_->GetEventIntValue("FOCUS_WINDOW")) + " -default";
     capture->Initialize(cmd, ShellCatcher::CATCHER_SCBWMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::DumpAppMapCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s 1910 -a DumpAppMap", ShellCatcher::CATCHER_DAM, pid_);
     tasks_.push_back(capture);
 }
 } // namespace HiviewDFX

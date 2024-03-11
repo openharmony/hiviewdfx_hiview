@@ -468,6 +468,7 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->SCBViewParamCapture();
     logTask->LightHilogCapture();
     logTask->SCBWMSCapture();
+    logTask->DumpAppMapCapture();
     printf("task size: %d\n", static_cast<int>(logTask->tasks_.size()));
     EXPECT_EQ(logTask->PeerBinderCapture("Test"), false);
     EXPECT_EQ(logTask->PeerBinderCapture("pb"), false);
@@ -766,6 +767,7 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_005, TestSize.Level1)
     peerBinderCatcher->AddBinderJsonInfo(infoList, 1);
     std::string str = "/proc/" + std::to_string(getpid()) + "/cmdline";
     printf("%s\n", str.c_str());
+    EXPECT_TRUE(!str.empty());
 }
 
 /**
@@ -899,18 +901,21 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
 
 /**
  * @tc.name: ShellCatcherTest
- * @tc.desc: CREATE_VIRTUAL_SCREEN test
+ * @tc.desc: add test
  * @tc.type: FUNC
  */
 HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
 {
-    int windowId = 4;
-    int ret = HiSysEventWrite(HiSysEvent::Domain::WINDOW_MANAGER,
-        "CREATE_VIRTUAL_SCREEN",
-        HiSysEvent::EventType::STATISTIC,
-        "FOCUS_WINDOW", windowId);
-    printf("HiSysEventWrite: %d\n", ret);
-    EXPECT_EQ(ret, 0);
+    auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    if (fd < 0) {
+        printf("Fail to create testFile. errno: %d\n", errno);
+        FAIL();
+    }
+    auto shellCatcher = std::make_shared<ShellCatcher>();
+    shellCatcher->Initialize("hidumper -s 1910 -a DumpAppMap", ShellCatcher::CATCHER_DAM, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, 1) >= 0);
+    printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
+    close(fd);
 }
 } // namesapce HiviewDFX
 } // namespace OHOS
