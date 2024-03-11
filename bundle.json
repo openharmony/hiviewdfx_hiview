@@ -126,10 +126,7 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection",
                         "header_files": [
-                            "client/gpu_collector.h",
-                            "client/io_collector.h",
-                            "client/memory_collector.h",
-                            "client/network_collector.h",
+                            "client/cpu_collector.h",
                             "client/trace_collector.h"
                         ]
                     }
