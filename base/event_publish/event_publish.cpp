@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include "file_util.h"
 #include "json/json.h"
 #include "logger.h"
+#include "storage_acl.h"
 #include "string_util.h"
 #include "time_util.h"
 
@@ -36,6 +37,10 @@ const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
 const std::string DOMAIN_OS = "OS";
+const std::string LOG_OVER_LIMIT = "log_over_limit";
+const std::string EXTERNAL_LOG = "external_log";
+const std::string PID = "pid";
+constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 
 std::string GetTempFilePath(int32_t uid)
 {
@@ -56,10 +61,9 @@ std::string GetBundleNameById(int32_t uid)
     return bundleName;
 }
 
-std::string GetSandBoxPathByUid(int32_t uid)
+std::string GetSandBoxBasePath(int32_t uid, const std::string& bundleName)
 {
     int userId = uid / VALUE_MOD;
-    std::string bundleName = GetBundleNameById(uid);
     std::string path;
     path.append("/data/app/el2/")
         .append(std::to_string(userId))
@@ -67,6 +71,62 @@ std::string GetSandBoxPathByUid(int32_t uid)
         .append(bundleName)
         .append("/cache/hiappevent");
     return path;
+}
+
+std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName)
+{
+    int userId = uid / VALUE_MOD;
+    std::string path;
+    path.append("/data/app/el2/")
+        .append(std::to_string(userId))
+        .append("/log/")
+        .append(bundleName)
+        .append("/hiappevent");
+    return path;
+}
+
+void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params)
+{
+    params[LOG_OVER_LIMIT] = false;
+    Json::Value externalLogJson;
+    externalLogJson.resize(0);
+    if (!params.isMember(EXTERNAL_LOG) || !params[EXTERNAL_LOG].isString()) {
+        params[EXTERNAL_LOG] = externalLogJson;
+        return;
+    }
+    std::string externalLog = params[EXTERNAL_LOG].asString();
+    params[EXTERNAL_LOG] = externalLogJson;
+    if (externalLog.empty()) {
+        HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
+        return;
+    }
+    uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
+    uint64_t fileSize = FileUtil::GetFileSize(externalLog);
+    if (dirSize + fileSize <= MAX_FILE_SIZE) {
+        std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+        int pid = 0;
+        if (params.isMember(PID) && params[PID].isInt()) {
+            pid = params[PID].asInt();
+        }
+        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid) + ".log";
+        sandBoxLogPath.append("/").append(desFileName);
+        if (FileUtil::CopyFile(externalLog, sandBoxLogPath) == 0) {
+            std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
+            if (OHOS::StorageDaemon::AclSetAccess(sandBoxLogPath, entryTxt) != 0) {
+                HIVIEW_LOGE("failed to set acl access dir=%{public}s", sandBoxLogPath.c_str());
+            }
+            params[EXTERNAL_LOG].append("/data/storage/el2/log/hiappevent/" + desFileName);
+            HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
+                externalLog.c_str(), sandBoxLogPath.c_str());
+        } else {
+            HIVIEW_LOGE("failed to move log file=%{public}s to sandBoxLogPath=%{public}s.",
+                externalLog.c_str(), sandBoxLogPath.c_str());
+        }
+    } else {
+        HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
+            ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, MAX_FILE_SIZE);
+        params[LOG_OVER_LIMIT] = true;
+    }
 }
 }
 
@@ -92,7 +152,13 @@ void EventPublish::SendEventToSandBox()
             continue;
         }
         int32_t uid = StringUtil::StrToInt(uidStr);
-        std::string desPath = GetSandBoxPathByUid(uid);
+        std::string bundleName = GetBundleNameById(uid);
+        if (bundleName.empty()) {
+            HIVIEW_LOGW("empty bundleName uid=%{public}d.", uid);
+            (void)FileUtil::RemoveFile(srcPath);
+            continue;
+        }
+        std::string desPath = GetSandBoxBasePath(uid, bundleName);
         if (!FileUtil::FileExists(desPath)) {
             HIVIEW_LOGE("SendEventToSandBox not exit desPath=%{public}s.", desPath.c_str());
             (void)FileUtil::RemoveFile(srcPath);
@@ -117,15 +183,20 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
         HIVIEW_LOGW("empty param.");
         return;
     }
+    std::string bundleName = GetBundleNameById(uid);
+    if (bundleName.empty()) {
+        HIVIEW_LOGW("empty bundleName uid=%{public}d.", uid);
+        return;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     if (!FileUtil::FileExists(PATH_DIR) && !FileUtil::ForceCreateDirectory(PATH_DIR)) {
         HIVIEW_LOGE("failed to create resourceDir.");
         return;
     }
     std::string srcPath = GetTempFilePath(uid);
-    std::string desPath = GetSandBoxPathByUid(uid);
+    std::string desPath = GetSandBoxBasePath(uid, bundleName);
     if (!FileUtil::FileExists(desPath)) {
-        HIVIEW_LOGD("PushEvent not exit desPath=%{public}s.", desPath.c_str());
+        HIVIEW_LOGD("desPath=%{public}s not exit.", desPath.c_str());
         (void)FileUtil::RemoveFile(srcPath);
         return;
     }
@@ -137,13 +208,19 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     Json::Value params;
     Json::Reader reader;
     if (!reader.parse(paramJson, params)) {
-        HIVIEW_LOGE("failed to parse paramJson.");
+        HIVIEW_LOGE("failed to parse paramJson bundleName=%{public}s, eventName=%{public}s.",
+            bundleName.c_str(), eventName.c_str());
         return;
+    }
+    if (eventName == "APP_CRASH" || eventName == "APP_FREEZE") {
+        std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName);
+        SendLogToSandBox(uid, eventName, sandBoxLogPath, params);
     }
     eventJson[PARAM_PROPERTY] = params;
     std::string eventStr = Json::FastWriter().write(eventJson);
     if (!FileUtil::SaveStringToFile(srcPath, eventStr, false)) {
-        HIVIEW_LOGE("failed to persist event to file.");
+        HIVIEW_LOGE("failed to save event to file bundleName=%{public}s, eventName=%{public}s.",
+            bundleName.c_str(), eventName.c_str());
     }
     StartSendingThread();
 }
