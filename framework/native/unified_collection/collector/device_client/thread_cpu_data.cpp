@@ -30,7 +30,8 @@ ThreadCpuData::ThreadCpuData(int magic, int pid, uint32_t threadCount): entry_(n
 
 void ThreadCpuData::Init(int magic, uint32_t totalCount, int pid)
 {
-    auto totalSize = sizeof(struct ucollection_thread_cpu_entry) * (totalCount + 1);
+    auto totalSize = sizeof(struct ucollection_thread_cpu_entry)
+        + sizeof(struct ucollection_thread_cpu_item) * totalCount;
     entry_ = (struct ucollection_thread_cpu_entry *)malloc(totalSize);
     memset_s(entry_, totalSize, 0, totalSize);
     entry_->magic = magic;
