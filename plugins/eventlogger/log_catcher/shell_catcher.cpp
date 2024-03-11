@@ -53,6 +53,9 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             ret = execl("/system/bin/hilog", "hilog", "-z", "1000", "-P", std::to_string(pid_).c_str(),
                 nullptr);
             break;
+        case CATCHER_DAM:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "1910", "-a", "DumpAppMap", nullptr);
+            break;
         case CATCHER_SCBWMS:
             {
                 if (event_ == nullptr) {
