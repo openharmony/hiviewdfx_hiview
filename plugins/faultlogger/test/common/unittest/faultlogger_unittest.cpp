@@ -801,7 +801,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
         "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
     std::string content = std::string("Pid:111\nUid:0\nProcess name:BootScanUnittest\n") +
         "Reason:unittest for StartBootScan\n" +
-        "Fault thread Info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
+        "Fault thread info:\nTid:111, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n" +
         "Registers:\n" + regs +
         "Other thread info:\n" + otherThreadInfo +
         "Memory near registers:\nr1(/data/xxxxx):\n    0097cd34 47886849\n    0097cd38 96059d05\n\n" +
