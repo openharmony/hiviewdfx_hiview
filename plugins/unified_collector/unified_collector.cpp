@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 #include "unified_collector.h"
 
+#include "app_mgr_client.h"
 #include "ffrt.h"
 #include "file_util.h"
 #include "io_collector.h"
@@ -55,6 +56,7 @@ void UnifiedCollector::OnLoad()
 void UnifiedCollector::OnUnload()
 {
     HIVIEW_LOGI("start to unload UnifiedCollector plugin");
+    UnregisterRenderObserver();
 }
 
 void UnifiedCollector::OnEventListeningCallback(const Event& event)
@@ -81,6 +83,7 @@ void UnifiedCollector::Init()
     }
     InitWorkLoop();
     InitWorkPath();
+    RegisterRenderObserver();
     RunCpuCollectionTask();
     RunIoCollectionTask();
     RunUCollectionStatTask();
@@ -101,6 +104,36 @@ void UnifiedCollector::InitWorkPath()
         return;
     }
     workPath_ = tempWorkPath;
+}
+
+void UnifiedCollector::RegisterRenderObserver()
+{
+    renderStateObserver_ = new(std::nothrow) UcRenderStateObserver();
+    if (renderStateObserver_ == nullptr) {
+        HIVIEW_LOGE("observer is null");
+        return;
+    }
+    auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
+        RegisterRenderStateObserver(renderStateObserver_);
+    if (res != ERR_OK) {
+        HIVIEW_LOGE("failed to register observer, res=%{public}d", res);
+        return;
+    }
+    HIVIEW_LOGI("succ to register observer");
+}
+
+void UnifiedCollector::UnregisterRenderObserver()
+{
+    if (renderStateObserver_ == nullptr) {
+        return;
+    }
+    auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
+        UnregisterRenderStateObserver(renderStateObserver_);
+    if (res != ERR_OK) {
+        HIVIEW_LOGE("failed to unregister observer, res=%{public}d", res);
+        return;
+    }
+    HIVIEW_LOGI("succ to unregister observer");
 }
 
 void UnifiedCollector::RunCpuCollectionTask()

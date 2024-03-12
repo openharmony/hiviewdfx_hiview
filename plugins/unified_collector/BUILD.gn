@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,6 +17,7 @@ config("unified_collector_config") {
   visibility = [ "*:*" ]
   include_dirs = [
     "include",
+    "observer/include",
     "storage/include",
     "task/include",
     "$hiview_framework/native/unified_collection/process/include",
@@ -28,6 +29,7 @@ ohos_source_set("unified_collector") {
   configs = [ ":unified_collector_config" ]
 
   sources = [
+    "observer/uc_render_state_observer.cpp",
     "storage/cpu_storage.cpp",
     "task/cpu_collection_task.cpp",
     "task/cpu_perf_dump.cpp",
@@ -41,6 +43,7 @@ ohos_source_set("unified_collector") {
   ]
 
   external_deps = [
+    "ability_runtime:app_manager",
     "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
