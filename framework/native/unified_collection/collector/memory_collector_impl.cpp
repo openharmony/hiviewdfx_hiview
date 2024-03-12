@@ -381,6 +381,16 @@ CollectResult<std::string> MemoryCollectorImpl::CollectRawMemInfo()
     return CollectRawInfo(MEM_INFO, "proc_meminfo_");
 }
 
+CollectResult<std::string> MemoryCollectorImpl::ExportMemView()
+{
+    if (!FileUtil::FileExists("/proc/memview")) {
+        HIVIEW_LOGW("path not exist");
+        CollectResult<std::string> result;
+        return result;
+    }
+    return CollectRawInfo("/proc/memview", "proc_memview_");
+}
+
 CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcessMemory()
 {
     CollectResult<std::vector<ProcessMemory>> result;

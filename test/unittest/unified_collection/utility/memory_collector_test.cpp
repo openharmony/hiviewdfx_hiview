@@ -19,6 +19,7 @@
 #include <regex>
 #include <string>
 
+#include "file_util.h"
 #include "memory_collector.h"
 
 #include <gtest/gtest.h>
@@ -40,6 +41,10 @@ const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w:\\.]{1,}(: )\\d{1,}( byt
 //     ab:              - kB
 const std::regex RAW_MEM_INFO1("^[\\w()]{1,}:\\s{1,}\\d{1,}( kB)?$");
 const std::regex RAW_MEM_INFO2("^[\\w()]{1,}:\\s{1,}- kB$");
+// eg: ab-cd:       12345 kB
+//     ab-cd        12345 (0 in SwapPss) kB
+const std::regex RAW_MEM_VIEW_INFO1("^[\\w\\s-]{1,}:\\s{1,}\\w{1,}( kB| \\%)?$");
+const std::regex RAW_MEM_VIEW_INFO2("^\\w{1,}[-\\.]\\w{1,}(-\\w{1,})?\\s{1,}\\d{1,} \\(\\d{1,} in SwapPss\\) (kB)$");
 // eg: Node     0, zone     abc, type   def  0  0  0  0  0  0  0  0  0  0  0
 //     ab  cd  efg  hi    jk     lmn  opq     rst   uvw     xyz
 const std::string RAW_PAGE_TYPE_STR1("^(Node)\\s{1,}\\d{1,}(, zone)\\s{1,}\\w{1,}((, type)\\s{1,}\\w{1,})?");
@@ -301,4 +306,23 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest014, TestSize.Level1)
     CollectResult<MemoryLimit> data = collector->CollectMemoryLimit();
     std::cout << "collect memoryLimit result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: MemoryCollectorTest015
+ * @tc.desc: used to test MemoryCollector.ExportMemView
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest015, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    CollectResult<std::string> data = collector->ExportMemView();
+    std::cout << "collect raw memory view info result" << data.retCode << std::endl;
+    if (!FileUtil::FileExists("/proc/memview")) {
+        ASSERT_TRUE(data.retCode == UcError::UNSUPPORT);
+    } else {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+        bool flag = CheckFormat(data.data, RAW_MEM_VIEW_INFO1, RAW_MEM_VIEW_INFO2, 0); // 0: don't skip the first line
+        ASSERT_TRUE(flag);
+    }
 }

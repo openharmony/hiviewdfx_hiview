@@ -39,6 +39,12 @@ CollectResult<std::string> MemoryDecorator::CollectRawMemInfo()
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+CollectResult<std::string> MemoryDecorator::ExportMemView()
+{
+    auto task = std::bind(&MemoryCollector::ExportMemView, memoryCollector_.get());
+    return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 CollectResult<std::vector<ProcessMemory>> MemoryDecorator::CollectAllProcessMemory()
 {
     auto task = std::bind(&MemoryCollector::CollectAllProcessMemory, memoryCollector_.get());
