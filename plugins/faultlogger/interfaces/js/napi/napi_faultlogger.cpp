@@ -52,7 +52,7 @@ static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogI
     int fd = faultLogInfo->GetRawFileDescriptor();
     if (fd < 0) {
         HIVIEW_LOGE("pid %{public}d Fail to get fd:%{public}d\n", faultLogInfo->GetProcessId(), fd);
-        ret.fullLog = "Fail to get log, fd is " + std::to_string(fd);
+        ret.fullLog = "The fault log has been aged by system";
         return ret;
     }
     while (true) {
