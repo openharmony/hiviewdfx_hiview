@@ -56,13 +56,21 @@ bool NativeLeakConfig::GetThresholdList(unordered_map<string, uint64_t> &list)
     }
     string line;
     while (getline(fin, line)) {
-        regex recordRegex("^(.+)\\s+(.+)$");
-        smatch matches;
-        if (!regex_match(line, matches, recordRegex)) {
+        HIVIEW_LOGI("start match line:%{public}s", line.c_str());
+        if (line.length() <= 0 || line[0] == '#') {
+            HIVIEW_LOGI("This line is a comment");
             continue;
         }
+        regex pattern("^\\s*([\\w._]+)\\s+(\\d+)\\s*$");
+        smatch matches;
+        if (!regex_match(line, matches, pattern)) {
+            HIVIEW_LOGW("regex_match failed, this line:%{public}s", line.c_str());
+            continue;
+        }
+        HIVIEW_LOGI("regex_match success, process: %{public}s", matches[ITEM_NAME].str().c_str());
         list.insert(make_pair(matches[ITEM_NAME].str(), stoull(matches[ITEM_VALUE])));
     }
+    HIVIEW_LOGI("list size: %{public}d", list.size());
     return true;
 }
 } // namespace HiviewDFX

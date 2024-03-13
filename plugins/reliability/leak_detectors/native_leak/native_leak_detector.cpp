@@ -72,16 +72,16 @@ void NativeLeakDetector::NativeLeakConfigParse()
     HIVIEW_LOGI("thresholdLists size %{public}zu", thresholdLists_.size());
     sampleInterval_ = SAMPLE_INTERVAL;
     updateInterval_ = UPDATE_INTERVAL;
-    if (FaultDetectorUtil::IsMemTestEnable()) {
-        sampleInterval_ = TEST_SAMPLE_INTERVAL;
-        updateInterval_ = TEST_UPDATE_INTERVAL;
-    }
     // set default threshold
     auto it = thresholdLists_.find("DEFAULT");
     if (it != thresholdLists_.end()) {
         defauleThreshold_ = it->second;
     } else {
         defauleThreshold_ = DEFAULT_THRESHOLD;
+    }
+    if (FaultDetectorUtil::IsMemTestEnable()) {
+        sampleInterval_ = TEST_SAMPLE_INTERVAL;
+        updateInterval_ = TEST_UPDATE_INTERVAL;
     }
     HIVIEW_LOGI("defauleThreshold_ %{public}llu", defauleThreshold_);
 }

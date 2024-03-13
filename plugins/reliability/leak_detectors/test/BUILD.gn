@@ -13,13 +13,17 @@
 
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
+import("//build/test.gni")
 
-config("leak_detector_config") {
+module_output_path = "hiview/hiview/leak_detector"
+
+config("leak_detector_test_config") {
   visibility = [ ":*" ]
   include_dirs = [
     ".",
-    "./base",
-    "./native_leak",
+    "..",
+    "../base",
+    "../native_leak",
     "$hiview_base/event_raw/include",
     "$hiview_base/event_publish/include",
     "$hiview_base/include",
@@ -33,24 +37,19 @@ config("leak_detector_config") {
   ]
 }
 
-ohos_source_set("leak_detector") {
+ohos_unittest("LeakDetectorUnitTest") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 
   sources = [
-    "fault_detector_manager.cpp",
-    "fault_detector_util.cpp",
-    "native_leak/native_leak_config.cpp",
-    "native_leak/native_leak_detector.cpp",
-    "native_leak/native_leak_info.cpp",
-    "native_leak/native_leak_state.cpp",
-    "native_leak/native_leak_state_context.cpp",
-    "native_leak/native_leak_util.cpp",
+    "../native_leak/native_leak_config.cpp",
+    "test_util.cpp",
+    "unittest/leak_detector_unit_test.cpp",
   ]
 
-  configs = [ ":leak_detector_config" ]
+  configs = [ ":leak_detector_test_config" ]
 
-  deps = [ "config:config" ]
+  cflags = [ "-DUNITTEST" ]
 
   external_deps = [
     "bundle_framework:appexecfwk_base",
@@ -64,16 +63,39 @@ ohos_source_set("leak_detector") {
   ]
 
   if (has_hiprofiler) {
-    cflags = [ "-DHAS_HIPROFILER" ]
+    cflags += [ "-DHAS_HIPROFILER" ]
   }
+
+  module_out_path = module_output_path
 }
 
-group("unittest") {
-  testonly = true
-  deps = [ "test:LeakDetectorUnitTest" ]
-}
+ohos_moduletest("LeakDetectorModuleTest") {
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 
-group("moduletest") {
-  testonly = true
-  deps = [ "test:LeakDetectorModuleTest" ]
+  sources = [
+    "moduletest/leak_detector_module_test.cpp",
+    "test_util.cpp",
+  ]
+
+  configs = [ ":leak_detector_test_config" ]
+
+  cflags = [ "-DMOUDLETEST" ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "hiprofiler:libnative_daemon_client",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+  ]
+
+  if (has_hiprofiler) {
+    cflags += [ "-DHAS_HIPROFILER" ]
+  }
+
+  module_out_path = module_output_path
 }
