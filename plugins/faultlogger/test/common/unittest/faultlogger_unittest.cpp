@@ -795,6 +795,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     std::vector<std::string> keyWords = { std::to_string(now) };
     faultEventListener->SetKeyWords(keyWords);
     std::string timeStr = GetFormatedTime(now);
+    std::string fillMapsContent = "96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
     std::string regs = "r0:00000019 r1:0097cd3c\nr4:f787fd2c\nfp:f787fd18 ip:7fffffff pc:0097c982\n";
     std::string otherThreadInfo =
         "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
@@ -807,16 +808,11 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
         "Maps:\n96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
     // let content more than 512k, trigger loglimit
     for (int i = 0; i < 10000; i++) {
-        content += regs;
+        content += fillMapsContent;
     }
-    std::string tmpLogFileName = "/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now);
-    GTEST_LOG_(INFO) << "========tmpLogFileName:" << tmpLogFileName;
-    bool saveFile = FileUtil::SaveStringToFile(tmpLogFileName, content);
-    GTEST_LOG_(INFO) << "========saveFile:" << saveFile;
-    ASSERT_TRUE(saveFile);
+    ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now), content));
     auto plugin = CreateFaultloggerInstance();
     plugin->StartBootScan();
-
     // check faultlog file content
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
     GTEST_LOG_(INFO) << "========fileName:" << fileName;
@@ -827,7 +823,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     } else {
         ASSERT_GT(FileUtil::GetFileSize(fileName), 512 * 1024ul);
     }
-
     // check event database
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
