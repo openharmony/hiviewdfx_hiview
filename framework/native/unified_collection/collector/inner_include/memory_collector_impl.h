@@ -30,6 +30,7 @@ public:
     virtual CollectResult<ProcessMemory> CollectProcessMemory(int32_t pid) override;
     virtual CollectResult<SysMemory> CollectSysMemory() override;
     virtual CollectResult<std::string> CollectRawMemInfo() override;
+    virtual CollectResult<std::string> ExportMemView() override;
     virtual CollectResult<std::vector<ProcessMemory>> CollectAllProcessMemory() override;
     virtual CollectResult<std::string> ExportAllProcessMemory() override;
     virtual CollectResult<std::string> CollectRawSlabInfo() override;
