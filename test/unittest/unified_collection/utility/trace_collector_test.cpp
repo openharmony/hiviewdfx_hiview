@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+#include "file_util.h"
 #include "trace_collector.h"
 #include "trace_manager.h"
 
@@ -263,4 +264,21 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultDumpTrace.data.size() > 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
+}
+
+/**
+ * @tc.name: TraceCollectorTest0013
+ * @tc.desc: used to test trace file in /share is zipped
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest013, TestSize.Level1)
+{
+    std::vector<std::string> traceFiles;
+    FileUtil::GetDirFiles("/data/log/hiview/unified_collection/trace/share/", traceFiles, false);
+    for (auto &path : traceFiles) {
+        if (path.find("temp") == std::string::npos) {
+            std::cout << "trace in share path: " << path.c_str() << std::endl;
+            ASSERT_TRUE(path.find("zip") != std::string::npos);
+        }
+    }
 }

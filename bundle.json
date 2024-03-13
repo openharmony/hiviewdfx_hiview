@@ -57,7 +57,8 @@
                 "napi",
                 "hiperf",
                 "hitrace",
-                "wifi"
+                "wifi",
+                "zlib"
             ],
             "third_party": [
                 "jsoncpp",

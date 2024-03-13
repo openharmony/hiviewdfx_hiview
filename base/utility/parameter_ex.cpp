@@ -56,6 +56,11 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
     return WatchParameter(keyPrefix, callback, context);
 }
 
+std::string GetDisplayVersionStr()
+{
+    return std::string(GetDisplayVersion());
+}
+
 bool IsBetaVersion()
 {
     auto versionType = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");

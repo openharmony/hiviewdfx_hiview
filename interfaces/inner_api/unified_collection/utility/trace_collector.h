@@ -42,6 +42,7 @@ public:
     virtual CollectResult<int32_t> TraceOn() = 0;
     virtual CollectResult<std::vector<std::string>> TraceOff() = 0;
     static std::shared_ptr<TraceCollector> Create();
+    static void RecoverTmpTrace();
 }; // TraceCollector
 } // UCollectUtil
 } // HiviewDFX

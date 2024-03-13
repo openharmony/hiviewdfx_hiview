@@ -13,15 +13,22 @@
  * limitations under the License.
  */
 #include <algorithm>
+#include <chrono>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <vector>
 
+#include "cpu_collector.h"
 #include "file_util.h"
+#include "ffrt.h"
 #include "logger.h"
+#include "parameter_ex.h"
+#include "securec.h"
 #include "string_util.h"
 #include "trace_utils.h"
 #include "trace_worker.h"
 
+using namespace std::chrono_literals;
 using OHOS::HiviewDFX::TraceWorker;
 
 namespace OHOS {
@@ -30,6 +37,7 @@ namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
+const std::string UNIFIED_SHARE_TEMP_PATH = UNIFIED_SHARE_PATH + "temp/";
 const std::string RELIABILITY = "Reliability";
 const std::string XPERF = "Xperf";
 const std::string XPOWER = "Xpower";
@@ -39,6 +47,9 @@ const uint32_t UNIFIED_SHARE_COUNTS = 20;
 const uint32_t UNIFIED_SPECIAL_XPERF = 3;
 const uint32_t UNIFIED_SPECIAL_RELIABILITY = 3;
 const uint32_t UNIFIED_SPECIAL_OTHER = 5;
+constexpr uint32_t READ_MORE_LENGTH = 100 * 1024;
+const double CPU_LOAD_THRESHOLD = 0.03;
+const uint32_t MAX_TRY_COUNT = 6;
 }
 
 enum {
@@ -277,9 +288,85 @@ std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Calle
 {
     if (EnumToString(caller) == OTHER || EnumToString(caller) == BETACLUB) {
         return GetUnifiedSpecialFiles(ret, caller);
-    } else {
+    }
+    if (EnumToString(caller) == XPOWER) {
         return GetUnifiedShareFiles(ret, caller);
     }
+    GetUnifiedSpecialFiles(ret, caller);
+    return GetUnifiedShareFiles(ret, caller);
+}
+
+void CheckCurrentCpuLoad()
+{
+    std::shared_ptr<UCollectUtil::CpuCollector> collector = UCollectUtil::CpuCollector::Create();
+    int32_t pid = getpid();
+    auto collectResult = collector->CollectProcessCpuStatInfo(pid);
+    HIVIEW_LOGI("first get cpu load %{public}f", collectResult.data.cpuLoad);
+    int32_t retryTime = 0;
+    while (collectResult.data.cpuLoad > CPU_LOAD_THRESHOLD && retryTime < MAX_TRY_COUNT) {
+        ffrt::this_task::sleep_for(5s);
+        collectResult = collector->CollectProcessCpuStatInfo(pid);
+        HIVIEW_LOGI("retry get cpu load %{public}f", collectResult.data.cpuLoad);
+        retryTime++;
+    }
+}
+
+void RenameZipFile(const std::string &srcZipPath, const std::string &destZipWithoutVersion)
+{
+    std::string displayVersion = Parameter::GetDisplayVersionStr();
+    std::string versionStr = StringUtil::ReplaceStr(StringUtil::ReplaceStr(displayVersion, "_", "-"), " ", "_");
+    std::string destZipName = StringUtil::ReplaceStr(destZipWithoutVersion, ".zip", "_" + versionStr + ".zip");
+    FileUtil::RenameFile(srcZipPath, destZipName);
+    HIVIEW_LOGI("finish rename file %{public}s", destZipName.c_str());
+}
+
+void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath)
+{
+    HIVIEW_LOGI("start ZipTraceFile src: %{public}s, dst: %{public}s", srcSysPath.c_str(), destZipPath.c_str());
+    FILE *srcFp = fopen(srcSysPath.c_str(), "rb");
+    if (srcFp == nullptr) {
+        return;
+    }
+    zip_fileinfo zipInfo;
+    errno_t result = memset_s(&zipInfo, sizeof(zipInfo), 0, sizeof(zipInfo));
+    if (result != EOK) {
+        (void)fclose(srcFp);
+        return;
+    }
+    std::string zipFileName = FileUtil::ExtractFileName(destZipPath);
+    zipFile zipFile = zipOpen((UNIFIED_SHARE_TEMP_PATH + zipFileName).c_str(), APPEND_STATUS_CREATE);
+    if (zipFile == nullptr) {
+        HIVIEW_LOGE("zipOpen failed");
+        (void)fclose(srcFp);
+        return;
+    }
+    CheckCurrentCpuLoad();
+    std::string sysFileName = FileUtil::ExtractFileName(srcSysPath);
+    zipOpenNewFileInZip(
+        zipFile, sysFileName.c_str(), &zipInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+    int errcode = 0;
+    char buf[READ_MORE_LENGTH] = {0};
+    while (!feof(srcFp)) {
+        size_t numBytes = fread(buf, 1, sizeof(buf), srcFp);
+        if (numBytes <= 0) {
+            HIVIEW_LOGE("zip file failed, size is zero");
+            errcode = -1;
+            break;
+        }
+        zipWriteInFileInZip(zipFile, buf, static_cast<unsigned int>(numBytes));
+        if (ferror(srcFp)) {
+            HIVIEW_LOGE("zip file failed: %{public}s, errno: %{public}d.", srcSysPath.c_str(), errno);
+            errcode = -1;
+            break;
+        }
+    }
+    (void)fclose(srcFp);
+    zipCloseFileInZip(zipFile);
+    zipClose(zipFile, nullptr);
+    if (errcode != 0) {
+        return;
+    }
+    RenameZipFile(UNIFIED_SHARE_TEMP_PATH + zipFileName, destZipPath);
 }
 
 void CopyFile(const std::string &src, const std::string &dst)
@@ -290,27 +377,11 @@ void CopyFile(const std::string &src, const std::string &dst)
     }
 }
 
-// Save three traces for xperf/Reliability
-void CopyToSpecialPath(const std::string &trace, const std::string &traceFile, const std::string &traceCaller)
-{
-    if (!FileUtil::FileExists(UNIFIED_SPECIAL_PATH)) {
-        if (!CreateMultiDirectory(UNIFIED_SPECIAL_PATH)) {
-            HIVIEW_LOGE("failed to create multidirectory.");
-            return;
-        }
-    }
-
-    std::string dst = UNIFIED_SPECIAL_PATH + traceCaller + "_" + traceFile;
-    UcollectionTask traceTask = [=]() {
-        CopyFile(trace, dst);
-    };
-    TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
-}
-
 /*
  * apply to xperf, xpower and reliability
  * trace path eg.:
- *     /data/log/hiview/unified_collection/trace/share/trace_20230906111617@8290-81765922.sys
+ *     /data/log/hiview/unified_collection/trace/share/
+ *     trace_20230906111617@8290-81765922_{device}_{version}.zip
 */
 std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
 {
@@ -319,8 +390,8 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
         return {};
     }
 
-    if (!FileUtil::FileExists(UNIFIED_SHARE_PATH)) {
-        if (!CreateMultiDirectory(UNIFIED_SHARE_PATH)) {
+    if (!FileUtil::FileExists(UNIFIED_SHARE_TEMP_PATH)) {
+        if (!CreateMultiDirectory(UNIFIED_SHARE_TEMP_PATH)) {
             HIVIEW_LOGE("failed to create multidirectory.");
             return {};
         }
@@ -329,19 +400,14 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
     std::vector<std::string> files;
     for (const auto &tracePath : ret.outputFiles) {
         std::string traceFile = FileUtil::ExtractFileName(tracePath);
-        // copy xperf/reliability trace to */trace/special/, reserve 3 trace in */trace/special/
-        std::string traceCaller = EnumToString(caller);
-        if (traceCaller == XPERF || traceCaller == RELIABILITY) {
-            CopyToSpecialPath(tracePath, traceFile, traceCaller);
-        }
-        const std::string dst = UNIFIED_SHARE_PATH + traceFile;
-        // for copy
+        const std::string destZipPath = UNIFIED_SHARE_PATH + StringUtil::ReplaceStr(traceFile, ".sys", ".zip");
+        // for zip
         UcollectionTask traceTask = [=]() {
-            CopyFile(tracePath, dst);
+            ZipTraceFile(tracePath, destZipPath);
         };
         TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
-        files.push_back(dst);
-        HIVIEW_LOGI("trace file : %{public}s.", dst.c_str());
+        files.push_back(destZipPath);
+        HIVIEW_LOGI("trace file : %{public}s.", destZipPath.c_str());
     }
 
     // file delete
@@ -385,8 +451,27 @@ std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, TraceCollector
 
     // file delete
     FileRemove(caller);
-
     return files;
+}
+
+void TraceCollector::RecoverTmpTrace()
+{
+    std::vector<std::string> traceFiles;
+    FileUtil::GetDirFiles(UNIFIED_SHARE_TEMP_PATH, traceFiles, false);
+    HIVIEW_LOGI("traceFiles need recover: %{public}zu", traceFiles.size());
+    for (auto &filePath : traceFiles) {
+        std::string fileName = FileUtil::ExtractFileName(filePath);
+        HIVIEW_LOGI("unfinished trace file: %{public}s", fileName.c_str());
+        std::string originTraceFile = StringUtil::ReplaceStr("/data/log/hitrace/" + fileName, ".zip", ".sys");
+        if (FileUtil::FileExists(originTraceFile)) {
+            HIVIEW_LOGI("originTraceFile path: %{public}s", originTraceFile.c_str());
+            FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
+            UcollectionTask traceTask = [=]() {
+                ZipTraceFile(originTraceFile, UNIFIED_SHARE_PATH + fileName);
+            };
+            TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+        }
+    }
 }
 } // HiViewDFX
 } // OHOS

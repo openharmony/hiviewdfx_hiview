@@ -39,6 +39,7 @@ typedef void (*ParameterChgPtr)(const char *key, const char *value, void *contex
 int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *context);
 bool IsBetaVersion();
 DeviceType GetDeviceType();
+std::string GetDisplayVersionStr();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

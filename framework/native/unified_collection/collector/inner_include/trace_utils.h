@@ -17,6 +17,7 @@
 
 #include <map>
 #include <string>
+#include <zip.h>
 
 #include "hitrace_dump.h"
 #include "trace_collector.h"
@@ -47,10 +48,12 @@ bool CreateMultiDirectory(const std::string &dirPath);
 const std::string EnumToString(UCollectUtil::TraceCollector::Caller &caller);
 std::vector<std::string> GetUnifiedFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
 void CopyFile(const std::string &src, const std::string &dst);
-void CopyToSpecialPath(const std::string &trace, const std::string &revRightStr, const std::string &traceCaller);
 std::vector<std::string> GetUnifiedShareFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
 std::vector<std::string> GetUnifiedSpecialFiles(Hitrace::TraceRetInfo ret,
     UCollectUtil::TraceCollector::Caller &caller);
+void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath);
+void RenameZipFile(const std::string &srcZipPath, const std::string &destZipWithoutVersion);
+void CheckCurrentCpuLoad();
 } // HiViewDFX
 } // OHOS
 #endif // FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_FILE_UTILS_H
