@@ -312,7 +312,7 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
     std::string log;
     GetHilog(info.pid, log);
     if (log.length() == 0) {
-        log.append("[]");
+        log.append("");
     }
     info.sectionMap["HILOG"] = log;
 }
@@ -539,7 +539,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     GetHilog(sysEvent->GetPid(), log);
     if (log.length() == 0) {
         HIVIEW_LOGE("Get hilog is empty");
-        hilog.append("[]");
+        hilog.append("");
     } else {
         std::stringstream logStream(log);
         std::string oneLine;
