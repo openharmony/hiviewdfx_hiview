@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -166,6 +166,20 @@ HWTEST_F(AdapterUtilityOhosTest, CommonUtilsOhosTest003, testing::ext::TestSize.
         O_CREAT | O_WRONLY | O_TRUNC, FileUtil::FILE_PERM_770);
     ret = CommonUtils::WriteCommandResultToFile(fd, cmd2);
     ASSERT_EQ(true, ret);
+}
+
+/**
+ * @tc.name: CommonUtilsOhosTest004
+ * @tc.desc: Test GetProcFullNameByPid defined in namespace CommonUtils
+ * @tc.type: FUNC
+ * @tc.require: issueI97MDA
+ */
+HWTEST_F(AdapterUtilityOhosTest, CommonUtilsOhosTest004, testing::ext::TestSize.Level3)
+{
+    auto ret = CommonUtils::GetProcFullNameByPid(1); // 1 is pid of init process
+    ASSERT_EQ(ret, "init");
+    ret = CommonUtils::GetProcFullNameByPid(-1); // -1 is a invalid pid value just for test
+    ASSERT_EQ(ret, "");
 }
 
 /**

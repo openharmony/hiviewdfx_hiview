@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -309,7 +309,7 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
         return false;
     }
     memory.pid = pid;
-    memory.name = CommonUtils::GetProcNameByPid(pid);
+    memory.name = CommonUtils::GetProcFullNameByPid(pid);
     InitSmapsOfProcessMemory(procDir, memory);
     InitAdjOfProcessMemory(procDir, memory);
     return true;
@@ -577,7 +577,7 @@ CollectResult<std::string> MemoryCollectorImpl::CollectHprof(int32_t pid)
     if (srcFilePath.empty()) {
         srcFilePath = GetSnapshotPath("/data/log/reliability/resource_leak/memory_leak", pidStr);
         if (srcFilePath.empty()) {
-            std::string procName = CommonUtils::GetProcNameByPid(pid);
+            std::string procName = CommonUtils::GetProcFullNameByPid(pid);
             std::string content = "unsupport dump js heap snapshot: " + procName;
             if (!FileUtil::SaveStringToFile(savePath, content)) {
                 HIVIEW_LOGE("save to %{public}s failed, content is %{public}s.", savePath.c_str(), content.c_str());

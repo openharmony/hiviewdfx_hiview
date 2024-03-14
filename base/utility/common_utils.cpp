@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,6 +33,53 @@ using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
 namespace CommonUtils {
+namespace {
+std::string GetProcessNameFromProcCmdline(int32_t pid)
+{
+    std::string procCmdlinePath = "/proc/" + std::to_string(pid) + "/cmdline";
+    std::string procCmdlineContent = FileUtil::GetFirstLine(procCmdlinePath);
+    if (procCmdlineContent.empty()) {
+        return "";
+    }
+
+    size_t procNameStartPos = 0;
+    size_t procNameEndPos = procCmdlineContent.size();
+    for (size_t i = 0; i < procCmdlineContent.size(); i++) {
+        if (procCmdlineContent[i] == '/') {
+            // for the format '/system/bin/hiview' of the cmdline file
+            procNameStartPos = i + 1; // 1 for next char
+        } else if (procCmdlineContent[i] == '\0') {
+            // for the format 'hiview \0 3 \0 hiview' of the cmdline file
+            procNameEndPos = i;
+            break;
+        }
+    }
+    return procCmdlineContent.substr(procNameStartPos, procNameEndPos - procNameStartPos);
+}
+
+std::string GetProcessNameFromProcStat(int32_t pid)
+{
+    std::string procStatFilePath = "/proc/" + std::to_string(pid) + "/stat";
+    std::string procStatFileContent = FileUtil::GetFirstLine(procStatFilePath);
+    if (procStatFileContent.empty()) {
+        return "";
+    }
+    // for the format '40 (hiview) I ...'
+    auto procNameStartPos = procStatFileContent.find('(') + 1; // 1: for '(' next char
+    if (procNameStartPos == std::string::npos) {
+        return "";
+    }
+    auto procNameEndPos = procStatFileContent.find(')');
+    if (procNameEndPos == std::string::npos) {
+        return "";
+    }
+    if (procNameEndPos <= procNameStartPos) {
+        return "";
+    }
+    return procStatFileContent.substr(procNameStartPos, procNameEndPos - procNameStartPos);
+}
+}
+
 int ExecCommand(const std::string &cmd, const std::vector<std::string> &args)
 {
     pid_t pid = fork();
@@ -84,6 +131,15 @@ std::string GetProcNameByPid(pid_t pid)
     }
     result.erase(pos + 1);
     return result;
+}
+
+std::string GetProcFullNameByPid(pid_t pid)
+{
+    std::string procName = GetProcessNameFromProcCmdline(pid);
+    if (procName.empty()) {
+        procName = GetProcessNameFromProcStat(pid);
+    }
+    return procName;
 }
 
 pid_t GetPidByName(const std::string& processName)

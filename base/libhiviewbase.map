@@ -344,6 +344,7 @@
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::CpuUsageHighInfo const&)";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::BatteryUsageInfo const&)";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ResourceOverLimitInfo const&)";
+        "OHOS::HiviewDFX::CommonUtils::GetProcFullNameByPid(int)";
     };
   local:
     *;
