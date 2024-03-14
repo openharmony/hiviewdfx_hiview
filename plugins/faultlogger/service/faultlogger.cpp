@@ -532,11 +532,11 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
+    Json::Value hilog;
     GetHilog(sysEvent->GetPid(), log);
     if (log.length() == 0) {
         HIVIEW_LOGE("Get hilog is empty");
     } else {
-        Json::Value hilog;
         std::stringstream logStream(log);
         std::string oneLine;
         while (getline(logStream, oneLine)) {
