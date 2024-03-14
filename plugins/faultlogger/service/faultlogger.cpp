@@ -311,9 +311,7 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
 
     std::string log;
     GetHilog(info.pid, log);
-    if (log.length() > 0) {
-        info.sectionMap["HILOG"] = log;
-    }
+    info.sectionMap["HILOG"] = log;
 }
 
 bool Faultlogger::VerifiedDumpPermission()
@@ -544,8 +542,8 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
         while (getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
-        params["hilog"] = hilog;
     }
+    params["hilog"] = hilog;
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportAppEvent: uid:%{public}d, json:%{public}s.",
         sysEvent->GetUid(), paramsStr.c_str());
