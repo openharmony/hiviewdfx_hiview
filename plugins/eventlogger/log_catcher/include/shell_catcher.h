@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "event_log_catcher.h"
+#include "sys_event.h"
 namespace OHOS {
 namespace HiviewDFX {
 class ShellCatcher : public EventLogCatcher {
@@ -28,6 +29,7 @@ public:
     ~ShellCatcher() override {};
     bool Initialize(const std::string& cmd, int type, int intParam2) override;
     int Catch(int fd, int jsonFd) override;
+    void SetEvent(std::shared_ptr<SysEvent> event);
 
     enum CATCHER_TYPE {
         CATCHER_AMS,
@@ -42,11 +44,14 @@ public:
         CATCHER_SCBSESSION,
         CATCHER_SCBVIEWPARAM,
         CATCHER_LIGHT_HILOG,
+        CATCHER_SCBWMS,
+        CATCHER_DAM,
     };
 private:
     std::string catcherCmd_;
     int pid_;
     CATCHER_TYPE catcherType_;
+    std::shared_ptr<SysEvent> event_ = nullptr;
 
     int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);

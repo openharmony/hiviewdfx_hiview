@@ -12,27 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef INTERFACES_INNER_API_UNIFIED_COLLECTION_CLIENT_NETWORK_COLLECTOR_H
-#define INTERFACES_INNER_API_UNIFIED_COLLECTION_CLIENT_NETWORK_COLLECTOR_H
-#include <memory>
 
-#include "collect_result.h"
-#include "resource/network.h"
+#ifndef HIVIEW_BASE_EVENT_STORE_UTILITY_CRC_GENERATOR_H
+#define HIVIEW_BASE_EVENT_STORE_UTILITY_CRC_GENERATOR_H
+
+#include <cstdint>
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace UCollectClient {
-class NetworkCollector {
+namespace EventStore {
+class CrcGenerator {
 public:
-    NetworkCollector() = default;
-    virtual ~NetworkCollector() = default;
+    static uint32_t GetCrc32(uint8_t* bufPtr, uint32_t count);
+    static void Initialize();
 
-public:
-    virtual CollectResult<NetworkRate> CollectRate() = 0;
-    virtual CollectResult<NetworkPackets> CollectSysPackets() = 0;
-    static std::shared_ptr<NetworkCollector> Create();
-}; // NetworkCollector
-} // UCollectClient
+    static constexpr uint32_t NUMBER_RANGE { 256 }; // 256 means 2^8
+    static constexpr uint32_t BIT_RANGE { 8 }; // means 8-bit
+
+private:
+    static uint32_t crcTable_[NUMBER_RANGE];
+}; // CrcGenerator
+} // EventStore
 } // HiviewDFX
 } // OHOS
-#endif // INTERFACES_INNER_API_UNIFIED_COLLECTION_CLIENT_NETWORK_COLLECTOR_H
+#endif // HIVIEW_BASE_EVENT_STORE_UTILITY_CRC_GENERATOR_H

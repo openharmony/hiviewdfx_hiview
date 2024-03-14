@@ -17,8 +17,10 @@
 #include <cstdint>
 #include <fstream>
 #include <list>
+#include "parameters.h"
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
 #include "faultlog_info.h"
 #include "faultlog_util.h"
@@ -50,7 +52,7 @@ static const char *MSG_QUEUE_INFO[] = {"MSG_QUEUE_INFO", "Message queue info:\n"
 static const char *BINDER_TRANSACTION_INFO[] = {"BINDER_TRANSACTION_INFO", "Binder transaction info:\n"};
 static const char *PROCESS_STACKTRACE[] = {"PROCESS_STACKTRACE", "Process stacktrace:\n"};
 static const char *OTHER_THREAD_INFO[] = {"OTHER_THREAD_INFO", "Other thread info:\n"};
-static const char *KEY_THREAD_INFO[] = {"KEY_THREAD_INFO", "Fault thread Info:\n"};
+static const char *KEY_THREAD_INFO[] = {"KEY_THREAD_INFO", "Fault thread info:\n"};
 static const char *KEY_THREAD_REGISTERS[] = {"KEY_THREAD_REGISTERS", "Registers:\n"};
 static const char *MEMORY_USAGE[] = {"MEM_USAGE", "Memory Usage:\n"};
 static const char *CPU_USAGE[] = {"FAULTCPU", "CPU Usage:"};
@@ -314,6 +316,36 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
         FileUtil::SaveStringToFd(fd, "\n");
     }
     return true;
+}
+
+bool IsFaultLogLimit()
+{
+    std::string isDev = OHOS::system::GetParameter("const.security.developermode.state", "");
+    std::string isBeta = OHOS::system::GetParameter("const.logsystemverison.type", "");
+    if ((isDev == "true") || (isBeta == "user")) {
+        return false;
+    }
+    return true;
+}
+
+void LimitCppCrashLog(int32_t fd, int32_t logType)
+{
+    if ((fd < 0) || (logType != FaultLogType::CPP_CRASH) || !IsFaultLogLimit()) {
+        return;
+    }
+    constexpr int maxLogSize = 512 * 1024;
+    off_t  endPos = lseek(fd, 0, SEEK_END);
+    if ((endPos == -1) || (endPos <= maxLogSize)) {
+        return;
+    }
+
+    if (ftruncate(fd, maxLogSize) < 0) {
+        return;
+    }
+    endPos = lseek(fd, maxLogSize, SEEK_SET);
+    if (endPos != -1) {
+        FileUtil::SaveStringToFd(fd, "\ncpp crash log is limit output.\n");
+    }
 }
 } // namespace FaultLogger
 } // namespace HiviewDFX

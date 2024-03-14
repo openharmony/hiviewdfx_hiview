@@ -23,10 +23,13 @@ namespace EventStore {
 #define MAGIC_NUM 0x894556454E541a0a
 #define NUM_OF_BYTES_IN_KB 1024
 #define NUM_OF_BYTES_IN_MB (1024 * 1024)
+#define CRC_SIZE sizeof(uint32_t)
 #define BLOCK_SIZE sizeof(uint32_t)
+#define SEQ_SIZE sizeof(int64_t)
 #define HEADER_SIZE sizeof(DocHeader)
-#define DOC_EVENT_HEADER_SIZE sizeof(DocEventHeader)
 
+#define MAX_DOMAIN_LEN 17
+#define MAX_EVENT_NAME_LEN 33
 #define MAX_TAG_LEN 17
 
 #define MAX_NEW_SIZE (386 * 1024)
@@ -47,9 +50,7 @@ namespace EventStore {
 #define DOC_STORE_ERROR_MEMORY (-3)
 #define DOC_STORE_ERROR_INVALID (-4)
 
-const char FILE_NAME_SEPARATOR[] = "-";
-const char FILE_SEPARATOR[] = "/";
-const char FILE_EXT[] = ".db";
+#pragma pack(1)
 
 /* Object returned by the event query */
 struct Entry {
@@ -69,6 +70,9 @@ struct DocHeader {
     /* Magic number */
     uint64_t magicNum = 0;
 
+    /* Block size */
+    uint32_t blockSize = 0;
+
     /* Page size */
     uint8_t pageSize = 0;
 
@@ -77,31 +81,14 @@ struct DocHeader {
 
     /* Event tag */
     char tag[MAX_TAG_LEN] = {0};
+
+    /* Crc value */
+    uint32_t crc = 0;
 };
 using DocHeader = struct DocHeader;
 
-/* Event content header for each event in the binary storage file */
-struct DocEventHeader {
-    int64_t seq = 0;
-    uint64_t timestamp = 0;
-    uint8_t timeZone = 0;
-    uint32_t uid = 0;
-    uint32_t pid = 0;
-    uint32_t tid = 0;
-    uint64_t id = 0;
-    uint8_t isTraceOpened : 1;
-};
-using DocEventHeader = struct DocEventHeader;
+#pragma pack()
 
-/* Common event information read from the binary storage file */
-struct CommonEventInfo {
-    std::string domain;
-    std::string name;
-    std::string level;
-    std::string tag;
-    uint8_t type = 0;
-};
-using CommonEventInfo = struct CommonEventInfo;
 } // EventStore
 } // HiviewDFX
 } // OHOS

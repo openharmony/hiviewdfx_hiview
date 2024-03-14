@@ -19,6 +19,7 @@
 #include <regex>
 #include <string>
 
+#include "file_util.h"
 #include "memory_collector.h"
 
 #include <gtest/gtest.h>
@@ -30,7 +31,7 @@ using namespace OHOS::HiviewDFX::UCollect;
 
 // eg: 123   ab-cd   456 789 0   -123
 //     123   ab cd   0   0   0   0
-const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.:/-]{1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
+const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.:/-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
 const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
 // eg: Total dmabuf size of ab.cd: 12345 bytes
 //     ab.cd    12  34  567  890  123   ef   gh   ijk
@@ -40,6 +41,10 @@ const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w:\\.]{1,}(: )\\d{1,}( byt
 //     ab:              - kB
 const std::regex RAW_MEM_INFO1("^[\\w()]{1,}:\\s{1,}\\d{1,}( kB)?$");
 const std::regex RAW_MEM_INFO2("^[\\w()]{1,}:\\s{1,}- kB$");
+// eg: ab-cd:       12345 kB
+//     ab-cd        12345 (0 in SwapPss) kB
+const std::regex RAW_MEM_VIEW_INFO1("^[\\w\\s-]{1,}:\\s{1,}\\w{1,}( kB| \\%)?$");
+const std::regex RAW_MEM_VIEW_INFO2("^\\w{1,}[-\\.]\\w{1,}(-\\w{1,})?\\s{1,}\\d{1,} \\(\\d{1,} in SwapPss\\) (kB)$");
 // eg: Node     0, zone     abc, type   def  0  0  0  0  0  0  0  0  0  0  0
 //     ab  cd  efg  hi    jk     lmn  opq     rst   uvw     xyz
 const std::string RAW_PAGE_TYPE_STR1("^(Node)\\s{1,}\\d{1,}(, zone)\\s{1,}\\w{1,}((, type)\\s{1,}\\w{1,})?");
@@ -108,9 +113,12 @@ bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std:
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest001, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<ProcessMemory> data = collector->CollectProcessMemory(1000);
+    CollectResult<ProcessMemory> data = collector->CollectProcessMemory(1); // init process id
     std::cout << "collect process memory result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    data = collector->CollectProcessMemory(-1); // invalid process id
+    std::cout << "collect process memory result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::READ_FAILED);
 }
 
 /**
@@ -285,4 +293,36 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest013, TestSize.Level1)
     CollectResult<uint64_t> data = collector->CollectProcessVss(1000);
     std::cout << "collect processvss result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: MemoryCollectorTest014
+ * @tc.desc: used to test MemoryCollector.CollectMemoryLimit
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest014, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    CollectResult<MemoryLimit> data = collector->CollectMemoryLimit();
+    std::cout << "collect memoryLimit result" << data.retCode << std::endl;
+    ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+}
+
+/**
+ * @tc.name: MemoryCollectorTest015
+ * @tc.desc: used to test MemoryCollector.ExportMemView
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest015, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    CollectResult<std::string> data = collector->ExportMemView();
+    std::cout << "collect raw memory view info result" << data.retCode << std::endl;
+    if (!FileUtil::FileExists("/proc/memview")) {
+        ASSERT_TRUE(data.retCode == UcError::UNSUPPORT);
+    } else {
+        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+        bool flag = CheckFormat(data.data, RAW_MEM_VIEW_INFO1, RAW_MEM_VIEW_INFO2, 0); // 0: don't skip the first line
+        ASSERT_TRUE(flag);
+    }
 }

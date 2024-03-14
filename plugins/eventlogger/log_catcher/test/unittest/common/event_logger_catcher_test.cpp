@@ -37,6 +37,7 @@
 #include "event_logger.h"
 #include "event_log_catcher.h"
 #include "sys_event.h"
+#include "hisysevent.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -466,6 +467,8 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->SCBSessionCapture();
     logTask->SCBViewParamCapture();
     logTask->LightHilogCapture();
+    logTask->SCBWMSCapture();
+    logTask->DumpAppMapCapture();
     printf("task size: %d\n", static_cast<int>(logTask->tasks_.size()));
     EXPECT_EQ(logTask->PeerBinderCapture("Test"), false);
     EXPECT_EQ(logTask->PeerBinderCapture("pb"), false);
@@ -764,6 +767,7 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_005, TestSize.Level1)
     peerBinderCatcher->AddBinderJsonInfo(infoList, 1);
     std::string str = "/proc/" + std::to_string(getpid()) + "/cmdline";
     printf("%s\n", str.c_str());
+    EXPECT_TRUE(!str.empty());
 }
 
 /**
@@ -851,18 +855,66 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     shellCatcher->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
+    shellCatcher->Initialize("hilog -z", ShellCatcher::CATCHER_LIGHT_HILOG, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
+
     shellCatcher->Initialize("snapshot_display -f", ShellCatcher::CATCHER_SNAPSHOT, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getContainerSession", ShellCatcher::CATCHER_SCBSESSION, 0);
-    printf("CATCHER_SCBSESSION result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+    printf("CATCHER_SCBSESSION result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
-    printf("CATCHER_SCBVIEWPARAM result: %s", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+    printf("CATCHER_SCBVIEWPARAM result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+
+    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
+    EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
+
+    auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("ShellCatcherTest", nullptr, jsonStr);
+    event->SetValue("FOCUS_WINDOW", 4); // 4 test value
+    shellCatcher->SetEvent(event);
+    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
+    printf("CATCHER_SCBWMS result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
     shellCatcher->Initialize("default", -1, 0);
     EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
 
+    close(fd);
+}
+
+/**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: GET_DISPLAY_SNAPSHOT test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
+{
+    int windowId = 4;
+    int ret = HiSysEventWrite(HiSysEvent::Domain::WINDOW_MANAGER,
+        "GET_DISPLAY_SNAPSHOT",
+        HiSysEvent::EventType::STATISTIC,
+        "FOCUS_WINDOW", windowId);
+    printf("HiSysEventWrite: %d\n", ret);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: add test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
+{
+    auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    if (fd < 0) {
+        printf("Fail to create testFile. errno: %d\n", errno);
+        FAIL();
+    }
+    auto shellCatcher = std::make_shared<ShellCatcher>();
+    shellCatcher->Initialize("hidumper -s 1910 -a DumpAppMap", ShellCatcher::CATCHER_DAM, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, 1) >= 0);
+    printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
     close(fd);
 }
 } // namesapce HiviewDFX

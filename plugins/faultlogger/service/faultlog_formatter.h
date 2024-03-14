@@ -27,6 +27,8 @@ FaultLogInfo ParseFaultLogInfoFromFile(const std::string& path, bool isTempFile 
 void WriteStackTraceFromLog(int32_t fd, const std::string& pidStr, const std::string& path);
 std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string> sections);
 bool WriteLogToFile(int32_t fd, const std::string& path);
+bool IsFaultLogLimit();
+void LimitCppCrashLog(int32_t fd, int32_t logType);
 }  // namespace FaultLogger
 }  // namespace HiviewDFX
 }  // namespace OHOS

@@ -51,24 +51,41 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         g_asanlog << buf[i];
     }
 
-    char *output = strstr(buf, "End GWP-ASan report");
-    if (output) {
+    char *gwpOutput = strstr(buf, "End GWP-ASan report");
+    char *tsanOutput = strstr(buf, "End TSAN report");
+    char *cfiOutput = strstr(buf, "End of process memory map");
+    if (gwpOutput) {
+        std::string gwpasanlog = g_asanlog.str();
+        // parse log
+        std::string errType = "GWP-ASAN";
+        ReadGwpAsanRecord(gwpasanlog, errType);
+        // clear buffer
+        g_asanlog.str("");
+    } else if (tsanOutput) {
+        std::string tsanlog = g_asanlog.str();
+        // parse log
+        std::string errType = "TSAN";
+        ReadGwpAsanRecord(tsanlog, errType);
+        // clear buffer
+        g_asanlog.str("");
+    } else if (cfiOutput) {
         std::string asanlog = g_asanlog.str();
         // parse log
-        ReadGwpAsanRecord(asanlog);
+        std::string errType = "ASAN";
+        ReadGwpAsanRecord(asanlog, errType);
         // clear buffer
         g_asanlog.str("");
     }
 }
 
-void ReadGwpAsanRecord(std::string& gwpAsanBuffer)
+void ReadGwpAsanRecord(std::string& asanBuffer, std::string& errType)
 {
     GwpAsanCurrInfo currInfo;
     char bundleName[BUF_SIZE];
-    currInfo.description = gwpAsanBuffer;
+    currInfo.description = asanBuffer;
     currInfo.pid = getpid();
     currInfo.uid = getuid();
-    currInfo.errType = "GWP-ASAN";
+    currInfo.errType = errType;
     if (GetNameByPid(static_cast<pid_t>(currInfo.pid), bundleName) == true) {
         currInfo.procName = std::string(bundleName);
     }
@@ -107,7 +124,7 @@ bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo)
         "Pid:" + std::to_string(currInfo.pid) + "\n" +
         "Uid:" + std::to_string(currInfo.uid) + "\n" +
         "Process name:" + currInfo.procName + "\n" +
-        "Fault thread Info:\n" + currInfo.description);
+        "Fault thread info:\n" + currInfo.description);
 
     close(fd);
     return true;
@@ -116,7 +133,16 @@ bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo)
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
 {
     std::string filePath = "data/log/faultlog/faultlogger/";
-    std::string prefix = "gwpasan";
+    std::string prefix = "";
+    if (currInfo.errType.compare("GWP-ASAN") == 0) {
+        prefix = "gwpasan";
+    } else if (currInfo.errType.compare("TSAN") == 0) {
+        prefix = "tsan";
+    } else if (currInfo.errType.compare("ASAN") == 0) {
+        prefix = "sanitizer";
+    } else {
+        prefix = "unknown-crash";
+    }
     std::string name = currInfo.procName;
     if (name.find("/") != std::string::npos) {
         name = currInfo.procName.substr(currInfo.procName.find_last_of("/") + 1);

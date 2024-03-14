@@ -1,10 +1,7 @@
 {
   global:
     extern "C++" {
-      "OHOS::HiviewDFX::UCollectClient::GpuCollector::Create()";
-      "OHOS::HiviewDFX::UCollectClient::IoCollector::Create()";
-      "OHOS::HiviewDFX::UCollectClient::MemoryCollector::Create()";
-      "OHOS::HiviewDFX::UCollectClient::NetworkCollector::Create()";
+      "OHOS::HiviewDFX::UCollectClient::CpuCollector::Create()";
       "OHOS::HiviewDFX::UCollectClient::TraceCollector::Create()";
     };
   local:

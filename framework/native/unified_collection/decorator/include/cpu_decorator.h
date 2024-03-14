@@ -30,11 +30,14 @@ public:
 public:
     virtual CollectResult<SysCpuLoad> CollectSysCpuLoad() override;
     virtual CollectResult<SysCpuUsage> CollectSysCpuUsage(bool isNeedUpdate = false) override;
+    virtual CollectResult<double> GetSysCpuUsage() override;
     virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid,
         bool isNeedUpdate = false) override;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
+    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) override;
+
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 

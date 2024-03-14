@@ -197,6 +197,49 @@ std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, s
     }
     return value->second;
 }
+
+void ParseJsErrorSummary(std::string& summary, std::string& name, std::string& message, std::string& stack)
+{
+    std::string leftStr = StringUtil::GetLeftSubstr(summary, "Error message:");
+    std::string rightStr = StringUtil::GetRightSubstr(summary, "Error message:");
+    name = StringUtil::GetRightSubstr(leftStr, "Error name:");
+    stack = StringUtil::GetRightSubstr(rightStr, "Stacktrace:");
+
+    leftStr = StringUtil::GetLeftSubstr(rightStr, "Stacktrace:");
+    do {
+        if (leftStr.find("Error code:") != std::string::npos) {
+            leftStr = StringUtil::GetLeftSubstr(leftStr, "Error code:");
+            break;
+        }
+        if (leftStr.find("SourceCode:") != std::string::npos) {
+            leftStr = StringUtil::GetLeftSubstr(leftStr, "SourceCode:");
+            break;
+        }
+    } while (false);
+    message = leftStr;
+}
+
+void FillJsErrorParams(std::string summary, Json::Value &params)
+{
+    Json::Value exception;
+    std::string name = "";
+    std::string message = "";
+    std::string stack = "";
+    do {
+        if (summary == "") {
+            break;
+        }
+        ParseJsErrorSummary(summary, name, message, stack);
+        name.erase(name.find_last_not_of(R"(\n)") + 1);
+        message.erase(message.find_last_not_of(R"(\n)") + 1);
+        stack.erase(stack.find_last_not_of(R"(\n)") + 1);
+        stack.erase(0, stack.find_first_not_of(R"(\n    )"));
+    } while (false);
+    exception["name"] = name;
+    exception["message"] = message;
+    exception["stack"] = stack;
+    params["exception"] = exception;
+}
 } // namespace
 
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
@@ -470,19 +513,9 @@ bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
 
 void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
-    std::smatch m;
     std::string summary = sysEvent->GetEventValue("SUMMARY");
-    std::string relStr = "[\\s\\S]*Error name:([\\s\\S]*)Error message:([\\s\\S]*)";
-    if (summary.find("Error code:") != std::string::npos) {
-        relStr += "Error code:[\\s\\S]*";
-    }
-    if (summary.find("SourceCode:") != std::string::npos) {
-        relStr += "SourceCode:[\\s\\S]*";
-    }
-    relStr += "Stacktrace:([\\s\\S]*)";
-    std::regex rel(relStr);
     HIVIEW_LOGD("ReportAppEvent:summary:%{public}s.", summary.c_str());
-    std::regex_search(summary, m, rel);
+
     Json::Value params;
     params["time"] = sysEvent->happenTime_;
     params["crash_type"] = "JsError";
@@ -497,14 +530,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
-    Json::Value exception;
-    std::string name = m[1];
-    std::string message = m[2]; // 2 is message
-    std::string stack = m[3]; // 3 is stack
-    exception["name"] = name;
-    exception["message"] = message;
-    exception["stack"] = stack;
-    params["exception"] = exception;
+    FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
     GetHilog(sysEvent->GetPid(), log);
@@ -681,7 +707,6 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     AddPublicInfo(info);
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
-        ReportCppCrashToAppEvent(info);
     }
 
     mgr_->SaveFaultLogToFile(info);
@@ -696,6 +721,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.module.c_str(),
                 info.reason.c_str(),
                 info.summary.c_str());
+
+    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+        ReportCppCrashToAppEvent(info);
+    }
 
     if (info.faultLogType == FaultLogType::APP_FREEZE) {
         ReportAppFreezeToAppEvent(info);
@@ -787,6 +816,7 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     }
 
     stackInfoObj["bundle_name"] = info.module;
+    stackInfoObj["external_log"] = info.logPath;
     if (info.sectionMap.count("VERSION") == 1) {
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
@@ -814,22 +844,22 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     stackInfo.append(Json::FastWriter().write(stackInfoObj));
 }
 
-void Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
+int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
 {
     HIVIEW_LOGD("Start do get hilog process, pid:%{public}d", pid);
     if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
         dup2(writeFd, STDERR_FILENO) == -1) {
         HIVIEW_LOGE("dup2 writeFd fail");
-        _exit(-1);
+        return -1;
     }
 
     int ret = -1;
     ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid).c_str(), nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
-        syscall(SYS_close, writeFd);
-        _exit(-1);
+        return ret;
     }
+    return 0;
 }
 
 bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
@@ -845,7 +875,9 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         return false;
     } else if (childPid == 0) {
         syscall(SYS_close, fds[0]);
-        DoGetHilogProcess(pid, fds[1]);
+        int rc = DoGetHilogProcess(pid, fds[1]);
+        syscall(SYS_close, fds[1]);
+        exit(rc);
     } else {
         syscall(SYS_close, fds[1]);
 

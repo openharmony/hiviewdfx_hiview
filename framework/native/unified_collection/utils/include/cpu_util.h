@@ -37,6 +37,19 @@ struct CpuTimeInfo {
     uint32_t softIrqTime = 0;
 };
 
+struct CalculationTimeInfo {
+    // calculation time, using system clock.
+    uint64_t startTime = 0;
+    uint64_t endTime = 0;
+
+    // calculation time, using steady clock.
+    uint64_t startMonoTime = 0;
+    uint64_t endMonoTime = 0;
+
+    // calculation period, using steady clock.
+    uint64_t period = 0;
+};
+
 class CpuUtil {
 public:
     static uint32_t GetNumOfCpuCores();

@@ -95,6 +95,8 @@ void FaultLogManager::Init()
     };
     store_->SetLogFileComparator(comparator);
     store_->Init();
+    store_->SetMaxSize(MAX_FAULTLOG_STORAGE_SIZE);
+    store_->SetMinKeepingFileNumber(MAX_FAULT_INFO_IN_MEM);
     faultLogDb_ = new FaultLogDatabase();
 }
 
@@ -113,6 +115,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
         FileUtil::SaveStringToFd(fd, "\nHiLog:\n");
         FileUtil::SaveStringToFd(fd, info.sectionMap["HILOG"]);
     }
+    FaultLogger::LimitCppCrashLog(fd, info.faultLogType);
     close(fd);
 
     std::string logFile = info.logPath;

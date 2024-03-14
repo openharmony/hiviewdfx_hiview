@@ -28,6 +28,7 @@ ohos_source_set("collect_device_client") {
   sources = [
     "collect_device_client.cpp",
     "process_cpu_data.cpp",
+    "thread_cpu_data.cpp",
   ]
 
   deps = [

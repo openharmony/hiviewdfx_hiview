@@ -32,6 +32,7 @@ public:
     virtual CollectResult<SysMemory> CollectSysMemory() = 0;
     static std::shared_ptr<MemoryCollector> Create();
     virtual CollectResult<std::string> CollectRawMemInfo() = 0;
+    virtual CollectResult<std::string> ExportMemView() = 0;
     virtual CollectResult<std::vector<ProcessMemory>> CollectAllProcessMemory() = 0;
     virtual CollectResult<std::string> ExportAllProcessMemory() = 0;
     virtual CollectResult<std::string> CollectRawSlabInfo() = 0;
@@ -42,6 +43,7 @@ public:
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) = 0;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) = 0;
     virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) = 0;
+    virtual CollectResult<MemoryLimit> CollectMemoryLimit() = 0;
 }; // MemoryCollector
 } // UCollectUtil
 } // HiviewDFX

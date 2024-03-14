@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 
 #include "cpu_collection_task.h"
 #include "plugin.h"
+#include "uc_render_state_observer.h"
 #include "unified_collection_stat.h"
 
 namespace OHOS {
@@ -33,6 +34,8 @@ private:
     void Init();
     void InitWorkLoop();
     void InitWorkPath();
+    void RegisterRenderObserver();
+    void UnregisterRenderObserver();
     void RunCpuCollectionTask();
     void CpuCollectionFfrtTask();
     void RegisterWorker();
@@ -44,6 +47,7 @@ private:
 private:
     std::string workPath_;
     std::shared_ptr<CpuCollectionTask> cpuCollectionTask_;
+    sptr<UcRenderStateObserver> renderStateObserver_ = nullptr;
 }; // UnifiedCollector
 } // namespace HiviewDFX
 } // namespace OHOS

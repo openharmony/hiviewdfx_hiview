@@ -305,7 +305,7 @@ struct TraceInfo& RawDataBuilder::GetTraceInfo()
     return traceInfo_;
 }
 
-void RawDataBuilder::InitValueParams(std::vector<std::shared_ptr<DecodedParam>> params)
+void RawDataBuilder::InitValueParams(const std::vector<std::shared_ptr<DecodedParam>>& params)
 {
     std::unordered_map<EventRaw::DataCodedType,
         std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
@@ -339,7 +339,7 @@ void RawDataBuilder::InitValueParams(std::vector<std::shared_ptr<DecodedParam>> 
             }, std::placeholders::_1)},
     };
     auto iter = paramFuncs.begin();
-    for (auto param : params) {
+    for (const auto& param : params) {
         if (param == nullptr) {
             continue;
         }
@@ -352,7 +352,7 @@ void RawDataBuilder::InitValueParams(std::vector<std::shared_ptr<DecodedParam>> 
     InitArrayValueParams(params);
 }
 
-void RawDataBuilder::InitArrayValueParams(std::vector<std::shared_ptr<DecodedParam>> params)
+void RawDataBuilder::InitArrayValueParams(const std::vector<std::shared_ptr<DecodedParam>>& params)
 {
     std::unordered_map<EventRaw::DataCodedType,
         std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
@@ -386,7 +386,7 @@ void RawDataBuilder::InitArrayValueParams(std::vector<std::shared_ptr<DecodedPar
             }, std::placeholders::_1)},
     };
     auto iter = paramFuncs.begin();
-    for (auto param : params) {
+    for (const auto& param : params) {
         if (param == nullptr) {
             continue;
         }

@@ -22,6 +22,7 @@ config("event_store_utility_config") {
     "$hiview_base/utility/include",
     "$hiview_base/include",
     "$hiview_root/include",
+    "crc/include",
     "reader/include",
     "writer/include",
   ]
@@ -31,7 +32,7 @@ ohos_source_set("event_store_utility_source") {
   public_configs = [ ":event_store_utility_config" ]
 
   sources = [
-    "reader/event_entry_creator.cpp",
+    "crc/crc_generator.cpp",
     "reader/sys_event_doc_reader.cpp",
     "writer/sys_event_doc_writer.cpp",
   ]

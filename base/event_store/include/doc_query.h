@@ -17,8 +17,6 @@
 
 #include <string>
 
-#include "base_def.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventRaw {
@@ -37,7 +35,20 @@ public:
     std::string ToString() const;
 
 private:
-    bool IsContainInnerCond(const DocEventHeader& eventHeader, const Cond& cond) const;
+#pragma pack(1)
+    /* for internal field query */
+    struct InnerFieldStruct {
+        int64_t seq;
+        uint64_t ts;
+        uint8_t tz;
+        uint32_t uid;
+        uint32_t pid;
+        uint32_t tid;
+    };
+    using InnerFieldStruct = struct InnerFieldStruct;
+#pragma pack()
+
+    bool IsContainInnerCond(const InnerFieldStruct& innerField, const Cond& cond) const;
     bool IsContainCond(const Cond& cond, const FieldValue& value) const;
     bool IsInnerCond(const Cond& cond) const;
 

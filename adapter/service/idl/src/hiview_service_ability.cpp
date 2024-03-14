@@ -326,6 +326,13 @@ CollectResultParcelable<int32_t> HiviewServiceAbility::RecoverTrace()
     return TraceCalling<int32_t>(traceRetHandler);
 }
 
+CollectResultParcelable<double> HiviewServiceAbility::GetSysCpuUsage()
+{
+    return TraceCalling<double>([] (HiviewService* service) {
+        return service->GetSysCpuUsage();
+    });
+}
+
 HiviewServiceAbilityDeathRecipient::HiviewServiceAbilityDeathRecipient()
 {
     HIVIEW_LOGI("called");

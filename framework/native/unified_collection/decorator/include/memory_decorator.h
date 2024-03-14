@@ -31,6 +31,7 @@ public:
     virtual CollectResult<ProcessMemory> CollectProcessMemory(int32_t pid) override;
     virtual CollectResult<SysMemory> CollectSysMemory() override;
     virtual CollectResult<std::string> CollectRawMemInfo() override;
+    virtual CollectResult<std::string> ExportMemView() override;
     virtual CollectResult<std::vector<ProcessMemory>> CollectAllProcessMemory() override;
     virtual CollectResult<std::string> ExportAllProcessMemory() override;
     virtual CollectResult<std::string> CollectRawSlabInfo() override;
@@ -41,6 +42,7 @@ public:
     virtual CollectResult<std::string> CollectRawSmaps(int32_t pid) override;
     virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
     virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
+    virtual CollectResult<MemoryLimit> CollectMemoryLimit() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 

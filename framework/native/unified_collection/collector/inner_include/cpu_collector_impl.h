@@ -22,35 +22,13 @@
 #include "cpu_calculator.h"
 #include "cpu_collector.h"
 #include "cpu_util.h"
-#include "process_cpu_data.h"
+#include "process_state_info_collector.h"
+#include "sys_cpu_usage_collector.h"
+#include "thread_state_info_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-constexpr int32_t INVALID_PID = 0;
-
-struct ProcessCpuTimeInfo {
-    uint32_t minFlt = 0;
-    uint32_t majFlt = 0;
-    uint64_t uUsageTime = 0;
-    uint64_t sUsageTime = 0;
-    uint64_t loadTime = 0;
-    uint64_t collectionTime = 0;
-    uint64_t collectionMonoTime = 0;
-};
-
-struct CalculationTimeInfo {
-    // calculation time, using system clock.
-    uint64_t startTime = 0;
-    uint64_t endTime = 0;
-
-    // calculation time, using steady clock.
-    uint64_t startMonoTime = 0;
-    uint64_t endMonoTime = 0;
-
-    // calculation period, using steady clock.
-    uint64_t period = 0;
-};
 
 class CpuCollectorImpl : public CpuCollector {
 public:
@@ -60,41 +38,21 @@ public:
 public:
     virtual CollectResult<SysCpuLoad> CollectSysCpuLoad() override;
     virtual CollectResult<SysCpuUsage> CollectSysCpuUsage(bool isNeedUpdate = false) override;
+    virtual CollectResult<double> GetSysCpuUsage() override;
     virtual CollectResult<ProcessCpuStatInfo> CollectProcessCpuStatInfo(int32_t pid,
         bool isNeedUpdate = false) override;
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
-
+    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) override;
 private:
     bool InitDeviceClient();
-    void InitLastProcCpuTimeInfos();
-    CalculationTimeInfo InitCalculationTimeInfo();
-    CalculationTimeInfo InitCalculationTimeInfo(int32_t pid);
-    std::shared_ptr<ProcessCpuData> FetchProcessCpuData(int32_t pid = INVALID_PID);
-    void UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo);
-    void UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem,
-        const CalculationTimeInfo& calcTimeInfo);
-    void CalculateSysCpuUsageInfos(std::vector<CpuUsageInfo>& cpuInfos,
-        const std::vector<CpuTimeInfo>& currCpuTimeInfos);
-    void CalculateProcessCpuStatInfos(
-        std::vector<ProcessCpuStatInfo>& processCpuStatInfos,
-        std::shared_ptr<ProcessCpuData> processCpuData,
-        bool isNeedUpdate);
-    std::optional<ProcessCpuStatInfo> CalculateProcessCpuStatInfo(
-        const ucollection_process_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
-    void TryToDeleteDeadProcessInfo();
 
 private:
-    std::mutex collectMutex_;
-    uint64_t lastSysCpuUsageTime_ = 0;
-    uint64_t lastCollectionTime_ = 0;
-    uint64_t lastCollectionMonoTime_ = 0;
-    std::unique_ptr<CollectDeviceClient> deviceClient_;
-    /* map<pid, ProcessCpuTimeInfo> */
-    std::unordered_map<int32_t, ProcessCpuTimeInfo> lastProcCpuTimeInfos_;
-    std::vector<CpuTimeInfo> lastSysCpuTimeInfos_;
-    CpuCalculator cpuCalculator_;
+    std::shared_ptr<CollectDeviceClient> deviceClient_ = nullptr;
+    std::shared_ptr<ProcessStatInfoCollector> statInfoCollector_ = nullptr;
+    std::shared_ptr<SysCpuUsageCollector> usageCollector_ = nullptr;
+    std::shared_ptr<CpuCalculator> cpuCalculator_ = nullptr;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

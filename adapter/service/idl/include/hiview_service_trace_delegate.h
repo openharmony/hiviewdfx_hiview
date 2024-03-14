@@ -41,9 +41,7 @@ private:
     static CollectResult<T> TraceCalling(
         std::function<CollectResultParcelable<T>(HiviewServiceAbilityProxy&)> proxyHandler)
     {
-        CollectResult<T> ret = {
-            .retCode = UCollect::UcError::UNSUPPORT,
-        };
+        CollectResult<T> ret;
         if (proxyHandler == nullptr) {
             return ret;
         }

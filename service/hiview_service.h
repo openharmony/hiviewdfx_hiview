@@ -22,6 +22,7 @@
 
 #include "audit_log_parser.h"
 #include "utility/trace_collector.h"
+#include "utility/cpu_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -46,6 +47,7 @@ public:
     CollectResult<std::vector<std::string>> RecordingTraceOff();
     CollectResult<int32_t> CloseTrace();
     CollectResult<int32_t> RecoverTrace();
+    CollectResult<double> GetSysCpuUsage();
 
 private:
     void DumpDetailedInfo(int fd);
@@ -67,6 +69,7 @@ private:
 private:
     std::unique_ptr<AuditLogParser> parser_ = nullptr;
     std::shared_ptr<UCollectUtil::TraceCollector> traceCollector_;
+    std::shared_ptr<UCollectUtil::CpuCollector> cpuCollector_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -75,12 +75,19 @@ const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
         "ohos.permission.DUMP"}
 };
 
+const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE), ""}
+};
+
 bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
 {
     using namespace Security::AccessToken;
     auto iter = permissions.find(code);
     if (iter == permissions.end()) {
         return false;
+    }
+    if (iter->second.empty()) {
+        return true;
     }
     AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
     int verifyResult = AccessTokenKit::VerifyAccessToken(callerToken, iter->second);
@@ -91,7 +98,7 @@ bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::
     return false;
 }
 
-int32_t WriteTracePracelableToMessage(MessageParcel& dest, Parcelable& data)
+int32_t WritePracelableToMessage(MessageParcel& dest, Parcelable& data)
 {
     if (!dest.WriteParcelable(&data)) {
         HIVIEW_LOGW("failed to write TraceErrorCodeWrapper to parcel");
@@ -122,7 +129,8 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
 
 bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
 {
-    return HasAccessPermission(code, ALL_PERMISSION_MAP) || HasAccessPermission(code, TRACE_PERMISSION_MAP);
+    return HasAccessPermission(code, ALL_PERMISSION_MAP) || HasAccessPermission(code, TRACE_PERMISSION_MAP) ||
+        HasAccessPermission(code, CPU_PERMISSION_MAP);
 }
 
 std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
@@ -172,13 +180,24 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceR
     return requestHandlers;
 }
 
+std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuRequestHandlers()
+{
+    static std::unordered_map<uint32_t, RequestHandler> cpuRequestHandlers = {
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE),
+         std::bind(&HiviewServiceAbilityStub::HandleGetSysCpuUsageRequest, this,
+                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+    };
+    return cpuRequestHandlers;
+}
+
 RequestHandler HiviewServiceAbilityStub::GetRequestHandler(uint32_t code)
 {
     std::vector<std::unordered_map<uint32_t, RequestHandler>> allHandlerMaps = {
         GetRequestHandlers(),
-        GetTraceRequestHandlers()
+        GetTraceRequestHandlers(),
+        GetCpuRequestHandlers()
     };
-    for (auto handlerMap : allHandlerMaps) {
+    for (const auto &handlerMap : allHandlerMaps) {
         auto iter = handlerMap.find(code);
         if (iter == handlerMap.end()) {
             continue;
@@ -290,7 +309,7 @@ int32_t HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest(MessageParcel& 
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     auto ret = OpenSnapshotTrace(tagGroups);
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply,
@@ -302,7 +321,7 @@ int32_t HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest(MessageParcel& 
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     auto ret = DumpSnapshotTrace(caller);
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleOpenRecordingTraceRequest(MessageParcel& data, MessageParcel& reply,
@@ -314,35 +333,42 @@ int32_t HiviewServiceAbilityStub::HandleOpenRecordingTraceRequest(MessageParcel&
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     auto ret = OpenRecordingTrace(tags);
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleRecordingTraceOnRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
     auto ret = RecordingTraceOn();
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleRecordingTraceOffRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
     auto ret = RecordingTraceOff();
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleCloseTraceRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
     auto ret = CloseTrace();
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
 }
 
 int32_t HiviewServiceAbilityStub::HandleRecoverTraceRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
     auto ret = RecoverTrace();
-    return WriteTracePracelableToMessage(reply, ret);
+    return WritePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleGetSysCpuUsageRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    auto ret = GetSysCpuUsage();
+    return WritePracelableToMessage(reply, ret);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

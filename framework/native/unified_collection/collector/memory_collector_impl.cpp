@@ -25,6 +25,7 @@
 #include <regex>
 #include <securec.h>
 #include <string_ex.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -39,6 +40,7 @@
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
 const std::size_t DELAY_MILLISEC = 3;
+const std::size_t BYTE_2_KB_SHIFT_BITS = 10;
 using namespace OHOS::HiviewDFX::UCollect;
 
 namespace OHOS {
@@ -168,12 +170,8 @@ static bool ReadMemFromAILib(AIProcessMem memInfos[], int len, int& realSize)
     int memInfoSize = len;
     int ret = aiFunc(memInfos, memInfoSize, &realSize);
     HIVIEW_LOGI("exec %{public}s, ret=%{public}d.", interface.c_str(), ret);
-    if (realSize < 0) {
-        dlclose(handle);
-        return false;
-    }
     dlclose(handle);
-    return true;
+    return (realSize >= 0) && (ret == 0);
 }
 
 static void DoClearFiles(const std::string& filePrefix)
@@ -238,6 +236,115 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     return result;
 }
 
+static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::string& attrName, int32_t value)
+{
+    static std::unordered_map<std::string, std::function<void(ProcessMemory&, int32_t)>> assignFuncMap = {
+        {"Rss", [] (ProcessMemory& memory, int32_t value) {
+            memory.rss = value;
+        }},
+        {"Pss", [] (ProcessMemory& memory, int32_t value) {
+            memory.pss = value;
+        }},
+        {"Shared_Dirty", [] (ProcessMemory& memory, int32_t value) {
+            memory.sharedDirty = value;
+        }},
+        {"Private_Dirty", [] (ProcessMemory& memory, int32_t value) {
+            memory.privateDirty = value;
+        }},
+        {"SwapPss", [] (ProcessMemory& memory, int32_t value) {
+            memory.swapPss = value;
+        }},
+        {"Shared_Clean", [] (ProcessMemory& memory, int32_t value) {
+            memory.sharedClean = value;
+        }},
+        {"Private_Clean", [] (ProcessMemory& memory, int32_t value) {
+            memory.privateClean = value;
+        }},
+    };
+    auto iter = assignFuncMap.find(attrName);
+    if (iter == assignFuncMap.end() || iter->second == nullptr) {
+        HIVIEW_LOGI("%{public}s isn't defined in ProcessMemory.", attrName.c_str());
+        return;
+    }
+    iter->second(processMemory, value);
+}
+
+static void InitSmapsOfProcessMemory(const std::string& procDir, ProcessMemory& memory)
+{
+    std::string smapsFilePath = procDir + SMAPS_ROLLUP;
+    std::string content;
+    if (!FileUtil::LoadStringFromFile(smapsFilePath, content)) {
+        HIVIEW_LOGW("failed to read smaps file:%{public}s.", smapsFilePath.c_str());
+        return;
+    }
+    std::vector<std::string> vec;
+    OHOS::SplitStr(content, "\n", vec);
+    for (const std::string& str : vec) {
+        std::string attrName;
+        int32_t value = 0;
+        if (CommonUtil::ParseTypeAndValue(str, attrName, value)) {
+            SetValueOfProcessMemory(memory, attrName, value);
+        }
+    }
+}
+
+static void InitAdjOfProcessMemory(const std::string& procDir, ProcessMemory& memory)
+{
+    std::string adjFilePath = procDir + "/oom_score_adj";
+    std::string content;
+    if (!FileUtil::LoadStringFromFile(adjFilePath, content)) {
+        HIVIEW_LOGW("failed to read adj file:%{public}s.", adjFilePath.c_str());
+        return;
+    }
+    if (!CommonUtil::StrToNum(content, memory.adj)) {
+        HIVIEW_LOGW("failed to translate \"%{public}s\" into number.", content.c_str());
+    }
+}
+
+static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
+{
+    std::string procDir = PROC + std::to_string(pid);
+    if (!FileUtil::FileExists(procDir)) {
+        HIVIEW_LOGW("%{public}s isn't exist.", procDir.c_str());
+        return false;
+    }
+    memory.pid = pid;
+    memory.name = CommonUtils::GetProcNameByPid(pid);
+    InitSmapsOfProcessMemory(procDir, memory);
+    InitAdjOfProcessMemory(procDir, memory);
+    return true;
+}
+
+static void SetValueOfSysMemory(SysMemory& sysMemory, const std::string& attrName, int32_t value)
+{
+    static std::unordered_map<std::string, std::function<void(SysMemory&, int32_t)>> assignFuncMap = {
+        {"MemTotal", [] (SysMemory& memory, int32_t value) {
+            memory.memTotal = value;
+        }},
+        {"MemFree", [] (SysMemory& memory, int32_t value) {
+            memory.memFree = value;
+        }},
+        {"MemAvailable", [] (SysMemory& memory, int32_t value) {
+            memory.memAvailable = value;
+        }},
+        {"ZramUsed", [] (SysMemory& memory, int32_t value) {
+            memory.zramUsed = value;
+        }},
+        {"SwapCached", [] (SysMemory& memory, int32_t value) {
+            memory.swapCached = value;
+        }},
+        {"Cached", [] (SysMemory& memory, int32_t value) {
+            memory.cached = value;
+        }},
+    };
+    auto iter = assignFuncMap.find(attrName);
+    if (iter == assignFuncMap.end() || iter->second == nullptr) {
+        HIVIEW_LOGI("%{public}s isn't defined in SysMemory.", attrName.c_str());
+        return;
+    }
+    iter->second(sysMemory, value);
+}
+
 std::shared_ptr<MemoryCollector> MemoryCollector::Create()
 {
     return std::make_shared<MemoryDecorator>(std::make_shared<MemoryCollectorImpl>());
@@ -246,37 +353,7 @@ std::shared_ptr<MemoryCollector> MemoryCollector::Create()
 CollectResult<ProcessMemory> MemoryCollectorImpl::CollectProcessMemory(int32_t pid)
 {
     CollectResult<ProcessMemory> result;
-    std::string filename = PROC + std::to_string(pid) + SMAPS_ROLLUP;
-    std::string content;
-    FileUtil::LoadStringFromFile(filename, content);
-    std::vector<std::string> vec;
-    OHOS::SplitStr(content, "\n", vec);
-    ProcessMemory& processMemory = result.data;
-    processMemory.pid = pid;
-    processMemory.name = CommonUtils::GetProcNameByPid(pid);
-    std::string type;
-    int32_t value = 0;
-    for (const std::string &str : vec) {
-        if (CommonUtil::ParseTypeAndValue(str, type, value)) {
-            if (type == "Rss") {
-                processMemory.rss = value;
-                HIVIEW_LOGD("Rss=%{public}d", processMemory.rss);
-            } else if (type == "Pss") {
-                processMemory.pss = value;
-                HIVIEW_LOGD("Pss=%{public}d", processMemory.pss);
-            } else if (type == "Shared_Dirty") {
-                processMemory.sharedDirty = value;
-                HIVIEW_LOGD("Shared_Dirty=%{public}d", processMemory.sharedDirty);
-            } else if (type == "Private_Dirty") {
-                processMemory.privateDirty = value;
-                HIVIEW_LOGD("Private_Dirty=%{public}d", processMemory.privateDirty);
-            } else if (type == "SwapPss") {
-                processMemory.swapPss= value;
-                HIVIEW_LOGD("SwapPss=%{public}d", processMemory.swapPss);
-            }
-        }
-    }
-    result.retCode = UcError::SUCCESS;
+    result.retCode = InitProcessMemory(pid, result.data) ? UcError::SUCCESS : UcError::READ_FAILED;
     return result;
 }
 
@@ -288,29 +365,11 @@ CollectResult<SysMemory> MemoryCollectorImpl::CollectSysMemory()
     std::vector<std::string> vec;
     OHOS::SplitStr(content, "\n", vec);
     SysMemory& sysmemory = result.data;
-    std::string type;
-    int32_t value = 0;
-    for (const std::string &str : vec) {
-        if (CommonUtil::ParseTypeAndValue(str, type, value)) {
-            if (type == "MemTotal") {
-                sysmemory.memTotal = value;
-                HIVIEW_LOGD("memTotal=%{public}d", sysmemory.memTotal);
-            } else if (type == "MemFree") {
-                sysmemory.memFree = value;
-                HIVIEW_LOGD("memFree=%{public}d", sysmemory.memFree);
-            } else if (type == "MemAvailable") {
-                sysmemory.memAvailable = value;
-                HIVIEW_LOGD("memAvailable=%{public}d", sysmemory.memAvailable);
-            } else if (type == "ZramUsed") {
-                sysmemory.zramUsed = value;
-                HIVIEW_LOGD("zramUsed=%{public}d", sysmemory.zramUsed);
-            } else if (type == "SwapCached") {
-                sysmemory.swapCached = value;
-                HIVIEW_LOGD("swapCached=%{public}d", sysmemory.swapCached);
-            } else if (type == "Cached") {
-                sysmemory.cached = value;
-                HIVIEW_LOGD("cached=%{public}d", sysmemory.cached);
-            }
+    for (const std::string& str : vec) {
+        std::string attrName;
+        int32_t value = 0;
+        if (CommonUtil::ParseTypeAndValue(str, attrName, value)) {
+            SetValueOfSysMemory(sysmemory, attrName, value);
         }
     }
     result.retCode = UcError::SUCCESS;
@@ -320,6 +379,16 @@ CollectResult<SysMemory> MemoryCollectorImpl::CollectSysMemory()
 CollectResult<std::string> MemoryCollectorImpl::CollectRawMemInfo()
 {
     return CollectRawInfo(MEM_INFO, "proc_meminfo_");
+}
+
+CollectResult<std::string> MemoryCollectorImpl::ExportMemView()
+{
+    if (!FileUtil::FileExists("/proc/memview")) {
+        HIVIEW_LOGW("path not exist");
+        CollectResult<std::string> result;
+        return result;
+    }
+    return CollectRawInfo("/proc/memview", "proc_memview_");
 }
 
 CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcessMemory()
@@ -335,21 +404,10 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcess
             HIVIEW_LOGD("%{public}s is not num string, value=%{public}d.", fileName.c_str(), value);
             continue;
         }
-        std::string smapsPath = PROC + fileName + "/smaps_rollup";
-        std::string adjPath = PROC + fileName + "/oom_score_adj";
         ProcessMemory procMemory;
-        procMemory.pid = value;
-        procMemory.name = CommonUtils::GetProcNameByPid(value);
-        if (!GetSmapsFromProcPath(smapsPath, procMemory)) {
+        if (!InitProcessMemory(value, procMemory)) {
             continue;
         }
-        std::string adj;
-        if (!FileUtil::LoadStringFromFile(adjPath, adj)) {
-            HIVIEW_LOGE("load string from %{public}s failed.", adjPath.c_str());
-            continue;
-        }
-        procMemory.adj = static_cast<int32_t>(std::strtol(adj.c_str(), nullptr, 0));
-
         procMemoryVec.emplace_back(procMemory);
     }
     result.data = procMemoryVec;
@@ -560,6 +618,30 @@ CollectResult<uint64_t> MemoryCollectorImpl::CollectProcessVss(int32_t pid)
             HIVIEW_LOGD("GetVss error! pid = %d", pid);
         }
     }
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<MemoryLimit> MemoryCollectorImpl::CollectMemoryLimit()
+{
+    CollectResult<MemoryLimit> result;
+    result.retCode = UcError::READ_FAILED;
+    MemoryLimit& memoryLimit = result.data;
+
+    struct rlimit rlim;
+    int err = getrlimit(RLIMIT_RSS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get rss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.rssLimit = rlim.rlim_cur >> BYTE_2_KB_SHIFT_BITS;
+
+    err = getrlimit(RLIMIT_AS, &rlim);
+    if (err != 0) {
+        HIVIEW_LOGE("get vss limit error! err = %{public}d", err);
+        return result;
+    }
+    memoryLimit.vssLimit = rlim.rlim_cur >> BYTE_2_KB_SHIFT_BITS;
     result.retCode = UcError::SUCCESS;
     return result;
 }

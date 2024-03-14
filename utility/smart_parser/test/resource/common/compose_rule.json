@@ -34,11 +34,16 @@
             }
     },
     "PANIC": {
-            "04_PANIC_01":{
-                "F1NAME": "NocTrace.v_errcode+NocTrace.v_master+NocTrace.v_slave+NocTrace.v_address+NocTrace.v_user_signal+NocTrace.v_security",
-                "F3NAME": "BasicParam.v_noc",
-                "END_STACK": "MainCallTrace.v_trace"
-           }
+        "04_PANIC_01":{
+            "FIRST_FRAME": "NocTrace.v_errcode+NocTrace.v_master+NocTrace.v_slave+NocTrace.v_address+NocTrace.v_user_signal+NocTrace.v_security",
+            "LAST_FRAME": "BasicParam.v_noc",
+            "END_STACK": "MainCallTrace.v_trace"
+        },
+        "04_PANIC_00":{
+            "FIRST_FRAME": "BasicParam.v_first",
+            "SECOND_FRAME": "BasicParam.v_second",
+            "LAST_FRAME": "BasicParam.v_last"
+        }
     },
     "HWWATCHDOG": {
         "04_HWWATCHDOG_00":{
@@ -58,6 +63,25 @@
             "FIRST_FRAME": "BasicParam.v_bootfailReason",
             "SECOND_FRAME": "BasicParam.v_bootfailDetail",
             "LAST_FRAME": "BasicParam.v_bootfailErrno"
+        }
+    },
+    "SENSORHUBCRASH": {
+        "03_SENSORHUBCRASH_00":{
+            "FIRST_FRAME": "BasicParam.v_first"
+        }
+    },
+    "MODEMCRASH": {
+        "03_MODEMCRASH_00":{
+            "FIRST_FRAME": "BasicParam.v_first",
+            "SECOND_FRAME": "BasicParam.v_second",
+            "LAST_FRAME": "BasicParam.v_last"
+        }
+    },
+    "MODEM_REBOOTSYS": {
+        "03_MODEM_REBOOTSYS_00":{
+            "FIRST_FRAME": "BasicParam.v_first",
+            "SECOND_FRAME": "BasicParam.v_second",
+            "LAST_FRAME": "BasicParam.v_last"
         }
     }
 }

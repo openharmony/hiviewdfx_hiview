@@ -21,32 +21,40 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct SysMemory {
-    int32_t memTotal;     // total amount of usable RAM, unit KB
-    int32_t memFree;      // unit KB
-    int32_t memAvailable; // unit KB
-    int32_t zramUsed;     // unit KB
-    int32_t swapCached;   // unit KB
-    int32_t cached;       // unit KB
+    int32_t memTotal = 0;        // total amount of usable RAM, unit KB
+    int32_t memFree = 0;         // unit KB
+    int32_t memAvailable = 0;    // unit KB
+    int32_t zramUsed = 0;        // unit KB
+    int32_t swapCached = 0;      // unit KB
+    int32_t cached = 0;          // unit KB
 };
 
 struct ProcessMemory {
-    int32_t pid;            // process id
-    std::string name;       // process name
-    int32_t rss;            // resident set size, unit KB
-    int32_t pss;            // proportional set Size, unit KB
-    int32_t swapPss;        // swap pss, unit KB
-    int32_t adj;            // /proc/$pid/oom_score_adj
-    int32_t sharedDirty;   //process Shared_Dirty
-    int32_t privateDirty;  //process Private_Dirty
+    int32_t pid = 0;             // process id
+    std::string name;            // process name
+    int32_t rss = 0;             // resident set size, unit KB
+    int32_t pss = 0;             // proportional set Size, unit KB
+    int32_t vss = 0;             // virtual set size memory, unit KB
+    int32_t swapPss = 0;         // swap pss, unit KB
+    int32_t adj = 0;             // /proc/$pid/oom_score_adj
+    int32_t sharedDirty = 0;     //process Shared_Dirty
+    int32_t privateDirty = 0;    //process Private_Dirty
+    int32_t sharedClean = 0;     //process Shared_Clean
+    int32_t privateClean = 0;    //process Private_Clean
+};
+
+struct MemoryLimit {
+    uint64_t rssLimit = 0;
+    uint64_t vssLimit = 0;
 };
 
 extern "C" {
 const int HIAI_MAX_QUERIED_USER_MEMINFO_LIMIT = 256;
 
-typedef struct {
-    int pid;    // process id
-    int size;   // byte
-} AIProcessMem;
+using AIProcessMem = struct AIProcessMem {
+    int pid = 0;                 // process id
+    int size = 0;                // byte
+};
 };
 } // HiviewDFX
 } // OHOS
