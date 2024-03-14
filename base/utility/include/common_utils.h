@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,6 +38,7 @@ static constexpr uint64_t NS_PER_SECOND = 1000000000;
 static constexpr uint32_t MAX_LINE_LEN = 1024;
 namespace CommonUtils {
 std::string GetProcNameByPid(int32_t pid);
+std::string GetProcFullNameByPid(int32_t pid);
 pid_t GetPidByName(const std::string& processName);
 int32_t ExecCommand(const std::string &cmd, const std::vector<std::string> &args);
 bool IsSpecificCmdExist(const std::string& fullPath);
