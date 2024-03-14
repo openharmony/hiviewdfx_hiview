@@ -311,7 +311,7 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
 
     std::string log;
     GetHilog(info.pid, log);
-    if (log.length == 0) {
+    if (log.length() == 0) {
         log.append("[]");
     }
     info.sectionMap["HILOG"] = log;
