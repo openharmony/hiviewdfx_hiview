@@ -23,6 +23,7 @@
 #include "process_status.h"
 #include "sys_event.h"
 #include "unified_collection_stat.h"
+#include "utility/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -87,6 +88,7 @@ void UnifiedCollector::Init()
     RunCpuCollectionTask();
     RunIoCollectionTask();
     RunUCollectionStatTask();
+    UCollectUtil::TraceCollector::RecoverTmpTrace();
 }
 
 void UnifiedCollector::InitWorkLoop()
