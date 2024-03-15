@@ -311,9 +311,10 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
 
     std::string log;
     GetHilog(info.pid, log);
-    if (log.length() > 0) {
-        info.sectionMap["HILOG"] = log;
+    if (log.length() == 0) {
+        log.append("");
     }
+    info.sectionMap["HILOG"] = log;
 }
 
 bool Faultlogger::VerifiedDumpPermission()
@@ -525,6 +526,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         params["foreground"] = false;
     }
+    params["external_log"] = sysEvent->GetEventValue("LOG_PATH");
     params["bundle_version"] = sysEvent->GetEventValue("VERSION");
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
     params["pid"] = sysEvent->GetPid();
@@ -533,18 +535,19 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
+    Json::Value hilog;
     GetHilog(sysEvent->GetPid(), log);
     if (log.length() == 0) {
         HIVIEW_LOGE("Get hilog is empty");
+        hilog.append("");
     } else {
-        Json::Value hilog;
         std::stringstream logStream(log);
         std::string oneLine;
         while (getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
-        params["hilog"] = hilog;
     }
+    params["hilog"] = hilog;
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportAppEvent: uid:%{public}d, json:%{public}s.",
         sysEvent->GetUid(), paramsStr.c_str());
