@@ -191,7 +191,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_006, TestSize.Level3)
     eventLogger->logStore_->ClearOldestFilesIfNeeded();
     auto size = FileUtil::GetFolderSize(EventLogger::LOGGER_EVENT_LOG_PATH);
     auto listSize = static_cast<long>(eventLogger->logStore_->GetLogFiles().size());
-    printf("After-- logFileList num: %lu\n", listSize);
+    printf("After-- logFileList num: %ld\n", listSize);
     if (listSize == beforeSize) {
         EXPECT_TRUE(size == folderSize);
     } else {
