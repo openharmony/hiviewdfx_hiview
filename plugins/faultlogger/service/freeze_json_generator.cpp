@@ -127,6 +127,7 @@ FreezeJsonParams::FreezeJsonParams(const FreezeJsonParams::Builder& builder)
     bundleVersion_(builder.bundleVersion_),
     bundleName_(builder.bundleName_),
     processName_(builder.processName_),
+    externalLog_(builder.externalLog_),
     pid_(builder.pid_),
     uid_(builder.uid_),
     exception_(builder.exception_),
@@ -179,6 +180,12 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleName(const std::
 FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitProcessName(const std::string& processName)
 {
     processName_ = processName;
+    return *this;
+}
+
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitExternalLog(const std::string& externalLog)
+{
+    externalLog_ = externalLog;
     return *this;
 }
 
@@ -257,6 +264,7 @@ std::string FreezeJsonParams::JsonStr() const
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersion, bundleVersion_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleName, bundleName_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsProcessName, processName_));
+    list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsExternalLog, externalLog_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsPid, pid_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsUid, uid_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsException, exception_));
