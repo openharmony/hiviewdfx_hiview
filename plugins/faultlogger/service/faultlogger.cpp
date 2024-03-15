@@ -311,9 +311,6 @@ void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
 
     std::string log;
     GetHilog(info.pid, log);
-    if (log.length() == 0) {
-        log.append("");
-    }
     info.sectionMap["HILOG"] = log;
 }
 
@@ -841,6 +838,9 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         std::string oneLine;
         while (getline(logStream, oneLine)) {
             hilog.append(oneLine);
+        }
+        if (info.sectionMap.at("HILOG").length() == 0) {
+            hilog.append("");
         }
         stackInfoObj["hilog"] = hilog;
     }
