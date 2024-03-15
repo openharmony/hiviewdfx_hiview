@@ -90,6 +90,7 @@ ohos_executable("hiview") {
   deps = [
     "base:hiviewbase",
     "core:hiview_core",
+    "plugins/crash_validator:libcrashvalidator",
     "service:hiview_service",
   ]
 

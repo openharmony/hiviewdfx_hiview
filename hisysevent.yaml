@@ -181,3 +181,36 @@ ADDR_SANITIZER:
   FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
   HAPPEN_TIME: {type: INT64, desc: fault trigger time}
   FIRST_FRAME: {type: STRING, desc: first stack info}
+
+CPP_CRASH_EXCEPTION:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: encounter exception when crash dump}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  PID: {type: INT32, desc: cpp_crash_exception pid}
+  UID: {type: INT32, desc: cpp_crash_exception uid}
+  HAPPEN_TIME: {type: INT64, desc: crash time}
+  ERROR_CODE: {type: INT32, desc: crash dump exception error code}
+  ERROR_MSG: {type: STRING, desc: crash dump exception error message}
+
+CPP_CRASH_MATCHED:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: CppCrashMatched}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  PID: {type: INT32, desc: crash pid}
+  UID: {type: INT32, desc: crash uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  HAPPEN_TIME: {type: INT64, desc: crash time}
+
+CPP_CRASH_EXCEPTION_MATCHED:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: CppCrashExceptionMatched}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  PID: {type: INT32, desc: crash pid}
+  UID: {type: INT32, desc: crash uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  HAPPEN_TIME: {type: INT64, desc: crash time}
+
+CPP_CRASH_DISMATCH:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: CppCrashDisMatch}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  PID: {type: INT32, desc: crash pid}
+  UID: {type: INT32, desc: crash uid}
+  SUMMARY: {type: STRING, desc: fault summary}
+  HAPPEN_TIME: {type: INT64, desc: crash time}

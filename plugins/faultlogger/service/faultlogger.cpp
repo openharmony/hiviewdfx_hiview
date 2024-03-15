@@ -69,6 +69,7 @@
 #include "zip_helper.h"
 #include "freeze_json_generator.h"
 #include "freeze_json_util.h"
+#include "crash_exception.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -713,6 +714,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
 
     mgr_->SaveFaultLogToFile(info);
+    if (!CheckFaultLog(info)) {
+        HIVIEW_LOGE("Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s, log file invalid.",
+            info.pid, info.module.c_str(), info.reason.c_str());
+    }
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
@@ -1056,6 +1061,26 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
     EventPublish::GetInstance().PushEvent(info.id, APP_FREEZE_TYPE,
         HiSysEvent::EventType::FAULT, freezeJsonParams.JsonStr());
     HIVIEW_LOGI("Report FreezeJson Successfully!");
+}
+
+/*
+ * return value: 0 means fault log invalid; 1 means fault log valid.
+ */
+bool Faultlogger::CheckFaultLog(const FaultLogInfo& info) const
+{
+    int32_t err = 0;
+    std::string file;
+
+    auto fileName = GetFaultLogName(info);
+    if (!mgr_->GetFaultLogContent(fileName, file)) {
+        err = CrashExceptionCode::CRASH_UNKNOWN;
+        HIVIEW_LOGE("read log %{public}s fail.", fileName.c_str());
+    } else {
+        err = CheckCrashLogValid(file);
+    }
+    ReportCrashException(info.module, info.pid, info.id, info.time, err);
+
+    return (err == CrashExceptionCode::CRASH_ESUCCESS);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

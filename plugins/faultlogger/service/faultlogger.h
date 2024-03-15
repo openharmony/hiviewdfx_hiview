@@ -88,6 +88,7 @@ private:
     std::string GetMemoryStrByPid(long pid) const;
     FreezeJsonUtil::FreezeJsonCollector GetFreezeJsonCollector(const FaultLogInfo& info) const;
     void ReportAppFreezeToAppEvent(const FaultLogInfo& info) const;
+    bool CheckFaultLog(const FaultLogInfo& info) const;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
