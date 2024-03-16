@@ -45,7 +45,7 @@ public:
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) = 0;
     virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) = 0;
-    static std::shared_ptr<CpuCollector> Create();
+    static std::shared_ptr<CpuCollector> Create(bool isSingleton = true);
 }; // CpuCollector
 } // UCollectUtil
 } // HiviewDFX
