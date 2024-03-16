@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include <string>
+#include <vector>
 
 #include "file_util.h"
 #include "param_const_common.h"
@@ -31,8 +32,9 @@ public:
 private:
     static void OnUpdateNotice(const std::string& localCfgPath, const std::string& cloudCfgPath);
     static bool IsFileNeedIgnore(const std::string& fileName);
-    static bool VerifyConfigFiles();
-    static bool CopyConfigFiles();
+    static void GetValidFiles(std::vector<std::string>& validFiles);
+    static bool CopyConfigFiles(const std::vector<std::string>& files);
+    static bool CopyFile(const std::string& srcFile, const std::string& dstFile);
 };
 }
 }

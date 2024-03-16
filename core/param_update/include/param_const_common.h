@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +22,11 @@
 namespace OHOS {
 namespace HiviewDFX {
     const std::string CONFIG_TYPE = "HIVIEWPARA";
-    const std::string SUB_TYPE = "CHINA";
     const std::string CONFIG_UPDATED_ACTION = "usual.event.DUE_SA_CFG_UPDATED";
-    const std::string CFG_PATH = "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/CHINA";
+    const std::string CFG_PATH = "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/CHINA/";
     const std::string PUBKEY_PATH = "/system/etc/hiview/hwkey_param_upgrade_hiviewdfx_v1.pem";
-    const std::string LOCAL_CFG_PATH = "/system/etc/hiview";
-    const std::string CLOUD_CFG_PATH = "/data/system/hiview";
+    const std::string LOCAL_CFG_PATH = "/system/etc/hiview/";
+    const std::string CLOUD_CFG_PATH = "/data/system/hiview/";
 }
 }
 #endif

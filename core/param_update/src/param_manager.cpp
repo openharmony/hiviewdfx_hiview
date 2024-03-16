@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,8 @@ namespace {
 const std::set<std::string> IGNORE_FILE_LIST = {
     "CERT.ENC",
     "CERT.SF",
-    "MANIFEST.MF"
+    "MANIFEST.MF",
+    "version.txt"
 };
 }
 
@@ -49,48 +50,55 @@ void ParamManager::InitParam()
         return;
     }
 
-    if (!VerifyConfigFiles()) {
-        HIVIEW_LOGE("VerifyParamFile error, param is invalid");
+    std::vector<std::string> validFiles;
+    GetValidFiles(validFiles);
+    if (validFiles.empty()) {
         return;
     }
-
-    CopyConfigFiles();
+    CopyConfigFiles(validFiles);
     OnUpdateNotice(LOCAL_CFG_PATH, CLOUD_CFG_PATH);
-};
+}
 
-bool ParamManager::CopyConfigFiles()
+bool ParamManager::CopyFile(const std::string& srcFile, const std::string& dstFile)
 {
-    std::vector<std::string> files;
-    FileUtil::GetDirFiles(CFG_PATH, files, false);
-    for (std::string file : files) {
-        std::string name = file.substr(file.rfind("/") + 1);
-        if (IsFileNeedIgnore(name)) {
-            continue;
-        }
-        std::string dest = CLOUD_CFG_PATH + "/" + name;
-        int flag = FileUtil::CopyFile(file, dest);
-        if (flag != 0) {
-            HIVIEW_LOGI("copy file failed:%{public}s", name.c_str());
+    std::string dstPath(FileUtil::ExtractFilePath(dstFile));
+    // create subdir if not exist
+    if (dstPath != CLOUD_CFG_PATH && !FileUtil::ForceCreateDirectory(dstPath)) {
+        HIVIEW_LOGW("create dst path failed: %{public}s", dstPath.c_str());
+        return false;
+    }
+    return FileUtil::CopyFile(srcFile, dstFile) == 0;
+}
+
+bool ParamManager::CopyConfigFiles(const std::vector<std::string>& files)
+{
+    for (const std::string& file : files) {
+        std::string dstFile(file);
+        dstFile.replace(0, CFG_PATH.length(), CLOUD_CFG_PATH);
+        if (!CopyFile(file, dstFile)) {
+            HIVIEW_LOGI("copy file failed: %{public}s", file.c_str());
         }
     }
     return true;
 }
 
-bool ParamManager::VerifyConfigFiles()
+void ParamManager::GetValidFiles(std::vector<std::string>& validFiles)
 {
     std::vector<std::string> files;
-    FileUtil::GetDirFiles(CFG_PATH, files, false);
-    for (std::string file : files) {
-        std::string name = file.substr(file.rfind("/") + 1);
-        if (IsFileNeedIgnore(name)) {
+    FileUtil::GetDirFiles(CFG_PATH, files, true);
+    for (const std::string& file : files) {
+        std::string fileName(FileUtil::ExtractFileName(file));
+        if (IsFileNeedIgnore(fileName)) {
             continue;
         }
-        if (!(ParamReader::VerifyParamFile(name))) {
-            HIVIEW_LOGE("VerifyParamFile error:%{public}s", name.c_str());
-            return false;
+        std::string relativedPath(file.substr(CFG_PATH.length()));
+        if (!ParamReader::VerifyParamFile(relativedPath)) {
+            HIVIEW_LOGE("verify file failed: %{public}s", fileName.c_str());
+            validFiles.clear();
+            break;
         }
+        validFiles.emplace_back(file);
     }
-    return true;
 }
 
 void ParamManager::OnUpdateNotice(const std::string& localCfgPath, const std::string& cloudCfgPath)

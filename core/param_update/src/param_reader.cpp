@@ -34,15 +34,15 @@ namespace {
 
 bool ParamReader::VerifyCertFile()
 {
-    std::string certFile = CFG_PATH + "/CERT.ENC";
-    std::string verifyFile = CFG_PATH + "/CERT.SF";
+    std::string certFile = CFG_PATH + "CERT.ENC";
+    std::string verifyFile = CFG_PATH + "CERT.SF";
     if (!LogSignTools::VerifyFileSign(PUBKEY_PATH, certFile, verifyFile)) {
         HIVIEW_LOGE("verify failed %{public}s,%{public}s, %{public}s", PUBKEY_PATH.c_str(),
             certFile.c_str(), verifyFile.c_str());
         return false;
     }
 
-    std::string manifestFile = CFG_PATH + "/MANIFEST.MF";
+    std::string manifestFile = CFG_PATH + "MANIFEST.MF";
     std::ifstream file(verifyFile);
     if (!file.good()) {
         HIVIEW_LOGE("Verify is not good");
@@ -72,13 +72,13 @@ bool ParamReader::VerifyCertFile()
 
 bool ParamReader::VerifyParamFile(const std::string &filePathStr)
 {
-    std::string manifestFile = CFG_PATH + "/MANIFEST.MF";
+    std::string manifestFile = CFG_PATH + "MANIFEST.MF";
     std::ifstream file(manifestFile);
     if (!file.good()) {
         HIVIEW_LOGE("manifestFile is not good");
         return false;
     }
-    std::string absFilePath = CFG_PATH + "/" + filePathStr;
+    std::string absFilePath = CFG_PATH + filePathStr;
     std::ifstream paramFile(absFilePath);
     if (!paramFile.good()) {
         HIVIEW_LOGE("paramFile is not good");
