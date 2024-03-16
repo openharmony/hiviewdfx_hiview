@@ -54,7 +54,7 @@ constexpr int8_t LOG_ALLOW_PACK = 0 << 5;
 constexpr int8_t LOG_NOT_ALLOW_PACK = 1 << 5;
 constexpr int8_t LOG_PACKED = 1;
 constexpr int8_t LOG_REPEAT = 1;
-constexpr int8_t LOG_THRESHOLD = 1;
+constexpr int8_t LOG_THRESHOLD = 2;
 
 class SysEventCreator;
 class SysEvent : public PipelineEvent {
