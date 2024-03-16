@@ -61,7 +61,7 @@ enum MemCmd {
     MEMCMD_DISABLE,
     MEMCMD_SAVE_LOG,
     MEMCMD_CLEAR_LOG,
-    MEMCMD_MAX // CNT or MAX ？
+    MEMCMD_MAX
 };
 
 class NativeLeakUtil {

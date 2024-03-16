@@ -70,7 +70,7 @@ public:
     static bool IsBetaVersion();
     static void GetStatm(int32_t pid, uint64_t &vss, uint64_t &rss);
     static void GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, uint64_t &totalMem);
-    static std::list<std::string> GetDightStrArr(const std::string& target);
+    static std::list<std::string> GetDightStrArr(const std::string &target);
 };
 } // HiviewDFX
 } // OHOS

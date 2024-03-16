@@ -448,7 +448,7 @@ void FaultDetectorUtil::GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, ui
         freeMem, avaliableMem, totalMem);
 }
 
-list<string> FaultDetectorUtil::GetDightStrArr(const string& target)
+list<string> FaultDetectorUtil::GetDightStrArr(const string &target)
 {
     list<string> ret;
     string temp = "";
@@ -468,5 +468,6 @@ list<string> FaultDetectorUtil::GetDightStrArr(const string& target)
     ret.push_back("0");
     return ret;
 }
+
 } // namespace HiviewDFX
 } // namespace OHOS
