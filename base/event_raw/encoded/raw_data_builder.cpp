@@ -36,7 +36,7 @@ RawDataBuilder::RawDataBuilder(std::shared_ptr<EventRaw::RawData> rawData)
     auto header = event.GetHeader();
     auto traceInfo = event.GetTraceInfo();
     AppendDomain(header.domain).AppendName(header.name).AppendType(static_cast<int>(header.type) + 1).
-        AppendTimeStamp(header.timestamp).AppendTimeZone(header.timeZone).
+        AppendTimeStamp(header.timestamp).AppendTimeZone(header.timeZone).AppendLog(header.log).
         AppendUid(header.uid).AppendPid(header.pid).AppendTid(header.tid).AppendId(header.id);
     if (header.isTraceOpened == 1) {
         AppendTraceInfo(traceInfo.traceId, traceInfo.spanId, traceInfo.pSpanId, traceInfo.traceFlag);
@@ -109,7 +109,7 @@ std::shared_ptr<RawData> RawDataBuilder::Build()
 bool RawDataBuilder::IsBaseInfo(const std::string& key)
 {
     std::vector<const std::string> allBaseInfoKeys = {
-        BASE_INFO_KEY_DOMAIN, BASE_INFO_KEY_NAME, BASE_INFO_KEY_TYPE, BASE_INFO_KEY_TIME_STAMP,
+        BASE_INFO_KEY_DOMAIN, BASE_INFO_KEY_NAME, BASE_INFO_KEY_TYPE, BASE_INFO_KEY_TIME_STAMP, BASE_INFO_KEY_LOG,
         BASE_INFO_KEY_TIME_ZONE, BASE_INFO_KEY_ID, BASE_INFO_KEY_PID, BASE_INFO_KEY_TID, BASE_INFO_KEY_UID,
         BASE_INFO_KEY_TRACE_ID, BASE_INFO_KEY_SPAN_ID, BASE_INFO_KEY_PARENT_SPAN_ID, BASE_INFO_KEY_TRACE_FLAG
     };
@@ -178,6 +178,12 @@ RawDataBuilder& RawDataBuilder::AppendPid(const uint32_t pid)
 RawDataBuilder& RawDataBuilder::AppendTid(const uint32_t tid)
 {
     header_.tid = tid;
+    return *this;
+}
+
+RawDataBuilder& RawDataBuilder::AppendLog(const uint8_t log)
+{
+    header_.log = log;
     return *this;
 }
 

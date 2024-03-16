@@ -17,26 +17,32 @@
 #define HIVIEW_BASE_EVENT_STORE_UTILITY_SYS_EVENT_DOC_READER_H
 
 #include <fstream>
+#include <functional>
 #include <string>
 
+#include "content_reader_factory.h"
 #include "event_doc_reader.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+using ReadCallback = std::function<bool(uint8_t* content, uint32_t& contentSize)>;
+using ContentList = std::vector<std::unique_ptr<uint8_t[]>>;
 class SysEventDocReader : public EventDocReader {
 public:
     SysEventDocReader(const std::string& path);
     ~SysEventDocReader();
     int Read(const DocQuery& query, EntryQueue& entries, int& num) override;
+    int Read(ContentList& contentList);
     int ReadFileSize();
     int ReadPageSize(uint32_t& pageSize);
+    int ReadHeader(DocHeader& header);
 
 private:
+    int Read(ReadCallback callback);
     void Init(const std::string& path);
-    int ReadHeader(DocHeader& header);
     int ReadContent(uint8_t** content, uint32_t& contentSize);
-    int ReadPages(const DocQuery& query, EntryQueue& entries, int& num);
+    int ReadPages(ReadCallback callback);
     bool HasReadFileEnd();
     bool HasReadPageEnd();
     bool IsValidHeader(const DocHeader& header);
@@ -46,11 +52,14 @@ private:
     int BuildEventJson(std::string& eventJson, uint32_t eventSize, int64_t seq);
     void TryToAddEntry(uint8_t* content, uint32_t contentSize, const DocQuery& query,
         EntryQueue& entries, int& num);
+    int ReadHeaderFromHistoryData(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize);
+    int WriteDomainNameInfo(uint8_t** event, uint32_t eventSize);
 
 private:
     std::ifstream in_;
     int fileSize_;
     uint32_t pageSize_;
+    uint8_t version_;
 
     std::string domain_;
     std::string name_;

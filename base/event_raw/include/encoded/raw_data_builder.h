@@ -64,6 +64,7 @@ public:
     RawDataBuilder& AppendUid(const uint32_t uid);
     RawDataBuilder& AppendPid(const uint32_t pid);
     RawDataBuilder& AppendTid(const uint32_t tid);
+    RawDataBuilder& AppendLog(const uint8_t log);
     RawDataBuilder& AppendId(const uint64_t id);
     RawDataBuilder& AppendId(const std::string& id);
     RawDataBuilder& AppendTraceId(const uint64_t traceId);
@@ -119,6 +120,15 @@ private:
     {
         if constexpr (isUnsignedNum<T>) {
             return AppendUid(static_cast<uint32_t>(val));
+        }
+        return *this;
+    }
+    
+    template<typename T>
+    RawDataBuilder& UpdateLog(const T val)
+    {
+        if constexpr (isUnsignedNum<T>) {
+            return AppendLog(static_cast<uint8_t>(val));
         }
         return *this;
     }
@@ -275,6 +285,7 @@ private:
             {BASE_INFO_KEY_PID, std::bind(&RawDataBuilder::UpdatePid<T>, this, std::placeholders::_1)},
             {BASE_INFO_KEY_TID, std::bind(&RawDataBuilder::UpdateTid<T>, this, std::placeholders::_1)},
             {BASE_INFO_KEY_UID, std::bind(&RawDataBuilder::UpdateUid<T>, this, std::placeholders::_1)},
+            {BASE_INFO_KEY_LOG, std::bind(&RawDataBuilder::UpdateLog<T>, this, std::placeholders::_1)},
             {BASE_INFO_KEY_TRACE_ID, std::bind(&RawDataBuilder::UpdateTraceId<T>, this, std::placeholders::_1)},
             {BASE_INFO_KEY_SPAN_ID, std::bind(&RawDataBuilder::UpdateSpanId<T>, this, std::placeholders::_1)},
             {BASE_INFO_KEY_PARENT_SPAN_ID, std::bind(&RawDataBuilder::UpdatePSpanId<T>, this, std::placeholders::_1)},
@@ -404,6 +415,9 @@ private:
             {BASE_INFO_KEY_UID, std::bind([this] (T& val) -> bool {
                     return this->ParseValue(val, header_.uid);
                 }, std::placeholders::_1)},
+            {BASE_INFO_KEY_LOG, std::bind([this] (T& val) -> bool {
+                    return this->ParseValue(val, header_.log);
+                }, std::placeholders::_1)},
             {BASE_INFO_KEY_TRACE_ID, std::bind([this] (T& val) -> bool {
                     return this->ParseAndSetTraceInfo(val, traceInfo_.traceId);
                 }, std::placeholders::_1)},
@@ -473,6 +487,7 @@ private:
         .pid = 0,
         .tid = 0,
         .id = 0,
+        .log = 0,
         .type = 0,
         .isTraceOpened = 0,
     };

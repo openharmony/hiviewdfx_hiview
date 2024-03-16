@@ -85,6 +85,38 @@ struct DocHeader {
     /* Crc value */
     uint32_t crc = 0;
 };
+
+struct ContentHeader {
+    /* event seqno */
+    uint64_t seq;
+
+    /* Event timestamp */
+    uint64_t timestamp;
+
+    /* Time zone */
+    uint8_t timeZone;
+
+    /* User id */
+    uint32_t uid;
+
+    /* Process id */
+    uint32_t pid;
+
+    /* Thread id */
+    uint32_t tid;
+
+    /* Event hash code*/
+    uint64_t id;
+
+    /* Event type */
+    uint8_t type : 2;
+
+    /* Trace info flag*/
+    uint8_t isTraceOpened : 1;
+
+    /* Log packing flag */
+    uint8_t log;
+};
 using DocHeader = struct DocHeader;
 
 #pragma pack()

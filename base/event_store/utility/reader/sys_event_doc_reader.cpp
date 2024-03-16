@@ -102,13 +102,43 @@ void SysEventDocReader::Init(const std::string& path)
     }
 }
 
+int SysEventDocReader::Read(EventStore::ContentList& contentList)
+{
+    auto saveFunc = [&contentList](uint8_t* content, uint32_t& contentSize) {
+        if (content == nullptr) {
+            return false;
+        }
+        std::unique_ptr<uint8_t[]> contentPtr = std::make_unique<uint8_t[]>(contentSize);
+        if (memcpy_s(contentPtr.get(), contentSize, content, contentSize) != 0) {
+            return false;
+        }
+        delete[] content;
+        contentList.emplace_back(std::move(contentPtr));
+        return true;
+    };
+    return Read(saveFunc);
+}
+
 int SysEventDocReader::Read(const DocQuery& query, EntryQueue& entries, int& num)
+{
+    auto saveFunc = [this, &query, &entries, &num](uint8_t* content, uint32_t& contentSize) {
+        if (content == nullptr) {
+            return false;
+        }
+        TryToAddEntry(content, contentSize, query, entries, num);
+        return true;
+    };
+    return Read(saveFunc);
+}
+
+int SysEventDocReader::Read(ReadCallback callback)
 {
     // read the header
     DocHeader header;
     if (auto ret = ReadHeader(header); ret != DOC_STORE_SUCCESS) {
         return ret;
     }
+    version_ = header.version;
     if (!IsValidHeader(header)) {
         return DOC_STORE_ERROR_INVALID;
     }
@@ -128,10 +158,10 @@ int SysEventDocReader::Read(const DocQuery& query, EntryQueue& entries, int& num
         if (auto ret = ReadContent(&content, contentSize); ret != DOC_STORE_SUCCESS) {
             return ret;
         }
-        TryToAddEntry(content, contentSize, query, entries, num);
+        callback(content, contentSize);
         return DOC_STORE_SUCCESS;
     }
-    return ReadPages(query, entries, num);
+    return ReadPages(callback);
 }
 
 int SysEventDocReader::ReadHeader(DocHeader& header)
@@ -145,7 +175,7 @@ int SysEventDocReader::ReadHeader(DocHeader& header)
     return DOC_STORE_SUCCESS;
 }
 
-int SysEventDocReader::ReadPages(const DocQuery& query, EntryQueue& entries, int& num)
+int SysEventDocReader::ReadPages(ReadCallback callback)
 {
     uint32_t pageIndex = 0;
     while (!HasReadFileEnd()) {
@@ -161,7 +191,7 @@ int SysEventDocReader::ReadPages(const DocQuery& query, EntryQueue& entries, int
             HIVIEW_LOGD("read the next page index=%{public}" PRIu32 ", file=%{public}s", pageIndex, docPath_.c_str());
             continue;
         }
-        TryToAddEntry(content, contentSize, query, entries, num);
+        callback(content, contentSize);
     }
     return DOC_STORE_SUCCESS;
 }
@@ -273,11 +303,78 @@ int SysEventDocReader::SeekgPage(uint32_t pageIndex)
     return DOC_STORE_ERROR_IO;
 }
 
+int SysEventDocReader::WriteDomainNameInfo(uint8_t** event, uint32_t eventSize)
+{
+    if (memcpy_s(*event, eventSize, reinterpret_cast<char*>(&eventSize), BLOCK_SIZE) != EOK) {
+        HIVIEW_LOGE("failed to copy block size to raw event");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    uint32_t eventPos = BLOCK_SIZE;
+    if (memcpy_s(*event + eventPos, eventSize - eventPos, domain_.c_str(), MAX_DOMAIN_LEN) != EOK) {
+        HIVIEW_LOGE("failed to copy domain to raw event");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    eventPos += MAX_DOMAIN_LEN;
+    if (memcpy_s(*event + eventPos, eventSize - eventPos, name_.c_str(), MAX_EVENT_NAME_LEN) != EOK) {
+        HIVIEW_LOGE("failed to copy name to raw event");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    return DOC_STORE_SUCCESS;
+}
+
+int SysEventDocReader::ReadHeaderFromHistoryData(
+    uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize)
+{
+    ContentReader reader = ContentReaderFactory::GetInstance().Get(version_);
+    if (reader == nullptr) {
+        HIVIEW_LOGE("reader nullptr, version:%{public}d", version_);
+        return DOC_STORE_ERROR_NULL;
+    }
+    EventStore::ContentHeader contentHeader;
+    reader->GetContentHead(content, contentHeader);
+    eventSize = contentSize - reader->GetHeaderSize() + sizeof(EventStore::ContentHeader) -
+        SEQ_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
+    if (eventSize > MAX_NEW_SIZE) {
+        HIVIEW_LOGE("invalid new event size=%{public}u", eventSize);
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    uint8_t* event = new(std::nothrow) uint8_t[eventSize];
+    if (event == nullptr) {
+        HIVIEW_LOGE("failed to new memory for raw event, size=%{public}u", eventSize);
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    int ret = WriteDomainNameInfo(&event, eventSize);
+    if (ret != DOC_STORE_SUCCESS) {
+        delete[] event;
+        return ret;
+    }
+    size_t eventPos = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
+    if (memcpy_s(event + eventPos, eventSize - eventPos, reinterpret_cast<uint8_t*>(&contentHeader) + SEQ_SIZE,
+        sizeof(EventStore::ContentHeader) - SEQ_SIZE) != EOK) {
+        HIVIEW_LOGE("failed to copy name to raw event");
+        delete[] event;
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    eventPos += (sizeof(EventStore::ContentHeader) - SEQ_SIZE);
+    size_t contentPos = BLOCK_SIZE + reader->GetHeaderSize();
+    if (memcpy_s(event + eventPos, eventSize - eventPos, content + contentPos, contentSize - contentPos) != EOK) {
+        HIVIEW_LOGE("failed to copy name to raw event");
+        delete[] event;
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    *rawEvent = event;
+    return DOC_STORE_SUCCESS;
+}
+
 int SysEventDocReader::BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize)
 {
     if (domain_.empty() || name_.empty()) {
         HIVIEW_LOGE("domain=%{public}s or name=%{public}s is empty", domain_.c_str(), name_.c_str());
         return DOC_STORE_ERROR_INVALID;
+    }
+    
+    if (version_ != EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION) {
+        return ReadHeaderFromHistoryData(rawEvent, eventSize, content, contentSize);
     }
 
     eventSize = contentSize - SEQ_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
@@ -290,24 +387,13 @@ int SysEventDocReader::BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, ui
         HIVIEW_LOGE("failed to new memory for raw event, size=%{public}u", eventSize);
         return DOC_STORE_ERROR_MEMORY;
     }
-    if (memcpy_s(event, eventSize, reinterpret_cast<char*>(&eventSize), BLOCK_SIZE) != EOK) {
-        HIVIEW_LOGE("failed to copy block size to raw event");
+    int ret = WriteDomainNameInfo(&event, eventSize);
+    if (ret != DOC_STORE_SUCCESS) {
         delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
+        return ret;
     }
-    uint32_t eventPos = BLOCK_SIZE;
-    if (memcpy_s(event + eventPos, eventSize - eventPos, domain_.c_str(), MAX_DOMAIN_LEN) != EOK) {
-        HIVIEW_LOGE("failed to copy domain to raw event");
-        delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    eventPos += MAX_DOMAIN_LEN;
-    if (memcpy_s(event + eventPos, eventSize - eventPos, name_.c_str(), MAX_EVENT_NAME_LEN) != EOK) {
-        HIVIEW_LOGE("failed to copy name to raw event");
-        delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    eventPos += MAX_EVENT_NAME_LEN;
+    
+    int eventPos = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
     if (memcpy_s(event + eventPos, eventSize - eventPos, content + BLOCK_SIZE + SEQ_SIZE,
         contentSize - BLOCK_SIZE - SEQ_SIZE) != EOK) {
         HIVIEW_LOGE("failed to copy name to raw event");

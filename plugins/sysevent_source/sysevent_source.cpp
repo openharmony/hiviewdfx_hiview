@@ -26,6 +26,7 @@
 #include "sys_event.h"
 #include "hiview_platform.h"
 #include "dispatch_config.h"
+#include "sys_event_dao.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -116,6 +117,7 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
+    EventStore::SysEventDao::CheckRepeat(sysEvent);
     if (!sysEventParser_->HandleEventJson(sysEvent)) {
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;

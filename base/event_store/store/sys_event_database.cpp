@@ -23,6 +23,7 @@
 #include "logger.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
+#include "sys_event_repeat_guard.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -105,6 +106,12 @@ int SysEventDatabase::Insert(const std::shared_ptr<SysEvent>& event)
         lruCache_->Add(keyOfCache, sysEventDoc);
     }
     return sysEventDoc->Insert(event);
+}
+
+void SysEventDatabase::CheckRepeat(std::shared_ptr<SysEvent> event)
+{
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    SysEventRepeatGuard::Check(event);
 }
 
 void SysEventDatabase::Clear()
