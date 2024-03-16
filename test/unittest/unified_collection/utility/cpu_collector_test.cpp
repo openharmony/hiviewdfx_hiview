@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -363,4 +363,24 @@ HWTEST_F(CpuCollectorTest, CpuCollectorTest018, TestSize.Level1)
     ASSERT_TRUE(collectResult3.data.size() >= 1);
     ASSERT_TRUE(collectResult3.data[0].cpuUsage >= 0);
     ASSERT_TRUE(collectResult2.data[0].startTime == collectResult3.data[0].startTime);
+}
+
+/**
+ * @tc.name: CpuCollectorTest019
+ * @tc.desc: used to test the function of CpuCollector.Create;
+ * @tc.type: FUNC
+*/
+HWTEST_F(CpuCollectorTest, CpuCollectorTest019, TestSize.Level1)
+{
+    std::shared_ptr<CpuCollector> collector1 = CpuCollector::Create();
+    ASSERT_NE(collector1, nullptr);
+    std::shared_ptr<CpuCollector> collector2 = CpuCollector::Create();
+    ASSERT_NE(collector2, nullptr);
+    ASSERT_EQ(collector1, collector2);
+
+    std::shared_ptr<CpuCollector> collector3 = CpuCollector::Create(false);
+    ASSERT_NE(collector3, nullptr);
+    std::shared_ptr<CpuCollector> collector4 = CpuCollector::Create(false);
+    ASSERT_NE(collector4, nullptr);
+    ASSERT_NE(collector3, collector4);
 }
