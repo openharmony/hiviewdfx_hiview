@@ -48,6 +48,11 @@ int SysEventDao::Insert(std::shared_ptr<SysEvent> sysEvent)
     return SysEventDatabase::GetInstance().Insert(sysEvent);
 }
 
+void SysEventDao::CheckRepeat(std::shared_ptr<SysEvent> event)
+{
+    SysEventDatabase::GetInstance().CheckRepeat(event);
+}
+
 void SysEventDao::Clear()
 {
     SysEventDatabase::GetInstance().Clear();

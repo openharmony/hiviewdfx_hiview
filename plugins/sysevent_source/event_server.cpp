@@ -140,6 +140,36 @@ void TransferEvent(std::string& text)
     close(socketId);
     HIVIEW_LOGD("send data successful");
 }
+
+uint8_t* ConverRawData(char* source)
+{
+    if (source == nullptr) {
+        HIVIEW_LOGE("invalid source.");
+        return nullptr;
+    }
+    uint32_t sourceLen = *(reinterpret_cast<uint32_t*>(source));
+    uint32_t desLen = sourceLen + sizeof(uint8_t);
+    uint8_t* des = reinterpret_cast<uint8_t*>(malloc(desLen));
+    if (des == nullptr) {
+        HIVIEW_LOGE("malloc failed.");
+        return nullptr;
+    }
+    uint32_t sourceHeaderLen = sizeof(int32_t) + sizeof(EventRaw::HiSysEventHeader) - sizeof(uint8_t);
+    if (memcpy_s(des, desLen, source, sourceHeaderLen) != EOK) {
+        HIVIEW_LOGE("copy failed.");
+        free(des);
+        return nullptr;
+    }
+    *(reinterpret_cast<uint8_t*>(des + sourceHeaderLen)) = 0; // init header.log flag
+    uint32_t desPos = sourceHeaderLen + sizeof(uint8_t);
+    if (memcpy_s(des + desPos, desLen - desPos, source + sourceHeaderLen, sourceLen - sourceHeaderLen) != EOK) {
+        HIVIEW_LOGE("copy failed.");
+        free(des);
+        return nullptr;
+    }
+    *(reinterpret_cast<int32_t*>(des)) = desLen;
+    return des;
+}
 }
 
 void SocketDevice::InitSocket(int &socketId)
@@ -215,13 +245,20 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
         if (n < static_cast<int>(EventRaw::GetValidDataMinimumByteCount())) {
             break;
         }
+
         buffer[n] = 0;
         int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
         if (dataByteCnt != n) {
             HIVIEW_LOGE("length of data received from client is invalid.");
             break;
         }
-        EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
+        uint8_t* des = ConverRawData(buffer);
+        if (des == nullptr) {
+            HIVIEW_LOGE("des is nullptr.");
+            break;
+        }
+        EventRaw::DecodedEvent event(des);
+        free(des);
         if (!g_extraSocketPath.empty()) {
             std::string eventJsonStr = event.AsJsonStr();
             TransferEvent(eventJsonStr);
@@ -284,7 +321,13 @@ int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiver
         HIVIEW_LOGE("length of data received from kernel is invalid.");
         return -1;
     }
-    EventRaw::DecodedEvent event(reinterpret_cast<uint8_t*>(buffer));
+    uint8_t* des = ConverRawData(buffer);
+    if (des == nullptr) {
+        HIVIEW_LOGE("des is nullptr.");
+        return -1;
+    }
+    EventRaw::DecodedEvent event(des);
+    free(des);
     if (!g_extraSocketPath.empty()) {
         std::string eventJsonStr = event.AsJsonStr();
         TransferEvent(eventJsonStr);

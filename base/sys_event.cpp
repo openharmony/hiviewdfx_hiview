@@ -99,7 +99,7 @@ std::atomic<int64_t> SysEvent::totalSize_(0);
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
     std::shared_ptr<EventRaw::RawData> rawData)
-    : PipelineEvent(sender, handler), eventType_(0), preserve_(true), seq_(0), pid_(0),
+    : PipelineEvent(sender, handler), eventType_(0), preserve_(true), log_(0), seq_(0), pid_(0),
     tid_(0), uid_(0), tz_(0), eventSeq_(-1)
 {
     messageType_ = Event::MessageType::SYS_EVENT;
@@ -160,6 +160,7 @@ void SysEvent::InitialMembers()
     pid_ = static_cast<int32_t>(header.pid);
     tid_ = static_cast<int32_t>(header.tid);
     uid_ = static_cast<int32_t>(header.uid);
+    log_ = header.log;
     if (header.isTraceOpened == 1) {
         auto traceInfo = builder_->GetTraceInfo();
         traceId_ = StringUtil::ToString(traceInfo.traceId);
@@ -455,6 +456,7 @@ std::string SysEvent::AsJsonStr()
     if (builder_ == nullptr) {
         return "";
     }
+    builder_->AppendLog(log_);
     rawData_ = builder_->Build(); // update
     if (rawData_ == nullptr) {
         return "";
@@ -479,6 +481,7 @@ uint8_t* SysEvent::AsRawData()
     if (builder_ == nullptr) {
         return nullptr;
     }
+    builder_->AppendLog(log_);
     rawData_ = builder_->Build();
     if (rawData_ == nullptr) {
         return nullptr;

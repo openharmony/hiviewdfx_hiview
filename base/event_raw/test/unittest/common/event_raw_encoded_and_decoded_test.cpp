@@ -845,7 +845,8 @@ HWTEST_F(EventRawEncodedTest, DecodedEventTest002, testing::ext::TestSize.Level1
     ASSERT_TRUE(event.IsValid());
     ASSERT_TRUE(event.GetRawData() != nullptr);
     std::string formattedStr = R"~({"domain_":"DEMO","name_":"EVENT_NAME_A","type_":4,)~";
-    formattedStr.append(R"~("time_":0,"tz_":"-0100","pid_":0,"tid_":0,"uid_":0,"id_":"00000000000000000000",)~");
+    formattedStr.append(
+        R"~("time_":0,"tz_":"-0100","pid_":0,"tid_":0,"uid_":0,"log_":0,"id_":"00000000000000000000",)~");
     formattedStr.append(R"~("PARAM_A":3.4,"UINT64_T":18446744073709551610,)~");
     formattedStr.append(R"~("INT64_T":9223372036854775800,"PARAM_B":["123","456","789"],"PARAM_C":[]})~");
     ASSERT_EQ(event.AsJsonStr(), formattedStr);

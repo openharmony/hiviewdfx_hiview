@@ -37,6 +37,7 @@ public:
     int Insert(const std::shared_ptr<SysEvent>& sysEvent);
     void Clear();
     int Query(SysEventQuery& query, EntryQueue& entries);
+    void CheckRepeat(std::shared_ptr<SysEvent> event);
     std::string GetDatabaseDir();
 
 private:

@@ -136,6 +136,7 @@ private:
         .id = 0,
         .type = 0,
         .isTraceOpened = 0,
+        .log = 0,
     };
     struct TraceInfo traceInfo_ {
         .traceFlag = 0,

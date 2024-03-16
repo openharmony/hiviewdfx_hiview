@@ -27,7 +27,6 @@ DEFINE_LOG_TAG("HiView-SysEventDocWriter");
 namespace {
 constexpr uint32_t HEADER_BLOCK_SIZE = 27;
 constexpr uint32_t CRC_INIT_VALUE = 0x0;
-constexpr uint8_t DEFAULT_DATA_VERSION = 0x1;
 constexpr uint32_t RAW_DATA_OFFSET = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
 
 template<typename T>
@@ -80,6 +79,12 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
             return ret;
         }
         return WriteContent(sysEvent, contentSize);
+    }
+
+    DocHeader header;
+    reader.ReadHeader(header);
+    if (header.version != EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION) {
+        return DOC_STORE_NEW_FILE;
     }
 
     // if file is not empty, read the file header for writing
@@ -156,7 +161,7 @@ int SysEventDocWriter::WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, ui
         .magicNum = MAGIC_NUM,
         .blockSize = HEADER_BLOCK_SIZE,
         .pageSize = pageSize,
-        .version = DEFAULT_DATA_VERSION,
+        .version = EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION,
         .crc = CRC_INIT_VALUE,
     };
     if (!sysEvent->GetTag().empty() && strcpy_s(header.tag, MAX_TAG_LEN, sysEvent->GetTag().c_str()) != EOK) {

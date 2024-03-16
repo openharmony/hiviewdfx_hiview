@@ -28,6 +28,10 @@ namespace EventRaw {
 constexpr unsigned int MAX_DOMAIN_LENGTH = 16;
 constexpr unsigned int MAX_EVENT_NAME_LENGTH = 32;
 constexpr unsigned int MAX_ARRAY_SIZE = 100;
+enum EVENT_DATA_FORMATE_VERSION {
+    VERSION1 = 0x1,
+    DEFAULT_DATA_VERSION = 0x2
+};
 
 constexpr char BASE_INFO_KEY_DOMAIN[] = "domain_";
 constexpr char BASE_INFO_KEY_NAME[] = "name_";
@@ -38,6 +42,7 @@ constexpr char BASE_INFO_KEY_ID[] = "id_";
 constexpr char BASE_INFO_KEY_PID[] = "pid_";
 constexpr char BASE_INFO_KEY_TID[] = "tid_";
 constexpr char BASE_INFO_KEY_UID[] = "uid_";
+constexpr char BASE_INFO_KEY_LOG[] = "log_";
 constexpr char BASE_INFO_KEY_TRACE_ID[] = "traceid_";
 constexpr char BASE_INFO_KEY_SPAN_ID[] = "spanid_";
 constexpr char BASE_INFO_KEY_PARENT_SPAN_ID[] = "pspanid_";
@@ -106,6 +111,9 @@ struct HiSysEventHeader {
 
     /* Trace info flag*/
     uint8_t isTraceOpened : 1;
+
+    /* Log packing flag */
+    uint8_t log;
 };
 
 struct TraceInfo {
