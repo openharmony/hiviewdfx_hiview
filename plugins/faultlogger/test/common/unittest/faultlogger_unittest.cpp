@@ -810,6 +810,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     for (int i = 0; i < 10000; i++) {
         content += fillMapsContent;
     }
+
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now), content));
     auto plugin = CreateFaultloggerInstance();
     plugin->StartBootScan();
