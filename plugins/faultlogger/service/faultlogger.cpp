@@ -36,6 +36,7 @@
 #include <cerrno>
 #include <thread>
 #include <unistd.h>
+#include <future>
 
 #include "accesstoken_kit.h"
 #include "asan_collector.h"
@@ -711,10 +712,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
 
     mgr_->SaveFaultLogToFile(info);
-    if (!CheckFaultLog(info)) {
-        HIVIEW_LOGE("Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s, log file invalid.",
-            info.pid, info.module.c_str(), info.reason.c_str());
-    }
+    CheckFaultLogAsync(info);
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
@@ -1067,7 +1065,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
 /*
  * return value: 0 means fault log invalid; 1 means fault log valid.
  */
-bool Faultlogger::CheckFaultLog(const FaultLogInfo& info) const
+bool Faultlogger::CheckFaultLog(FaultLogInfo info) const
 {
     int32_t err = 0;
     std::string file;
@@ -1082,6 +1080,11 @@ bool Faultlogger::CheckFaultLog(const FaultLogInfo& info) const
     ReportCrashException(info.module, info.pid, info.id, info.time, err);
 
     return (err == CrashExceptionCode::CRASH_ESUCCESS);
+}
+
+void Faultlogger::CheckFaultLogAsync(const FaultLogInfo& info)
+{
+    std::async(std::launch::async, &Faultlogger::CheckFaultLog, this, info);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
