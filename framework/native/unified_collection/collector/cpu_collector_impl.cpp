@@ -76,7 +76,7 @@ CollectResult<double> CpuCollectorImpl::GetSysCpuUsage()
     auto sysCpuUsage = CollectSysCpuUsage();
     double retValue = 0;
     if (!sysCpuUsage.data.cpuInfos.empty()) {
-        auto &totalCpuUsageInfo = sysCpuUsage.data.cpuInfos.at(0);
+        const auto &totalCpuUsageInfo = sysCpuUsage.data.cpuInfos.at(0);
         retValue += (totalCpuUsageInfo.userUsage + totalCpuUsageInfo.niceUsage + totalCpuUsageInfo.systemUsage);
     }
     CollectResult<double> result = {};
