@@ -46,25 +46,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-
 DEFINE_LOG_TAG("NativeLeakState");
 
-using std::string;
-using std::map;
-using std::ifstream;
-using std::regex;
-using std::smatch;
-using std::regex_match;
-using std::static_pointer_cast;
-using std::ios;
-using std::left;
-using std::endl;
-using std::setw;
-using std::to_string;
-using std::shared_ptr;
-using std::stringstream;
+using namespace std;
 using std::chrono::microseconds;
-using std::ofstream;
 
 namespace {
 constexpr uint32_t SHORT_WEIGHT = 8; // the ostream placeholder for a word when write memory info to file
@@ -106,13 +91,6 @@ struct TrackCmd {
     enum MemCmd cmd;
 };
 
-struct StackInfo {
-    uint32_t magic { 0 };
-    uint32_t type { 0 };
-    uint64_t size { 0 };
-    char data[0];
-};
-
 struct DetailInfo {
     uint32_t magic { 0 };
     uint32_t id { 0 };
@@ -123,9 +101,9 @@ struct DetailInfo {
 };
 }
 
-ErrCode NativeLeakSampleState::StateProcess(shared_ptr<FaultInfoBase> &monitorfInfo, FaultDetectorBase &detectorObj)
+ErrCode NativeLeakSampleState::StateProcess(shared_ptr<FaultInfoBase> &monitorInfo, FaultDetectorBase &detectorObj)
 {
-    auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorfInfo);
+    auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
     HIVIEW_LOGI("NativeLeakSampleState::StateProcess pid: %{public}d", userMonitorInfo->GetPid());
     CollectBaseInfo(userMonitorInfo);
     return SUCCESSED;
@@ -281,10 +259,10 @@ ErrCode NativeLeakJudgeState::ChangeNextState(shared_ptr<FaultInfoBase> &monitor
 }
 
 NativeLeakDumpState::NativeLeakDumpState()
-{
 #ifdef HAS_HIPROFILER
-    memProfilerCollector_ = UCollectUtil::MemProfilerCollector::Create();
+    : memProfilerCollector_(UCollectUtil::MemProfilerCollector::Create())
 #endif
+{
 }
 
 ErrCode NativeLeakDumpState::StateProcess(shared_ptr<FaultInfoBase> &monitorInfo, FaultDetectorBase &detectorObj)
@@ -486,7 +464,7 @@ bool NativeLeakDumpState::ForkProcessToDumpExtraInfo(
         + string("LOGGER_MEMCHECK_") + GetExtraInfo(type) + "\n"
         + string("get info realtime:\t") + FaultDetectorUtil::GetRealTime() + "\n";
     size_t generalMessageSize = generalMessage.size();
-    size_t watchdogWrite = write(writeFd, generalMessage.c_str(), generalMessageSize);
+    ssize_t watchdogWrite = write(writeFd, generalMessage.c_str(), generalMessageSize);
     if (watchdogWrite < 0) {
         HIVIEW_LOGE("write get extra info realtime failed, errno is %{public}d", errno);
     }
@@ -532,7 +510,7 @@ bool NativeLeakDumpState::DumpUserMemInfoToSmapsFile(int writeFd, shared_ptr<Nat
             + userMonitorInfo->GetRealTime().at(i) + "\n";
     }
     size_t userMemMessageSize = userMemMessage.size();
-    size_t watchdogWrite = write(writeFd, userMemMessage.c_str(), userMemMessageSize);
+    ssize_t watchdogWrite = write(writeFd, userMemMessage.c_str(), userMemMessageSize);
     if (watchdogWrite < 0) {
         HIVIEW_LOGE("write to smaps file failed, errno is %{public}d", errno);
         return false;
@@ -540,12 +518,14 @@ bool NativeLeakDumpState::DumpUserMemInfoToSmapsFile(int writeFd, shared_ptr<Nat
     return true;
 }
 
-string NativeLeakDumpState::GetExtraInfo(uint32_t &type) const
+string NativeLeakDumpState::GetExtraInfo(uint32_t type) const
 {
-    for (auto item : extraInfo) {
-        if (type & item.first) {
-            return item.second;
-        }
+    auto it = find_if(extraInfo.begin(), extraInfo.end(),
+                      [&type](const pair<uint32_t, string>& item) {
+                          return type & item.first;
+                      });
+    if (it != extraInfo.end()) {
+        return it->second;
     }
     return "";
 }

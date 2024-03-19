@@ -41,17 +41,17 @@ public:
     uint64_t GetActualRssThreshold() const;
     void SetActualRssThreshold(uint64_t value);
     std::string GetLeakGrade() const;
-    void SetLeakGrade(std::string leakGrade);
+    void SetLeakGrade(const std::string &grade);
     bool GetInThresholdList() const;
     void SetInThresholdList(bool flag);
     bool GetJavaState() const;
     void SetJavaState(bool flag);
     bool GetIsProcessDied() const;
-    void SetIsProcessDied(bool value);
+    void SetIsProcessDied(bool flag);
     bool GetIsAppendSmapsFile() const;
-    void SetIsAppendSmapsFile(bool value);
+    void SetIsAppendSmapsFile(bool flag);
     bool GetIsDumpHiprofilerDrop() const;
-    void SetIsDumpHiprofilerDrop(bool value);
+    void SetIsDumpHiprofilerDrop(bool flag);
     std::string GetRsGpuPath();
     std::string GetSmapsPath();
 

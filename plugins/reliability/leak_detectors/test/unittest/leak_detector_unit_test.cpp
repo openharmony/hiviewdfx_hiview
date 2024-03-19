@@ -58,14 +58,11 @@ void LeakDetectorUnitTest::TearDown(void) {}
 HWTEST_F(LeakDetectorUnitTest, LeakDetectorUnitTest001, TestSize.Level1)
 {
     unordered_map<string, uint64_t> configList;
-    NativeLeakConfig *configObj = new NativeLeakConfig();
-    ASSERT_NE(configObj, nullptr);
-    bool ret = configObj->GetThresholdList(configList);
+    bool ret = NativeLeakConfig::GetThresholdList(configList);
     HIVIEW_LOGI("configList size: %{public}d", configList.size());
     ASSERT_TRUE(ret);
     auto it = configList.find("DEFAULT");
     ASSERT_NE(it, configList.end());
-    free(configObj);
 }
 
 } // namespace HiviewDFX
