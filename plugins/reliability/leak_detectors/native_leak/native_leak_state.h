@@ -74,7 +74,7 @@ private:
     bool ForkProcessToDumpExtraInfo(
         const std::string &path, std::shared_ptr<NativeLeakInfo> &userMonitorInfo, uint32_t type) const;
     bool DumpUserMemInfoToSmapsFile(int writeFd, std::shared_ptr<NativeLeakInfo> &userMonitorInfo) const;
-    std::string GetExtraInfo(uint32_t &type) const; // rename GetExtraInfo
+    std::string GetExtraInfo(uint32_t type) const;
     void ExecuteChildProcessGetSmapsInfo(int pid) const;
     void ExecuteChildProcessGetRsInfo() const;
     void ExecuteChildProcessGetGpuInfo() const;

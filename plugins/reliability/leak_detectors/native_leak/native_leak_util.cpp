@@ -64,12 +64,15 @@ void NativeLeakUtil::RemoveInvalidFile(shared_ptr<FaultInfoBase> monitorInfo)
 
 uint64_t NativeLeakUtil::GetRSSMemoryThreshold(uint64_t threshold)
 {
-    for (auto rssthresholdTime : g_rssthresholdTimes) {
-        if (threshold > rssthresholdTime.first) {
-            return threshold * rssthresholdTime.second;
-        }
+    auto it = find_if(g_rssthresholdTimes.begin(), g_rssthresholdTimes.end(),
+                      [threshold](const pair<uint64_t, uint64_t>& rssthresholdTime) {
+                          return threshold > rssthresholdTime.first;
+                      });
+    if (it != g_rssthresholdTimes.end()) {
+        return threshold * it->second;
     }
     return threshold;
 }
+
 } // namespace HiviewDFX
 } // namespace OHOS

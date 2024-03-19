@@ -94,8 +94,8 @@ bool FaultDetectorUtil::IsMemTestEnable()
 bool FaultDetectorUtil::GetIsHmKernel()
 {
     static int isHmKernel = -1;
-    string meminfoPath = "/proc/memview";
     if (isHmKernel == -1) {
+        string meminfoPath = "/proc/memview";
         auto fd = open(meminfoPath.c_str(), O_RDONLY);
         if (fd < 0) {
             isHmKernel = 0;

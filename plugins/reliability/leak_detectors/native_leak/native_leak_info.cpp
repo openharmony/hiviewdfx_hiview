@@ -59,7 +59,7 @@ string NativeLeakInfo::GetLeakGrade() const
     return leakGrade_;
 }
 
-void NativeLeakInfo::SetLeakGrade(string grade)
+void NativeLeakInfo::SetLeakGrade(const string &grade)
 {
     leakGrade_ = grade;
 }

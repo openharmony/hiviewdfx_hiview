@@ -67,8 +67,7 @@ void NativeLeakDetector::PrepareNativeLeakEnv()
 
 void NativeLeakDetector::NativeLeakConfigParse()
 {
-    NativeLeakConfig nativeParser;
-    nativeParser.GetThresholdList(thresholdLists_);
+    NativeLeakConfig::GetThresholdList(thresholdLists_);
     HIVIEW_LOGI("thresholdLists size %{public}zu", thresholdLists_.size());
     sampleInterval_ = SAMPLE_INTERVAL;
     updateInterval_ = UPDATE_INTERVAL;
@@ -124,10 +123,7 @@ void NativeLeakDetector::UpdateUserMonitorInfo()
         uint64_t rssNum = FaultDetectorUtil::GetProcessRss(pid);
         if (rssNum > rssThreshold) {
             shared_ptr<FaultInfoBase> monitorInfo = make_shared<NativeLeakInfo>();
-            if (monitorInfo == nullptr) {
-                HIVIEW_LOGE("failed to create NativeLeakInfo, pid %{public}d", pid);
-                continue;
-            }
+
             HIVIEW_LOGI("start monitor pid: %{public}d, name: %{public}s, rssThreshold: %{public}lld" PRIu64,
                 pid, name.c_str(), rssThreshold);
             auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
@@ -219,12 +215,8 @@ void NativeLeakDetector::RemoveFinishedInfo(int64_t pid)
     auto &list = monitoredPidsList_;
     HIVIEW_LOGD("Before RemoveFinishedInfo, info size %{public}zu, list size %{public}zu", info.size(), list.size());
     nativeDetectorMtx_.lock();
-    if (info.find(pid) != info.end()) {
-        info.erase(pid);
-    }
-    if (list.find(pid) != list.end()) {
-        list.erase(pid);
-    }
+    info.erase(pid);
+    list.erase(pid);
     nativeDetectorMtx_.unlock();
     HIVIEW_LOGD("After RemoveFinishedInfo, info size %{public}zu, list size %{public}zu", info.size(), list.size());
 }
@@ -323,12 +315,12 @@ void NativeLeakDetector::AddMonitorToList(shared_ptr<FaultInfoBase> &monitorInfo
     monitoredPidsInfo_.insert(make_pair(pid, monitorInfo));
 }
 
-ErrCode NativeLeakDetector::ExeNextStateProcess(shared_ptr<FaultInfoBase> monitorInfo, FaultStateType nextStateType)
+ErrCode NativeLeakDetector::ExeNextStateProcess(shared_ptr<FaultInfoBase> monitorInfo, FaultStateType stateType)
 {
     auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
     const string &name = userMonitorInfo->GetProcessName();
     HIVIEW_LOGI("pid: %{public}d, process: %{public}s, current state: %{public}d, next state: %{public}d",
-        userMonitorInfo->GetPid(), name.c_str(), userMonitorInfo->GetState(), nextStateType);
+        userMonitorInfo->GetPid(), name.c_str(), userMonitorInfo->GetState(), stateType);
     if (userMonitorInfo->GetIsProcessDied()) {
         HIVIEW_LOGE("pid: %{public}d already died", userMonitorInfo->GetPid());
         return FAILURE;
@@ -344,12 +336,12 @@ ErrCode NativeLeakDetector::ExeNextStateProcess(shared_ptr<FaultInfoBase> monito
     }
     nativeDetectorMtx_.unlock();
 
-    if (nextStateType == PROC_FINISHED_STATE) {
-        HIVIEW_LOGI("nextStateType is PROC_FINISHED_STATE");
+    if (stateType == PROC_FINISHED_STATE) {
+        HIVIEW_LOGI("next stateType is PROC_FINISHED_STATE");
         return SUCCESSED;
     }
-    OnChangeState(monitorInfo, nextStateType);
-    ErrCode ret = GetStateObj(nextStateType)->StateProcess(monitorInfo, *this);
+    OnChangeState(monitorInfo, stateType);
+    ErrCode ret = GetStateObj(stateType)->StateProcess(monitorInfo, *this);
     if (ret) {
         HIVIEW_LOGE("exe %{public}s state process failed, ret is %{public}d",
             FaultStateName[userMonitorInfo->GetState()].c_str(), ret);
@@ -398,22 +390,22 @@ void NativeLeakDetector::ProcessUserEvent(const string &name, const string &msg,
         return;
     }
     // is in gray list
-    for (auto it = grayList_.begin(); it != grayList_.end();) {
-        if (it->second == nullptr) {
-            it = grayList_.erase(it);
+    for (auto it2 = grayList_.begin(); it2 != grayList_.end();) {
+        if (it2->second == nullptr) {
+            it2 = grayList_.erase(it2);
             HIVIEW_LOGE("monitor in grayList_ is null");
             continue;
         }
-        if (it->second->GetProcessName() == name) {
-            auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(it->second);
+        if (it2->second->GetProcessName() == name) {
+            auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(it2->second);
             userMonitorInfo->SetEventMsg(msg);
             nativeDetectorMtx_.lock();
-            AddMonitorToList(it->second);
+            AddMonitorToList(it2->second);
             nativeDetectorMtx_.unlock();
-            it = grayList_.erase(it);
+            grayList_.erase(it2);
             return;
         }
-        it++;
+        it2++;
     }
 
     // not in gray list

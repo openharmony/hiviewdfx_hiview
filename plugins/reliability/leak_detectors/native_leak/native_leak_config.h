@@ -23,9 +23,7 @@ namespace HiviewDFX {
 
 class NativeLeakConfig {
 public:
-    NativeLeakConfig();
-    ~NativeLeakConfig();
-    bool GetThresholdList(std::unordered_map<std::string, uint64_t> &list);
+    static bool GetThresholdList(std::unordered_map<std::string, uint64_t> &list);
 };
 } // HiviewDFX
 } // OHOS

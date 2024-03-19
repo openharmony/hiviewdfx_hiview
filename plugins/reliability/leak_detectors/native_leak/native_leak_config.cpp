@@ -41,10 +41,6 @@ enum RecordItem {
 };
 }
 
-NativeLeakConfig::NativeLeakConfig() {};
-
-NativeLeakConfig::~NativeLeakConfig() {};
-
 bool NativeLeakConfig::GetThresholdList(unordered_map<string, uint64_t> &list)
 {
     ifstream fin;

@@ -32,7 +32,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class FaultDetectorManager : public FileDescriptorEventCallback, public AppEventPublisher  {
 public:
-    bool OnEvent(std::shared_ptr<Event> &Event) override;
+    bool OnEvent(std::shared_ptr<Event> &event) override;
     bool ReadyToLoad() override;
     void OnLoad() override;
     void OnUnload() override;
@@ -55,7 +55,6 @@ private:
     static constexpr uint64_t TASK_TIMER_INTERVAL = 5; // 5s
     static const inline std::string eventNameLowmem = "LOWMEM";
 
-    int inotifyFd_;
     std::map<std::string, int> fileMap_;
     bool isLoopContinue_ { false };
     ffrt::task_handle processTaskHandle_;
