@@ -36,8 +36,6 @@
 #include "fault_state_base.h"
 #include "ffrt.h"
 #include "hisysevent.h"
-#include "kits/cpp/mutex.h"
-#include "kits/cpp/sleep.h"
 #include "logger.h"
 #include "mem_profiler_collector.h"
 #include "native_leak_info.h"

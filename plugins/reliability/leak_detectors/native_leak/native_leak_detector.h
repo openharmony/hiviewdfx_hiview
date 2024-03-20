@@ -25,7 +25,6 @@
 #include "fault_info_base.h"
 #include "fault_state_base.h"
 #include "ffrt.h"
-#include "kits/cpp/mutex.h"
 #include "singleton.h"
 
 namespace OHOS {
