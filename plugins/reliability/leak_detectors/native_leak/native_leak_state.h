@@ -27,6 +27,7 @@
 #include "fault_info_base.h"
 #include "fault_state_base.h"
 #include "ffrt.h"
+#include "kits/cpp/mutex.h"
 #include "mem_profiler_collector.h"
 #include "native_leak_info.h"
 #include "native_leak_util.h"
