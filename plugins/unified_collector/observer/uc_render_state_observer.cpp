@@ -37,13 +37,13 @@ ProcessState GetProcessState(int32_t state)
 }
 }
 
-void UcRenderStateObserver::OnRenderStateChanged(pid_t renderPid, int32_t state)
+void UcRenderStateObserver::OnRenderStateChanged(const AppExecFwk::RenderStateData &renderStateData)
 {
-    ProcessState procState = GetProcessState(state);
+    ProcessState procState = GetProcessState(renderStateData.state);
     if (procState == INVALID) {
         return;
     }
-    ProcessStatus::GetInstance().NotifyProcessState(renderPid, procState);
+    ProcessStatus::GetInstance().NotifyProcessState(renderStateData.pid, procState);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

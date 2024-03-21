@@ -24,7 +24,7 @@ class UcRenderStateObserver : public AppExecFwk::RenderStateObserverStub {
 public:
     UcRenderStateObserver() = default;
     virtual ~UcRenderStateObserver() = default;
-    void OnRenderStateChanged(pid_t renderPid, int32_t state) override;
+    void OnRenderStateChanged(const AppExecFwk::RenderStateData &renderStateData) override;
 }; // UcRenderStateObserver
 } // namespace HiviewDFX
 } // namespace OHOS
