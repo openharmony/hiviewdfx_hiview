@@ -16,7 +16,7 @@
                         "LIFECYCLE_HALF_TIMEOUT", "APP_LIFECYCLE_TIMEOUT", "APP_INPUT_BLOCK"]
         },{
             "domain": "FRAMEWORK",
-            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL"]
+            "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL", "HIT_EMPTY_WARNING"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "HUNGTASK", "COM_LONG_PRESS", "DMD_TP_I2C", "DMD_TP_HP", "DMD_LCD_DDR",
