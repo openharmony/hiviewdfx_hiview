@@ -100,8 +100,8 @@ void TestUtil::KillProcess(const string &name)
 string TestUtil::GetPidByProcess(const string &name)
 {
     string pid = ExecCmd(CmdType::PID_OF, name);
-    while (pid.length() > 0 && pid[pid.length() - 1] == '\n') {
-        pid = pid.substr(0, pid.length() - 1);
+    while (!pid.empty() && pid.back() == '\n') {
+        pid.pop_back();
     }
     HIVIEW_LOGI("pid: %{public}s", pid.c_str());
     return pid;
@@ -110,21 +110,21 @@ string TestUtil::GetPidByProcess(const string &name)
 void TestUtil::ClearDir(string name)
 {
     HIVIEW_LOGI("ClearDir:%{public}s", name.c_str());
-    if (name.length() <= 0) {
+    if (name.empty()) {
         return;
     }
-    while (name.length() > 0 && name[name.length() - 1] == '/') {
-        name[name.length() - 1] = '\0';
+    while (!name.empty() && name.back() == '/') {
+        name.pop_back();
     }
     ExecCmd(CmdType::CLEAR_DIR, name);
 }
 
-bool TestUtil::IsValidTarget(const string& target)
+bool TestUtil::IsValidTarget(const string &target)
 {
     return regex_match(target, regex("^[a-zA-Z0-9_\\/]+$"));
 }
 
-string TestUtil::BuildCommand(CmdType type, const string& target)
+string TestUtil::BuildCommand(CmdType type, const string &target)
 {
     if (!IsValidTarget(target)) {
         HIVIEW_LOGW("BuildCommand failed, by target invalid");
@@ -149,7 +149,7 @@ string TestUtil::BuildCommand(CmdType type, const string& target)
     return cmd;
 }
 
-string TestUtil::ExecCmd(CmdType type, const string& target)
+string TestUtil::ExecCmd(CmdType type, const string &target)
 {
     string cmd = BuildCommand(type, target);
     if (cmd.empty()) {
@@ -268,7 +268,7 @@ void TestUtil::WriteFile(const string &file, const string &line)
 {
     std::ofstream fs(file, std::ios::out);
     if (fs.is_open()) {
-        fs << line.c_str() << "\n";
+        fs << line << "\n";
         fs.close();
     }
 }

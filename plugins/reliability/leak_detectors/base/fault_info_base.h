@@ -177,7 +177,7 @@ public:
         topMemory_ = value;
     }
 
-    const std::string& GetEventMsg() const
+    const std::string &GetEventMsg() const
     {
         return eventMsg_;
     }
