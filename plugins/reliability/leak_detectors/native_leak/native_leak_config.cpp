@@ -53,7 +53,7 @@ bool NativeLeakConfig::GetThresholdList(unordered_map<string, uint64_t> &list)
     string line;
     while (getline(fin, line)) {
         HIVIEW_LOGI("start match line:%{public}s", line.c_str());
-        if (line.length() <= 0 || line[0] == '#') {
+        if (line.empty() || line[0] == '#') {
             HIVIEW_LOGI("This line is a comment");
             continue;
         }
