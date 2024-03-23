@@ -15,8 +15,10 @@
 
 #include "crash_validator.h"
 
+#include <csignal>
 #include <cstdio>
 #include <memory>
+#include <set>
 
 #include "logger.h"
 #include "plugin_factory.h"
@@ -39,6 +41,7 @@ void CrashValidator::OnLoad()
 {
     if (GetHiviewContext() == nullptr) {
         HIVIEW_LOGE("hiview context is null");
+        return;
     }
     InitWorkLoop();
     GetHiviewContext()->AppendPluginToPipeline("CrashValidator", "faultloggerPipeline");
@@ -145,6 +148,18 @@ void CrashValidator::AddEventToMap(int32_t pid, std::shared_ptr<SysEvent> sysEve
     }
 }
 
+static bool IsNormalExitEvent(std::shared_ptr<SysEvent> sysEvent)
+{
+    std::set<int32_t> crashSet = { SIGILL, SIGABRT, SIGBUS, SIGFPE,
+                                   SIGSEGV, SIGSTKFLT, SIGSYS, SIGTRAP };
+    int32_t status = sysEvent->GetEventIntValue("STATUS");
+    if (crashSet.count(status)) {
+        return false;
+    }
+
+    return true;
+}
+
 bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
 {
     if (!hasLoaded_ || event == nullptr) {
@@ -156,7 +171,7 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     }
 
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
-    if ((sysEvent->eventName_ == "PROCESS_EXIT") && !sysEvent->GetEventIntValue("STATUS")) {
+    if ((sysEvent->eventName_ == "PROCESS_EXIT") && IsNormalExitEvent(sysEvent)) {
         return true;
     }
 
