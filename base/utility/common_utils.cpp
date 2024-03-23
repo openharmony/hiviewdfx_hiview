@@ -167,6 +167,12 @@ bool IsTheProcessExist(pid_t pid)
     return true;
 }
 
+bool IsPidExist(pid_t pid)
+{
+    std::string procDir = "/proc/" + std::to_string(pid);
+    return FileUtil::IsDirectory(procDir);
+}
+
 bool IsSpecificCmdExist(const std::string& fullPath)
 {
     return access(fullPath.c_str(), X_OK) == 0;

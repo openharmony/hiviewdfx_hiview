@@ -65,6 +65,7 @@ private:
     std::optional<ProcessCpuStatInfo> CalculateProcessCpuStatInfo(
         const ucollection_process_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
     void TryToDeleteDeadProcessInfo();
+    void TryToDeleteDeadProcessInfoByPid(int32_t pid);
 
 private:
     std::mutex collectMutex_;

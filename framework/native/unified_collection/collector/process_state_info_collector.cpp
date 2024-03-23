@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "common_utils.h"
 #include "cpu_decorator.h"
 #include "logger.h"
 #include "process_status.h"
@@ -185,7 +186,7 @@ void ProcessStatInfoCollector::TryToDeleteDeadProcessInfo()
             it++;
         }
     }
-    HIVIEW_LOGI("end to delete dead process, size=%{public}zu", lastProcCpuTimeInfos_.size());
+    HIVIEW_LOGD("end to delete dead process, size=%{public}zu", lastProcCpuTimeInfos_.size());
 }
 
 CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
@@ -193,6 +194,10 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
     CollectResult<ProcessCpuStatInfo> cpuCollectResult;
 
     std::unique_lock<std::mutex> lock(collectMutex_);
+    if (!CommonUtils::IsPidExist(pid)) {
+        TryToDeleteDeadProcessInfoByPid(pid);
+        return cpuCollectResult;
+    }
     auto processCpuData = FetchProcessCpuData(pid);
     if (processCpuData == nullptr) {
         return cpuCollectResult;
@@ -227,6 +232,14 @@ CalculationTimeInfo ProcessStatInfoCollector::InitCalculationTimeInfo(int32_t pi
     calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
         ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
     return calcTimeInfo;
+}
+
+void ProcessStatInfoCollector::TryToDeleteDeadProcessInfoByPid(int32_t pid)
+{
+    if (lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()) {
+        lastProcCpuTimeInfos_.erase(pid);
+        HIVIEW_LOGD("end to delete dead process=%{public}d", pid);
+    }
 }
 } // UCollectUtil
 } // HiViewDFX
