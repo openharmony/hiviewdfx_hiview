@@ -28,12 +28,6 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-ProcessStatus");
 namespace {
 constexpr uint64_t INVALID_LAST_FOREGROUND_TIME = 0;
-
-bool IsValidProcessId(int32_t pid)
-{
-    std::string procDir = "/proc/" + std::to_string(pid);
-    return FileUtil::IsDirectory(procDir);
-}
 }
 
 std::string ProcessStatus::GetProcessName(int32_t pid)
@@ -64,7 +58,7 @@ void ProcessStatus::ClearProcessInfos()
 {
     HIVIEW_LOGI("start to clear process cache, size=%{public}zu", processInfos_.size());
     for (auto it = processInfos_.begin(); it != processInfos_.end();) {
-        if (!IsValidProcessId(it->first)) {
+        if (!CommonUtils::IsPidExist(it->first)) {
             it = processInfos_.erase(it);
         } else {
             it++;
