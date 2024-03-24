@@ -35,6 +35,12 @@ public:
     void SetOutputFilename(const std::string &outputFilename) override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
+    // for prepare recod mode
+    CollectResult<bool> Prepare(const std::string &logDir) override;
+    CollectResult<bool> StartRun() override;
+    CollectResult<bool> Pause() override;
+    CollectResult<bool> Resume() override;
+    CollectResult<bool> Stop() override;
 
 private:
     std::shared_ptr<PerfCollector> perfCollector_;

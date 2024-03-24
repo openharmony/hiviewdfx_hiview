@@ -34,6 +34,12 @@ public:
     virtual void SetFrequency(int frequency) = 0;
     virtual void SetOffCPU(bool offCPU) = 0;
     virtual void SetOutputFilename(const std::string &outputFilename) = 0;
+    // for prepare recod mode
+    virtual CollectResult<bool> Prepare(const std::string &logDir) = 0;
+    virtual CollectResult<bool> StartRun() = 0;
+    virtual CollectResult<bool> Pause() = 0;
+    virtual CollectResult<bool> Resume() = 0;
+    virtual CollectResult<bool> Stop() = 0;
     static std::shared_ptr<PerfCollector> Create();
 };
 } // UCollectUtil
