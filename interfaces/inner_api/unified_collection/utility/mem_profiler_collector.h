@@ -30,6 +30,7 @@ public:
 public:
     virtual int Start(ProfilerType type,
                       int pid, int duration, int sampleInterval) = 0;
+    virtual int StartPrintNmd(int fd, int pid, int type) = 0;
     virtual int Stop(int pid) = 0;
     virtual int Start(int fd, ProfilerType type,
                       int pid, int duration, int sampleInterval) = 0;
