@@ -541,7 +541,7 @@ int32_t IoCollectorImpl::GetProcStateInCollectionPeriod(int32_t pid)
         return static_cast<int32_t>(FOREGROUND);
     }
     uint64_t procForegroundTime = ProcessStatus::GetInstance().GetProcessLastForegroundTime(pid);
-    if (procForegroundTime >= preCollectProcIoTime_ && procForegroundTime < currCollectProcIoTime_) {
+    if (procForegroundTime >= preCollectProcIoTime_) {
         return static_cast<int32_t>(FOREGROUND);
     }
     return static_cast<int32_t>(procState);

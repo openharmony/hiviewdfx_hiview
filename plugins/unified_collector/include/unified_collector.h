@@ -19,7 +19,7 @@
 
 #include "cpu_collection_task.h"
 #include "plugin.h"
-#include "uc_render_state_observer.h"
+#include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
 
 namespace OHOS {
@@ -34,8 +34,6 @@ private:
     void Init();
     void InitWorkLoop();
     void InitWorkPath();
-    void RegisterRenderObserver();
-    void UnregisterRenderObserver();
     void RunCpuCollectionTask();
     void CpuCollectionFfrtTask();
     void RegisterWorker();
@@ -47,7 +45,7 @@ private:
 private:
     std::string workPath_;
     std::shared_ptr<CpuCollectionTask> cpuCollectionTask_;
-    sptr<UcRenderStateObserver> renderStateObserver_ = nullptr;
+    std::shared_ptr<UcObserverManager> observerMgr_;
 }; // UnifiedCollector
 } // namespace HiviewDFX
 } // namespace OHOS

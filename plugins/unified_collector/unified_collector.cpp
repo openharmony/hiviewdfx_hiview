@@ -14,7 +14,6 @@
  */
 #include "unified_collector.h"
 
-#include "app_mgr_client.h"
 #include "ffrt.h"
 #include "file_util.h"
 #include "io_collector.h"
@@ -57,7 +56,7 @@ void UnifiedCollector::OnLoad()
 void UnifiedCollector::OnUnload()
 {
     HIVIEW_LOGI("start to unload UnifiedCollector plugin");
-    UnregisterRenderObserver();
+    observerMgr_ = nullptr;
 }
 
 void UnifiedCollector::OnEventListeningCallback(const Event& event)
@@ -84,11 +83,11 @@ void UnifiedCollector::Init()
     }
     InitWorkLoop();
     InitWorkPath();
-    RegisterRenderObserver();
     RunCpuCollectionTask();
     RunIoCollectionTask();
     RunUCollectionStatTask();
     UCollectUtil::TraceCollector::RecoverTmpTrace();
+    observerMgr_ = std::make_shared<UcObserverManager>();
 }
 
 void UnifiedCollector::InitWorkLoop()
@@ -106,36 +105,6 @@ void UnifiedCollector::InitWorkPath()
         return;
     }
     workPath_ = tempWorkPath;
-}
-
-void UnifiedCollector::RegisterRenderObserver()
-{
-    renderStateObserver_ = new(std::nothrow) UcRenderStateObserver();
-    if (renderStateObserver_ == nullptr) {
-        HIVIEW_LOGE("observer is null");
-        return;
-    }
-    auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
-        RegisterRenderStateObserver(renderStateObserver_);
-    if (res != ERR_OK) {
-        HIVIEW_LOGE("failed to register observer, res=%{public}d", res);
-        return;
-    }
-    HIVIEW_LOGI("succ to register observer");
-}
-
-void UnifiedCollector::UnregisterRenderObserver()
-{
-    if (renderStateObserver_ == nullptr) {
-        return;
-    }
-    auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
-        UnregisterRenderStateObserver(renderStateObserver_);
-    if (res != ERR_OK) {
-        HIVIEW_LOGE("failed to unregister observer, res=%{public}d", res);
-        return;
-    }
-    HIVIEW_LOGI("succ to unregister observer");
 }
 
 void UnifiedCollector::RunCpuCollectionTask()

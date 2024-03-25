@@ -51,20 +51,33 @@ std::string ProcessStatus::GetProcessName(int32_t pid)
 
 bool ProcessStatus::NeedClearProcessInfos()
 {
-    return processInfos_.size() > PROCESS_TOTAL_COUNT;
+    if (processInfos_.size() <= capacity_) {
+        return false;
+    }
+    static uint64_t lastClearTime = 0;
+    uint64_t now = TimeUtil::GetSteadyClockTimeMs();
+    uint64_t interval = now > lastClearTime ? (now - lastClearTime) : 0;
+    constexpr uint32_t clearInterval = 600 * 1000; // 10min
+    if (interval <= clearInterval) {
+        return false;
+    }
+    lastClearTime = now;
+    return true;
 }
 
 void ProcessStatus::ClearProcessInfos()
 {
-    HIVIEW_LOGI("start to clear process cache, size=%{public}zu", processInfos_.size());
+    HIVIEW_LOGI("start to clear process cache, size=%{public}zu, capacity=%{public}u", processInfos_.size(), capacity_);
     for (auto it = processInfos_.begin(); it != processInfos_.end();) {
-        if (!CommonUtils::IsPidExist(it->first)) {
+        if (!CommonUtils::IsPidExist(it->first) || CommonUtils::GetProcFullNameByPid(it->first) != it->second.name) {
             it = processInfos_.erase(it);
-        } else {
-            it++;
+            continue;
         }
+        it++;
     }
-    HIVIEW_LOGI("end to clear process cache, size=%{public}zu", processInfos_.size());
+    constexpr uint32_t reservedNum = 100;
+    capacity_ = processInfos_.size() + reservedNum;
+    HIVIEW_LOGI("end to clear process cache, size=%{public}zu, capacity=%{public}u", processInfos_.size(), capacity_);
 }
 
 bool ProcessStatus::UpdateProcessName(int32_t pid, const std::string& procName)
@@ -117,6 +130,12 @@ void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState)
         case BACKGROUND:
             UpdateProcessBackgroundState(pid);
             break;
+        case CREATED:
+            ClearProcessInfo(pid);
+            break;
+        case DIED:
+            ClearProcessInfo(pid);
+            break;
         default:
             HIVIEW_LOGW("invalid process=%{public}d state=%{public}d", pid, procState);
     }
@@ -152,6 +171,14 @@ void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
         .state = BACKGROUND,
         .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
     };
+}
+
+void ProcessStatus::ClearProcessInfo(int32_t pid)
+{
+    if (processInfos_.find(pid) != processInfos_.end()) {
+        processInfos_.erase(pid);
+        HIVIEW_LOGD("end to clear process cache, pid=%{public}d", pid);
+    }
 }
 } // UCollectUtil
 }  // namespace HiviewDFX
