@@ -23,11 +23,6 @@
 #include "hiview_platform.h"
 #include "securec.h"
 namespace OHOS {
-static void InitHiviewContext()
-{
-    HiviewDFX::HiviewPlatform &platform = HiviewDFX::HiviewPlatform::GetInstance();
-    platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
-}
 
 std::shared_ptr<HiviewDFX::Faultlogger> CreateFaultloggerInstance()
 {
@@ -42,8 +37,6 @@ std::shared_ptr<HiviewDFX::Faultlogger> CreateFaultloggerInstance()
 
 void FuzzServiceInterfaceDump(const uint8_t* data, size_t size)
 {
-    InitHiviewContext();
-
     auto service = CreateFaultloggerInstance();
     HiviewDFX::FaultloggerServiceOhos serviceOhos;
     HiviewDFX::FaultloggerServiceOhos::StartService(service.get());
@@ -67,8 +60,6 @@ void FuzzServiceInterfaceDump(const uint8_t* data, size_t size)
 
 void FuzzServiceInterfaceQuerySelfFaultLog(const uint8_t* data, size_t size)
 {
-    InitHiviewContext();
-
     auto service = CreateFaultloggerInstance();
     HiviewDFX::FaultloggerServiceOhos serviceOhos;
     HiviewDFX::FaultloggerServiceOhos::StartService(service.get());
