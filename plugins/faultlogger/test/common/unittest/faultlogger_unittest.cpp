@@ -235,10 +235,8 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
  */
 HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
 {
-    /**
-     * @tc.steps: step1. create a cpp crash event with stackInfo and pass it to faultlogger
-     * @tc.expected: the calling is success and the appevent info test file has been created
-     */
+    int pipeFd[2] = {-1, -1};
+    ASSERT_EQ(pipe(pipeFd), 0) << "create pipe failed";
     auto plugin = CreateFaultloggerInstance();
     FaultLogInfo info;
     info.time = 1607161163;
@@ -252,7 +250,8 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    info.sectionMap["stackInfo"] = R"~({"crash_type":"NativeCrash", "exception":{"frames":
+    info.pipeFd = pipeFd[0];
+    std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
         [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4",
         "symbol":"test_abc"}, {"buildId":"12345abcde",
         "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278, "pc":"0000bef3",
@@ -266,25 +265,26 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
         "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
         "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
         "time":1701863741296, "uid":20010043, "uuid":""})~";
+    ssize_t nwrite = -1;
+    do {
+        nwrite = write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size());
+    } while (nwrite == -1 && errno == EINTR);
+    close(pipeFd[1]);
     plugin->AddFaultLog(info);
+    close(info.pipeFd);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
-    bool exist = FileUtil::FileExists(fileName);
-    ASSERT_EQ(exist, true);
-    auto size = FileUtil::GetFileSize(fileName);
-    ASSERT_GT(size, 0ul);
+    ASSERT_EQ(FileUtil::FileExists(fileName), true);
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
 
     // check appevent json info
     std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
     ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);
-    ASSERT_GT(FileUtil::GetFileSize(appeventInfofileName), 0ul);
-    string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":",
-        "\"thread_name\":", "\"tid\":" };
+    string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":", "\"thread_name\":", "\"tid\":" };
     int length = sizeof(keywords) / sizeof(keywords[0]);
-    int count = CheckKeyWordsInFile(appeventInfofileName, keywords, length, false);
-    ASSERT_EQ(count, length) << "GenCppCrashLogTest001 check keywords failed";
+    ASSERT_EQ(CheckKeyWordsInFile(appeventInfofileName, keywords, length, false), length);
 }
 
 /**

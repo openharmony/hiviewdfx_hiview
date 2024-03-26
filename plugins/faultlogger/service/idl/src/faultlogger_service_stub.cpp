@@ -43,7 +43,9 @@ int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                 HIVIEW_LOGE("failed to Unmarshalling info.");
                 return ERR_FLATTEN_OBJECT;
             }
-
+            if (data.ContainFileDescriptors()) {
+                ohosInfo->pipeFd = data.ReadFileDescriptor();
+            }
             FaultLogInfoOhos info(*ohosInfo);
             AddFaultLog(info);
             return ERR_OK;
