@@ -27,6 +27,8 @@ enum ProcessState {
     INVALID = -1,
     BACKGROUND = 0,
     FOREGROUND,
+    CREATED,
+    DIED,
 };
 
 struct ProcessInfo {
@@ -49,11 +51,13 @@ private:
     void UpdateProcessBackgroundState(int32_t pid);
     bool NeedClearProcessInfos();
     void ClearProcessInfos();
+    void ClearProcessInfo(int32_t pid);
 
 private:
     std::mutex mutex_;
     /* map<pid, ProcessInfo> */
     std::unordered_map<int32_t, ProcessInfo> processInfos_;
+    uint32_t capacity_ = 1000; // 1000, max number of processes
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

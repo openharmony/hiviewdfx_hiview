@@ -126,7 +126,7 @@ bool IsForegroundStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollection
         return true;
     }
     uint64_t procForegroundTime = ProcessStatus::GetInstance().GetProcessLastForegroundTime(pid);
-    return (procForegroundTime >= cpuCollectionInfo.startTime && procForegroundTime < cpuCollectionInfo.endTime);
+    return procForegroundTime >= cpuCollectionInfo.startTime;
 }
 
 int32_t GetProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)

@@ -215,6 +215,7 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
     }
     if (isNeedUpdate) {
         UpdateLastProcCpuTimeInfo(procCpuItem, calcTimeInfo);
+        TryToDeleteDeadProcessInfoByTime(calcTimeInfo.endMonoTime);
     }
     return cpuCollectResult;
 }
@@ -240,6 +241,26 @@ void ProcessStatInfoCollector::TryToDeleteDeadProcessInfoByPid(int32_t pid)
         lastProcCpuTimeInfos_.erase(pid);
         HIVIEW_LOGD("end to delete dead process=%{public}d", pid);
     }
+}
+
+void ProcessStatInfoCollector::TryToDeleteDeadProcessInfoByTime(uint64_t collectionMonoTime)
+{
+    static uint64_t lastClearTime = TimeUtil::GetSteadyClockTimeMs();
+    uint64_t interval = collectionMonoTime > lastClearTime ? (collectionMonoTime - lastClearTime) : 0;
+    constexpr uint32_t clearInterval = 600 * 1000; // 10min
+    if (interval < clearInterval) {
+        return;
+    }
+    lastClearTime = collectionMonoTime;
+    HIVIEW_LOGD("start to delete dead processes, size=%{public}zu", lastProcCpuTimeInfos_.size());
+    for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
+        if (!CommonUtils::IsPidExist(it->first)) {
+            it = lastProcCpuTimeInfos_.erase(it);
+        } else {
+            it++;
+        }
+    }
+    HIVIEW_LOGD("end to delete dead processes, size=%{public}zu", lastProcCpuTimeInfos_.size());
 }
 } // UCollectUtil
 } // HiViewDFX
