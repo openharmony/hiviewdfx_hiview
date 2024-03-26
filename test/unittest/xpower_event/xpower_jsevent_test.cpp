@@ -77,6 +77,9 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest002, testing::ext::TestSize
     param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
     ASSERT_EQ(param, 1);
     ret = ReportXPowerJsStackSysEvent(env, "XPOWER_HIVIEW_JSAPI_TEST", "info=2,succ=true");
+    if (ret == 2) {
+        GTEST_SKIP() << "No JS stack exists in C++";
+    }
     ASSERT_EQ(ret, ERR_SUCCESS);
 
     printf("enable parameter and test default info.\n");
@@ -114,6 +117,9 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest003, testing::ext::TestSize
     param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
     ASSERT_EQ(param, 1);
     ret = ReportXPowerJsStackSysEvent(engine, "XPOWER_HIVIEW_JSAPI2_TEST", "info=7,succ=true");
+    if (ret == 2) {
+        GTEST_SKIP() << "No JS stack exists in C++";
+    }
     ASSERT_EQ(ret, ERR_SUCCESS);
 
     printf("enable parameter and test default info.\n");
@@ -138,6 +144,9 @@ HWTEST_F(NapiXPowerEventTest, ReportXPowerJsEventTest004, testing::ext::TestSize
     int param = OHOS::system::GetIntParameter(PROP_XPOWER_OPTIMIZE_ENABLE, 0);
     ASSERT_EQ(param, 1);
     int ret = ReportXPowerJsStackSysEvent(vm, "XPOWER_HIVIEW_JSAPI2_TEST", "info=7,succ=true");
+    if (ret == 2) {
+        GTEST_SKIP() << "No JS stack exists in C++";
+    }
     ASSERT_EQ(ret, ERR_SUCCESS);
 
     printf("enable parameter and test default info.\n");
