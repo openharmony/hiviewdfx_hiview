@@ -81,17 +81,15 @@ void WriteGwpAsanLog(char* buf, size_t sz)
 void ReadGwpAsanRecord(std::string& asanBuffer, std::string& errType)
 {
     GwpAsanCurrInfo currInfo;
-    char bundleName[BUF_SIZE];
     currInfo.description = asanBuffer;
     currInfo.pid = getpid();
     currInfo.uid = getuid();
     currInfo.errType = errType;
-    if (GetNameByPid(static_cast<pid_t>(currInfo.pid), bundleName) == true) {
-        currInfo.procName = std::string(bundleName);
-    }
     if (currInfo.uid >= MIN_APP_UID) {
+        currInfo.procName = GetApplicationNameById(currInfo.uid);
         currInfo.appVersion = GetApplicationVersion(currInfo.uid, currInfo.procName);
     } else {
+        currInfo.procName = GetNameByPid(currInfo.pid);
         currInfo.appVersion = "";
     }
     time_t timeNow = time(nullptr);
@@ -132,7 +130,7 @@ bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo)
 
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
 {
-    std::string filePath = "data/log/faultlog/faultlogger/";
+    std::string filePath = "/data/log/faultlog/faultlogger/";
     std::string prefix = "";
     if (currInfo.errType.compare("GWP-ASAN") == 0) {
         prefix = "gwpasan";
@@ -174,11 +172,17 @@ void WriteCollectedData(const GwpAsanCurrInfo &currInfo)
     WriteNewFile(fd, currInfo);
 }
 
+std::mutex g_mutex;
 int32_t CreateLogFile(const std::string& name)
 {
+    std::lock_guard<std::mutex> lock(g_mutex);
     int32_t fd = -1;
 
-    fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC);
+    if (access(name.c_str(), F_OK) == 0) {
+        fd = open(name.c_str(), O_WRONLY | O_APPEND);
+    } else {
+        fd = open(name.c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR);
+    }
     if (fd < 0) {
         HIVIEW_LOGE("Fail to create %{public}s,  err: %{public}s.",
             name.c_str(), strerror(errno));
@@ -186,26 +190,43 @@ int32_t CreateLogFile(const std::string& name)
     return fd;
 }
 
-bool GetNameByPid(pid_t pid, const char procName[])
+std::string GetNameByPid(uint32_t pid)
 {
-    char pidPath[BUF_SIZE];
-    char buf[BUF_SIZE];
-    bool ret = false;
-
-    sprintf_s(pidPath, BUF_SIZE, "/proc/%d/status", pid);
-    FILE *fp = fopen(pidPath, "r");
-    if (fp != nullptr) {
-        if (fgets(buf, BUF_SIZE - 1, fp) != nullptr) {
-            if (sscanf_s(buf, "%*s %s", procName, MAX_PROCESS_PATH) == 1) {
-                ret = true;
-            }
-        } else {
-            ret = false;
-        }
-        fclose(fp);
+    char path[BUF_SIZE] = { 0 };
+    int err = snprintf_s(path, sizeof(path), sizeof(path) - 1, "/proc/%d/cmdline", pid);
+    if (err <= 0) {
+        return "";
     }
+    char cmdline[BUF_SIZE] = { 0 };
+    int i = 0;
+    FILE *fp = fopen(path, "r");
+    if (fp == nullptr) {
+        return "";
+    }
+    while (i < (BUF_SIZE - 1)) {
+        char c = static_cast<char>(fgetc(fp));
+        // 0. don't need args of cmdline
+        // 1. ignore unvisible character
+        if (!isgraph(c)) {
+            break;
+        }
+        cmdline[i] = c;
+        i++;
+    }
+    (void)fclose(fp);
+    return cmdline;
+}
 
-    return ret;
+std::string GetApplicationNameById(int32_t uid)
+{
+    std::string bundleName;
+    OHOS::AppExecFwk::BundleMgrClient client;
+    if (client.GetNameForUid(uid, bundleName) != OHOS::ERR_OK) {
+        HIVIEW_LOGW("Failed to query bundleName from bms, uid:%{public}d.", uid);
+    } else {
+        HIVIEW_LOGI("bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
+    }
+    return bundleName;
 }
 
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName)
