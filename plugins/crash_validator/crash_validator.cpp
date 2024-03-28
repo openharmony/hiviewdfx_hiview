@@ -153,7 +153,8 @@ static bool IsNormalExitEvent(std::shared_ptr<SysEvent> sysEvent)
     std::set<int32_t> crashSet = { SIGILL, SIGABRT, SIGBUS, SIGFPE,
                                    SIGSEGV, SIGSTKFLT, SIGSYS, SIGTRAP };
     int32_t status = sysEvent->GetEventIntValue("STATUS");
-    if (crashSet.count(status)) {
+    int32_t exitSigno = WTERMSIG(status);
+    if (crashSet.count(exitSigno)) {
         return false;
     }
 
