@@ -146,6 +146,8 @@
         "OHOS::HiviewDFX::FileUtil::ForceCreateDirectory(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int)";
         "OHOS::HiviewDFX::FileUtil::ExtractFileName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::FileUtil::RenameFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::FileUtil::IsDirectory(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::FileUtil::GetFolderSize(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::EventLoop::AddTimerEvent(std::__1::shared_ptr<OHOS::HiviewDFX::EventHandler>, std::__1::shared_ptr<OHOS::HiviewDFX::Event>, std::__1::function<void ()> const&, unsigned long, bool)";
         "OHOS::HiviewDFX::EventLoop::AddEvent(std::__1::shared_ptr<OHOS::HiviewDFX::EventHandler>, std::__1::shared_ptr<OHOS::HiviewDFX::Event>, std::__1::function<void ()>)";
         "OHOS::HiviewDFX::EventLoop::AddTimerEvent(std::__1::shared_ptr<OHOS::HiviewDFX::EventHandler>, std::__1::shared_ptr<OHOS::HiviewDFX::Event>, std::__1::function<void ()> const&, unsigned long, bool)";
