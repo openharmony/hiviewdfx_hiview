@@ -66,7 +66,6 @@ bool NativeLeakConfig::GetThresholdList(unordered_map<string, uint64_t> &list)
         HIVIEW_LOGI("regex_match success, process: %{public}s", matches[ITEM_NAME].str().c_str());
         list.insert(make_pair(matches[ITEM_NAME].str(), stoull(matches[ITEM_VALUE])));
     }
-    HIVIEW_LOGI("list size: %{public}d", list.size());
     return true;
 }
 } // namespace HiviewDFX

@@ -82,7 +82,6 @@ void NativeLeakDetector::NativeLeakConfigParse()
         sampleInterval_ = TEST_SAMPLE_INTERVAL;
         updateInterval_ = TEST_UPDATE_INTERVAL;
     }
-    HIVIEW_LOGI("defauleThreshold_ %{public}llu", defauleThreshold_);
 }
 
 void NativeLeakDetector::InitMonitorInfo()
@@ -124,8 +123,6 @@ void NativeLeakDetector::UpdateUserMonitorInfo()
         if (rssNum > rssThreshold) {
             shared_ptr<FaultInfoBase> monitorInfo = make_shared<NativeLeakInfo>();
 
-            HIVIEW_LOGI("start monitor pid: %{public}d, name: %{public}s, rssThreshold: %{public}lld" PRIu64,
-                pid, name.c_str(), rssThreshold);
             auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
             userMonitorInfo->SetPid(pid);
             userMonitorInfo->SetProcessName(name);
@@ -243,7 +240,6 @@ ErrCode NativeLeakDetector::MainProcess()
     // state change: Collect->Report->Control
     for (auto &it : monitoredPidsInfo_) {
         if (it.second == nullptr) {
-            HIVIEW_LOGE("monitorInfo is null, pid is %{public}lld" PRId64, it.first);
             continue;
         }
         // if is monitored or not leaked, ignore it
