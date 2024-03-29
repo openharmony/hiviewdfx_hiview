@@ -31,12 +31,12 @@ using namespace OHOS::HiviewDFX::UCollect;
 
 // eg: 123   ab-cd   456 789 0   -123
 //     123   ab cd   0   0   0   0
-const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.:/-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
+const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.\\[\\]():/>-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
 const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
-// eg: Total dmabuf size of ab.cd: 12345 bytes
-//     ab.cd    12  34  567  890  123   ef   gh   ijk
-const std::regex RAW_DMA1("^[\\w:\\.]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
-const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w:\\.]{1,}(: )\\d{1,}( bytes)$");
+// eg: ab.cd    12  34  567  890  123   ef   gh   ijk
+//     Total dmabuf size of ab.cd: 12345 bytes
+const std::regex RAW_DMA1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
+const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w\\.\\[\\]():/>-]{1,}(: )\\d{1,}( bytes)$");
 // eg: ab(cd):      12345 kB
 //     ab:              - kB
 const std::regex RAW_MEM_INFO1("^[\\w()]{1,}:\\s{1,}\\d{1,}( kB)?$");
@@ -54,7 +54,7 @@ const std::regex RAW_PAGE_TYPE_INFO2("^(\\w{1,}\\s{1,}){5,}$");
 // eg: abc   12    34    5  678    9 : tunables    1    2    3 : slabdata      4      5      6
 //     abc - version: 1.2
 //     #name       <ab> <cd> <ef> <hi> <jk> : tunables <lmn> <opq> <rst> : slabdata <uv> <wx> <yz>
-const std::string RAW_SLAB_STR1("^[\\w\\[\\]:>-]{1,}(\\s{1,}\\d{1,}){5}( : tunables)(\\s{1,}\\d{1,}){3}");
+const std::string RAW_SLAB_STR1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}( : tunables)(\\s{1,}\\d{1,}){3}");
 const std::string RAW_SLAB_STR2("( : slabdata)(\\s{1,}\\d{1,}){3}(\\s{1,}\\w{1,})?$");
 const std::regex RAW_SLAB_INFO1(RAW_SLAB_STR1 + RAW_SLAB_STR2);
 const std::string RAW_SLAB_STR3("^(\\w{1,} - version: )[\\d\\.]{1,}|# ?name\\s{1,}");
