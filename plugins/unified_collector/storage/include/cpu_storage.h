@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,10 +19,17 @@
 #include <memory>
 
 #include "resource/cpu.h"
+#include "rdb_helper.h"
 #include "rdb_store.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+class CpuStorageDbCallback : public NativeRdb::RdbOpenCallback {
+public:
+    int OnCreate(NativeRdb::RdbStore& rdbStore) override;
+    int OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion) override;
+}; // CpuStorageDbCallback
+
 class CpuStorage {
 public:
     CpuStorage(const std::string& workPath);
@@ -36,8 +43,6 @@ private:
     bool InitDbStoreUploadPath();
     void Store(const ProcessCpuStatInfo& cpuCollection);
     bool NeedReport();
-    int32_t CreateTable();
-    void InsertTable(const ProcessCpuStatInfo& cpuCollection);
     void PrepareOldDbFilesBeforeReport();
     void ResetDbStore();
     void MoveDbFilesToUploadDir();
@@ -45,6 +50,8 @@ private:
     void TryToAgeUploadDbFiles();
     void ReportCpuCollectionEvent();
     void PrepareNewDbFilesAfterReport();
+    std::string GetStoredSysVersion();
+    void ReportDbRecords();
 
 private:
     std::string workPath_;

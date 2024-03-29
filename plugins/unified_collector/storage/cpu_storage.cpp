@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,12 +16,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
+#include <map>
 
 #include "file_util.h"
 #include "hisysevent.h"
 #include "logger.h"
 #include "process_status.h"
-#include "rdb_helper.h"
+#include "parameter_ex.h"
+#include "rdb_predicates.h"
 #include "sql_util.h"
 #include "string_util.h"
 #include "time_util.h"
@@ -31,8 +34,9 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-CpuStorage");
 using namespace OHOS::HiviewDFX::UCollectUtil;
 namespace {
-constexpr int32_t DB_VERSION = 1;
-const std::string TABLE_NAME = "unified_collection_cpu";
+constexpr int32_t DB_VERSION = 2;
+const std::string CPU_COLLECTION_TABLE_NAME = "unified_collection_cpu";
+const std::string SYS_VERSION_TABLE_NAME = "version";
 const std::string COLUMN_START_TIME = "start_time";
 const std::string COLUMN_END_TIME = "end_time";
 const std::string COLUMN_PID = "pid";
@@ -40,6 +44,8 @@ const std::string COLUMN_PROC_NAME = "proc_name";
 const std::string COLUMN_PROC_STATE = "proc_state";
 const std::string COLUMN_CPU_LOAD = "cpu_load";
 const std::string COLUMN_CPU_USAGE = "cpu_usage";
+const std::string COLUMN_THREAD_CNT = "thread_cnt";
+const std::string COLUMN_VERSION_NAME = "name";
 constexpr uint32_t MAX_NUM_OF_DB_FILES = 7; // save files for one week
 constexpr uint32_t DEFAULT_PRECISION_OF_DECIMAL = 6; // 0.123456
 
@@ -135,21 +141,96 @@ int32_t GetProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectio
         ? static_cast<int32_t>(FOREGROUND)
         : static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(cpuCollectionInfo.pid));
 }
+
+int32_t CreateTable(NativeRdb::RdbStore& dbStore, const std::string& tableName,
+    const std::vector<std::pair<std::string, std::string>>& fields)
+{
+    std::string sql = SqlUtil::GenerateCreateSql(tableName, fields);
+    HIVIEW_LOGI("try to create %{public}s table, sql=%{public}s", tableName.c_str(), sql.c_str());
+    return dbStore.ExecuteSql(sql);
 }
 
-class CpuDbStoreCallback : public NativeRdb::RdbOpenCallback {
-public:
-    int OnCreate(NativeRdb::RdbStore &rdbStore) override;
-    int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
-};
-
-int CpuDbStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
+int32_t StoreSysVersion(NativeRdb::RdbStore& dbStore, const std::string& version)
 {
-    HIVIEW_LOGD("create dbStore");
+    NativeRdb::ValuesBucket bucket;
+    bucket.PutString(COLUMN_VERSION_NAME, version);
+    int64_t seq = 0;
+    if (auto ret = dbStore.Insert(seq, SYS_VERSION_TABLE_NAME, bucket); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to insert %{public}s to version table", version.c_str());
+        return ret;
+    }
     return NativeRdb::E_OK;
 }
 
-int CpuDbStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion)
+int32_t CreateCpuCollectionTable(NativeRdb::RdbStore& dbStore)
+{
+    /**
+     * table: unified_collection_cpu
+     *
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|------------|
+     * |  id | start_time | end_time | pid | proc_state | proc_name | cpu_load | cpu_usage | thread_cnt |
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|------------|
+     * | INT |    INT64   |   INT64  | INT |    INT     |  VARCHAR  |  DOUBLE  |   DOUBLE  |    INT     |
+     * |-----|------------|----------|-----|------------|-----------|----------|-----------|------------|
+     */
+    const std::vector<std::pair<std::string, std::string>> fields = {
+        {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_PID, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_PROC_STATE, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_PROC_NAME, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
+        {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
+        {COLUMN_THREAD_CNT, SqlUtil::COLUMN_TYPE_INT},
+    };
+    if (auto ret = CreateTable(dbStore, CPU_COLLECTION_TABLE_NAME, fields); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create %{public}s table", CPU_COLLECTION_TABLE_NAME.c_str());
+        return ret;
+    }
+    return NativeRdb::E_OK;
+}
+
+int32_t CreateVersionTable(NativeRdb::RdbStore& dbStore)
+{
+    /**
+     * table: version
+     *
+     * |-----|-----------|
+     * |  id |    name   |
+     * |-----|-----------|
+     * | INT |  VARCHAR  |
+     * |-----|-----------|
+     */
+    const std::vector<std::pair<std::string, std::string>> fields = {
+        {COLUMN_VERSION_NAME, SqlUtil::COLUMN_TYPE_STR},
+    };
+    if (auto ret = CreateTable(dbStore, SYS_VERSION_TABLE_NAME, fields); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create %{public}s table", SYS_VERSION_TABLE_NAME.c_str());
+        return ret;
+    }
+    return NativeRdb::E_OK;
+}
+}
+
+int CpuStorageDbCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
+{
+    HIVIEW_LOGD("create dbStore");
+    if (auto ret = CreateVersionTable(rdbStore); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create version table in db creation");
+        return ret;
+    }
+    if (auto ret = StoreSysVersion(rdbStore, Parameter::GetDisplayVersionStr()); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to insert system version into version table in db creation");
+        return ret;
+    }
+    if (auto ret = CreateCpuCollectionTable(rdbStore); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create cpu collection table in db creation");
+        return ret;
+    }
+    return NativeRdb::E_OK;
+}
+
+int CpuStorageDbCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion)
 {
     HIVIEW_LOGD("oldVersion=%{public}d, newVersion=%{public}d", oldVersion, newVersion);
     return NativeRdb::E_OK;
@@ -159,6 +240,10 @@ CpuStorage::CpuStorage(const std::string& workPath) : workPath_(workPath)
 {
     InitDbStorePath();
     InitDbStore();
+    if (GetStoredSysVersion() != Parameter::GetDisplayVersionStr()) {
+        HIVIEW_LOGI("system has been upgaded, report directly");
+        ReportDbRecords();
+    }
 }
 
 void CpuStorage::InitDbStorePath()
@@ -179,7 +264,7 @@ void CpuStorage::InitDbStore()
 {
     NativeRdb::RdbStoreConfig config(dbStorePath_);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
-    CpuDbStoreCallback callback;
+    CpuStorageDbCallback callback;
     auto ret = NativeRdb::E_OK;
     dbStore_ = NativeRdb::RdbHelper::GetRdbStore(config, DB_VERSION, callback, ret);
     if (ret != NativeRdb::E_OK) {
@@ -195,7 +280,6 @@ void CpuStorage::Store(const std::vector<ProcessCpuStatInfo>& cpuCollectionInfos
         HIVIEW_LOGW("db store is null, path=%{public}s", dbStorePath_.c_str());
         return;
     }
-
     for (auto& cpuCollectionInfo : cpuCollectionInfos) {
         if (NeedStoreInDb(cpuCollectionInfo)) {
             Store(cpuCollectionInfo);
@@ -205,14 +289,6 @@ void CpuStorage::Store(const std::vector<ProcessCpuStatInfo>& cpuCollectionInfos
 
 void CpuStorage::Store(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
-    InsertTable(cpuCollectionInfo);
-}
-
-void CpuStorage::InsertTable(const ProcessCpuStatInfo& cpuCollectionInfo)
-{
-    if (CreateTable() != 0) {
-        return;
-    }
     NativeRdb::ValuesBucket bucket;
     bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollectionInfo.startTime));
     bucket.PutLong(COLUMN_END_TIME, static_cast<int64_t>(cpuCollectionInfo.endTime));
@@ -221,38 +297,11 @@ void CpuStorage::InsertTable(const ProcessCpuStatInfo& cpuCollectionInfo)
     bucket.PutString(COLUMN_PROC_NAME, cpuCollectionInfo.procName);
     bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuLoad));
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuUsage));
+    bucket.PutInt(COLUMN_THREAD_CNT, 0); // 0 is a default thread count.
     int64_t seq = 0;
-    if (dbStore_->Insert(seq, TABLE_NAME, bucket) != NativeRdb::E_OK) {
+    if (dbStore_->Insert(seq, CPU_COLLECTION_TABLE_NAME, bucket) != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to insert cpu data to db store, pid=%{public}d, proc_name=%{public}s", 0, "");
     }
-}
-
-int32_t CpuStorage::CreateTable()
-{
-    /**
-     * table: unified_collection_cpu
-     *
-     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
-     * |  id | start_time | end_time | pid | proc_state | proc_name | cpu_load | cpu_usage |
-     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
-     * | INT |    INT64   |   INT64  | INT |    INT     |  VARCHAR  |  DOUBLE  |   DOUBLE  |
-     * |-----|------------|----------|-----|------------|-----------|----------|-----------|
-     */
-    const std::vector<std::pair<std::string, std::string>> fields = {
-        {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
-        {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
-        {COLUMN_PID, SqlUtil::COLUMN_TYPE_INT},
-        {COLUMN_PROC_STATE, SqlUtil::COLUMN_TYPE_INT},
-        {COLUMN_PROC_NAME, SqlUtil::COLUMN_TYPE_STR},
-        {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
-        {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
-    };
-    std::string sql = SqlUtil::GenerateCreateSql(TABLE_NAME, fields);
-    if (dbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to create table, sql=%{public}s", sql.c_str());
-        return -1;
-    }
-    return 0;
 }
 
 void CpuStorage::Report()
@@ -260,15 +309,44 @@ void CpuStorage::Report()
     if (!NeedReport()) {
         return;
     }
+    ReportDbRecords();
+}
+
+void CpuStorage::ReportDbRecords()
+{
     HIVIEW_LOGI("start to report cpu collection event");
     PrepareOldDbFilesBeforeReport();
     ReportCpuCollectionEvent();
     PrepareNewDbFilesAfterReport();
 }
 
+std::string CpuStorage::GetStoredSysVersion()
+{
+    NativeRdb::RdbPredicates predicates(SYS_VERSION_TABLE_NAME);
+    std::vector<std::string> columns;
+    columns.emplace_back(COLUMN_VERSION_NAME);
+    std::string version;
+    std::shared_ptr<NativeRdb::ResultSet> allVersions = dbStore_->Query(predicates, columns);
+    if (allVersions == nullptr || allVersions->GoToFirstRow() != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to get result set from db query");
+        return version;
+    }
+    NativeRdb::RowEntity entity;
+    if (allVersions->GetRow(entity) != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to read row entity from result set");
+        return version;
+    }
+    if (entity.Get(COLUMN_VERSION_NAME).GetString(version) != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to get version value");
+    }
+    HIVIEW_LOGI("stored version in db is %{public}s", version.c_str());
+    return version;
+}
+
 bool CpuStorage::NeedReport()
 {
     if (dbStorePath_.empty()) {
+        HIVIEW_LOGI("the db file stored directory is empty");
         return false;
     }
     std::string nowDbFileName = FileUtil::ExtractFileName(dbStorePath_);
