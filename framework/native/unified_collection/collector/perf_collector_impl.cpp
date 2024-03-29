@@ -75,7 +75,7 @@ void PerfCollectorImpl::SetOutputFilename(const std::string &outputFilename)
 
 void PerfCollectorImpl::SetCallGraph(const std::string &sampleTypes)
 {
-    opt_.SetOutputFilename(outputFilename);
+    opt_.SetCallGraph(sampleTypes);
 }
 
 void PerfCollectorImpl::SetSelectEvents(const std::vector<std::string> &selectEvents)
