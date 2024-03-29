@@ -195,6 +195,7 @@ CollectResult<bool> PerfCollectorImpl::Stop()
     result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
     HIVIEW_LOGI("result : %{public}d", ret);
     DecreaseUseCount();
+    hiperfClient_.KillChild();
     return result;
 }
 } // UCollectUtil

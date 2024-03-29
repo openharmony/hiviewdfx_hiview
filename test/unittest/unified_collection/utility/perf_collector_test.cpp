@@ -97,7 +97,7 @@ HWTEST_F(PerfCollectorTest, PerfCollectorTest003, TestSize.Level1)
     perfCollector->SetOutputFilename(filename);
     perfCollector->SetTargetSystemWide(true);
     perfCollector->SetCallGraph("fp");
-    vector<string> selectEvents = {"hw-cpu-cycles:k"};
+    std::vector<std::string> = {"hw-cpu-cycles", "hw-instructions"};
     perfCollector->SetSelectEvents(selectEvents);
     CollectResult<bool> data = perfCollector->Prepare(filedir);
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
