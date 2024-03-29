@@ -59,7 +59,6 @@ HWTEST_F(LeakDetectorUnitTest, LeakDetectorUnitTest001, TestSize.Level1)
 {
     unordered_map<string, uint64_t> configList;
     bool ret = NativeLeakConfig::GetThresholdList(configList);
-    HIVIEW_LOGI("configList size: %{public}d", configList.size());
     ASSERT_TRUE(ret);
     auto it = configList.find("DEFAULT");
     ASSERT_NE(it, configList.end());

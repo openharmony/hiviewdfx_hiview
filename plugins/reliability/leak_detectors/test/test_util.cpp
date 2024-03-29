@@ -174,7 +174,6 @@ string TestUtil::ExecCmd(CmdType type, const string &target)
 
 bool TestUtil::IsLeakingProcessAlive()
 {
-    HIVIEW_LOGI("leakProcessPid_:%{public}d", leakProcessPid_);
     return leakProcessPid_ != -1;
 }
 
@@ -213,7 +212,6 @@ bool TestUtil::GetStatm(uint64_t &rss)
     unsigned long long multiples = 4;
     it++;
     rss = multiples * stoull(*it);
-    HIVIEW_LOGI("rss:%{public}llu", rss);
     return true;
 }
 
@@ -232,7 +230,6 @@ bool TestUtil::GetSelfStatm(uint64_t &rss)
     unsigned long long multiples = 4;
     it++;
     rss = multiples * stoull(*it);
-    HIVIEW_LOGI("self rss:%{public}llu", rss);
     return true;
 }
 
