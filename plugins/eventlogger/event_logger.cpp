@@ -92,6 +92,17 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", sysEvent->domain_.c_str(),
         sysEvent->eventName_.c_str(), pid);
 
+    if (sysEvent->eventName_ == "THREAD_BLOCK_6S" || sysEvent->eventName_ == "APP_INPUT_BLOCK") {
+        long lastPid = lastPid_;
+        std::string lastEventName = lastEventName_;
+        lastPid_ = pid;
+        lastEventName_ = sysEvent->eventName_;
+        if (lastPid == pid) {
+            HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld has happened", lastEventName.c_str(), pid);
+            return true;
+        }
+    }
+
     if (sysEvent->GetValue("eventLog_action").empty()) {
         HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld, eventLog_action is empty.",
             sysEvent->eventName_.c_str(), pid);
