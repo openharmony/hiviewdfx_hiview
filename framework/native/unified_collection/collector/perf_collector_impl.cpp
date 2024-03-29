@@ -73,6 +73,21 @@ void PerfCollectorImpl::SetOutputFilename(const std::string &outputFilename)
     opt_.SetOutputFilename(outputFilename);
 }
 
+void PerfCollectorImpl::SetCallGraph(const std::string &sampleTypes)
+{
+    opt_.SetOutputFilename(outputFilename);
+}
+
+void PerfCollectorImpl::SetSelectEvents(const std::vector<std::string> &selectEvents)
+{
+    opt_.SetSelectEvents(selectEvents);
+}
+
+void PerfCollectorImpl::SetCpuPercent(int cpuPercent)
+{
+    opt_.SetCpuPercent(cpuPercent);
+}
+
 void PerfCollectorImpl::IncreaseUseCount()
 {
     inUseCount_.fetch_add(1);

@@ -34,6 +34,9 @@ public:
     virtual void SetFrequency(int frequency) = 0;
     virtual void SetOffCPU(bool offCPU) = 0;
     virtual void SetOutputFilename(const std::string &outputFilename) = 0;
+    virtual void SetCallGraph(const std::string &sampleTypes)  = 0;
+    virtual void SetSelectEvents(const std::vector<std::string> &selectEvents)  = 0;
+    virtual void SetCpuPercent(int cpuPercent)  = 0;
     // for prepare recod mode
     virtual CollectResult<bool> Prepare(const std::string &logDir) = 0;
     virtual CollectResult<bool> StartRun() = 0;

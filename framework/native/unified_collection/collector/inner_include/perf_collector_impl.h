@@ -34,6 +34,9 @@ public:
     void SetFrequency(int frequency) override;
     void SetOffCPU(bool offCPU) override;
     void SetOutputFilename(const std::string &outputFilename) override;
+    void SetCallGraph(const std::string &sampleTypes) override;
+    void SetSelectEvents(const std::vector<std::string> &selectEvents) override;
+    void SetCpuPercent(int cpuPercent) override;
     // for prepare recod mode
     CollectResult<bool> Prepare(const std::string &logDir) override;
     CollectResult<bool> StartRun() override;

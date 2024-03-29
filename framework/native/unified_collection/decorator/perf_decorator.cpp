@@ -57,6 +57,21 @@ void PerfDecorator::SetOutputFilename(const std::string &outputFilename)
     perfCollector_->SetOutputFilename(outputFilename);
 }
 
+void PerfDecorator::SetCallGraph(const std::string &sampleTypes)
+{
+    perfCollector_->SetCallGraph(sampleTypes);
+}
+
+void PerfDecorator::SetSelectEvents(const std::vector<std::string> &selectEvents)
+{
+    perfCollector_->SetSelectEvents(selectEvents);
+}
+
+void PerfDecorator::SetCpuPercent(int cpuPercent)
+{
+    perfCollector_->SetCpuPercent(cpuPercent);
+}
+
 void PerfDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
