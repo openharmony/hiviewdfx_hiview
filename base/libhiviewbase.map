@@ -283,6 +283,7 @@
         "OHOS::HiviewDFX::Parameter::WaitParamSync(char const*, char const*, int)";
         "OHOS::HiviewDFX::Parameter::WatchParamChange(char const*, void (*)(char const*, char const*, void*), void*)";
         "OHOS::HiviewDFX::EventLoop::RemoveEvent(unsigned long)";
+        "OHOS::HiviewDFX::EventLoop::RemoveEvent(unsigned long long)";
         "OHOS::HiviewDFX::SqlUtil::GenerateCreateSql(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::vector<std::__h::pair<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>, std::__h::allocator<std::__h::pair<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>>> const&)";
         "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::HiviewEventCacher>::mutex_";
         "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::HiviewEventCacher>::instance_";

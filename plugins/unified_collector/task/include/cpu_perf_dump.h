@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,7 +40,7 @@ private:
     std::vector<pid_t> topNProcs_;
     int64_t systemUpTime_ = 0;
     int64_t lastRecordTime_ = 0;
-    bool isBetaVersion_;
+    bool isSwitchOn_;
 }; // CpuPerfDump
 } // namespace HiviewDFX
 } // namespace OHOS
