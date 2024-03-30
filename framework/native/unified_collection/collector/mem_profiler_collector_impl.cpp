@@ -36,7 +36,7 @@ int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 100;
 constexpr int FINAL_TIME = 3000;
 constexpr int PREPARE_TIME = 10;
-constexpr int PREPARE_THRESH = 300;
+constexpr int PREPARE_THRESH = 2000;
 
 int MemProfilerCollectorImpl::Prepare()
 {
