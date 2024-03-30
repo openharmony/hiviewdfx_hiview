@@ -28,7 +28,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-PerfCollectorImpl");
-constexpr uint8_t MAX_PERF_USE_COUNT = 5;
+constexpr uint8_t MAX_PERF_USE_COUNT = 8;
 constexpr int DEFAULT_PERF_RECORD_TIME = 5;
 constexpr int DEFAULT_PERF_RECORD_FREQUENCY = 100;
 const std::string DEFAULT_PERF_RECORD_CALLGRAPH = "fp";
