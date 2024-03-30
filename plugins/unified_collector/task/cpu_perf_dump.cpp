@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2024  Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,7 +42,7 @@ CpuPerfDump::CpuPerfDump()
     }
     systemUpTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     lastRecordTime_ = systemUpTime_;
-    isBetaVersion_ = Parameter::IsBetaVersion();
+    isSwitchOn_ = Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn();
 }
 
 void CpuPerfDump::DumpTopNCpuProcessPerfData()
@@ -74,7 +74,7 @@ bool CpuPerfDump::CompareCpuUsage(const ProcessCpuStatInfo &info1, const Process
 
 bool CpuPerfDump::CheckRecordInterval()
 {
-    if (!isBetaVersion_) {
+    if (!isSwitchOn_) {
         return false;
     }
     int64_t nowTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
@@ -150,7 +150,7 @@ bool CpuPerfDump::CompareFilenames(const std::string &name1, const std::string &
 {
     std::string timestamp1 = GetTimestamp(name1);
     std::string timestamp2 = GetTimestamp(name2);
-    
+
     uint64_t time1 = std::stoull(timestamp1);
     uint64_t time2 = std::stoull(timestamp2);
     return time1 < time2;
