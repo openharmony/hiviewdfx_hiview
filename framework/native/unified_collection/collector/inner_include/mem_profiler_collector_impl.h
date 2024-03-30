@@ -30,6 +30,7 @@ public:
     int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
     int Stop(int pid) override;
     int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
+    int Prepare() override;
     enum ErrorType {
         RET_FAIL = -1,
         RET_SUCC = 0,

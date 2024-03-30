@@ -21,6 +21,12 @@ namespace UCollectUtil {
 const std::string MEM_PROFILER_COLLECTOR_NAME = "MemProfilerCollector";
 StatInfoWrapper MemProfilerDecorator::statInfoWrapper_;
 
+int MemProfilerDecorator::Prepare()
+{
+    auto task = std::bind(&MemProfilerCollector::Prepare, memProfilerCollector_.get());
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 int MemProfilerDecorator::Start(ProfilerType type, int pid, int duration, int sampleInterval)
 {
     auto task = std::bind(

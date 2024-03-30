@@ -29,6 +29,7 @@ public:
     int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
     int Stop(int pid) override;
     int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
+    int Prepare() override;
     
     void GenerateStatInfo(uint64_t startTime, const std::string& funcName, int result);
     static void SaveStatCommonInfo();

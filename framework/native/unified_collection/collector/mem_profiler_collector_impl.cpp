@@ -33,8 +33,25 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-MemProfilerCollector");
 const std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
-constexpr int WAIT_EXIT_MILLS = 1000;
+constexpr int WAIT_EXIT_MILLS = 100;
 constexpr int FINAL_TIME = 3000;
+constexpr int PREPARE_TIME = 10;
+constexpr int PREPARE_THRESH = 200;
+
+int MemProfilerCollectorImpl::Prepare()
+{
+    sptr<IRemoteObject> service = NativeMemoryProfilerSaClientManager::GetRemoteService();
+    int time = 0;
+    while(service == nullptr && time < PREPARE_THRESH) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(PREPARE_TIME));
+        time += PREPARE_TIME;
+        service = NativeMemoryProfilerSaClientManager::GetRemoteService();
+    }
+    if (service == nullptr) {
+        return RET_FAIL;
+    }
+    return RET_SUCC;
+}
 
 int MemProfilerCollectorImpl::Start(ProfilerType type,
                                     int pid, int duration, int sampleInterval)
