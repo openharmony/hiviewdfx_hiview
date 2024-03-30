@@ -34,15 +34,16 @@
 #include <sys/wait.h>
 
 #include <cerrno>
+#include <future>
 #include <thread>
 #include <unistd.h>
-#include <future>
 
 #include "accesstoken_kit.h"
 #include "asan_collector.h"
 #include "bundle_mgr_client.h"
 #include "common_utils.h"
 #include "constants.h"
+#include "crash_exception.h"
 #include "event.h"
 #include "event_publish.h"
 #include "faultlog_formatter.h"
@@ -70,7 +71,6 @@
 #include "zip_helper.h"
 #include "freeze_json_generator.h"
 #include "freeze_json_util.h"
-#include "crash_exception.h"
 
 namespace OHOS {
 namespace HiviewDFX {

@@ -20,10 +20,10 @@
 #include <memory>
 #include <set>
 
+#include "hisysevent.h"
 #include "logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
-#include "hisysevent.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -133,17 +133,17 @@ void CrashValidator::AddEventToMap(int32_t pid, std::shared_ptr<SysEvent> sysEve
 
     if ((sysEvent->eventName_ == "PROCESS_EXIT")) {
         if (processExitEvents_.find(pid) == processExitEvents_.end()) {
-                processExitEvents_[pid] = sysEvent;
+            processExitEvents_[pid] = sysEvent;
         }
     } else if (sysEvent->eventName_ == "CPP_CRASH") {
         if ((cppCrashEvents_.find(pid) == cppCrashEvents_.end()) ||
             (cppCrashEvents_[pid]->GetEventIntValue("time_") - happendTime > 0)) {
-                cppCrashEvents_[pid] = sysEvent;
+            cppCrashEvents_[pid] = sysEvent;
         }
     } else {
         if ((cppCrashExceptionEvents_.find(pid) == cppCrashExceptionEvents_.end()) ||
             (cppCrashExceptionEvents_[pid]->GetEventIntValue("time_") - happendTime > 0)) {
-                cppCrashExceptionEvents_[pid] = sysEvent;
+            cppCrashExceptionEvents_[pid] = sysEvent;
         }
     }
 }
