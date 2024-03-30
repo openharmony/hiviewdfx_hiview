@@ -13,7 +13,6 @@
 
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
-import("//out/products_ext/hmos_ext_var.gni")
 
 config("ucolletciton_source_config") {
   visibility = [ "*:*" ]
@@ -110,10 +109,6 @@ ohos_source_set("ucollection_source") {
     external_deps += [ "wifi:wifi_sdk" ]
     defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
-  
-  if (config_platform_type == "pc_standard") {
-    defines += [ "PC_APP_STATES" ]
-  } 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
