@@ -17,7 +17,7 @@
 
 #include <map>
 #include <string>
-#include <zip.h>
+#include <contrib/minizip/zip.h>
 
 #include "hitrace_dump.h"
 #include "trace_collector.h"
