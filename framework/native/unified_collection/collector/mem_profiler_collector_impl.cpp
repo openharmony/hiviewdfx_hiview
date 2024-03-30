@@ -36,10 +36,11 @@ int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 100;
 constexpr int FINAL_TIME = 3000;
 constexpr int PREPARE_TIME = 10;
-constexpr int PREPARE_THRESH = 200;
+constexpr int PREPARE_THRESH = 300;
 
 int MemProfilerCollectorImpl::Prepare()
 {
+    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     sptr<IRemoteObject> service = NativeMemoryProfilerSaClientManager::GetRemoteService();
     int time = 0;
     while(service == nullptr && time < PREPARE_THRESH) {
