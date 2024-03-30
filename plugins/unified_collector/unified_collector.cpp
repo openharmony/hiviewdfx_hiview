@@ -45,6 +45,16 @@ ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
     HIVIEW_LOGW("invalid event name=%{public}s", eventName.c_str());
     return INVALID;
 }
+
+ProcessState GetProcessStateByGroup(const SysEvent& sysEvent)
+{
+    // 11 - The app is in the background group
+    if (procGroup == 11) {
+        return BACKGROUND;
+    }
+    // else - The app is in the foreground group
+    return FOREGROUND;
+}
 }
 
 void UnifiedCollector::OnLoad()
@@ -67,7 +77,13 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
         HIVIEW_LOGW("invalid process id=%{public}d", procId);
         return;
     }
+#ifdef PC_APP_STATES
+    int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
+    ProcessState procState = GetProcessStateByGroup(procGroup);
+#endif
+#ifndef PC_APP_STATES
     ProcessState procState = GetProcessStateByEvent(sysEvent);
+#endif
     if (procState == INVALID) {
         HIVIEW_LOGW("invalid process state=%{public}d", procState);
         return;

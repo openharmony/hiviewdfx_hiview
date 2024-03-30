@@ -95,7 +95,8 @@ static bool WriteProcessMemoryToFile(std::string& filePath, const std::vector<Pr
             "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << std::endl;
     for (auto& processMem : processMems) {
         file << processMem.pid << '\t' << processMem.name << '\t' << processMem.rss << '\t' <<
-                processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << std::endl;
+                processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << '\t' <<
+                processMem.procState << std::endl;
     }
     file.close();
     return true;
@@ -236,6 +237,23 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     return result;
 }
 
+static int32_t ProcessStateToString (ProcessState state)
+{
+#ifdef PC_APP_STATES
+    switch (state) {
+        case BACKGROUND:
+            return 0;
+        case FOREGROUND:
+            return 1;
+        default:
+            return 255;
+    }
+#endif
+#ifndef PC_APP_STATES
+    return -1; 
+#endif
+}
+
 static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::string& attrName, int32_t value)
 {
     static std::unordered_map<std::string, std::function<void(ProcessMemory&, int32_t)>> assignFuncMap = {
@@ -310,6 +328,7 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
+    memory.procState = ProcessStateToString(ProcessStatus::GetInstance().GetProcessState(pid));
     InitSmapsOfProcessMemory(procDir, memory);
     InitAdjOfProcessMemory(procDir, memory);
     return true;
