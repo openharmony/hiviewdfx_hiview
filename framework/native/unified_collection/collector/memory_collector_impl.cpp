@@ -247,7 +247,7 @@ static int32_t ProcessStateToString(ProcessState state)
         case FOREGROUND:
             return 1;
         default:
-            return 255; // abnormal process status
+            return -1;
     }
 #endif
 #ifndef PC_APP_STATES
