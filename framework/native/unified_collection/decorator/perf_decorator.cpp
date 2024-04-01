@@ -57,6 +57,21 @@ void PerfDecorator::SetOutputFilename(const std::string &outputFilename)
     perfCollector_->SetOutputFilename(outputFilename);
 }
 
+void PerfDecorator::SetCallGraph(const std::string &sampleTypes)
+{
+    perfCollector_->SetCallGraph(sampleTypes);
+}
+
+void PerfDecorator::SetSelectEvents(const std::vector<std::string> &selectEvents)
+{
+    perfCollector_->SetSelectEvents(selectEvents);
+}
+
+void PerfDecorator::SetCpuPercent(int cpuPercent)
+{
+    perfCollector_->SetCpuPercent(cpuPercent);
+}
+
 void PerfDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
@@ -70,6 +85,36 @@ void PerfDecorator::SaveStatCommonInfo()
 void PerfDecorator::ResetStatInfo()
 {
     statInfoWrapper_.ResetStatInfo();
+}
+
+CollectResult<bool> PerfDecorator::Prepare(const std::string &logDir)
+{
+    auto task = std::bind(&PerfCollector::Prepare, perfCollector_.get(), logDir);
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+CollectResult<bool> PerfDecorator::StartRun()
+{
+    auto task = std::bind(&PerfCollector::StartRun, perfCollector_.get());
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+CollectResult<bool> PerfDecorator::Pause()
+{
+    auto task = std::bind(&PerfCollector::Pause, perfCollector_.get());
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+CollectResult<bool> PerfDecorator::Resume()
+{
+    auto task = std::bind(&PerfCollector::Resume, perfCollector_.get());
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+CollectResult<bool> PerfDecorator::Stop()
+{
+    auto task = std::bind(&PerfCollector::Stop, perfCollector_.get());
+    return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 } // namespace UCollectUtil
 } // namespace HiviewDFX

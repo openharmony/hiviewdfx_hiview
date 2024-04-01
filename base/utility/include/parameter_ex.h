@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,8 @@ namespace OHOS {
 namespace HiviewDFX {
 constexpr char KEY_BUILD_CHARACTER[] = "ro.build.characteristics";
 constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
+constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state";
+constexpr char HIVIEW_UCOLLECTION_STATE[] = "sys.hiview.diag.ucollection";
 namespace Parameter {
 enum DeviceType {
     UNKNOWN = 0,
@@ -38,6 +40,8 @@ int WaitParamSync(const char *key, const char *value, int timeout);
 typedef void (*ParameterChgPtr)(const char *key, const char *value, void *context);
 int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *context);
 bool IsBetaVersion();
+bool IsDeveloperMode();
+bool IsUCollectionSwitchOn();
 DeviceType GetDeviceType();
 std::string GetDisplayVersionStr();
 };
