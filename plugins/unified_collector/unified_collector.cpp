@@ -46,7 +46,7 @@ ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
     return INVALID;
 }
 
-ProcessState GetProcessStateByGroup(const SysEvent& sysEvent)
+ProcessState GetProcessStateByGroup(int32_t procGroup)
 {
     // 11 - The app is in the background group
     if (procGroup == 11) {

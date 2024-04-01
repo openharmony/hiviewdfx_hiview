@@ -36,6 +36,7 @@
 #include "memory_decorator.h"
 #include "string_util.h"
 #include "time_util.h"
+#include "process_status.h"
 
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
