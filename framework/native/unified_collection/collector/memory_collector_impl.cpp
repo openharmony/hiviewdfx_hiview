@@ -238,7 +238,7 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     return result;
 }
 
-static int32_t ProcessStateToString (ProcessState state)
+static int32_t ProcessStateToString(ProcessState state)
 {
 #ifdef PC_APP_STATES
     switch (state) {
@@ -247,11 +247,11 @@ static int32_t ProcessStateToString (ProcessState state)
         case FOREGROUND:
             return 1;
         default:
-            return 255;
+            return 255; // abnormal process status
     }
 #endif
 #ifndef PC_APP_STATES
-    return -1; 
+    return -1;
 #endif
 }
 
