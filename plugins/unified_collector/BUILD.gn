@@ -23,6 +23,11 @@ config("unified_collector_config") {
     "$hiview_framework/native/unified_collection/process/include",
     "$hiview_framework/native/unified_collection/decorator/include",
   ]
+
+  defines = [ "PC_APP_STATE_COLLECT_ENALBE = $hiview_unified_collector_PC_app_state_collect_enable" ]
+  if (config_platform_type == "pc_standard") {
+    defines += [ "PC_APP_STATES" ]
+  }
 }
 
 ohos_source_set("unified_collector") {
@@ -54,11 +59,6 @@ ohos_source_set("unified_collector") {
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
-  }
-
-  defines = []
-  if (config_platform_type == "pc_standard") {
-    defines += [ "PC_APP_STATES" ]
   }
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

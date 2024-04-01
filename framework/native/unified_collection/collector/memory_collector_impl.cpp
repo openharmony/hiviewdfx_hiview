@@ -50,6 +50,7 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
 
 std::mutex g_memMutex;
+const int NON_PC_APP_STATE_INVALID = -1;
 
 static std::string GetCurrTimestamp()
 {
@@ -238,23 +239,6 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
     return result;
 }
 
-static int32_t ProcessStateToString(ProcessState state)
-{
-#ifdef PC_APP_STATES
-    switch (state) {
-        case BACKGROUND:
-            return 0;
-        case FOREGROUND:
-            return 1;
-        default:
-            return -1;
-    }
-#endif
-#ifndef PC_APP_STATES
-    return -1;
-#endif
-}
-
 static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::string& attrName, int32_t value)
 {
     static std::unordered_map<std::string, std::function<void(ProcessMemory&, int32_t)>> assignFuncMap = {
@@ -329,7 +313,10 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
-    memory.procState = ProcessStateToString(ProcessStatus::GetInstance().GetProcessState(pid));
+    memory.procState = NON_PC_APP_STATE_INVALID;
+#ifdef PC_APP_STATE_COLLECT_ENABLE
+    memory.procState = ProcessStatus::GetInstance().GetProcessState(pid);
+#endif
     InitSmapsOfProcessMemory(procDir, memory);
     InitAdjOfProcessMemory(procDir, memory);
     return true;
