@@ -51,6 +51,17 @@ int MemProfilerDecorator::Start(int fd, ProfilerType type, int pid, int duration
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
+int MemProfilerDecorator::Start(int fd, ProfilerType type, std::string processName, int duration,
+                                int sampleInterval, bool startup)
+{
+    auto task = std::bind(
+        static_cast<int(MemProfilerCollector::*)(int, ProfilerType,
+                                                 std::string, int, int, bool)>(&MemProfilerCollector::Start),
+        memProfilerCollector_.get(), fd, type, processName, duration, sampleInterval, startup);
+    // has same func name, rename it with num "-2"
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-3");
+}
+
 void MemProfilerDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

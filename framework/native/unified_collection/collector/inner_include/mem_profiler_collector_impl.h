@@ -30,6 +30,8 @@ public:
     int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
     int Stop(int pid) override;
     int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
+    int Start(int fd, ProfilerType type, std::string processName, int duration, int sampleInterval,
+              bool startup = false) override;
     int Prepare() override;
     enum ErrorType {
         RET_FAIL = -1,
