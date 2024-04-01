@@ -132,9 +132,7 @@ void CrashValidator::AddEventToMap(int32_t pid, std::shared_ptr<SysEvent> sysEve
     int64_t happendTime = sysEvent->GetEventIntValue("time_");
 
     if ((sysEvent->eventName_ == "PROCESS_EXIT")) {
-        if (processExitEvents_.find(pid) == processExitEvents_.end()) {
-            processExitEvents_[pid] = sysEvent;
-        }
+        processExitEvents_.try_emplace(pid, sysEvent);
     } else if (sysEvent->eventName_ == "CPP_CRASH") {
         if ((cppCrashEvents_.find(pid) == cppCrashEvents_.end()) ||
             (cppCrashEvents_[pid]->GetEventIntValue("time_") - happendTime > 0)) {
