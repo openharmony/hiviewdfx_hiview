@@ -45,6 +45,12 @@ int MemProfilerDecorator::Start(int fd, ProfilerType type, int pid, int duration
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
+int MemProfilerDecorator::StartPrintNmd(int fd, int pid, int type)
+{
+    auto task = std::bind(&MemProfilerCollector::StartPrintNmd, memProfilerCollector_.get(), fd, pid, type);
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 void MemProfilerDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

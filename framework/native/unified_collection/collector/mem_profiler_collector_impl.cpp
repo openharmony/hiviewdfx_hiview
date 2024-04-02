@@ -70,16 +70,6 @@ int MemProfilerCollectorImpl::StartPrintNmd(int fd, int pid, int type)
 
 int MemProfilerCollectorImpl::Stop(int pid)
 {
-    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
-    int time = 0;
-    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
-        time += WAIT_EXIT_MILLS;
-    }
-    if (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
-        HIVIEW_LOGE("native daemon process not stopped");
-        return RET_FAIL;
-    }
     HIVIEW_LOGI("mem_profiler_collector stoping");
     return NativeMemoryProfilerSaClientManager::Stop(pid);
 }
