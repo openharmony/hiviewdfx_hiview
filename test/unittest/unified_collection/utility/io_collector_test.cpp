@@ -26,6 +26,15 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
+class IoCollectorTest : public testing::Test {
+public:
+    void SetUp() {};
+    void TearDown() {};
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
+};
+
+namespace {
 // %-13s\t%12s\t%12s\t%12s\t%12s\t%12s\t%12s\t%20s\t%20s
 const std::regex ALL_PROC_IO_STATS1("^\\d{1,}\\s{1,}[\\w/\\.:-]{1,}\\s{1,}\\d{1,}(\\s{1,}\\d{1,}\\.\\d{2}){6}$");
 const std::regex ALL_PROC_IO_STATS2("^[\\d\\s]{12}[\\s\\w/\\.:-]{13,}[\\s\\d]{13}([\\s\\d\\.]{13}){6}$");
@@ -39,15 +48,6 @@ const std::regex EMMC_INFO2("^[\\w\\.\\s]{15,}([\\w\\s]{10}){3}[\\s\\d\\.]{12}$"
 const std::regex SYS_IO_STATS1("^\\d{1,}\\.\\d{2}(\\s{1,}\\d{1,}\\.\\d{2}){5}$");
 const std::regex SYS_IO_STATS2("^[\\d\\s\\.]{12}([\\d\\s\\.]{13}){5}$");
 
-class IoCollectorTest : public testing::Test {
-public:
-    void SetUp() {};
-    void TearDown() {};
-    static void SetUpTestCase() {};
-    static void TearDownTestCase() {};
-};
-
-namespace {
 bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std::regex &reg2)
 {
     std::ifstream file;
