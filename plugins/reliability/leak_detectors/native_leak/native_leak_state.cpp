@@ -341,14 +341,14 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
     fout << "LOGGER_MEMCHECK_DETAIL_INFO" << endl;
     auto fd = open(BBOX_PATH.c_str(), O_RDONLY);
     if (fd < 0) {
-        dumpStateMtx_.lock();
+        dumpStateMtx_.unlock();
         HIVIEW_LOGE("failed to open %{public}s, err: %{public}d", BBOX_PATH.c_str(), errno);
         return;
     }
     uint64_t detailSize = sizeof(DetailInfo) + MEMCHECK_DETAILINFO_MAXSIZE;
     auto detailInfo = static_cast<DetailInfo *>(calloc(1, detailSize));
     if (detailInfo == nullptr) {
-        dumpStateMtx_.lock();
+        dumpStateMtx_.unlock();
         HIVIEW_LOGE("FAILED TO ALLOC MEMORY!");
         close(fd);
     }
