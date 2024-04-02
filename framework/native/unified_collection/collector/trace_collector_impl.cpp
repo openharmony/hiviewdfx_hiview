@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include <mutex>
 
 #include "logger.h"
+#include "parameter_ex.h"
 #include "trace_decorator.h"
 #include "trace_flow_controller.h"
 #include "trace_manager.h"
@@ -45,11 +46,15 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
 {
-    std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
-
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
-    std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
     CollectResult<std::vector<std::string>> result;
+    if (!Parameter::IsBetaVersion() && !Parameter::IsUCollectionSwitchOn()) {
+        result.retCode = UcError::UNSUPPORT;
+        HIVIEW_LOGI("hitrace service not permitted to load on current version");
+        return result;
+    }
+    std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
+    std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
     // check 1, judge whether need to dump
     if (!controlPolicy->NeedDump(caller)) {
         result.retCode = UcError::TRACE_OVER_FLOW;

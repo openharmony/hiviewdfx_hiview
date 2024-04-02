@@ -73,6 +73,7 @@ private:
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
 
     std::shared_ptr<LogStoreEx> logStore_;
+    long lastPid_ = 0;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
     std::unordered_map<int, std::string> fileMap_;
@@ -84,6 +85,7 @@ private:
     std::unique_ptr<ActiveKeyEvent> activeKeyEvent_;
     std::string cmdlinePath_ = "/proc/cmdline";
     std::string cmdlineContent_ = "";
+    std::string lastEventName_ = "";
     std::vector<std::string> rebootReasons_;
 
     void StartLogCollect(std::shared_ptr<SysEvent> event);

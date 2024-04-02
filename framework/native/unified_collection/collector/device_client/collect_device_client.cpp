@@ -31,6 +31,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("UDeviceCli");
+namespace {
+    constexpr int PID_ALL = 0;
+    constexpr unsigned int PROCESS_ONLY_ONE_COUNT = 1;
+    constexpr unsigned int ADD_COUNT = 30;
+}
 
 CollectDeviceClient::CollectDeviceClient(): fd_(-1)
 {}
@@ -65,10 +70,25 @@ int CollectDeviceClient::Open()
     return (fd_ > 0) ? 0 : -1;
 }
 
+unsigned int CollectDeviceClient::GetProcessCount()
+{
+    HIVIEW_LOGD("send IOCTRL_COLLECT_PROC_COUNT, cmd=%{public}zu", IOCTRL_COLLECT_PROC_COUNT);
+    unsigned int processCount = 0;
+    int ret = ioctl(fd_, IOCTRL_COLLECT_PROC_COUNT, &processCount);
+    if (ret < 0) {
+        HIVIEW_LOGE("ioctl IOCTRL_COLLECT_PROC_COUNT cmd=%{public}zu, ret=%{public}d",
+                    IOCTRL_COLLECT_PROC_COUNT, ret);
+        return 0;
+    }
+    return processCount;
+}
+
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 {
+    unsigned int processCount = GetProcessCount();
     HIVIEW_LOGD("send IOCTRL_COLLECT_ALL_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_ALL_PROC_CPU);
-    std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>();
+    std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>(IOCTRL_COLLECT_ALL_PROC_CPU, PID_ALL,
+        processCount + ADD_COUNT);
     int ret = ioctl(fd_, IOCTRL_COLLECT_ALL_PROC_CPU, data->entry_);
     if (ret < 0) {
         HIVIEW_LOGE("ioctl IOCTRL_COLLECT_ALL_PROC_CPU cmd=%{public}zu, ret=%{public}d",
@@ -81,7 +101,8 @@ std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData()
 std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData(int pid)
 {
     HIVIEW_LOGD("send IOCTRL_COLLECT_THE_PROC_CPU, cmd=%{public}zu", IOCTRL_COLLECT_THE_PROC_CPU);
-    std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>(pid);
+    std::shared_ptr<ProcessCpuData> data = std::make_shared<ProcessCpuData>(IOCTRL_COLLECT_THE_PROC_CPU, pid,
+        PROCESS_ONLY_ONE_COUNT);
     int ret = ioctl(fd_, IOCTRL_COLLECT_THE_PROC_CPU, data->entry_);
     if (ret < 0) {
         HIVIEW_LOGE("ioctl IOCTRL_COLLECT_THE_PROC_CPU cmd=%{public}zu, ret=%{public}d",

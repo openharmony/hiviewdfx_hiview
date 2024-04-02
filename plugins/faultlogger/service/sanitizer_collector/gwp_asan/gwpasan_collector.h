@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef GWPASAN_COLLECTOR_H
 #define GWPASAN_COLLECTOR_H
 
@@ -49,12 +48,13 @@ struct GwpAsanCurrInfo {
     /** information about faultlog using <key,value> */
     std::map<std::string, std::string> sectionMaps;
 };
-constexpr unsigned BUF_SIZE = 1024;
+constexpr unsigned BUF_SIZE = 128;
 constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr int MIN_APP_UID = 10000;
 
 void ReadGwpAsanRecord(std::string& gwpAsanBuffer, std::string& errType);
-bool GetNameByPid(pid_t pid, const char procName[]);
+std::string GetApplicationNameById(int32_t uid);
+std::string GetNameByPid(uint32_t pid);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);

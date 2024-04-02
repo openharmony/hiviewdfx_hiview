@@ -20,10 +20,10 @@
 #include <memory>
 #include <set>
 
+#include "hisysevent.h"
 #include "logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
-#include "hisysevent.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -132,18 +132,16 @@ void CrashValidator::AddEventToMap(int32_t pid, std::shared_ptr<SysEvent> sysEve
     int64_t happendTime = sysEvent->GetEventIntValue("time_");
 
     if ((sysEvent->eventName_ == "PROCESS_EXIT")) {
-        if (processExitEvents_.find(pid) == processExitEvents_.end()) {
-                processExitEvents_[pid] = sysEvent;
-        }
+        processExitEvents_.try_emplace(pid, sysEvent);
     } else if (sysEvent->eventName_ == "CPP_CRASH") {
         if ((cppCrashEvents_.find(pid) == cppCrashEvents_.end()) ||
             (cppCrashEvents_[pid]->GetEventIntValue("time_") - happendTime > 0)) {
-                cppCrashEvents_[pid] = sysEvent;
+            cppCrashEvents_[pid] = sysEvent;
         }
     } else {
         if ((cppCrashExceptionEvents_.find(pid) == cppCrashExceptionEvents_.end()) ||
             (cppCrashExceptionEvents_[pid]->GetEventIntValue("time_") - happendTime > 0)) {
-                cppCrashExceptionEvents_[pid] = sysEvent;
+            cppCrashExceptionEvents_[pid] = sysEvent;
         }
     }
 }
@@ -153,7 +151,8 @@ static bool IsNormalExitEvent(std::shared_ptr<SysEvent> sysEvent)
     std::set<int32_t> crashSet = { SIGILL, SIGABRT, SIGBUS, SIGFPE,
                                    SIGSEGV, SIGSTKFLT, SIGSYS, SIGTRAP };
     int32_t status = sysEvent->GetEventIntValue("STATUS");
-    if (crashSet.count(status)) {
+    int32_t exitSigno = WTERMSIG(status);
+    if (crashSet.count(exitSigno)) {
         return false;
     }
 

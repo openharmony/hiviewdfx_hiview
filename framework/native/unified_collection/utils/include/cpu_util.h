@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,11 +42,11 @@ struct CalculationTimeInfo {
     uint64_t startTime = 0;
     uint64_t endTime = 0;
 
-    // calculation time, using steady clock.
-    uint64_t startMonoTime = 0;
-    uint64_t endMonoTime = 0;
+    // calculation time, using boot time.
+    uint64_t startBootTime = 0;
+    uint64_t endBootTime = 0;
 
-    // calculation period, using steady clock.
+    // calculation period, using boot time.
     uint64_t period = 0;
 };
 

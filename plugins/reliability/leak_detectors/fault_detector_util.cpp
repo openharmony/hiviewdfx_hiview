@@ -426,7 +426,6 @@ void FaultDetectorUtil::GetStatm(int32_t pid, uint64_t &vss, uint64_t &rss)
     vss = multiples * stoull(*it);
     it++;
     rss = multiples * stoull(*it);
-    HIVIEW_LOGI("GET rss=%{public}llu, vss=%{public}llu.", rss, vss);
 }
 
 void FaultDetectorUtil::GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, uint64_t &totalMem)
@@ -444,8 +443,6 @@ void FaultDetectorUtil::GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, ui
     getline(meminfoStream, meminfoLine);
     avaliableMem = stoull(GetDightStrArr(meminfoLine).front());
     meminfoStream.close();
-    HIVIEW_LOGI("GET freeMem=%{public}llu, avaliableMem=%{public}llu, totalMem=%{public}llu.",
-        freeMem, avaliableMem, totalMem);
 }
 
 list<string> FaultDetectorUtil::GetDightStrArr(const string &target)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 #include "cpu_collection_task.h"
 
+#include "parameter_ex.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(workPath)
@@ -27,7 +29,9 @@ CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(wo
 
 void CpuCollectionTask::Collect()
 {
-    ReportCpuCollectionEvent();
+    if (Parameter::IsBetaVersion()) {
+        ReportCpuCollectionEvent();
+    }
     CollectCpuData();
 }
 
@@ -57,7 +61,9 @@ void CpuCollectionTask::CollectCpuData()
 {
     auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
-        cpuStorage_->Store(cpuCollectionsResult.data);
+        if (Parameter::IsBetaVersion()) {
+            cpuStorage_->Store(cpuCollectionsResult.data);
+        }
 #ifdef HAS_HIPERF
         cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);
 #endif

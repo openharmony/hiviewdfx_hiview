@@ -22,6 +22,7 @@
 // kernel struct, modify at the same time
 struct ucollection_process_cpu_item {
     int pid;
+    unsigned int thread_total;
     unsigned long long min_flt;
     unsigned long long maj_flt;
     unsigned long long cpu_usage_utime;
@@ -37,8 +38,8 @@ struct ucollection_process_filter {
 
 struct ucollection_process_cpu_entry {
     int magic;
-    int total_count;
-    int cur_count;
+    unsigned int total_count;
+    unsigned int cur_count;
     struct ucollection_process_filter filter;
     struct ucollection_process_cpu_item datas[];
 };
@@ -85,6 +86,7 @@ enum collection_type {
     struct ucollection_process_cpu_entry)
 #define IOCTRL_COLLECT_THE_PROC_CPU _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THE_PROC, \
     struct ucollection_process_cpu_entry)
+#define IOCTRL_COLLECT_PROC_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_PROC_COUNT, unsigned int)
 #define IOCTRL_COLLECT_THREAD_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THREAD_COUNT, \
     struct ucollection_process_thread_count)
 #define IOCTRL_COLLECT_APP_THREAD _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_APP_THREAD, struct ucollection_thread_cpu_entry)

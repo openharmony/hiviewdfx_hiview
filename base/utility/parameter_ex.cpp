@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,6 +65,17 @@ bool IsBetaVersion()
 {
     auto versionType = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");
     return (versionType.find("beta") != std::string::npos);
+}
+
+bool IsDeveloperMode()
+{
+    return GetBoolean(KEY_DEVELOPER_MODE_STATE, false);
+}
+
+bool IsUCollectionSwitchOn()
+{
+    std::string ucollectionState = GetString(HIVIEW_UCOLLECTION_STATE, "false");
+    return ucollectionState == "true";
 }
 
 DeviceType GetDeviceType()

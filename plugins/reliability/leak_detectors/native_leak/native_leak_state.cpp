@@ -158,7 +158,6 @@ void NativeLeakSampleState::RemoveData(shared_ptr<NativeLeakInfo> &userMonitorIn
 {
     size_t cpuSize = userMonitorInfo->GetCpuTime().size();
     if (cpuSize < MAX_RECORD_NUM) {
-        HIVIEW_LOGE("cpuSize:%{public}d is too few", cpuSize);
         return;
     }
     HIVIEW_LOGI("NativeLeakSampleState::RemoveData pid: %{public}d", userMonitorInfo->GetPid());
@@ -184,7 +183,6 @@ bool NativeLeakJudgeState::IsMemoryLeak(shared_ptr<NativeLeakInfo> &userMonitorI
     uint64_t topMemory = userMonitorInfo->GetTopMemory();
     auto pid = userMonitorInfo->GetPid();
     if (topMemory >= HARD_THRESHOLD) {
-        HIVIEW_LOGI("pid: %{public}d topMemory:%{public}llu too big, must leak", pid, topMemory);
         return true;
     }
     uint32_t memorySize = userMonitorInfo->GetMemory().size();
@@ -341,14 +339,14 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
     fout << "LOGGER_MEMCHECK_DETAIL_INFO" << endl;
     auto fd = open(BBOX_PATH.c_str(), O_RDONLY);
     if (fd < 0) {
-        dumpStateMtx_.lock();
+        dumpStateMtx_.unlock();
         HIVIEW_LOGE("failed to open %{public}s, err: %{public}d", BBOX_PATH.c_str(), errno);
         return;
     }
     uint64_t detailSize = sizeof(DetailInfo) + MEMCHECK_DETAILINFO_MAXSIZE;
     auto detailInfo = static_cast<DetailInfo *>(calloc(1, detailSize));
     if (detailInfo == nullptr) {
-        dumpStateMtx_.lock();
+        dumpStateMtx_.unlock();
         HIVIEW_LOGE("FAILED TO ALLOC MEMORY!");
         close(fd);
     }
@@ -357,8 +355,6 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
     detailInfo->size = MEMCHECK_DETAILINFO_MAXSIZE;
     detailInfo->type = MTYPE_USER_PSS;
     detailInfo->timestamp = userMonitorInfo->GetPidStartTime();
-    HIVIEW_LOGI("DETAIL TYPE: pid=%{public}d, type=%{public}d, time=%{public}" PRIu64,
-        detailInfo->id, detailInfo->type, detailInfo->timestamp);
     int32_t ret = ioctl(fd, LOGGER_MEMCHECK_DETAIL_READ, detailInfo);
     if (ret != 0) {
         HIVIEW_LOGE("IOCTL READ DETAIL STATISITICS FAILED, ret=%{public}d", ret);
@@ -582,12 +578,12 @@ int32_t NativeLeakDumpState::SendCmd(shared_ptr<NativeLeakInfo> &userMonitorInfo
     HIVIEW_LOGI("ID:%{public}d, type:%{public}u, cmd:%{public}d", trackCmd.id, trackCmd.type, cmdType);
     int fd = open(BBOX_PATH.c_str(), O_RDONLY);
     if (fd < 0) {
-        HIVIEW_LOGE("failed to open %{public}s, err: %{public}d", BBOX_PATH.c_str(), errno);
+        HIVIEW_LOGE("failed to open %{public}s", BBOX_PATH.c_str());
         return FAILURE;
     }
     int32_t ret = ioctl(fd, LOGGER_MEMCHECK_COMMAND, &trackCmd);
     if (ret != 0) {
-        HIVIEW_LOGE("SEND CMD ERROR ret=%{public}d, id=%{public}u, errno: %{public}d", ret, trackCmd.id, errno);
+        HIVIEW_LOGE("SEND CMD ERROR");
     }
     close(fd);
     return ret;
@@ -597,7 +593,6 @@ ErrCode NativeLeakDumpState::ChangeNextState(shared_ptr<FaultInfoBase> &monitorI
 {
     FaultStateType nextState = PROC_REPORT_STATE;
     auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
-    HIVIEW_LOGI("nextState is PROC_REPORT_STATE, pid: %{public}d", userMonitorInfo->GetPid());
 
     int ret = detectorObj.ExeNextStateProcess(monitorInfo, nextState);
     if (ret) {
@@ -611,14 +606,11 @@ ErrCode NativeLeakDumpState::ChangeNextState(shared_ptr<FaultInfoBase> &monitorI
 ErrCode NativeLeakReportState::StateProcess(shared_ptr<FaultInfoBase> &monitorInfo, FaultDetectorBase &detectorObj)
 {
     auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
-    HIVIEW_LOGI("NativeLeakReportState::StateProcess pid: %{public}d", userMonitorInfo->GetPid());
     PostEvent(monitorInfo);
 
     if (ChangeNextState(monitorInfo, detectorObj)) {
-        HIVIEW_LOGE("ChangeNextState failed, pid: %{public}d", userMonitorInfo->GetPid());
         return FAILURE;
     }
-    HIVIEW_LOGI("NativeLeakReportState::StateProcess success, pid: %{public}d", userMonitorInfo->GetPid());
     return SUCCESSED;
 }
 
@@ -631,7 +623,6 @@ void NativeLeakReportState::setEventHandler(std::shared_ptr<AppEventHandler> han
 void NativeLeakReportState::PostEvent(shared_ptr<FaultInfoBase> &monitorInfo)
 {
     auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(monitorInfo);
-    HIVIEW_LOGI("NativeLeakReportState::PostEvent pid: %{public}d", userMonitorInfo->GetPid());
 
     if (appEventHandler_ == nullptr) {
         HIVIEW_LOGE("appEventHandler_ is null, will not postEvent.");
@@ -647,18 +638,6 @@ void NativeLeakReportState::PostEvent(shared_ptr<FaultInfoBase> &monitorInfo)
     info.pss = userMonitorInfo->GetTopMemory();
     FaultDetectorUtil::GetStatm(info.pid, info.vss, info.rss);
     FaultDetectorUtil::GetMeminfo(info.avaliableMem, info.freeMem, info.totalMem);
-
-    HIVIEW_LOGI("PostEvent pid: %{public}d", info.pid);
-    HIVIEW_LOGI("PostEvent uid: %{public}d", info.uid);
-    HIVIEW_LOGI("PostEvent Name: %{public}s", info.bundleName.c_str());
-    HIVIEW_LOGI("PostEvent Version: %{public}s", info.bundleVersion.c_str());
-    HIVIEW_LOGI("PostEvent resourceType: %{public}s", info.resourceType.c_str());
-    HIVIEW_LOGI("PostEvent pss: %{public}llu", info.pss);
-    HIVIEW_LOGI("PostEvent vss: %{public}llu", info.vss);
-    HIVIEW_LOGI("PostEvent rss: %{public}llu", info.rss);
-    HIVIEW_LOGI("PostEvent avaliableMem: %{public}llu", info.avaliableMem);
-    HIVIEW_LOGI("PostEvent freeMem: %{public}llu", info.freeMem);
-    HIVIEW_LOGI("PostEvent totalMem: %{public}llu", info.totalMem);
 
     HIVIEW_LOGD("PostFaultEvent start");
     appEventHandler_->PostEvent(info);
@@ -676,7 +655,6 @@ ErrCode NativeLeakReportState::ChangeNextState(shared_ptr<FaultInfoBase> &monito
             FaultStateName[nextState].c_str(), ret);
         return FAILURE;
     }
-    HIVIEW_LOGE("report success, pid: %{public}d\n", userMonitorInfo->GetPid());
     return SUCCESSED;
 }
 

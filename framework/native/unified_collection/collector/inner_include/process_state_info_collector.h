@@ -35,7 +35,7 @@ struct ProcessCpuTimeInfo {
     uint64_t sUsageTime = 0;
     uint64_t loadTime = 0;
     uint64_t collectionTime = 0;
-    uint64_t collectionMonoTime = 0;
+    uint64_t collectionBootTime = 0;
 };
 
 class ProcessStatInfoCollector {
@@ -66,11 +66,12 @@ private:
         const ucollection_process_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
     void TryToDeleteDeadProcessInfo();
     void TryToDeleteDeadProcessInfoByPid(int32_t pid);
+    void TryToDeleteDeadProcessInfoByTime(uint64_t collectionBootTime);
 
 private:
     std::mutex collectMutex_;
     uint64_t lastCollectionTime_ = 0;
-    uint64_t lastCollectionMonoTime_ = 0;
+    uint64_t lastCollectionBootTime_ = 0;
     std::shared_ptr<CollectDeviceClient> deviceClient_;
     /* map<pid, ProcessCpuTimeInfo> */
     std::unordered_map<int32_t, ProcessCpuTimeInfo> lastProcCpuTimeInfos_;

@@ -28,7 +28,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-PerfCollectorImpl");
-constexpr uint8_t MAX_PERF_USE_COUNT = 5;
+constexpr uint8_t MAX_PERF_USE_COUNT = 8;
 constexpr int DEFAULT_PERF_RECORD_TIME = 5;
 constexpr int DEFAULT_PERF_RECORD_FREQUENCY = 100;
 const std::string DEFAULT_PERF_RECORD_CALLGRAPH = "fp";
@@ -40,7 +40,6 @@ PerfCollectorImpl::PerfCollectorImpl()
 {
     opt_.SetFrequency(DEFAULT_PERF_RECORD_FREQUENCY);
     opt_.SetCallGraph(DEFAULT_PERF_RECORD_CALLGRAPH);
-    opt_.SetTimeStopSec(DEFAULT_PERF_RECORD_TIME);
     opt_.SetOffCPU(true);
 }
 
@@ -74,6 +73,21 @@ void PerfCollectorImpl::SetOutputFilename(const std::string &outputFilename)
     opt_.SetOutputFilename(outputFilename);
 }
 
+void PerfCollectorImpl::SetCallGraph(const std::string &sampleTypes)
+{
+    opt_.SetCallGraph(sampleTypes);
+}
+
+void PerfCollectorImpl::SetSelectEvents(const std::vector<std::string> &selectEvents)
+{
+    opt_.SetSelectEvents(selectEvents);
+}
+
+void PerfCollectorImpl::SetCpuPercent(int cpuPercent)
+{
+    opt_.SetCpuPercent(cpuPercent);
+}
+
 void PerfCollectorImpl::IncreaseUseCount()
 {
     inUseCount_.fetch_add(1);
@@ -89,7 +103,7 @@ std::shared_ptr<PerfCollector> PerfCollector::Create()
     return std::make_shared<PerfDecorator>(std::make_shared<PerfCollectorImpl>());
 }
 
-CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)
+CollectResult<bool> PerfCollectorImpl::CheckUseCount()
 {
     HIVIEW_LOGI("current used count : %{public}d", inUseCount_.load());
     IncreaseUseCount();
@@ -101,14 +115,87 @@ CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)
         DecreaseUseCount();
         return result;
     }
-    HIVIEW_LOGI("start collecting data");
-    Client client(logDir);
+    result.data = true;
+    result.retCode = UcError::SUCCESS;
+    return result;
+}
 
-    bool ret = client.Start(opt_);
+CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)
+{
+    CollectResult<bool> result = CheckUseCount();
+    if (result.retCode != UCollect::UcError::SUCCESS) {
+        return result;
+    }
+
+    HIVIEW_LOGI("start collecting data");
+    hiperfClient_.Setup(logDir);
+    bool ret = hiperfClient_.Start(opt_);
     result.data = ret;
     result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
     HIVIEW_LOGI("finished recording with result : %{public}d", ret);
     DecreaseUseCount();
+    return result;
+}
+
+CollectResult<bool> PerfCollectorImpl::Prepare(const std::string &logDir)
+{
+    CollectResult<bool> result = CheckUseCount();
+    if (result.retCode != UCollect::UcError::SUCCESS) {
+        return result;
+    }
+
+    HIVIEW_LOGI("prepare collecting data");
+    hiperfClient_.Setup(logDir);
+    bool ret = hiperfClient_.PrePare(opt_);
+    result.data = ret;
+    result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
+    HIVIEW_LOGI("Prepare result : %{public}d", ret);
+    return result;
+}
+
+CollectResult<bool> PerfCollectorImpl::StartRun()
+{
+    HIVIEW_LOGI("bgein");
+    CollectResult<bool> result;
+    bool ret = hiperfClient_.StartRun();
+    result.data = ret;
+    result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
+    HIVIEW_LOGI("result : %{public}d", ret);
+    return result;
+}
+
+CollectResult<bool> PerfCollectorImpl::Pause()
+{
+    HIVIEW_LOGI("begin");
+    CollectResult<bool> result;
+    bool ret = hiperfClient_.Pause();
+    result.data = ret;
+    result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
+    HIVIEW_LOGI("result : %{public}d", ret);
+    return result;
+}
+
+CollectResult<bool> PerfCollectorImpl::Resume()
+{
+    HIVIEW_LOGI("begin");
+    CollectResult<bool> result;
+    bool ret = hiperfClient_.Pause();
+    result.data = ret;
+    result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
+    HIVIEW_LOGI("result : %{public}d", ret);
+    return result;
+}
+
+CollectResult<bool> PerfCollectorImpl::Stop()
+{
+    HIVIEW_LOGI("begin");
+    CollectResult<bool> result;
+    bool ret = hiperfClient_.Stop();
+    result.data = ret;
+    result.retCode = ret ? UcError::SUCCESS : UcError::PERF_COLLECT_FAILED;
+    HIVIEW_LOGI("result : %{public}d", ret);
+    DecreaseUseCount();
+    hiperfClient_.KillChild();
     return result;
 }
 } // UCollectUtil

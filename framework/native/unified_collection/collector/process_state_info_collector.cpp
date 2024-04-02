@@ -69,7 +69,7 @@ std::shared_ptr<ProcessCpuData> ProcessStatInfoCollector::FetchProcessCpuData(in
 void ProcessStatInfoCollector::UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo)
 {
     lastCollectionTime_ = calcTimeInfo.endTime;
-    lastCollectionMonoTime_ = calcTimeInfo.endMonoTime;
+    lastCollectionBootTime_ = calcTimeInfo.endBootTime;
 }
 
 void ProcessStatInfoCollector::UpdateLastProcCpuTimeInfo(const ucollection_process_cpu_item* procCpuItem,
@@ -82,7 +82,7 @@ void ProcessStatInfoCollector::UpdateLastProcCpuTimeInfo(const ucollection_proce
         .sUsageTime = procCpuItem->cpu_usage_stime,
         .loadTime = procCpuItem->cpu_load_time,
         .collectionTime = calcTimeInfo.endTime,
-        .collectionMonoTime = calcTimeInfo.endMonoTime,
+        .collectionBootTime = calcTimeInfo.endBootTime,
     };
 }
 
@@ -112,9 +112,9 @@ void ProcessStatInfoCollector::CalculateProcessCpuStatInfos(
     bool isNeedUpdate)
 {
     CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo();
-    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startMonoTime=%{public}" PRIu64
-        ", endMonoTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
-        calcTimeInfo.endTime, calcTimeInfo.startMonoTime, calcTimeInfo.endMonoTime, calcTimeInfo.period);
+    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startBootTime=%{public}" PRIu64
+        ", endBootTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
+        calcTimeInfo.endTime, calcTimeInfo.startBootTime, calcTimeInfo.endBootTime, calcTimeInfo.period);
     auto procCpuItem = processCpuData->GetNextProcess();
     while (procCpuItem != nullptr) {
         auto processCpuStatInfo = CalculateProcessCpuStatInfo(procCpuItem, calcTimeInfo);
@@ -137,11 +137,11 @@ CalculationTimeInfo ProcessStatInfoCollector::InitCalculationTimeInfo()
     CalculationTimeInfo calcTimeInfo = {
         .startTime = lastCollectionTime_,
         .endTime = TimeUtil::GetMilliseconds(),
-        .startMonoTime = lastCollectionMonoTime_,
-        .endMonoTime = TimeUtil::GetSteadyClockTimeMs(),
+        .startBootTime = lastCollectionBootTime_,
+        .endBootTime = TimeUtil::GetBootTimeMs(),
     };
-    calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
-        ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
+    calcTimeInfo.period = calcTimeInfo.endBootTime > calcTimeInfo.startBootTime
+        ? (calcTimeInfo.endBootTime - calcTimeInfo.startBootTime) : 0;
     return calcTimeInfo;
 }
 
@@ -215,6 +215,7 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
     }
     if (isNeedUpdate) {
         UpdateLastProcCpuTimeInfo(procCpuItem, calcTimeInfo);
+        TryToDeleteDeadProcessInfoByTime(calcTimeInfo.endBootTime);
     }
     return cpuCollectResult;
 }
@@ -225,12 +226,12 @@ CalculationTimeInfo ProcessStatInfoCollector::InitCalculationTimeInfo(int32_t pi
         .startTime = lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()
             ? lastProcCpuTimeInfos_[pid].collectionTime : 0,
         .endTime = TimeUtil::GetMilliseconds(),
-        .startMonoTime = lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()
-            ? lastProcCpuTimeInfos_[pid].collectionMonoTime : 0,
-        .endMonoTime = TimeUtil::GetSteadyClockTimeMs(),
+        .startBootTime = lastProcCpuTimeInfos_.find(pid) != lastProcCpuTimeInfos_.end()
+            ? lastProcCpuTimeInfos_[pid].collectionBootTime : 0,
+        .endBootTime = TimeUtil::GetBootTimeMs(),
     };
-    calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
-        ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
+    calcTimeInfo.period = calcTimeInfo.endBootTime > calcTimeInfo.startBootTime
+        ? (calcTimeInfo.endBootTime - calcTimeInfo.startBootTime) : 0;
     return calcTimeInfo;
 }
 
@@ -240,6 +241,26 @@ void ProcessStatInfoCollector::TryToDeleteDeadProcessInfoByPid(int32_t pid)
         lastProcCpuTimeInfos_.erase(pid);
         HIVIEW_LOGD("end to delete dead process=%{public}d", pid);
     }
+}
+
+void ProcessStatInfoCollector::TryToDeleteDeadProcessInfoByTime(uint64_t collectionBootTime)
+{
+    static uint64_t lastClearTime = TimeUtil::GetBootTimeMs();
+    uint64_t interval = collectionBootTime > lastClearTime ? (collectionBootTime - lastClearTime) : 0;
+    constexpr uint32_t clearInterval = 600 * 1000; // 10min
+    if (interval < clearInterval) {
+        return;
+    }
+    lastClearTime = collectionBootTime;
+    HIVIEW_LOGD("start to delete dead processes, size=%{public}zu", lastProcCpuTimeInfos_.size());
+    for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
+        if (!CommonUtils::IsPidExist(it->first)) {
+            it = lastProcCpuTimeInfos_.erase(it);
+        } else {
+            it++;
+        }
+    }
+    HIVIEW_LOGD("end to delete dead processes, size=%{public}zu", lastProcCpuTimeInfos_.size());
 }
 } // UCollectUtil
 } // HiViewDFX

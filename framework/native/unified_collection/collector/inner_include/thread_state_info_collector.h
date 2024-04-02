@@ -32,7 +32,7 @@ struct ThreadCpuTimeInfo {
     uint64_t sUsageTime = 0;
     uint64_t loadTime = 0;
     uint64_t collectionTime = 0;
-    uint64_t collectionMonoTime = 0;
+    uint64_t collectionBootTime = 0;
 };
 
 class ThreadStateInfoCollector : public ThreadCollector {
@@ -61,7 +61,7 @@ private:
 private:
     std::mutex collectMutex_;
     uint64_t lastCollectionTime_ = 0;
-    uint64_t lastCollectionMonoTime_ = 0;
+    uint64_t lastCollectionBootTime_ = 0;
     std::shared_ptr<CollectDeviceClient> deviceClient_;
     std::shared_ptr<CpuCalculator> cpuCalculator_;
     std::unordered_map<int32_t, ThreadCpuTimeInfo> lastThreadCpuTimeInfos_;

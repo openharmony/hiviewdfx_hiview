@@ -34,12 +34,23 @@ public:
     void SetFrequency(int frequency) override;
     void SetOffCPU(bool offCPU) override;
     void SetOutputFilename(const std::string &outputFilename) override;
+    void SetCallGraph(const std::string &sampleTypes) override;
+    void SetSelectEvents(const std::vector<std::string> &selectEvents) override;
+    void SetCpuPercent(int cpuPercent) override;
+    // for prepare recod mode
+    CollectResult<bool> Prepare(const std::string &logDir) override;
+    CollectResult<bool> StartRun() override;
+    CollectResult<bool> Pause() override;
+    CollectResult<bool> Resume() override;
+    CollectResult<bool> Stop() override;
 private:
     static std::atomic<uint8_t> inUseCount_;
     static uint8_t limitUseCount_;
     RecordOption opt_;
+    Client hiperfClient_;
     void IncreaseUseCount();
     void DecreaseUseCount();
+    CollectResult<bool> CheckUseCount();
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX
