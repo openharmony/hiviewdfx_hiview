@@ -18,20 +18,14 @@
 
 #include "securec.h"
 
-#define PROCESS_ONLY_ONE_COUNT 1
 namespace OHOS {
 namespace HiviewDFX {
-ProcessCpuData::ProcessCpuData(): entry_(nullptr), current_(0)
+ProcessCpuData::ProcessCpuData(int magic, int pid, unsigned int count): entry_(nullptr), current_(0)
 {
-    Init(IOCTRL_COLLECT_ALL_PROC_CPU, PROCESS_TOTAL_COUNT, 0);
+    Init(magic, count, pid);
 }
 
-ProcessCpuData::ProcessCpuData(int pid): entry_(nullptr), current_(0)
-{
-    Init(IOCTRL_COLLECT_THE_PROC_CPU, PROCESS_ONLY_ONE_COUNT, pid);
-}
-
-void ProcessCpuData::Init(int magic, int totalCount, int pid)
+void ProcessCpuData::Init(int magic, unsigned int totalCount, int pid)
 {
     int totalSize = sizeof(struct ucollection_process_cpu_entry)
         + sizeof(struct ucollection_process_cpu_item) * totalCount;

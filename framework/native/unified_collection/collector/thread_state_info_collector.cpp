@@ -109,7 +109,7 @@ std::shared_ptr<ThreadCpuData> ThreadStateInfoCollector::FetchThreadCpuData()
         HIVIEW_LOGW("device client is null");
         return nullptr;
     }
-    return (collectPid_ == getpid()) ? deviceClient_->FetchSelfThreadCpuData(collectPid_)
+    return (collectPid_ == getprocpid()) ? deviceClient_->FetchSelfThreadCpuData(collectPid_)
         : deviceClient_->FetchThreadCpuData(collectPid_);
 }
 
