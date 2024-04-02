@@ -62,7 +62,7 @@ public:
     /* 可以通过hidumper命令行查询当前插件的dump信息，该接口就是实现能dump出来那些内容 */
     virtual void Dump(int fd, const std::vector<std::string>& cmds);
 
-    /* 当前插件最为一个事件动态订阅者，接收通过动态订阅来的外部驱动事件，并且处理事件 */
+    /* 当前插件作为一个事件动态订阅者，接收通过动态订阅来的外部驱动事件，并且处理事件 */
     virtual void OnEventListeningCallback(const Event &msg);
 
     // 以下为接口
