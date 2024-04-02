@@ -54,11 +54,11 @@ CalculationTimeInfo ThreadStateInfoCollector::InitCalculationTimeInfo()
     CalculationTimeInfo calcTimeInfo = {
         .startTime = lastCollectionTime_,
         .endTime = TimeUtil::GetMilliseconds(),
-        .startMonoTime = lastCollectionMonoTime_,
-        .endMonoTime = TimeUtil::GetSteadyClockTimeMs(),
+        .startBootTime = lastCollectionBootTime_,
+        .endBootTime = TimeUtil::GetBootTimeMs(),
     };
-    calcTimeInfo.period = calcTimeInfo.endMonoTime > calcTimeInfo.startMonoTime
-        ? (calcTimeInfo.endMonoTime - calcTimeInfo.startMonoTime) : 0;
+    calcTimeInfo.period = calcTimeInfo.endBootTime > calcTimeInfo.startBootTime
+        ? (calcTimeInfo.endBootTime - calcTimeInfo.startBootTime) : 0;
     return calcTimeInfo;
 }
 
@@ -70,14 +70,14 @@ void ThreadStateInfoCollector::UpdateLastThreadTimeInfo(const ucollection_thread
         .sUsageTime = threadCpuItem->cpu_usage_stime,
         .loadTime = threadCpuItem->cpu_load_time,
         .collectionTime = calcTimeInfo.endTime,
-        .collectionMonoTime = calcTimeInfo.endMonoTime,
+        .collectionBootTime = calcTimeInfo.endBootTime,
     };
 }
 
 void ThreadStateInfoCollector::UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo)
 {
     lastCollectionTime_ = calcTimeInfo.endTime;
-    lastCollectionMonoTime_ = calcTimeInfo.endMonoTime;
+    lastCollectionBootTime_ = calcTimeInfo.endBootTime;
 }
 
 CollectResult<std::vector<ThreadCpuStatInfo>> ThreadStateInfoCollector::CollectThreadStatInfos(bool isNeedUpdate)
@@ -119,9 +119,9 @@ void ThreadStateInfoCollector::CalculateThreadCpuStatInfos(
     bool isNeedUpdate)
 {
     CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo();
-    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startMonoTime=%{public}" PRIu64
-        ", endMonoTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
-        calcTimeInfo.endTime, calcTimeInfo.startMonoTime, calcTimeInfo.endMonoTime, calcTimeInfo.period);
+    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startBootTime=%{public}" PRIu64
+        ", endBootTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
+        calcTimeInfo.endTime, calcTimeInfo.startBootTime, calcTimeInfo.endBootTime, calcTimeInfo.period);
     auto procCpuItem = threadCpuData->GetNextThread();
     while (procCpuItem != nullptr) {
         auto threadCpuStatInfo = CalculateThreadCpuStatInfo(procCpuItem, calcTimeInfo);
