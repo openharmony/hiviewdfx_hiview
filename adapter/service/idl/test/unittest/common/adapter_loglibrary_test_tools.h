@@ -22,6 +22,7 @@ namespace HiviewDFX {
 class AdapterLoglibraryTestTools {
 public:
     static void CreateDir(const std::string& dir);
+    static void RemoveDir(const std::string& dir);
     static void ApplyPermissionAccess();
 private:
     static void NativeToken(const char* permList[], int permSize);

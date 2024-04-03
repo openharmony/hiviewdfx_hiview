@@ -32,6 +32,13 @@ void AdapterLoglibraryTestTools::CreateDir(const std::string& dir)
     }
 }
 
+void AdapterLoglibraryTestTools::RemoveDir(const std::string& dir)
+{
+    if (FileUtil::FileExists(dir)) {
+        FileUtil::ForceRemoveDirectory(dir);
+    }
+}
+
 void AdapterLoglibraryTestTools::NativeToken(const char* permList[], int permSize)
 {
     uint64_t tokenId;
