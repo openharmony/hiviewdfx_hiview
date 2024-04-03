@@ -212,6 +212,23 @@ HWTEST_F(AdapterUtilityOhosTest, TimeUtilOhosTest002, testing::ext::TestSize.Lev
 }
 
 /**
+ * @tc.name: TimeUtilOhosTest003
+ * @tc.desc: Test GetBootTimeMs defined in namespace TimeUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI9DYOQ
+ */
+HWTEST_F(AdapterUtilityOhosTest, TimeUtilOhosTest003, testing::ext::TestSize.Level3)
+{
+    auto time1 = TimeUtil::GetBootTimeMs();
+    ASSERT_GT(time1, 0);
+
+    TimeUtil::Sleep(1); // 1s
+
+    auto time2 = TimeUtil::GetBootTimeMs();
+    ASSERT_GT(time2, time1);
+}
+
+/**
  * @tc.name: FileUtilOhosTest001
  * @tc.desc: Test LoadBufferFromFile/SaveBufferToFile defined in namespace FileUtil
  * @tc.type: FUNC
