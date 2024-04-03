@@ -372,6 +372,13 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         oss << StringUtil::UnescapeJsonStringValue(binderInfo) << std::endl;
     }
     FileUtil::SaveStringToFd(fd, oss.str());
+    if(event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_RENDER_BLOCK") == 0) {
+        std::ostringstream stackOss;
+        std::string stackMsg = StringUtil::ReplaceStr(event->GetEventValue("EVENT_KEY_FORM_BLOCK_CALLSTACK"), "\\n", "\n");
+        stackOss << "CallStack = " << stackMsg << std::endl;
+        FileUtil::SaveStringToFd(fd, stackOss.str());
+    }
+
     return true;
 }
 
