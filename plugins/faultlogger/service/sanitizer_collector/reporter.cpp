@@ -14,7 +14,6 @@
  */
 
 #include "reporter.h"
-#include "hisysevent.h"
 #include "sanitizerd_log.h"
 #include "zip_helper.h"
 #include "logger.h"
