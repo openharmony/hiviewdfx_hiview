@@ -34,37 +34,39 @@ config("leak_detector_config") {
 }
 
 ohos_source_set("leak_detector") {
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
+  if (enable_leak_detector) {
+    part_name = "hiview"
+    subsystem_name = "hiviewdfx"
 
-  sources = [
-    "fault_detector_manager.cpp",
-    "fault_detector_util.cpp",
-    "native_leak/native_leak_config.cpp",
-    "native_leak/native_leak_detector.cpp",
-    "native_leak/native_leak_info.cpp",
-    "native_leak/native_leak_state.cpp",
-    "native_leak/native_leak_state_context.cpp",
-    "native_leak/native_leak_util.cpp",
-  ]
+    sources = [
+      "fault_detector_manager.cpp",
+      "fault_detector_util.cpp",
+      "native_leak/native_leak_config.cpp",
+      "native_leak/native_leak_detector.cpp",
+      "native_leak/native_leak_info.cpp",
+      "native_leak/native_leak_state.cpp",
+      "native_leak/native_leak_state_context.cpp",
+      "native_leak/native_leak_util.cpp",
+    ]
 
-  configs = [ ":leak_detector_config" ]
+    configs = [ ":leak_detector_config" ]
 
-  deps = [ "config:config" ]
+    deps = [ "config:config" ]
 
-  external_deps = [
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "ffrt:libffrt",
-    "hilog:libhilog",
-    "hiprofiler:libnative_daemon_client",
-    "hisysevent:libhisysevent",
-    "init:libbegetutil",
-  ]
+    external_deps = [
+      "bundle_framework:appexecfwk_base",
+      "bundle_framework:appexecfwk_core",
+      "c_utils:utils",
+      "ffrt:libffrt",
+      "hilog:libhilog",
+      "hiprofiler:libnative_daemon_client",
+      "hisysevent:libhisysevent",
+      "init:libbegetutil",
+    ]
 
-  if (has_hiprofiler) {
-    cflags = [ "-DHAS_HIPROFILER" ]
+    if (has_hiprofiler) {
+      cflags = [ "-DHAS_HIPROFILER" ]
+    }
   }
 }
 

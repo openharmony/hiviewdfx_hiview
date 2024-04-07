@@ -38,64 +38,68 @@ config("leak_detector_test_config") {
 }
 
 ohos_unittest("LeakDetectorUnitTest") {
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-
-  sources = [
-    "../native_leak/native_leak_config.cpp",
-    "test_util.cpp",
-    "unittest/leak_detector_unit_test.cpp",
-  ]
-
-  configs = [ ":leak_detector_test_config" ]
-
-  cflags = [ "-DUNITTEST" ]
-
-  external_deps = [
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "ffrt:libffrt",
-    "hilog:libhilog",
-    "hiprofiler:libnative_daemon_client",
-    "hisysevent:libhisysevent",
-    "init:libbegetutil",
-  ]
-
-  if (has_hiprofiler) {
-    cflags += [ "-DHAS_HIPROFILER" ]
-  }
-
   module_out_path = module_output_path
+
+  if (enable_leak_detector) {
+    part_name = "hiview"
+    subsystem_name = "hiviewdfx"
+
+    sources = [
+      "../native_leak/native_leak_config.cpp",
+      "test_util.cpp",
+      "unittest/leak_detector_unit_test.cpp",
+    ]
+
+    configs = [ ":leak_detector_test_config" ]
+
+    cflags = [ "-DUNITTEST" ]
+
+    external_deps = [
+      "bundle_framework:appexecfwk_base",
+      "bundle_framework:appexecfwk_core",
+      "c_utils:utils",
+      "ffrt:libffrt",
+      "hilog:libhilog",
+      "hiprofiler:libnative_daemon_client",
+      "hisysevent:libhisysevent",
+      "init:libbegetutil",
+    ]
+
+    if (has_hiprofiler) {
+      cflags += [ "-DHAS_HIPROFILER" ]
+    }
+  }
 }
 
 ohos_moduletest("LeakDetectorModuleTest") {
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-
-  sources = [
-    "moduletest/leak_detector_module_test.cpp",
-    "test_util.cpp",
-  ]
-
-  configs = [ ":leak_detector_test_config" ]
-
-  cflags = [ "-DMOUDLETEST" ]
-
-  external_deps = [
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "ffrt:libffrt",
-    "hilog:libhilog",
-    "hiprofiler:libnative_daemon_client",
-    "hisysevent:libhisysevent",
-    "init:libbegetutil",
-  ]
-
-  if (has_hiprofiler) {
-    cflags += [ "-DHAS_HIPROFILER" ]
-  }
-
   module_out_path = module_output_path
+
+  if (enable_leak_detector) {
+    part_name = "hiview"
+    subsystem_name = "hiviewdfx"
+
+    sources = [
+      "moduletest/leak_detector_module_test.cpp",
+      "test_util.cpp",
+    ]
+
+    configs = [ ":leak_detector_test_config" ]
+
+    cflags = [ "-DMOUDLETEST" ]
+
+    external_deps = [
+      "bundle_framework:appexecfwk_base",
+      "bundle_framework:appexecfwk_core",
+      "c_utils:utils",
+      "ffrt:libffrt",
+      "hilog:libhilog",
+      "hiprofiler:libnative_daemon_client",
+      "hisysevent:libhisysevent",
+      "init:libbegetutil",
+    ]
+
+    if (has_hiprofiler) {
+      cflags += [ "-DHAS_HIPROFILER" ]
+    }
+  }
 }
