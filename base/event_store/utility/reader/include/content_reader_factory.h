@@ -18,24 +18,23 @@
 
 #include <unordered_map>
 
-#include "i_content_reader.h"
+#include "content_reader.h"
 #include "singleton.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-using ContentReader = std::shared_ptr<IContentReader>;
 class ContentReaderFactory : public OHOS::DelayedRefSingleton<ContentReaderFactory> {
 public:
-    void Register(int8_t version, ContentReader reader);
-    ContentReader Get(int8_t version);
+    void Register(int8_t version, std::shared_ptr<ContentReader> reader);
+    std::shared_ptr<ContentReader> Get(int8_t version);
 
 private:
-    std::unordered_map<int8_t, ContentReader> readerMap_;
+    std::unordered_map<int8_t, std::shared_ptr<ContentReader>> readerMap_;
 };
 
 class ReaderRegister {
 public:
-    ReaderRegister(int8_t version, ContentReader reader)
+    ReaderRegister(int8_t version, std::shared_ptr<ContentReader> reader)
     {
         ContentReaderFactory::GetInstance().Register(version, reader);
     }
