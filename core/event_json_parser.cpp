@@ -32,8 +32,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-constexpr uint64_t PRIME = 0x100000001B3ull;
-constexpr uint64_t BASIS = 0xCBF29CE484222325ull;
+constexpr uint64_t PRIME = 0x100000001B3ULL;
+constexpr uint64_t BASIS = 0xCBF29CE484222325ULL;
 constexpr int INVALID_EVENT_TYPE = 0;
 constexpr char BASE[] = "__BASE";
 constexpr char LEVEL[] = "level";

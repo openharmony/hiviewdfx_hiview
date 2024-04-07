@@ -29,6 +29,15 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::HiviewDFX::UCollect;
 
+class MemoryCollectorTest : public testing::Test {
+public:
+    void SetUp() {};
+    void TearDown() {};
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
+};
+
+namespace {
 // eg: 123   ab-cd   456 789 0   -123
 //     123   ab cd   0   0   0   0
 const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.\\[\\]():/>-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
@@ -61,15 +70,6 @@ const std::string RAW_SLAB_STR3("^(\\w{1,} - version: )[\\d\\.]{1,}|# ?name\\s{1
 const std::string RAW_SLAB_STR4("( <\\w{1,}>){5} : tunables( <\\w{1,}>){3} : slabdata( <\\w{1,}>){3,}$");
 const std::regex RAW_SLAB_INFO2(RAW_SLAB_STR3 + RAW_SLAB_STR4);
 
-class MemoryCollectorTest : public testing::Test {
-public:
-    void SetUp() {};
-    void TearDown() {};
-    static void SetUpTestCase() {};
-    static void TearDownTestCase() {};
-};
-
-namespace {
 bool HasValidAILibrary()
 {
     const std::string libName = "libai_infra.so";
