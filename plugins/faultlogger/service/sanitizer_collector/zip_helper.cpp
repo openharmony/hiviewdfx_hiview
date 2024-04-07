@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <time_util.h>
 #include <unistd.h>
+
 #include "string_ex.h"
 #include "securec.h"
 #include "limits.h"
@@ -38,6 +39,7 @@
 #include "json/json.h"
 #include "sanitizerd_log.h"
 #include "parameters.h"
+#include "parameter_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -204,6 +206,8 @@ static bool WriteNewFile(const int32_t fd, const T_SANITIZERD_PARAMS *params)
             system::GetParameter(DEVICE_OHOS_VERSION_PARAM, EMPTY_PARAM) + "\n" +
             "=================================================================\n" +
             "TIMESTAMP:" + std::to_string(params->happenTime) + "\n" +
+            "Device Info:" + Parameter::GetString("const.product.name", "Unknown") + "\n" +
+            "Build Info:" + Parameter::GetString("const.product.software.version", "Unknown") + "\n" +
             "Pid:" + std::to_string(params->pid) + "\n" +
             "Uid:" + std::to_string(params->uid) + "\n" +
             "Process name:" + params->procName + "\n" +
