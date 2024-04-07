@@ -128,6 +128,32 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         params[LOG_OVER_LIMIT] = true;
     }
 }
+
+void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
+{
+    std::string eventStr = Json::FastWriter().write(eventJson);
+    if (!FileUtil::SaveStringToFile(filePath, eventStr, false)) {
+        HIVIEW_LOGE("failed to save event, eventName=%{public}s, file=%{public}s",
+            eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str());
+    }
+}
+
+void SaveEventAndLogToSandBox(int32_t uid, const std::string& eventName, const std::string& bundleName,
+    Json::Value& eventJson)
+{
+    std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName);
+    SendLogToSandBox(uid, eventName, sandBoxLogPath, eventJson[PARAM_PROPERTY]);
+    std::string desPath = GetSandBoxBasePath(uid, bundleName);
+    std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+    desPath.append(FILE_PREFIX).append(timeStr).append(".txt");
+    WriteEventJson(eventJson, desPath);
+}
+
+void SaveEventToTempFile(int32_t uid, Json::Value& eventJson)
+{
+    std::string tempPath = GetTempFilePath(uid);
+    WriteEventJson(eventJson, tempPath);
+}
 }
 
 void EventPublish::StartSendingThread()
@@ -212,17 +238,14 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
             bundleName.c_str(), eventName.c_str());
         return;
     }
-    if (eventName == "APP_CRASH" || eventName == "APP_FREEZE") {
-        std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName);
-        SendLogToSandBox(uid, eventName, sandBoxLogPath, params);
-    }
     eventJson[PARAM_PROPERTY] = params;
-    std::string eventStr = Json::FastWriter().write(eventJson);
-    if (!FileUtil::SaveStringToFile(srcPath, eventStr, false)) {
-        HIVIEW_LOGE("failed to save event to file bundleName=%{public}s, eventName=%{public}s.",
-            bundleName.c_str(), eventName.c_str());
+    const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER"};
+    if (immediateEvents.find(eventName) != immediateEvents.end()) {
+        SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
+    } else {
+        SaveEventToTempFile(uid, eventJson);
+        StartSendingThread();
     }
-    StartSendingThread();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
