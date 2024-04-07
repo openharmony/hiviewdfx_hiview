@@ -324,7 +324,22 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, headerStream.str());
     return true;
 }
+void EventLogger::WriteCallStack(std::shared_ptr<SysEvent> event, int fd)
+{
+    if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_RENDER_BLOCK") == 0) {
+        std::ostringstream stackOss;
+        std::string stackMsg = StringUtil::ReplaceStr(event->GetEventValue("EVENT_KEY_FORM_BLOCK_CALLSTACK"),
+        "\\n", "\n");
+        stackOss << "CallStack = " << stackMsg << std::endl;
+        FileUtil::SaveStringToFd(fd, stackOss.str());
 
+        std::ostringstream appNameOss;
+        std::string appMsg = StringUtil::ReplaceStr(event->GetEventValue("EVENT_KEY_FORM_BLOCK_APPNAME"),
+        "\\n", "\n");
+        appNameOss << "AppName = " << appMsg << std::endl;
+        FileUtil::SaveStringToFd(fd, appNameOss.str());
+    }
+}
 bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
 {
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
@@ -372,14 +387,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         oss << StringUtil::UnescapeJsonStringValue(binderInfo) << std::endl;
     }
     FileUtil::SaveStringToFd(fd, oss.str());
-    if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_RENDER_BLOCK") == 0) {
-        std::ostringstream stackOss;
-        std::string stackMsg = StringUtil::ReplaceStr(event->GetEventValue("EVENT_KEY_FORM_BLOCK_CALLSTACK"),
-        "\\n", "\n");
-        stackOss << "CallStack = " << stackMsg << std::endl;
-        FileUtil::SaveStringToFd(fd, stackOss.str());
-    }
-
+    WriteCallStack(event, fd);
     return true;
 }
 

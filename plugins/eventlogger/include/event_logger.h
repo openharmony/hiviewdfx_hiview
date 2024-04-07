@@ -103,6 +103,7 @@ private:
     void GetCmdlineContent();
     void GetRebootReasonConfig();
     bool GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const;
+    void WriteCallStack(std::shared_ptr<SysEvent> event, int fd);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
