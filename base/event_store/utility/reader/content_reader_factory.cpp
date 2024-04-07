@@ -17,12 +17,12 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-void ContentReaderFactory::Register(int8_t version, ContentReader reader)
+void ContentReaderFactory::Register(int8_t version, std::shared_ptr<ContentReader> reader)
 {
-    readerMap_.insert(std::pair<int8_t, ContentReader>(version, reader));
+    readerMap_.insert(std::pair<int8_t, std::shared_ptr<ContentReader>>(version, reader));
 }
 
-ContentReader ContentReaderFactory::Get(int8_t version)
+std::shared_ptr<ContentReader> ContentReaderFactory::Get(int8_t version)
 {
     auto itr = readerMap_.find(version);
     if (itr != readerMap_.end()) {

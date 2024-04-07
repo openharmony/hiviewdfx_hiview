@@ -58,7 +58,8 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
 
 std::string GetDisplayVersionStr()
 {
-    return std::string(GetDisplayVersion());
+    static std::string displayedVersionStr = std::string(GetDisplayVersion());
+    return displayedVersionStr;
 }
 
 bool IsBetaVersion()

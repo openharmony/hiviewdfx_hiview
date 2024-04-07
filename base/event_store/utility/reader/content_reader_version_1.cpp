@@ -18,13 +18,36 @@
 #include "base_def.h"
 #include "content_reader_factory.h"
 #include "base/raw_data_base_def.h"
+#include "logger.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-REGISTER_CONTENT_READER(EventRaw::EVENT_DATA_FORMATE_VERSION::VERSION1, ContentReaderVersion1);
+DEFINE_LOG_TAG("HiView-ContentReaderVersion1");
+REGISTER_CONTENT_READER(EventStore::EVENT_DATA_FORMATE_VERSION::VERSION1, ContentReaderVersion1);
 namespace {
 #pragma pack(1)
-struct Version1ContentHeader {
+struct DocHeaderVersion1 {
+    /* Magic number */
+    uint64_t magicNum = 0;
+
+    /* Block size */
+    uint32_t blockSize = 0;
+
+    /* Page size */
+    uint8_t pageSize = 0;
+
+    /* Version number */
+    uint8_t version = 0;
+
+    /* Event tag */
+    char tag[MAX_TAG_LEN] = {0};
+
+    /* version block size */
+    uint32_t crc = 0;
+};
+
+struct ContentHeaderVersion1 {
     /* Event Seq */
     int64_t seq;
 
@@ -55,27 +78,55 @@ struct Version1ContentHeader {
 #pragma pack()
 }
 
-int ContentReaderVersion1::GetContentHead(uint8_t* content, EventStore::ContentHeader& head)
+int ContentReaderVersion1::ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
+    uint64_t& docHeaderSize, std::string& sysVersion)
+{
+    if (!docStream.is_open()) {
+        return DOC_STORE_ERROR_IO;
+    }
+    docStream.seekg(0, std::ios::beg);
+    docHeaderSize = sizeof(DocHeaderVersion1);
+    DocHeaderVersion1 docHeaderV1;
+    docStream.read(reinterpret_cast<char*>(&docHeaderV1), docHeaderSize);
+    header.magicNum = docHeaderV1.magicNum;
+    header.blockSize = docHeaderV1.blockSize;
+    header.pageSize = docHeaderV1.pageSize;
+    header.version = docHeaderV1.version;
+    if (memcpy_s(header.tag, MAX_TAG_LEN, docHeaderV1.tag, MAX_TAG_LEN) != EOK) {
+        HIVIEW_LOGE("failed to copy tag to doc header");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    
+    sysVersion = "";  // system version was not stored in doc header in version 1
+    return DOC_STORE_SUCCESS;
+}
+
+bool ContentReaderVersion1::IsValidMagicNum(const uint64_t magicNum)
+{
+    return magicNum == MAGIC_NUM_VERSION1;
+}
+
+int ContentReaderVersion1::GetContentHeader(uint8_t* content, EventStore::ContentHeader& header)
 {
     if (content == nullptr) {
         return DOC_STORE_ERROR_NULL;
     }
 
-    Version1ContentHeader curHead = *(reinterpret_cast<Version1ContentHeader*>(content + BLOCK_SIZE));
-    head.timestamp = curHead.timestamp;
-    head.timeZone = curHead.timeZone;
-    head.uid = curHead.uid;
-    head.pid = curHead.pid;
-    head.tid = curHead.tid;
-    head.id = curHead.id;
-    head.type = curHead.type;
-    head.isTraceOpened = curHead.isTraceOpened;
+    ContentHeaderVersion1 contentHeaderV1 = *(reinterpret_cast<ContentHeaderVersion1*>(content + BLOCK_SIZE));
+    header.timestamp = contentHeaderV1.timestamp;
+    header.timeZone = contentHeaderV1.timeZone;
+    header.uid = contentHeaderV1.uid;
+    header.pid = contentHeaderV1.pid;
+    header.tid = contentHeaderV1.tid;
+    header.id = contentHeaderV1.id;
+    header.type = contentHeaderV1.type;
+    header.isTraceOpened = contentHeaderV1.isTraceOpened;
     return DOC_STORE_SUCCESS;
 }
 
-size_t ContentReaderVersion1::GetHeaderSize()
+size_t ContentReaderVersion1::GetContentHeaderSize()
 {
-    return sizeof(Version1ContentHeader);
+    return sizeof(ContentHeaderVersion1);
 }
 } // HiviewDFX
 } // OHOS
