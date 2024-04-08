@@ -35,6 +35,7 @@ hiview_module = "hiview/hiview"
 
 declare_args() {
   device_usage_statistics_enable = true
+  hiview_unified_collector_PC_app_state_collect_enable = false
   if (defined(global_parts_info) &&
       !defined(global_parts_info.resourceschedule_device_usage_statistics)) {
     device_usage_statistics_enable = false
