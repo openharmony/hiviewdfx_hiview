@@ -110,6 +110,7 @@ ohos_source_set("ucollection_source") {
     external_deps += [ "wifi:wifi_sdk" ]
     defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
+  
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
