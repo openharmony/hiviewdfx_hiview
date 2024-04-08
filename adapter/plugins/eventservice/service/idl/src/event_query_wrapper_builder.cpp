@@ -263,7 +263,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             details.second++;
             continue;
         }
-        if (cachedEvents_.size() >= queryLimit_ ||
+        if (cachedEvents_.size() >= static_cast<size_t> (queryLimit_) ||
             cachedEventTotalSize_ + eventJsonSize >= MAX_TRANS_BUF) {
             TransportCachedEvents(callback);
         }
