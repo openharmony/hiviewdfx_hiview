@@ -26,7 +26,7 @@ config("ucolletciton_source_config") {
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
   ]
-  defines = [ "PC_APP_STATE_COLLECT_ENALBE = $hiview_unified_collector_PC_app_state_collect_enable" ]
+  defines = [ "PC_APP_STATE_COLLECT_ENABLE = $hiview_unified_collector_PC_app_state_collect_enable" ]
 }
 
 ohos_source_set("ucollection_source") {
