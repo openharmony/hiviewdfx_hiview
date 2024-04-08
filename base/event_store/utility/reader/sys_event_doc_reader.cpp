@@ -139,6 +139,10 @@ int SysEventDocReader::Read(ReadCallback callback)
         return ret;
     }
 
+    if (!IsValidHeader(header)) {
+        return DOC_STORE_ERROR_INVALID;
+    }
+
     // set event tag if have
     if (tag_.empty() && strlen(header.tag) != 0) {
         tag_ = header.tag;
