@@ -40,16 +40,17 @@ public:
     int ReadHeader(DocHeader& header, std::string& sysVersion);
 
 private:
-    int Read(ReadCallback callback);
     void Init(const std::string& path);
+    void InitEventInfo(const std::string& path);
+    int Read(ReadCallback callback);
     int ReadContent(uint8_t** content, uint32_t& contentSize);
     int ReadPages(ReadCallback callback);
     bool HasReadFileEnd();
     bool HasReadPageEnd();
     bool IsValidHeader(const DocHeader& header);
+    bool CheckEventInfo(uint8_t* content);
     int SeekgPage(uint32_t pageIndex);
-    int BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize);
-    int BuildEventJson(std::string& eventJson, uint32_t eventSize, int64_t seq);
+    std::shared_ptr<RawData> BuildRawData(uint8_t* content, uint32_t contentSize);
     void TryToAddEntry(uint8_t* content, uint32_t contentSize, const DocQuery& query,
         EntryQueue& entries, int& num);
 
@@ -60,8 +61,6 @@ private:
     uint8_t dataFmtVersion_ = 0;
     uint64_t docHeaderSize_ = 0;
     std::string sysVersion_;
-    std::string level_;
-    std::string tag_;
     EventInfo info_;
 }; // EventDocWriter
 } // EventStore

@@ -68,20 +68,6 @@ enum EVENT_DATA_FORMATE_VERSION {
 };
 
 #pragma pack(1)
-
-/* Object returned by the event query */
-struct Entry {
-    /* Event sequence */
-    int64_t id = 0;
-
-    /* Event timestamp */
-    int64_t ts = 0;
-
-    /* Event json string */
-    std::string value;
-};
-using Entry = struct Entry;
-
 /* File header of the binary storage file */
 struct DocHeader {
     /* Magic number */

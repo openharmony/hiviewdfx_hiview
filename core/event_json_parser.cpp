@@ -23,7 +23,6 @@
 #include <cstdlib>
 
 #include "file_util.h"
-#include "flat_json_parser.h"
 #include "hiview_global.h"
 #include "logger.h"
 #include "parameter.h"
@@ -47,13 +46,13 @@ const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
 
-uint64_t GenerateHash(const std::string& info)
+uint64_t GenerateHash(std::shared_ptr<SysEvent> event)
 {
-    uint64_t ret {BASIS};
-    const char* p = info.c_str();
-    size_t infoLen = info.size();
-    size_t infoLenLimit = 256;
+    constexpr size_t infoLenLimit = 256;
+    size_t infoLen = event->rawData_->GetDataLength();
     size_t hashLen = (infoLen < infoLenLimit) ? infoLen : infoLenLimit;
+    const uint8_t* p = event->rawData_->GetData();
+    uint64_t ret {BASIS};
     size_t i = 0;
     while (i < hashLen) {
         ret ^= *(p + i);
@@ -96,16 +95,16 @@ DEFINE_LOG_TAG("Event-JsonParser");
 
 bool DuplicateIdFilter::IsDuplicateEvent(const uint64_t sysEventId)
 {
-    for (auto iter = sysEventIds.begin(); iter != sysEventIds.end(); iter++) {
+    for (auto iter = sysEventIds_.begin(); iter != sysEventIds_.end(); iter++) {
         if (*iter == sysEventId) {
             return true;
         }
     }
     FILTER_SIZE_TYPE maxSize { 5 }; // size of queue limit to 5
-    if (sysEventIds.size() >= maxSize) {
-        sysEventIds.pop_front();
+    if (sysEventIds_.size() >= maxSize) {
+        sysEventIds_.pop_front();
     }
-    sysEventIds.emplace_back(sysEventId);
+    sysEventIds_.emplace_back(sysEventId);
     return false;
 }
 
@@ -115,6 +114,7 @@ EventJsonParser::EventJsonParser(std::vector<std::string>& paths)
     for (auto path : paths) {
         if (!ReadSysEventDefFromFile(path, hiSysEventDef)) {
             HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
+            continue;
         }
         ParseHiSysEventDef(hiSysEventDef);
     }
@@ -146,61 +146,45 @@ bool EventJsonParser::GetPreserveByDomainAndName(const std::string& domain, cons
 
 bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
 {
-    if (!CheckEventValidity(event)) {
-        HIVIEW_LOGI("invalid event or event with empty domain or empty name.");
+    if (!CheckEvent(event)) {
         return false;
     }
-
-    auto baseInfo = GetDefinedBaseInfoByDomainName(event->domain_, event->eventName_);
-    if (baseInfo.type == INVALID_EVENT_TYPE) {
-        HIVIEW_LOGI("type defined for event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
-            event->domain_.c_str(), event->eventName_.c_str(), event->GetEventUintValue("time_"));
-        return false;
-    }
-    if (!CheckBaseInfoValidity(baseInfo, event)) {
-        HIVIEW_LOGI("failed to verify the base info of event[%{public}s|%{public}s|%{public}" PRIu64 "].",
-            event->domain_.c_str(), event->eventName_.c_str(), event->GetEventUintValue("time_"));
-        return false;
-    }
-
-    auto curSysEventId = GenerateHash(event->AsJsonStr());
-    if (filter_.IsDuplicateEvent(curSysEventId)) {
-        HIVIEW_LOGI(
-            "ignore duplicate event[%{public}s|%{public}s|%{public}" PRIu64 "].", event->domain_.c_str(),
-            event->eventName_.c_str(), event->GetEventUintValue("time_"));
-        return false; // ignore duplicate sys event
-    }
-
-    AppendExtensiveInfo(event, curSysEventId);
+    AppendExtensiveInfo(event);
     WriteSeqToFile(++curSeq_);
-
     return true;
 }
 
-void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event, const uint64_t sysEventId) const
+bool EventJsonParser::CheckEvent(std::shared_ptr<SysEvent> event)
 {
     if (event == nullptr) {
-        return;
+        HIVIEW_LOGW("event is null.");
+        return false;
     }
-
-    // hash code need to add
-    event->SetId(sysEventId);
-
-    // FreezeDetector needs to add
-    event->SetEventValue(EventStore::EventCol::INFO, "");
-
-    // add testtype configured as system property named persist.sys.hiview.testtype
-    if (!testTypeConfigured.empty()) {
-        event->SetEventValue(TEST_TYPE_KEY, testTypeConfigured);
+    if (!CheckBaseInfo(event)) {
+        return false;
     }
-
-    // add seq to sys event and then persist it into local file
-    event->SetEventSeq(curSeq_);
+    if (!CheckDuplicate(event)) {
+        return false;
+    }
+    return true;
 }
 
-bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
+bool EventJsonParser::CheckBaseInfo(std::shared_ptr<SysEvent> event) const
 {
-    if (!CheckTypeValidity(baseInfo, event)) {
+    if (event->domain_.empty() || event->eventName_.empty()) {
+        HIVIEW_LOGW("domain=%{public}s or name=%{public}s is empty.",
+            event->domain_.c_str(), event->eventName_.c_str());
+        return false;
+    }
+    auto baseInfo = GetDefinedBaseInfoByDomainName(event->domain_, event->eventName_);
+    if (baseInfo.type == INVALID_EVENT_TYPE) {
+        HIVIEW_LOGW("type defined for event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
+            event->domain_.c_str(), event->eventName_.c_str(), event->happenTime_);
+        return false;
+    }
+    if (event->GetEventType() != baseInfo.type) {
+        HIVIEW_LOGW("type=%{public}d of event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
+            event->GetEventType(), event->domain_.c_str(), event->eventName_.c_str(), event->happenTime_);
         return false;
     }
     if (!baseInfo.level.empty()) {
@@ -210,23 +194,6 @@ bool EventJsonParser::CheckBaseInfoValidity(const BaseInfo& baseInfo, std::share
         event->SetTag(baseInfo.tag);
     }
     return true;
-}
-
-bool EventJsonParser::CheckEventValidity(std::shared_ptr<SysEvent> event) const
-{
-    if (event == nullptr) {
-        return false;
-    }
-    return !(event->domain_.empty()) && !(event->eventName_.empty());
-}
-
-bool EventJsonParser::CheckTypeValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const
-{
-    if (event == nullptr) {
-        return false;
-    }
-    HIVIEW_LOGD("base info type is %{public}d, event type is %{public}d", baseInfo.type, event->GetEventType());
-    return event->GetEventType() == baseInfo.type;
 }
 
 BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& domain,
@@ -240,17 +207,42 @@ BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& doma
     };
     auto domainIter = hiSysEventDef_.find(domain);
     if (domainIter == hiSysEventDef_.end()) {
-        HIVIEW_LOGD("domain named %{public}s is not defined.", domain.c_str());
+        HIVIEW_LOGD("domain %{public}s is not defined.", domain.c_str());
         return baseInfo;
     }
     auto domainNames = hiSysEventDef_.at(domain);
     auto nameIter = domainNames.find(name);
     if (nameIter == domainNames.end()) {
-        HIVIEW_LOGD("%{public}s is not defined in domain named %{public}s.",
-            name.c_str(), domain.c_str());
+        HIVIEW_LOGD("%{public}s is not defined in domain %{public}s.", name.c_str(), domain.c_str());
         return baseInfo;
     }
     return nameIter->second;
+}
+
+bool EventJsonParser::CheckDuplicate(std::shared_ptr<SysEvent> event)
+{
+    auto sysEventId = GenerateHash(event);
+    if (filter_.IsDuplicateEvent(sysEventId)) {
+        HIVIEW_LOGW("ignore duplicate event[%{public}s|%{public}s|%{public}" PRIu64 "].",
+            event->domain_.c_str(), event->eventName_.c_str(), event->happenTime_);
+        return false;
+    }
+    // hash code need to add
+    event->SetId(sysEventId);
+    return true;
+}
+
+void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const
+{
+    // add testtype configured as system property named persist.sys.hiview.testtype
+    if (!testTypeConfigured.empty()) {
+        event->SetEventValue(TEST_TYPE_KEY, testTypeConfigured);
+    }
+
+    // add seq to sys event and then persist it into local file
+    event->SetEventSeq(curSeq_);
+    event->SetTag(GetTagByDomainAndName(event->domain_, event->eventName_));
+    event->preserve_ = GetPreserveByDomainAndName(event->domain_, event->eventName_);
 }
 
 bool EventJsonParser::HasIntMember(const Json::Value& jsonObj, const std::string& name) const

@@ -16,7 +16,6 @@
 
 #include <cinttypes>
 
-#include "decoded/decoded_event.h"
 #include "logger.h"
 #include "securec.h"
 #include "string_util.h"
@@ -26,6 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDocReader");
+using OHOS::HiviewDFX::EventRaw::RawData;
 namespace {
 template<typename T>
 int32_t GetNegativeNum(T num)
@@ -77,19 +77,7 @@ void SysEventDocReader::Init(const std::string& path)
     in_.open(path, std::ios::binary);
 
     // get domain, name and level from file path
-    std::vector<std::string> dirNames;
-    StringUtil::SplitStr(path, "/", dirNames);
-    constexpr size_t domainOffset = 2;
-    if (dirNames.size() >= domainOffset) {
-        info_.domain = dirNames[dirNames.size() - domainOffset];
-        std::string file = dirNames.back();
-        std::vector<std::string> fileNames;
-        StringUtil::SplitStr(file, "-", fileNames);
-        if (fileNames.size() == FILE_NAME_SPLIT_SIZE) {
-            info_.name = fileNames[EVENT_NAME_INDEX];
-            level_ = fileNames[EVENT_LEVEL_INDEX];
-        }
-    }
+    InitEventInfo(path);
 
     // get file size and data format version
     if (in_.is_open()) {
@@ -102,6 +90,41 @@ void SysEventDocReader::Init(const std::string& path)
     }
 }
 
+void SysEventDocReader::InitEventInfo(const std::string& path)
+{
+    std::vector<std::string> dirNames;
+    StringUtil::SplitStr(path, "/", dirNames);
+    constexpr size_t domainOffset = 2;
+    if (dirNames.size() < domainOffset) {
+        HIVIEW_LOGW("invalid size=%{public}zu of dir names", dirNames.size());
+        return;
+    }
+
+    // init domain
+    const std::string domainStr = dirNames[dirNames.size() - domainOffset];
+    if (memcpy_s(info_.domain, MAX_DOMAIN_LEN, domainStr.c_str(), domainStr.length()) != EOK) {
+        HIVIEW_LOGE("failed to copy domain to EventInfo");
+        return;
+    }
+    std::string file = dirNames.back();
+    std::vector<std::string> fileNames;
+    StringUtil::SplitStr(file, "-", fileNames);
+    if (fileNames.size() != FILE_NAME_SPLIT_SIZE) {
+        HIVIEW_LOGW("invalid size=%{public}zu of file names", fileNames.size());
+        return;
+    }
+
+    // init name
+    const std::string nameStr = fileNames[EVENT_NAME_INDEX];
+    if (memcpy_s(info_.name, MAX_EVENT_NAME_LEN, nameStr.c_str(), nameStr.length()) != EOK) {
+        HIVIEW_LOGE("failed to copy name to EventInfo");
+        return;
+    }
+
+    // init level
+    info_.level = fileNames[EVENT_LEVEL_INDEX];
+}
+
 int SysEventDocReader::Read(EventStore::ContentList& contentList)
 {
     auto saveFunc = [&contentList](uint8_t* content, uint32_t& contentSize) {
@@ -112,7 +135,6 @@ int SysEventDocReader::Read(EventStore::ContentList& contentList)
         if (memcpy_s(contentPtr.get(), contentSize, content, contentSize) != 0) {
             return false;
         }
-        delete[] content;
         contentList.emplace_back(std::move(contentPtr));
         return true;
     };
@@ -140,8 +162,8 @@ int SysEventDocReader::Read(ReadCallback callback)
     }
 
     // set event tag if have
-    if (tag_.empty() && strlen(header.tag) != 0) {
-        tag_ = header.tag;
+    if (info_.tag.empty() && strlen(header.tag) != 0) {
+        info_.tag = header.tag;
     }
 
     // set page size
@@ -155,6 +177,7 @@ int SysEventDocReader::Read(ReadCallback callback)
             return ret;
         }
         callback(content, contentSize);
+        delete[] content;
         return DOC_STORE_SUCCESS;
     }
     return ReadPages(callback);
@@ -194,6 +217,7 @@ int SysEventDocReader::ReadPages(ReadCallback callback)
             continue;
         }
         callback(content, contentSize);
+        delete[] content;
     }
     return DOC_STORE_SUCCESS;
 }
@@ -225,7 +249,8 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
         return DOC_STORE_READ_EMPTY;
     }
     ReadValueAndReset(in_, contentSize);
-    if (contentSize <= BLOCK_SIZE) {
+    constexpr uint32_t minContentSize = SEQ_SIZE + sizeof(ContentHeader);
+    if (contentSize < minContentSize) {
         HIVIEW_LOGD("invalid content size=%{public}u, file=%{public}s", contentSize, docPath_.c_str());
         return DOC_STORE_READ_EMPTY;
     }
@@ -285,80 +310,64 @@ int SysEventDocReader::SeekgPage(uint32_t pageIndex)
     return DOC_STORE_ERROR_IO;
 }
 
-int SysEventDocReader::BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize)
+std::shared_ptr<RawData> SysEventDocReader::BuildRawData(uint8_t* content, uint32_t contentSize)
 {
-    if (info_.domain.empty() || info_.name.empty()) {
-        HIVIEW_LOGE("domain=%{public}s or name=%{public}s is empty", info_.domain.c_str(), info_.name.c_str());
-        return DOC_STORE_ERROR_INVALID;
-    }
     auto reader = ContentReaderFactory::GetInstance().Get(dataFmtVersion_);
     if (reader == nullptr) {
         HIVIEW_LOGE("reader nullptr, version:%{public}d", dataFmtVersion_);
-        return DOC_STORE_ERROR_NULL;
+        return nullptr;
     }
-    return reader->ReadRawEvent(info_, rawEvent, eventSize, content, contentSize);
-}
-
-int SysEventDocReader::BuildEventJson(std::string& eventJson, uint32_t eventSize, int64_t seq)
-{
-    if (eventJson.empty()) {
-        HIVIEW_LOGE("event json is empty");
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (level_.empty()) {
-        HIVIEW_LOGE("event level is empty");
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (seq < 0) {
-        HIVIEW_LOGE("event seq is invalid, seq=%{public}" PRId64, seq);
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (!tag_.empty()) {
-        AppendJsonValue(eventJson, EventCol::TAG, tag_);
-    }
-    AppendJsonValue(eventJson, EventCol::LEVEL, level_);
-    AppendJsonValue(eventJson, EventCol::SEQ, seq);
-    return DOC_STORE_SUCCESS;
+    return reader->ReadRawData(info_, content, contentSize);
 }
 
 void SysEventDocReader::TryToAddEntry(uint8_t* content, uint32_t contentSize, const DocQuery& query,
     EntryQueue& entries, int& num)
 {
+    if (!CheckEventInfo(content)) {
+        return;
+    }
+
     // check inner condition
     if (!query.IsContainInnerConds(content)) {
-        delete[] content;
         return;
     }
-    int64_t seq = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE));
-    int64_t ts = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE + SEQ_SIZE));
-
-    uint8_t* rawEvent = nullptr;
-    uint32_t eventSize = 0;
-    auto ret = BuildRawEvent(&rawEvent, eventSize, content, contentSize);
-    delete[] content;
-    if (ret != DOC_STORE_SUCCESS) {
+    // build raw data
+    auto rawData = BuildRawData(content, contentSize);
+    if (rawData == nullptr) {
         return;
     }
-
     // check extra condition
-    EventRaw::DecodedEvent decodedEvent(rawEvent);
-    delete[] rawEvent;
-    if (!query.IsContainExtraConds(decodedEvent)) {
+    if (!query.IsContainExtraConds(rawData->GetData())) {
         return;
     }
-
-    // build the json string of the event
-    std::string eventJson = decodedEvent.AsJsonStr();
-    if (BuildEventJson(eventJson, eventSize, seq) != DOC_STORE_SUCCESS) {
-        return;
-    }
-
+    // add to entry queue
     num++;
-    Entry entry;
-    entry.id = seq;
-    entry.ts = ts;
-    entry.value = eventJson;
-    entries.emplace(entry);
+    entries.emplace(info_.seq, info_.timestamp, rawData);
+}
+
+bool SysEventDocReader::CheckEventInfo(uint8_t* content)
+{
+    if (strlen(info_.domain) == 0 || strlen(info_.name) == 0 || info_.level.empty()) {
+        HIVIEW_LOGE("domain=%{public}s or name=%{public}s or level=%{public}s is empty",
+            info_.domain, info_.name, info_.level.c_str());
+        return false;
+    }
+
+    int64_t seq = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE));
+    if (seq < 0) {
+        HIVIEW_LOGE("event seq is invalid, seq=%{public}" PRId64, seq);
+        return false;
+    }
+    info_.seq = seq;
+
+    int64_t timestamp = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE + SEQ_SIZE));
+    if (timestamp < 0) {
+        HIVIEW_LOGE("event seq is invalid, timestamp=%{public}" PRId64, timestamp);
+        return false;
+    }
+    info_.timestamp = timestamp;
+
+    return true;
 }
 } // EventStore
 } // HiviewDFX
