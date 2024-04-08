@@ -733,11 +733,17 @@ HWTEST_F(SysEventDaoTest, CheckEventRepeatTest_01, testing::ext::TestSize.Level0
     time_t now = time(nullptr);
     sysEventCreator.SetKeyValue("testTime", now);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    sysEvent->SetLevel("CRITICAL");
+    int64_t testSeq = 0;
+    sysEvent->SetEventSeq(testSeq);
     EventStore::SysEventDao::CheckRepeat(sysEvent);
     ASSERT_EQ(sysEvent->log_, LOG_ALLOW_PACK|LOG_PACKED);
 
     EventStore::SysEventDao::Insert(sysEvent);
     std::shared_ptr<SysEvent> repeatSysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    testSeq++;
+    repeatSysEvent->SetLevel("CRITICAL");
+    repeatSysEvent->SetEventSeq(testSeq);
     EventStore::SysEventDao::CheckRepeat(repeatSysEvent);
     ASSERT_EQ(repeatSysEvent->log_, LOG_NOT_ALLOW_PACK|LOG_REPEAT);
 }

@@ -41,5 +41,8 @@ ohos_moduletest("FaultloggerNativeInterfaceTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hisysevent:libhisysevent" ]
+  external_deps = [
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+  ]
 }

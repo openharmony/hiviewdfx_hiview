@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "gwpasan_collector.h"
 
 #include <cstdint>
@@ -25,14 +24,17 @@
 #include <mutex>
 #include <securec.h>
 #include <sys/time.h>
+#include <time_util.h>
 #include <unistd.h>
 #include <vector>
 
 #include "bundle_mgr_client.h"
+#include "event_publish.h"
 #include "faultlog_util.h"
 #include "file_util.h"
-#include "logger.h"
 #include "hisysevent.h"
+#include "json/json.h"
+#include "logger.h"
 
 DEFINE_LOG_LABEL(0xD002D12, "Sanitizer");
 
@@ -170,6 +172,21 @@ void WriteCollectedData(const GwpAsanCurrInfo &currInfo)
         return;
     }
     WriteNewFile(fd, currInfo);
+    Json::Value eventParams;
+    auto timeNow = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
+    eventParams["time"] = timeNow;
+    eventParams["type"] = currInfo.errType;
+    eventParams["bundle_version"] = currInfo.appVersion;
+    eventParams["bundle_name"] = currInfo.procName;
+    eventParams["external_log"] = fullName;
+    eventParams["pid"] = currInfo.pid;
+    eventParams["uid"] = currInfo.uid;
+
+    std::string paramsStr = Json::FastWriter().write(eventParams);
+    HIVIEW_LOGD("Gwpasan ReportAppEvent: uid:%{public}d, json:%{public}s.",
+        currInfo.uid, paramsStr.c_str());
+    OHOS::HiviewDFX::EventPublish::GetInstance().PushEvent(currInfo.uid, "ADDRESS_SANITIZER",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT, paramsStr);
 }
 
 std::mutex g_mutex;
@@ -190,7 +207,7 @@ int32_t CreateLogFile(const std::string& name)
     return fd;
 }
 
-std::string GetNameByPid(uint32_t pid)
+std::string GetNameByPid(int32_t pid)
 {
     char path[BUF_SIZE] = { 0 };
     int err = snprintf_s(path, sizeof(path), sizeof(path) - 1, "/proc/%d/cmdline", pid);

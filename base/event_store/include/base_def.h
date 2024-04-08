@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef HIVIEW_BASE_EVENT_STORE_INCLUDE_BASE_DEF_H
 #define HIVIEW_BASE_EVENT_STORE_INCLUDE_BASE_DEF_H
 
@@ -20,13 +21,19 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
-#define MAGIC_NUM 0x894556454E541a0a
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define MAGIC_NUM (0x894556454E541a0a & ~1) // set the first low bit to 0
+#elif __BYTE_ORDER == __BIG_ENDIAN
+#define MAGIC_NUM (0x894556454E541a0a | 1)  // set the first low bit to 1
+#else
+#error "ERROR: No BIG_LITTLE_ENDIAN defines."
+#endif
+
 #define NUM_OF_BYTES_IN_KB 1024
 #define NUM_OF_BYTES_IN_MB (1024 * 1024)
 #define CRC_SIZE sizeof(uint32_t)
 #define BLOCK_SIZE sizeof(uint32_t)
 #define SEQ_SIZE sizeof(int64_t)
-#define HEADER_SIZE sizeof(DocHeader)
 
 #define MAX_DOMAIN_LEN 17
 #define MAX_EVENT_NAME_LEN 33
@@ -49,6 +56,16 @@ namespace EventStore {
 #define DOC_STORE_ERROR_IO (-2)
 #define DOC_STORE_ERROR_MEMORY (-3)
 #define DOC_STORE_ERROR_INVALID (-4)
+
+#define MAX_VERSION_LENG 1000
+
+enum EVENT_DATA_FORMATE_VERSION {
+    INVALID = 0x0,
+    VERSION1 = 0x1,
+    VERSION2 = 0x2,    // add log label into event header
+    VERSION3 = 0x3,    // remove crc and append system version into file header
+    CURRENT = VERSION3,
+};
 
 #pragma pack(1)
 
@@ -81,9 +98,6 @@ struct DocHeader {
 
     /* Event tag */
     char tag[MAX_TAG_LEN] = {0};
-
-    /* Crc value */
-    uint32_t crc = 0;
 };
 
 struct ContentHeader {

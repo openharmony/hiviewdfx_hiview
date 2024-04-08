@@ -325,7 +325,7 @@ HWTEST_F(HolisticPlatformTest, HolisticPlatformRun001, TestSize.Level3)
 void HolisticPlatformTest::Run002Check01()
 {
     int count = count1_->size() + count2_->size();
-    ASSERT_EQ(count, 4ul);
+    ASSERT_EQ(count, 4UL);
     std::string be1 = platform_.GetHiviewProperty("BE1_OnEvent", "");
     if (be1.find("testbbbb") != be1.npos) {
         FAIL();

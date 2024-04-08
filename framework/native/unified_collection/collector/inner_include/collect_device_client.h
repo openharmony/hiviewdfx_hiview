@@ -36,6 +36,7 @@ public:
     std::shared_ptr<ThreadCpuData> FetchSelfThreadCpuData(int pid);
 private:
     int GetDeviceFd(bool readOnly);
+    unsigned int GetProcessCount();
     int GetThreadCount(int pid);
     std::shared_ptr<ThreadCpuData> FetchThreadData(unsigned int magic, int pid);
     int fd_;

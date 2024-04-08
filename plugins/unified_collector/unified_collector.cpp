@@ -16,8 +16,10 @@
 
 #include "ffrt.h"
 #include "file_util.h"
+#include "hitrace_dump.h"
 #include "io_collector.h"
 #include "logger.h"
+#include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"
 #include "sys_event.h"
@@ -30,7 +32,13 @@ REGISTER(UnifiedCollector);
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace std::literals::chrono_literals;
+using namespace OHOS::HiviewDFX::Hitrace;
 namespace {
+std::mutex g_traceLock;
+const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
+const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
+const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
+const std::string OTHER = "Other";
 const int NAP_BACKGROUND_GROUP = 11;
 const std::unordered_map<std::string, ProcessState> APP_STATES = {
     {"APP_FOREGROUND", FOREGROUND},
@@ -60,6 +68,7 @@ ProcessState GetProcessStateByGroup(int32_t procGroup)
 void UnifiedCollector::OnLoad()
 {
     HIVIEW_LOGI("start to load UnifiedCollector plugin");
+    ExitHitraceService();
     Init();
 }
 
@@ -99,11 +108,94 @@ void UnifiedCollector::Init()
     }
     InitWorkLoop();
     InitWorkPath();
-    RunCpuCollectionTask();
-    RunIoCollectionTask();
-    RunUCollectionStatTask();
+    if (Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn()) {
+        RunCpuCollectionTask();
+        RunIoCollectionTask();
+        RunUCollectionStatTask();
+        LoadHitraceService();
+    }
+    if (Parameter::IsDeveloperMode()) {
+        RunCpuCollectionTask();
+    }
+    if (!Parameter::IsBetaVersion()) {
+        int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
+        HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
+    }
     UCollectUtil::TraceCollector::RecoverTmpTrace();
     observerMgr_ = std::make_shared<UcObserverManager>();
+}
+
+void UnifiedCollector::CleanDataFiles()
+{
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(UNIFIED_SPECIAL_PATH, files);
+    for (const auto& file : files) {
+        if (file.find(OTHER) != std::string::npos) {
+            FileUtil::RemoveFile(file);
+        }
+    }
+    FileUtil::ForceRemoveDirectory(COLLECTION_IO_PATH, false);
+    FileUtil::ForceRemoveDirectory(HIPERF_LOG_PATH, false);
+}
+
+void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, void* context)
+{
+    HIVIEW_LOGI("ucollection switch state changed, ret: %{public}s", value);
+    if (context == nullptr || key == nullptr || value == nullptr) {
+        HIVIEW_LOGE("input ptr null");
+        return;
+    }
+    if (strncmp(key, HIVIEW_UCOLLECTION_STATE, strlen(HIVIEW_UCOLLECTION_STATE)) != 0) {
+        HIVIEW_LOGE("param key error");
+        return;
+    }
+    UnifiedCollector* unifiedCollectorPtr = static_cast<UnifiedCollector*>(context);
+    if (unifiedCollectorPtr == nullptr) {
+        HIVIEW_LOGE("unifiedCollectorPtr is null");
+        return;
+    }
+    if (strncmp(value, "true", strlen("true")) == 0) {
+        unifiedCollectorPtr->RunCpuCollectionTask();
+        unifiedCollectorPtr->RunIoCollectionTask();
+        unifiedCollectorPtr->RunUCollectionStatTask();
+        unifiedCollectorPtr->LoadHitraceService();
+    } else {
+        unifiedCollectorPtr->isCpuTaskRunning_ = false;
+        for (const auto &it : unifiedCollectorPtr->taskMap_) {
+            unifiedCollectorPtr->workLoop_->RemoveEvent(it.first);
+        }
+        unifiedCollectorPtr->taskMap_.clear();
+        unifiedCollectorPtr->ExitHitraceService();
+        unifiedCollectorPtr->CleanDataFiles();
+    }
+}
+
+void UnifiedCollector::LoadHitraceService()
+{
+    std::lock_guard<std::mutex> lock(g_traceLock);
+    HIVIEW_LOGI("start to load hitrace service.");
+    uint8_t mode = GetTraceMode();
+    if (mode != TraceMode::CLOSE) {
+        HIVIEW_LOGE("service is running, mode=%{public}u.", mode);
+        return;
+    }
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceErrorCode ret = OpenTrace(tagGroups);
+    if (ret != TraceErrorCode::SUCCESS) {
+        HIVIEW_LOGE("OpenTrace fail.");
+    }
+}
+
+void UnifiedCollector::ExitHitraceService()
+{
+    std::lock_guard<std::mutex> lock(g_traceLock);
+    HIVIEW_LOGI("exit hitrace service.");
+    uint8_t mode = GetTraceMode();
+    if (mode == TraceMode::CLOSE) {
+        HIVIEW_LOGE("service is close mode.");
+        return;
+    }
+    CloseTrace();
 }
 
 void UnifiedCollector::InitWorkLoop()
@@ -125,10 +217,11 @@ void UnifiedCollector::InitWorkPath()
 
 void UnifiedCollector::RunCpuCollectionTask()
 {
-    if (workPath_.empty()) {
-        HIVIEW_LOGE("workPath is null");
+    if (workPath_.empty() || isCpuTaskRunning_) {
+        HIVIEW_LOGE("workPath is null or task is running");
         return;
     }
+    isCpuTaskRunning_ = true;
     auto task = std::bind(&UnifiedCollector::CpuCollectionFfrtTask, this);
     ffrt::submit(task, {}, {}, ffrt::task_attr().name("UC_CPU").qos(ffrt::qos_default));
 }
@@ -137,6 +230,9 @@ void UnifiedCollector::CpuCollectionFfrtTask()
 {
     cpuCollectionTask_ = std::make_shared<CpuCollectionTask>(workPath_);
     while (true) {
+        if (!isCpuTaskRunning_) {
+            break;
+        }
         ffrt::this_task::sleep_for(10s); // 10s: collect period
         cpuCollectionTask_->Collect();
     }
@@ -150,7 +246,8 @@ void UnifiedCollector::RunIoCollectionTask()
     }
     auto ioCollectionTask = std::bind(&UnifiedCollector::IoCollectionTask, this);
     const uint64_t taskInterval = 30; // 30s
-    workLoop_->AddTimerEvent(nullptr, nullptr, ioCollectionTask, taskInterval, true);
+    auto ioSeqId = workLoop_->AddTimerEvent(nullptr, nullptr, ioCollectionTask, taskInterval, true);
+    taskMap_.insert(std::make_pair(ioSeqId, ioCollectionTask));
 }
 
 void UnifiedCollector::IoCollectionTask()
@@ -168,7 +265,8 @@ void UnifiedCollector::RunUCollectionStatTask()
     }
     auto statTask = std::bind(&UnifiedCollector::UCollectionStatTask, this);
     const uint64_t taskInterval = 600; // 600s
-    workLoop_->AddTimerEvent(nullptr, nullptr, statTask, taskInterval, true);
+    auto statSeqId = workLoop_->AddTimerEvent(nullptr, nullptr, statTask, taskInterval, true);
+    taskMap_.insert(std::make_pair(statSeqId, statTask));
 }
 
 void UnifiedCollector::UCollectionStatTask()

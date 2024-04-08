@@ -302,7 +302,7 @@ void CheckCurrentCpuLoad()
     int32_t pid = getpid();
     auto collectResult = collector->CollectProcessCpuStatInfo(pid);
     HIVIEW_LOGI("first get cpu load %{public}f", collectResult.data.cpuLoad);
-    int32_t retryTime = 0;
+    uint32_t retryTime = 0;
     while (collectResult.data.cpuLoad > CPU_LOAD_THRESHOLD && retryTime < MAX_TRY_COUNT) {
         ffrt::this_task::sleep_for(5s);
         collectResult = collector->CollectProcessCpuStatInfo(pid);

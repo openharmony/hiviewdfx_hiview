@@ -12,21 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ADAPTER_LOGLIBRARY_TEST_TOOLS_H
-#define ADAPTER_LOGLIBRARY_TEST_TOOLS_H
+ 
+#ifndef CONTENT_READER_VERSION_2_H
+#define CONTENT_READER_VERSION_2_H
 
 #include <string>
 
+#include "content_reader.h"
+
 namespace OHOS {
 namespace HiviewDFX {
-class AdapterLoglibraryTestTools {
+#define MAGIC_NUM_VERSION2 0x894556454E541a0a
+class ContentReaderVersion2 : public ContentReader {
 public:
-    static void CreateDir(const std::string& dir);
-    static void RemoveDir(const std::string& dir);
-    static void ApplyPermissionAccess();
-private:
-    static void NativeToken(const char* permList[], int permSize);
+    int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header, uint64_t& docHeaderSize,
+        std::string& sysVersion) override;
+    bool IsValidMagicNum(const uint64_t magicNum) override;
+
+protected:
+    virtual int GetContentHeader(uint8_t* content, EventStore::ContentHeader& header) override;
+    virtual size_t GetContentHeaderSize() override;
 };
-} // namespace HiviewDFX
-} // namespace OHOS
-#endif // ADAPTER_LOGLIBRARY_TEST_TOOLS_H
+} // HiviewDFX
+} // OHOS
+#endif // CONTENT_READER_VERSION_2_H

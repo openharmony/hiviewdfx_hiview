@@ -20,13 +20,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class ProcessCpuData {
 public:
-    ProcessCpuData();
-    ProcessCpuData(int pid);
+    ProcessCpuData(int magic, int pid, unsigned int count);
     ~ProcessCpuData();
     struct ucollection_process_cpu_item* GetNextProcess();
 
 private:
-    void Init(int magic, int totalCount, int pid);
+    void Init(int magic, unsigned int totalCount, int pid);
 
     friend class CollectDeviceClient;
     struct ucollection_process_cpu_entry *entry_;

@@ -12,21 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ADAPTER_LOGLIBRARY_TEST_TOOLS_H
-#define ADAPTER_LOGLIBRARY_TEST_TOOLS_H
 
-#include <string>
+#ifndef HIVIEW_BASE_EVENT_STORE_UTILITY_UNITTEST
+#define HIVIEW_BASE_EVENT_STORE_UTILITY_UNITTEST
+
+#include <gtest/gtest.h>
 
 namespace OHOS {
 namespace HiviewDFX {
-class AdapterLoglibraryTestTools {
+class SysEventStoreUtilityTest : public testing::Test {
 public:
-    static void CreateDir(const std::string& dir);
-    static void RemoveDir(const std::string& dir);
-    static void ApplyPermissionAccess();
-private:
-    static void NativeToken(const char* permList[], int permSize);
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+    void SetUp();
+    void TearDown();
 };
-} // namespace HiviewDFX
-} // namespace OHOS
-#endif // ADAPTER_LOGLIBRARY_TEST_TOOLS_H
+}  // namespace HiviewDFX
+}  // namespace OHOS
+#endif  // HIVIEW_BASE_EVENT_STORE_UTILITY_UNITTEST
