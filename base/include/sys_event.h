@@ -50,11 +50,11 @@ public:
 };
 }
 
-constexpr int8_t LOG_ALLOW_PACK = 0 << 5;
-constexpr int8_t LOG_NOT_ALLOW_PACK = 1 << 5;
-constexpr int8_t LOG_PACKED = 1;
-constexpr int8_t LOG_REPEAT = 1;
-constexpr int8_t LOG_THRESHOLD = 2;
+constexpr uint8_t LOG_ALLOW_PACK = 0 << 5;
+constexpr uint8_t LOG_NOT_ALLOW_PACK = 1 << 5;
+constexpr uint8_t LOG_PACKED = 1;
+constexpr uint8_t LOG_REPEAT = 1;
+constexpr uint8_t LOG_THRESHOLD = 2;
 
 class SysEventCreator;
 class SysEvent : public PipelineEvent {
@@ -132,7 +132,7 @@ public:
 public:
     int eventType_;
     bool preserve_;
-    int8_t log_;
+    uint8_t log_;
 
 public:
     static std::atomic<uint32_t> totalCount_;
