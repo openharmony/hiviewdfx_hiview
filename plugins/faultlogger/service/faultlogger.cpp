@@ -531,6 +531,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
+    params["app_running_unique_id"] = sysEvent->GetEventValue("APP_RUNNING_UNIQUE_ID");
     FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
