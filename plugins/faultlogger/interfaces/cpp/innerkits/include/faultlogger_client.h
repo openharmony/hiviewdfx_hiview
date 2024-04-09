@@ -32,6 +32,8 @@ struct FaultLogInfoInner {
     int32_t id {-1};
     /** the id of process which fault happened*/
     int32_t pid {-1};
+    /** the fd of pipe to transfer json string*/
+    int32_t pipeFd {-1};
     /** type of fault */
     int32_t faultLogType {0};
     /** name of module which fault occurred */
