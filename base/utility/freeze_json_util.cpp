@@ -137,6 +137,10 @@ void FormatCollect(std::map<std::string, std::list<std::string>>& collectMap, Fr
         // use the earliest peer_binder
         jsonCollector.stack = collectMap["stack"].front();
     }
+
+    if (!collectMap["runtimeId"].empty()) {
+        jsonCollector.runtimeId = std::stol(collectMap["runtimeId"].front());
+    }
 }
 
 void LoadCollectorFromFile(const std::string& filePath, FreezeJsonCollector& jsonCollector)
