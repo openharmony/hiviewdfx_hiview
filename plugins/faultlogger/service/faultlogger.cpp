@@ -51,6 +51,7 @@
 #include "faultlog_query_result_inner.h"
 #include "faultlog_util.h"
 #include "faultlogger_adapter.h"
+#include "ffrt.h"
 #include "file_util.h"
 #include "hisysevent.h"
 #include "hiview_global.h"
@@ -583,9 +584,9 @@ void Faultlogger::OnLoad()
         workLoop_ = eventloop;
     }
 #ifndef UNIT_TEST
-    std::thread sanitizerdThread(&Faultlogger::RunSanitizerd);
-    pthread_setname_np(sanitizerdThread.native_handle(), "RunSanitizerd");
-    sanitizerdThread.detach();
+    ffrt::submit([&] {
+        Faultlogger::RunSanitizerd();
+        }, {}, {});
 #endif
 }
 
