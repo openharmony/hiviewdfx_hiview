@@ -157,7 +157,7 @@ int SysEventDocReader::ReadPages(const DocQuery& query, EntryQueue& entries, int
                     pageIndex, docPath_.c_str());
                 break;
             }
-            HIVIEW_LOGD("read the next page index=%{public}zu, file=%{public}s", pageIndex, docPath_.c_str());
+            HIVIEW_LOGD("read the next page index=%{public}" PRIu32 ", file=%{public}s", pageIndex, docPath_.c_str());
             continue;
         }
         TryToAddEntry(content, contentSize, query, entries, num);
