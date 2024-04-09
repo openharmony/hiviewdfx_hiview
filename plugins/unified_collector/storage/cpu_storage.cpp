@@ -28,6 +28,7 @@
 #include "sql_util.h"
 #include "string_util.h"
 #include "time_util.h"
+#include "power_status_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -135,11 +136,16 @@ bool IsForegroundStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollection
     return procForegroundTime >= cpuCollectionInfo.startTime;
 }
 
-int32_t GetProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)
+int32_t GetPowerProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
-    return IsForegroundStateInCollectionPeriod(cpuCollectionInfo)
-        ? static_cast<int32_t>(FOREGROUND)
-        : static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(cpuCollectionInfo.pid));
+    int32_t processState = IsForegroundStateInCollectionPeriod(cpuCollectionInfo) ? static_cast<int32_t>(FOREGROUND) :
+        static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(cpuCollectionInfo.pid));
+#ifdef POWER_MANAGER_ENABLE
+    int32_t powerState = PowerStatusManager::GetInstance().GetPowerState();
+    return processState + powerState;
+#else
+    return processState;
+#endif
 }
 
 int32_t CreateTable(NativeRdb::RdbStore& dbStore, const std::string& tableName,
@@ -293,7 +299,7 @@ void CpuStorage::Store(const ProcessCpuStatInfo& cpuCollectionInfo)
     bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollectionInfo.startTime));
     bucket.PutLong(COLUMN_END_TIME, static_cast<int64_t>(cpuCollectionInfo.endTime));
     bucket.PutInt(COLUMN_PID, cpuCollectionInfo.pid);
-    bucket.PutInt(COLUMN_PROC_STATE, GetProcessStateInCollectionPeriod(cpuCollectionInfo));
+    bucket.PutInt(COLUMN_PROC_STATE, GetPowerProcessStateInCollectionPeriod(cpuCollectionInfo));
     bucket.PutString(COLUMN_PROC_NAME, cpuCollectionInfo.procName);
     bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuLoad));
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuUsage));
