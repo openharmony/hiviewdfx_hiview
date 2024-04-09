@@ -15,10 +15,11 @@
 #ifndef HIVIEWDFX_HIVIEW_POWER_STATUS_MANAGER_H
 #define HIVIEWDFX_HIVIEW_POWER_STATUS_MANAGER_H
 
-#include <common_event_data.h>
-#include <common_event_subscriber.h>
 
+#include "common_event_data.h"
+#include "common_event_subscriber.h"
 #include "singleton.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
@@ -44,7 +45,7 @@ public:
 private:
     std::mutex mutex_;
     int32_t powerState_;
-    std::shared_ptr<EventFwk::CommonEventSubscriber> powerStateSubscriber = nullptr;
+    std::shared_ptr<EventFwk::CommonEventSubscriber> powerStateSubscriber_ = nullptr;
 };
 }
 }

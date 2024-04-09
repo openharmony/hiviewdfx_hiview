@@ -14,8 +14,8 @@
  */
 #include "power_status_manager.h"
 
-#include <common_event_support.h>
-#include <common_event_manager.h>
+#include "common_event_support.h"
+#include "common_event_manager.h"
 #include "logger.h"
 #include "power_mgr_client.h"
 
@@ -31,7 +31,6 @@ void PowerStateSubscriber::OnReceiveEvent(const CommonEventData &data)
         PowerStatusManager::GetInstance().SetPowerState(SCREEN_ON);
     } else if (action == CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
         PowerStatusManager::GetInstance().SetPowerState(SCREEN_OFF);
-    } else {
     }
 }
 
@@ -42,7 +41,7 @@ PowerStatusManager::PowerStatusManager()
     matchingSkills.AddEvent(CommonEventSupport::COMMON_EVENT_SCREEN_ON);
     matchingSkills.AddEvent(CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     CommonEventSubscribeInfo info(matchingSkills);
-    powerStateSubscriber = std::make_shared<PowerStateSubscriber>(info);
+    powerStateSubscriber_ = std::make_shared<PowerStateSubscriber>(info);
     if (!CommonEventManager::SubscribeCommonEvent(powerStateSubscriber)) {
         HIVIEW_LOGE("register PowerStateSubscriber fail");
     }
@@ -50,7 +49,7 @@ PowerStatusManager::PowerStatusManager()
 
 PowerStatusManager::~PowerStatusManager()
 {
-    if (powerStateSubscriber != nullptr) {
+    if (powerStateSubscriber_ != nullptr) {
         CommonEventManager::UnSubscribeCommonEvent(powerStateSubscriber);
     }
 }
