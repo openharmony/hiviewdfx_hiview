@@ -20,6 +20,7 @@ config("ucolletciton_source_config") {
     "calculator/include",
     "collector/inner_include",
     "process/include",
+    "power/include",
     "decorator/include",
     "utils/include",
     "$hiview_interfaces/inner_api/unified_collection",
@@ -108,6 +109,14 @@ ohos_source_set("ucollection_source") {
   if (is_wifi_enable) {
     external_deps += [ "wifi:wifi_sdk" ]
     defines += [ "COMMUNICATION_WIFI_ENABLE" ]
+  }
+
+  if (power_manager_enable) {
+    external_deps += [
+      "common_event_service:cesfwk_innerkits",
+      "power_manager:powermgr_client",
+    ]
+    sources += [ "power/power_status_manager.cpp" ]
   }
 
   part_name = "hiview"
