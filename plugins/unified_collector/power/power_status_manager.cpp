@@ -42,7 +42,7 @@ PowerStatusManager::PowerStatusManager()
     matchingSkills.AddEvent(CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     CommonEventSubscribeInfo info(matchingSkills);
     powerStateSubscriber_ = std::make_shared<PowerStateSubscriber>(info);
-    if (!CommonEventManager::SubscribeCommonEvent(powerStateSubscriber)) {
+    if (!CommonEventManager::SubscribeCommonEvent(powerStateSubscriber_)) {
         HIVIEW_LOGE("register PowerStateSubscriber fail");
     }
 }
@@ -50,7 +50,7 @@ PowerStatusManager::PowerStatusManager()
 PowerStatusManager::~PowerStatusManager()
 {
     if (powerStateSubscriber_ != nullptr) {
-        CommonEventManager::UnSubscribeCommonEvent(powerStateSubscriber);
+        CommonEventManager::UnSubscribeCommonEvent(powerStateSubscriber_);
     }
 }
 
