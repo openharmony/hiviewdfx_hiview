@@ -86,11 +86,11 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
         HIVIEW_LOGW("invalid process id=%{public}d", procId);
         return;
     }
-#ifdef PC_APP_STATE_COLLECT_ENABLE
+#if PC_APP_STATE_COLLECT_ENABLE
     int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
     ProcessState procState = GetProcessStateByGroup(procGroup);
 #endif
-#ifndef PC_APP_STATE_COLLECT_ENABLE
+#if !PC_APP_STATE_COLLECT_ENABLE
     ProcessState procState = GetProcessStateByEvent(sysEvent);
 #endif
     if (procState == INVALID) {
