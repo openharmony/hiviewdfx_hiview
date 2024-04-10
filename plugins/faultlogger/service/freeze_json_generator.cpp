@@ -130,7 +130,7 @@ FreezeJsonParams::FreezeJsonParams(const FreezeJsonParams::Builder& builder)
     externalLog_(builder.externalLog_),
     pid_(builder.pid_),
     uid_(builder.uid_),
-    runtimeId_(builder.runtimeId_),
+    appRunningUniqueId_(builder.appRunningUniqueId_),
     exception_(builder.exception_),
     hilog_(builder.hilog_),
     eventHandler_(builder.eventHandler_),
@@ -202,9 +202,9 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitUid(long uid)
     return *this;
 }
 
-FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitRuntimeId(long runtimeId)
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitAppRunningUniqueId(const std::string& appRunningUniqueId)
 {
-    runtimeId_ = runtimeId;
+    appRunningUniqueId_ = appRunningUniqueId;
     return *this;
 }
 
@@ -274,7 +274,7 @@ std::string FreezeJsonParams::JsonStr() const
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsExternalLog, externalLog_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsPid, pid_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsUid, uid_));
-    list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsRuntimeId, runtimeId_));
+    list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsAppRunningUniqueId, appRunningUniqueId_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsException, exception_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsHilog, hilog_));
     list.push_back(FreezeJsonUtil::GetStrByKeyValue(jsonParamsEventHandler, eventHandler_));

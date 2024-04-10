@@ -138,8 +138,8 @@ void FormatCollect(std::map<std::string, std::list<std::string>>& collectMap, Fr
         jsonCollector.stack = collectMap["stack"].front();
     }
 
-    if (!collectMap["runtimeId"].empty()) {
-        jsonCollector.runtimeId = std::stol(collectMap["runtimeId"].front());
+    if (!collectMap["appRunningUniqueId"].empty()) {
+        jsonCollector.appRunningUniqueId = collectMap["appRunningUniqueId"].front();
     }
 }
 
