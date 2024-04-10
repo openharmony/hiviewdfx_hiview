@@ -201,7 +201,7 @@ int32_t HiviewServiceAbilityStub::HandleListRequest(MessageParcel& data, Message
     if (ret != ERR_OK) {
         return ret;
     }
-    HIVIEW_LOGW("file list num:%{public}d", fileInfos.size());
+    HIVIEW_LOGW("file list num:%{public}zu", fileInfos.size());
     sptr<Ashmem> ashmem = AshMemoryUtils::GetAshmem(ASH_MEM_NAME, ASH_MEM_SIZE);
     if (ashmem == nullptr) {
         HIVIEW_LOGE("ge ashmem failed.");
@@ -346,3 +346,4 @@ int32_t HiviewServiceAbilityStub::HandleRecoverTraceRequest(MessageParcel& data,
 }
 } // namespace HiviewDFX
 } // namespace OHOS
+

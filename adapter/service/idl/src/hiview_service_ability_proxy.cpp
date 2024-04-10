@@ -65,7 +65,7 @@ int32_t HiviewServiceAbilityProxy::List(const std::string& logType, std::vector<
         HIVIEW_LOGE("ReadBulkData failed");
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
-    HIVIEW_LOGW("file list num:%{public}d", fileInfos.size());
+    HIVIEW_LOGW("file list num:%{public}zu", fileInfos.size());
     return ERR_OK;
 }
 
