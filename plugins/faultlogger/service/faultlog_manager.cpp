@@ -97,7 +97,7 @@ void FaultLogManager::Init()
     store_->Init();
     store_->SetMaxSize(MAX_FAULTLOG_STORAGE_SIZE);
     store_->SetMinKeepingFileNumber(MAX_FAULT_INFO_IN_MEM);
-    faultLogDb_ = new FaultLogDatabase();
+    faultLogDb_ = new FaultLogDatabase(looper_);
 }
 
 std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const

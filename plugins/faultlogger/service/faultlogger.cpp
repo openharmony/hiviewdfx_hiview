@@ -572,17 +572,16 @@ void Faultlogger::OnLoad()
     mgr_ = std::make_unique<FaultLogManager>(GetHiviewContext()->GetSharedWorkLoop());
     mgr_->Init();
     hasInit_ = true;
+    workLoop_ = GetHiviewContext()->GetSharedWorkLoop();
 #ifndef UNITTEST
     FaultloggerAdapter::StartService(this);
-#endif
 
     // some crash happened before hiview start, ensure every crash event is added into eventdb
-    auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
-    if (eventloop != nullptr) {
+    if (workLoop_ != nullptr) {
         auto task = std::bind(&Faultlogger::StartBootScan, this);
-        eventloop->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
-        workLoop_ = eventloop;
+        workLoop_->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
     }
+#endif
 #ifndef UNIT_TEST
     ffrt::submit([&] {
         Faultlogger::RunSanitizerd();

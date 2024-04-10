@@ -22,6 +22,7 @@
 #include <mutex>
 #include <string>
 
+#include "event_loop.h"
 #include "faultlog_info.h"
 #include "sys_event.h"
 
@@ -29,13 +30,13 @@ namespace OHOS {
 namespace HiviewDFX {
 class FaultLogDatabase {
 public:
-    FaultLogDatabase() {};
-    ~FaultLogDatabase(){};
+    explicit FaultLogDatabase(const std::shared_ptr<EventLoop>& eventLoop);
     void SaveFaultLogInfo(FaultLogInfo& info);
     std::list<FaultLogInfo> GetFaultInfoList(
         const std::string& module, int32_t id, int32_t faultType, int32_t maxNum);
     bool IsFaultExist(int32_t pid, int32_t uid, int32_t faultType);
 private:
+    std::shared_ptr<EventLoop> eventLoop_{nullptr};
     std::mutex mutex_;
 };
 }  // namespace HiviewDFX
