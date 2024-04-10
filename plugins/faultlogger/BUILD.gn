@@ -55,6 +55,7 @@ group("unittest") {
   testonly = true
   deps = [
     "interfaces/js/test/unittest:unittest",
+    "test:AsanUnittest",
     "test:FaultloggerClientUnittest",
     "test:FaultloggerUnittest",
   ]
