@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,8 +21,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "sysevent_source.h"
 #include "hiview_platform.h"
+#include "sysevent_source.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -81,4 +81,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     OHOS::HiviewDFX::SysEventSourceDumpTest(data, size);
     return 0;
 }
-
