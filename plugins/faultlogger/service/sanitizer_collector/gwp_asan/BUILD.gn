@@ -29,6 +29,7 @@ ohos_shared_library("libasan_logger") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "zlib:libz",
   ]
 
   deps = [
@@ -37,7 +38,6 @@ ohos_shared_library("libasan_logger") {
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/openssl:libcrypto_shared",
-    "//third_party/zlib:libz",
   ]
 
   install_enable = true

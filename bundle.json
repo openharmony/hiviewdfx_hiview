@@ -65,8 +65,7 @@
                 "libxml2",
                 "sqlite",
                 "openssl",
-                "bounds_checking_function",
-                "zlib"
+                "bounds_checking_function"
             ]
         },
         "build": {
