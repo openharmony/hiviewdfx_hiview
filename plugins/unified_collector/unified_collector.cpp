@@ -58,7 +58,7 @@ ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
 
 ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
 {
-    if(sysEvent.GetEventName() != RSS_APP_STATE_EVENT) {
+    if (sysEvent.GetEventName() != RSS_APP_STATE_EVENT) {
         return INVALID;
     }
     int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
