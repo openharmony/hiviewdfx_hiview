@@ -22,6 +22,8 @@
 #include "file_util.h"
 #include "rdb_predicates.h"
 #include "time_util.h"
+#include "power_status_manager.h"
+#include "gmock/gmock-matchers.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -131,4 +133,26 @@ HWTEST_F(CpuStorageTest, CpuStorageTest003, TestSize.Level3)
     ASSERT_EQ(ret, E_OK);
     ret = callback.OnUpgrade(*dbStore, 2, 3); // test db upgrade from version 2 to version 3
     ASSERT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: CpuStorageTest004
+ * @tc.desc: CpuStorage as RdbOpenCallback
+ * @tc.type: FUNC
+ * @tc.require: issueI5NULM
+ */
+HWTEST_F(CpuStorageTest, CpuStorageTest004, TestSize.Level3)
+{
+#ifdef POWER_MANAGER_ENABLE
+    int32_t powerState = UCollectUtil::PowerStatusManager::GetInstance().GetPowerState();
+    ASSERT_THAT(powerState, testing::AnyOf(UCollectUtil::SCREEN_OFF, UCollectUtil::SCREEN_ON));
+    UCollectUtil::PowerStatusManager::GetInstance().SetPowerState(UCollectUtil::SCREEN_ON);
+    int32_t powerState2 = UCollectUtil::PowerStatusManager::GetInstance().GetPowerState();
+    ASSERT_EQ(powerState2, UCollectUtil::SCREEN_ON);
+    UCollectUtil::PowerStatusManager::GetInstance().SetPowerState(UCollectUtil::SCREEN_OFF);
+    int32_t powerState3 = UCollectUtil::PowerStatusManager::GetInstance().GetPowerState();
+    ASSERT_EQ(powerState3, UCollectUtil::SCREEN_OFF);
+#else
+    ASSERT_TRUE(true);
+#endif
 }

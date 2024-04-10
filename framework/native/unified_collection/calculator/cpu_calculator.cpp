@@ -60,14 +60,14 @@ void CpuCalculator::InitCpuDmipses()
         }
         uint32_t dmipse = StringUtil::StringToUl(cpuCapacityFileContent);
         cpuDmipses_.emplace_back(dmipse);
-        HIVIEW_LOGI("get cpu=%{public}u capacity value=%{public}u", i, dmipse);
+        HIVIEW_LOGD("get cpu=%{public}u capacity value=%{public}u", i, dmipse);
     }
 }
 
 void CpuCalculator::InitMaxCpuLoadUnit()
 {
     maxCpuLoadUnit_ = IsSMTEnabled() ? GetMaxStCpuLoadWithSMT() : GetMaxStCpuLoad();
-    HIVIEW_LOGI("init max cpu load unit=%{public}" PRIu64, maxCpuLoadUnit_);
+    HIVIEW_LOGD("init max cpu load unit=%{public}" PRIu64, maxCpuLoadUnit_);
 }
 
 bool CpuCalculator::IsSMTEnabled()

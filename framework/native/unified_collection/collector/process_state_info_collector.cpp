@@ -168,6 +168,7 @@ std::optional<ProcessCpuStatInfo> ProcessStatInfoCollector::CalculateProcessCpuS
     processCpuStatInfo.sCpuUsage = cpuCalculator_->CalculateCpuUsage(procCpuItem->cpu_usage_stime,
         lastProcCpuTimeInfos_[procCpuItem->pid].sUsageTime, calcTimeInfo.period);
     processCpuStatInfo.cpuUsage = processCpuStatInfo.uCpuUsage + processCpuStatInfo.sCpuUsage;
+    processCpuStatInfo.threadCount = procCpuItem->thread_total;
     if (processCpuStatInfo.cpuLoad >= 1) { // 1: max cpu load
         HIVIEW_LOGI("invalid cpu load=%{public}f, name=%{public}s, last_load=%{public}" PRIu64
             ", curr_load=%{public}" PRIu64, processCpuStatInfo.cpuLoad, processCpuStatInfo.procName.c_str(),

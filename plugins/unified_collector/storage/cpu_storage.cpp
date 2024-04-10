@@ -303,7 +303,7 @@ void CpuStorage::Store(const ProcessCpuStatInfo& cpuCollectionInfo)
     bucket.PutString(COLUMN_PROC_NAME, cpuCollectionInfo.procName);
     bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuLoad));
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuUsage));
-    bucket.PutInt(COLUMN_THREAD_CNT, 0); // 0 is a default thread count.
+    bucket.PutInt(COLUMN_THREAD_CNT, cpuCollectionInfo.threadCount);
     int64_t seq = 0;
     if (dbStore_->Insert(seq, CPU_COLLECTION_TABLE_NAME, bucket) != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to insert cpu data to db store, pid=%{public}d, proc_name=%{public}s", 0, "");

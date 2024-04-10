@@ -22,6 +22,7 @@ config("unittest_config") {
   include_dirs = [
     ".",
     "$hiview_plugin/unified_collector/storage/include",
+    "$hiview_plugin/unified_collector/power/include",
   ]
 
   cflags = [ "-D__UNITTEST__" ]
@@ -39,6 +40,7 @@ ohos_unittest("CpuStorageTest") {
     "$hiview_core:hiview_core",
     "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/unified_collector:unified_collector",
+    "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -46,4 +48,12 @@ ohos_unittest("CpuStorageTest") {
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
+
+  if (power_manager_enable) {
+    external_deps += [
+      "common_event_service:cesfwk_innerkits",
+      "power_manager:powermgr_client",
+    ]
+    defines = [ "POWER_MANAGER_ENABLE" ]
+  }
 }
