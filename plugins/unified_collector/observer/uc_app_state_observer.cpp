@@ -14,20 +14,23 @@
  */
 #include "uc_app_state_observer.h"
 
+#include "logger.h"
 #include "process_status.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
 
 void UcAppStateObserver::OnProcessCreated(const AppExecFwk::ProcessData& processData)
 {
+    HIVIEW_LOGD("process=%{public}d created", processData.pid);
     ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED);
 }
 
 void UcAppStateObserver::OnProcessDied(const AppExecFwk::ProcessData& processData)
 {
-    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, DIED);
+    HIVIEW_LOGD("process=%{public}d died", processData.pid);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

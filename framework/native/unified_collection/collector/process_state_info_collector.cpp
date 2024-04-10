@@ -181,6 +181,7 @@ void ProcessStatInfoCollector::TryToDeleteDeadProcessInfo()
     for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
         // if the latest collection operation does not update the process collection time, delete it
         if (it->second.collectionTime != lastCollectionTime_) {
+            ProcessStatus::GetInstance().NotifyProcessState(it->first, DIED);
             it = lastProcCpuTimeInfos_.erase(it);
         } else {
             it++;
