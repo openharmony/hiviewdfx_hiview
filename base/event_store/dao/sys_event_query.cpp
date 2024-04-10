@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -506,9 +506,7 @@ ResultSet SysEventQuery::Execute(int limit, DbQueryTag tag, QueryProcessInfo cal
     }
     while (!entries.empty() && resultNum >= 0) {
         auto& entry = entries.top();
-        SysEvent sysEvent("", nullptr, entry.value);
-        sysEvent.SetSeq(entry.id);
-        resultSet.eventRecords_.emplace_back(sysEvent);
+        resultSet.eventRecords_.emplace_back("", nullptr, entry.data, entry.id);
         entries.pop();
         resultNum--;
     }

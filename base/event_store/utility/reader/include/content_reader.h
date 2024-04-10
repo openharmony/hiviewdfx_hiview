@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef CONTENT_READER_H
 #define CONTENT_READER_H
 
@@ -23,12 +23,23 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct EventInfo {
-    // Event domain
-    std::string domain;
+namespace EventRaw {
+class RawData;
+}
+using EventRaw::RawData;
 
-    // Event name
-    std::string name;
+struct EventInfo {
+    char domain[MAX_DOMAIN_LEN] = {0};
+
+    char name[MAX_EVENT_NAME_LEN] = {0};
+
+    std::string level;
+
+    std::string tag;
+
+    int64_t seq = 0;
+
+    int64_t timestamp = 0;
 };
 using EventInfo = struct EventInfo;
 
@@ -38,8 +49,7 @@ public:
 
 public:
     static uint8_t ReadFmtVersion(std::ifstream& docStream);
-    int ReadRawEvent(const EventInfo& docInfo, uint8_t** rawEvent, uint32_t& eventSize,
-        uint8_t* content, uint32_t contentSize);
+    std::shared_ptr<RawData> ReadRawData(const EventInfo& eventInfo, uint8_t* content, uint32_t contentSize);
     virtual int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
         uint64_t& docHeaderSize, std::string& sysVersion) = 0;
     virtual bool IsValidMagicNum(const uint64_t magicNum) = 0;
@@ -49,7 +59,12 @@ protected:
     virtual size_t GetContentHeaderSize() = 0;
 
 protected:
-    int WriteDomainName(const EventInfo& docInfo, uint8_t** event, uint32_t eventSize);
+    int AppendDomainAndName(std::shared_ptr<RawData> rawData, const EventInfo& eventInfo);
+    int AppendContentData(std::shared_ptr<RawData> rawData, uint8_t* content, uint32_t contentSize);
+    int AppendExtraInfo(std::shared_ptr<RawData> rawData, const EventInfo& eventInfo);
+    int AppendTag(std::shared_ptr<RawData> rawData, const std::string& tag);
+    int AppendLevel(std::shared_ptr<RawData> rawData, const std::string& level);
+    int AppendSeq(std::shared_ptr<RawData> rawData, int64_t seq);
 };
 } // HiviewDFX
 } // OHOS

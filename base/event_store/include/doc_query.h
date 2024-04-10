@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,9 +19,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace EventRaw {
-class DecodedEvent;
-} // EventRaw
 namespace EventStore {
 class Cond;
 class FieldValue;
@@ -30,7 +27,7 @@ class DocQuery {
 public:
     std::pair<std::string, bool> GetOrderField();
     void And(const Cond& cond);
-    bool IsContainExtraConds(EventRaw::DecodedEvent& decodedEvent) const;
+    bool IsContainExtraConds(uint8_t* content) const;
     bool IsContainInnerConds(uint8_t* content) const;
     std::string ToString() const;
 

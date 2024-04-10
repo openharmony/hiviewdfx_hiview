@@ -26,17 +26,6 @@ namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDocWriter");
 namespace {
 constexpr uint32_t RAW_DATA_OFFSET = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-
-template<typename T>
-int CopyValue(uint8_t* dst, size_t dstSize, T value)
-{
-    return memcpy_s(dst, dstSize, &value, sizeof(T));
-}
-
-int CopyValue(uint8_t* dst, size_t dstSize, const uint8_t* src, size_t count)
-{
-    return memcpy_s(dst, dstSize, src, count);
-}
 }
 SysEventDocWriter::SysEventDocWriter(const std::string& path): EventDocWriter(path)
 {
@@ -135,12 +124,13 @@ int SysEventDocWriter::FillCurrPageWithZero(uint32_t remainSize)
 
 int SysEventDocWriter::GetContentSize(const std::shared_ptr<SysEvent>& sysEvent, uint32_t& contentSize)
 {
-    if (sysEvent->AsRawData() == nullptr) {
+    uint8_t* rawData = sysEvent->AsRawData();
+    if (rawData == nullptr) {
         HIVIEW_LOGE("The raw data of event is null");
         return DOC_STORE_ERROR_NULL;
     }
-    uint32_t dataSize = *(reinterpret_cast<uint32_t*>(sysEvent->AsRawData()));
-    if (dataSize < RAW_DATA_OFFSET) {
+    uint32_t dataSize = *(reinterpret_cast<uint32_t*>(rawData));
+    if (dataSize < RAW_DATA_OFFSET || dataSize > MAX_NEW_SIZE) {
         HIVIEW_LOGE("The length=%{public}u of raw data is invalid", dataSize);
         return DOC_STORE_ERROR_INVALID;
     }
@@ -178,51 +168,30 @@ int SysEventDocWriter::WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, ui
 
 int SysEventDocWriter::WriteContent(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize)
 {
-    uint8_t* content = nullptr;
-    if (int ret = BuildContent(sysEvent, &content, contentSize); ret != DOC_STORE_SUCCESS) {
-        return ret;
-    }
-    out_.seekp(0, std::ios::end); // move to the end
-    out_.write(reinterpret_cast<char*>(content), contentSize);
-    delete[] content;
-    out_.flush();
-    HIVIEW_LOGD("write content size=%{public}u, seq=%{public}" PRId64 ", file=%{public}s", contentSize,
-        sysEvent->GetEventSeq(), docPath_.c_str());
-    return DOC_STORE_SUCCESS;
-}
+    // move to the end
+    out_.seekp(0, std::ios::end);
 
-int SysEventDocWriter::BuildContent(const std::shared_ptr<SysEvent>& sysEvent,
-    uint8_t** contentPtr, uint32_t contentSize)
-{
-    if (contentSize > MAX_NEW_SIZE) {
-        HIVIEW_LOGE("invalid new content size=%{public}u", contentSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint8_t* content = new(std::nothrow) uint8_t[contentSize];
-    if (content == nullptr) {
-        HIVIEW_LOGE("failed to new memory for content, size=%{public}u", contentSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    if (CopyValue(content, contentSize, contentSize) != EOK) {
-        HIVIEW_LOGE("failed to write contentSize=%{public}u", contentSize);
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint32_t pos = sizeof(contentSize);
-    if (CopyValue(content + pos, contentSize, sysEvent->GetEventSeq()) != EOK) {
-        HIVIEW_LOGE("failed to write seq=%{public}" PRId64, sysEvent->GetEventSeq());
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    pos += sizeof(sysEvent->GetEventSeq());
+    // content.blockSize
+    out_.write(reinterpret_cast<const char*>(&contentSize), sizeof(contentSize));
+
+    // content.seq
+    const auto eventSeq = sysEvent->GetEventSeq();
+    out_.write(reinterpret_cast<const char*>(&eventSeq), sizeof(eventSeq));
+
+    // content.rawData
     uint8_t* rawData = sysEvent->AsRawData();
     uint32_t dataSize = *(reinterpret_cast<uint32_t*>(rawData)) - RAW_DATA_OFFSET;
-    if (CopyValue(content + pos, contentSize, rawData + RAW_DATA_OFFSET, dataSize) != EOK) {
-        HIVIEW_LOGE("failed to write event data");
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    *contentPtr = content;
+    out_.write(reinterpret_cast<const char*>(rawData + RAW_DATA_OFFSET), dataSize);
+
+    // content.crc
+    const uint32_t crcDefault = 0;
+    out_.write(reinterpret_cast<const char*>(&crcDefault), CRC_SIZE);
+
+    // flush the file
+    out_.flush();
+
+    HIVIEW_LOGD("write content size=%{public}u, seq=%{public}" PRId64 ", file=%{public}s", contentSize,
+        sysEvent->GetEventSeq(), docPath_.c_str());
     return DOC_STORE_SUCCESS;
 }
 } // EventStore

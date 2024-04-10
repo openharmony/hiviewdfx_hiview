@@ -157,15 +157,13 @@ HWTEST_F(SysEventStoreUtilityTest, SysEventStoreUtilityTest003, testing::ext::Te
     reader->ReadDocDetails(dbFileStream, header, docHeaderSize, sysVersion);
     ASSERT_EQ(header.version, EventStore::EVENT_DATA_FORMATE_VERSION::VERSION3);
     ASSERT_GT(sysVersion.size(), 0);
-    uint8_t* rawEvent = nullptr;
-    uint32_t eventSize = 0;
     uint8_t content[TEST_EVENT_SIZE] = {0};
     dbFileStream.seekg(docHeaderSize, std::ios::beg);
     dbFileStream.read(reinterpret_cast<char*>(&content), TEST_EVENT_SIZE);
     uint32_t contentSize = TEST_EVENT_SIZE;
     EventInfo info;
-    auto ret = reader->ReadRawEvent(info, &rawEvent, eventSize, content, contentSize);
-    ASSERT_EQ(ret, DOC_STORE_SUCCESS);
+    auto ret = reader->ReadRawData(info, content, contentSize);
+    ASSERT_NE(ret, nullptr);
     dbFileStream.close();
 }
 } // namespace HiviewDFX

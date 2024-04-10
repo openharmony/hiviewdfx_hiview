@@ -716,8 +716,7 @@ HWTEST_F(SysEventDaoTest, DocQueryTest_01, testing::ext::TestSize.Level0)
     std::string jsonStr = R"~({"domain_":"demo","name_":"DocQueryTest_01","type_":1,"tz_":8,"time_":1620271291188,
         "pid_":6527,"tid_":6527,"INT_VALUE":1,"DOU_VALUE":1.23,"STR_VALUE":"test_event"})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
-    EventRaw::DecodedEvent decodedEvent(sysEvent->rawData_->GetData());
-    ASSERT_TRUE(docQuery.IsContainExtraConds(decodedEvent));
+    ASSERT_TRUE(docQuery.IsContainExtraConds(sysEvent->rawData_->GetData()));
 }
 
 /**

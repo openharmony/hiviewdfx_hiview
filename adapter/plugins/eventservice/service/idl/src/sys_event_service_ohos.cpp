@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -197,7 +197,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             isMatched ? "success" : "fail");
         if (isMatched) {
             callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_),
-                static_cast<int>(event->what_), Str8ToStr16(event->AsJsonStr()));
+                static_cast<uint32_t>(event->eventType_), Str8ToStr16(event->AsJsonStr()));
         }
     }
     dataPublisher_->OnSysEvent(event);

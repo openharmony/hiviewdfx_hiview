@@ -44,10 +44,13 @@ std::string EventCol::LEVEL = "level_";
 std::string EventCol::SEQ = "seq_";
 std::string EventCol::TAG = "tag_";
 }
+using EventRaw::HiSysEventHeader;
 namespace {
 constexpr int64_t DEFAULT_INT_VALUE = 0;
 constexpr uint64_t DEFAULT_UINT_VALUE = 0;
 constexpr double DEFAULT_DOUBLE_VALUE = 0.0;
+constexpr size_t BLOCK_SIZE_OFFSET = sizeof(int32_t);
+
 template<typename T>
 void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
 {
@@ -98,22 +101,24 @@ std::atomic<uint32_t> SysEvent::totalCount_(0);
 std::atomic<int64_t> SysEvent::totalSize_(0);
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
-    std::shared_ptr<EventRaw::RawData> rawData)
-    : PipelineEvent(sender, handler), eventType_(0), preserve_(true), log_(0), seq_(0), pid_(0),
-    tid_(0), uid_(0), tz_(0), eventSeq_(-1)
+    std::shared_ptr<EventRaw::RawData> rawData, int64_t seq)
+    : PipelineEvent(sender, handler), eventType_(0), preserve_(true), log_(0),  seq_(seq)
 {
     messageType_ = Event::MessageType::SYS_EVENT;
-    if (rawData == nullptr) {
+    if (rawData == nullptr || rawData->GetData() == nullptr ||
+        rawData->GetDataLength() < EventRaw::GetValidDataMinimumByteCount()) {
         return;
     }
     rawData_ = rawData;
-    builder_ = std::make_shared<EventRaw::RawDataBuilder>(rawData);
     totalCount_.fetch_add(1);
-    if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
-        totalSize_.fetch_add(*(reinterpret_cast<int32_t*>(rawData_->GetData())));
-    }
+    totalSize_.fetch_add(*(reinterpret_cast<int32_t*>(rawData_->GetData())));
     InitialMembers();
 }
+
+SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
+    std::shared_ptr<EventRaw::RawData> rawData)
+    : SysEvent(sender, handler, rawData, 0)
+{}
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator)
     : SysEvent(sender, handler, sysEventCreator.GetRawData())
@@ -138,36 +143,29 @@ SysEvent::~SysEvent()
 
 void SysEvent::InitialMembers()
 {
-    if (builder_ == nullptr) {
-        return;
-    }
-    domain_ = builder_->GetDomain();
-    eventName_ = builder_->GetName();
-    auto header = builder_->GetHeader();
-    eventType_ = builder_->GetEventType();
-    what_ = static_cast<uint16_t>(eventType_);
+    HiSysEventHeader header = *(reinterpret_cast<struct HiSysEventHeader*>(rawData_->GetData() + BLOCK_SIZE_OFFSET));
+    domain_ = header.domain;
+    eventName_ = header.name;
+    eventType_ = static_cast<int32_t>(header.type) + 1;
     happenTime_ = header.timestamp;
     if (happenTime_ == 0) {
-        auto currentTimeStamp = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-        builder_->AppendTimeStamp(currentTimeStamp);
+        auto currentTimeStamp = TimeUtil::GetMilliseconds();
         happenTime_ = currentTimeStamp;
-    }
-    auto seqParam = builder_->GetValue("seq_");
-    if (seqParam != nullptr) {
-        seqParam->AsInt64(eventSeq_);
     }
     tz_ = static_cast<int16_t>(header.timeZone);
     pid_ = static_cast<int32_t>(header.pid);
     tid_ = static_cast<int32_t>(header.tid);
     uid_ = static_cast<int32_t>(header.uid);
     log_ = header.log;
-    if (header.isTraceOpened == 1) {
-        auto traceInfo = builder_->GetTraceInfo();
-        traceId_ = StringUtil::ToString(traceInfo.traceId);
-        spanId_ =  StringUtil::ToString(traceInfo.spanId);
-        parentSpanId_ =  StringUtil::ToString(traceInfo.pSpanId);
-        traceFlag_ =  StringUtil::ToString(traceInfo.traceFlag);
+}
+
+bool SysEvent::InitBuilder()
+{
+    if (builder_ != nullptr) {
+        return true;
     }
+    builder_ = std::make_shared<EventRaw::RawDataBuilder>(rawData_);
+    return builder_ != nullptr;
 }
 
 std::shared_ptr<EventRaw::RawData> SysEvent::TansJsonStrToRawData(const std::string& jsonStr)
@@ -243,19 +241,32 @@ int16_t SysEvent::GetTz() const
     return tz_;
 }
 
+int SysEvent::GetEventType() const
+{
+    return eventType_;
+}
+
+void SysEvent::SetId(uint64_t id)
+{
+    if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
+        rawData_->Update(reinterpret_cast<uint8_t*>(&id), sizeof(uint64_t),
+            BLOCK_SIZE_OFFSET + EventRaw::POS_OF_ID_IN_HEADER);
+    }
+}
+
 std::string SysEvent::GetEventValue(const std::string& key)
 {
-    std::string dest;
-    if (builder_ == nullptr) {
-        return dest;
+    if (!InitBuilder()) {
+        return "";
     }
+    std::string dest;
     builder_->ParseValueByKey(key, dest);
     return dest;
 }
 
 int64_t SysEvent::GetEventIntValue(const std::string& key)
 {
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return DEFAULT_INT_VALUE;
     }
     if (int64_t intDest = DEFAULT_INT_VALUE; builder_->ParseValueByKey(key, intDest)) {
@@ -275,7 +286,7 @@ int64_t SysEvent::GetEventIntValue(const std::string& key)
 
 uint64_t SysEvent::GetEventUintValue(const std::string& key)
 {
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return DEFAULT_UINT_VALUE;
     }
     if (uint64_t uIntDest = DEFAULT_UINT_VALUE; builder_->ParseValueByKey(key, uIntDest)) {
@@ -295,7 +306,7 @@ uint64_t SysEvent::GetEventUintValue(const std::string& key)
 
 double SysEvent::GetEventDoubleValue(const std::string& key)
 {
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return DEFAULT_DOUBLE_VALUE;
     }
     if (double dDest = DEFAULT_DOUBLE_VALUE; builder_->ParseValueByKey(key, dDest)) {
@@ -313,7 +324,7 @@ double SysEvent::GetEventDoubleValue(const std::string& key)
 bool SysEvent::GetEventIntArrayValue(const std::string& key, std::vector<int64_t>& dest)
 {
     dest.clear();
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return false;
     }
     auto intArrayItemHandler = [&dest] (int64_t& item) {
@@ -351,7 +362,7 @@ bool SysEvent::GetEventIntArrayValue(const std::string& key, std::vector<int64_t
 bool SysEvent::GetEventUintArrayValue(const std::string& key, std::vector<uint64_t>& dest)
 {
     dest.clear();
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return false;
     }
     auto uIntArrayItemHandler = [&dest] (uint64_t& item) {
@@ -389,7 +400,7 @@ bool SysEvent::GetEventUintArrayValue(const std::string& key, std::vector<uint64
 bool SysEvent::GetEventDoubleArrayValue(const std::string& key, std::vector<double>& dest)
 {
     dest.clear();
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return false;
     }
     auto dArrayItemHandler = [&dest] (double& item) {
@@ -420,7 +431,7 @@ bool SysEvent::GetEventDoubleArrayValue(const std::string& key, std::vector<doub
 bool SysEvent::GetEventStringArrayValue(const std::string& key, std::vector<std::string>& dest)
 {
     dest.clear();
-    if (builder_ == nullptr) {
+    if (!InitBuilder()) {
         return false;
     }
     auto strArrayItemHandler = [&dest] (std::string& item) {
@@ -446,24 +457,41 @@ bool SysEvent::GetEventStringArrayValue(const std::string& key, std::vector<std:
     return false;
 }
 
-int SysEvent::GetEventType()
+bool SysEvent::TryToUpdateRawData()
 {
-    return eventType_;
+    if (rawData_ == nullptr) {
+        return false;
+    }
+
+    // raw data does not need to be re-initialized
+    if (!isUpdated_) {
+        return true;
+    }
+
+    // raw data needs to be re-initialized
+    if (!InitBuilder()) {
+        return false;
+    }
+    builder_->AppendLog(log_);
+    rawData_ = builder_->Build();
+    if (rawData_ == nullptr) {
+        return false;
+    }
+    isUpdated_ = false;
+    return true;
 }
 
 std::string SysEvent::AsJsonStr()
 {
-    if (builder_ == nullptr) {
+    if (!TryToUpdateRawData()) {
         return "";
     }
-    builder_->AppendLog(log_);
-    rawData_ = builder_->Build(); // update
-    if (rawData_ == nullptr) {
-        return "";
-    }
-    EventRaw::DecodedEvent event(rawData_->GetData());
 
-    std::string jsonStr = event.AsJsonStr();
+    std::string jsonStr;
+    {
+        EventRaw::DecodedEvent event(rawData_->GetData());
+        jsonStr = event.AsJsonStr();
+    }
     if (!tag_.empty()) {
         AppendJsonValue(jsonStr, EventStore::EventCol::TAG, tag_);
     }
@@ -478,12 +506,7 @@ std::string SysEvent::AsJsonStr()
 
 uint8_t* SysEvent::AsRawData()
 {
-    if (builder_ == nullptr) {
-        return nullptr;
-    }
-    builder_->AppendLog(log_);
-    rawData_ = builder_->Build();
-    if (rawData_ == nullptr) {
+    if (!TryToUpdateRawData()) {
         return nullptr;
     }
     return rawData_->GetData();

@@ -34,7 +34,6 @@ public:
 private:
     int WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize);
     int WriteContent(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize);
-    int BuildContent(const std::shared_ptr<SysEvent>& sysEvent, uint8_t** contentPtr, uint32_t contentSize);
     uint32_t GetCurrPageRemainSize(int fileSize, uint32_t pageSize);
     int FillCurrPageWithZero(uint32_t remainSize);
     int GetContentSize(const std::shared_ptr<SysEvent>& sysEvent, uint32_t& contentSize);

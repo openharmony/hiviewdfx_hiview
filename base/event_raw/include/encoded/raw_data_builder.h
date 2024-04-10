@@ -123,7 +123,7 @@ private:
         }
         return *this;
     }
-    
+
     template<typename T>
     RawDataBuilder& UpdateLog(const T val)
     {
