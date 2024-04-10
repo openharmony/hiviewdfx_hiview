@@ -39,6 +39,7 @@ const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
 const std::string OTHER = "Other";
+const std::string RSS_APP_STATE_EVENT = "APP_CGROUP_CHANGE";
 const int NAP_BACKGROUND_GROUP = 11;
 const std::unordered_map<std::string, ProcessState> APP_STATES = {
     {"APP_FOREGROUND", FOREGROUND},
@@ -55,8 +56,12 @@ ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
     return INVALID;
 }
 
-ProcessState GetProcessStateByGroup(int32_t procGroup)
+ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
 {
+    if(sysEvent.GetEventName() != RSS_APP_STATE_EVENT) {
+        return INVALID;
+    }
+    int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
     if (procGroup == NAP_BACKGROUND_GROUP) {
         return BACKGROUND;
     }
@@ -87,10 +92,8 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
         return;
     }
 #if PC_APP_STATE_COLLECT_ENABLE
-    int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
-    ProcessState procState = GetProcessStateByGroup(procGroup);
-#endif
-#if !PC_APP_STATE_COLLECT_ENABLE
+    ProcessState procState = GetProcessStateByGroup(sysEvent);
+#else
     ProcessState procState = GetProcessStateByEvent(sysEvent);
 #endif
     if (procState == INVALID) {

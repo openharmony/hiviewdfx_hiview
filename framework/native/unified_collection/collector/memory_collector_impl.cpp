@@ -50,7 +50,7 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
 
 std::mutex g_memMutex;
-const int NON_PC_APP_STATE_INVALID = -1;
+const int NON_PC_APP_STATE = -1;
 
 static std::string GetCurrTimestamp()
 {
@@ -94,7 +94,8 @@ static bool WriteProcessMemoryToFile(std::string& filePath, const std::vector<Pr
     }
 
     file << "pid" << '\t' << "pname" << '\t' << "rss(KB)" << '\t' <<
-            "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << std::endl;
+            "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << '\t' <<
+            "procState" << std::endl;
     for (auto& processMem : processMems) {
         file << processMem.pid << '\t' << processMem.name << '\t' << processMem.rss << '\t' <<
                 processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << '\t' <<
@@ -313,7 +314,7 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
-    memory.procState = NON_PC_APP_STATE_INVALID;
+    memory.procState = NON_PC_APP_STATE;
 #if PC_APP_STATE_COLLECT_ENABLE
     memory.procState = ProcessStatus::GetInstance().GetProcessState(pid);
 #endif
