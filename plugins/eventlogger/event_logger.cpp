@@ -334,7 +334,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         std::string message;
         std::string eventHandlerStr;
         ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
-        long runtimeId = event->GetEventIntValue("RUNTIME_ID");
+        std::string appRunningUniqueId = event->GetEventValue("APP_RUNNING_UNIQUE_ID");
 
         std::string jsonStack = event->GetEventValue("STACK");
         if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
@@ -350,7 +350,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
-            FreezeJsonUtil::WriteKeyValue(jsonFd, "runtimeId", runtimeId);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "appRunningUniqueId", appRunningUniqueId);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
         } else {
             HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);

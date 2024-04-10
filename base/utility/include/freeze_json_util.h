@@ -55,7 +55,7 @@ const std::list<std::string> KEY_IN_LOGFILE{
     "timestamp",
     "pid",
     "uid",
-    "runtimeId",
+    "appRunningUniqueId",
     "uuid",
     "foreground",
     "domain",
@@ -78,7 +78,7 @@ struct FreezeJsonCollector {
     unsigned long long timestamp = 0;
     long pid = 0;
     long uid = 0;
-    long runtimeId = 0;
+    std::string appRunningUniqueId = "";
     std::string uuid = "";
     std::string domain = "";
     std::string stringId = "";

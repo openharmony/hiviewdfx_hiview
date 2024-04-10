@@ -1048,7 +1048,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
         .InitExternalLog(info.logPath)
         .InitPid(collector.pid)
         .InitUid(collector.uid)
-        .InitRuntimeId(collector.runtimeId)
+        .InitAppRunningUniqueId(collector.appRunningUniqueId)
         .InitException(collector.exception)
         .InitHilog(collector.hilog)
         .InitEventHandler(collector.event_handler)
