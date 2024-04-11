@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -132,4 +132,12 @@ ohos_source_set("hiview_service_impl_for_js") {
 group("unittest") {
   testonly = true
   deps = [ "test:unittest" ]
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [
+    "test/fuzztest/hiviewlogconfigmanager_fuzzer:HiviewLogConfigManagerFuzzTest",
+    "test/fuzztest/hiviewserviceabilitystub_fuzzer:HiviewServiceAbilityStubFuzzTest",
+  ]
 }

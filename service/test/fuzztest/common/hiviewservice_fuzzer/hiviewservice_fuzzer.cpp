@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -73,6 +73,12 @@ static void HiViewServiceSnapshotTraceFuzzTest(const uint8_t* data, size_t size)
     g_hiviewService.OpenSnapshotTrace(tagsGroup);
 }
 
+static void HiViewServiceDumpSnapshotTraceFuzzTest(const uint8_t* data, size_t size)
+{
+    UCollectUtil::TraceCollector::Caller caller = static_cast<UCollectUtil::TraceCollector::Caller>(*data);
+    g_hiviewService.DumpSnapshotTrace(caller);
+}
+
 static void HiViewServiceRecordingTraceFuzzTest(const uint8_t* data, size_t size)
 {
     std::string tags = std::string(reinterpret_cast<const char*>(data), size);
@@ -91,6 +97,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     }
     OHOS::HiviewDFX::HiviewServiceDumpFuzzTest(data, size);
     OHOS::HiviewDFX::HiViewServiceSnapshotTraceFuzzTest(data, size);
+    OHOS::HiviewDFX::HiViewServiceDumpSnapshotTraceFuzzTest(data, size);
     OHOS::HiviewDFX::HiViewServiceRecordingTraceFuzzTest(data, size);
     return 0;
 }
