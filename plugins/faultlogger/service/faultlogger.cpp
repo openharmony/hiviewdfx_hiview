@@ -102,6 +102,7 @@ constexpr int RETRY_DELAY = 10;
 constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
+constexpr int REPORT_HILOG_LINE = 100;
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -543,7 +544,8 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         std::stringstream logStream(log);
         std::string oneLine;
-        while (getline(logStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
     }
@@ -839,7 +841,8 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         Json::Value hilog;
         std::stringstream logStream(info.sectionMap.at("HILOG"));
         std::string oneLine;
-        while (getline(logStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
         if (info.sectionMap.at("HILOG").length() == 0) {
@@ -860,7 +863,7 @@ int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
     }
 
     int ret = -1;
-    ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid).c_str(), nullptr);
+    ret = execl("/system/bin/hilog", "hilog", "-z", "2000", "-P", std::to_string(pid).c_str(), nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         return ret;
@@ -1007,7 +1010,8 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     } else {
         std::stringstream hilogStream(hilogStr);
         std::string oneLine;
-        while (std::getline(hilogStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && std::getline(hilogStream, oneLine)) {
             hilogList.push_back(StringUtil::EscapeJsonStringValue(oneLine));
         }
     }
