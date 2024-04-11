@@ -15,7 +15,6 @@
 
 #include "memory_collector_impl.h"
 
-
 #include <csignal>
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -263,7 +262,7 @@ static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::str
     };
     auto iter = assignFuncMap.find(attrName);
     if (iter == assignFuncMap.end() || iter->second == nullptr) {
-        HIVIEW_LOGI("%{public}s isn't defined in ProcessMemory.", attrName.c_str());
+        HIVIEW_LOGD("%{public}s isn't defined in ProcessMemory.", attrName.c_str());
         return;
     }
     iter->second(processMemory, value);
