@@ -108,7 +108,14 @@ bool CrashValidator::CheckProcessMapEmpty()
 /* only process exit with status !=0 will trigger this func be called */
 bool CrashValidator::MatchEvent(int32_t pid)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     if (CheckProcessMapEmpty()) {
+        return false;
+    }
+
+    if (processExitEvents_.find(pid) == processExitEvents_.end()) {
+        HIVIEW_LOGE("process(pid = %d) does not in process exit map", pid);
         return false;
     }
 
@@ -130,6 +137,7 @@ bool CrashValidator::MatchEvent(int32_t pid)
 void CrashValidator::AddEventToMap(int32_t pid, std::shared_ptr<SysEvent> sysEvent)
 {
     int64_t happendTime = sysEvent->GetEventIntValue("time_");
+    std::lock_guard<std::mutex> lock(mutex_);
 
     if ((sysEvent->eventName_ == "PROCESS_EXIT")) {
         processExitEvents_.try_emplace(pid, sysEvent);
@@ -170,6 +178,10 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     }
 
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
+    if (sysEvent == nullptr) {
+        return false;
+    }
+
     if ((sysEvent->eventName_ == "PROCESS_EXIT") && IsNormalExitEvent(sysEvent)) {
         return true;
     }
@@ -179,6 +191,8 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     if (sysEvent->eventName_ == "PROCESS_EXIT") {
         auto task = std::bind(&CrashValidator::MatchEvent, this, pid);
         workLoop_->AddTimerEvent(nullptr, nullptr, task, CHECK_TIME, false);
+        HIVIEW_LOGI("Add MatchEvent task, process pid = %{public}d, name = %{public}s", pid,
+                    sysEvent->GetEventValue("PROCESS_NAME").c_str());
     }
 
     return true;
@@ -188,6 +202,11 @@ void CrashValidator::ReportMatchEvent(std::string eventName, std::shared_ptr<Sys
 {
     std::string summary;
     std::string processName;
+
+    if (sysEvent == nullptr) {
+        HIVIEW_LOGE("report match sysEvent is null");
+        return;
+    }
 
     if (eventName == "CPP_CRASH_MATCHED") {
         summary = sysEvent->GetEventValue("SUMMARY");
@@ -210,6 +229,11 @@ void CrashValidator::ReportMatchEvent(std::string eventName, std::shared_ptr<Sys
 
 void CrashValidator::ReportDisMatchEvent(std::shared_ptr<SysEvent> sysEvent)
 {
+    if (sysEvent == nullptr) {
+        HIVIEW_LOGE("report dismatch sysEvent is null");
+        return;
+    }
+
     HiSysEventWrite(
         HiSysEvent::Domain::RELIABILITY,
         "CPP_CRASH_DISMATCH",
