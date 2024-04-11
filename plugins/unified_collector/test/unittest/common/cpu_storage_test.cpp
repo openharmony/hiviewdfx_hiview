@@ -137,7 +137,7 @@ HWTEST_F(CpuStorageTest, CpuStorageTest003, TestSize.Level3)
 
 /**
  * @tc.name: CpuStorageTest004
- * @tc.desc: CpuStorage as RdbOpenCallback
+ * @tc.desc: CpuStorage test PowerStatusManager
  * @tc.type: FUNC
  * @tc.require: issueI5NULM
  */
