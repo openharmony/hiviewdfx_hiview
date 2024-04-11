@@ -58,6 +58,7 @@ ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
 void UnifiedCollector::OnLoad()
 {
     HIVIEW_LOGI("start to load UnifiedCollector plugin");
+    UCollectUtil::TraceCollector::RecoverTmpTrace();
     ExitHitraceService();
     Init();
 }
@@ -105,7 +106,6 @@ void UnifiedCollector::Init()
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
         HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
     }
-    UCollectUtil::TraceCollector::RecoverTmpTrace();
     observerMgr_ = std::make_shared<UcObserverManager>();
 }
 
