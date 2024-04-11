@@ -141,9 +141,9 @@ HWTEST_F(CpuStorageTest, CpuStorageTest003, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: issueI5NULM
  */
+#ifdef POWER_MANAGER_ENABLE
 HWTEST_F(CpuStorageTest, CpuStorageTest004, TestSize.Level3)
 {
-#ifdef POWER_MANAGER_ENABLE
     int32_t powerState = UCollectUtil::PowerStatusManager::GetInstance().GetPowerState();
     ASSERT_THAT(powerState, testing::AnyOf(UCollectUtil::SCREEN_OFF, UCollectUtil::SCREEN_ON));
     UCollectUtil::PowerStatusManager::GetInstance().SetPowerState(UCollectUtil::SCREEN_ON);
@@ -152,7 +152,5 @@ HWTEST_F(CpuStorageTest, CpuStorageTest004, TestSize.Level3)
     UCollectUtil::PowerStatusManager::GetInstance().SetPowerState(UCollectUtil::SCREEN_OFF);
     int32_t powerState3 = UCollectUtil::PowerStatusManager::GetInstance().GetPowerState();
     ASSERT_EQ(powerState3, UCollectUtil::SCREEN_OFF);
-#else
-    ASSERT_TRUE(true);
-#endif
 }
+#endif
