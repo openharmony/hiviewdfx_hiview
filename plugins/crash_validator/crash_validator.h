@@ -17,6 +17,7 @@
 #define HIVIEW_PLUGINS_CRASH_VALIDATOR_H
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "event.h"
@@ -43,6 +44,7 @@ private:
 
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
     std::atomic<bool> hasLoaded_;
+    std::mutex mutex_;
     std::map<int32_t, std::shared_ptr<SysEvent>> processExitEvents_;
     std::map<int32_t, std::shared_ptr<SysEvent>> cppCrashEvents_;
     std::map<int32_t, std::shared_ptr<SysEvent>> cppCrashExceptionEvents_;
