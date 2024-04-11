@@ -65,6 +65,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "hilog:libhilog",
     "hitrace:hitrace_dump",
     "init:libbegetutil",
+    "zlib:libz",
   ]
 
   if (has_hiprofiler) {
