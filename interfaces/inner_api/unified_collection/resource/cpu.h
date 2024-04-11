@@ -61,7 +61,7 @@ struct ProcessCpuStatInfo {
     double sCpuUsage = 0;
     double cpuUsage = 0;
     std::string procName;
-    int32_t threadCount;
+    int32_t threadCount = 0;
 };
 
 struct ThreadCpuStatInfo {
