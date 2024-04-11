@@ -3,6 +3,7 @@
     extern "C++" {
       "OHOS::HiviewDFX::UCollectUtil::CpuCollector::Create(bool)";
       "OHOS::HiviewDFX::UCollectUtil::GpuCollector::Create()";
+      "OHOS::HiviewDFX::UCollectUtil::HiebpfCollector::Create()";
       "OHOS::HiviewDFX::UCollectUtil::HilogCollector::Create()";
       "OHOS::HiviewDFX::UCollectUtil::IoCollector::Create()";
       "OHOS::HiviewDFX::UCollectUtil::MemoryCollector::Create()";
