@@ -69,7 +69,6 @@ static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogI
         }
         ret.fullLog += buf;
     }
-    close(fd);
 
     return ret;
 }
