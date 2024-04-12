@@ -270,7 +270,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
-        if (strList.size() < 7) { // less than 7: valid array size
+        if (strList.size() < 7) { // more than or equal to 7: valid array size
             continue;
         }
         // 2: binder peer id
