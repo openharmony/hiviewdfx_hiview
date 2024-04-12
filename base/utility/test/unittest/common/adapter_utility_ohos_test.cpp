@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 
 #include "ash_memory_utils.h"
+#include "cjson_util.h"
 #include "common_utils.h"
 #include "file_util.h"
 #include "securec.h"
@@ -32,7 +33,15 @@ using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const char LOG_FILE_PATH[] = "/data/test/adapter_utility_test/";
+constexpr char LOG_FILE_PATH[] = "/data/test/adapter_utility_test/";
+constexpr char TEST_JSON_FILE_PATH[] = "/data/test/test_data/test.json";
+constexpr char STRING_VAL[] = "OpenHarmony is a better choice for you.";
+constexpr char STRING_ARR_FIRST_VAL[] = "3.1 release";
+constexpr int64_t INT_VAL = 2024;
+constexpr int64_t INT_VAL_DEFAULT = -1;
+constexpr double DOU_VAL = 2024.0;
+constexpr double DOU_VAL_DEFAULT = -1.0;
+constexpr size_t TEST_ARRAY_SIZE = 2;
 constexpr int SUFFIX_0 = 0;
 constexpr int SUFFIX_1 = 1;
 
@@ -458,6 +467,12 @@ HWTEST_F(AdapterUtilityOhosTest, FileUtilOhosTest013, testing::ext::TestSize.Lev
     ASSERT_TRUE(true);
 }
 
+/**
+ * @tc.name: AshMemoryUtilsOhosTest001
+ * @tc.desc: Test AshMemoryUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI65DUW
+ */
 HWTEST_F(AdapterUtilityOhosTest, AshMemoryUtilsOhosTest001, testing::ext::TestSize.Level3)
 {
     std::vector<AshMemTestStruct> dataIn = {
@@ -481,6 +496,30 @@ HWTEST_F(AdapterUtilityOhosTest, AshMemoryUtilsOhosTest001, testing::ext::TestSi
     for (size_t i = 0; i < dataIn.size(); i++) {
         ASSERT_EQ(dataIn[i].data, dataOut[i].data);
     }
+}
+
+/**
+ * @tc.name: CJsonUtilTest001
+ * @tc.desc: Test apifs of CJsonUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI9E8HA
+ */
+HWTEST_F(AdapterUtilityOhosTest, CJsonUtilTest001, testing::ext::TestSize.Level3)
+{
+    auto jsonRoot = CJsonUtil::ParseJsonRoot(TEST_JSON_FILE_PATH);
+    ASSERT_NE(jsonRoot, nullptr);
+    std::vector<std::string> strArr;
+    CJsonUtil::GetStringArray(jsonRoot, "STRING_ARRAY", strArr);
+    ASSERT_EQ(strArr.size(), TEST_ARRAY_SIZE);
+    ASSERT_EQ(strArr[0], STRING_ARR_FIRST_VAL);
+    ASSERT_EQ(CJsonUtil::GetStringValue(jsonRoot, "STRING"), STRING_VAL);
+    ASSERT_EQ(CJsonUtil::GetIntValue(jsonRoot, "INT"), INT_VAL);
+    ASSERT_EQ(CJsonUtil::GetDoubleValue(jsonRoot, "DOUBLE"), DOU_VAL);
+    ASSERT_EQ(CJsonUtil::GetIntValue(jsonRoot, "INT_NOT_SET", INT_VAL_DEFAULT), INT_VAL_DEFAULT);
+    ASSERT_EQ(CJsonUtil::GetDoubleValue(jsonRoot, "DOUBLE_NOT_SET", DOU_VAL_DEFAULT), DOU_VAL_DEFAULT);
+    ASSERT_EQ(CJsonUtil::GetStringValue(nullptr, "STRING"), "");
+    ASSERT_EQ(CJsonUtil::GetIntValue(nullptr, "INT", INT_VAL_DEFAULT), INT_VAL_DEFAULT);
+    ASSERT_EQ(CJsonUtil::GetDoubleValue(nullptr, "DOUBLE", DOU_VAL_DEFAULT), DOU_VAL_DEFAULT);
 }
 }
 }
