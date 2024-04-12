@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,51 +10,45 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("hiview_utils_config") {
+config("event_export_config_parser_config") {
   visibility = [ "*:*" ]
 
-  include_dirs = [
-    ".",
-    "include",
-  ]
+  include_dirs = [ "include" ]
 }
 
-ohos_source_set("hiview_utility") {
-  public_configs = [ ":hiview_utils_config" ]
-
-  sources = [
-    "ash_memory_utils.cpp",
-    "cjson_util.cpp",
-    "common_utils.cpp",
-    "dynamic_module.cpp",
-    "file_util.cpp",
-    "freeze_json_util.cpp",
-    "memory_util.cpp",
-    "parameter_ex.cpp",
-    "socket_util.cpp",
-    "sql_util.cpp",
-    "string_util.cpp",
-    "thread_util.cpp",
-    "time_util.cpp",
-  ]
-
-  defines = []
-  if (use_musl && use_jemalloc && use_jemalloc_dfx_intf) {
-    defines += [ "USE_JEMALLOC_DFX_INTF" ]
+ohos_source_set("event_export_config_parser") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
   }
 
-  deps = [ "$hiview_base:logger" ]
+  public_configs = [ ":event_export_config_parser_config" ]
+
+  configs = [ ":event_export_config_parser_config" ]
+
+  sources = [
+    "export_config_manager.cpp",
+    "export_config_parser.cpp",
+    "export_event_list_parser.cpp",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_base/utility:hiview_utility",
+  ]
 
   external_deps = [
     "cJSON:cjson",
     "c_utils:utils",
     "hilog:libhilog",
-    "init:libbeget_proxy",
-    "init:libbegetutil",
   ]
 
   part_name = "hiview"
+
+  subsystem_name = "hiviewdfx"
 }
