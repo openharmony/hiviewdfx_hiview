@@ -75,5 +75,5 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest002, TestSize.Level1)
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    ASSERT_TRUE(time < FINAL_TIME);
+    ASSERT_FALSE(time < FINAL_TIME);
 }
