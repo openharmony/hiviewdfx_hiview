@@ -73,7 +73,6 @@ ohos_source_set("faultlogger_service") {
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/jsoncpp:jsoncpp",
-    "//third_party/zlib:libz",
   ]
 
   external_deps = [
@@ -89,6 +88,7 @@ ohos_source_set("faultlogger_service") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:libz",
   ]
 }
 
@@ -118,7 +118,6 @@ ohos_source_set("faultlogger_service_fuzz_src") {
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/jsoncpp:jsoncpp",
-    "//third_party/zlib:libz",
   ]
 
   external_deps = [
@@ -132,5 +131,6 @@ ohos_source_set("faultlogger_service_fuzz_src") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "zlib:libz",
   ]
 }
