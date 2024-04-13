@@ -21,9 +21,9 @@
     </target>
     <target name="SysEventStoreUtilityTest">
         <preparer>
-            <option name="push" value="event_store/version1_db_file -> /data/test/test_data/" src="res"/>
-            <option name="push" value="event_store/version2_db_file -> /data/test/test_data/" src="res"/>
-            <option name="push" value="event_store/version3_db_file -> /data/test/test_data/" src="res"/>
+            <option name="push" value="event_store/TEST_VERSION1-1-CRITICAL-1.db -> /data/test/TEST_DOMAIN/" src="res"/>
+            <option name="push" value="event_store/TEST_VERSION2-1-CRITICAL-1.db -> /data/test/TEST_DOMAIN/" src="res"/>
+            <option name="push" value="event_store/TEST_VERSION3-1-CRITICAL-1.db -> /data/test/TEST_DOMAIN/" src="res"/>
         </preparer>
     </target>
 </configuration>
