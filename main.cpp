@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <memory>
+#include <unistd.h>
 
 #include "hiview_platform.h"
 #include "hiview_service.h"
@@ -38,7 +39,7 @@ int main(int argc __UNUSED, char* argv[] __UNUSED)
     // parse configs and load plugin
     if (!hiview.InitEnvironment()) {
         HIVIEW_LOGW("Fail to init plugin environment. exit");
-        return -1;
+        _exit(-1); // user _exit to avoid double-free of HiviewPlatform
     }
 
     auto hidumperCpuService = std::make_unique<DumpManagerCpuService>();
