@@ -21,7 +21,7 @@ namespace HiviewDFX {
 constexpr char KEY_BUILD_CHARACTER[] = "ro.build.characteristics";
 constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
 constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state";
-constexpr char HIVIEW_UCOLLECTION_STATE[] = "sys.hiview.diag.ucollection";
+constexpr char HIVIEW_UCOLLECTION_STATE[] = "hiviewdfx.ucollection.switchon";
 namespace Parameter {
 enum DeviceType {
     UNKNOWN = 0,
