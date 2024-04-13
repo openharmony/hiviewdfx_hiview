@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <climits>
 #include <gtest/gtest.h>
 #include <iostream>
 
@@ -26,6 +27,10 @@ using namespace OHOS::HiviewDFX::UCollect;
 
 namespace {
 TraceManager g_traceManager;
+constexpr uint32_t TIME_0S = 0;
+constexpr uint32_t TIME_10S = 10;
+constexpr uint32_t TIME_20S = 20;
+constexpr uint32_t TIME_30S = 30;
 }
 
 class TraceCollectorTest : public testing::Test {
@@ -281,4 +286,75 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest013, TestSize.Level1)
             ASSERT_TRUE(path.find("zip") != std::string::npos);
         }
     }
+}
+
+/**
+ * @tc.name: TraceCollectorTest0014
+ * @tc.desc: test interface DumpTraceWithDuration for 0 second
+ * @tc.type: FUNC
+ */
+HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    sleep(TIME_10S);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, TIME_0S);
+    std::vector<std::string> items = resultDumpTrace.data;
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.retCode != UcError::SUCCESS);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
+}
+
+/**
+ * @tc.name: TraceCollectorTest0015
+ * @tc.desc: test interface DumpTraceWithDuration for 20 second
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    sleep(TIME_30S);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, TIME_20S);
+    std::vector<std::string> items = resultDumpTrace.data;
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
+}
+
+/**
+ * @tc.name: TraceCollectorTest0016
+ * @tc.desc: test interface DumpTraceWithDuration for UINT32_MAX
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    sleep(TIME_30S);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, UINT32_MAX);
+    std::vector<std::string> items = resultDumpTrace.data;
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }

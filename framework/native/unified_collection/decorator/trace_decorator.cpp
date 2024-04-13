@@ -38,6 +38,13 @@ CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(TraceCollector
     return Invoke(task, traceStatWrapper_, caller);
 }
 
+CollectResult<std::vector<std::string>> TraceDecorator::DumpTraceWithDuration(TraceCollector::Caller &caller,
+    uint32_t timeLimit)
+{
+    auto task = std::bind(&TraceCollector::DumpTraceWithDuration, traceCollector_.get(), caller, timeLimit);
+    return Invoke(task, traceStatWrapper_, caller);
+}
+
 CollectResult<int32_t> TraceDecorator::TraceOn()
 {
     auto task = std::bind(&TraceCollector::TraceOn, traceCollector_.get());
