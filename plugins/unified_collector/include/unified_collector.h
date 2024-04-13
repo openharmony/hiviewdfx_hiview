@@ -50,7 +50,7 @@ private:
     std::string workPath_;
     std::shared_ptr<CpuCollectionTask> cpuCollectionTask_;
     std::shared_ptr<UcObserverManager> observerMgr_;
-    std::map<uint64_t, Task> taskMap_;
+    std::list<uint64_t> taskList_;
     volatile bool isCpuTaskRunning_;
 }; // UnifiedCollector
 } // namespace HiviewDFX
