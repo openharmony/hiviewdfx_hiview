@@ -253,7 +253,7 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
         return DOC_STORE_READ_EMPTY;
     }
     ReadValueAndReset(in_, contentSize);
-    constexpr uint32_t minContentSize = SEQ_SIZE + sizeof(ContentHeader);
+    constexpr uint32_t minContentSize = BLOCK_SIZE + sizeof(ContentHeader) + CRC_SIZE;
     if (contentSize < minContentSize) {
         HIVIEW_LOGD("invalid content size=%{public}u, file=%{public}s", contentSize, docPath_.c_str());
         return DOC_STORE_READ_EMPTY;

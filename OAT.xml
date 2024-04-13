@@ -79,9 +79,9 @@ Note:If the text contains special characters, please escape them according to th
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
                 <filteritem type="filepath" name="figures/.*" desc="self developed pictures used in readme documents"/>
-                <filteritem type="filename" name="version1_db_file" desc="the binary file for test, the file is self-developed"/>
-                <filteritem type="filename" name="version2_db_file" desc="the binary file for test, the file is self-developed"/>
-                <filteritem type="filename" name="version3_db_file" desc="the binary file for test, the file is self-developed"/>
+                <filteritem type="filename" name="TEST_VERSION1-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
+                <filteritem type="filename" name="TEST_VERSION2-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
+                <filteritem type="filename" name="TEST_VERSION3-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
             </filefilter>
         </filefilterlist>
     </oatconfig>

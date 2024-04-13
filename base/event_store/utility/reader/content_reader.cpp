@@ -103,7 +103,18 @@ int ContentReader::AppendDomainAndName(std::shared_ptr<RawData> rawData, const E
 
 int ContentReader::AppendContentData(std::shared_ptr<RawData> rawData, uint8_t* content, uint32_t contentSize)
 {
-    if (!rawData->Append(content + BLOCK_SIZE + SEQ_SIZE, contentSize - BLOCK_SIZE - SEQ_SIZE - CRC_SIZE)) {
+    EventStore::ContentHeader contentHeader;
+    if (GetContentHeader(content, contentHeader) != DOC_STORE_SUCCESS) {
+        HIVIEW_LOGE("failed to get header of content");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    if (!rawData->Append(reinterpret_cast<uint8_t*>(&contentHeader) + SEQ_SIZE,
+        sizeof(EventStore::ContentHeader) - SEQ_SIZE)) {
+        HIVIEW_LOGE("failed to copy content header to raw event");
+        return DOC_STORE_ERROR_MEMORY;
+    }
+    size_t contentPos = BLOCK_SIZE + GetContentHeaderSize();
+    if (!rawData->Append(content + contentPos, contentSize - contentPos - CRC_SIZE)) {
         HIVIEW_LOGE("failed to copy content data to raw event");
         return DOC_STORE_ERROR_MEMORY;
     }
