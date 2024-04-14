@@ -325,8 +325,8 @@ ErrCode NativeLeakDetector::ExeNextStateProcess(shared_ptr<FaultInfoBase> monito
     nativeDetectorMtx_.lock();
     if (userMonitorInfo->GetState() == PROC_REPORT_STATE) {
         time_t now = time(nullptr);
-        if (now == (time_t)(-1)) {
-            now = (time_t)(0);
+        if (now == static_cast<time_t>(-1)) {
+            now = static_cast<time_t>(0);
         }
         processedPids_.insert(make_pair(name, now));
     }

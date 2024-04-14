@@ -69,15 +69,15 @@ enum StatIndex {
 };
 }
 
-bool FaultDetectorUtil::IsMemLeakDisable()
+bool FaultDetectorUtil::IsMemLeakEnable()
 {
-    bool disable = false;
+    bool flag = true;
     string value = system::GetParameter(MEMORY_LEAK_ENABLE_PROPERTY, "");
     if (value == "disable" || value == "false") {
         HIVIEW_LOGI("disable memory leak function");
-        disable = true;
+        flag = false;
     }
-    return disable;
+    return flag;
 }
 
 bool FaultDetectorUtil::IsMemTestEnable()

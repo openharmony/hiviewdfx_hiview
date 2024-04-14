@@ -290,7 +290,7 @@ void NativeLeakDumpState::GetMemoryLeakLog(shared_ptr<NativeLeakInfo> &userMonit
         fout.open(filePath, ios::out | ios::app);
     }
     if (!fout.is_open()) {
-        HIVIEW_LOGE("FAILED TO OPEN FILE:%{public}s", filePath.c_str());
+        HIVIEW_LOGE("failed to open file:%{public}s", filePath.c_str());
         return;
     }
     if (flag & GENERAL_STATISTICS) {
@@ -330,7 +330,7 @@ void NativeLeakDumpState::DumpGeneralInfo(ofstream &fout, shared_ptr<NativeLeakI
     fout << "LOGGER_MEMCHECK_MEMINFO" << endl;
     fout << fin.rdbuf();
     fout << endl;
-    HIVIEW_LOGI("WRITE GENERAL STATIS ITICS FINISHED");
+    HIVIEW_LOGI("write general statis itics finished");
 }
 
 void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakInfo> &userMonitorInfo)
@@ -349,8 +349,9 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
     auto detailInfo = static_cast<DetailInfo *>(calloc(1, detailSize));
     if (detailInfo == nullptr) {
         dumpStateMtx_.unlock();
-        HIVIEW_LOGE("FAILED TO ALLOC MEMORY!");
+        HIVIEW_LOGE("failed to alloc memory!");
         close(fd);
+        return;
     }
     detailInfo->magic = MEMCHECK_MAGIC;
     detailInfo->id = userMonitorInfo->GetPid();
@@ -359,11 +360,11 @@ void NativeLeakDumpState::DumpDetailInfo(ofstream &fout, shared_ptr<NativeLeakIn
     detailInfo->timestamp = userMonitorInfo->GetPidStartTime();
     int32_t ret = ioctl(fd, LOGGER_MEMCHECK_DETAIL_READ, detailInfo);
     if (ret != 0) {
-        HIVIEW_LOGE("IOCTL READ DETAIL STATISITICS FAILED, ret=%{public}d", ret);
+        HIVIEW_LOGE("ioctl read detail statisitics failed, ret=%{public}d", ret);
     }
     fout << detailInfo->data << endl;
     free(detailInfo);
-    HIVIEW_LOGI("process %{public}s WRITE DETAIL STATISITICS FINISHED", userMonitorInfo->GetProcessName().c_str());
+    HIVIEW_LOGI("process %{public}s write detail statisitics finished", userMonitorInfo->GetProcessName().c_str());
     close(fd);
     dumpStateMtx_.unlock();
 }
@@ -388,7 +389,7 @@ void NativeLeakDumpState::DumpStackInfo(shared_ptr<NativeLeakInfo> &userMonitorI
     }
     ffrt::this_task::sleep_for(microseconds(WAIT_TO_DUMP_PROFILER_MEM * US_PER_SECOND));
     close(fd);
-    HIVIEW_LOGI("process %{public}s WRITE STACK STATISITICS FINISHED", userMonitorInfo->GetProcessName().c_str());
+    HIVIEW_LOGI("process %{public}s write stack statisitics finished", userMonitorInfo->GetProcessName().c_str());
 #else
     HIVIEW_LOGW("HAS_HIPROFILER not define, will not dump stack info.");
 #endif
@@ -498,7 +499,7 @@ bool NativeLeakDumpState::DumpUserMemInfoToSmapsFile(int writeFd, shared_ptr<Nat
     size_t cpuSize = userMonitorInfo->GetCpuTime().size();
     for (size_t i = 0; i < userMonitorInfo->GetCpuTime().size(); ++i) {
         if (cpuSize != userMonitorInfo->GetMemory().size()) {
-            HIVIEW_LOGE("CPU SIZE NOT MATCH MEMORY SIZE");
+            HIVIEW_LOGE("cpu size not match memory size");
             return false;
         }
         userMemMessage += to_string(userMonitorInfo->GetCpuTime().at(i)) + longWeight
@@ -585,7 +586,7 @@ int32_t NativeLeakDumpState::SendCmd(shared_ptr<NativeLeakInfo> &userMonitorInfo
     }
     int32_t ret = ioctl(fd, LOGGER_MEMCHECK_COMMAND, &trackCmd);
     if (ret != 0) {
-        HIVIEW_LOGE("SEND CMD ERROR");
+        HIVIEW_LOGE("send cmd error");
     }
     close(fd);
     return ret;
