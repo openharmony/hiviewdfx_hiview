@@ -16,7 +16,6 @@
 #include "export_config_parser.h"
 
 #include <fstream>
-#include <limits>
 
 #include "cjson_util.h"
 #include "export_event_list_parser.h"
@@ -29,8 +28,8 @@ DEFINE_LOG_TAG("HiView-EventConfigParser");
 namespace {
 constexpr char SETTING_DB_PARAM[] = "settingDbParam";
 constexpr char SETTING_DB_PARAM_NAME[] = "name";
-constexpr char SETTING_DB_ENABLED[] = "enabled_value";
-constexpr char SETTING_DB_DISABLED[] = "disabled_value";
+constexpr char SETTING_DB_ENABLED[] = "enabledValue";
+constexpr char SETTING_DB_DISABLED[] = "disabledValue";
 constexpr char EXPORT_DIR[] = "exportDir";
 constexpr char EXPORT_DIR_MAX_CAPACITY[] = "exportDirMaxCapacity";
 constexpr char EXPORT_SINGLE_FILE_MAX_SIZE[] = "exportSingleFileMaxSize";
@@ -39,11 +38,6 @@ constexpr char EXPORT_EVENT_LIST_CONFIG_PATHS[] = "exportEventListConfigPaths";
 constexpr char FILE_STORED_MAX_DAY_CNT[] = "fileStoredMaxDayCnt";
 constexpr int32_t INVALID_INT_VAL = -1;
 constexpr double INVALID_DOUBLE_VAL = -1.0;
-
-bool IsDoubleNumEqual(double num1, double num2)
-{
-    return std::fabs(num1 - num2) < std::numeric_limits<double>::epsilon();
-}
 
 std::shared_ptr<ExportEventListParser> GetParser(ExportEventListParsers& parsers,
     const std::string& path)
@@ -163,14 +157,14 @@ bool ExportConfigParser::ParseResidualContent(std::shared_ptr<ExportConfig> conf
         return false;
     }
     // read task executing cycle
-    config->taskCycle = CJsonUtil::GetDoubleValue(jsonRoot_, TASK_EXECUTING_CYCLE, INVALID_DOUBLE_VAL);
-    if (IsDoubleNumEqual(config->taskCycle, INVALID_DOUBLE_VAL)) {
+    config->taskCycle = CJsonUtil::GetIntValue(jsonRoot_, TASK_EXECUTING_CYCLE, INVALID_DOUBLE_VAL);
+    if (config->taskCycle == INVALID_INT_VAL) {
         HIVIEW_LOGW("taskExecutingCycle configured is invalid.");
         return false;
     }
     // read day count for event file to store
-    config->dayCnt = CJsonUtil::GetDoubleValue(jsonRoot_, FILE_STORED_MAX_DAY_CNT, INVALID_DOUBLE_VAL);
-    if (IsDoubleNumEqual(config->dayCnt, INVALID_DOUBLE_VAL)) {
+    config->dayCnt = CJsonUtil::GetIntValue(jsonRoot_, FILE_STORED_MAX_DAY_CNT, INVALID_DOUBLE_VAL);
+    if (config->dayCnt == INVALID_INT_VAL) {
         HIVIEW_LOGW("fileStoredMaxDayCnt configured is invalid.");
         return false;
     }

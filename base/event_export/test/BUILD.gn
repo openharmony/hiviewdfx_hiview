@@ -18,7 +18,10 @@ module_output_path = "hiview/base/event_export"
 
 group("unittest") {
   testonly = true
-  deps = [ ":EventExportConfigTest" ]
+  deps = [
+    ":EventExportConfigTest",
+    ":EventExportDbMgrTest",
+  ]
 }
 
 config("event_export_config_test_config") {
@@ -56,4 +59,25 @@ config("event_db_mgr_test_config") {
   include_dirs = [ "unittest/common" ]
 
   cflags = []
+}
+
+ohos_unittest("EventExportDbMgrTest") {
+  module_out_path = module_output_path
+
+  configs = [ ":event_db_mgr_test_config" ]
+
+  sources = [ "unittest/common/event_export_db_mgr_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_export/seq_db:event_export_db_mgr",
+    "$hiview_core:hiview_core",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
 }

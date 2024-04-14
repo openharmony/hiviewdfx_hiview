@@ -48,17 +48,17 @@ struct ExportConfig {
     // the maximum capacity of the export directory, unit: Mb
     int64_t maxCapcity = 0;
 
-    // the maximum size of the export event file, unit: Kb
+    // the maximum size of the export event file, unit: Mb
     int64_t maxSize = 0;
 
     // the executing cycle for exporting&expiring task, unit: hour
-    double taskCycle = 0.0;
+    int64_t taskCycle = 0;
 
     // the list consists of events configured to export
     ExportEventList eventList;
 
     // the maximum count of day for event files to store. unit: day
-    double dayCnt = 0.0;
+    int64_t dayCnt = 0;
 };
 
 class ExportConfigParser {

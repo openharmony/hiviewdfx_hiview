@@ -30,10 +30,10 @@ constexpr char TEST_SETTING_DB_PARAM_NAME[] = "test_param_key";
 constexpr char TEST_SETTING_DB_PARAM_ENABLED_VAL[] = "1";
 constexpr char TEST_SETTING_DB_PARAM_DISABLED_VAL[] = "0";
 constexpr size_t TEST_MODULE_CNT = 1;
-constexpr uint32_t TEST_CAPACITY = 100;
-constexpr uint32_t TEST_SIZE = 200;
-constexpr double TEST_CYCLE = 1.0;
-constexpr double TEST_FILE_STORE_DAY_CNT = 2.0;
+constexpr int64_t TEST_CAPACITY = 100;
+constexpr int64_t TEST_SIZE = 2;
+constexpr int64_t TEST_CYCLE = 3600;
+constexpr int64_t TEST_FILE_STORE_DAY_CNT = 7;
 constexpr size_t TEST_EXPORT_DOMAIN_CNT = 2;
 constexpr size_t TEST_EXPORT_NAME_CNT = 3;
 }

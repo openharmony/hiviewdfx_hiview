@@ -30,7 +30,7 @@ constexpr char EVENTS[] = "events";
 constexpr char DOMAIN[] = "domain";
 constexpr char NAME[] = "name";
 constexpr char NAMES[] = "names";
-constexpr int32_t INVALID_INT_VAL = -1;
+constexpr int64_t INVALID_INT_VAL = -1;
 
 void AddDomainNames(const std::string& domain, const std::vector<std::string>& names,
     ExportEventList& eventList)
