@@ -72,4 +72,6 @@ declare_args() {
   }
 
   enable_leak_detector = false
+
+  hiview_unified_collector_PC_app_state_collect_enable = false
 }

@@ -38,10 +38,10 @@ public:
 };
 
 namespace {
-// eg: 123   ab-cd   456 789 0   -123
-//     123   ab cd   0   0   0   0
-const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.\\[\\]():/>-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
-const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}$");
+// eg: 123   ab-cd   456 789 0   -123  0
+//     123   ab cd   0   0   0   0     0
+const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.\\[\\]():/>-]*(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}\\s{1,}-?[01]$");
+const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}\\s{1,}-?[01]$");
 // eg: ab.cd    12  34  567  890  123   ef   gh   ijk
 //     Total dmabuf size of ab.cd: 12345 bytes
 const std::regex RAW_DMA1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
