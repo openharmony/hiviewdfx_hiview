@@ -97,7 +97,7 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
     ProcessState procState = GetProcessStateByEvent(sysEvent);
 #endif
     if (procState == INVALID) {
-        HIVIEW_LOGW("invalid process state=%{public}d", procState);
+        HIVIEW_LOGD("invalid process state=%{public}d", procState);
         return;
     }
     ProcessStatus::GetInstance().NotifyProcessState(procId, procState);
