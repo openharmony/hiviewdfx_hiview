@@ -14,23 +14,25 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("leak_detector_config") {
-  visibility = [ ":*" ]
-  include_dirs = [
-    ".",
-    "./base",
-    "./native_leak",
-    "$hiview_base/event_raw/include",
-    "$hiview_base/event_publish/include",
-    "$hiview_base/include",
-    "$hiview_base/logstore/include",
-    "$hiview_base/utility/include",
-    "$hiview_root/include",
-    "$hiview_root/interfaces/inner_api/unified_collection",
-    "$hiview_root/interfaces/inner_api/unified_collection/utility",
-    "$hiview_plugin/faultlogger/common",
-    "$hiview_plugin/faultlogger/service",
-  ]
+if (enable_leak_detector) {
+  config("leak_detector_config") {
+    visibility = [ ":*" ]
+    include_dirs = [
+      ".",
+      "./base",
+      "./native_leak",
+      "$hiview_base/event_raw/include",
+      "$hiview_base/event_publish/include",
+      "$hiview_base/include",
+      "$hiview_base/logstore/include",
+      "$hiview_base/utility/include",
+      "$hiview_root/include",
+      "$hiview_root/interfaces/inner_api/unified_collection",
+      "$hiview_root/interfaces/inner_api/unified_collection/utility",
+      "$hiview_plugin/faultlogger/common",
+      "$hiview_plugin/faultlogger/service",
+    ]
+  }
 }
 
 ohos_source_set("leak_detector") {

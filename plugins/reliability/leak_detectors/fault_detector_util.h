@@ -42,7 +42,7 @@ const std::string NO_MEMORY_LEAK = "/";
 
 class FaultDetectorUtil {
 public:
-    static bool IsMemLeakDisable();
+    static bool IsMemLeakEnable();
     static bool IsMemTestEnable();
     static bool GetIsHmKernel();
     static std::string GetMemInfoPath();
