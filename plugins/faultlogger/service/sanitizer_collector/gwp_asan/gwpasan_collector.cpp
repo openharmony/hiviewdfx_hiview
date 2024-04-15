@@ -81,10 +81,10 @@ void WriteGwpAsanLog(char* buf, size_t sz)
     }
 }
 
-void ReadGwpAsanRecord(std::string& asanBuffer, std::string& errType)
+void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType)
 {
     GwpAsanCurrInfo currInfo;
-    currInfo.description = asanBuffer;
+    currInfo.description = gwpAsanBuffer;
     currInfo.pid = getpid();
     currInfo.uid = getuid();
     currInfo.errType = errType;
@@ -218,7 +218,7 @@ std::string GetNameByPid(int32_t pid)
         return "";
     }
     char cmdline[BUF_SIZE] = { 0 };
-    int i = 0;
+    size_t i = 0;
     FILE *fp = fopen(path, "r");
     if (fp == nullptr) {
         return "";
