@@ -313,6 +313,10 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
+    if (memory.name.empty()) {
+        HIVIEW_LOGD("process name is empty, pid=%{public}d.", pid);
+        return false;
+    }
 #if PC_APP_STATE_COLLECT_ENABLE
     memory.procState = ProcessStatus::GetInstance().GetProcessState(pid);
 #else

@@ -136,7 +136,7 @@ std::string GetProcNameByPid(pid_t pid)
 std::string GetProcFullNameByPid(pid_t pid)
 {
     std::string procName = GetProcessNameFromProcCmdline(pid);
-    if (procName.empty()) {
+    if (procName.empty() && errno != ESRCH) { // ESRCH means 'no such process'
         procName = GetProcessNameFromProcStat(pid);
     }
     return procName;
