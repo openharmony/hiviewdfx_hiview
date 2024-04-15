@@ -314,9 +314,10 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
-    memory.procState = NON_PC_APP_STATE;
 #if PC_APP_STATE_COLLECT_ENABLE
     memory.procState = ProcessStatus::GetInstance().GetProcessState(pid);
+else
+    memory.procState = NON_PC_APP_STATE;
 #endif
     InitSmapsOfProcessMemory(procDir, memory);
     InitAdjOfProcessMemory(procDir, memory);
