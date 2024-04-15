@@ -70,7 +70,6 @@ CollectResult<bool> HiebpfCollectorImpl::StopHiebpf()
     } else if (childpid == 0) {
         execl("/system/bin/hiebpf", "hiebpf", "--stop", "true", NULL);
     } else {
-        sleep(1);
         result.retCode = UCollect::UcError::SUCCESS;
         if (waitpid(childpid, nullptr, 0) != childpid) {
             HIVIEW_LOGE("waitpid fail, pid: = %{public}d, errno = %{public}d", childpid, errno);
