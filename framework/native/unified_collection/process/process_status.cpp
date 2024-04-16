@@ -150,7 +150,7 @@ void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
         return;
     }
     processInfos_[pid] = {
-        .name = "",
+        .name = CommonUtils::GetProcFullNameByPid(pid),
         .state = FOREGROUND,
         .lastForegroundTime = nowTime,
     };
@@ -167,7 +167,7 @@ void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
         return;
     }
     processInfos_[pid] = {
-        .name = "",
+        .name = CommonUtils::GetProcFullNameByPid(pid),
         .state = BACKGROUND,
         .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
     };

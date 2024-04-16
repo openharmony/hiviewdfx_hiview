@@ -39,22 +39,9 @@ const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
 const std::string OTHER = "Other";
+#if PC_APP_STATE_COLLECT_ENABLE
 const std::string RSS_APP_STATE_EVENT = "APP_CGROUP_CHANGE";
 const int NAP_BACKGROUND_GROUP = 11;
-const std::unordered_map<std::string, ProcessState> APP_STATES = {
-    {"APP_FOREGROUND", FOREGROUND},
-    {"APP_BACKGROUND", BACKGROUND},
-};
-
-ProcessState GetProcessStateByEvent(const SysEvent& sysEvent)
-{
-    std::string eventName = sysEvent.GetEventName();
-    if (APP_STATES.find(eventName) != APP_STATES.end()) {
-        return APP_STATES.at(eventName);
-    }
-    HIVIEW_LOGW("invalid event name=%{public}s", eventName.c_str());
-    return INVALID;
-}
 
 ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
 {
@@ -68,6 +55,7 @@ ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
     // else - The app is in the foreground group
     return FOREGROUND;
 }
+#endif
 }
 
 void UnifiedCollector::OnLoad()
@@ -85,22 +73,20 @@ void UnifiedCollector::OnUnload()
 
 void UnifiedCollector::OnEventListeningCallback(const Event& event)
 {
+#if PC_APP_STATE_COLLECT_ENABLE
     SysEvent& sysEvent = static_cast<SysEvent&>(const_cast<Event&>(event));
     int32_t procId = sysEvent.GetEventIntValue("APP_PID");
     if (procId <= 0) {
         HIVIEW_LOGW("invalid process id=%{public}d", procId);
         return;
     }
-#if PC_APP_STATE_COLLECT_ENABLE
     ProcessState procState = GetProcessStateByGroup(sysEvent);
-#else
-    ProcessState procState = GetProcessStateByEvent(sysEvent);
-#endif
     if (procState == INVALID) {
         HIVIEW_LOGD("invalid process state=%{public}d", procState);
         return;
     }
     ProcessStatus::GetInstance().NotifyProcessState(procId, procState);
+#endif
 }
 
 void UnifiedCollector::Init()

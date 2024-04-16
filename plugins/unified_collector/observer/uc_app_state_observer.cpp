@@ -21,14 +21,27 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
+using namespace OHOS::AppExecFwk;
 
-void UcAppStateObserver::OnProcessCreated(const AppExecFwk::ProcessData& processData)
+void UcAppStateObserver::OnForegroundApplicationChanged(const AppStateData& appStateData)
+{
+#if !(PC_APP_STATE_COLLECT_ENABLE)
+    HIVIEW_LOGD("process=%{public}d, state=%{public}d", appStateData.pid, appStateData.state);
+    if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_FOREGROUND)) {
+        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, FOREGROUND);
+    } else if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_BACKGROUND)) {
+        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, BACKGROUND);
+    }
+#endif
+}
+
+void UcAppStateObserver::OnProcessCreated(const ProcessData& processData)
 {
     HIVIEW_LOGD("process=%{public}d created", processData.pid);
     ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED);
 }
 
-void UcAppStateObserver::OnProcessDied(const AppExecFwk::ProcessData& processData)
+void UcAppStateObserver::OnProcessDied(const ProcessData& processData)
 {
     HIVIEW_LOGD("process=%{public}d died", processData.pid);
 }
