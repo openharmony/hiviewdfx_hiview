@@ -1,10 +1,6 @@
 {
     "domains": [
         {
-            "domain": "AAFWK",
-            "include": ["APP_FOREGROUND", "APP_BACKGROUND"]
-        },
-        {
             "domain": "RSS",
             "include": ["APP_CGROUP_CHANGE"]
         }
