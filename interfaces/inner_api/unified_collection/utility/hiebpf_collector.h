@@ -26,7 +26,7 @@ public:
     HiebpfCollector() = default;
     virtual ~HiebpfCollector() = default;
     virtual CollectResult<bool> StartHiebpf(int duration,
-        const std::string process_name, const std::string out_file) = 0;
+        const std::string processName, const std::string outFile) = 0;
     virtual CollectResult<bool> StopHiebpf() = 0;
     static std::shared_ptr<HiebpfCollector> Create();
 };

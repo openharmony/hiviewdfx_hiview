@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,10 +21,10 @@ const std::string HIEBPF_COLLECTOR_NAME = "HiebpfCollector";
 StatInfoWrapper HiebpfDecorator::statInfoWrapper_;
 
 CollectResult<bool> HiebpfDecorator::StartHiebpf(int duration,
-    const std::string process_name,
-    const std::string out_file)
+    const std::string processName,
+    const std::string outFile)
 {
-    auto task = std::bind(&HiebpfCollector::StartHiebpf, hiebpfCollector_.get(), duration, process_name, out_file);
+    auto task = std::bind(&HiebpfCollector::StartHiebpf, hiebpfCollector_.get(), duration, processName, outFile);
     return Invoke(task, statInfoWrapper_, HIEBPF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

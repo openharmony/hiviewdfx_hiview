@@ -38,7 +38,7 @@ public:
 HWTEST_F(HiebpfCollectorTest, HiebpfCollectorTest001, TestSize.Level1)
 {
     std::shared_ptr<UCollectUtil::HiebpfCollector> hiebpfCollector = UCollectUtil::HiebpfCollector::Create();
-    CollectResult<bool> data = hiebpfCollector->StartHiebpf(10, "com.ohos.launcher", "/data/local/tmp/ebpf.txt");
+    CollectResult<bool> data = hiebpfCollector->StartHiebpf(5, "com.ohos.launcher", "/data/local/tmp/ebpf.txt");
     std::cout << "collect hiebpf data result = " << data.retCode << std::endl;
     data = hiebpfCollector->StopHiebpf();
     std::cout << "collect hiebpf data result = " << data.retCode << std::endl;

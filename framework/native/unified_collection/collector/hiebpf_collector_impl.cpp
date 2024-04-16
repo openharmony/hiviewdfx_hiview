@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,25 +35,25 @@ std::shared_ptr<HiebpfCollector> HiebpfCollector::Create()
 }
 
 CollectResult<bool> HiebpfCollectorImpl::StartHiebpf(int duration,
-    const std::string process_name,
-    const std::string out_file)
+    const std::string processName,
+    const std::string outFile)
 {
     CollectResult<bool> result;
-    int childpid = fork();
-    if (childpid < 0) {
+    int childPid = fork();
+    if (childPid < 0) {
         result.data = false;
         result.retCode = UCollect::UcError::UNSUPPORT;
         return result;
-    } else if (childpid == 0) {
+    } else if (childPid == 0) {
         std::string timestr = std::to_string(duration);
         execl("/system/bin/hiebpf", "hiebpf", "--events", "thread", "--duration", timestr.c_str(),
-            "--target_proc_name", process_name.c_str(), "--start", "true", "--outprase_file", out_file.c_str(), NULL);
+            "--target_proc_name", processName.c_str(), "--start", "true", "--outprase_file", outFile.c_str(), NULL);
     } else {
         result.retCode = UCollect::UcError::SUCCESS;
-        if (waitpid(childpid, nullptr, 0) != childpid) {
-            HIVIEW_LOGE("waitpid fail, pid: = %{public}d, errno = %{public}d", childpid, errno);
+        if (waitpid(childPid, nullptr, 0) != childPid) {
+            HIVIEW_LOGE("waitpid fail, pid: = %{public}d, errno = %{public}d", childPid, errno);
         } else {
-            HIVIEW_LOGE("waitpid success, pid: = %{public}d", childpid);
+            HIVIEW_LOGE("waitpid success, pid: = %{public}d", childPid);
         }
     }
     return result;
@@ -62,19 +62,19 @@ CollectResult<bool> HiebpfCollectorImpl::StartHiebpf(int duration,
 CollectResult<bool> HiebpfCollectorImpl::StopHiebpf()
 {
     CollectResult<bool> result;
-    int childpid = fork();
-    if (childpid < 0) {
+    int childPid = fork();
+    if (childPid < 0) {
         result.data = false;
         result.retCode = UCollect::UcError::UNSUPPORT;
         return result;
-    } else if (childpid == 0) {
+    } else if (childPid == 0) {
         execl("/system/bin/hiebpf", "hiebpf", "--stop", "true", NULL);
     } else {
         result.retCode = UCollect::UcError::SUCCESS;
-        if (waitpid(childpid, nullptr, 0) != childpid) {
-            HIVIEW_LOGE("waitpid fail, pid: = %{public}d, errno = %{public}d", childpid, errno);
+        if (waitpid(childPid, nullptr, 0) != childPid) {
+            HIVIEW_LOGE("waitpid fail, pid: = %{public}d, errno = %{public}d", childPid, errno);
         } else {
-            HIVIEW_LOGE("waitpid success, pid: = %{public}d", childpid);
+            HIVIEW_LOGE("waitpid success, pid: = %{public}d", childPid);
         }
     }
     return result;
