@@ -39,12 +39,12 @@ class ThreadStateInfoCollector : public ThreadCpuCollector {
 public:
     ThreadStateInfoCollector(std::shared_ptr<CollectDeviceClient> deviceClient,
          std::shared_ptr<CpuCalculator> cpuCalculator, int collectPid);
-    ThreadStateInfoCollector(int32_t collectPid);
+    explicit ThreadStateInfoCollector(int32_t collectPid);
     virtual ~ThreadStateInfoCollector() = default;
 
 public:
-    CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate = false) override;
-    virtual int GetCollectPid() override;
+    CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate) override;
+    int GetCollectPid() override;
 
 private:
     void InitLastThreadCpuTimeInfos();

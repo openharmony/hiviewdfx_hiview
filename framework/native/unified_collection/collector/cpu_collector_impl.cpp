@@ -49,7 +49,6 @@ std::shared_ptr<CpuCollector> CpuCollector::Create(bool isSingleton)
     if (!isSingleton) {
         return std::make_shared<CpuDecorator>(std::make_shared<CpuCollectorImpl>());
     }
-
     static std::shared_ptr<CpuCollector> instance_ =
         std::make_shared<CpuDecorator>(std::make_shared<CpuCollectorImpl>());
     return instance_;
