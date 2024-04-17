@@ -19,6 +19,8 @@
 
 #include <gtest/gtest.h>
 
+namespace OHOS {
+namespace HiviewDFX {
 class EventloggerPluginTest : public testing::Test {
 public:
     void SetUp();
@@ -28,4 +30,6 @@ public:
 
 private:
 };
+} // namesapce HiviewDFX
+} // namespace OHOS
 #endif // EVENT_LOGGER_PLUGIN_TEST_H
