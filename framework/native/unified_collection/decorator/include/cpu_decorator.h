@@ -26,7 +26,7 @@ class CpuDecorator : public CpuCollector, public ThreadCpuCollector, public UCDe
 public:
     CpuDecorator(std::shared_ptr<CpuCollector> collector,
         std::shared_ptr<ThreadCpuCollector> threadCpuCollector = nullptr) : cpuCollector_(collector),
-            threadCpuCollector_(threadCpuCollector) {};
+        threadCpuCollector_(threadCpuCollector) {};
     virtual ~CpuDecorator() = default;
 
 public:
