@@ -17,9 +17,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "cpu_decorator.h"
 #include "logger.h"
 #include "time_util.h"
-#include "cpu_decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -43,7 +43,7 @@ ThreadStateInfoCollector::ThreadStateInfoCollector(std::shared_ptr<CollectDevice
     InitLastThreadCpuTimeInfos();
 }
 
-ThreadStateInfoCollector::ThreadStateInfoCollector(int collectPid)
+ThreadStateInfoCollector::ThreadStateInfoCollector(int collectPid): collectPid_(collectPid)
 {
     InitDeviceClient();
     if (deviceClient_ == nullptr) {
@@ -53,7 +53,7 @@ ThreadStateInfoCollector::ThreadStateInfoCollector(int collectPid)
     InitLastThreadCpuTimeInfos();
 }
 
-bool ThreadStateInfoCollector::InitDeviceClient()
+void ThreadStateInfoCollector::InitDeviceClient()
 {
     deviceClient_ = std::make_shared<CollectDeviceClient>();
     if (deviceClient_->Open() != 0) {

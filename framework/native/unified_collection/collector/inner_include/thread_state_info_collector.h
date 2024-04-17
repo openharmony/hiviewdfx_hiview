@@ -58,7 +58,7 @@ private:
         const ucollection_thread_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
     void UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo);
     void TryToDeleteDeadThreadInfo();
-    bool InitDeviceClient();
+    void InitDeviceClient();
 
 private:
     std::mutex collectMutex_;
