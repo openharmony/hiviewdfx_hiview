@@ -72,6 +72,11 @@ void PerfDecorator::SetCpuPercent(int cpuPercent)
     perfCollector_->SetCpuPercent(cpuPercent);
 }
 
+void PerfDecorator::SetReport(bool enable)
+{
+    perfCollector_->SetReport(enable);
+}
+
 void PerfDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

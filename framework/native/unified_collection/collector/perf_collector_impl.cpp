@@ -58,6 +58,7 @@ void PerfCollectorImpl::SetTimeStopSec(int timeStopSec)
     opt_.SetTimeStopSec(timeStopSec);
 }
 
+
 void PerfCollectorImpl::SetFrequency(int frequency)
 {
     opt_.SetFrequency(frequency);
@@ -86,6 +87,11 @@ void PerfCollectorImpl::SetSelectEvents(const std::vector<std::string> &selectEv
 void PerfCollectorImpl::SetCpuPercent(int cpuPercent)
 {
     opt_.SetCpuPercent(cpuPercent);
+}
+
+void PerfCollectorImpl::SetReport(bool enable)
+{
+    opt_.SetReport(enable);
 }
 
 void PerfCollectorImpl::IncreaseUseCount()

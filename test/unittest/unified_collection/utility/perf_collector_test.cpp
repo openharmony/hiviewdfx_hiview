@@ -135,4 +135,27 @@ HWTEST_F(PerfCollectorTest, PerfCollectorTest004, TestSize.Level1)
     std::cout << "collect perf data result" << data.retCode << std::endl;
     ASSERT_EQ(FileUtil::FileExists(filepath), true);
 }
+/**
+ * @tc.name: PerfCollectorTest005
+ * @tc.desc: used to test PerfCollector.SetReport
+ * @tc.type: FUNC
+*/
+HWTEST_F(PerfCollectorTest, PerfCollectorTest005, TestSize.Level1)
+{
+    std::shared_ptr<UCollectUtil::PerfCollector> perfCollector = UCollectUtil::PerfCollector::Create();
+    vector<pid_t> selectPids = {getpid()};
+    std::string filedir = "/data/local/tmp/";
+    std::string filename = "hiperf-";
+    filename += TimeUtil::TimestampFormatToDate(TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC,
+    "%Y%m%d%H%M%S");
+    filename += ".data";
+    std::string filepath = filedir + filename;
+    perfCollector->SetOutputFilename(filename);
+    perfCollector->SetSelectPids(selectPids);
+    perfCollector->SetTimeStopSec(3);
+    perfCollector->SetReport(true);
+    CollectResult<bool> data = perfCollector->StartPerf(filedir);
+    std::cout << "collect perf data result" << data.retCode << std::endl;
+    ASSERT_EQ(FileUtil::FileExists(filepath), true);
+}
 #endif // HAS_HIPERF
