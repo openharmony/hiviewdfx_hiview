@@ -110,7 +110,7 @@ CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(in
     return error;
 }
 
-std::shared_ptr<ThreadCollector> CpuCollectorImpl::CreateThreadCollector(int pid)
+std::shared_ptr<ThreadCpuCollector> CpuCollectorImpl::CreateThreadCollector(int pid)
 {
     if (deviceClient_ == nullptr) {
         return nullptr;

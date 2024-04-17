@@ -30,6 +30,9 @@ void ProcessCpuData::Init(int magic, unsigned int totalCount, int pid)
     int totalSize = sizeof(struct ucollection_process_cpu_entry)
         + sizeof(struct ucollection_process_cpu_item) * totalCount;
     entry_ = (struct ucollection_process_cpu_entry *)malloc(totalSize);
+    if (entry_ == NULL) {
+        return;
+    }
     memset_s(entry_, totalSize, 0, totalSize);
     entry_->magic = magic;
     entry_->total_count = totalCount;
@@ -39,7 +42,7 @@ void ProcessCpuData::Init(int magic, unsigned int totalCount, int pid)
 
 ProcessCpuData::~ProcessCpuData()
 {
-    if (entry_ == nullptr) {
+    if (entry_ == NULL) {
         return;
     }
     free(entry_);
@@ -48,7 +51,7 @@ ProcessCpuData::~ProcessCpuData()
 
 struct ucollection_process_cpu_item* ProcessCpuData::GetNextProcess()
 {
-    if (current_ >= entry_->cur_count) {
+    if (entry_ == NULL || current_ >= entry_->cur_count) {
         return nullptr;
     }
 

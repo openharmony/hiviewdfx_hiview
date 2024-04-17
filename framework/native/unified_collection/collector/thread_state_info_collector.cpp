@@ -19,17 +19,49 @@
 
 #include "logger.h"
 #include "time_util.h"
+#include "cpu_decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("CpuCollector");
 
+std::shared_ptr<ThreadCpuCollector> ThreadCpuCollector::Create(int32_t pid, bool isSingleton)
+{
+    if (!isSingleton) {
+        return std::make_shared<CpuDecorator>(nullptr, std::make_shared<ThreadStateInfoCollector>(pid));
+    }
+    static std::shared_ptr<ThreadCpuCollector> instance_ =
+            std::make_shared<CpuDecorator>(nullptr, std::make_shared<ThreadStateInfoCollector>(pid));
+    return instance_;
+}
+
 ThreadStateInfoCollector::ThreadStateInfoCollector(std::shared_ptr<CollectDeviceClient> deviceClient,
     std::shared_ptr<CpuCalculator> cpuCalculator, int collectPid): deviceClient_(deviceClient),
     cpuCalculator_(cpuCalculator), collectPid_(collectPid)
 {
     InitLastThreadCpuTimeInfos();
+}
+
+ThreadStateInfoCollector::ThreadStateInfoCollector(int collectPid)
+{
+    InitDeviceClient();
+    if (deviceClient_ == nullptr) {
+        return;
+    }
+    cpuCalculator_ = std::make_shared<CpuCalculator>();
+    InitLastThreadCpuTimeInfos();
+}
+
+bool ThreadStateInfoCollector::InitDeviceClient()
+{
+    deviceClient_ = std::make_shared<CollectDeviceClient>();
+    if (deviceClient_->Open() != 0) {
+        HIVIEW_LOGE("failed to open device client");
+        deviceClient_ = nullptr;
+        return false;
+    }
+    return true;
 }
 
 void ThreadStateInfoCollector::InitLastThreadCpuTimeInfos()

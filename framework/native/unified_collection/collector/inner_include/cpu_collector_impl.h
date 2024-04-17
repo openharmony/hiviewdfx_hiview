@@ -44,7 +44,7 @@ public:
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
-    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) override;
+    virtual std::shared_ptr<ThreadCpuCollector> CreateThreadCollector(int pid) override;
 private:
     bool InitDeviceClient();
 
