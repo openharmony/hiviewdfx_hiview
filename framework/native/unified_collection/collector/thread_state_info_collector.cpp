@@ -59,9 +59,7 @@ void ThreadStateInfoCollector::InitDeviceClient()
     if (deviceClient_->Open() != 0) {
         HIVIEW_LOGE("failed to open device client");
         deviceClient_ = nullptr;
-        return false;
     }
-    return true;
 }
 
 void ThreadStateInfoCollector::InitLastThreadCpuTimeInfos()

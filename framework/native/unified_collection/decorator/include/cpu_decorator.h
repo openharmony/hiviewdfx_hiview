@@ -25,8 +25,8 @@ namespace UCollectUtil {
 class CpuDecorator : public CpuCollector, public ThreadCpuCollector, public UCDecorator {
 public:
     CpuDecorator(std::shared_ptr<CpuCollector> collector,
-        std::shared_ptr<ThreadCpuCollector> threadCpuCollector = nullptr) :
-        cpuCollector_(collector), threadCpuCollector_(threadCpuCollector) {};
+        std::shared_ptr<ThreadCpuCollector> threadCpuCollector = nullptr) : cpuCollector_(collector),
+            threadCpuCollector_(threadCpuCollector) {};
     virtual ~CpuDecorator() = default;
 
 public:
