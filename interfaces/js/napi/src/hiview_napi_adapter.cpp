@@ -18,7 +18,6 @@
 #include "hiview_err_code.h"
 #include "hiview_napi_util.h"
 #include "hiview_service_agent.h"
-#include "hiview_app_context.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -39,13 +38,8 @@ void HiviewNapiAdapter::Copy(napi_env env, HiviewFileParams* params)
 
 void HiviewNapiAdapter::CopyFileExecution(napi_env env, void* data)
 {
-    std::string baseDirOut;
-    std::string cacheDirOut;
-    AppConext::GrantBaseDirAccessToHiView(baseDirOut);
-    AppConext::GrantCacheDirAccessToHiView(cacheDirOut);
     HiviewFileParams* params = reinterpret_cast<HiviewFileParams*>(data);
-    params->result = HiviewServiceAgent::GetInstance().Copy(params->logType,
-        cacheDirOut, params->logName, params->destDir);
+    params->result = HiviewServiceAgent::GetInstance().Copy(params->logType, params->logName, params->destDir);
 }
 
 void HiviewNapiAdapter::Move(napi_env env, HiviewFileParams* params)
@@ -59,13 +53,8 @@ void HiviewNapiAdapter::Move(napi_env env, HiviewFileParams* params)
 
 void HiviewNapiAdapter::MoveFileExecution(napi_env env, void* data)
 {
-    std::string baseDirOut;
-    std::string cacheDirOut;
-    AppConext::GrantBaseDirAccessToHiView(baseDirOut);
-    AppConext::GrantCacheDirAccessToHiView(cacheDirOut);
     HiviewFileParams* params = reinterpret_cast<HiviewFileParams*>(data);
-    params->result = HiviewServiceAgent::GetInstance().Move(params->logType,
-        cacheDirOut, params->logName, params->destDir);
+    params->result = HiviewServiceAgent::GetInstance().Move(params->logType, params->logName, params->destDir);
 }
 
 void HiviewNapiAdapter::FileOperationCompleteCallback(napi_env env, napi_status status, void* data)
