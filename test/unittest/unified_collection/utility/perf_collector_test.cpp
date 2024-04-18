@@ -135,6 +135,7 @@ HWTEST_F(PerfCollectorTest, PerfCollectorTest004, TestSize.Level1)
     std::cout << "collect perf data result" << data.retCode << std::endl;
     ASSERT_EQ(FileUtil::FileExists(filepath), true);
 }
+
 /**
  * @tc.name: PerfCollectorTest005
  * @tc.desc: used to test PerfCollector.SetReport

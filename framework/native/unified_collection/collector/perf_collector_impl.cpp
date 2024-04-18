@@ -58,7 +58,6 @@ void PerfCollectorImpl::SetTimeStopSec(int timeStopSec)
     opt_.SetTimeStopSec(timeStopSec);
 }
 
-
 void PerfCollectorImpl::SetFrequency(int frequency)
 {
     opt_.SetFrequency(frequency);
