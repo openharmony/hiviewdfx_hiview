@@ -390,7 +390,7 @@ CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t 
 
     CollectResult<int32_t> result;
     result.retCode = UCollect::UcError::SUCCESS;
-    if (AppCallerEvent::isDynamicTraceOpen) {
+    if (AppCallerEvent::isDynamicTraceOpen_) {
         HIVIEW_LOGE("dynamic trace is already open uid=%{public}d, pid=%{public}d", uid, pid);
         result.retCode = UCollect::UcError::EXISTS_CAPTURE_TASK;
         return result;
@@ -403,25 +403,25 @@ CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t 
         return result;
     }
 
-    AppCallerEvent::isDynamicTraceOpen = true;
-    std::shared_ptr<AppCallerEvent> appJankEvent = std::make_shared<AppCallerEvent>("HiViewService");
-    appJankEvent->messageType_ = Event::MessageType::PLUGIN_MAINTENANCE;
-    appJankEvent->eventName_ = UCollectUtil::START_CAPTURE_TRACE;
-    appJankEvent->bundleName_ = appCaller.bundleName;
-    appJankEvent->bundleVersion_ = appCaller.bundleVersion;
-    appJankEvent->uid_ = appCaller.uid;
-    appJankEvent->pid_ = appCaller.pid;
-    appJankEvent->happenTime_ = appCaller.happenTime;
-    appJankEvent->beginTime_ = appCaller.beginTime;
-    appJankEvent->endTime_ = appCaller.endTime;
-    appJankEvent->taskBeginTime_ = TimeUtil::GetMilliseconds();
+    AppCallerEvent::isDynamicTraceOpen_ = true;
+    std::shared_ptr<AppCallerEvent> appCallerEvent = std::make_shared<AppCallerEvent>("HiViewService");
+    appCallerEvent->messageType_ = Event::MessageType::PLUGIN_MAINTENANCE;
+    appCallerEvent->eventName_ = UCollectUtil::START_CAPTURE_TRACE;
+    appCallerEvent->bundleName_ = appCaller.bundleName;
+    appCallerEvent->bundleVersion_ = appCaller.bundleVersion;
+    appCallerEvent->uid_ = appCaller.uid;
+    appCallerEvent->pid_ = appCaller.pid;
+    appCallerEvent->happenTime_ = appCaller.happenTime;
+    appCallerEvent->beginTime_ = appCaller.beginTime;
+    appCallerEvent->endTime_ = appCaller.endTime;
+    appCallerEvent->taskBeginTime_ = TimeUtil::GetMilliseconds();
 
-    std::shared_ptr<Event> mainThreadJankEvent = std::dynamic_pointer_cast<Event>(appJankEvent);
+    std::shared_ptr<Event> mainThreadJankEvent = std::dynamic_pointer_cast<Event>(appCallerEvent);
     if (!plugin->OnEvent(mainThreadJankEvent)) {
-        AppCallerEvent::isDynamicTraceOpen = false;
+        AppCallerEvent::isDynamicTraceOpen_ = false;
         HIVIEW_LOGE("capture trace failed for uid=%{public}d pid=%{public}d error code=%{public}d",
-            uid, pid, appJankEvent->resultCode_);
-        result.retCode = UCollect::UcError(appJankEvent->resultCode_);
+            uid, pid, appCallerEvent->resultCode_);
+        result.retCode = UCollect::UcError(appCallerEvent->resultCode_);
     }
     return result;
 }

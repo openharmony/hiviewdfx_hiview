@@ -39,7 +39,7 @@ public:
 
 public:
     static bool IsEnableAppCaptureTrace();
-    static bool isDynamicTraceOpen;
+    static bool isDynamicTraceOpen_;
     static bool enableDynamicTrace_;
 };
 } // HiviewDFX

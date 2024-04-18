@@ -195,7 +195,7 @@ void OnLogServiceRemoteLogChange(const char *key, const char *value, void *conte
     }
 }
 
-void InitDynamicTrce()
+void InitDynamicTrace()
 {
     if (Parameter::IsBetaVersion()) {
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_TEST_TRACE_ON, OnTraceTestStateChange, nullptr);
@@ -219,6 +219,7 @@ void InitDynamicTrce()
         AppCallerEvent::enableDynamicTrace_ = false;
         return;
     }
+    AppCallerEvent::enableDynamicTrace_ = false;
 }
 }
 
@@ -272,12 +273,12 @@ bool UnifiedCollector::OnStopCaptureTrace(std::shared_ptr<Event>& event)
     ShareAppEvent(appJankEvent);
 
     std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
-    traceController->OneNewFinishTask(appJankEvent);
+    traceController->AddNewFinishTask(appJankEvent);
     traceController->CleanAppTrace();
 
     ReportMainThreadJankForTrace(appJankEvent);
     HIVIEW_LOGI("has stop trace for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
-    AppCallerEvent::isDynamicTraceOpen = false;
+    AppCallerEvent::isDynamicTraceOpen_ = false;
     return true;
 }
 
@@ -381,7 +382,7 @@ void UnifiedCollector::Init()
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
         HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
     }
-    InitDynamicTrce();
+    InitDynamicTrace();
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 
     observerMgr_ = std::make_shared<UcObserverManager>();

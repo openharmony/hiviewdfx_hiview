@@ -22,12 +22,12 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiViewRemoteService");
 namespace RemoteService {
 namespace {
-sptr<IRemoteObject> hiviewServiceAbilityProxy_;
-sptr<IRemoteObject::DeathRecipient> deathRecipient_;
-std::mutex proxyMutex_;
+DEFINE_LOG_TAG("HiViewRemoteService");
+sptr<IRemoteObject> g_hiviewServiceAbilityProxy = nullptr;
+sptr<IRemoteObject::DeathRecipient> g_deathRecipient = nullptr;
+std::mutex g_proxyMutex;
 }
 
 class HiviewServiceDeathRecipient : public IRemoteObject::DeathRecipient {
@@ -43,28 +43,28 @@ public:
 
 sptr<IRemoteObject> GetHiViewRemoteService()
 {
-    std::lock_guard<std::mutex> proxyGuard(proxyMutex_);
-    if (hiviewServiceAbilityProxy_ != nullptr) {
-        return hiviewServiceAbilityProxy_;
+    std::lock_guard<std::mutex> proxyGuard(g_proxyMutex);
+    if (g_hiviewServiceAbilityProxy != nullptr) {
+        return g_hiviewServiceAbilityProxy;
     }
     HIVIEW_LOGI("refresh remote service instance.");
     auto abilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (abilityManager == nullptr) {
         return nullptr;
     }
-    hiviewServiceAbilityProxy_ = abilityManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
-    if (hiviewServiceAbilityProxy_ == nullptr) {
+    g_hiviewServiceAbilityProxy = abilityManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
+    if (g_hiviewServiceAbilityProxy == nullptr) {
         HIVIEW_LOGE("get hiview ability failed.");
         return nullptr;
     }
-    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new HiviewServiceDeathRecipient());
-    if (deathRecipient_ == nullptr) {
+    g_deathRecipient = sptr<IRemoteObject::DeathRecipient>(new HiviewServiceDeathRecipient());
+    if (g_deathRecipient == nullptr) {
         HIVIEW_LOGE("create service deathrecipient failed.");
-        hiviewServiceAbilityProxy_ = nullptr;
+        g_hiviewServiceAbilityProxy = nullptr;
         return nullptr;
     }
-    hiviewServiceAbilityProxy_->AddDeathRecipient(deathRecipient_);
-    return hiviewServiceAbilityProxy_;
+    g_hiviewServiceAbilityProxy->AddDeathRecipient(g_deathRecipient);
+    return g_hiviewServiceAbilityProxy;
 }
 } // namespace RemoteService
 } // namespace HiviewDFX

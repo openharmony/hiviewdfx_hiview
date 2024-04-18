@@ -17,9 +17,8 @@
 
 #include <string>
 
-#include "logger.h"
-
 #include "application_context.h"
+#include "logger.h"
 #include "storage_acl.h"
 
 namespace OHOS {
@@ -41,12 +40,12 @@ bool GrantBaseDirAccessToHiView(std::string &baseDirOut)
         return false;
     }
 
-    baseDirOut = baseDir;
     int aclBaseRet = OHOS::StorageDaemon::AclSetAccess(baseDir, "g:1201:x");
     if (aclBaseRet != 0) {
         HIVIEW_LOGE("set acl access for base dir failed.");
         return false;
     }
+    baseDirOut = baseDir;
     return true;
 }
 

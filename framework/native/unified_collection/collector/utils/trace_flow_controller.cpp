@@ -200,7 +200,7 @@ bool TraceFlowController::HasCallOnceToday(int32_t uid, uint64_t happenTime)
     return appEventTask.id_ > 0;
 }
 
-bool TraceFlowController::OneNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent)
+bool TraceFlowController::AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent)
 {
     AppEventTask appEventTask;
 
