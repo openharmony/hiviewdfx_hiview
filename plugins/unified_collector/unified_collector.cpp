@@ -55,12 +55,12 @@ const std::string DEVELOP_TRACE_RECORDER_TRUE = "true";
 const std::string DEVELOP_TRACE_RECORDER_FALSE = "false";
 
 const int8_t STATE_COUNT = 2;
-const int8_t COML_STATE = 1;
-// [beta:0]{{remote log true, trace record false}, {remote log false, trace record true}}
-// [coml:1]{{remote log true, trace record false}, {remote log false, trace record true}}
+const int8_t COML_STATE = 0;
+// [coml:0][is remote log][is trace record]
+// [beta:1][is remote log][is trace record]
 const bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
-    {{false, false}, {false, false}},
     {{true,  false}, {false, false}}
+    {{false, false}, {false, false}},
 };
 
 #if PC_APP_STATE_COLLECT_ENABLE
@@ -194,7 +194,10 @@ void InitDynamicTrace()
     bool s1 = Parameter::IsBetaVersion();
     bool s2 = IsRemoteLogOpen();
     bool s3 = IsDevelopTraceRecorderOpen();
+    HIVIEW_LOGI("IsBetaVersion=%{public}d, IsRemoteLogOpen=%{public}d, IsDevelopTraceRecorderOpen=%{public}d",
+        s1, s2, s3);
     AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[s1][s2][s3];
+    HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 }
 
 void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* context)
@@ -390,7 +393,6 @@ void UnifiedCollector::Init()
     }
 
     InitDynamicTrace();
-    HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 
     observerMgr_ = std::make_shared<UcObserverManager>();
 }

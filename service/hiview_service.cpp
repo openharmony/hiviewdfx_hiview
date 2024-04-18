@@ -390,6 +390,12 @@ CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t 
 
     CollectResult<int32_t> result;
     result.retCode = UCollect::UcError::SUCCESS;
+    if (!AppCallerEvent::enableDynamicTrace_) {
+        HIVIEW_LOGE("disable dynamic trace, can not capture trace for uid=%{public}d, pid=%{public}d", uid, pid);
+        result.retCode = UCollect::UcError::UNSUPPORT;
+        return result;
+    }
+
     if (AppCallerEvent::isDynamicTraceOpen_) {
         HIVIEW_LOGE("dynamic trace is already open uid=%{public}d, pid=%{public}d", uid, pid);
         result.retCode = UCollect::UcError::EXISTS_CAPTURE_TASK;
