@@ -32,7 +32,7 @@ std::shared_ptr<ThreadCpuCollector> ThreadCpuCollector::Create(int32_t pid, bool
         return std::make_shared<CpuDecorator>(nullptr, std::make_shared<ThreadStateInfoCollector>(pid));
     }
     static std::shared_ptr<ThreadCpuCollector> instance_ =
-            std::make_shared<CpuDecorator>(nullptr, std::make_shared<ThreadStateInfoCollector>(pid));
+        std::make_shared<CpuDecorator>(nullptr, std::make_shared<ThreadStateInfoCollector>(pid));
     return instance_;
 }
 
