@@ -50,7 +50,7 @@ private:
     void ExitHitraceService();
     void OnMainThreadJank(SysEvent& sysEvent);
     bool OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
-    bool OnStopCaptureTrace(sstd::shared_ptr<AppCallerEvent> appJankEvent);
+    bool OnStopCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
     static void OnSwitchStateChanged(const char* key, const char* value, void* context);
 
 private:

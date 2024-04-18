@@ -285,12 +285,12 @@ bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
     if (event->messageType_ == Event::MessageType::PLUGIN_MAINTENANCE) {
         if (event->eventName_ == UCollectUtil::START_CAPTURE_TRACE) {
             std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
-            return OnStartCaptureTrace(event);
+            return OnStartCaptureTrace(appCallerEvent);
         }
 
         if (event->eventName_ == UCollectUtil::STOP_CAPTURE_TRACE) {
             std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
-            return OnStopCaptureTrace(event);
+            return OnStopCaptureTrace(appCallerEvent);
         }
     }
 
