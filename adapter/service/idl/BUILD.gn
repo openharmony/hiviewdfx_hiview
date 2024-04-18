@@ -104,7 +104,6 @@ ohos_source_set("hiview_service_impl_for_js") {
   ]
 
   sources = [
-    "src/hiview_app_context.cpp",
     "src/hiview_file_info.cpp",
     "src/hiview_service_ability_proxy.cpp",
     "src/hiview_service_agent.cpp",
