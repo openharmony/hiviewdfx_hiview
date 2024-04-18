@@ -16,6 +16,8 @@
 
 #include <memory>
 
+#include "app_caller_event.h"
+#include "collect_event.h"
 #include "event_publish.h"
 #include "ffrt.h"
 #include "file_util.h"
@@ -28,12 +30,10 @@
 #include "process_status.h"
 #include "sys_event.h"
 #include "time_util.h"
+#include "trace_flow_controller.h"
+#include "trace_manager.h"
 #include "unified_collection_stat.h"
 #include "utility/trace_collector.h"
-#include "collect_event.h"
-#include "trace_flow_controller.h"
-#include "app_caller_event.h"
-#include "trace_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -168,7 +168,7 @@ void ReportMainThreadJankForTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
         UCollectUtil::SYS_EVENT_PARAM_BUNDLE_VERSION, appJankEvent->bundleVersion_,
         UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME, appJankEvent->beginTime_,
         UCollectUtil::SYS_EVENT_PARAM_END_TIME, appJankEvent->endTime_,
-        UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL, 1);
+        UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL, 1); // 1: over 450ms
 }
 
 bool IsRemoteLogOpen()
@@ -232,9 +232,8 @@ void UnifiedCollector::OnUnload()
     observerMgr_ = nullptr;
 }
 
-bool UnifiedCollector::OnStartCaptureTrace(std::shared_ptr<Event>& event)
+bool UnifiedCollector::OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
 {
-    std::shared_ptr<AppCallerEvent> appJankEvent = Event::DownCastTo<AppCallerEvent>(event);
     HIVIEW_LOGI("start trace to capture serval seconds for uid=%{public}d pid=%{public}d",
         appJankEvent->uid_, appJankEvent->pid_);
 
@@ -253,14 +252,13 @@ bool UnifiedCollector::OnStartCaptureTrace(std::shared_ptr<Event>& event)
     }
 
     appJankEvent->eventName_ = UCollectUtil::STOP_CAPTURE_TRACE;
-    DelayProcessEvent(event, 3); // 3: delay 3 second to stop trace
+    DelayProcessEvent(appJankEvent, 3); // 3: delay 3 second to stop trace
     HIVIEW_LOGI("trace is on, wait for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
     return true;
 }
 
-bool UnifiedCollector::OnStopCaptureTrace(std::shared_ptr<Event>& event)
+bool UnifiedCollector::OnStopCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
 {
-    std::shared_ptr<AppCallerEvent> appJankEvent = Event::DownCastTo<AppCallerEvent>(event);
     HIVIEW_LOGI("stop trace for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
 
     StopRecordAppTrace(appJankEvent);
@@ -280,13 +278,18 @@ bool UnifiedCollector::OnStopCaptureTrace(std::shared_ptr<Event>& event)
 
 bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
 {
+    if (event == nullptr) {
+        return true;
+    }
     HIVIEW_LOGI("Receive Event %{public}s", event->GetEventName().c_str());
     if (event->messageType_ == Event::MessageType::PLUGIN_MAINTENANCE) {
         if (event->eventName_ == UCollectUtil::START_CAPTURE_TRACE) {
+            std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
             return OnStartCaptureTrace(event);
         }
 
         if (event->eventName_ == UCollectUtil::STOP_CAPTURE_TRACE) {
+            std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
             return OnStopCaptureTrace(event);
         }
     }
@@ -385,7 +388,7 @@ void UnifiedCollector::Init()
         ret = Parameter::WatchParamChange(DEVELOP_HIVIEW_TRACE_RECORDER, OnHiViewTraceRecorderChanged, nullptr);
         HIVIEW_LOGI("add develop trace recorder param watcher ret: %{public}d", ret);
     }
-    
+
     InitDynamicTrace();
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 

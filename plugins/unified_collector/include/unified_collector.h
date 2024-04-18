@@ -17,6 +17,7 @@
 
 #include <memory>
 
+#include "app_caller_event.h"
 #include "cpu_collection_task.h"
 #include "plugin.h"
 #include "uc_observer_mgr.h"
@@ -48,8 +49,8 @@ private:
     void LoadHitraceService();
     void ExitHitraceService();
     void OnMainThreadJank(SysEvent& sysEvent);
-    bool OnStartCaptureTrace(std::shared_ptr<Event>& event);
-    bool OnStopCaptureTrace(std::shared_ptr<Event>& event);
+    bool OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
+    bool OnStopCaptureTrace(sstd::shared_ptr<AppCallerEvent> appJankEvent);
     static void OnSwitchStateChanged(const char* key, const char* value, void* context);
 
 private:

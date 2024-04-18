@@ -21,15 +21,15 @@
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 
+#include "app_caller_event.h"
+#include "bundle_mgr_client.h"
+#include "collect_event.h"
 #include "file_util.h"
-#include "time_util.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
 #include "logger.h"
+#include "time_util.h"
 #include "trace_manager.h"
-#include "collect_event.h"
-#include "bundle_mgr_client.h"
-#include "app_caller_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
