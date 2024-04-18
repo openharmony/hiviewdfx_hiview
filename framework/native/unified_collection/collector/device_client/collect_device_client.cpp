@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 
 #define UNIFIED_COLLECTION_DEVICE  "/dev/ucollection"

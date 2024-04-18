@@ -24,7 +24,7 @@
 #include "faultlog_util.h"
 #include "hisysevent.h"
 #include "hiview_global.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "log_analyzer.h"
 #include "string_util.h"
 #include "sys_event_dao.h"

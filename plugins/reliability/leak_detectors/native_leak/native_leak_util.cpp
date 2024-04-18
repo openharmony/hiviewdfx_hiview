@@ -20,7 +20,7 @@
 
 #include "fault_detector_util.h"
 #include "fault_info_base.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "native_leak_info.h"
 
 namespace OHOS {

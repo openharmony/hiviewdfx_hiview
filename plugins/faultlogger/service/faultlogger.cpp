@@ -58,7 +58,7 @@
 #include "ipc_skeleton.h"
 #include "json/json.h"
 #include "log_analyzer.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"

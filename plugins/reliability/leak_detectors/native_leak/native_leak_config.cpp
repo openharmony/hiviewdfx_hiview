@@ -19,7 +19,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

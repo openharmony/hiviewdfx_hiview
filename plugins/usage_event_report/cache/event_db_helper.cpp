@@ -16,7 +16,7 @@
 
 #include "file_util.h"
 #include "json_parser.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_stats_event_factory.h"
 #include "rdb_helper.h"
 #include "sql_util.h"

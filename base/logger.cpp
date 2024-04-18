@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include <cstdarg>
 #include "default_logger.h"
 #ifndef __WITH_NO_HILOG__

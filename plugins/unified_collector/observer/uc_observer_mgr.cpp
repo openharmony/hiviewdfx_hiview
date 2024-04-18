@@ -15,7 +15,7 @@
 #include "uc_observer_mgr.h"
 
 #include "app_mgr_client.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 
 namespace OHOS {

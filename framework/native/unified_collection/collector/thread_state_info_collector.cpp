@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 #include "cpu_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 
 namespace OHOS {

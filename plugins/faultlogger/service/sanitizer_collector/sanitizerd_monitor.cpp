@@ -26,7 +26,7 @@
 #include "securec.h"
 
 #include "sanitizerd_log.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

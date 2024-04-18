@@ -21,7 +21,7 @@
 #ifdef POWER_MANAGER_ENABLE
 #include "hiview_shutdown_callback.h"
 #endif
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "securec.h"
 #ifdef POWER_MANAGER_ENABLE

@@ -20,7 +20,7 @@
 #include <string>
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
 

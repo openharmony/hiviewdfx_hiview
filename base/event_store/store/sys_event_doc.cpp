@@ -19,7 +19,7 @@
 #include "base_def.h"
 #include "event_store_config.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event_database.h"
 #include "sys_event_doc_reader.h"
 #include "sys_event_doc_writer.h"

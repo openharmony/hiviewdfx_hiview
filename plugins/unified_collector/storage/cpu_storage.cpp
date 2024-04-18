@@ -21,7 +21,7 @@
 
 #include "file_util.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "parameter_ex.h"
 #include "rdb_predicates.h"

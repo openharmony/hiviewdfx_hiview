@@ -19,7 +19,7 @@
 
 #include "bundle_mgr_client.h"
 #include "event_publish.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 
 namespace OHOS {

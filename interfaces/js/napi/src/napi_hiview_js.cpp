@@ -17,7 +17,7 @@
 #include "hiview_napi_adapter.h"
 #include "hiview_napi_util.h"
 #include "hiview_service_agent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "string_util.h"

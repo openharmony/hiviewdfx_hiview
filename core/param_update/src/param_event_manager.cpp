@@ -23,7 +23,7 @@
 
 #include "common_event_subscriber.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "param_manager.h"
 #include "param_reader.h"
 

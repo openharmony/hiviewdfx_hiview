@@ -20,7 +20,7 @@
 #include "common_util.h"
 #include "file_util.h"
 #include "gpu_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 

@@ -18,7 +18,7 @@
 #include <regex>
 #include <map>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
 

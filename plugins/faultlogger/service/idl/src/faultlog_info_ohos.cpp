@@ -14,7 +14,7 @@
  */
 #include "faultlog_info_ohos.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parcel.h"
 
 namespace OHOS {

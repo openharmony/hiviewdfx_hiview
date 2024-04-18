@@ -18,7 +18,7 @@
 #include "file_util.h"
 #include "hitrace_dump.h"
 #include "io_collector.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"

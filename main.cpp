@@ -19,7 +19,7 @@
 #include "hiview_service.h"
 
 #include "defines.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_util.h"
 #include "dump_manager_cpu_service.h"
 

@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "log_catcher_utils.h"
 #include "common_utils.h"
 #include "file_util.h"

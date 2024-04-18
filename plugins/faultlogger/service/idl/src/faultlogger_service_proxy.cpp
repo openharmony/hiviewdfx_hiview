@@ -17,10 +17,10 @@
 #include <unistd.h>
 #include "ipc_types.h"
 #include "message_parcel.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "faultlog_info_ohos.h"
 #include "faultlog_query_result_proxy.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "hiviewfaultlogger_ipc_interface_code.h"
 
 namespace OHOS {

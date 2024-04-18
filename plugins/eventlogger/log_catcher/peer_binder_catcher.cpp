@@ -28,7 +28,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "log_catcher_utils.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "string_util.h"
 #include "freeze_json_util.h"

@@ -19,7 +19,7 @@
 
 #include "file_util.h"
 #include "hiview_event_report.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"

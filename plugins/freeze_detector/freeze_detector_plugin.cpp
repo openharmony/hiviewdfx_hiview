@@ -17,7 +17,7 @@
 
 #include <algorithm>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "sys_event_dao.h"

@@ -18,7 +18,7 @@
 #include <regex>
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "ffrt.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "trace_worker.h"
 
 namespace OHOS {

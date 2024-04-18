@@ -16,7 +16,7 @@
 
 #include <cinttypes>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 #include "string_util.h"
 #include "sys_event_query.h"

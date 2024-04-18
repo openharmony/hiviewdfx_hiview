@@ -24,7 +24,7 @@
 
 #include "file_util.h"
 #include "hiview_global.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter.h"
 #include "sys_event_service_adapter.h"
 

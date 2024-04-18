@@ -21,7 +21,7 @@
 #include <set>
 
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
 

@@ -18,7 +18,7 @@
 
 #include <string>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_ex.h"
 #include "string_util.h"
 

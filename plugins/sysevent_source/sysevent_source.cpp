@@ -20,7 +20,7 @@
 
 #include "decoded/decoded_event.h"
 #include "defines.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
 #include "sys_event.h"

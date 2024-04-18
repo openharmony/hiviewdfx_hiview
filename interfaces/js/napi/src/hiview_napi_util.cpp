@@ -16,7 +16,7 @@
 #include "hiview_napi_util.h"
 
 #include "hiview_err_code.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "ipc_skeleton.h"
 #include "tokenid_kit.h"
 

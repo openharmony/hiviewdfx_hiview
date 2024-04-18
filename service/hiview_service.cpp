@@ -24,7 +24,7 @@
 #include "file_util.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "trace_manager.h"
 
 namespace OHOS {

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include "faultlog_util.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "reporter.h"
 #include "zip_helper.h"
 

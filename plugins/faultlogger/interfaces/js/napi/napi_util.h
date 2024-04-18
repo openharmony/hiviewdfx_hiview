@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 

@@ -14,7 +14,7 @@
  */
 #include "plugin_factory.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-PluginFactory");
