@@ -15,7 +15,7 @@
 
 #include "app_event_task_storage.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sql_util.h"
 
 namespace OHOS {

@@ -18,7 +18,7 @@
 #include <string>
 
 #include "application_context.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "storage_acl.h"
 
 namespace OHOS {
