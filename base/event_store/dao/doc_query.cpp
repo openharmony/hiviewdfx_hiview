@@ -17,7 +17,7 @@
 #include <unordered_set>
 
 #include "decoded/decoded_event.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event_query.h"
 
 namespace OHOS {

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include "faultlog_util.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "reporter.h"
 #include "zip_helper.h"
 
@@ -92,7 +92,6 @@ void AsanCollector::ProcessStackTrace(
         "([^\\+ )]+\\+" + std::string(XDIGIT_REGEX) + ")";   // Matches until delimiter reached
     static const std::regex STACK_ENTRY_RE(stackEntry);
     std::match_results<std::string::iterator> stack_entry_captured;
-
     std::string hashable;
     std::string previous_hashable;
 
@@ -101,16 +100,14 @@ void AsanCollector::ProcessStackTrace(
     std::string stackEnd = " is located";
     static const std::regex STACK_END_RE(stackEnd);
     std::match_results<std::string::iterator> stack_end_captured;
-
     for (auto str_line: str_lines) {
         std::string frm_no;
         std::string xdigit;
         std::string function_name;
         if (std::regex_search(str_line.begin(), str_line.end(), stack_entry_captured, STACK_ENTRY_RE)) {
             frm_no = stack_entry_captured[1].str();
-            xdigit = stack_entry_captured[2].str();
-            function_name = stack_entry_captured[3].str();
-
+            xdigit = stack_entry_captured[2].str(); // 2 : index of xdigit
+            function_name = stack_entry_captured[3].str(); // 3 : index of function_name
             if (frm_no == "0") {
                 if (printDiagnostics) {
                     HIVIEW_LOGI("Stack trace starting.%{public}s",
@@ -120,17 +117,14 @@ void AsanCollector::ProcessStackTrace(
                 hashable.clear();
                 curr_.func.clear();
             }
-
             if (!hashable.empty())
                 hashable.append("|");
             hashable.append(function_name);
 
             if (curr_.func.empty()) {
-                if (!function_name.empty()) {
+                if (!function_name.empty() && (function_name.find(CLANGLIB) == std::string::npos)) {
                     // skip special libclang_rt lib
-                    if (function_name.find(CLANGLIB) == std::string::npos) {
-                        curr_.func = function_name;
-                    }
+                    curr_.func = function_name;
                 }
             }
         } else if (std::regex_search(str_line.begin(), str_line.end(), stack_end_captured, STACK_END_RE)) {
@@ -147,7 +141,6 @@ void AsanCollector::ProcessStackTrace(
     if (hashable.empty()) {
         hashable = previous_hashable;
     }
-
     *hash = OHOS::HiviewDFX::HashString(hashable);
 }
 

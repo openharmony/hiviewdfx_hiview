@@ -18,7 +18,7 @@
 #include <set>
 
 #include "cjson_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

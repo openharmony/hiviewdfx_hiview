@@ -25,9 +25,9 @@
 #include "bundle_mgr_client.h"
 #include "collect_event.h"
 #include "file_util.h"
+#include "hiview_logger.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
-#include "logger.h"
 #include "time_util.h"
 #include "trace_manager.h"
 

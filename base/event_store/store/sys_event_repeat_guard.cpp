@@ -18,7 +18,7 @@
 #include <algorithm>
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "string_util.h"
 #include "sys_event_database.h"
@@ -63,7 +63,7 @@ bool SysEventRepeatGuard::IsTimeRangeMatched(const std::string& file)
 {
     struct stat fileInfo;
     stat(file.c_str(), &fileInfo);
-    uint64_t modiTime = fileInfo.st_mtime;
+    uint64_t modiTime = static_cast<uint64_t> (fileInfo.st_mtime);
     return modiTime >= GetMinValidTime();
 }
 

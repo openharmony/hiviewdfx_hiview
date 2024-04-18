@@ -16,7 +16,7 @@
 #include "export_db_storage.h"
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "rdb_predicates.h"
 #include "sql_util.h"
 

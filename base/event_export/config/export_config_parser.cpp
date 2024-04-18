@@ -19,7 +19,7 @@
 
 #include "cjson_util.h"
 #include "export_event_list_parser.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

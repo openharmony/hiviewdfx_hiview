@@ -17,7 +17,7 @@
 #include "faultlogger.h"
 #include "faultlogger_service_ohos.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

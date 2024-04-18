@@ -18,7 +18,7 @@
 #include <getopt.h>
 
 #include "app_usage_event_factory.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_usage_event_factory.h"
 #include "time_util.h"
 #include "usage_event_common.h"

@@ -144,7 +144,7 @@ bool ParseFaultLogLine(const std::list<const char **>& parseList, const std::str
         }
         std::string sectionHead = std::string(item[LOG_MAP_VALUE], strlen(item[LOG_MAP_VALUE]) - 1);
         if (line.find(sectionHead) != std::string::npos) {
-            if (line.at(line.size() - 1) == ':') {
+            if (!line.empty() && line.at(line.size() - 1) == ':') {
                 if ((item[LOG_MAP_KEY] != multlineName) && (!multline.empty())) {
                     info.sectionMap[multlineName] = multline;
                 }

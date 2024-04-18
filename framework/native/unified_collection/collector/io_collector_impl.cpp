@@ -28,7 +28,7 @@
 #include "file_util.h"
 #include "io_calculator.h"
 #include "io_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "string_util.h"
 #include "time_util.h"

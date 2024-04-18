@@ -25,7 +25,7 @@
 
 #include "file_util.h"
 #include "log_file.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

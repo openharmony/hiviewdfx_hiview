@@ -26,7 +26,7 @@
 #include "securec.h"
 
 #include "sanitizerd_log.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -109,6 +109,7 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
     } else {
         HIVIEW_LOGI("add watch %{public}s successfully: %{public}d.", asanLogPath.c_str(), gUfds[0].fd);
     }
+    Uninit();
 
     gCallback = pcb;
     return 0;

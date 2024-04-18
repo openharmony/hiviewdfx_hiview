@@ -18,7 +18,7 @@
 
 #include "file_util.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "rdb_helper.h"
 #include "sql_util.h"

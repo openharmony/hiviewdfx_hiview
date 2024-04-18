@@ -22,7 +22,7 @@
 #include "trace_flow_controller.h"
 #include "trace_utils.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 #include "app_event_task_storage.h"
 #include "app_caller_event.h"

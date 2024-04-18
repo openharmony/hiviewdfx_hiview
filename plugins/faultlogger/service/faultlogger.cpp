@@ -58,7 +58,7 @@
 #include "ipc_skeleton.h"
 #include "json/json.h"
 #include "log_analyzer.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"
@@ -937,6 +937,9 @@ std::list<std::string> GetDightStrArr(const std::string& target)
 
 std::string Faultlogger::GetMemoryStrByPid(long pid) const
 {
+    if (pid <= 0) {
+        return "";
+    }
     unsigned long long rss = 0; // statm col = 2 *4
     unsigned long long vss = 0; // statm col = 1 *4
     unsigned long long sysFreeMem = 0; // meminfo row=2

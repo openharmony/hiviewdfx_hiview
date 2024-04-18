@@ -21,7 +21,7 @@
 #include "data_share_common.h"
 #include "data_share_util.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 
 namespace OHOS {

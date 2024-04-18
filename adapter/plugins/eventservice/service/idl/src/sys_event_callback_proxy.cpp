@@ -16,7 +16,7 @@
 #include "sys_event_callback_proxy.h"
 
 #include "errors.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

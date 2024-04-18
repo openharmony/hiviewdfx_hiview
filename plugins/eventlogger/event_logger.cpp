@@ -279,7 +279,12 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
             continue;
         }
         if (processNameMap.find(pidStr) == processNameMap.end()) {
-            std::ifstream cmdLineFile("/proc/" + pidStr + "/cmdline");
+            std::string filePath = "/proc/" + pidStr + "/cmdline";
+            std::string realPath;
+            if (!FileUtil::PathToRealPath(filePath, realPath)) {
+                continue;
+            }
+            std::ifstream cmdLineFile(realPath);
             std::string processName;
             if (cmdLineFile) {
                 std::getline(cmdLineFile, processName);

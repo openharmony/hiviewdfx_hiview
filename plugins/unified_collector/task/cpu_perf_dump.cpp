@@ -16,7 +16,7 @@
 #include "cpu_perf_dump.h"
 #include "file_util.h"
 #include "time_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 
 namespace OHOS {

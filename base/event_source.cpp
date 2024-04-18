@@ -14,7 +14,7 @@
  */
 #include "event_source.h"
 #include "audit.h"
-#include "logger.h"
+#include "hiview_logger.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventSource");

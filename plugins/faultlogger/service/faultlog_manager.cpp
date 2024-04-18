@@ -29,7 +29,7 @@
 #include "defines.h"
 #include "file_util.h"
 #include "log_store_ex.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 
 #include "faultlog_database.h"

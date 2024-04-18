@@ -73,16 +73,16 @@ HWTEST_F(SysEventDaoTest, TestSysEventDaoInsert_001, testing::ext::TestSize.Leve
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr = R"~({"domain_":"demo","name_":"SysEventDaoTest_001","type_":1,"tz_":8,"time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
-        "keyChar":97,"keyShort":-100,"keyInt":-200,"KeyLong":-300,"KeyLongLong":-400,"keyUnsignedChar":97,
-        "keyUnsignedShort":100,"keyUnsignedInt":200,"keyUnsignedLong":300,"keyUnsignedLongLong":400,"keyFloat":1.1,
-        "keyDouble":2.2,"keyString1":"abc","keyString2":"efg","keyBools":[1,1,0],"keyChars":[97,98,99],
-        "keyUnsignedChars":[97,98,99],"keyShorts":[-100,-200,-300],"keyUnsignedShorts":[100,200,300],
-        "keyInts":[-1000,-2000,-3000],"keyUnsignedInts":[1000,2000,3000],"keyLongs":[-10000,-20000,-30000],
-        "keyUnsignedLongs":[10000,20000,30000],"keyLongLongs":[-100000,-200000,-300000],
-        "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
-        "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
+    std::string jsonStr = R"~({"domain_":"demo", "name_":"SysEventDaoTest_001", "type_":1, "tz_":8,
+        "time_":1620271291188, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10", "pspanid_":"20",
+        "trace_flag_":4, "keyBool":1, "keyChar":97, "keyShort":-100, "keyInt":-200, "KeyLong":-300, "KeyLongLong":-400,
+        "keyUnsignedChar":97, "keyUnsignedShort":100, "keyUnsignedInt":200, "keyUnsignedLong":300,
+        "keyUnsignedLongLong":400, "keyFloat":1.1, "keyDouble":2.2, "keyString1":"abc", "keyString2":"efg",
+        "keyBools":[1, 1, 0], "keyChars":[97, 98, 99], "keyUnsignedChars":[97, 98, 99], "keyShorts":[-100, -200, -300],
+        "keyUnsignedShorts":[100, 200, 300], "keyInts":[-1000, -2000, -3000], "keyUnsignedInts":[1000, 2000, 3000],
+        "keyLongs":[-10000, -20000, -30000], "keyUnsignedLongs":[10000, 20000, 30000],
+        "keyLongLongs":[-100000, -200000, -300000], "keyUnsignedLongLongs":[100000, 200000, 300000],
+        "keyFloats":[1.1, 2.2, 3.3], "keyDoubles":[10.1, 20.2, 30.3], "keyStrings":["a", "b", "c"]})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     sysEvent->SetLevel(TEST_LEVEL);
     sysEvent->SetEventSeq(0);
@@ -104,32 +104,32 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_002, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr1 = R"~({"domain_":"demo","name_":"SysEventDaoTest_002","type_":1,"tz_":8,"time_":162027129100,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
-        "keyChar":97,"keyShort":-100,"keyInt":-200,"KeyLong":-300,"KeyLongLong":-400,"keyUnsignedChar":97,
-        "keyUnsignedShort":100,"keyUnsignedInt":200,"keyUnsignedLong":300,"keyUnsignedLongLong":400,"keyFloat":1.1,
-        "keyDouble":2.2,"keyString1":"abc","keyString2":"efg","keyBools":[1,1,0],"keyChars":[97,98,99],
-        "keyUnsignedChars":[97,98,99],"keyShorts":[-100,-200,-300],"keyUnsignedShorts":[100,200,300],
-        "keyInts":[-1000,-2000,-3000],"keyUnsignedInts":[1000,2000,3000],"keyLongs":[-10000,-20000,-30000],
-        "keyUnsignedLongs":[10000,20000,30000],"keyLongLongs":[-100000,-200000,-300000],
-        "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
-        "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
+    std::string jsonStr1 = R"~({"domain_":"demo", "name_":"SysEventDaoTest_002", "type_":1, "tz_":8,
+        "time_":162027129100, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10", "pspanid_":"20",
+        "trace_flag_":4, "keyBool":1, "keyChar":97, "keyShort":-100, "keyInt":-200, "KeyLong":-300, "KeyLongLong":-400,
+        "keyUnsignedChar":97, "keyUnsignedShort":100, "keyUnsignedInt":200, "keyUnsignedLong":300,
+        "keyUnsignedLongLong":400, "keyFloat":1.1, "keyDouble":2.2, "keyString1":"abc", "keyString2":"efg",
+        "keyBools":[1, 1, 0], "keyChars":[97, 98, 99], "keyUnsignedChars":[97, 98, 99], "keyShorts":[-100, -200, -300],
+        "keyUnsignedShorts":[100, 200, 300], "keyInts":[-1000, -2000, 3000], "keyUnsignedInts":[1000, 2000, 3000],
+        "keyLongs":[-10000, -20000, -30000], "keyUnsignedLongs":[10000, 20000, 30000],
+        "keyLongLongs":[-100000, -200000, -300000], "keyUnsignedLongLongs":[100000, 200000, 300000],
+        "keyFloats":[1.1, 2.2, 3.3], "keyDoubles":[10.1, 20.2, 30.3], "keyStrings":["a", "b", "c"]})~";
     auto sysEvent1 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
     sysEvent1->SetLevel(TEST_LEVEL);
     sysEvent1->SetEventSeq(1); // 1: test seq
     int retCode1 = EventStore::SysEventDao::Insert(sysEvent1);
     ASSERT_TRUE(retCode1 == 0);
 
-    std::string jsonStr2 = R"~({"domain_":"demo","name_":"SysEventDaoTest_002","type_":1,"tz_":8,"time_":162027129110,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed5160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,"keyBool":1,
-        "keyChar":97,"keyShort":-100,"keyInt":-200,"KeyLong":-300,"KeyLongLong":-400,"keyUnsignedChar":97,
-        "keyUnsignedShort":100,"keyUnsignedInt":200,"keyUnsignedLong":300,"keyUnsignedLongLong":400,"keyFloat":1.1,
-        "keyDouble":2.2,"keyString1":"abc","keyString2":"efg","keyBools":[1,1,0],"keyChars":[97,98,99],
-        "keyUnsignedChars":[97,98,99],"keyShorts":[-100,-200,-300],"keyUnsignedShorts":[100,200,300],
-        "keyInts":[-1000,-2000,-3000],"keyUnsignedInts":[1000,2000,3000],"keyLongs":[-10000,-20000,-30000],
-        "keyUnsignedLongs":[10000,20000,30000],"keyLongLongs":[-100000,-200000,-300000],
-        "keyUnsignedLongLongs":[100000,200000,300000],"keyFloats":[1.1,2.2,3.3],
-        "keyDoubles":[10.1,20.2,30.3],"keyStrings":["a","b","c"]})~";
+    std::string jsonStr2 = R"~({"domain_":"demo", "name_":"SysEventDaoTest_002", "type_":1, "tz_":8,
+        "time_":162027129110, "pid_":6527, "tid_":6527, "traceid_":"f0ed5160bb2df4b", "spanid_":"10", "pspanid_":"20",
+        "trace_flag_":4, "keyBool":1, "keyChar":97, "keyShort":-100, "keyInt":-200, "KeyLong":-300, "KeyLongLong":-400,
+        "keyUnsignedChar":97, "keyUnsignedShort":100, "keyUnsignedInt":200, "keyUnsignedLong":300,
+        "keyUnsignedLongLong":400, "keyFloat":1.1, "keyDouble":2.2, "keyString1":"abc", "keyString2":"efg",
+        "keyBools":[1, 1, 0], "keyChars":[97, 98, 99], "keyUnsignedChars":[97, 98, 99], "keyShorts":[-100, -200, -300],
+        "keyUnsignedShorts":[100, 200, 300], "keyInts":[-1000, -2000, -3000], "keyUnsignedInts":[1000, 2000, 3000],
+        "keyLongs":[-10000, -20000, -30000], "keyUnsignedLongs":[10000, 20000, 30000],
+        "keyLongLongs":[-100000, -200000, -300000], "keyUnsignedLongLongs":[100000, 200000, 300000],
+        "keyFloats":[1.1, 2.2, 3.3], "keyDoubles":[10.1, 20.2, 30.3], "keyStrings":["a", "b", "c"]})~";
     auto sysEvent2 = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr2);
     sysEvent2->SetLevel(TEST_LEVEL);
     sysEvent2->SetEventSeq(3); // 3: test seq
@@ -163,8 +163,9 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_003, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr1 = R"~({"domain_":"DEMO","name_":"SYS_EVENT_DAO_TEST","type_":1,"tz_":8,"time_":162027129100,
-        "pid_":1201,"tid_":1201,"uid_":1201,"KEY_INT":-200,"KEY_DOUBLE":2.2,"KEY_STR":"abc"})~";
+    std::string jsonStr1 = R"~({"domain_":"DEMO", "name_":"SYS_EVENT_DAO_TEST", "type_":1, "tz_":8,
+        "time_":162027129100, "pid_":1201, "tid_":1201, "uid_":1201, "KEY_INT":-200, "KEY_DOUBLE":2.2,
+        "KEY_STR":"abc"})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
     sysEvent->SetLevel(TEST_LEVEL);
     constexpr int64_t testSeq = 1;
@@ -330,8 +331,9 @@ HWTEST_F(SysEventDaoTest, TestEventDaoQuery_011, testing::ext::TestSize.Level3)
      * @tc.steps: step2. invoke OnEvent func
      * @tc.expected: all ASSERT_TRUE work through.
      */
-    std::string jsonStr1 = R"~({"domain_":"DEMO","name_":"SYS_EVENT_DAO_TEST","type_":1,"tz_":8,"time_":162027129100,
-        "pid_":1201,"tid_":1201,"uid_":1201,"KEY_INT":-200,"KEY_DOUBLE":2.2,"KEY_STR":"abc"})~";
+    std::string jsonStr1 = R"~({"domain_":"DEMO", "name_":"SYS_EVENT_DAO_TEST", "type_":1, "tz_":8,
+        "time_":162027129100, "pid_":1201, "tid_":1201, "uid_":1201, "KEY_INT":-200, "KEY_DOUBLE":2.2,
+        "KEY_STR":"abc"})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr1);
     sysEvent->SetLevel(TEST_LEVEL);
     constexpr int64_t testSeq = 1;
@@ -713,8 +715,8 @@ HWTEST_F(SysEventDaoTest, DocQueryTest_01, testing::ext::TestSize.Level0)
     docQuery.And(cond8);
     ASSERT_FALSE(docQuery.ToString().empty());
 
-    std::string jsonStr = R"~({"domain_":"demo","name_":"DocQueryTest_01","type_":1,"tz_":8,"time_":1620271291188,
-        "pid_":6527,"tid_":6527,"INT_VALUE":1,"DOU_VALUE":1.23,"STR_VALUE":"test_event"})~";
+    std::string jsonStr = R"~({"domain_":"demo", "name_":"DocQueryTest_01", "type_":1, "tz_":8, "time_":1620271291188,
+        "pid_":6527, "tid_":6527, "INT_VALUE":1, "DOU_VALUE":1.23, "STR_VALUE":"test_event"})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     ASSERT_TRUE(docQuery.IsContainExtraConds(sysEvent->rawData_->GetData()));
 }

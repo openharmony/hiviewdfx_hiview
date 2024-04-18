@@ -22,7 +22,7 @@
 #include "data_publisher.h"
 #include "hiview_event_common.h"
 #include "ipc_skeleton.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "ret_code.h"
 #include "string_ex.h"
 

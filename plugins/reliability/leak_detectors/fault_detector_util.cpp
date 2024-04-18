@@ -30,7 +30,7 @@
 
 #include "bundle_mgr_client.h"
 #include "dirent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 
 namespace OHOS {

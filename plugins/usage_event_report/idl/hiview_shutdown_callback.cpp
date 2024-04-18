@@ -15,7 +15,7 @@
 #include "hiview_shutdown_callback.h"
 
 #include "usage_event_report.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

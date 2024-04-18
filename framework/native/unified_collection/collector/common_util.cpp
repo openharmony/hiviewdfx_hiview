@@ -18,7 +18,7 @@
 #include <regex>
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 #include "time_util.h"
 

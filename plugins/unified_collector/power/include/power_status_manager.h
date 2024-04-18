@@ -15,7 +15,6 @@
 #ifndef HIVIEWDFX_HIVIEW_POWER_STATUS_MANAGER_H
 #define HIVIEWDFX_HIVIEW_POWER_STATUS_MANAGER_H
 
-
 #include "common_event_data.h"
 #include "common_event_subscriber.h"
 #include "singleton.h"

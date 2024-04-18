@@ -27,7 +27,7 @@
 #include "common_utils.h"
 #include "defines.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-EventLogCatcher");

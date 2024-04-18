@@ -17,7 +17,7 @@
 
 #include "hiview_err_code.h"
 #include "iservice_registry.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {

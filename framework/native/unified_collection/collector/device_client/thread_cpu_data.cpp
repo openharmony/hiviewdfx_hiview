@@ -33,6 +33,9 @@ void ThreadCpuData::Init(int magic, uint32_t totalCount, int pid)
     auto totalSize = sizeof(struct ucollection_thread_cpu_entry)
         + sizeof(struct ucollection_thread_cpu_item) * totalCount;
     entry_ = (struct ucollection_thread_cpu_entry *)malloc(totalSize);
+    if (entry_ == NULL) {
+        return;
+    }
     memset_s(entry_, totalSize, 0, totalSize);
     entry_->magic = magic;
     entry_->total_count = totalCount;
@@ -42,7 +45,7 @@ void ThreadCpuData::Init(int magic, uint32_t totalCount, int pid)
 
 ThreadCpuData::~ThreadCpuData()
 {
-    if (entry_ == nullptr) {
+    if (entry_ == NULL) {
         return;
     }
     free(entry_);
@@ -51,7 +54,7 @@ ThreadCpuData::~ThreadCpuData()
 
 struct ucollection_thread_cpu_item* ThreadCpuData::GetNextThread()
 {
-    if (current_ >= entry_->cur_count) {
+    if (entry_ == NULL || current_ >= entry_->cur_count) {
         return nullptr;
     }
 

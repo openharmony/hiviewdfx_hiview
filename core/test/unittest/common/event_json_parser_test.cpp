@@ -53,12 +53,12 @@ HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Lev
 
     std::shared_ptr<SysEvent> sysEvent = nullptr;
     ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"type_\":4,\
-        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"type_\":4,\
+        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
     sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, invalidJsonStr);
     ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"name_\":\"PLUGIN_LOAD\",\"type_\":4,\
-        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"name_\":\"PLUGIN_LOAD\", \"type_\":4,\
+        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
     sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, jsonStr);
 
     ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));

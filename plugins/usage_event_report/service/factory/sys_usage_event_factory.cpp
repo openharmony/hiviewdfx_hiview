@@ -19,7 +19,7 @@
 #ifdef BATTERY_STATISTICS_ENABLE
 #include "battery_stats_client.h"
 #endif
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_usage_event.h"
 #include "time_service_client.h"
 #include "time_util.h"

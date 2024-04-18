@@ -23,7 +23,7 @@
 #include "cpu_collector.h"
 #include "file_util.h"
 #include "ffrt.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "securec.h"
 #include "string_util.h"

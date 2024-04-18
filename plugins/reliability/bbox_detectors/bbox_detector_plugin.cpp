@@ -22,7 +22,7 @@
 #include "event_loop.h"
 #include "file_util.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "sys_event_dao.h"
 #include "smart_parser.h"

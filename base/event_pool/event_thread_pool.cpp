@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_util.h"
 #include "thread_util.h"
 

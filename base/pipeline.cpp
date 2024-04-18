@@ -15,7 +15,7 @@
 #include "pipeline.h"
 #include "audit.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "thread_util.h"
 #include "time_util.h"
 namespace OHOS {

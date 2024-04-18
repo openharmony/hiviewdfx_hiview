@@ -24,7 +24,7 @@
 
 #include "common_utils.h"
 #include "cpu_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "time_util.h"
 

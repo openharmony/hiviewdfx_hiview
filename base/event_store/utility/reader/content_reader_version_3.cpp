@@ -18,7 +18,7 @@
 #include "base_def.h"
 #include "content_reader_factory.h"
 #include "base/raw_data_base_def.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 
 namespace OHOS {

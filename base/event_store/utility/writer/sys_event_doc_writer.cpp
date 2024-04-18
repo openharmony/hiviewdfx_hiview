@@ -15,7 +15,7 @@
 #include "sys_event_doc_writer.h"
 
 #include "event_store_config.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "securec.h"
 #include "sys_event_doc_reader.h"
