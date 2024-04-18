@@ -49,10 +49,20 @@ const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/"
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 const std::string OTHER = "Other";
-const std::string TEST_TRACE_ON = "true";
-const std::string TEST_TRACE_OFF = "false";
-const std::string REMOTELOG_ON = "true";
-const std::string REMOTELOG_OFF = "false";
+const std::string HIVIEW_UCOLLECTION_STATE_TRUE = "true";
+const std::string HIVIEW_UCOLLECTION_STATE_FALSE = "false";
+const std::string DEVELOP_TRACE_RECORDER_TRUE = "true";
+const std::string DEVELOP_TRACE_RECORDER_FALSE = "false";
+
+const int8_t STATE_COUNT = 2;
+const int8_t COML_STATE = 1;
+// [beta:0]{{remote log true, trace record false}, {remote log false, trace record true}}
+// [coml:1]{{remote log true, trace record false}, {remote log false, trace record true}}
+const bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
+    {{false, false}, {false, false}},
+    {{true,  false}, {false, false}}
+};
+
 #if PC_APP_STATE_COLLECT_ENABLE
 const std::string RSS_APP_STATE_EVENT = "APP_CGROUP_CHANGE";
 const int NAP_BACKGROUND_GROUP = 11;
@@ -161,65 +171,51 @@ void ReportMainThreadJankForTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
         UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL, 1);
 }
 
-void OnTraceTestStateChange(const char *key, const char *value, void *context)
+bool IsRemoteLogOpen()
 {
-    if (key == nullptr || value == nullptr) {
-        return;
+    std::string remoteLogState = Parameter::GetString(HIVIEW_UCOLLECTION_STATE, HIVIEW_UCOLLECTION_STATE_FALSE);
+    if (remoteLogState == HIVIEW_UCOLLECTION_STATE_TRUE) {
+        return true;
     }
-
-    if (std::string(HIVIEW_UCOLLECTION_TEST_TRACE_ON) != key) {
-        return;
-    }
-
-    if (std::string(value) == TEST_TRACE_ON) {
-        AppCallerEvent::enableDynamicTrace_ = true;
-    } else {
-        AppCallerEvent::enableDynamicTrace_ = false;
-    }
+    return false;
 }
 
-void OnLogServiceRemoteLogChange(const char *key, const char *value, void *context)
+bool IsDevelopTraceRecorderOpen()
 {
-    if (key == nullptr || value == nullptr) {
-        return;
+   std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
+    if (traceRecorderState == DEVELOP_TRACE_RECORDER_TRUE) {
+        return true;
     }
-
-    if (std::string(LOG_SERVICE_REMOTELOG_ON) != key) {
-        return;
-    }
-
-    if (std::string(value) == REMOTELOG_ON) {
-        AppCallerEvent::enableDynamicTrace_ = false;
-    } else {
-        AppCallerEvent::enableDynamicTrace_ = true;
-    }
+    return false;
 }
 
 void InitDynamicTrace()
+{   
+    bool s1 = Parameter::IsBetaVersion();
+    bool s2 = IsRemoteLogOpen();
+    bool s3 = IsDevelopTraceRecorderOpen();
+    AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[s1][s2][s3];
+}
+
+void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* context)
 {
-    if (Parameter::IsBetaVersion()) {
-        int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_TEST_TRACE_ON, OnTraceTestStateChange, nullptr);
-        HIVIEW_LOGI("add ucollection test trace param watcher ret: %{public}d", ret);
-
-        std::string on = Parameter::GetString(HIVIEW_UCOLLECTION_TEST_TRACE_ON, TEST_TRACE_OFF);
-        if (on == TEST_TRACE_ON) {
-            AppCallerEvent::enableDynamicTrace_ = true;
-            return;
-        }
-
-        AppCallerEvent::enableDynamicTrace_ = false;
+    if (key == nullptr || value == nullptr) {
         return;
     }
 
-    int ret = Parameter::WatchParamChange(LOG_SERVICE_REMOTELOG_ON, OnLogServiceRemoteLogChange, nullptr);
-    HIVIEW_LOGI("add remote log param watcher ret: %{public}d", ret);
-
-    std::string remoteLogOn = Parameter::GetString(LOG_SERVICE_REMOTELOG_ON, REMOTELOG_OFF);
-    if (remoteLogOn == REMOTELOG_ON) {
-        AppCallerEvent::enableDynamicTrace_ = false;
+    if (!(std::string(DEVELOP_HIVIEW_TRACE_RECORDER) == key)) {
         return;
     }
-    AppCallerEvent::enableDynamicTrace_ = false;
+
+    bool s1 = Parameter::IsBetaVersion();
+    bool s2 = IsRemoteLogOpen();
+    bool s3;
+    if (std::string(DEVELOP_TRACE_RECORDER_TRUE) == value) {
+        s3 = true;
+    } else {
+        s3 = false;
+    }
+    AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[s1][s2][s3];
 }
 }
 
@@ -356,9 +352,13 @@ void UnifiedCollector::Dump(int fd, const std::vector<std::string>& cmds)
 {
     dprintf(fd, "device beta state is %s.\n", Parameter::IsBetaVersion() ? "beta" : "is not beta");
 
-    std::string remoteLogOn = Parameter::GetString(LOG_SERVICE_REMOTELOG_ON, REMOTELOG_OFF);
-    dprintf(fd, "remote log state is %s.\n", remoteLogOn.c_str());
-    dprintf(fd, "dynamic trace stat is %s.\n", AppCallerEvent::enableDynamicTrace_ ? "enable" : "false");
+    std::string remoteLogState = Parameter::GetString(HIVIEW_UCOLLECTION_STATE, HIVIEW_UCOLLECTION_STATE_FALSE);
+    dprintf(fd, "remote log state is %s.\n", remoteLogState.c_str());
+
+    std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
+    dprintf(fd, "trace recorder state is %s.\n", traceRecorderState.c_str());
+    
+    dprintf(fd, "dynamic trace state is %s.\n", AppCallerEvent::enableDynamicTrace_ ? "true" : "false");
 }
 
 void UnifiedCollector::Init()
@@ -381,7 +381,11 @@ void UnifiedCollector::Init()
     if (!Parameter::IsBetaVersion()) {
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
         HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
+
+        ret = Parameter::WatchParamChange(DEVELOP_HIVIEW_TRACE_RECORDER, OnHiViewTraceRecorderChanged, nullptr);
+        HIVIEW_LOGI("add develop trace recorder param watcher ret: %{public}d", ret);
     }
+    
     InitDynamicTrace();
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 
@@ -417,12 +421,16 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         HIVIEW_LOGE("unifiedCollectorPtr is null");
         return;
     }
-    if (strncmp(value, "true", strlen("true")) == 0) {
+
+    bool s2;
+    if (HIVIEW_UCOLLECTION_STATE_TRUE == value) {
+        s2 = true;
         unifiedCollectorPtr->RunCpuCollectionTask();
         unifiedCollectorPtr->RunIoCollectionTask();
         unifiedCollectorPtr->RunUCollectionStatTask();
         unifiedCollectorPtr->LoadHitraceService();
     } else {
+        s2 = false;
         if (!Parameter::IsDeveloperMode()) {
             unifiedCollectorPtr->isCpuTaskRunning_ = false;
         }
@@ -433,6 +441,9 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         unifiedCollectorPtr->ExitHitraceService();
         unifiedCollectorPtr->CleanDataFiles();
     }
+
+    bool s3 = IsDevelopTraceRecorderOpen();
+    AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[COML_STATE][s2][s3];
 }
 
 void UnifiedCollector::LoadHitraceService()
