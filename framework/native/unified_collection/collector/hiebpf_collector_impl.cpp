@@ -19,7 +19,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "hiebpf_collector_impl.h"
 #include "hiebpf_decorator.h"
 

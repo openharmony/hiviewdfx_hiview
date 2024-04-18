@@ -20,7 +20,7 @@
 #include "hiview_err_code.h"
 #include "hiview_service_ability_proxy.h"
 #include "iservice_registry.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "storage_acl.h"
 #include "string_util.h"
 #include "system_ability_definition.h"

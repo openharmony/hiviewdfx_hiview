@@ -19,7 +19,7 @@
 #include <ctime>
 #include <fstream>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "perf_decorator.h"
 
 using namespace OHOS::HiviewDFX::UCollect;

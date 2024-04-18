@@ -19,7 +19,7 @@
 #include <memory>
 #include <mutex>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "trace_decorator.h"
 #include "trace_flow_controller.h"

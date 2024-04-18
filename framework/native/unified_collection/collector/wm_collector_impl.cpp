@@ -22,7 +22,7 @@
 
 #include "common_util.h"
 #include "common_utils.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_ex.h"
 #include "wm_decorator.h"
 

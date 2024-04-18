@@ -27,7 +27,7 @@
 #include "fault_info_base.h"
 #include "fault_state_base.h"
 #include "ffrt.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "native_leak_config.h"
 #include "native_leak_info.h"
 #include "native_leak_state.h"

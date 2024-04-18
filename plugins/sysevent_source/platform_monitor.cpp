@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "hiview_global.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "pipeline.h"
 #include "sys_event_dao.h"
 #include "sys_event.h"

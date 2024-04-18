@@ -14,7 +14,7 @@
  */
 #include "usage_event_cacher.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

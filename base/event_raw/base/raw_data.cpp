@@ -17,7 +17,7 @@
 
 #include <new>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 
 namespace OHOS {

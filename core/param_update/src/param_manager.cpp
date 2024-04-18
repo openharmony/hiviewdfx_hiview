@@ -20,7 +20,7 @@
 #include <set>
 
 #include "hiview_platform.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "param_const_common.h"
 #include "param_reader.h"
 #include "string_util.h"

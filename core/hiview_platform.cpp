@@ -34,7 +34,7 @@
 #include "hiview_event_report.h"
 #include "hiview_global.h"
 #include "hiview_platform_config.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_config.h"
 #include "plugin_factory.h"

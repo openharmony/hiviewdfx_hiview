@@ -22,7 +22,7 @@
 #include "napi/native_node_api.h"
 
 #include "common_utils.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 #include "faultlog_query_result.h"
 #include "napi_error.h"

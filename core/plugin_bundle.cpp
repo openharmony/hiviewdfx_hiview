@@ -15,7 +15,7 @@
 #include "plugin_bundle.h"
 
 #include "dynamic_module.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 
 namespace OHOS {

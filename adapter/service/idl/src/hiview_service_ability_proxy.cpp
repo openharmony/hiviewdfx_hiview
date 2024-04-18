@@ -17,7 +17,7 @@
 
 #include "ash_memory_utils.h"
 #include "collect_result.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

@@ -23,7 +23,7 @@
 #include "content_reader_version_1.h"
 #include "content_reader_version_2.h"
 #include "content_reader_version_3.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event_doc_reader.h"
 
 namespace OHOS {

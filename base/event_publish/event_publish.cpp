@@ -18,7 +18,7 @@
 #include "bundle_mgr_client.h"
 #include "file_util.h"
 #include "json/json.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "storage_acl.h"
 #include "string_util.h"
 #include "time_util.h"

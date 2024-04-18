@@ -36,7 +36,7 @@
 #include "fault_state_base.h"
 #include "ffrt.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "mem_profiler_collector.h"
 #include "native_leak_info.h"
 #include "native_leak_util.h"

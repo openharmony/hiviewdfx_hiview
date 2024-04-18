@@ -16,7 +16,7 @@
 #include "sys_event_service_adapter.h"
 
 #include "event_loop.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

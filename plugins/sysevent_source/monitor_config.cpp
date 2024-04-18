@@ -21,7 +21,7 @@
 #include <regex>
 #include <sstream>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 
 namespace OHOS {

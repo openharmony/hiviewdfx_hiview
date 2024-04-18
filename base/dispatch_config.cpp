@@ -16,7 +16,7 @@
 
 #include <fstream>
 #include <algorithm>
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event.h"
 
 namespace OHOS {

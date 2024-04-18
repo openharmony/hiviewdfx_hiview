@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "decoded/decoded_event.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

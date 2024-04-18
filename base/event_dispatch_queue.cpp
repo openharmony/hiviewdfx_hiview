@@ -19,7 +19,7 @@
 
 #include "file_util.h"
 #include "hiview_event_report.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_util.h"
 #include "plugin.h"
 #include "thread_util.h"

@@ -16,7 +16,7 @@
 
 #include "feature_analysis.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "rule.h"
 
 using namespace std;

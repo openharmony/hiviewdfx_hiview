@@ -22,7 +22,7 @@
 #include "trace_flow_controller.h"
 #include "trace_utils.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 
 using namespace OHOS::HiviewDFX;

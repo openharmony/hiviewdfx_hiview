@@ -18,7 +18,7 @@
 #include <algorithm>
 
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "string_util.h"
 #include "sys_event_database.h"

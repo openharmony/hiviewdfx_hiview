@@ -23,7 +23,7 @@
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 #include "faultlog_info.h"
 #include "faultlog_info_ohos.h"

@@ -14,7 +14,7 @@
  */
 #include "hiview_service_adapter.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 #include "hiview_service_ability.h"
 

@@ -33,7 +33,7 @@
 
 #include "audit.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_util.h"
 #include "thread_util.h"
 namespace OHOS {

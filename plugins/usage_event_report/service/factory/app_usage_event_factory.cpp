@@ -22,7 +22,7 @@
 #include "bundle_active_client.h"
 #endif
 #include "bundle_mgr_client.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "os_account_manager.h"
 #include "time_util.h"
 #include "usage_event_common.h"

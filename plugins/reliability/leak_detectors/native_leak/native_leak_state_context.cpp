@@ -17,7 +17,7 @@
 #include "fault_common_base.h"
 #include "fault_state_base.h"
 #include "fault_state_context_base.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

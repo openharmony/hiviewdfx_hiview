@@ -17,7 +17,7 @@
 #include <chrono>
 #include <regex>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "file_util.h"
 namespace OHOS {
 namespace HiviewDFX {

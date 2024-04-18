@@ -22,7 +22,7 @@
 
 #include "base/raw_data_base_def.h"
 #include "decoded/raw_data_decoder.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

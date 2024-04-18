@@ -19,7 +19,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "log_sign_tools.h"
 #include "param_const_common.h"
 #include "string_util.h"

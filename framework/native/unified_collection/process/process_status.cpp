@@ -18,7 +18,7 @@
 
 #include "common_utils.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 #include "unified_collection_data.h"
 

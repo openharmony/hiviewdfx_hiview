@@ -14,7 +14,7 @@
  */
 #include "uc_render_state_observer.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 
 namespace OHOS {

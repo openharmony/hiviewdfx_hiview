@@ -19,7 +19,7 @@
 #include <memory>
 #include <thread>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "mem_profiler_decorator.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"

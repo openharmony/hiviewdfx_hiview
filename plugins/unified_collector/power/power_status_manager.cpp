@@ -16,7 +16,7 @@
 
 #include "common_event_support.h"
 #include "common_event_manager.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "power_mgr_client.h"
 
 namespace OHOS {

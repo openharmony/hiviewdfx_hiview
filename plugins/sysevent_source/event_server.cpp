@@ -34,7 +34,7 @@
 #include "decoded/decoded_event.h"
 #include "device_node.h"
 #include "init_socket.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "socket_util.h"
 
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"

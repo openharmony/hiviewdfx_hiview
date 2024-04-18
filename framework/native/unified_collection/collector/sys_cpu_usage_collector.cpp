@@ -15,7 +15,7 @@
 
 #include "sys_cpu_usage_collector.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 
 namespace OHOS {

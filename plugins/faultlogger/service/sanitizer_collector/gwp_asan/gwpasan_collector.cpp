@@ -34,7 +34,7 @@
 #include "file_util.h"
 #include "hisysevent.h"
 #include "json/json.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 
 DEFINE_LOG_LABEL(0xD002D12, "Sanitizer");

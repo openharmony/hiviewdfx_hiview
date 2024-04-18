@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "rdb_errno.h"
 #include "rdb_helper.h"
 

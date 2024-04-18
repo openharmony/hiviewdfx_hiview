@@ -17,7 +17,7 @@
 
 #include "file_util.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "time_util.h"
 
 #include "cpu_decorator.h"
