@@ -128,7 +128,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         if (params.isMember(PID) && params[PID].isInt()) {
             pid = params[PID].asInt();
         }
-        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid) 
+        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
             + externalLogInfo.extensionType_;
         sandBoxLogPath.append("/").append(desFileName);
         if (FileUtil::CopyFile(externalLog, sandBoxLogPath) == 0) {

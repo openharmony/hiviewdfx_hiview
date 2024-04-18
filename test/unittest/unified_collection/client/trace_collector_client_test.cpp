@@ -143,6 +143,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
     appCaller.beginTime = appCaller.happenTime - 100;
     appCaller.endTime = appCaller.happenTime + 100;
     auto result = traceCollector->CaptureDurationTrace(appCaller);
-    ASSERT_TRUE(result.retCode == UcError::SUCCESS);
+    ASSERT_TRUE(result.data == 0);
     DisablePermissionAccess();
 }

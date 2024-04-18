@@ -182,7 +182,7 @@ bool IsRemoteLogOpen()
 
 bool IsDevelopTraceRecorderOpen()
 {
-   std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
+    std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
     if (traceRecorderState == DEVELOP_TRACE_RECORDER_TRUE) {
         return true;
     }

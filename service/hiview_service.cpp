@@ -389,6 +389,7 @@ CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t 
     std::lock_guard<std::mutex> guard(traceMutex);
 
     CollectResult<int32_t> result;
+    result.data = 0;
     result.retCode = UCollect::UcError::SUCCESS;
     if (!AppCallerEvent::enableDynamicTrace_) {
         HIVIEW_LOGE("disable dynamic trace, can not capture trace for uid=%{public}d, pid=%{public}d", uid, pid);

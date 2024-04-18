@@ -15,10 +15,9 @@
 
 #include "hiview_remote_service.h"
 
-#include "logger.h"
-
-#include "system_ability_definition.h"
+#include "hiview_logger.h"
 #include "iservice_registry.h"
+#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace HiviewDFX {
