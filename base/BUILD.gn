@@ -61,6 +61,7 @@ ohos_source_set("hiview_base") {
   public_configs = [ ":hiview_base_config" ]
   configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
   sources = [
+    "app_caller_event.cpp",
     "audit.cpp",
     "audit_log_parser.cpp",
     "dispatch_config.cpp",

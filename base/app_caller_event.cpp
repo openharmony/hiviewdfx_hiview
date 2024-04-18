@@ -13,21 +13,20 @@
  * limitations under the License.
  */
 
-#include "hiview_service_cpu_delegate.h"
-#include "hiview_service_ability_proxy.h"
-#include "hiview_remote_service.h"
+#include "app_caller_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-CollectResult<double> HiViewServiceCpuDelegate::GetSysCpuUsage()
+bool AppCallerEvent::isDynamicTraceOpen = false;
+bool AppCallerEvent::enableDynamicTrace_ = false;
+
+AppCallerEvent::AppCallerEvent(const std::string &sender): Event(sender)
 {
-    auto service = RemoteService::GetHiViewRemoteService();
-    if (!service) {
-        CollectResult<double> ret;
-        return ret;
-    }
-    HiviewServiceAbilityProxy proxy(service);
-    return proxy.GetSysCpuUsage().result_;
 }
+
+bool AppCallerEvent::IsEnableAppCaptureTrace()
+{
+    return AppCallerEvent::enableDynamicTrace_;
 }
-}
+} // HiviewDFX
+} // OHOS

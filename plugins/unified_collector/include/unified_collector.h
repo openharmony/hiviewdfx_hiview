@@ -21,6 +21,7 @@
 #include "plugin.h"
 #include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
+#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,7 +29,9 @@ class UnifiedCollector : public Plugin {
 public:
     void OnLoad() override;
     void OnUnload() override;
+    bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnEventListeningCallback(const Event& event) override;
+    void Dump(int fd, const std::vector<std::string>& cmds) override;
 
 private:
     void Init();
@@ -44,6 +47,9 @@ private:
     void CleanDataFiles();
     void LoadHitraceService();
     void ExitHitraceService();
+    void OnMainThreadJank(SysEvent& sysEvent);
+    bool OnStartCaptureTrace(std::shared_ptr<Event>& event);
+    bool OnStopCaptureTrace(std::shared_ptr<Event>& event);
     static void OnSwitchStateChanged(const char* key, const char* value, void* context);
 
 private:

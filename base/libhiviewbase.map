@@ -350,6 +350,12 @@
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::BatteryUsageInfo const&)";
         "OHOS::HiviewDFX::AppEventHandler::PostEvent(OHOS::HiviewDFX::AppEventHandler::ResourceOverLimitInfo const&)";
         "OHOS::HiviewDFX::CommonUtils::GetProcFullNameByPid(int)";
+        "OHOS::HiviewDFX::Plugin::DelayProcessEvent(std::__h::shared_ptr<OHOS::HiviewDFX::Event>, unsigned long)";
+        "OHOS::HiviewDFX::Plugin::DelayProcessEvent(std::__h::shared_ptr<OHOS::HiviewDFX::Event>, unsigned long long)";
+        "OHOS::HiviewDFX::AppCallerEvent::AppCallerEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::AppCallerEvent::isDynamicTraceOpen";
+        "OHOS::HiviewDFX::AppCallerEvent::enableDynamicTrace_";
+        "OHOS::HiviewDFX::AppCallerEvent::IsEnableAppCaptureTrace()";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>, long)";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>, long long)";
         "OHOS::HiviewDFX::SysEvent::InitBuilder()";

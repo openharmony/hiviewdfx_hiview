@@ -22,6 +22,8 @@ constexpr char KEY_BUILD_CHARACTER[] = "ro.build.characteristics";
 constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
 constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state";
 constexpr char HIVIEW_UCOLLECTION_STATE[] = "hiviewdfx.ucollection.switchon";
+constexpr char HIVIEW_UCOLLECTION_TEST_TRACE_ON[] = "hiviewdfx.ucollection.test.trace.on";
+constexpr char LOG_SERVICE_REMOTELOG_ON[] = "hiviewdfx.logservice.remotelog.on";
 namespace Parameter {
 enum DeviceType {
     UNKNOWN = 0,

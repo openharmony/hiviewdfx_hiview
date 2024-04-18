@@ -27,6 +27,7 @@
 #include "logger.h"
 #include "singleton.h"
 #include "system_ability.h"
+#include "client/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -54,6 +55,7 @@ public:
     CollectResultParcelable<std::vector<std::string>> RecordingTraceOff() override;
     CollectResultParcelable<int32_t> CloseTrace() override;
     CollectResultParcelable<int32_t> RecoverTrace() override;
+    CollectResultParcelable<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller) override;
     CollectResultParcelable<double> GetSysCpuUsage() override;
 
 protected:

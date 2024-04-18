@@ -13,21 +13,16 @@
  * limitations under the License.
  */
 
-#include "hiview_service_cpu_delegate.h"
-#include "hiview_service_ability_proxy.h"
-#include "hiview_remote_service.h"
+#ifndef HIVIEW_REMOTE_SERVICE_H
+#define HIVIEW_REMOTE_SERVICE_H
+
+#include "iremote_broker.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-CollectResult<double> HiViewServiceCpuDelegate::GetSysCpuUsage()
-{
-    auto service = RemoteService::GetHiViewRemoteService();
-    if (!service) {
-        CollectResult<double> ret;
-        return ret;
-    }
-    HiviewServiceAbilityProxy proxy(service);
-    return proxy.GetSysCpuUsage().result_;
-}
-}
-}
+namespace RemoteService {
+sptr<IRemoteObject> GetHiViewRemoteService();
+} // namespace RemoteService
+} // namespace HiviewDFX
+} // namespace OHOS
+#endif // HIVIEW_REMOTE_SERVICE_H

@@ -28,8 +28,10 @@ namespace HiviewDFX {
 class HiviewServiceAgent {
 public:
     int32_t List(const std::string& logType, std::vector<HiviewFileInfo>& fileInfos);
-    int32_t Copy(const std::string& logType, const std::string& logName, const std::string& dest);
-    int32_t Move(const std::string& logType, const std::string& logName, const std::string& dest);
+    int32_t Copy(const std::string& logType, const std::string& root,
+        const std::string& logName, const std::string& dest);
+    int32_t Move(const std::string& logType, const std::string& root,
+        const std::string& logName, const std::string& dest);
     int32_t Remove(const std::string& logType, const std::string& logName);
     void ProcessDeathObserver(const wptr<IRemoteObject>& remote);
     sptr<IRemoteObject> GetRemoteService();
@@ -40,8 +42,9 @@ private:
     ~HiviewServiceAgent() = default;
 
     int32_t CopyOrMoveFile(
-        const std::string& logType, const std::string& logName, const std::string& dest, bool isMove);
-    bool CheckAndCreateHiviewDir(const std::string& destDir);
+        const std::string& logType, const std::string& root,
+        const std::string& logName, const std::string& dest, bool isMove);
+    bool CheckAndCreateHiviewDir(const std::string& root, const std::string& destDir);
     bool CreateDestDirs(const std::string& rootDir, const std::string& destDir);
     bool CreateAndGrantAclPermission(const std::string& dirPath);
 

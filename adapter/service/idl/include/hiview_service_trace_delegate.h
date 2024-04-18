@@ -20,9 +20,9 @@
 
 #include "collect_result.h"
 #include "hiview_service_ability_proxy.h"
-#include "hiview_service_agent.h"
+#include "hiview_remote_service.h"
 #include "parcel.h"
-
+#include "client/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -35,6 +35,7 @@ public:
     static CollectResult<std::vector<std::string>> RecordingOff();
     static CollectResult<int32_t> Close();
     static CollectResult<int32_t> Recover();
+    static CollectResult<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller);
 
 private:
     template<typename T>
@@ -45,7 +46,7 @@ private:
         if (proxyHandler == nullptr) {
             return ret;
         }
-        auto service = HiviewServiceAgent::GetInstance().GetRemoteService();
+        auto service = RemoteService::GetHiViewRemoteService();
         if (service == nullptr) {
             return ret;
         }

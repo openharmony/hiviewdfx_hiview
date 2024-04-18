@@ -48,20 +48,23 @@ int32_t HiviewServiceAgent::List(const std::string& logType, std::vector<HiviewF
     return proxy.List(logType, fileInfos);
 }
 
-int32_t HiviewServiceAgent::Copy(const std::string& logType, const std::string& logName, const std::string& dest)
+int32_t HiviewServiceAgent::Copy(const std::string& logType, const std::string& root,
+    const std::string& logName, const std::string& dest)
 {
-    return CopyOrMoveFile(logType, logName, dest, false);
+    return CopyOrMoveFile(logType, root, logName, dest, false);
 }
 
-int32_t HiviewServiceAgent::Move(const std::string& logType, const std::string& logName, const std::string& dest)
+int32_t HiviewServiceAgent::Move(const std::string& logType, const std::string& root,
+    const std::string& logName, const std::string& dest)
 {
-    return CopyOrMoveFile(logType, logName, dest, true);
+    return CopyOrMoveFile(logType, root, logName, dest, true);
 }
 
 int32_t HiviewServiceAgent::CopyOrMoveFile(
-    const std::string& logType, const std::string& logName, const std::string& dest, bool isMove)
+    const std::string& logType, const std::string& root,
+    const std::string& logName, const std::string& dest, bool isMove)
 {
-    if (!CheckAndCreateHiviewDir(dest)) {
+    if (!CheckAndCreateHiviewDir(root, dest)) {
         HIVIEW_LOGE("create dirs failed.");
         return HiviewNapiErrCode::ERR_DEFAULT;
     }
@@ -128,31 +131,14 @@ void HiviewServiceAgent::ProcessDeathObserver(const wptr<IRemoteObject>& remote)
     }
 }
 
-bool HiviewServiceAgent::CheckAndCreateHiviewDir(const std::string& destDir)
+bool HiviewServiceAgent::CheckAndCreateHiviewDir(const std::string& root, const std::string& destDir)
 {
     if (destDir.find("..") != std::string::npos) {
         HIVIEW_LOGE("invalid destDir: %{public}s", destDir.c_str());
         return false;
     }
-    std::shared_ptr<OHOS::AbilityRuntime::ApplicationContext> context =
-        OHOS::AbilityRuntime::Context::GetApplicationContext();
-    if (context == nullptr) {
-        HIVIEW_LOGE("Context is null.");
-        return false;
-    }
-    std::string baseDir = context->GetBaseDir();
-    std::string cacheDir = context->GetCacheDir();
-    if (baseDir.empty() || cacheDir.empty()) {
-        HIVIEW_LOGE("file dir is empty.");
-        return false;
-    }
-    int aclBaseRet = OHOS::StorageDaemon::AclSetAccess(baseDir, "g:1201:x");
-    int aclCacheRet = OHOS::StorageDaemon::AclSetAccess(cacheDir, "g:1201:x");
-    if (aclBaseRet != 0 || aclCacheRet != 0) {
-        HIVIEW_LOGE("set acl access for app failed.");
-        return false;
-    }
-    std::string hiviewDir = cacheDir + "/hiview";
+
+    std::string hiviewDir = root + "/hiview";
     if (!CreateAndGrantAclPermission(hiviewDir)) {
         HIVIEW_LOGE("create hiview dir failed.");
         return false;

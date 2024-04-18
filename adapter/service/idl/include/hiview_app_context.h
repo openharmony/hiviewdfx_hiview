@@ -13,21 +13,17 @@
  * limitations under the License.
  */
 
-#include "hiview_service_cpu_delegate.h"
-#include "hiview_service_ability_proxy.h"
-#include "hiview_remote_service.h"
+#ifndef HIVIEW_APP_CONTEXT_H
+#define HIVIEW_APP_CONTEXT_H
+
+#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
-CollectResult<double> HiViewServiceCpuDelegate::GetSysCpuUsage()
-{
-    auto service = RemoteService::GetHiViewRemoteService();
-    if (!service) {
-        CollectResult<double> ret;
-        return ret;
-    }
-    HiviewServiceAbilityProxy proxy(service);
-    return proxy.GetSysCpuUsage().result_;
-}
-}
-}
+namespace AppConext {
+bool GrantBaseDirAccessToHiView(std::string &baseDirOut);
+bool GrantCacheDirAccessToHiView(std::string &cacheDirOut);
+} // namespace AppConext
+} // namespace HiviewDFX
+} // namespace OHOS
+#endif // HIVIEW_APP_CONTEXT_H
