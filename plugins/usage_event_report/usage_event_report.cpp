@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 
 #include <sys/wait.h>
 
+#include "ffrt.h"
 #include "hiview_event_report.h"
 #include "hiview_event_cacher.h"
 #ifdef POWER_MANAGER_ENABLE
@@ -41,13 +42,13 @@ uint64_t UsageEventReport::lastSysReportTime_ = 0;
 uint64_t UsageEventReport::nextReportTime_ = 0;
 std::string UsageEventReport::workPath_ = "";
 namespace {
-constexpr int TRIGGER_CYCLE = 5 * 60; // 5 min
+constexpr int TRIGGER_CYCLE = 5 * 60 * 1000 * 1000; // 5 min
 constexpr uint32_t TRIGGER_ONE_HOUR = 12; // 1h = 5min * 12
 }
 using namespace SysUsageDbSpace;
 using namespace SysUsageEventSpace;
 
-UsageEventReport::UsageEventReport() : callback_(nullptr), timeOutCnt_(0)
+UsageEventReport::UsageEventReport() : callback_(nullptr), timeOutCnt_(0), isRunning_(false)
 {}
 
 void UsageEventReport::OnLoad()
@@ -60,16 +61,19 @@ void UsageEventReport::OnLoad()
 void UsageEventReport::OnUnload()
 {
     HIVIEW_LOGI("start to clean up the env");
-    if (workLoop_ != nullptr) {
-        workLoop_->StopLoop();
-        workLoop_.reset();
-    }
     if (callback_ != nullptr) {
 #ifdef POWER_MANAGER_ENABLE
         PowerMgr::ShutdownClient::GetInstance().UnRegisterShutdownCallback(callback_);
 #endif
         callback_ = nullptr;
     }
+    Stop();
+}
+
+bool UsageEventReport::IsRunning()
+{
+    std::lock_guard lock(runningMutex_);
+    return isRunning_;
 }
 
 void UsageEventReport::Init()
@@ -128,13 +132,33 @@ void UsageEventReport::InitCallback()
 
 void UsageEventReport::Start()
 {
+    {
+        std::lock_guard lock(runningMutex_);
+        isRunning_  = true;
+    }
+    RunTask();
+}
+
+void UsageEventReport::Stop()
+{
+    std::lock_guard lock(runningMutex_);
+    isRunning_ = false;
+}
+
+void UsageEventReport::RunTask()
+{
     auto task = bind(&UsageEventReport::TimeOut, this);
-    workLoop_->AddTimerEvent(nullptr, nullptr, task, TRIGGER_CYCLE, true);
+    ffrt::submit(task, {}, {}, ffrt::task_attr().name("UsageEventReport").delay(TRIGGER_CYCLE));
 }
 
 void UsageEventReport::TimeOut()
 {
-    HIVIEW_LOGI("start checking whether events need to be reported");
+    if (!IsRunning()) {
+        HIVIEW_LOGI("task exit");
+        return;
+    }
+
+    HIVIEW_LOGD("start checking whether events need to be reported");
     ReportTimeOutEvent();
     ReportDailyEvent();
 
@@ -142,6 +166,8 @@ void UsageEventReport::TimeOut()
     if (callback_ == nullptr) {
         InitCallback();
     }
+
+    RunTask();
 }
 
 void UsageEventReport::ReportDailyEvent()
@@ -164,8 +190,6 @@ void UsageEventReport::ReportDailyEvent()
         // update report time
         lastReportTime_ = TimeUtil::GetMilliseconds();
         nextReportTime_ += TimeUtil::MILLISECS_PER_DAY;
-    } else {
-        HIVIEW_LOGI("No need to report daily events");
     }
 }
 
