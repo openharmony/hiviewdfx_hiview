@@ -265,6 +265,7 @@ void FileRemove(TraceCollector::Caller &caller)
             break;
         case TraceCollector::Caller::APP:
             shareCleaner->DoClean();
+            break;
         default:
             specialCleaner->DoClean();
             break;
