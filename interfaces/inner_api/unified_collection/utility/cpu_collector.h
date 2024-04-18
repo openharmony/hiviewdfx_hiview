@@ -24,10 +24,11 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 
-class ThreadCollector {
+class ThreadCpuCollector {
 public:
     virtual CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate = false) = 0;
     virtual int GetCollectPid() = 0;
+    static std::shared_ptr<ThreadCpuCollector> Create(int32_t pid, bool isSingleton = true);
 };
 
 class CpuCollector {
@@ -44,7 +45,7 @@ public:
         bool isNeedUpdate = false) = 0;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) = 0;
-    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) = 0;
+    virtual std::shared_ptr<ThreadCpuCollector> CreateThreadCollector(int pid) = 0;
     static std::shared_ptr<CpuCollector> Create(bool isSingleton = true);
 }; // CpuCollector
 } // UCollectUtil

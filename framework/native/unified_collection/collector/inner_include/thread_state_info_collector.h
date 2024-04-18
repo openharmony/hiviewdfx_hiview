@@ -35,15 +35,16 @@ struct ThreadCpuTimeInfo {
     uint64_t collectionBootTime = 0;
 };
 
-class ThreadStateInfoCollector : public ThreadCollector {
+class ThreadStateInfoCollector : public ThreadCpuCollector {
 public:
     ThreadStateInfoCollector(std::shared_ptr<CollectDeviceClient> deviceClient,
          std::shared_ptr<CpuCalculator> cpuCalculator, int collectPid);
+    explicit ThreadStateInfoCollector(int32_t collectPid);
     virtual ~ThreadStateInfoCollector() = default;
 
 public:
-    CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate = false) override;
-    virtual int GetCollectPid() override;
+    CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate) override;
+    int GetCollectPid() override;
 
 private:
     void InitLastThreadCpuTimeInfos();
@@ -57,6 +58,7 @@ private:
         const ucollection_thread_cpu_item* procCpuItem, const CalculationTimeInfo& calcTimeInfo);
     void UpdateCollectionTime(const CalculationTimeInfo& calcTimeInfo);
     void TryToDeleteDeadThreadInfo();
+    void InitDeviceClient();
 
 private:
     std::mutex collectMutex_;
