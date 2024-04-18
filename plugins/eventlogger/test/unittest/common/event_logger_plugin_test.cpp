@@ -28,6 +28,8 @@
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
+namespace OHOS {
+namespace HiviewDFX {
 void EventloggerPluginTest::SetUp()
 {
     printf("SetUp.\n");
@@ -152,3 +154,5 @@ HWTEST_F(EventloggerPluginTest, EventloggerPluginTest006, TestSize.Level3)
     std::shared_ptr<Event> event = nullptr;
     ASSERT_EQ(eventLogger.OnEvent(event), false);
 }
+} // namesapce HiviewDFX
+} // namespace OHOS
