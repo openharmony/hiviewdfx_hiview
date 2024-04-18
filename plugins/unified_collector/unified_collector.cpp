@@ -56,10 +56,10 @@ const std::string DEVELOP_TRACE_RECORDER_FALSE = "false";
 
 const int8_t STATE_COUNT = 2;
 const int8_t COML_STATE = 0;
-// [coml:0][is remote log][is trace record]
-// [beta:1][is remote log][is trace record]
+// [coml:0][is remote log][is trace recorder]
+// [beta:1][is remote log][is trace recorder]
 const bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
-    {{true,  false}, {false, false}}
+    {{true,  false}, {false, false}},
     {{false, false}, {false, false}},
 };
 
@@ -190,7 +190,7 @@ bool IsDevelopTraceRecorderOpen()
 }
 
 void InitDynamicTrace()
-{   
+{
     bool s1 = Parameter::IsBetaVersion();
     bool s2 = IsRemoteLogOpen();
     bool s3 = IsDevelopTraceRecorderOpen();
@@ -363,7 +363,7 @@ void UnifiedCollector::Dump(int fd, const std::vector<std::string>& cmds)
 
     std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
     dprintf(fd, "trace recorder state is %s.\n", traceRecorderState.c_str());
-    
+
     dprintf(fd, "dynamic trace state is %s.\n", AppCallerEvent::enableDynamicTrace_ ? "true" : "false");
 }
 
