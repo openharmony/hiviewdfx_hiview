@@ -61,7 +61,7 @@ HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyCopyTest001, testing::ext::Tes
 {
     std::string fileName = "Copy.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "copytestcontent", true);
-    int32_t result = HiviewServiceAgent::GetInstance().Copy(LOG_TYPE, SOURCE_PATH, fileName, DEST_PATH);
+    int32_t result = HiviewServiceAgent::GetInstance().Copy(LOG_TYPE, fileName, DEST_PATH);
     ASSERT_EQ(result, -1);
 }
 
@@ -69,7 +69,7 @@ HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyMoveTest001, testing::ext::Tes
 {
     std::string fileName = "Move.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "movetestcontent", true);
-    int32_t result = HiviewServiceAgent::GetInstance().Move(LOG_TYPE, SOURCE_PATH, fileName, DEST_PATH);
+    int32_t result = HiviewServiceAgent::GetInstance().Move(LOG_TYPE, fileName, DEST_PATH);
     ASSERT_EQ(result, -1);
 }
 
