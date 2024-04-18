@@ -517,13 +517,13 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
  */
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
 {
-    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,
-        "tz_":"+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,
-        "MODULE":"FaultloggerUnittest","REASON":"unittest for SaveFaultLogInfo",
-        "SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"","HAPPEN_TIME":"1501973701",
-        "PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/",
+    std::string jsonStr = R"~({"domain_":"RELIABILITY", "name_":"CPP_CRASH", "type_":1, "time_":1501973701070,
+        "tz_":"+0800", "pid_":1854, "tid_":1854, "uid_":0, "FAULT_TYPE":"2", "PID":1854, "UID":0,
+        "MODULE":"FaultloggerUnittest", "REASON":"unittest for SaveFaultLogInfo",
+        "SUMMARY":"summary for SaveFaultLogInfo", "LOG_PATH":"", "VERSION":"", "HAPPEN_TIME":"1501973701",
+        "PNAME":"/", "FIRST_FRAME":"/", "SECOND_FRAME":"/", "LAST_FRAME":"/",
         "FINGERPRINT":"04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d",
-        "level_":"CRITICAL","tag_":"STABILITY","id_":"17165544771317691984","info_":""})~";
+        "level_":"CRITICAL", "tag_":"STABILITY", "id_":"17165544771317691984", "info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     sysEvent->SetLevel("MINOR");
     sysEvent->SetEventSeq(448); // 448: test seq
