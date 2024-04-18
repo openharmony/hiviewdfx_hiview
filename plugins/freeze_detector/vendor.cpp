@@ -142,12 +142,16 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
         if (!FileUtil::FileExists(filePath)) {
             continue;
         }
-        std::ifstream ifs(filePath, std::ios::in);
+        std::string realPath;
+        if (!FileUtil::PathToRealPath(filePath, realPath)) {
+            continue;
+        }
+        std::ifstream ifs(realPath, std::ios::in);
         if (ifs.is_open()) {
             oss << ifs.rdbuf();
             ifs.close();
         }
-        FreezeJsonUtil::DelFile(filePath);
+        FreezeJsonUtil::DelFile(realPath);
     }
 
     std::string mergeFilePath = FreezeJsonUtil::GetFilePath(watchPoint.GetPid(),

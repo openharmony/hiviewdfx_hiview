@@ -26,6 +26,21 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo& info,
+                               std::map<std::string, std::string>& eventInfos)
+{
+    if (info.reason.compare("SERVICE_BLOCK") == 0) {
+        static uint64_t serviceBlockNum = 0;
+        fingerRawString = std::to_string(++serviceBlockNum);
+        return;
+    }
+
+    auto eventType = GetFaultNameByType(info.faultLogType, false);
+    fingerRawString = info.module + StringUtil::GetLeftSubstr(info.reason, "@") +
+        eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"] +
+        ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : "");
+}
+
 bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos)
 {
     std::string fingerPrint;
@@ -49,9 +64,9 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
         return false;
     }
     Tbox::FilterTrace(eventInfos, eventType);
-    fingerPrint = Tbox::CalcFingerPrint(info.module + StringUtil::GetLeftSubstr(info.reason, "@") +
-        eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"] +
-        ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : ""), 0, FP_BUFFER);
+    std::string fingerRawString;
+    GetFingerRawString(fingerRawString, info, eventInfos);
+    fingerPrint = Tbox::CalcFingerPrint(fingerRawString, 0, FP_BUFFER);
     eventInfos["fingerPrint"] = fingerPrint;
 
     if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty())) {
