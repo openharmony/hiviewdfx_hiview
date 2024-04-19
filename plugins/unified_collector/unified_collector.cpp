@@ -48,7 +48,7 @@ const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
-const std::string args = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0";
+const std::string DEVELOPER_MODE_TRACE_ARGS = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0";
 const std::string OTHER = "Other";
 const std::string HIVIEW_UCOLLECTION_STATE_TRUE = "true";
 const std::string HIVIEW_UCOLLECTION_STATE_FALSE = "false";
@@ -85,8 +85,8 @@ ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
 bool StartCatpureAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
 {
     TraceManager manager;
-    std::string args = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1";
-    int32_t retCode = manager.OpenRecordingTrace(args);
+    std::string appArgs = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1";
+    int32_t retCode = manager.OpenRecordingTrace(appArgs);
     if (retCode != UCollect::UcError::SUCCESS) {
         manager.CloseTrace();
         HIVIEW_LOGE("failed to open trace in recording mode, error code %{public}d", retCode);
@@ -241,7 +241,7 @@ void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* c
     if (UnifiedCollector::IsEnableRecordTrace() == false && strncmp(value, "true", strlen("true")) == 0) {
         UnifiedCollector::SetRecordTraceStatus(true);
         TraceManager traceManager;
-        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(args);
+        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(DEVELOPER_MODE_TRACE_ARGS);
         if (resultOpenTrace != 0) {
             HIVIEW_LOGE("failed to start trace service");
         }
@@ -610,7 +610,7 @@ void UnifiedCollector::RunRecordTraceTask()
     if (IsEnableRecordTrace() == false && Parameter::IsTraceCollectionSwitchOn()){
         SetRecordTraceStatus(true);
         TraceManager traceManager;
-        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(args);
+        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(DEVELOPER_MODE_TRACE_ARGS);
         if (resultOpenTrace != 0) {
             HIVIEW_LOGE("failed to start trace service");
         }
