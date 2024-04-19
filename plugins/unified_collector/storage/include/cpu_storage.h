@@ -34,14 +34,16 @@ class CpuStorage {
 public:
     CpuStorage(const std::string& workPath);
     ~CpuStorage() = default;
-    void Store(const std::vector<ProcessCpuStatInfo>& cpuCollections);
+    void StoreProcessDatas(const std::vector<ProcessCpuStatInfo>& cpuCollections);
+    void StoreThreadDatas(const std::vector<ThreadCpuStatInfo>& cpuCollections);
     void Report();
 
 private:
     void InitDbStorePath();
     void InitDbStore();
     bool InitDbStoreUploadPath();
-    void Store(const ProcessCpuStatInfo& cpuCollection);
+    void StoreProcessData(const ProcessCpuStatInfo& cpuCollection);
+    void StoreThreadData(const ThreadCpuStatInfo& cpuCollection);
     bool NeedReport();
     void PrepareOldDbFilesBeforeReport();
     void ResetDbStore();

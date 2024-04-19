@@ -42,6 +42,7 @@ private:
 private:
     std::string workPath_;
     std::shared_ptr<UCollectUtil::CpuCollector> cpuCollector_;
+    std::shared_ptr<UCollectUtil::ThreadCpuCollector> threadCpuCollector_;
     std::shared_ptr<CpuStorage> cpuStorage_;
 #ifdef HAS_HIPERF
     std::shared_ptr<CpuPerfDump> cpuPerfDump_;
