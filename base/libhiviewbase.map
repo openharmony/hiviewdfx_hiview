@@ -353,6 +353,8 @@
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>, long)";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>, long long)";
         "OHOS::HiviewDFX::SysEvent::InitBuilder()";
+        "OHOS::HiviewDFX::Parameter::IsBetaVersion()";
+        "OHOS::HiviewDFX::Parameter::GetDisplayVersionStr()";
     };
   local:
     *;
