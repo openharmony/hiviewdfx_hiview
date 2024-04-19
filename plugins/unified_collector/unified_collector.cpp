@@ -607,7 +607,7 @@ void UnifiedCollector::UCollectionStatTask()
 
 void UnifiedCollector::RunRecordTraceTask()
 {
-    if (IsEnableRecordTrace() == false && Parameter::IsTraceCollectionSwitchOn()){
+    if (IsEnableRecordTrace() == false && Parameter::IsTraceCollectionSwitchOn()) {
         SetRecordTraceStatus(true);
         TraceManager traceManager;
         int32_t resultOpenTrace = traceManager.OpenRecordingTrace(DEVELOPER_MODE_TRACE_ARGS);
