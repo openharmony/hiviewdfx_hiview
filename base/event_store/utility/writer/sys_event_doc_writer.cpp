@@ -71,6 +71,7 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
     DocHeader header;
     std::string sysVersion;
     reader.ReadHeader(header, sysVersion);
+    headerSize_ = header.blockSize + sizeof(header.magicNum); // for GetCurrPageRemainSize
     if (header.version != EventStore::EVENT_DATA_FORMATE_VERSION::CURRENT ||
         sysVersion != Parameter::GetDisplayVersionStr()) {
         return DOC_STORE_NEW_FILE;
