@@ -116,6 +116,8 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     config->sampleInterval_ = (uint32_t)sampleInterval;
     uint32_t fiveMinutes = 300;
     config->statisticsInterval_ = fiveMinutes;
+    config->jsStackReport_ = true;
+    config->maxJsStackDepth_ = 10;
     HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }
