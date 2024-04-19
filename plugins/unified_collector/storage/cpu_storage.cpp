@@ -37,11 +37,14 @@ using namespace OHOS::HiviewDFX::UCollectUtil;
 namespace {
 constexpr int32_t DB_VERSION = 2;
 const std::string CPU_COLLECTION_TABLE_NAME = "unified_collection_cpu";
+const std::string THREAD_CPU_COLLECTION_TABLE_NAME = "unified_collection_hiview_cpu";
 const std::string SYS_VERSION_TABLE_NAME = "version";
 const std::string COLUMN_START_TIME = "start_time";
 const std::string COLUMN_END_TIME = "end_time";
 const std::string COLUMN_PID = "pid";
+const std::string COLUMN_TID = "tid";
 const std::string COLUMN_PROC_NAME = "proc_name";
+const std::string COLUMN_THREAD_NAME = "thread_name";
 const std::string COLUMN_PROC_STATE = "proc_state";
 const std::string COLUMN_CPU_LOAD = "cpu_load";
 const std::string COLUMN_CPU_USAGE = "cpu_usage";
@@ -196,6 +199,32 @@ int32_t CreateCpuCollectionTable(NativeRdb::RdbStore& dbStore)
     return NativeRdb::E_OK;
 }
 
+int32_t CreateThreadCpuCollectionTable(NativeRdb::RdbStore& dbStore)
+{
+    /**
+     * table: unified_collection_hiview_cpu
+     *
+     * |-----|------------|----------|-----|-----------  |----------|-----------|
+     * |  id | start_time | end_time | tid | thread_name | cpu_load | cpu_usage |
+     * |-----|------------|----------|-----|-------------|----------|-----------|
+     * | INT |    INT64   |   INT64  | INT |  VARCHAR    |  DOUBLE  |   DOUBLE  |
+     * |-----|------------|----------|-----|-------------|----------|-----------|
+     */
+    const std::vector<std::pair<std::string, std::string>> fields = {
+        {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_TID, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_THREAD_NAME, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
+        {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
+    };
+    if (auto ret = CreateTable(dbStore, THREAD_CPU_COLLECTION_TABLE_NAME, fields); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create %{public}s table", THREAD_CPU_COLLECTION_TABLE_NAME.c_str());
+        return ret;
+    }
+    return NativeRdb::E_OK;
+}
+
 int32_t CreateVersionTable(NativeRdb::RdbStore& dbStore)
 {
     /**
@@ -230,6 +259,10 @@ int CpuStorageDbCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
         return ret;
     }
     if (auto ret = CreateCpuCollectionTable(rdbStore); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create cpu collection table in db creation");
+        return ret;
+    }
+    if (auto ret = CreateThreadCpuCollectionTable(rdbStore); ret != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to create cpu collection table in db creation");
         return ret;
     }
@@ -280,7 +313,7 @@ void CpuStorage::InitDbStore()
     }
 }
 
-void CpuStorage::Store(const std::vector<ProcessCpuStatInfo>& cpuCollectionInfos)
+void CpuStorage::StoreProcessDatas(const std::vector<ProcessCpuStatInfo>& cpuCollectionInfos)
 {
     if (dbStore_ == nullptr) {
         HIVIEW_LOGW("db store is null, path=%{public}s", dbStorePath_.c_str());
@@ -288,12 +321,23 @@ void CpuStorage::Store(const std::vector<ProcessCpuStatInfo>& cpuCollectionInfos
     }
     for (auto& cpuCollectionInfo : cpuCollectionInfos) {
         if (NeedStoreInDb(cpuCollectionInfo)) {
-            Store(cpuCollectionInfo);
+            StoreProcessData(cpuCollectionInfo);
         }
     }
 }
 
-void CpuStorage::Store(const ProcessCpuStatInfo& cpuCollectionInfo)
+void CpuStorage::StoreThreadDatas(const std::vector<ThreadCpuStatInfo>& cpuCollections)
+{
+    if (dbStore_ == nullptr) {
+        HIVIEW_LOGW("db store is null, path=%{public}s", dbStorePath_.c_str());
+        return;
+    }
+    for (auto& cpuCollectionInfo : cpuCollections) {
+        StoreThreadData(cpuCollectionInfo);
+    }
+}
+
+void CpuStorage::StoreProcessData(const ProcessCpuStatInfo& cpuCollectionInfo)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollectionInfo.startTime));
@@ -306,7 +350,23 @@ void CpuStorage::Store(const ProcessCpuStatInfo& cpuCollectionInfo)
     bucket.PutInt(COLUMN_THREAD_CNT, cpuCollectionInfo.threadCount);
     int64_t seq = 0;
     if (dbStore_->Insert(seq, CPU_COLLECTION_TABLE_NAME, bucket) != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to insert cpu data to db store, pid=%{public}d, proc_name=%{public}s", 0, "");
+        HIVIEW_LOGE("failed to insert cpu data to db store, pid=%{public}d, proc_name=%{public}s",
+            cpuCollectionInfo.pid, cpuCollectionInfo.procName.c_str());
+    }
+}
+
+void CpuStorage::StoreThreadData(const ThreadCpuStatInfo& cpuCollection)
+{
+    NativeRdb::ValuesBucket bucket;
+    bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollection.startTime));
+    bucket.PutLong(COLUMN_END_TIME, static_cast<int64_t>(cpuCollection.endTime));
+    bucket.PutInt(COLUMN_TID, cpuCollection.tid);
+    bucket.PutString(COLUMN_THREAD_NAME, "");
+    bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollection.cpuLoad));
+    bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollection.cpuUsage));
+    int64_t seq = 0;
+    if (dbStore_->Insert(seq, THREAD_CPU_COLLECTION_TABLE_NAME, bucket) != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to insert cpu data to db store, tid=%{public}d", cpuCollection.tid);
     }
 }
 
