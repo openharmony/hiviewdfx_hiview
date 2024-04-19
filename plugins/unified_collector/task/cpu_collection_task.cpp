@@ -24,7 +24,7 @@ CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(wo
 {
     InitCpuCollector();
     if (Parameter::IsBetaVersion()) {
-       cpuStorage_ = std::make_shared<CpuStorage>(workPath_);
+        InitCpuStorage();
     }
 #ifdef HAS_HIPERF
     InitCpuPerfDump();
@@ -65,8 +65,10 @@ void CpuCollectionTask::ReportCpuCollectionEvent()
 void CpuCollectionTask::CollectCpuData()
 {
     auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
-    if (Parameter::IsBetaVersion() && cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
-        cpuStorage_->StoreProcessDatas(cpuCollectionsResult.data);
+    if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
+        if (Parameter::IsBetaVersion()) {
+            cpuStorage_->StoreProcessDatas(cpuCollectionsResult.data);
+        }
 
 #ifdef HAS_HIPERF
         cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);

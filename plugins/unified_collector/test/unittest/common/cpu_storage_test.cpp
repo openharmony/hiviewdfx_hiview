@@ -93,7 +93,7 @@ HWTEST_F(CpuStorageTest, CpuStorageTest002, TestSize.Level3)
     auto cpuCollector = UCollectUtil::CpuCollector::Create();
     auto cpuCollectionsResult = cpuCollector->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
-        cpuStorage.Store(cpuCollectionsResult.data);
+        cpuStorage.StoreProcessDatas(cpuCollectionsResult.data);
     }
     cpuStorage.Report();
     RdbPredicates predicates(CPU_COLLECTION_TABLE_NAME);

@@ -211,12 +211,12 @@ int32_t CreateThreadCpuCollectionTable(NativeRdb::RdbStore& dbStore)
      * |-----|------------|----------|-----|-------------|----------|-----------|
      */
     const std::vector<std::pair<std::string, std::string>> fields = {
-            {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
-            {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
-            {COLUMN_TID, SqlUtil::COLUMN_TYPE_INT},
-            {COLUMN_THREAD_NAME, SqlUtil::COLUMN_TYPE_STR},
-            {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
-            {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
+        {COLUMN_START_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_END_TIME, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_TID, SqlUtil::COLUMN_TYPE_INT},
+        {COLUMN_THREAD_NAME, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_CPU_LOAD, SqlUtil::COLUMN_TYPE_DOU},
+        {COLUMN_CPU_USAGE, SqlUtil::COLUMN_TYPE_DOU},
     };
     if (auto ret = CreateTable(dbStore, THREAD_CPU_COLLECTION_TABLE_NAME, fields); ret != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to create %{public}s table", THREAD_CPU_COLLECTION_TABLE_NAME.c_str());
@@ -366,8 +366,7 @@ void CpuStorage::StoreThreadData(const ThreadCpuStatInfo& cpuCollection)
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollection.cpuUsage));
     int64_t seq = 0;
     if (dbStore_->Insert(seq, THREAD_CPU_COLLECTION_TABLE_NAME, bucket) != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to insert cpu data to db store, tid=%{public}d, thread_name=%{public}s",
-            cpuCollection.tid, "*".c_str());
+        HIVIEW_LOGE("failed to insert cpu data to db store, tid=%{public}d", cpuCollection.tid);
     }
 }
 
