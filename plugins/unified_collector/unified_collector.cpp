@@ -87,6 +87,7 @@ bool StartCatpureAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
     std::string args = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1";
     int32_t retCode = manager.OpenRecordingTrace(args);
     if (retCode != UCollect::UcError::SUCCESS) {
+        manager.CloseTrace();
         HIVIEW_LOGE("failed to open trace in recording mode, error code %{public}d", retCode);
         appJankEvent->resultCode_ = UCollect::UcError(retCode);
         return false;
@@ -95,7 +96,9 @@ bool StartCatpureAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
     std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
     CollectResult<int32_t> result = traceCollector->TraceOn();
     if (result.retCode != UCollect::UcError::SUCCESS) {
+        manager.CloseTrace();
         HIVIEW_LOGE("failed to trace on, error code %{public}d", result.retCode);
+        appJankEvent->resultCode_ = result.retCode;
         return false;
     }
     appJankEvent->resultCode_ = 0;

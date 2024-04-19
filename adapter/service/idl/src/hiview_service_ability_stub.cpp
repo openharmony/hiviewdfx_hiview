@@ -73,7 +73,7 @@ const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
         "ohos.permission.DUMP"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
         "ohos.permission.DUMP"},
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CAPTURE_DURATION_TRACE), ""},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE), ""},
 };
 
 const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
@@ -177,7 +177,7 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceR
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
             std::bind(&HiviewServiceAbilityStub::HandleRecoverTraceRequest, this,
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
-        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CAPTURE_DURATION_TRACE),
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE),
             std::bind(&HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest, this,
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
     };

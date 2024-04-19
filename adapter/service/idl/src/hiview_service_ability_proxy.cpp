@@ -252,7 +252,7 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CaptureDurationTrace
         }
         return true;
     };
-    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CAPTURE_DURATION_TRACE,
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE,
         parcelHandler);
 }
 
