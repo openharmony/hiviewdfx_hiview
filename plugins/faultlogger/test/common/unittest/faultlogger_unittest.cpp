@@ -234,7 +234,7 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
 
     std::string result;
     if (FileUtil::LoadStringFromFile("/data/test/testFile", result)) {
-        ASSERT_GT(result.length(), 0ul);
+        ASSERT_GT(result.length(), 0uL);
     } else {
         FAIL();
     }
@@ -418,12 +418,12 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
  */
 HWTEST_F(FaultloggerUnittest, GetFaultInfoListTest001, testing::ext::TestSize.Level3)
 {
-    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":
-    "+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest",
-    "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
-    "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
-    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
-    "17165544771317691984","info_":""})~";
+    std::string jsonStr = R"~({"domain_":"RELIABILITY", "name_":"CPP_CRASH", "type_":1, "time_":1501973701070, "tz_":
+    "+0800", "pid_":1854, "tid_":1854, "uid_":0, "FAULT_TYPE":"2", "PID":1854, "UID":0, "MODULE":"FaultloggerUnittest",
+    "REASON":"unittest for SaveFaultLogInfo", "SUMMARY":"summary for SaveFaultLogInfo", "LOG_PATH":"", "VERSION":"",
+    "HAPPEN_TIME":"1501973701", "PNAME":"/", "FIRST_FRAME":"/", "SECOND_FRAME":"/", "LAST_FRAME":"/", "FINGERPRINT":
+    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d", "level_":"CRITICAL", "tag_":"STABILITY", "id_":
+    "17165544771317691984", "info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     sysEvent->SetLevel("MINOR");
     sysEvent->SetEventSeq(447); // 447: test seq
@@ -680,7 +680,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     fd = -1;
     std::string result;
     if (FileUtil::LoadStringFromFile("/data/test/testFile2", result)) {
-        ASSERT_GT(result.length(), 0ul);
+        ASSERT_GT(result.length(), 0uL);
     } else {
         FAIL();
     }

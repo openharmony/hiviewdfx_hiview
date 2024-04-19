@@ -84,30 +84,25 @@ void FeatureAnalysis::RawInfoPosition(stringstream& buffer)
         for (auto iterCmd = featureSet_.rules.begin(); iterCmd != featureSet_.rules.end();) {
             // Check the variable symbol and replace it with the parameter value of the variable
             FeatureRule& featureCmd = *iterCmd;
-            if (CheckDepend(featureCmd)) {
-                // The depend element exists but the dependent feature has no value
+
+            if (CheckDepend(featureCmd) || (!CheckVariableParam(featureCmd)) || (!IsSourceMatch(line, featureCmd))) {
                 iterCmd++;
                 continue;
             }
+            int num = featureCmd.num;
+            bool matchFlag = ParseElementForParam(line, featureCmd);
+            while (--num > 0 && getline(buffer, line)) {
+                GetCursorInfo(buffer, line);
+                ParseElementForParam(line, featureCmd);
+            }
 
-            if (CheckVariableParam(featureCmd) && IsSourceMatch(line, featureCmd)) {
-                int num = featureCmd.num;
-                bool matchFlag = ParseElementForParam(line, featureCmd);
-                while (--num > 0 && getline(buffer, line)) {
-                    GetCursorInfo(buffer, line);
-                    ParseElementForParam(line, featureCmd);
-                }
-
-                if (matchFlag && featureCmd.cmdType == L2_RULES) {
-                    iterCmd = featureSet_.rules.erase(iterCmd); // erase will iterCmd++, but break avoid out of range
-                } else {
-                    iterCmd++;
-                }
-                dismatchCount = 0;
-                break;
+            if (matchFlag && featureCmd.cmdType == L2_RULES) {
+                iterCmd = featureSet_.rules.erase(iterCmd); // erase will iterCmd++, but break avoid out of range
             } else {
                 iterCmd++;
             }
+            dismatchCount = 0;
+            break;
         }
         dismatchCount++;
         if (featureSet_.rules.empty() || dismatchCount - 1 >= skipStep) {
