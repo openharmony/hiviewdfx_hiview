@@ -17,10 +17,12 @@
 
 #include <memory>
 
+#include "app_caller_event.h"
 #include "cpu_collection_task.h"
 #include "plugin.h"
 #include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
+#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,7 +30,11 @@ class UnifiedCollector : public Plugin {
 public:
     void OnLoad() override;
     void OnUnload() override;
+    bool OnEvent(std::shared_ptr<Event>& event) override;
     void OnEventListeningCallback(const Event& event) override;
+    void Dump(int fd, const std::vector<std::string>& cmds) override;
+    static bool IsEnableRecordTrace() { return isEnableRecordTrace_; }
+    static void SetRecordTraceStatus(bool isEnable) { isEnableRecordTrace_ = isEnable; }
 
 private:
     void Init();
@@ -44,6 +50,10 @@ private:
     void CleanDataFiles();
     void LoadHitraceService();
     void ExitHitraceService();
+    void OnMainThreadJank(SysEvent& sysEvent);
+    bool OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
+    bool OnStopCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
+    void RunRecordTraceTask();
     static void OnSwitchStateChanged(const char* key, const char* value, void* context);
 
 private:
@@ -52,6 +62,7 @@ private:
     std::shared_ptr<UcObserverManager> observerMgr_;
     std::list<uint64_t> taskList_;
     volatile bool isCpuTaskRunning_;
+    static bool isEnableRecordTrace_;
 }; // UnifiedCollector
 } // namespace HiviewDFX
 } // namespace OHOS

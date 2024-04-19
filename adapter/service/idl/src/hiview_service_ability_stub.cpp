@@ -72,7 +72,8 @@ const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE),
         "ohos.permission.DUMP"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
-        "ohos.permission.DUMP"}
+        "ohos.permission.DUMP"},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE), ""},
 };
 
 const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
@@ -175,6 +176,9 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceR
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
             std::bind(&HiviewServiceAbilityStub::HandleRecoverTraceRequest, this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE),
+            std::bind(&HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest, this,
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
     };
     return requestHandlers;
@@ -361,6 +365,55 @@ int32_t HiviewServiceAbilityStub::HandleRecoverTraceRequest(MessageParcel& data,
     MessageOption& option)
 {
     auto ret = RecoverTrace();
+    return WritePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    UCollectClient::AppCaller appCaller;
+
+    std::string errField;
+    do {
+        if (!data.ReadString(appCaller.bundleName)) {
+            errField = "bundleName";
+            break;
+        }
+        if (!data.ReadString(appCaller.bundleVersion)) {
+            errField = "bundleVersion";
+            break;
+        }
+        if (!data.ReadInt32(appCaller.uid)) {
+            errField = "uid";
+            break;
+        }
+
+        if (!data.ReadInt32(appCaller.pid)) {
+            errField = "pid";
+            break;
+        }
+
+        if (!data.ReadInt64(appCaller.happenTime)) {
+            errField = "happenTime";
+            break;
+        }
+
+        if (!data.ReadInt64(appCaller.beginTime)) {
+            errField = "beginTime";
+            break;
+        }
+        if (!data.ReadInt64(appCaller.endTime)) {
+            errField = "endTime";
+            break;
+        }
+    } while (0);
+
+    if (!errField.empty()) {
+        HIVIEW_LOGW("failed to read %{public}s from parcel", errField.c_str());
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+
+    auto ret = CaptureDurationTrace(appCaller);
     return WritePracelableToMessage(reply, ret);
 }
 

@@ -52,6 +52,7 @@ ohos_source_set("ucollection_source") {
     "collector/sys_cpu_usage_collector.cpp",
     "collector/thread_state_info_collector.cpp",
     "collector/trace_collector_impl.cpp",
+    "collector/utils/app_event_task_storage.cpp",
     "collector/utils/trace_flow_controller.cpp",
     "collector/utils/trace_manager.cpp",
     "collector/utils/trace_storage.cpp",

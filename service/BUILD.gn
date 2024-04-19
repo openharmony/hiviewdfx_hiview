@@ -55,6 +55,7 @@ ohos_source_set("hiview_service") {
   ]
 
   external_deps = [
+    "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
     "hitrace:hitrace_dump",
   ]

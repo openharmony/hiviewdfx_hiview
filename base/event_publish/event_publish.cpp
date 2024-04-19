@@ -40,7 +40,25 @@ const std::string DOMAIN_OS = "OS";
 const std::string LOG_OVER_LIMIT = "log_over_limit";
 const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
+const std::string MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
+
+struct ExternalLogInfo {
+    std::string extensionType_;
+    std::string subPath_;
+};
+
+void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalLogInfo)
+{
+    if (eventName == MAIN_THREAD_JANK) {
+        externalLogInfo.extensionType_ = ".trace";
+        externalLogInfo.subPath_ = "watchdog";
+    } else {
+        externalLogInfo.extensionType_ = ".log";
+        externalLogInfo.subPath_ = "hiappevent";
+    }
+}
+
 
 std::string GetTempFilePath(int32_t uid)
 {
@@ -73,19 +91,20 @@ std::string GetSandBoxBasePath(int32_t uid, const std::string& bundleName)
     return path;
 }
 
-std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName)
+std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const ExternalLogInfo &externalLogInfo)
 {
     int userId = uid / VALUE_MOD;
     std::string path;
     path.append("/data/app/el2/")
         .append(std::to_string(userId))
         .append("/log/")
-        .append(bundleName)
-        .append("/hiappevent");
+        .append(bundleName);
+    path.append("/").append(externalLogInfo.subPath_);
     return path;
 }
 
-void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params)
+void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
+    const ExternalLogInfo &externalLogInfo)
 {
     params[LOG_OVER_LIMIT] = false;
     Json::Value externalLogJson;
@@ -100,6 +119,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
         return;
     }
+
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     uint64_t fileSize = FileUtil::GetFileSize(externalLog);
     if (dirSize + fileSize <= MAX_FILE_SIZE) {
@@ -108,14 +128,15 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         if (params.isMember(PID) && params[PID].isInt()) {
             pid = params[PID].asInt();
         }
-        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid) + ".log";
+        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+            + externalLogInfo.extensionType_;
         sandBoxLogPath.append("/").append(desFileName);
         if (FileUtil::CopyFile(externalLog, sandBoxLogPath) == 0) {
             std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
             if (OHOS::StorageDaemon::AclSetAccess(sandBoxLogPath, entryTxt) != 0) {
                 HIVIEW_LOGE("failed to set acl access dir=%{public}s", sandBoxLogPath.c_str());
             }
-            params[EXTERNAL_LOG].append("/data/storage/el2/log/hiappevent/" + desFileName);
+            params[EXTERNAL_LOG].append("/data/storage/el2/log/" + externalLogInfo.subPath_ + "/" + desFileName);
             HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
                 externalLog.c_str(), sandBoxLogPath.c_str());
         } else {
@@ -135,14 +156,19 @@ void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
     if (!FileUtil::SaveStringToFile(filePath, eventStr, false)) {
         HIVIEW_LOGE("failed to save event, eventName=%{public}s, file=%{public}s",
             eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str());
+        return;
     }
+    HIVIEW_LOGI("save event finish, eventName=%{public}s, file=%{public}s, eventStr=%{public}s",
+        eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str(), eventStr.c_str());
 }
 
 void SaveEventAndLogToSandBox(int32_t uid, const std::string& eventName, const std::string& bundleName,
     Json::Value& eventJson)
 {
-    std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName);
-    SendLogToSandBox(uid, eventName, sandBoxLogPath, eventJson[PARAM_PROPERTY]);
+    ExternalLogInfo externalLogInfo;
+    GetExternalLogInfo(eventName, externalLogInfo);
+    std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName, externalLogInfo);
+    SendLogToSandBox(uid, eventName, sandBoxLogPath, eventJson[PARAM_PROPERTY], externalLogInfo);
     std::string desPath = GetSandBoxBasePath(uid, bundleName);
     std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
     desPath.append(FILE_PREFIX).append(timeStr).append(".txt");
@@ -222,7 +248,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     std::string srcPath = GetTempFilePath(uid);
     std::string desPath = GetSandBoxBasePath(uid, bundleName);
     if (!FileUtil::FileExists(desPath)) {
-        HIVIEW_LOGD("desPath=%{public}s not exit.", desPath.c_str());
+        HIVIEW_LOGE("desPath=%{public}s not exit.", desPath.c_str());
         (void)FileUtil::RemoveFile(srcPath);
         return;
     }
@@ -239,7 +265,8 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
         return;
     }
     eventJson[PARAM_PROPERTY] = params;
-    const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER"};
+    const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER",
+        MAIN_THREAD_JANK};
     if (immediateEvents.find(eventName) != immediateEvents.end()) {
         SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
     } else {

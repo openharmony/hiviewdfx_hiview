@@ -44,8 +44,10 @@ const std::string RELIABILITY = "Reliability";
 const std::string XPERF = "Xperf";
 const std::string XPOWER = "Xpower";
 const std::string BETACLUB = "BetaClub";
+const std::string APP = "APP";
 const std::string OTHER = "Other";
 const uint32_t UNIFIED_SHARE_COUNTS = 20;
+const uint32_t UNIFIED_APP_SHARE_COUNTS = 40;
 const uint32_t UNIFIED_SPECIAL_XPERF = 3;
 const uint32_t UNIFIED_SPECIAL_RELIABILITY = 3;
 const uint32_t UNIFIED_SPECIAL_OTHER = 5;
@@ -150,6 +152,26 @@ protected:
     }
 };
 
+class AppShareCleanPolicy : public CleanPolicy {
+public:
+    explicit AppShareCleanPolicy(int type) : CleanPolicy(type) {}
+    ~AppShareCleanPolicy() override {}
+
+protected:
+    bool IsMine(const std::string &fileName) override
+    {
+        if (fileName.find("/"+APP) != std::string::npos) {
+            return true;
+        }
+        return false;
+    }
+
+    uint32_t MyThreshold() override
+    {
+        return UNIFIED_APP_SHARE_COUNTS;
+    }
+};
+
 class SpecialXperfCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialXperfCleanPolicy(int type) : CleanPolicy(type) {}
@@ -211,6 +233,10 @@ protected:
 std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &caller)
 {
     if (type == SHARE) {
+        if (caller == TraceCollector::Caller::APP) {
+            return std::make_shared<AppShareCleanPolicy>(type);
+        }
+
         return std::make_shared<ShareCleanPolicy>(type);
     }
 
@@ -236,6 +262,9 @@ void FileRemove(TraceCollector::Caller &caller)
         case TraceCollector::Caller::XPERF:
             shareCleaner->DoClean();
             specialCleaner->DoClean();
+            break;
+        case TraceCollector::Caller::APP:
+            shareCleaner->DoClean();
             break;
         default:
             specialCleaner->DoClean();
@@ -281,6 +310,8 @@ const std::string EnumToString(TraceCollector::Caller &caller)
             return XPOWER;
         case TraceCollector::Caller::BETACLUB:
             return BETACLUB;
+        case TraceCollector::Caller::APP:
+            return APP;
         default:
             return OTHER;
     }

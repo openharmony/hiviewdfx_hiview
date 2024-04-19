@@ -77,5 +77,13 @@ CollectResult<int32_t> HiViewServiceTraceDelegate::Recover()
     };
     return TraceCalling<int32_t>(proxyHandler);
 }
+
+CollectResult<int32_t> HiViewServiceTraceDelegate::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
+{
+    auto proxyHandler = [&appCaller] (HiviewServiceAbilityProxy& proxy) {
+        return proxy.CaptureDurationTrace(appCaller);
+    };
+    return TraceCalling<int32_t>(proxyHandler);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

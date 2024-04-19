@@ -34,6 +34,7 @@ public:
         XPOWER,
         BETACLUB,
         DEVELOP,
+        APP,
         OTHER,
     };
 

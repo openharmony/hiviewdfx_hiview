@@ -205,6 +205,57 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::RecoverTrace()
         parcelHandler);
 }
 
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
+{
+    auto parcelHandler = [&appCaller] (MessageParcel& data) {
+        std::string errField;
+        do {
+            if (!data.WriteString(appCaller.bundleName)) {
+                errField = "bundleName";
+                break;
+            }
+
+            if (!data.WriteString(appCaller.bundleVersion)) {
+                errField = "bundleVersion";
+                break;
+            }
+
+            if (!data.WriteInt32(appCaller.uid)) {
+                errField = "uid";
+                break;
+            }
+
+            if (!data.WriteInt32(appCaller.pid)) {
+                errField = "pid";
+                break;
+            }
+
+            if (!data.WriteInt64(appCaller.happenTime)) {
+                errField = "happenTime";
+                break;
+            }
+
+            if (!data.WriteInt64(appCaller.beginTime)) {
+                errField = "beginTime";
+                break;
+            }
+
+            if (!data.WriteInt64(appCaller.endTime)) {
+                errField = "endTime";
+                break;
+            }
+        } while (0);
+
+        if (!errField.empty()) {
+            HIVIEW_LOGE("write field %{public}s failed", errField.c_str());
+            return false;
+        }
+        return true;
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE,
+        parcelHandler);
+}
+
 CollectResultParcelable<double> HiviewServiceAbilityProxy::GetSysCpuUsage()
 {
     auto parcelHandler = [] (MessageParcel& data) {
