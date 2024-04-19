@@ -79,6 +79,12 @@ bool IsUCollectionSwitchOn()
     return ucollectionState == "true";
 }
 
+bool IsTraceCollectionSwitchOn()
+{
+    std::string traceCollectionState = GetString(DEVELOP_HIVIEW_TRACE_RECORDER, "false");
+    return traceCollectionState == "true";
+}
+
 DeviceType GetDeviceType()
 {
     std::string deviceType = GetString(KEY_BUILD_CHARACTER, "unknown");

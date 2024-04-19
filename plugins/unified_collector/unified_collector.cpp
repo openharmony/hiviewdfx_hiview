@@ -48,6 +48,7 @@ const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
+const std::string args = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0";
 const std::string OTHER = "Other";
 const std::string HIVIEW_UCOLLECTION_STATE_TRUE = "true";
 const std::string HIVIEW_UCOLLECTION_STATE_FALSE = "false";
@@ -223,7 +224,50 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
     }
     AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[s1][s2][s3];
 }
+
+void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* context)
+{
+    OnHiViewTraceRecorderChanged(key, value, context);
+    HIVIEW_LOGI("record trace state changed, ret: %{public}s", value);
+    if (key == nullptr || value == nullptr) {
+        HIVIEW_LOGE("record trace switch input ptr null");
+        return;
+    }
+    if (strncmp(key, DEVELOP_HIVIEW_TRACE_RECORDER, strlen(DEVELOP_HIVIEW_TRACE_RECORDER)) != 0) {
+        HIVIEW_LOGE("record trace switch param key error");
+        return;
+    }
+
+    if (UnifiedCollector::IsEnableRecordTrace() == false && strncmp(value, "true", strlen("true")) == 0) {
+        UnifiedCollector::SetRecordTraceStatus(true);
+        TraceManager traceManager;
+        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(args);
+        if (resultOpenTrace != 0) {
+            HIVIEW_LOGE("failed to start trace service");
+        }
+
+        std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
+        CollectResult<int32_t> resultTraceOn = traceCollector->TraceOn();
+        if (resultTraceOn.retCode != UCollect::UcError::SUCCESS) {
+            HIVIEW_LOGE("failed to start collection trace");
+        }
+    } else if (UnifiedCollector::IsEnableRecordTrace() == true && strncmp(value, "false", strlen("false")) == 0) {
+        UnifiedCollector::SetRecordTraceStatus(false);
+        std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
+        CollectResult<std::vector<std::string>> resultTraceOff = traceCollector->TraceOff();
+        if (resultTraceOff.retCode != UCollect::UcError::SUCCESS) {
+            HIVIEW_LOGE("failed to stop collection trace");
+        }
+        TraceManager traceManager;
+        int32_t resultCloseTrace = traceManager.CloseTrace();
+        if (resultCloseTrace != 0) {
+            HIVIEW_LOGE("failed to stop trace service");
+        }
+    }
 }
+}
+
+bool UnifiedCollector::isEnableRecordTrace_ = false;
 
 void UnifiedCollector::OnLoad()
 {
@@ -390,14 +434,15 @@ void UnifiedCollector::Init()
     if (!Parameter::IsBetaVersion()) {
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
         HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
-
-        ret = Parameter::WatchParamChange(DEVELOP_HIVIEW_TRACE_RECORDER, OnHiViewTraceRecorderChanged, nullptr);
-        HIVIEW_LOGI("add develop trace recorder param watcher ret: %{public}d", ret);
     }
 
     InitDynamicTrace();
 
     observerMgr_ = std::make_shared<UcObserverManager>();
+
+    if (Parameter::IsDeveloperMode()) {
+        RunRecordTraceTask();
+    }
 }
 
 void UnifiedCollector::CleanDataFiles()
@@ -558,6 +603,26 @@ void UnifiedCollector::UCollectionStatTask()
 {
     UnifiedCollectionStat stat;
     stat.Report();
+}
+
+void UnifiedCollector::RunRecordTraceTask()
+{
+    if (IsEnableRecordTrace() == false && Parameter::IsTraceCollectionSwitchOn()){
+        SetRecordTraceStatus(true);
+        TraceManager traceManager;
+        int32_t resultOpenTrace = traceManager.OpenRecordingTrace(args);
+        if (resultOpenTrace != 0) {
+            HIVIEW_LOGE("failed to start trace service");
+        }
+
+        std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
+        CollectResult<int32_t> resultTraceOn = traceCollector->TraceOn();
+        if (resultTraceOn.retCode != UCollect::UcError::SUCCESS) {
+            HIVIEW_LOGE("failed to start collection trace");
+        }
+    }
+    int ret = Parameter::WatchParamChange(DEVELOP_HIVIEW_TRACE_RECORDER, OnSwitchRecordTraceStateChanged, this);
+    HIVIEW_LOGI("add ucollection trace switch param watcher ret: %{public}d", ret);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

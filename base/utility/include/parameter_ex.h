@@ -43,6 +43,7 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
 bool IsBetaVersion();
 bool IsDeveloperMode();
 bool IsUCollectionSwitchOn();
+bool IsTraceCollectionSwitchOn();
 DeviceType GetDeviceType();
 std::string GetDisplayVersionStr();
 };
