@@ -21,3 +21,7 @@ persist.sys.hiview.diag.chrtcpdump="hiview:log:755"
 sys.hiview.chr.fluchcache="hiview:log:755"
 hiviewdfx.freeze.filter.="hiview:log:666"
 hiviewdfx.ucollection.="hiview:log:755"
+
+persist.hiview.leak_detector="hiview:log:755"
+persist.hiview.freeze_detector="hiview:log:755"
+persist.hiview.trace_recorder="hiview:log:755"
