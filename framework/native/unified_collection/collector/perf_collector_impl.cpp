@@ -88,6 +88,11 @@ void PerfCollectorImpl::SetCpuPercent(int cpuPercent)
     opt_.SetCpuPercent(cpuPercent);
 }
 
+void PerfCollectorImpl::SetReport(bool enable)
+{
+    opt_.SetReport(enable);
+}
+
 void PerfCollectorImpl::IncreaseUseCount()
 {
     inUseCount_.fetch_add(1);
