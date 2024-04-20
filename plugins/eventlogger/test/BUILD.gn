@@ -44,6 +44,7 @@ ohos_unittest("EventloggerPluginTest") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "input:libmmi-client",
   ]
@@ -88,6 +89,7 @@ ohos_unittest("EventLoggerTest") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "input:libmmi-client",
   ]

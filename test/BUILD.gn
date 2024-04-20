@@ -68,7 +68,10 @@ ohos_unittest("HolisticPlatformTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }

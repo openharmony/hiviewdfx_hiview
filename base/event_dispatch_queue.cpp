@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,63 +14,21 @@
  */
 #include "event_dispatch_queue.h"
 
-#include <algorithm>
-#include <memory>
-
-#include "file_util.h"
 #include "hiview_event_report.h"
 #include "hiview_logger.h"
-#include "memory_util.h"
 #include "plugin.h"
-#include "thread_util.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventDispatchQueue");
 EventDispatchQueue::EventDispatchQueue(const std::string& name, Event::ManageType type, HiviewContext* context)
-    : stop_(false), isRunning_(false), threadName_(name), type_(type), context_(context)
+    : isRunning_(false), threadName_(name), type_(type), context_(context)
 {}
 
 EventDispatchQueue::~EventDispatchQueue()
 {
     Stop();
-}
-
-void EventDispatchQueue::Run()
-{
-    if (MemoryUtil::DisableThreadCache() != 0 || MemoryUtil::DisableDelayFree() != 0) {
-        HIVIEW_LOGW("Failed to optimize memory for current thread");
-    }
-    const int threadNameLen = 15;
-    Thread::SetThreadDescription(threadName_.substr(0, threadNameLen));
-    isRunning_ = true;
-    while (true) {
-        std::shared_ptr<Event> event = nullptr;
-        {
-            std::unique_lock<std::mutex> lock(mutexLock_);
-            while (pendingEvents_.empty()) {
-                condition_.wait(lock);
-                if (stop_) {
-                    return;
-                }
-            }
-            event = pendingEvents_.front();
-            pendingEvents_.pop_front();
-        }
-
-        if (event == nullptr) {
-            continue;
-        }
-
-        if (type_ == Event::ManageType::UNORDERED) {
-            ProcessUnorderedEvent(*(event.get()));
-        }
-
-        if (stop_) {
-            break;
-        }
-    }
 }
 
 void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
@@ -92,33 +50,45 @@ void EventDispatchQueue::ProcessUnorderedEvent(const Event& event)
 
 void EventDispatchQueue::Stop()
 {
-    stop_ = true;
-    condition_.notify_all();
-    if (thread_ != nullptr && thread_->joinable()) {
-        thread_->join();
-    }
+    std::unique_lock<ffrt::mutex> lock(mutexLock_);
+    ffrtQueue_ = nullptr;
     isRunning_ = false;
 }
 
 void EventDispatchQueue::Start()
 {
-    std::unique_lock<std::mutex> lock(mutexLock_);
-    if (!IsRunning()) {
-        thread_ = std::make_unique<std::thread>(&EventDispatchQueue::Run, this);
+    std::unique_lock<ffrt::mutex> lock(mutexLock_);
+    if (!isRunning_) {
+        ffrtQueue_ = std::make_unique<ffrt::queue>(threadName_.c_str());
+        isRunning_ = true;
     }
 }
 
 void EventDispatchQueue::Enqueue(std::shared_ptr<Event> event)
 {
-    HIVIEW_LOGD("EventDispatchQueue Enqueue");
-    std::unique_lock<std::mutex> lock(mutexLock_);
-    pendingEvents_.push_back(std::move(event));
-    condition_.notify_one();
-}
+    if (event == nullptr) {
+        HIVIEW_LOGW("event is null");
+        return;
+    }
 
-int EventDispatchQueue::GetWaitQueueSize() const
-{
-    return pendingEvents_.size();
+    std::unique_lock<ffrt::mutex> lock(mutexLock_);
+    if (!isRunning_) {
+        HIVIEW_LOGW("queue is stopped");
+        return;
+    }
+    if (context_ == nullptr) {
+        HIVIEW_LOGW("context is null");
+        return;
+    }
+
+    auto queuePtr = shared_from_this();
+    ffrtQueue_->submit([event, queuePtr] {
+        if (queuePtr->type_ == Event::ManageType::UNORDERED) {
+            queuePtr->ProcessUnorderedEvent(*(event.get()));
+        } else {
+            HIVIEW_LOGW("invalid type=%{public}d of queue", queuePtr->type_);
+        }
+    }, ffrt::task_attr().name("dft_plat_unorder"));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
