@@ -18,7 +18,6 @@
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
 #include "trace_collector.h"
-#include "time_util.h"
 
 #include <gtest/gtest.h>
 #include <unistd.h>
