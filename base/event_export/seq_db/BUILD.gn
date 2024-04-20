@@ -20,7 +20,7 @@ config("event_export_db_mgr_config") {
   include_dirs = [ "include" ]
 }
 
-ohos_source_set("event_export_db_mgr") {
+ohos_source_set("event_export_db_mgr_source") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true

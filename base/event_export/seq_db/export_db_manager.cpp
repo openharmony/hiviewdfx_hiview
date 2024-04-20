@@ -36,11 +36,11 @@ int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
     ExportDetailRecord record;
     storage_->QueryExportDetailRecord(moduleName, record);
     if (record.moduleName.empty()) {
-        HIVIEW_LOGD("no export details record found of %{public}s module in db", moduleName.c_str());
+        HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
     if (record.exportEnabledSeq == INVALID_SEQ_VAL) {
-        HIVIEW_LOGD("export switch of %{public}s is off, no need to export event", moduleName.c_str());
+        HIVIEW_LOGI("export switch of %{public}s is off, no need to export event", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
     return std::max(record.exportEnabledSeq, record.exportedMaxSeq);
@@ -102,23 +102,23 @@ void ExportDbManager::HandleExportSwitchOff(const std::string& moduleName)
     storage_->UpdateExportEnabledSeq(record);
 }
 
-void ExportDbManager::HandleExportTaskFinished(const std::string& moduleName, int64_t exportedMaxSeq)
+void ExportDbManager::HandleExportTaskFinished(const std::string& moduleName, int64_t eventSeq)
 {
     HIVIEW_LOGD("export task of %{public}s module is finished, maximum event sequence is %{public}" PRId64 "",
-        moduleName.c_str(), exportedMaxSeq);
+        moduleName.c_str(), eventSeq);
     if (IsUnrecordedModule(moduleName)) {
         HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
         ExportDetailRecord record = {
             .moduleName = moduleName,
             .exportEnabledSeq = INVALID_SEQ_VAL,
-            .exportedMaxSeq = exportedMaxSeq,
+            .exportedMaxSeq = eventSeq,
         };
         storage_->InsertExportDetailRecord(record);
         return;
     }
     ExportDetailRecord record {
         .moduleName = moduleName,
-        .exportedMaxSeq = exportedMaxSeq,
+        .exportedMaxSeq = eventSeq,
     };
     storage_->UpdateExportedMaxSeq(record);
 }

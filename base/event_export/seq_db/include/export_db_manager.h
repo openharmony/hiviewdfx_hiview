@@ -36,7 +36,7 @@ public:
     void HandleExportModuleInit(const std::string& moduleName, int64_t curSeq);
     void HandleExportSwitchOn(const std::string& moduleName, int64_t curSeq);
     void HandleExportSwitchOff(const std::string& moduleName);
-    void HandleExportTaskFinished(const std::string& moduleName, int64_t exportedMaxSeq);
+    void HandleExportTaskFinished(const std::string& moduleName, int64_t eventSeq);
 
 private:
     bool IsUnrecordedModule(const std::string& moduleName);
