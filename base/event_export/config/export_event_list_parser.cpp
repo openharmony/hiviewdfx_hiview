@@ -74,6 +74,7 @@ void ParseExportEventList(cJSON* eventItem, ExportEventList& eventList)
 
 ExportEventListParser::ExportEventListParser(const std::string& configFile)
 {
+    HIVIEW_LOGD("event list config file path is %{public}s.", configFile.c_str());
     jsonRoot_ = CJsonUtil::ParseJsonRoot(configFile);
     ParseConfiguration();
 }

@@ -14,38 +14,45 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("event_export_config_parser_config") {
+config("event_export_mgr_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [ "include" ]
 }
 
-ohos_source_set("event_export_config_source") {
+ohos_source_set("event_export_mgr_source") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
     debug = false
   }
 
-  public_configs = [ ":event_export_config_parser_config" ]
+  public_configs = [ ":event_export_mgr_config" ]
 
-  configs = [ ":event_export_config_parser_config" ]
+  configs = [ ":event_export_mgr_config" ]
 
-  sources = [
-    "export_config_manager.cpp",
-    "export_config_parser.cpp",
-    "export_event_list_parser.cpp",
-  ]
+  sources = [ "setting_observer_manager.cpp" ]
 
   deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_base:hiviewbase",
+    "$hiview_base/event_export/config:event_export_config_source",
+    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
     "$hiview_base/utility:hiview_utility",
   ]
 
   external_deps = [
+    "ability_base:zuri",
+    "ability_runtime:ability_manager",
+    "ability_runtime:dataobs_manager",
     "cJSON:cjson",
     "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "ffrt:libffrt",
     "hilog:libhilog",
+    "ipc:ipc_core",
+    "relational_store:native_rdb",
   ]
 
   part_name = "hiview"

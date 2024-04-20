@@ -21,6 +21,7 @@ group("unittest") {
   deps = [
     ":EventExportConfigTest",
     ":EventExportDbMgrTest",
+    ":EventExportMgrTest",
   ]
 }
 
@@ -41,7 +42,7 @@ ohos_unittest("EventExportConfigTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_export/config:event_export_config_parser",
+    "$hiview_base/event_export/config:event_export_config_source",
     "$hiview_core:hiview_core",
     "//third_party/cJSON:cjson",
     "//third_party/googletest:gmock",
@@ -70,7 +71,7 @@ ohos_unittest("EventExportDbMgrTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_export/seq_db:event_export_db_mgr",
+    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
     "$hiview_core:hiview_core",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
@@ -78,6 +79,44 @@ ohos_unittest("EventExportDbMgrTest") {
 
   external_deps = [
     "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
+}
+
+config("event_export_mgr_test_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [ "unittest/common" ]
+
+  cflags = []
+}
+
+ohos_unittest("EventExportMgrTest") {
+  module_out_path = module_output_path
+
+  configs = [ ":event_export_mgr_test_config" ]
+
+  sources = [ "unittest/common/event_export_mgr_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_export:event_export_mgr_source",
+    "$hiview_base/event_export/config:event_export_config_source",
+    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
+    "$hiview_core:hiview_core",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "ability_base:zuri",
+    "ability_runtime:ability_manager",
+    "ability_runtime:dataobs_manager",
+    "cJSON:cjson",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "hilog:libhilog",
+    "ipc:ipc_core",
     "relational_store:native_rdb",
   ]
 }
