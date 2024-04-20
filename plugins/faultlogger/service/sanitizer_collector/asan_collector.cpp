@@ -28,8 +28,8 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-const uint32_t XDIGIT 2
-const uint32_t FUNC_NAME 3
+const uint32_t XDIGIT = 2;
+const uint32_t FUNC_NAME = 3;
 DEFINE_LOG_TAG("Faultlogger");
 const char CLANGLIB[] = "libclang_rt";
 const std::string SKIP_SPECIAL_PROCESS = "sa_main appspawn";
