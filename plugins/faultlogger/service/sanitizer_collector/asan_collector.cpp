@@ -108,8 +108,8 @@ void AsanCollector::ProcessStackTrace(
         std::string function_name;
         if (std::regex_search(str_line.begin(), str_line.end(), stack_entry_captured, STACK_ENTRY_RE)) {
             frm_no = stack_entry_captured[1].str();
-            xdigit = stack_entry_captured[XDIGIT].str(); // 2 : index of xdigit
-            function_name = stack_entry_captured[FUNC_NAME].str(); // 3 : index of function_name
+            xdigit = stack_entry_captured[XDIGIT].str();
+            function_name = stack_entry_captured[FUNC_NAME].str();
             if (frm_no == "0") {
                 if (printDiagnostics) {
                     HIVIEW_LOGI("Stack trace starting.%{public}s",
