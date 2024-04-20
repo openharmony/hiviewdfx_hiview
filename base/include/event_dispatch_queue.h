@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,20 +14,16 @@
  */
 #ifndef HIVIEW_BASE_EVENT_DISPATCH_QUEUE_IMPL_H
 #define HIVIEW_BASE_EVENT_DISPATCH_QUEUE_IMPL_H
-#include <condition_variable>
-#include <list>
 #include <memory>
-#include <mutex>
 #include <string>
-#include <thread>
-#include <unordered_map>
 
 #include "event.h"
+#include "ffrt.h"
 #include "plugin.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class EventDispatchQueue {
+class EventDispatchQueue : public std::enable_shared_from_this<EventDispatchQueue> {
 public:
     EventDispatchQueue(const std::string& name, Event::ManageType type, HiviewContext* context_);
     ~EventDispatchQueue();
@@ -35,25 +31,21 @@ public:
     void Stop();
     void Start();
     void Enqueue(std::shared_ptr<Event> event);
-    int GetWaitQueueSize() const;
     bool IsRunning() const
     {
+        std::unique_lock<ffrt::mutex> lock(mutexLock_);
         return isRunning_;
     }
 
 private:
-    void Run();
     void ProcessUnorderedEvent(const Event &event);
 
-    volatile bool stop_;
     bool isRunning_ = false;
     std::string threadName_;
     Event::ManageType type_;
     HiviewContext* context_;
-    mutable std::mutex mutexLock_;
-    std::condition_variable condition_;
-    std::list<std::shared_ptr<Event>> pendingEvents_;
-    std::unique_ptr<std::thread> thread_;
+    mutable ffrt::mutex mutexLock_;
+    std::unique_ptr<ffrt::queue> ffrtQueue_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

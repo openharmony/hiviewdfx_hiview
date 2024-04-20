@@ -560,7 +560,7 @@ void HiviewPlatform::StartLoop()
 void HiviewPlatform::StartPlatformDispatchQueue()
 {
     if (unorderQueue_ == nullptr) {
-        unorderQueue_ = std::make_unique<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED, this);
+        unorderQueue_ = std::make_shared<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED, this);
         unorderQueue_->Start();
     }
 

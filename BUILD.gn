@@ -101,6 +101,7 @@ ohos_executable("hiview") {
   deps += plugin_static_deps
 
   external_deps = [
+    "ffrt:libffrt",
     "hidumper:hidumperservice_cpu_source",
     "hilog:libhilog",
   ]

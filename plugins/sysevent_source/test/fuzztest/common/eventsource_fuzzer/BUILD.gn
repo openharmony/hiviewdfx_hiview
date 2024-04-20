@@ -36,5 +36,8 @@ ohos_fuzztest("EventSourceFuzzTest") {
     "$hiview_plugin/sysevent_source:sysevent_source",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 }

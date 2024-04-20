@@ -36,5 +36,8 @@ ohos_fuzztest("HiviewServiceFuzzTest") {
     "$hiview_service:hiview_service",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 }
