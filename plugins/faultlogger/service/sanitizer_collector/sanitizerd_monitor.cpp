@@ -64,6 +64,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
         }
         if (strcpy_s(filename, PATH_MAX,  event->name) != EOK) {
             HIVIEW_LOGI("try to copy the file name error, continue");
+            continue;
         }
 
         // Check the full path of log file.
