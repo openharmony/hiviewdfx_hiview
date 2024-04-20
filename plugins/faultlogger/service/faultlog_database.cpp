@@ -37,8 +37,9 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FaultLogDatabase");
 namespace {
-static const std::vector<std::string> QUERY_ITEMS =
-    { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
+static const std::vector<std::string> QUERY_ITEMS = {
+    "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE"
+};
 static const std::string LOG_PATH_BASE = "/data/log/faultlog/faultlogger/";
 bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, FaultLogInfo& info)
 {

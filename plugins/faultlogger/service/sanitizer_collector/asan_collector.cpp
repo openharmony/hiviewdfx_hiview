@@ -28,6 +28,8 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+const uint32_t XDIGIT = 2;
+const uint32_t FUNC_NAME = 3;
 DEFINE_LOG_TAG("Faultlogger");
 const char CLANGLIB[] = "libclang_rt";
 const std::string SKIP_SPECIAL_PROCESS = "sa_main appspawn";
@@ -106,8 +108,8 @@ void AsanCollector::ProcessStackTrace(
         std::string function_name;
         if (std::regex_search(str_line.begin(), str_line.end(), stack_entry_captured, STACK_ENTRY_RE)) {
             frm_no = stack_entry_captured[1].str();
-            xdigit = stack_entry_captured[2].str(); // 2 : index of xdigit
-            function_name = stack_entry_captured[3].str(); // 3 : index of function_name
+            xdigit = stack_entry_captured[XDIGIT].str();
+            function_name = stack_entry_captured[FUNC_NAME].str();
             if (frm_no == "0") {
                 if (printDiagnostics) {
                     HIVIEW_LOGI("Stack trace starting.%{public}s",
@@ -121,11 +123,9 @@ void AsanCollector::ProcessStackTrace(
                 hashable.append("|");
             hashable.append(function_name);
 
-            if (curr_.func.empty()) {
-                if (!function_name.empty() && (function_name.find(CLANGLIB) == std::string::npos)) {
-                    // skip special libclang_rt lib
-                    curr_.func = function_name;
-                }
+            if (curr_.func.empty() && (!function_name.empty()) && (function_name.find(CLANGLIB) == std::string::npos)) {
+                // skip special libclang_rt lib
+                curr_.func = function_name;
             }
         } else if (std::regex_search(str_line.begin(), str_line.end(), stack_end_captured, STACK_END_RE)) {
             if (printDiagnostics) {

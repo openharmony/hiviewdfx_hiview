@@ -56,7 +56,6 @@ public:
     static const std::string SMART_PARSER_TEST_DIR;
     static const int TOTAL_LINE_NUM;
 
-
 private:
     static int GetFileFd(const std::string& file);
 };

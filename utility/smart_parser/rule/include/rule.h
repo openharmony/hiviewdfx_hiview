@@ -24,8 +24,8 @@ namespace OHOS {
 namespace HiviewDFX {
 class Rule {
 public:
-    Rule(std::string eventPath, std::string analysisConfig, std::string eventType) :
-        eventPath_(eventPath), analysisConfig_(analysisConfig), eventType_(eventType) {};
+    Rule(std::string eventPath, std::string analysisConfig, std::string eventType)
+        : eventPath_(eventPath), analysisConfig_(analysisConfig), eventType_(eventType) {};
     ~Rule() {};
     Rule(const Rule&) = delete;
     Rule& operator=(const Rule&) = delete;
