@@ -55,8 +55,8 @@ void WriteGwpAsanLog(char* buf, size_t sz)
     }
 
     char *gwpOutput = strstr(buf, "End GWP-ASan report");
-    char *tsanOutput = strstr(buf, "End TSAN report");
-    char *cfiOutput = strstr(buf, "End of process memory map");
+    char *tsanOutput = strstr(buf, "End Tsan report");
+    char *cfiOutput = strstr(buf, "End CFI report");
     if (gwpOutput) {
         std::string gwpasanlog = g_asanlog.str();
         // parse log
@@ -72,10 +72,10 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         // clear buffer
         g_asanlog.str("");
     } else if (cfiOutput) {
-        std::string asanlog = g_asanlog.str();
+        std::string ubsanlog = g_asanlog.str();
         // parse log
-        std::string errType = "ASAN";
-        ReadGwpAsanRecord(asanlog, errType);
+        std::string errType = "UBSAN";
+        ReadGwpAsanRecord(ubsanlog, errType);
         // clear buffer
         g_asanlog.str("");
     }
@@ -141,8 +141,8 @@ std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
         prefix = "gwpasan";
     } else if (currInfo.errType.compare("TSAN") == 0) {
         prefix = "tsan";
-    } else if (currInfo.errType.compare("ASAN") == 0) {
-        prefix = "sanitizer";
+    } else if (currInfo.errType.compare("UBSAN") == 0) {
+        prefix = "ubsan";
     } else {
         prefix = "unknown-crash";
     }
