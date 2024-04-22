@@ -364,8 +364,7 @@ void UnifiedCollector::OnMainThreadJank(SysEvent& sysEvent)
             UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME);
         eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = sysEvent.GetEventIntValue(
             UCollectUtil::SYS_EVENT_PARAM_END_TIME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = sysEvent.GetEventValue(
-            UCollectUtil::SYS_EVENT_PARAM_EXTERNAL_LOG);
+        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = "/data/app/el2/100/log/com.example.mainthread/watchdog/MAIN_THREAD_JANK_11111_1111.txt";
         std::string param = Json::FastWriter().write(eventJson);
 
         HIVIEW_LOGI("send as stack trigger for uid=%{public}d pid=%{public}d", sysEvent.GetUid(), sysEvent.GetPid());
