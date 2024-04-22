@@ -312,8 +312,7 @@ void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
     int ch = -1;
     while ((ch = getopt(argc, argv, "v")) != -1) {
         if (ch == 'v') {
-            HIVIEW_LOGI("hiview version: %s%s%s", VERSION, SEPARATOR_VERSION,
-                            RECORDER_VERSION);
+            HIVIEW_LOGI("hiview version: %s%s%s", VERSION, SEPARATOR_VERSION, RECORDER_VERSION);
             printf("hiview version: %s%s%s\n", VERSION, SEPARATOR_VERSION, RECORDER_VERSION);
             _exit(1);
         }

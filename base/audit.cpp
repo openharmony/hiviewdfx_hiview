@@ -99,7 +99,7 @@ void Audit::Init(bool isBeta)
     useBak_ = IsBackupFileActive();
     std::string path = useBak_ ? AUDIT_LOG_PATH_BAK : AUDIT_LOG_PATH;
     writeFd_ = UniqueFd(FileUtil::Open(path, O_CREAT | O_APPEND | O_RDWR,
-                        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
+        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
     if (writeFd_.Get() < 0) {
         enabled_ = false;
     }

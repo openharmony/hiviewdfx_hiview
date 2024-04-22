@@ -54,7 +54,7 @@ std::string TransNumberVecToStr(const std::vector<T>& nums)
 std::string GetOriginTestString()
 {
     std::string jsonStr = R"~({"domain_":"DEMO","name_":"NAME1","type_":1,"tz_":"+0800","time_":1620271291188,
-        "pid_":6527,"tid_":6527,"traceid_":"f0ed6160bb2df4b","spanid_":"10","pspanid_":"20","trace_flag_":4,)~";
+        "pid_":6527, "tid_":6527, "traceid_":"f0ed6160bb2df4b", "spanid_":"10", "pspanid_":"20", "trace_flag_":4,)~";
     jsonStr.append(R"~("EMPTY_ARRAY":[],"INT_ARRAY1":[)~");
     jsonStr.append(std::to_string(std::numeric_limits<int64_t>::min()));
     jsonStr.append(R"~(,)~");
