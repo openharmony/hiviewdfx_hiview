@@ -1,0 +1,139 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//base/hiviewdfx/hiview/hiview.gni")
+import("//build/ohos.gni")
+
+defines = []
+
+if (enable_performance_monitor) {
+  config("xperf_service_config") {
+    visibility = [ "*:*" ]
+
+    include_dirs = [
+      ".",
+      "common",
+      "config",
+      "context",
+      "event_publisher",
+      "executor",
+      "monitor",
+      "monitor/converter",
+      "monitor/gateway",
+      "monitor/gateway/executor",
+      "monitor/gateway/reporter",
+      "persistence",
+      "reporter",
+      "reporter/adapter",
+      "reporter/event_poster",
+      "reporter/infrastructure",
+      "scene_data_processor",
+      "scene_data_processor/gateway",
+      "timer",
+
+      "$hiview_base/event_raw/include",
+      "$hiview_base/event_publish/include",
+      "$hiview_base/include",
+      "$hiview_base/logstore/include",
+      "$hiview_base/utility/include",
+      "$hiview_root/include",
+      "$hiview_root/interfaces/inner_api/unified_collection",
+      "$hiview_root/interfaces/inner_api/unified_collection/utility",
+      "$hiview_plugin/faultlogger/common",
+      "$hiview_plugin/faultlogger/service",
+    ]
+
+    cflags_cc = [
+      "-DENABLE_SCREEM",
+      "-fexceptions",
+    ]
+  }
+}
+
+ohos_prebuilt_etc("hiviewxperf_event_file") {
+  source = "config/event/XperfPlugin"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  relative_install_dir = "hiview/listener_rule"
+}
+
+ohos_prebuilt_etc("xperfplugins_config") {
+  source = "config/xperf_plugin_config"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  relative_install_dir = "hiview"
+}
+
+ohos_shared_library("xperf") {
+  if (enable_performance_monitor) {
+    part_name = "hiview"
+    subsystem_name = "hiviewdfx"
+
+    sanitize = {
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+
+    sources = [
+      "XperfPlugin.cpp",
+      "context/BaseContext.cpp",
+      "context/NormalContext.cpp",
+      "executor/ThrExecutor.cpp",
+      "executor/ThrTaskContainer.cpp",
+      "monitor/AppLaunchMonitor.cpp",
+      "monitor/DefaultMonitor.cpp",
+      "monitor/JankAnimatorMonitor.cpp",
+      "persistence/AppLaunchSceneDbAdapter.cpp",
+      "reporter/adapter/AppStartReporterAdapter.cpp",
+      "reporter/adapter/JankAnimatorReporterAdapter.cpp",
+      "reporter/adapter/SimpleAppStartReporterAdapter.cpp",
+      "reporter/event_poster/EventsPoster.cpp",
+      "reporter/infrastructure/AppStartReporter.cpp",
+      "reporter/infrastructure/JankAnimatorReporter.cpp",
+      "scene_data_processor/AnimatorSceneDataProcessor.cpp",
+      "scene_data_processor/AppLaunchSceneDataProcessor.cpp",
+      "scene_data_processor/SceneDataMapDbAdapter.cpp",
+      "timer/AppTimerAdapter.cpp",
+      "timer/SceneTimerOhImpl.cpp",
+    ]
+
+    configs = [ ":xperf_service_config" ]
+
+    deps = [
+      ":hiviewxperf_event_file",
+      ":xperfplugins_config",
+      "$hiview_base:hiviewbase",
+      "config:config",
+    ]
+
+    external_deps = [
+      "c_utils:utils",
+      "hilog:libhilog",
+      "hisysevent:libhisysevent",
+      "init:libbegetutil",
+      "ipc:ipc_core",
+      "samgr:samgr_proxy",
+    ]
+  }
+}
+
+group("unittest") {
+  testonly = true
+  deps = []
+}
+
+group("moduletest") {
+  testonly = true
+  deps = []
+}
