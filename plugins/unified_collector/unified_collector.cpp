@@ -349,7 +349,7 @@ bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
 
 void UnifiedCollector::OnMainThreadJank(SysEvent& sysEvent)
 {
-    if (sysEvent.GetEventIntValue(UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL) <
+    if (sysEvent.GetEventIntValue(UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL) <=
         UCollectUtil::SYS_EVENT_JANK_LEVEL_VALUE_TRACE) {
         // hicollie capture stack in application process, only need to share app event to application by hiview
         Json::Value eventJson;
