@@ -120,11 +120,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
         return;
     }
-	if (externalLog.find(SANDBOX_DIR) == 0) {
+    if (externalLog.find(SANDBOX_DIR) == 0) {
         HIVIEW_LOGI("file in sandbox not copy.");
         params[EXTERNAL_LOG].append(externalLog);
         return;
-	}
+    }
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     uint64_t fileSize = FileUtil::GetFileSize(externalLog);
     if (dirSize + fileSize <= MAX_FILE_SIZE) {
