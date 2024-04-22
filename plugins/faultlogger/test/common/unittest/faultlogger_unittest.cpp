@@ -836,8 +836,10 @@ HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::Test
     remove("/data/test_jsError_info");
     auto plugin = GetFaultloggerInstance();
     std::string summaryHasErrorCodeAndSourceCode = R"~(Error name:TypeErrorError message:Obj is not a Valid object
-        Error code:\n    get BLO\nSourceCode:CKSSvalue() {\n        ^\nStacktrace:\n    at anonymous
-        (entry/src/main/ets/pages/index.ets:76:10))~";
+        Error code:\n    get BLO\nSourceCode:CKSSvalue() {\n        ^\nStacktrace:
+        at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+        at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+        at anonymous3(entry/src/main/ets/pages/index.ets:76:10)\n)~";
     ReportJsErrorToAppEventTestCommon(summaryHasErrorCodeAndSourceCode, "summaryHasErrorCodeAndSourceCode", plugin);
     std::string summaryHasSourceCode = R"~(Error name:TypeError\naaaError message:Obj is not a Valid object\nSourceCode:
         CKSSvalue(){\n        ^\nStacktrace:aaaa\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
