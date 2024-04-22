@@ -121,7 +121,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         return;
     }
     if (externalLog.find(SANDBOX_DIR) == 0) {
-        HIVIEW_LOGI("file in sandbox not copy.");
+        HIVIEW_LOGI("File in sandbox path not copy.");
         params[EXTERNAL_LOG].append(externalLog);
         return;
     }
