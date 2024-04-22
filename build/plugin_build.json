@@ -125,7 +125,7 @@
                         "FreezeDetectorPlugin": "freeze_detector",
                         "BBoxDetectorPlugin": "bbox_detector",
                         "FaultDetectorManager": "leak_detector",
-                        "SysEventDispatcher": "sys_dispatcher"
+                        "SysEventDispatcher": "sysevent_store"
                     }
                 }
             }
