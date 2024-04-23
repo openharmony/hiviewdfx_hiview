@@ -30,6 +30,7 @@ DEFINE_LOG_TAG("HiView-EventPublish");
 constexpr int VALUE_MOD = 200000;
 constexpr int DELAY_TIME = 30;
 const std::string PATH_DIR = "/data/log/hiview/system_event_db/events/temp";
+const std::string SANDBOX_DIR = "/data/storage/el2/log";
 const std::string FILE_PREFIX = "/hiappevent_";
 const std::string FILE_SUFFIX = ".evt";
 const std::string DOMAIN_PROPERTY = "domain";
@@ -119,7 +120,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
         return;
     }
-
+    if (externalLog.find(SANDBOX_DIR) == 0) {
+        HIVIEW_LOGI("File in sandbox path not copy.");
+        params[EXTERNAL_LOG].append(externalLog);
+        return;
+    }
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     uint64_t fileSize = FileUtil::GetFileSize(externalLog);
     if (dirSize + fileSize <= MAX_FILE_SIZE) {
