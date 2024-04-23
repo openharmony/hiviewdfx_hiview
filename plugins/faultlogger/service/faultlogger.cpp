@@ -887,7 +887,7 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         syscall(SYS_close, fds[0]);
         int rc = DoGetHilogProcess(pid, fds[1]);
         syscall(SYS_close, fds[1]);
-        exit(rc);
+        _exit(rc);111
     } else {
         syscall(SYS_close, fds[1]);
 

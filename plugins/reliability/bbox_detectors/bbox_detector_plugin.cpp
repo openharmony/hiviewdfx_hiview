@@ -92,6 +92,9 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string LOG_PATH = sysEvent->GetEventValue("LOG_PATH");
     std::string name = sysEvent->GetEventValue("name_");
 
+    if (LOG_PATH.empty()) {
+        return;
+    }
     std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
                                   LOG_PATH : LOG_PATH + '/') + timeStr;
 #ifndef UNITTEST
