@@ -34,7 +34,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 using namespace std;
-REGISTER(BBoxDetectorPlugin)
+REGISTER(BBoxDetectorPlugin);
 DEFINE_LOG_TAG("BBoxDetectorPlugin");
 
 namespace {

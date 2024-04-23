@@ -68,7 +68,7 @@ class Register##ClassName {                                                     
 };                                                                              \
 const PluginRegister Register##ClassName::g_staticPluginRegister(#ClassName,    \
     std::make_shared<PluginRegistInfo>(Register##ClassName::GetObject,          \
-    needCreateProxy, needStartupLoading));
+    needCreateProxy, needStartupLoading))
 
 #define PROXY_ASSERT(ClassName)                                                 \
     class EventSource;                                                          \
@@ -76,14 +76,14 @@ const PluginRegister Register##ClassName::g_staticPluginRegister(#ClassName,    
         "EventSource cannot use Proxy");                                        \
     class EventListener;                                                        \
     static_assert(!(std::is_base_of<EventListener, ClassName>::value),          \
-        "EventListener cannot use Proxy");
+        "EventListener cannot use Proxy")
 
-#define REGISTER(ClassName) REGISTER__(ClassName, false, true);
+#define REGISTER(ClassName) REGISTER__(ClassName, false, true)
 #define REGISTER_PROXY(ClassName)                                               \
-    PROXY_ASSERT(ClassName)                                                     \
+    PROXY_ASSERT(ClassName);                                                    \
     REGISTER__(ClassName, true, false)
 #define REGISTER_PROXY_WITH_LOADED(ClassName)                                   \
-    PROXY_ASSERT(ClassName)                                                     \
+    PROXY_ASSERT(ClassName);                                                    \
     REGISTER__(ClassName, true, true)
 } // namespace HiviewDFX
 } // namespace OHOS
