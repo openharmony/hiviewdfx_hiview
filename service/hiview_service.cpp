@@ -418,10 +418,10 @@ CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t 
     appCallerEvent->bundleVersion_ = appCaller.bundleVersion;
     appCallerEvent->uid_ = appCaller.uid;
     appCallerEvent->pid_ = appCaller.pid;
-    appCallerEvent->happenTime_ = appCaller.happenTime;
+    appCallerEvent->happenTime_ = static_cast<uint64_t>(appCaller.happenTime);
     appCallerEvent->beginTime_ = appCaller.beginTime;
     appCallerEvent->endTime_ = appCaller.endTime;
-    appCallerEvent->taskBeginTime_ = TimeUtil::GetMilliseconds();
+    appCallerEvent->taskBeginTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
 
     std::shared_ptr<Event> mainThreadJankEvent = std::dynamic_pointer_cast<Event>(appCallerEvent);
     if (!plugin->OnEvent(mainThreadJankEvent)) {

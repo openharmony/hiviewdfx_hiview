@@ -215,7 +215,7 @@ bool TraceFlowController::AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEv
     appEventTask.startTime_ = appEvent->taskBeginTime_;
     appEventTask.finishTime_ = appEvent->taskEndTime_;
     appEventTask.resourePath_ = appEvent->externalLog_;
-    appEventTask.resourceSize_ = FileUtil::GetFileSize(appEventTask.resourePath_);
+    appEventTask.resourceSize_ = static_cast<int32_t>(FileUtil::GetFileSize(appEventTask.resourePath_));
     appEventTask.state_ = APP_EVENT_TASK_STATE_FINISH;
     return traceStorage_->StoreAppEventTask(appEventTask);
 }

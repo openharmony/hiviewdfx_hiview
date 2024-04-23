@@ -27,7 +27,7 @@ ProcessCpuData::ProcessCpuData(int magic, int pid, unsigned int count): entry_(n
 
 void ProcessCpuData::Init(int magic, unsigned int totalCount, int pid)
 {
-    int totalSize = sizeof(struct ucollection_process_cpu_entry)
+    unsigned int totalSize = sizeof(struct ucollection_process_cpu_entry)
         + sizeof(struct ucollection_process_cpu_item) * totalCount;
     entry_ = (struct ucollection_process_cpu_entry *)malloc(totalSize);
     if (entry_ == NULL) {

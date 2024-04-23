@@ -31,6 +31,9 @@ constexpr size_t EXPAND_BUF_SIZE = 128;
 RawData::RawData()
 {
     data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
+    if (data_ == nullptr) {
+        return;
+    }
     capacity_ = EXPAND_BUF_SIZE;
     len_ = 0;
 }
@@ -38,6 +41,9 @@ RawData::RawData()
 RawData::RawData(size_t dataLen)
 {
     data_ = new(std::nothrow) uint8_t[dataLen];
+    if (data_ == nullptr) {
+        return;
+    }
     capacity_ = dataLen;
     len_ = 0;
 }
@@ -46,6 +52,9 @@ RawData::RawData(uint8_t* data, size_t dataLen)
 {
     if (data == nullptr || dataLen == 0) {
         data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
+        if (data_ == nullptr) {
+            return;
+        }
         capacity_ = EXPAND_BUF_SIZE;
         len_ = 0;
         return;
@@ -126,6 +135,9 @@ void RawData::Reset()
         data_ = nullptr;
     }
     data_ = new(std::nothrow) uint8_t[EXPAND_BUF_SIZE];
+    if (data_ == nullptr) {
+        return;
+    }
     capacity_ = EXPAND_BUF_SIZE;
     len_ = 0;
 }
