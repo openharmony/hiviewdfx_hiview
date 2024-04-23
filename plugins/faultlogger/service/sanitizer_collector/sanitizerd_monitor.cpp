@@ -97,6 +97,10 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
     const std::string asanLogPath = std::string(ASAN_LOG_PATH);
     gNfds = 1;
     gUfds = reinterpret_cast<pollfd*>(calloc(1, sizeof(gUfds[0])));
+    if (!gUfds) {
+        HIVIEW_LOGI("Memory allocation failed for gUfds.");
+        return 1;
+    }
     gUfds[0].fd = inotify_init();
     if (gUfds[0].fd < 0) {
         HIVIEW_LOGI("inotify_init failed: %{public}d-%{public}s.", gUfds[0].fd, strerror(errno));
