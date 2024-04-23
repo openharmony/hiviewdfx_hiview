@@ -349,7 +349,7 @@ bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
 
 void UnifiedCollector::OnMainThreadJank(SysEvent& sysEvent)
 {
-    if (sysEvent.GetEventIntValue(UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL) <=
+    if (sysEvent.GetEventIntValue(UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL) <
         UCollectUtil::SYS_EVENT_JANK_LEVEL_VALUE_TRACE) {
         // hicollie capture stack in application process, only need to share app event to application by hiview
         Json::Value eventJson;
@@ -364,7 +364,8 @@ void UnifiedCollector::OnMainThreadJank(SysEvent& sysEvent)
             UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME);
         eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = sysEvent.GetEventIntValue(
             UCollectUtil::SYS_EVENT_PARAM_END_TIME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = "/data/storage/el2/log/watchdog/MAIN_THREAD_JANK_11111_1111.txt";
+        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = sysEvent.GetEventValue(
+            UCollectUtil::SYS_EVENT_PARAM_EXTERNAL_LOG);
         std::string param = Json::FastWriter().write(eventJson);
 
         HIVIEW_LOGI("send as stack trigger for uid=%{public}d pid=%{public}d", sysEvent.GetUid(), sysEvent.GetPid());
