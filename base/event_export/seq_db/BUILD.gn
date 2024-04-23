@@ -24,6 +24,7 @@ ohos_source_set("event_export_db_mgr_source") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
 
