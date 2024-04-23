@@ -114,13 +114,13 @@ uint64_t ProcessStatus::GetProcessLastForegroundTime(int32_t pid)
         : INVALID_LAST_FOREGROUND_TIME;
 }
 
-void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState)
+void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState, const std::string& name)
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    UpdateProcessState(pid, procState);
+    UpdateProcessState(pid, procState, name);
 }
 
-void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState)
+void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, const std::string& name)
 {
     HIVIEW_LOGI("update process=%{public}d state=%{public}d", pid, procState);
     switch (procState) {
@@ -131,7 +131,7 @@ void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState)
             UpdateProcessBackgroundState(pid);
             break;
         case CREATED:
-            ClearProcessInfo(pid);
+            UpdateProcessCreatedState(pid, name);
             break;
         case DIED:
             ClearProcessInfo(pid);
@@ -168,6 +168,15 @@ void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
     }
     processInfos_[pid] = {
         .name = CommonUtils::GetProcFullNameByPid(pid),
+        .state = BACKGROUND,
+        .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
+    };
+}
+
+void ProcessStatus::UpdateProcessCreatedState(int32_t pid, const std::string& name)
+{
+    processInfos_[pid] = {
+        .name = name,
         .state = BACKGROUND,
         .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
     };
