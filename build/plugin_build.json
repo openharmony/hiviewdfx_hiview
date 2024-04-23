@@ -122,7 +122,6 @@
                         "SysEventSource": "sysevent_source",
                         "SysEventStore": "sysevent_store",
                         "EventLogger": "event_logger",
-                        "FreezeDetectorPlugin": "freeze_detector",
                         "BBoxDetectorPlugin": "bbox_detector",
                         "FaultDetectorManager": "leak_detector",
                         "SysEventDispatcher": "sys_dispatcher"

@@ -17,6 +17,7 @@
 
 #include <algorithm>
 
+#include "ffrt.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "string_util.h"
@@ -51,12 +52,6 @@ void FreezeDetectorPlugin::OnLoad()
     SetName(FREEZE_DETECTOR_PLUGIN_NAME);
     SetVersion(FREEZE_DETECTOR_PLUGIN_VERSION);
 
-    threadLoop_ = GetWorkLoop();
-    if (threadLoop_ == nullptr) {
-        HIVIEW_LOGW("thread loop is null.");
-        return;
-    }
-    threadLoop_->StartLoop(false);
     freezeCommon_ = std::make_shared<FreezeCommon>();
     bool ret = freezeCommon_->Init();
     if (!ret) {
@@ -171,7 +166,6 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
 
     HIVIEW_LOGD("received event domain=%{public}s, stringid=%{public}s",
         event.domain_.c_str(), event.eventName_.c_str());
-    HIVIEW_LOGD("threadLoop_->IsRunning() = %{public}d", threadLoop_->IsRunning());
     this->AddUseCount();
     // dispatcher context, send task to our thread
     WatchPoint watchPoint = MakeWatchPoint(event);
@@ -198,7 +192,10 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
         }
     }
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
-    threadLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
+    ffrt::submit([delayTime, task]() {
+        ffrt::this_task::sleep_for(std::chrono::seconds(delayTime));
+        task();
+        }, {}, {}, ffrt::task_attr().name("FreezeDetector").qos(ffrt::qos_default));
 }
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)

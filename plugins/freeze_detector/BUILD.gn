@@ -43,6 +43,7 @@ ohos_source_set("freeze_detector") {
 
   external_deps = [
     "display_manager:displaymgr",
+    "ffrt:libffrt",
     "hilog:libhilog",
     "power_manager:powermgr_client",
   ]
