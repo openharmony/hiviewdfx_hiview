@@ -96,9 +96,9 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
 {
     const std::string asanLogPath = std::string(ASAN_LOG_PATH);
     gNfds = 1;
-    auto ca = calloc(1, sizeof(gUfds[0]));
-    if (!ca) {
-        HIVIEW_LOGI("Memory allocation failed for gUfds.");
+    void *error = calloc(1, sizeof(gUfds[0]));
+    if (!error) {
+        HIVIEW_LOGI("Memory allocation failed.");
         return 1;
     }
     gUfds = reinterpret_cast<pollfd *>(ca);
