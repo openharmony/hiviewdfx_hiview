@@ -27,6 +27,7 @@ ohos_source_set("sys_event_service_ohos") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
   part_name = "hiview"
