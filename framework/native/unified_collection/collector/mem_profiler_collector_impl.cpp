@@ -92,7 +92,7 @@ int MemProfilerCollectorImpl::Stop(int pid)
     return NativeMemoryProfilerSaClientManager::Stop(pid);
 }
 
-int MemProfilerCollectorImpl::Stop(std::string processName)
+int MemProfilerCollectorImpl::Stop(const std::string& processName)
 {
     HIVIEW_LOGI("mem_profiler_collector stoping");
     return NativeMemoryProfilerSaClientManager::Stop(processName);

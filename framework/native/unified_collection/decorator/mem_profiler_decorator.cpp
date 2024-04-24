@@ -45,10 +45,10 @@ int MemProfilerDecorator::Stop(int pid)
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1");
 }
 
-int MemProfilerDecorator::Stop(std::string processName)
+int MemProfilerDecorator::Stop(const std::string& processName)
 {
     auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(std::string)>(&MemProfilerCollector::Stop),
+        static_cast<int(MemProfilerCollector::*)(const std::string&)>(&MemProfilerCollector::Stop),
         memProfilerCollector_.get(), processName);
     // has same func name, rename it with num "-1"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
