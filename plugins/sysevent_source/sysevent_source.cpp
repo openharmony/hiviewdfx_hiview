@@ -20,6 +20,7 @@
 
 #include "decoded/decoded_event.h"
 #include "defines.h"
+#include "event_export_engine.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
@@ -53,12 +54,14 @@ void SysEventSource::OnLoad()
     platformMonitor_.StartMonitor(looper);
     sysEventParser_ = HiviewPlatform::GetInstance().GetEventJsonParser();
     sysEventStat_ = std::make_unique<SysEventStat>();
+    EventExportEngine::GetInstance().Start();
 }
 
 void SysEventSource::OnUnload()
 {
     eventServer_.Stop();
     HIVIEW_LOGI("SysEventSource unload");
+    EventExportEngine::GetInstance().Stop();
 }
 
 void SysEventSource::StartEventSource()

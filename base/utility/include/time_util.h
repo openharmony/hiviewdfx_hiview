@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <iomanip>
 #include <memory>
 #include <string>
 
@@ -59,6 +60,10 @@ int64_t Get0ClockStampMs();
 uint64_t GetSteadyClockTimeMs();
 uint64_t GetBootTimeMs();
 std::string FormatTime(const int64_t timestamp, const std::string &format);
+
+// time format as YYYYmmddHHMMSSxxx
+// eg. 202404222319765
+std::string GetFormattedTimestampEndWithMilli();
 } // namespace TimeUtil
 } // namespace HiviewDFX
 } // namespace OHOS

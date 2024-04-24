@@ -17,10 +17,14 @@
 
 #include "parameter.h"
 #include "parameters.h"
+#include "sysversion.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace Parameter {
+namespace {
+constexpr char DEFAULT_DES[] = "unknown";
+}
 std::string GetString(const std::string& key, const std::string& defaultValue)
 {
     return OHOS::system::GetParameter(key, defaultValue);
@@ -85,9 +89,15 @@ bool IsTraceCollectionSwitchOn()
     return traceCollectionState == "true";
 }
 
+std::string GetDeviceTypeStr()
+{
+    static std::string deviceType = GetString(KEY_BUILD_CHARACTER, "unknown");
+    return deviceType;
+}
+
 DeviceType GetDeviceType()
 {
-    std::string deviceType = GetString(KEY_BUILD_CHARACTER, "unknown");
+    auto deviceType = GetDeviceTypeStr();
     if (deviceType == "phone" || deviceType == "default") {
         return DeviceType::PHONE;
     } else if (deviceType == "watch") {
@@ -99,6 +109,66 @@ DeviceType GetDeviceType()
     } else {
         return DeviceType::UNKNOWN;
     }
+}
+
+std::string GetBrandStr()
+{
+    static std::string brandStr = std::string(GetBrand());
+    return brandStr;
+}
+
+std::string GetManufactureStr()
+{
+    static std::string manufactureStr = std::string(GetManufacture());
+    return manufactureStr;
+}
+
+std::string GetMarketNameStr()
+{
+    static std::string marketNameStr = std::string(GetMarketName());
+    return marketNameStr;
+}
+
+std::string GetDeviceModelStr()
+{
+    std::string displayedVersionStr = std::string(GetDisplayVersion());
+    auto pos = displayedVersionStr.find(' ');
+    if (pos == displayedVersionStr.npos) {
+        return DEFAULT_DES;
+    }
+    return displayedVersionStr.substr(0, pos);
+}
+
+std::string GetSysVersionStr()
+{
+    std::string displayedVersionStr = Parameter::GetDisplayVersionStr();
+    auto pos = displayedVersionStr.find(' ');
+    if (pos == displayedVersionStr.npos) {
+        return displayedVersionStr;
+    }
+    return displayedVersionStr.substr(pos + 1, displayedVersionStr.size());
+}
+
+std::string GetDistributionOsVersionStr()
+{
+    static std::string osVersion = std::string(GetDistributionOSVersion());
+    return osVersion;
+}
+
+std::string GetProductModelStr()
+{
+    static std::string productModelStr = std::string(GetProductModel());
+    return productModelStr;
+}
+
+std::string GetSysVersionDetailsStr()
+{
+    std::string sysVersionDetails = std::to_string(GetMajorVersion());
+    sysVersionDetails += ".";
+    sysVersionDetails += std::to_string(GetSeniorVersion());
+    sysVersionDetails += ".";
+    sysVersionDetails += std::to_string(GetFeatureVersion());
+    return sysVersionDetails;
 }
 } // namespace Parameter
 } // namespace HiviewDFX

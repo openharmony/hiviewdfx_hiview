@@ -42,7 +42,7 @@ ohos_unittest("EventExportConfigTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_export/config:event_export_config_source",
+    "$hiview_base/event_export:event_export_engine",
     "$hiview_core:hiview_core",
     "//third_party/cJSON:cjson",
     "//third_party/googletest:gmock",
@@ -71,7 +71,7 @@ ohos_unittest("EventExportDbMgrTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
+    "$hiview_base/event_export:event_export_engine",
     "$hiview_core:hiview_core",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
@@ -100,9 +100,7 @@ ohos_unittest("EventExportMgrTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_export:event_export_mgr_source",
-    "$hiview_base/event_export/config:event_export_config_source",
-    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
+    "$hiview_base/event_export:event_export_engine",
     "$hiview_core:hiview_core",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",

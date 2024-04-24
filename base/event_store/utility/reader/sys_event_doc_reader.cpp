@@ -346,7 +346,7 @@ void SysEventDocReader::TryToAddEntry(uint8_t* content, uint32_t contentSize, co
     }
     // add to entry queue
     num++;
-    entries.emplace(info_.seq, info_.timestamp, rawData);
+    entries.emplace(info_.seq, info_.timestamp, rawData, sysVersion_);
 }
 
 bool SysEventDocReader::CheckEventInfo(uint8_t* content)

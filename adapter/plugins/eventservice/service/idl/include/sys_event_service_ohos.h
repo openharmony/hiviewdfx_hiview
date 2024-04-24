@@ -87,6 +87,7 @@ public:
     int32_t RemoveSubscriber() override;
     int64_t Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules) override;
     void SetWorkLoop(std::shared_ptr<EventLoop> looper);
+    int64_t GetCurrentEventSeq();
 
 private:
     bool HasAccessPermission() const;

@@ -30,6 +30,7 @@ public:
     static void UpdateEventSeq(int64_t seq);
     static void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     static void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
+    static int64_t GetCurrentEventSeq();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

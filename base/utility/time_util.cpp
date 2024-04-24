@@ -18,10 +18,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <chrono>
+#include <sstream>
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace TimeUtil {
+namespace {
+constexpr int8_t MILLISECONDS_LENGTH = 3;
+}
 time_t StrToTimeStamp(const std::string& tmStr, const std::string& format)
 {
     std::string stTime = tmStr;
@@ -147,6 +151,18 @@ uint64_t GetBootTimeMs()
         return static_cast<uint64_t>(ts.tv_sec * SEC_TO_MILLISEC + ts.tv_nsec / MILLISEC_TO_NANOSEC);
     }
     return 0;
+}
+
+std::string GetFormattedTimestampEndWithMilli()
+{
+    auto milliSeconds = GetMilliseconds();
+    auto seconds = milliSeconds / SEC_TO_MILLISEC;
+    std::string formattedTimeStamp = TimestampFormatToDate(seconds, "%Y%m%d%H%M%S");
+    std::stringstream ss;
+    ss << formattedTimeStamp;
+    milliSeconds = milliSeconds % SEC_TO_MILLISEC;
+    ss << std::setfill('0') << std::setw(MILLISECONDS_LENGTH) << milliSeconds;
+    return ss.str();
 }
 } // namespace TimeUtil
 } // namespace HiviewDFX

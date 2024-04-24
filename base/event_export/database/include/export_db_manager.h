@@ -34,8 +34,7 @@ public:
 public:
     int64_t GetExportBeginningSeq(const std::string& moduleName);
     void HandleExportModuleInit(const std::string& moduleName, int64_t curSeq);
-    void HandleExportSwitchOn(const std::string& moduleName, int64_t curSeq);
-    void HandleExportSwitchOff(const std::string& moduleName);
+    void HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq);
     void HandleExportTaskFinished(const std::string& moduleName, int64_t eventSeq);
 
 private:

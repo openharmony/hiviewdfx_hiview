@@ -45,7 +45,13 @@ struct Entry {
     /* Event data */
     std::shared_ptr<EventRaw::RawData> data = nullptr;
 
-    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data) : id(id), ts(ts), data(data) {}
+    std::string sysVersion;
+
+    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data)
+        : id(id), ts(ts), data(data), sysVersion("") {}
+
+    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data, std::string& sysVersion)
+        : id(id), ts(ts), data(data), sysVersion(sysVersion) {}
 };
 using CompareFunc = bool(*)(const Entry&, const Entry&);
 using EntryQueue = std::priority_queue<Entry, std::vector<Entry>, CompareFunc>;
@@ -297,6 +303,7 @@ private:
     std::pair<std::string, bool> orderCol_;
     Cond cond_;
     SysEventQueryArg queryArg_;
+    std::string version_;
 }; // SysEventQuery
 } // EventStore
 } // namespace HiviewDFX

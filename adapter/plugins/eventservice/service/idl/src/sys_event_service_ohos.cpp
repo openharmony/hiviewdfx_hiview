@@ -579,5 +579,9 @@ void SysEventServiceOhos::SetWorkLoop(std::shared_ptr<EventLoop> looper)
     dataPublisher_->SetWorkLoop(looper);
 }
 
+int64_t SysEventServiceOhos::GetCurrentEventSeq()
+{
+    return curSeq.load(std::memory_order_acquire);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
