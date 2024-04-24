@@ -30,6 +30,7 @@ public:
     int Start(ProfilerType type, int pid, int duration, int sampleInterval) override;
     int StartPrintNmd(int fd, int pid, int type) override;
     int Stop(int pid) override;
+    int Stop(std::string processName) override;
     int Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval) override;
     int Start(int fd, ProfilerType type, std::string processName, int duration, int sampleInterval,
               bool startup = false) override;
