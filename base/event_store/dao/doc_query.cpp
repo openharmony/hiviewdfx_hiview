@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2023 Huawei Device Co., Ltd.
+* Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -17,14 +17,13 @@
 #include <unordered_set>
 
 #include "decoded/decoded_event.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event_query.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-DocQuery");
-using EventRaw::DecodedEvent;
 
 void DocQuery::And(const Cond& cond)
 {
@@ -104,8 +103,12 @@ bool DocQuery::IsContainInnerConds(uint8_t* content) const
     });
 }
 
-bool DocQuery::IsContainExtraConds(EventRaw::DecodedEvent& decodedEvent) const
+bool DocQuery::IsContainExtraConds(uint8_t* content) const
 {
+    if (extraConds_.empty()) {
+        return true;
+    }
+    EventRaw::DecodedEvent decodedEvent(content);
     return std::all_of(extraConds_.begin(), extraConds_.end(), [this, &decodedEvent] (auto& cond) {
         const auto& extraParams = decodedEvent.GetAllCustomizedValues();
         for (auto& param : extraParams) {

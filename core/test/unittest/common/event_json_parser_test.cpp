@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,6 @@
 #include <iostream>
 
 #include "event_json_parser.h"
-#include "flat_json_parser.h"
 #include "hiview_platform.h"
 
 namespace OHOS {
@@ -54,12 +53,12 @@ HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Lev
 
     std::shared_ptr<SysEvent> sysEvent = nullptr;
     ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"type_\":4,\
-        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"type_\":4,\
+        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
     sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, invalidJsonStr);
     ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\",\"name_\":\"PLUGIN_LOAD\",\"type_\":4,\
-        \"PARAM_A\":\"param a\",\"PARAM_B\":\"param b\"}";
+    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"name_\":\"PLUGIN_LOAD\", \"type_\":4,\
+        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
     sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, jsonStr);
 
     ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));
@@ -71,10 +70,6 @@ HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Lev
     ASSERT_FALSE(filter.IsDuplicateEvent(0));
     ASSERT_FALSE(filter.IsDuplicateEvent(1));
     ASSERT_TRUE(filter.IsDuplicateEvent(1));
-
-    FlatJsonParser parser("{\"level\":[abc]}");
-    std::cout << "FlatJsonParser:" << parser.Print() << std::endl;
-    ASSERT_TRUE(parser.Print() == "{\"level\":[abc]}");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

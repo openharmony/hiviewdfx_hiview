@@ -20,7 +20,7 @@
 
 #include "decoded/decoded_event.h"
 #include "defines.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
 #include "sys_event.h"
@@ -33,23 +33,15 @@ namespace HiviewDFX {
 REGISTER(SysEventSource);
 DEFINE_LOG_TAG("HiView-SysEventSource");
 
-std::shared_ptr<PipelineEvent> SysEventParser::Parser(std::shared_ptr<EventRaw::RawData> rawData) const
-{
-    if (rawData == nullptr) {
-        HIVIEW_LOGI("raw data of sys event is null");
-        return nullptr;
-    }
-    return std::make_shared<SysEvent>("SysEventSource", pipeProducer, rawData);
-}
-
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
 {
-    SysEventParser sysEventParser(static_cast<PipelineEventProducer *>(&eventSource));
-    std::shared_ptr<PipelineEvent> event = sysEventParser.Parser(rawData);
-    if (event != nullptr) {
-        event->realtime_ += TimeUtil::GenerateTimestamp() - event->createTime_;
+    if (rawData == nullptr || rawData->GetData() == nullptr) {
+        HIVIEW_LOGW("raw data of sys event is null");
+        return;
     }
-    if (eventSource.CheckValidSysEvent(event)) {
+    std::shared_ptr<PipelineEvent> event = std::make_shared<SysEvent>("SysEventSource",
+        static_cast<PipelineEventProducer*>(&eventSource), rawData);
+    if (eventSource.CheckEvent(event)) {
         eventSource.PublishPipelineEvent(event);
     }
 }
@@ -65,7 +57,7 @@ void SysEventSource::OnLoad()
 
 void SysEventSource::OnUnload()
 {
-    eventServer.Stop();
+    eventServer_.Stop();
     HIVIEW_LOGI("SysEventSource unload");
 }
 
@@ -73,8 +65,8 @@ void SysEventSource::StartEventSource()
 {
     HIVIEW_LOGI("SysEventSource start");
     std::shared_ptr<EventReceiver> sysEventReceiver = std::make_shared<SysEventReceiver>(*this);
-    eventServer.AddReceiver(sysEventReceiver);
-    eventServer.Start();
+    eventServer_.AddReceiver(sysEventReceiver);
+    eventServer_.Start();
 }
 
 void SysEventSource::Recycle(PipelineEvent *event)
@@ -109,7 +101,7 @@ bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
     return true;
 }
 
-bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
+bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
 {
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent == nullptr || sysEventParser_ == nullptr) {
@@ -124,9 +116,6 @@ bool SysEventSource::CheckValidSysEvent(std::shared_ptr<Event> event)
     }
     HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
         sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), sysEvent->GetEventSeq());
-    sysEvent->SetTag(sysEventParser_->GetTagByDomainAndName(sysEvent->domain_, sysEvent->eventName_));
-    sysEvent->eventType_ = sysEventParser_->GetTypeByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
-    sysEvent->preserve_ = sysEventParser_->GetPreserveByDomainAndName(sysEvent->domain_, sysEvent->eventName_);
     sysEventStat_->AccumulateEvent();
     return true;
 }
@@ -141,11 +130,7 @@ std::shared_ptr<SysEvent> SysEventSource::Convert2SysEvent(std::shared_ptr<Event
         HIVIEW_LOGE("receive out of sys event type");
         return nullptr;
     }
-    std::shared_ptr<SysEvent> sysEvent = Event::DownCastTo<SysEvent>(event);
-    if (sysEvent == nullptr) {
-        HIVIEW_LOGE("sysevent is null");
-    }
-    return sysEvent;
+    return Event::DownCastTo<SysEvent>(event);
 }
 
 static void ShowUsage(int fd, const std::vector<std::string>& cmds)

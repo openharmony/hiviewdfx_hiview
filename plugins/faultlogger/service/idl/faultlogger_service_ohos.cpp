@@ -23,7 +23,7 @@
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 #include "faultlog_info.h"
 #include "faultlog_info_ohos.h"
@@ -118,6 +118,7 @@ void FaultloggerServiceOhos::AddFaultLog(const FaultLogInfoOhos& info)
     outInfo.time = info.time;
     outInfo.id = info.uid;
     outInfo.pid = info.pid;
+    outInfo.pipeFd = info.pipeFd;
     outInfo.faultLogType = info.faultLogType;
     outInfo.fd = (info.fd > 0) ? dup(info.fd) : -1;
     outInfo.module = info.module;

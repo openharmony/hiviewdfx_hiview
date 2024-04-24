@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,10 +28,6 @@ namespace EventRaw {
 constexpr unsigned int MAX_DOMAIN_LENGTH = 16;
 constexpr unsigned int MAX_EVENT_NAME_LENGTH = 32;
 constexpr unsigned int MAX_ARRAY_SIZE = 100;
-enum EVENT_DATA_FORMATE_VERSION {
-    VERSION1 = 0x1,
-    DEFAULT_DATA_VERSION = 0x2
-};
 
 constexpr char BASE_INFO_KEY_DOMAIN[] = "domain_";
 constexpr char BASE_INFO_KEY_NAME[] = "name_";
@@ -193,6 +189,10 @@ enum EncodeType: int8_t {
     // Reserved
     INVALID = 4,
 };
+
+constexpr uint32_t POS_OF_ID_IN_HEADER = sizeof(HiSysEventHeader::domain) + sizeof(HiSysEventHeader::name)
+    + sizeof(HiSysEventHeader::timestamp) + sizeof(HiSysEventHeader::timeZone) + sizeof(HiSysEventHeader::uid)
+    + sizeof(HiSysEventHeader::pid) + sizeof(HiSysEventHeader::tid);
 
 int ParseTimeZone(const std::string& tzStr);
 std::string ParseTimeZone(const uint8_t tzVal);

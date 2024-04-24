@@ -109,6 +109,8 @@ public:
     TraceDecorator(std::shared_ptr<TraceCollector> collector) : traceCollector_(collector) {};
     virtual ~TraceDecorator() = default;
     virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(TraceCollector::Caller &caller,
+        uint32_t timeLimit) override;
     virtual CollectResult<int32_t> TraceOn() override;
     virtual CollectResult<std::vector<std::string>> TraceOff() override;
     static void SaveStatSpecialInfo();

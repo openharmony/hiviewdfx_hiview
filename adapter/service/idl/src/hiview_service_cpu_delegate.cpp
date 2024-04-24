@@ -15,13 +15,13 @@
 
 #include "hiview_service_cpu_delegate.h"
 #include "hiview_service_ability_proxy.h"
-#include "hiview_service_agent.h"
+#include "hiview_remote_service.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 CollectResult<double> HiViewServiceCpuDelegate::GetSysCpuUsage()
 {
-    auto service = HiviewServiceAgent::GetInstance().GetRemoteService();
+    auto service = RemoteService::GetHiViewRemoteService();
     if (!service) {
         CollectResult<double> ret;
         return ret;

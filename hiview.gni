@@ -70,4 +70,8 @@ declare_args() {
       !defined(global_parts_info.communication_wifi)) {
     is_wifi_enable = false
   }
+
+  enable_leak_detector = false
+
+  hiview_unified_collector_PC_app_state_collect_enable = false
 }

@@ -18,14 +18,20 @@
 
 #include <string>
 
-#include "i_content_reader.h"
+#include "content_reader.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class ContentReaderVersion1 : public IContentReader {
+#define MAGIC_NUM_VERSION1 0x894556454E541a0a
+class ContentReaderVersion1 : public ContentReader {
 public:
-    int GetContentHead(uint8_t* content, EventStore::ContentHeader& head) override;
-    size_t GetHeaderSize() override;
+    int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header, uint64_t& docHeaderSize,
+        std::string& sysVersion) override;
+    bool IsValidMagicNum(const uint64_t magicNum) override;
+
+protected:
+    int GetContentHeader(uint8_t* content, EventStore::ContentHeader& header) override;
+    size_t GetContentHeaderSize() override;
 };
 } // HiviewDFX
 } // OHOS

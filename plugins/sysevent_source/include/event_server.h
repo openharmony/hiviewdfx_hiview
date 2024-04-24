@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ public:
     uint32_t GetEvents() override;
     std::string GetName() override;
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
+    bool IsValidMsg(char* msg, int32_t len) override;
 private:
     void InitSocket(int &socketId);
     int socketId_ = -1;
@@ -49,6 +50,7 @@ public:
     uint32_t GetEvents() override;
     std::string GetName() override;
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
+    bool IsValidMsg(char* msg, int32_t len) override;
 private:
     int fd_ = -1;
     bool hasBbox_ = false;

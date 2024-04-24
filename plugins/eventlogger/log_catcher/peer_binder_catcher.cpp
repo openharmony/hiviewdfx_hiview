@@ -28,7 +28,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "log_catcher_utils.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "string_util.h"
 #include "freeze_json_util.h"
@@ -121,7 +121,12 @@ void PeerBinderCatcher::AddBinderJsonInfo(std::list<OutputBinderInfo> outputBind
         if (processNameMap[pid] != "") {
             continue;
         }
-        std::ifstream cmdLineFile("/proc/" + std::to_string(pid) + "/cmdline");
+        std::string filePath = "/proc/" + std::to_string(pid) + "/cmdline";
+        std::string realPath;
+        if (!FileUtil::PathToRealPath(filePath, realPath)) {
+            continue;
+        }
+        std::ifstream cmdLineFile(realPath);
         std::string processName;
         if (cmdLineFile) {
             std::getline(cmdLineFile, processName);

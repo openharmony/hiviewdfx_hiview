@@ -21,10 +21,8 @@ namespace OHOS {
 namespace HiviewDFX {
 class BundleEventSourceExampleEvent : public PipelineEvent {
 public:
-    BundleEventSourceExampleEvent(const std::string& sender, PipelineEventProducer* handler):
-        PipelineEvent(sender, handler),
-        data_(nullptr),
-        addon_("") {};
+    BundleEventSourceExampleEvent(const std::string& sender, PipelineEventProducer* handler)
+        : PipelineEvent(sender, handler), data_(nullptr), addon_("") {};
 
     BundleEventSourceExampleEvent(const BundleEventSourceExampleEvent& obj) : PipelineEvent(obj)
     {

@@ -24,6 +24,16 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
+struct AppCaller {
+    std::string bundleName;    // app bundle name
+    std::string bundleVersion; // app bundle version
+    int32_t uid;               // app user id
+    int32_t pid;               // app process id
+    int64_t happenTime;  // jank happend time, millisecond unit
+    int64_t beginTime;   // message handle begin time, millisecond unit
+    int64_t endTime;     // message handle end time, millisecond unit
+};
+
 class TraceCollector {
 public:
     TraceCollector() = default;
@@ -45,6 +55,8 @@ public:
     virtual CollectResult<std::vector<std::string>> RecordingOff() = 0;
     virtual CollectResult<int32_t> Close() = 0;
     virtual CollectResult<int32_t> Recover() = 0;
+    // use for hap main looper
+    virtual CollectResult<int32_t> CaptureDurationTrace(AppCaller &appCaller) = 0;
 
     static std::shared_ptr<TraceCollector> Create();
 }; // TraceCollector

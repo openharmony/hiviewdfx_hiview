@@ -19,48 +19,92 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 const std::string CPU_COLLECTOR_NAME = "CpuCollector";
+const std::string THREAD_CPU_COLLECTOR_NAME = "ThreadCpuCollector";
 StatInfoWrapper CpuDecorator::statInfoWrapper_;
 
 CollectResult<SysCpuLoad> CpuDecorator::CollectSysCpuLoad()
 {
+    CollectResult<SysCpuLoad> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::CollectSysCpuLoad, cpuCollector_.get());
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
-CollectResult<SysCpuUsage>  CpuDecorator::CollectSysCpuUsage(bool isNeedUpdate)
+CollectResult<SysCpuUsage> CpuDecorator::CollectSysCpuUsage(bool isNeedUpdate)
 {
+    CollectResult<SysCpuUsage> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::CollectSysCpuUsage, cpuCollector_.get(), isNeedUpdate);
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<double> CpuDecorator::GetSysCpuUsage()
 {
+    CollectResult<double> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::GetSysCpuUsage, cpuCollector_.get());
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<ProcessCpuStatInfo> CpuDecorator::CollectProcessCpuStatInfo(int32_t pid, bool isNeedUpdate)
 {
+    CollectResult<ProcessCpuStatInfo> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfo, cpuCollector_.get(), pid, isNeedUpdate);
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<CpuFreq>> CpuDecorator::CollectCpuFrequency()
 {
+    CollectResult<std::vector<CpuFreq>> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::CollectCpuFrequency, cpuCollector_.get());
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<ProcessCpuStatInfo>> CpuDecorator::CollectProcessCpuStatInfos(bool isNeedUpdate)
 {
+    CollectResult<std::vector<ProcessCpuStatInfo>> result;
+    if (cpuCollector_ == nullptr) {
+        return result;
+    }
     auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfos, cpuCollector_.get(), isNeedUpdate);
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
-std::shared_ptr<ThreadCollector> CpuDecorator::CreateThreadCollector(int pid)
+std::shared_ptr<ThreadCpuCollector> CpuDecorator::CreateThreadCollector(int pid)
 {
     return cpuCollector_->CreateThreadCollector(pid);
 }
+
+CollectResult<std::vector<ThreadCpuStatInfo>> CpuDecorator::CollectThreadStatInfos(bool isNeedUpdate)
+{
+    CollectResult<std::vector<ThreadCpuStatInfo>> result;
+    if (threadCpuCollector_ == nullptr) {
+        return result;
+    }
+    auto task = std::bind(&ThreadCpuCollector::CollectThreadStatInfos, threadCpuCollector_.get(), isNeedUpdate);
+    return Invoke(task, statInfoWrapper_, THREAD_CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+int CpuDecorator::GetCollectPid()
+{
+    if (threadCpuCollector_ == nullptr) {
+        return -1;
+    }
+    return threadCpuCollector_->GetCollectPid();
+}
+
 
 void CpuDecorator::SaveStatCommonInfo()
 {

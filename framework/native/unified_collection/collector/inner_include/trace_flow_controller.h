@@ -21,6 +21,7 @@
 #include "hitrace_dump.h"
 #include "trace_collector.h"
 #include "trace_storage.h"
+#include "app_caller_event.h"
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::Hitrace::TraceRetInfo;
@@ -37,6 +38,28 @@ public:
     bool NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret);
     void StoreDb();
 
+    /**
+     * @brief app whether report jank event trace today
+     *
+     * @param uid app user id
+     * @param happenTime main thread jank happen time, millisecond
+     * @return true: has report trace event today; false: has not report trace event today
+     */
+    bool HasCallOnceToday(int32_t uid, uint64_t happenTime);
+
+    /**
+     * @brief save who capture trace
+     *
+     * @param appEvent app caller
+     * @return true: save success; false: save fail
+     */
+    bool AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent);
+
+    /**
+     * @brief clean which remain in share create by app
+     *
+     */
+    void CleanAppTrace();
 private:
     void InitTraceDb();
     void InitTraceStorage();

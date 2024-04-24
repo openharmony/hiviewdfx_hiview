@@ -15,10 +15,11 @@
 
 #include "trace_collector_impl.h"
 
+#include <climits>
 #include <memory>
 #include <mutex>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "trace_decorator.h"
 #include "trace_flow_controller.h"
@@ -37,6 +38,7 @@ namespace UCollectUtil {
 namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_dumpTraceMutex;
+constexpr int32_t FULL_TRACE_DURATION = -1;
 }
 
 std::shared_ptr<TraceCollector> TraceCollector::Create()
@@ -44,7 +46,22 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
     return std::make_shared<TraceDecorator>(std::make_shared<TraceCollectorImpl>());
 }
 
+CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuration(
+    TraceCollector::Caller &caller, uint32_t timeLimit)
+{
+    if (timeLimit > INT32_MAX) {
+        return StartDumpTrace(caller, INT32_MAX);
+    }
+    return StartDumpTrace(caller, static_cast<int32_t>(timeLimit));
+}
+
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
+{
+    return StartDumpTrace(caller, FULL_TRACE_DURATION);
+}
+
+CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(TraceCollector::Caller &caller,
+    int32_t timeLimit)
 {
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
     CollectResult<std::vector<std::string>> result;
@@ -62,7 +79,12 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceColle
         return result;
     }
 
-    TraceRetInfo traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace();
+    TraceRetInfo traceRetInfo;
+    if (timeLimit == FULL_TRACE_DURATION) {
+        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace();
+    } else {
+        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(timeLimit);
+    }
     // check 2, judge whether to upload or not
     if (!controlPolicy->NeedUpload(caller, traceRetInfo)) {
         result.retCode = UcError::TRACE_OVER_FLOW;

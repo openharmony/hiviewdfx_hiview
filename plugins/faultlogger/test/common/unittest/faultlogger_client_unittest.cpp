@@ -124,6 +124,19 @@ HWTEST_F(FaultloggerClientUnittest, QuerySelfFaultLogTest001, testing::ext::Test
      */
     const int maxQueryCount = 10;
     int32_t currentCount = 0;
+    auto now = time(nullptr);
+    std::vector<int32_t> timeStamps;
+    auto task = [](int32_t now) {
+        printf("AddFaultLog %d\n", now);
+        auto info = CreateFaultLogInfo(now, getuid(), FaultLogType::NO_SPECIFIC, "faultlogtest1");
+        AddFaultLog(info);
+    };
+    for (int32_t i = 0; i < maxQueryCount; i++) {
+        now = now + 1;
+        timeStamps.push_back(now);
+        task(now);
+        sleep(1);
+    }
     auto result = QuerySelfFaultLog(FaultLogType::NO_SPECIFIC, maxQueryCount);
     if (result != nullptr) {
         while (result->HasNext()) {

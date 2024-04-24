@@ -16,7 +16,7 @@
 #include "sys_event_service_stub.h"
 
 #include "errors.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_util.h"
 #include "parcelable_vector_rw.h"
 #include "query_argument.h"

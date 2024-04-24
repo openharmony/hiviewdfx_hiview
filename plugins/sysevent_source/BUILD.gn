@@ -55,6 +55,7 @@ ohos_source_set("sysevent_source") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "init:libbegetutil",
   ]

@@ -25,7 +25,7 @@
 #include "event.h"
 #include "event_loop.h"
 #include "log_store_ex.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin.h"
 #include "sys_event.h"
 

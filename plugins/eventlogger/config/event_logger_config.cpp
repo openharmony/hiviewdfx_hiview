@@ -17,7 +17,8 @@
 #include <chrono>
 #include <regex>
 
-#include "logger.h"
+#include "hiview_logger.h"
+#include "file_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -43,7 +44,12 @@ EventLoggerConfig::EventLoggerConfig(std::string configPath)
 
 bool EventLoggerConfig::OpenConfig()
 {
-    in_.open(configPath_);
+    std::string realPath;
+    if (!FileUtil::PathToRealPath(configPath_, realPath)) {
+        HIVIEW_LOGI("fail to realPath.");
+        return false;
+    }
+    in_.open(realPath);
     if (!in_.is_open()) {
         HIVIEW_LOGW("fail to open config file.\n");
         return false;

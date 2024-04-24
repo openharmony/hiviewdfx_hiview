@@ -19,7 +19,7 @@
 #include <ctime>
 #include <fstream>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "perf_decorator.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
@@ -86,6 +86,11 @@ void PerfCollectorImpl::SetSelectEvents(const std::vector<std::string> &selectEv
 void PerfCollectorImpl::SetCpuPercent(int cpuPercent)
 {
     opt_.SetCpuPercent(cpuPercent);
+}
+
+void PerfCollectorImpl::SetReport(bool enable)
+{
+    opt_.SetReport(enable);
 }
 
 void PerfCollectorImpl::IncreaseUseCount()

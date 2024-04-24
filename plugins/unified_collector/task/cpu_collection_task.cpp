@@ -14,6 +14,8 @@
  */
 #include "cpu_collection_task.h"
 
+#include <unistd.h>
+
 #include "parameter_ex.h"
 
 namespace OHOS {
@@ -21,7 +23,9 @@ namespace HiviewDFX {
 CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(workPath)
 {
     InitCpuCollector();
-    InitCpuStorage();
+    if (Parameter::IsBetaVersion()) {
+        InitCpuStorage();
+    }
 #ifdef HAS_HIPERF
     InitCpuPerfDump();
 #endif
@@ -38,6 +42,7 @@ void CpuCollectionTask::Collect()
 void CpuCollectionTask::InitCpuCollector()
 {
     cpuCollector_ = UCollectUtil::CpuCollector::Create();
+    threadCpuCollector_ = cpuCollector_->CreateThreadCollector(getprocpid());
 }
 
 void CpuCollectionTask::InitCpuStorage()
@@ -62,13 +67,17 @@ void CpuCollectionTask::CollectCpuData()
     auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
         if (Parameter::IsBetaVersion()) {
-            cpuStorage_->Store(cpuCollectionsResult.data);
+            cpuStorage_->StoreProcessDatas(cpuCollectionsResult.data);
         }
+
 #ifdef HAS_HIPERF
         cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);
 #endif
     }
-
+    auto threadCpuCollectResult = threadCpuCollector_ ->CollectThreadStatInfos(true);
+    if (Parameter::IsBetaVersion() && threadCpuCollectResult.retCode == UCollect::UcError::SUCCESS) {
+        cpuStorage_->StoreThreadDatas(threadCpuCollectResult.data);
+    }
     // collect the system cpu usage periodically for hidumper
     cpuCollector_->CollectSysCpuUsage(true);
 }

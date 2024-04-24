@@ -14,9 +14,9 @@
  */
 #include "sys_event_doc_writer.h"
 
-#include "crc_generator.h"
 #include "event_store_config.h"
-#include "logger.h"
+#include "hiview_logger.h"
+#include "parameter_ex.h"
 #include "securec.h"
 #include "sys_event_doc_reader.h"
 
@@ -25,20 +25,7 @@ namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDocWriter");
 namespace {
-constexpr uint32_t HEADER_BLOCK_SIZE = 27;
-constexpr uint32_t CRC_INIT_VALUE = 0x0;
 constexpr uint32_t RAW_DATA_OFFSET = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-
-template<typename T>
-int CopyValue(uint8_t* dst, size_t dstSize, T value)
-{
-    return memcpy_s(dst, dstSize, &value, sizeof(T));
-}
-
-int CopyValue(uint8_t* dst, size_t dstSize, const uint8_t* src, size_t count)
-{
-    return memcpy_s(dst, dstSize, src, count);
-}
 }
 SysEventDocWriter::SysEventDocWriter(const std::string& path): EventDocWriter(path)
 {
@@ -82,8 +69,11 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
     }
 
     DocHeader header;
-    reader.ReadHeader(header);
-    if (header.version != EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION) {
+    std::string sysVersion;
+    reader.ReadHeader(header, sysVersion);
+    headerSize_ = header.blockSize + sizeof(header.magicNum); // for GetCurrPageRemainSize
+    if (header.version != EventStore::EVENT_DATA_FORMATE_VERSION::CURRENT ||
+        sysVersion != Parameter::GetDisplayVersionStr()) {
         return DOC_STORE_NEW_FILE;
     }
 
@@ -111,7 +101,7 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
 
 uint32_t SysEventDocWriter::GetCurrPageRemainSize(int fileSize, uint32_t pageSize)
 {
-    return (pageSize - ((static_cast<uint32_t>(fileSize) - HEADER_SIZE) % pageSize));
+    return (pageSize - ((static_cast<uint32_t>(fileSize) - headerSize_) % pageSize));
 }
 
 int SysEventDocWriter::FillCurrPageWithZero(uint32_t remainSize)
@@ -135,12 +125,13 @@ int SysEventDocWriter::FillCurrPageWithZero(uint32_t remainSize)
 
 int SysEventDocWriter::GetContentSize(const std::shared_ptr<SysEvent>& sysEvent, uint32_t& contentSize)
 {
-    if (sysEvent->AsRawData() == nullptr) {
+    uint8_t* rawData = sysEvent->AsRawData();
+    if (rawData == nullptr) {
         HIVIEW_LOGE("The raw data of event is null");
         return DOC_STORE_ERROR_NULL;
     }
-    uint32_t dataSize = *(reinterpret_cast<uint32_t*>(sysEvent->AsRawData()));
-    if (dataSize < RAW_DATA_OFFSET) {
+    uint32_t dataSize = *(reinterpret_cast<uint32_t*>(rawData));
+    if (dataSize < RAW_DATA_OFFSET || dataSize > MAX_NEW_SIZE) {
         HIVIEW_LOGE("The length=%{public}u of raw data is invalid", dataSize);
         return DOC_STORE_ERROR_INVALID;
     }
@@ -159,73 +150,49 @@ int SysEventDocWriter::WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, ui
 
     DocHeader header = {
         .magicNum = MAGIC_NUM,
-        .blockSize = HEADER_BLOCK_SIZE,
         .pageSize = pageSize,
-        .version = EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION,
-        .crc = CRC_INIT_VALUE,
+        .version = EventStore::EVENT_DATA_FORMATE_VERSION::CURRENT,
     };
     if (!sysEvent->GetTag().empty() && strcpy_s(header.tag, MAX_TAG_LEN, sysEvent->GetTag().c_str()) != EOK) {
         HIVIEW_LOGW("failed to copy tag to event, tag=%{public}s", sysEvent->GetTag().c_str());
     }
-    header.crc = CrcGenerator::GetCrc32(reinterpret_cast<uint8_t*>(&header), HEADER_SIZE - CRC_SIZE);
-    out_.write(reinterpret_cast<char*>(&header), HEADER_SIZE);
+    auto sysVersion = Parameter::GetDisplayVersionStr();
+    uint32_t sysVersionSize = sysVersion.length() + 1; // reserve one byte for '\0'
+    header.blockSize = sizeof(DocHeader) - sizeof(header.magicNum)
+        + sizeof(sysVersionSize) + sysVersionSize;
+    headerSize_ = header.blockSize + sizeof(header.magicNum);
+    out_.write(reinterpret_cast<char*>(&header), sizeof(DocHeader));
+    out_.write(reinterpret_cast<char*>(&sysVersionSize), sizeof(uint32_t)); // append size of system version string
+    out_.write(sysVersion.c_str(), sysVersionSize); // append system version
     return DOC_STORE_SUCCESS;
 }
 
 int SysEventDocWriter::WriteContent(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize)
 {
-    uint8_t* content = nullptr;
-    if (int ret = BuildContent(sysEvent, &content, contentSize); ret != DOC_STORE_SUCCESS) {
-        return ret;
-    }
-    out_.seekp(0, std::ios::end); // move to the end
-    out_.write(reinterpret_cast<char*>(content), contentSize);
-    delete[] content;
-    out_.flush();
-    HIVIEW_LOGD("write content size=%{public}u, seq=%{public}" PRId64 ", file=%{public}s", contentSize,
-        sysEvent->GetEventSeq(), docPath_.c_str());
-    return DOC_STORE_SUCCESS;
-}
+    // move to the end
+    out_.seekp(0, std::ios::end);
 
-int SysEventDocWriter::BuildContent(const std::shared_ptr<SysEvent>& sysEvent,
-    uint8_t** contentPtr, uint32_t contentSize)
-{
-    if (contentSize > MAX_NEW_SIZE) {
-        HIVIEW_LOGE("invalid new content size=%{public}u", contentSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint8_t* content = new(std::nothrow) uint8_t[contentSize];
-    if (content == nullptr) {
-        HIVIEW_LOGE("failed to new memory for content, size=%{public}u", contentSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    if (CopyValue(content, contentSize, contentSize) != EOK) {
-        HIVIEW_LOGE("failed to write contentSize=%{public}u", contentSize);
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint32_t pos = sizeof(contentSize);
-    if (CopyValue(content + pos, contentSize, sysEvent->GetEventSeq()) != EOK) {
-        HIVIEW_LOGE("failed to write seq=%{public}" PRId64, sysEvent->GetEventSeq());
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    pos += sizeof(sysEvent->GetEventSeq());
+    // content.blockSize
+    out_.write(reinterpret_cast<const char*>(&contentSize), sizeof(contentSize));
+
+    // content.seq
+    const auto eventSeq = sysEvent->GetEventSeq();
+    out_.write(reinterpret_cast<const char*>(&eventSeq), sizeof(eventSeq));
+
+    // content.rawData
     uint8_t* rawData = sysEvent->AsRawData();
     uint32_t dataSize = *(reinterpret_cast<uint32_t*>(rawData)) - RAW_DATA_OFFSET;
-    if (CopyValue(content + pos, contentSize, rawData + RAW_DATA_OFFSET, dataSize) != EOK) {
-        HIVIEW_LOGE("failed to write event data");
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    pos += dataSize;
-    uint32_t crc = CrcGenerator::GetCrc32(reinterpret_cast<uint8_t*>(content), contentSize - CRC_SIZE);
-    if (CopyValue(content + pos, contentSize, crc) != EOK) {
-        HIVIEW_LOGE("failed to write crc=%{public}u", crc);
-        delete[] content;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    *contentPtr = content;
+    out_.write(reinterpret_cast<const char*>(rawData + RAW_DATA_OFFSET), dataSize);
+
+    // content.crc
+    const uint32_t crcDefault = 0;
+    out_.write(reinterpret_cast<const char*>(&crcDefault), CRC_SIZE);
+
+    // flush the file
+    out_.flush();
+
+    HIVIEW_LOGD("write content size=%{public}u, seq=%{public}" PRId64 ", file=%{public}s", contentSize,
+        sysEvent->GetEventSeq(), docPath_.c_str());
     return DOC_STORE_SUCCESS;
 }
 } // EventStore

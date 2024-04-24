@@ -16,7 +16,7 @@
 #include "encoded/encoded_param.h"
 
 #include "encoded/raw_data_encoder.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 
 namespace OHOS {

@@ -24,7 +24,7 @@
 
 #include "common_utils.h"
 #include "cpu_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "time_util.h"
 
@@ -168,6 +168,7 @@ std::optional<ProcessCpuStatInfo> ProcessStatInfoCollector::CalculateProcessCpuS
     processCpuStatInfo.sCpuUsage = cpuCalculator_->CalculateCpuUsage(procCpuItem->cpu_usage_stime,
         lastProcCpuTimeInfos_[procCpuItem->pid].sUsageTime, calcTimeInfo.period);
     processCpuStatInfo.cpuUsage = processCpuStatInfo.uCpuUsage + processCpuStatInfo.sCpuUsage;
+    processCpuStatInfo.threadCount = procCpuItem->thread_total;
     if (processCpuStatInfo.cpuLoad >= 1) { // 1: max cpu load
         HIVIEW_LOGI("invalid cpu load=%{public}f, name=%{public}s, last_load=%{public}" PRIu64
             ", curr_load=%{public}" PRIu64, processCpuStatInfo.cpuLoad, processCpuStatInfo.procName.c_str(),
@@ -181,6 +182,7 @@ void ProcessStatInfoCollector::TryToDeleteDeadProcessInfo()
     for (auto it = lastProcCpuTimeInfos_.begin(); it != lastProcCpuTimeInfos_.end();) {
         // if the latest collection operation does not update the process collection time, delete it
         if (it->second.collectionTime != lastCollectionTime_) {
+            ProcessStatus::GetInstance().NotifyProcessState(it->first, DIED);
             it = lastProcCpuTimeInfos_.erase(it);
         } else {
             it++;

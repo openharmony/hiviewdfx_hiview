@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -195,7 +195,7 @@ private:
     std::string defaultPersistDir_;
     std::string defaultConfigName_;
     std::vector<std::string> dynamicLibSearchDir_;
-    std::unique_ptr<EventDispatchQueue> unorderQueue_;
+    std::shared_ptr<EventDispatchQueue> unorderQueue_;
     std::shared_ptr<EventLoop> sharedWorkLoop_;
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::map<std::string, std::shared_ptr<Plugin>> pluginMap_;

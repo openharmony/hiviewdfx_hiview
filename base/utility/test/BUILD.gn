@@ -88,9 +88,12 @@ ohos_unittest("AdapterUtilityOhosTest") {
   ]
 
   external_deps = [
+    "cJSON:cjson",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",
   ]
+
+  resource_config_file = "$hiview_base/utility/test/resource/ohos_test.xml"
 }

@@ -16,7 +16,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include "logger.h"
+#include "hiview_logger.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;

@@ -22,8 +22,10 @@
 #include "trace_flow_controller.h"
 #include "trace_utils.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
+#include "app_event_task_storage.h"
+#include "app_caller_event.h"
 
 using namespace OHOS::HiviewDFX;
 
@@ -185,6 +187,43 @@ UcollectionTraceStorage TraceFlowController::QueryDb()
     struct UcollectionTraceStorage ucollectionTraceStorage;
     traceStorage_->Query(ucollectionTraceStorage);
     return ucollectionTraceStorage;
+}
+
+bool TraceFlowController::HasCallOnceToday(int32_t uid, uint64_t happenTime)
+{
+    uint64_t happenTimeInSecond = happenTime / TimeUtil::SEC_TO_MILLISEC;
+    std::string date = TimeUtil::TimestampFormatToDate(happenTimeInSecond, "%Y%m%d");
+
+    AppEventTask appEventTask;
+    appEventTask.id_ = 0;
+    traceStorage_->QueryAppEventTask(uid, std::stoll(date, nullptr, 0), appEventTask);
+    return appEventTask.id_ > 0;
+}
+
+bool TraceFlowController::AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent)
+{
+    AppEventTask appEventTask;
+
+    uint64_t happenTimeInSecond = appEvent->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
+    std::string date = TimeUtil::TimestampFormatToDate(happenTimeInSecond, "%Y%m%d");
+    appEventTask.taskDate_ = std::stoll(date, nullptr, 0);
+    appEventTask.taskType_ = APP_EVENT_TASK_TYPE_JANK_EVENT;
+    appEventTask.uid_ = appEvent->uid_;
+    appEventTask.pid_ = appEvent->pid_;
+    appEventTask.bundleName_ = appEvent->bundleName_;
+    appEventTask.bundleVersion_ = appEvent->bundleVersion_;
+    appEventTask.startTime_ = appEvent->taskBeginTime_;
+    appEventTask.finishTime_ = appEvent->taskEndTime_;
+    appEventTask.resourePath_ = appEvent->externalLog_;
+    appEventTask.resourceSize_ = FileUtil::GetFileSize(appEventTask.resourePath_);
+    appEventTask.state_ = APP_EVENT_TASK_STATE_FINISH;
+    return traceStorage_->StoreAppEventTask(appEventTask);
+}
+
+void TraceFlowController::CleanAppTrace()
+{
+    TraceCollector::Caller caller = TraceCollector::Caller::APP;
+    FileRemove(caller);
 }
 } // HiViewDFX
 } // OHOS

@@ -34,11 +34,14 @@ public:
         XPOWER,
         BETACLUB,
         DEVELOP,
+        APP,
         OTHER,
     };
 
 public:
     virtual CollectResult<std::vector<std::string>> DumpTrace(Caller &caller) = 0;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(Caller &caller,
+        uint32_t timeLimit) = 0;
     virtual CollectResult<int32_t> TraceOn() = 0;
     virtual CollectResult<std::vector<std::string>> TraceOff() = 0;
     static std::shared_ptr<TraceCollector> Create();

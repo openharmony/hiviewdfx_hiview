@@ -14,20 +14,36 @@
  */
 #include "uc_app_state_observer.h"
 
+#include "hiview_logger.h"
 #include "process_status.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
+using namespace OHOS::AppExecFwk;
 
-void UcAppStateObserver::OnProcessCreated(const AppExecFwk::ProcessData& processData)
+void UcAppStateObserver::OnForegroundApplicationChanged(const AppStateData& appStateData)
 {
-    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED);
+#if !(PC_APP_STATE_COLLECT_ENABLE)
+    HIVIEW_LOGD("process=%{public}d, state=%{public}d", appStateData.pid, appStateData.state);
+    if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_FOREGROUND)) {
+        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, FOREGROUND);
+    } else if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_BACKGROUND)) {
+        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, BACKGROUND);
+    }
+#endif
 }
 
-void UcAppStateObserver::OnProcessDied(const AppExecFwk::ProcessData& processData)
+void UcAppStateObserver::OnProcessCreated(const ProcessData& processData)
 {
-    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, DIED);
+    HIVIEW_LOGD("process name=%{public}s, pid=%{public}d created", processData.processName.c_str(), processData.pid);
+    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED, processData.processName);
+}
+
+void UcAppStateObserver::OnProcessDied(const ProcessData& processData)
+{
+    HIVIEW_LOGD("process=%{public}d died", processData.pid);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

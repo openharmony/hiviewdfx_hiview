@@ -58,7 +58,8 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
 
 std::string GetDisplayVersionStr()
 {
-    return std::string(GetDisplayVersion());
+    static std::string displayedVersionStr = std::string(GetDisplayVersion());
+    return displayedVersionStr;
 }
 
 bool IsBetaVersion()
@@ -76,6 +77,12 @@ bool IsUCollectionSwitchOn()
 {
     std::string ucollectionState = GetString(HIVIEW_UCOLLECTION_STATE, "false");
     return ucollectionState == "true";
+}
+
+bool IsTraceCollectionSwitchOn()
+{
+    std::string traceCollectionState = GetString(DEVELOP_HIVIEW_TRACE_RECORDER, "false");
+    return traceCollectionState == "true";
 }
 
 DeviceType GetDeviceType()

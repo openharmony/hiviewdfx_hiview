@@ -17,7 +17,7 @@
 
 #include "hiview_err_code.h"
 #include "iservice_registry.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -74,6 +74,14 @@ CollectResult<int32_t> HiViewServiceTraceDelegate::Recover()
 {
     auto proxyHandler = [] (HiviewServiceAbilityProxy& proxy) {
         return proxy.RecoverTrace();
+    };
+    return TraceCalling<int32_t>(proxyHandler);
+}
+
+CollectResult<int32_t> HiViewServiceTraceDelegate::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
+{
+    auto proxyHandler = [&appCaller] (HiviewServiceAbilityProxy& proxy) {
+        return proxy.CaptureDurationTrace(appCaller);
     };
     return TraceCalling<int32_t>(proxyHandler);
 }

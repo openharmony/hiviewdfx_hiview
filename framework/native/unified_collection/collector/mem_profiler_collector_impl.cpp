@@ -19,7 +19,7 @@
 #include <memory>
 #include <thread>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "mem_profiler_decorator.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"
@@ -71,18 +71,23 @@ int MemProfilerCollectorImpl::Start(ProfilerType type,
     return NativeMemoryProfilerSaClientManager::Start(type, pid, duration, sampleInterval);
 }
 
-int MemProfilerCollectorImpl::Stop(int pid)
+int MemProfilerCollectorImpl::StartPrintNmd(int fd, int pid, int type)
 {
-    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "0");
+    OHOS::system::SetParameter("hiviewdfx.hiprofiler.memprofiler.start", "1");
     int time = 0;
-    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+    while (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
     }
-    if (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
-        HIVIEW_LOGE("native daemon process not stopped");
+    if (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
+        HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
+    return NativeMemoryProfilerSaClientManager::GetMallocStats(fd, pid, type);
+}
+
+int MemProfilerCollectorImpl::Stop(int pid)
+{
     HIVIEW_LOGI("mem_profiler_collector stoping");
     return NativeMemoryProfilerSaClientManager::Stop(pid);
 }
@@ -110,7 +115,10 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     config->duration_ = (uint32_t)duration;
     config->sampleInterval_ = (uint32_t)sampleInterval;
     uint32_t fiveMinutes = 300;
+    uint32_t jsStackDeps = 10;
     config->statisticsInterval_ = fiveMinutes;
+    config->jsStackReport_ = true;
+    config->maxJsStackDepth_ = jsStackDeps;
     HIVIEW_LOGI("mem_profiler_collector dumping data");
     return NativeMemoryProfilerSaClientManager::DumpData(fd, config);
 }

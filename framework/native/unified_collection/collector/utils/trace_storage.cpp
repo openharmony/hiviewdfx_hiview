@@ -18,7 +18,7 @@
 
 #include "file_util.h"
 #include "hisysevent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "process_status.h"
 #include "rdb_helper.h"
 #include "sql_util.h"
@@ -77,6 +77,9 @@ void TraceStorage::InitDbStore()
         dbStore_ = nullptr;
         return;
     }
+
+    appTaskStore_ = std::make_shared<AppEventTaskStorage>(dbStore_);
+    appTaskStore_->InitAppTask();
 
     std::string sql = SqlUtil::GenerateExistSql(TABLE_NAME);
     auto retSql = dbStore_->ExecuteSql(sql);
@@ -182,6 +185,24 @@ int32_t TraceStorage::CreateTable()
         return -1;
     }
     return 0;
+}
+
+bool TraceStorage::QueryAppEventTask(int32_t uid, int32_t date, AppEventTask &appEventTask)
+{
+    if (appTaskStore_ == nullptr) {
+        return false;
+    }
+    appTaskStore_->GetAppEventTask(uid, date, appEventTask);
+    return true;
+}
+
+bool TraceStorage::StoreAppEventTask(AppEventTask &appEventTask)
+{
+    if (appTaskStore_ == nullptr) {
+        return false;
+    }
+
+    return appTaskStore_->InsertAppEventTask(appEventTask);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

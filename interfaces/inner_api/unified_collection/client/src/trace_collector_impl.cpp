@@ -34,6 +34,7 @@ public:
     virtual CollectResult<std::vector<std::string>> RecordingOff() override;
     virtual CollectResult<int32_t> Close() override;
     virtual CollectResult<int32_t> Recover() override;
+    virtual CollectResult<int32_t> CaptureDurationTrace(AppCaller &appCaller) override;
 };
 
 std::shared_ptr<TraceCollector> TraceCollector::Create()
@@ -74,6 +75,11 @@ CollectResult<int32_t> TraceCollectorImpl::Close()
 CollectResult<int32_t> TraceCollectorImpl::Recover()
 {
     return HiViewServiceTraceDelegate::Recover();
+}
+
+CollectResult<int32_t> TraceCollectorImpl::CaptureDurationTrace(AppCaller &appCaller)
+{
+    return HiViewServiceTraceDelegate::CaptureDurationTrace(appCaller);
 }
 } // UCollectClient
 } // HiViewDFX

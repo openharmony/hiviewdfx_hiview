@@ -24,7 +24,7 @@
 #include "faultlog_util.h"
 #include "hisysevent.h"
 #include "hiview_global.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "log_analyzer.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
@@ -37,8 +37,9 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FaultLogDatabase");
 namespace {
-static const std::vector<std::string> QUERY_ITEMS =
-    { "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE" };
+static const std::vector<std::string> QUERY_ITEMS = {
+    "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE"
+};
 static const std::string LOG_PATH_BASE = "/data/log/faultlog/faultlogger/";
 bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, FaultLogInfo& info)
 {
@@ -68,37 +69,46 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
 }
 }
 
+FaultLogDatabase::FaultLogDatabase(const std::shared_ptr<EventLoop>& eventLoop) : eventLoop_(eventLoop) {}
+
 void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::map<std::string, std::string> eventInfos;
     AnalysisFaultlog(info, eventInfos);
-
-    HiSysEventWrite(
-        HiSysEvent::Domain::RELIABILITY,
-        GetFaultNameByType(info.faultLogType, false),
-        HiSysEvent::EventType::FAULT,
-        "FAULT_TYPE", std::to_string(info.faultLogType),
-        "PID", info.pid,
-        "UID", info.id,
-        "MODULE", info.module,
-        "REASON", info.reason,
-        "SUMMARY", info.summary,
-        "LOG_PATH", info.logPath,
-        "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
-        "PRE_INSTALL", info.sectionMap["PRE_INSTALL"],
-        "FOREGROUND", info.sectionMap["FOREGROUND"],
-        "HAPPEN_TIME", info.time,
-        "HITRACE_TIME", info.sectionMap.find("HITRACE_TIME") != info.sectionMap.end()?
-                        info.sectionMap.at("HITRACE_TIME") : "",
-        "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end()?
-                      info.sectionMap.at("SYSRQ_TIME") : "",
-        "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
-        "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
-        "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
-        "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
-        "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
-    );
+    if (!eventLoop_) {
+        HIVIEW_LOGE("eventLoop_ is not inited.");
+        return;
+    }
+    auto task = [info, eventInfos(std::move(eventInfos))] () mutable {
+        HiSysEventWrite(
+            HiSysEvent::Domain::RELIABILITY,
+            GetFaultNameByType(info.faultLogType, false),
+            HiSysEvent::EventType::FAULT,
+            "FAULT_TYPE", std::to_string(info.faultLogType),
+            "PID", info.pid,
+            "UID", info.id,
+            "MODULE", info.module,
+            "REASON", info.reason,
+            "SUMMARY", info.summary,
+            "LOG_PATH", info.logPath,
+            "VERSION", info.sectionMap.find("VERSION") != info.sectionMap.end() ? info.sectionMap.at("VERSION") : "",
+            "PRE_INSTALL", info.sectionMap["PRE_INSTALL"],
+            "FOREGROUND", info.sectionMap["FOREGROUND"],
+            "HAPPEN_TIME", info.time,
+            "HITRACE_TIME", info.sectionMap.find("HITRACE_TIME") != info.sectionMap.end() ?
+                            info.sectionMap.at("HITRACE_TIME") : "",
+            "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end() ?
+                          info.sectionMap.at("SYSRQ_TIME") : "",
+            "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
+            "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
+            "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
+            "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
+            "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
+        );
+    };
+    constexpr int delayTime = 5;
+    eventLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 
 std::list<std::shared_ptr<EventStore::SysEventQuery>> CreateQueries(

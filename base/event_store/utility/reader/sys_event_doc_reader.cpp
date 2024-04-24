@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,7 @@
 
 #include <cinttypes>
 
-#include "crc_generator.h"
-#include "decoded/decoded_event.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "securec.h"
 #include "string_util.h"
 #include "sys_event_query.h"
@@ -27,6 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDocReader");
+using OHOS::HiviewDFX::EventRaw::RawData;
 namespace {
 template<typename T>
 int32_t GetNegativeNum(T num)
@@ -61,8 +60,7 @@ void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
 }
 }
 
-SysEventDocReader::SysEventDocReader(const std::string& path): EventDocReader(path),
-    fileSize_(INVALID_VALUE_INT), pageSize_(0)
+SysEventDocReader::SysEventDocReader(const std::string& path): EventDocReader(path)
 {
     Init(path);
 }
@@ -79,27 +77,52 @@ void SysEventDocReader::Init(const std::string& path)
     in_.open(path, std::ios::binary);
 
     // get domain, name and level from file path
-    std::vector<std::string> dirNames;
-    StringUtil::SplitStr(path, "/", dirNames);
-    constexpr size_t domainOffset = 2;
-    if (dirNames.size() >= domainOffset) {
-        domain_ = dirNames[dirNames.size() - domainOffset];
-        std::string file = dirNames.back();
-        std::vector<std::string> fileNames;
-        StringUtil::SplitStr(file, "-", fileNames);
-        if (fileNames.size() == FILE_NAME_SPLIT_SIZE) {
-            name_ = fileNames[EVENT_NAME_INDEX];
-            level_ = fileNames[EVENT_LEVEL_INDEX];
-        }
-    }
+    InitEventInfo(path);
 
-    // get file size
+    // get file size and data format version
     if (in_.is_open()) {
         auto curPos = in_.tellg();
         in_.seekg(0, std::ios::end);
         fileSize_ = in_.tellg();
         in_.seekg(curPos, std::ios::beg);
+
+        dataFmtVersion_ = ContentReader::ReadFmtVersion(in_);
     }
+}
+
+void SysEventDocReader::InitEventInfo(const std::string& path)
+{
+    std::vector<std::string> dirNames;
+    StringUtil::SplitStr(path, "/", dirNames);
+    constexpr size_t domainOffset = 2;
+    if (dirNames.size() < domainOffset) {
+        HIVIEW_LOGW("invalid size=%{public}zu of dir names", dirNames.size());
+        return;
+    }
+
+    // init domain
+    const std::string domainStr = dirNames[dirNames.size() - domainOffset];
+    if (memcpy_s(info_.domain, MAX_DOMAIN_LEN, domainStr.c_str(), domainStr.length()) != EOK) {
+        HIVIEW_LOGE("failed to copy domain to EventInfo");
+        return;
+    }
+    std::string file = dirNames.back();
+    std::vector<std::string> fileNames;
+    StringUtil::SplitStr(file, "-", fileNames);
+    if (fileNames.size() != FILE_NAME_SPLIT_SIZE) {
+        HIVIEW_LOGW("invalid size=%{public}zu of file names", fileNames.size());
+        return;
+    }
+
+    // init name
+    const std::string nameStr = fileNames[EVENT_NAME_INDEX];
+    if (memcpy_s(info_.name, MAX_EVENT_NAME_LEN, nameStr.c_str(), nameStr.length()) != EOK) {
+        HIVIEW_LOGE("failed to copy name to EventInfo");
+        return;
+    }
+
+    // init level
+    info_.level = fileNames[EVENT_LEVEL_INDEX];
 }
 
 int SysEventDocReader::Read(EventStore::ContentList& contentList)
@@ -112,7 +135,6 @@ int SysEventDocReader::Read(EventStore::ContentList& contentList)
         if (memcpy_s(contentPtr.get(), contentSize, content, contentSize) != 0) {
             return false;
         }
-        delete[] content;
         contentList.emplace_back(std::move(contentPtr));
         return true;
     };
@@ -138,14 +160,14 @@ int SysEventDocReader::Read(ReadCallback callback)
     if (auto ret = ReadHeader(header); ret != DOC_STORE_SUCCESS) {
         return ret;
     }
-    version_ = header.version;
+
     if (!IsValidHeader(header)) {
         return DOC_STORE_ERROR_INVALID;
     }
 
     // set event tag if have
-    if (tag_.empty() && strlen(header.tag) != 0) {
-        tag_ = header.tag;
+    if (info_.tag.empty() && strlen(header.tag) != 0) {
+        info_.tag = header.tag;
     }
 
     // set page size
@@ -159,6 +181,7 @@ int SysEventDocReader::Read(ReadCallback callback)
             return ret;
         }
         callback(content, contentSize);
+        delete[] content;
         return DOC_STORE_SUCCESS;
     }
     return ReadPages(callback);
@@ -166,12 +189,18 @@ int SysEventDocReader::Read(ReadCallback callback)
 
 int SysEventDocReader::ReadHeader(DocHeader& header)
 {
-    if (!in_.is_open()) {
-        HIVIEW_LOGE("failed to open the file, file=%{public}s", docPath_.c_str());
+    auto reader = ContentReaderFactory::GetInstance().Get(dataFmtVersion_);
+    if (reader == nullptr) {
+        HIVIEW_LOGE("reader is nullptr, version:%{public}d", dataFmtVersion_);
         return DOC_STORE_ERROR_IO;
     }
-    in_.seekg(0, std::ios::beg);
-    in_.read(reinterpret_cast<char*>(&header), HEADER_SIZE);
+    return reader->ReadDocDetails(in_, header, docHeaderSize_, sysVersion_);
+}
+
+int SysEventDocReader::ReadHeader(DocHeader& header, std::string& sysVersion)
+{
+    ReadHeader(header);
+    sysVersion = sysVersion_;
     return DOC_STORE_SUCCESS;
 }
 
@@ -192,6 +221,7 @@ int SysEventDocReader::ReadPages(ReadCallback callback)
             continue;
         }
         callback(content, contentSize);
+        delete[] content;
     }
     return DOC_STORE_SUCCESS;
 }
@@ -210,10 +240,10 @@ bool SysEventDocReader::HasReadPageEnd()
         return true;
     }
     uint32_t curPos = static_cast<uint32_t>(in_.tellg());
-    if (curPos <= HEADER_SIZE) {
+    if (curPos <= docHeaderSize_) {
         return false;
     }
-    return ((curPos - HEADER_SIZE) % pageSize_ + BLOCK_SIZE) >= pageSize_;
+    return ((curPos - docHeaderSize_) % pageSize_ + BLOCK_SIZE) >= pageSize_;
 }
 
 int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
@@ -223,7 +253,8 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
         return DOC_STORE_READ_EMPTY;
     }
     ReadValueAndReset(in_, contentSize);
-    if (contentSize <= BLOCK_SIZE) {
+    constexpr uint32_t minContentSize = BLOCK_SIZE + sizeof(ContentHeader) + CRC_SIZE;
+    if (contentSize < minContentSize) {
         HIVIEW_LOGD("invalid content size=%{public}u, file=%{public}s", contentSize, docPath_.c_str());
         return DOC_STORE_READ_EMPTY;
     }
@@ -237,11 +268,6 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
         return DOC_STORE_ERROR_MEMORY;
     }
     in_.read(reinterpret_cast<char*>(*content), contentSize);
-    if (!IsValidContent(*content, contentSize)) {
-        HIVIEW_LOGE("failed to read the content, file=%{public}s", docPath_.c_str());
-        delete[] *content;
-        return DOC_STORE_ERROR_INVALID;
-    }
     return DOC_STORE_SUCCESS;
 }
 
@@ -262,28 +288,13 @@ int SysEventDocReader::ReadPageSize(uint32_t& pageSize)
 
 bool SysEventDocReader::IsValidHeader(const DocHeader& header)
 {
-    if (header.magicNum != MAGIC_NUM) {
+    auto reader = ContentReaderFactory::GetInstance().Get(dataFmtVersion_);
+    if (reader == nullptr) {
+        HIVIEW_LOGE("reader nullptr, version:%{public}d", dataFmtVersion_);
+        return false;
+    }
+    if (!reader->IsValidMagicNum(header.magicNum)) {
         HIVIEW_LOGE("invalid magic number of file=%{public}s", docPath_.c_str());
-        return false;
-    }
-    uint32_t crc = CrcGenerator::GetCrc32(reinterpret_cast<uint8_t*>(const_cast<DocHeader*>(&header)),
-        HEADER_SIZE - CRC_SIZE);
-    if (header.crc != crc) {
-        HIVIEW_LOGE("invalid crc of header, file=%{public}s", docPath_.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool SysEventDocReader::IsValidContent(uint8_t* content, uint32_t contentSize)
-{
-    uint32_t crc = CrcGenerator::GetCrc32(content, contentSize - CRC_SIZE);
-    in_.seekg(GetNegativeNum(CRC_SIZE), std::ios::cur);
-    uint32_t contentCrc = 0;
-    ReadValue(in_, contentCrc);
-    if (contentCrc != crc) {
-        HIVIEW_LOGE("invalid crc of content, contentCrc=%{public}u, getCrc=%{public}u, file=%{public}s",
-            contentCrc, crc, docPath_.c_str());
         return false;
     }
     return true;
@@ -294,7 +305,7 @@ int SysEventDocReader::SeekgPage(uint32_t pageIndex)
     if (HasReadFileEnd()) {
         return DOC_STORE_ERROR_IO;
     }
-    auto seekSize = HEADER_SIZE + pageSize_ * pageIndex;
+    auto seekSize = docHeaderSize_ + pageSize_ * pageIndex;
     if (static_cast<int>(seekSize) < ReadFileSize()) {
         in_.seekg(seekSize, std::ios::beg);
         return DOC_STORE_SUCCESS;
@@ -303,168 +314,64 @@ int SysEventDocReader::SeekgPage(uint32_t pageIndex)
     return DOC_STORE_ERROR_IO;
 }
 
-int SysEventDocReader::WriteDomainNameInfo(uint8_t** event, uint32_t eventSize)
+std::shared_ptr<RawData> SysEventDocReader::BuildRawData(uint8_t* content, uint32_t contentSize)
 {
-    if (memcpy_s(*event, eventSize, reinterpret_cast<char*>(&eventSize), BLOCK_SIZE) != EOK) {
-        HIVIEW_LOGE("failed to copy block size to raw event");
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint32_t eventPos = BLOCK_SIZE;
-    if (memcpy_s(*event + eventPos, eventSize - eventPos, domain_.c_str(), MAX_DOMAIN_LEN) != EOK) {
-        HIVIEW_LOGE("failed to copy domain to raw event");
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    eventPos += MAX_DOMAIN_LEN;
-    if (memcpy_s(*event + eventPos, eventSize - eventPos, name_.c_str(), MAX_EVENT_NAME_LEN) != EOK) {
-        HIVIEW_LOGE("failed to copy name to raw event");
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    return DOC_STORE_SUCCESS;
-}
-
-int SysEventDocReader::ReadHeaderFromHistoryData(
-    uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize)
-{
-    ContentReader reader = ContentReaderFactory::GetInstance().Get(version_);
+    auto reader = ContentReaderFactory::GetInstance().Get(dataFmtVersion_);
     if (reader == nullptr) {
-        HIVIEW_LOGE("reader nullptr, version:%{public}d", version_);
-        return DOC_STORE_ERROR_NULL;
+        HIVIEW_LOGE("reader nullptr, version:%{public}d", dataFmtVersion_);
+        return nullptr;
     }
-    EventStore::ContentHeader contentHeader;
-    reader->GetContentHead(content, contentHeader);
-    eventSize = contentSize - reader->GetHeaderSize() + sizeof(EventStore::ContentHeader) -
-        SEQ_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-    if (eventSize > MAX_NEW_SIZE) {
-        HIVIEW_LOGE("invalid new event size=%{public}u", eventSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint8_t* event = new(std::nothrow) uint8_t[eventSize];
-    if (event == nullptr) {
-        HIVIEW_LOGE("failed to new memory for raw event, size=%{public}u", eventSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    int ret = WriteDomainNameInfo(&event, eventSize);
-    if (ret != DOC_STORE_SUCCESS) {
-        delete[] event;
-        return ret;
-    }
-    size_t eventPos = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-    if (memcpy_s(event + eventPos, eventSize - eventPos, reinterpret_cast<uint8_t*>(&contentHeader) + SEQ_SIZE,
-        sizeof(EventStore::ContentHeader) - SEQ_SIZE) != EOK) {
-        HIVIEW_LOGE("failed to copy name to raw event");
-        delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    eventPos += (sizeof(EventStore::ContentHeader) - SEQ_SIZE);
-    size_t contentPos = BLOCK_SIZE + reader->GetHeaderSize();
-    if (memcpy_s(event + eventPos, eventSize - eventPos, content + contentPos, contentSize - contentPos) != EOK) {
-        HIVIEW_LOGE("failed to copy name to raw event");
-        delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    *rawEvent = event;
-    return DOC_STORE_SUCCESS;
-}
-
-int SysEventDocReader::BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize)
-{
-    if (domain_.empty() || name_.empty()) {
-        HIVIEW_LOGE("domain=%{public}s or name=%{public}s is empty", domain_.c_str(), name_.c_str());
-        return DOC_STORE_ERROR_INVALID;
-    }
-    
-    if (version_ != EventRaw::EVENT_DATA_FORMATE_VERSION::DEFAULT_DATA_VERSION) {
-        return ReadHeaderFromHistoryData(rawEvent, eventSize, content, contentSize);
-    }
-
-    eventSize = contentSize - SEQ_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-    if (eventSize > MAX_NEW_SIZE) {
-        HIVIEW_LOGE("invalid new event size=%{public}u", eventSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    uint8_t* event = new(std::nothrow) uint8_t[eventSize];
-    if (event == nullptr) {
-        HIVIEW_LOGE("failed to new memory for raw event, size=%{public}u", eventSize);
-        return DOC_STORE_ERROR_MEMORY;
-    }
-    int ret = WriteDomainNameInfo(&event, eventSize);
-    if (ret != DOC_STORE_SUCCESS) {
-        delete[] event;
-        return ret;
-    }
-    
-    int eventPos = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
-    if (memcpy_s(event + eventPos, eventSize - eventPos, content + BLOCK_SIZE + SEQ_SIZE,
-        contentSize - BLOCK_SIZE - SEQ_SIZE) != EOK) {
-        HIVIEW_LOGE("failed to copy name to raw event");
-        delete[] event;
-        return DOC_STORE_ERROR_MEMORY;
-    }
-
-    *rawEvent = event;
-    return DOC_STORE_SUCCESS;
-}
-
-int SysEventDocReader::BuildEventJson(std::string& eventJson, uint32_t eventSize, int64_t seq)
-{
-    if (eventJson.empty()) {
-        HIVIEW_LOGE("event json is empty");
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (level_.empty()) {
-        HIVIEW_LOGE("event level is empty");
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (seq < 0) {
-        HIVIEW_LOGE("event seq is invalid, seq=%{public}" PRId64, seq);
-        return DOC_STORE_ERROR_INVALID;
-    }
-    if (!tag_.empty()) {
-        AppendJsonValue(eventJson, EventCol::TAG, tag_);
-    }
-    AppendJsonValue(eventJson, EventCol::LEVEL, level_);
-    AppendJsonValue(eventJson, EventCol::SEQ, seq);
-    return DOC_STORE_SUCCESS;
+    return reader->ReadRawData(info_, content, contentSize);
 }
 
 void SysEventDocReader::TryToAddEntry(uint8_t* content, uint32_t contentSize, const DocQuery& query,
     EntryQueue& entries, int& num)
 {
+    if (!CheckEventInfo(content)) {
+        return;
+    }
+
     // check inner condition
     if (!query.IsContainInnerConds(content)) {
-        delete[] content;
         return;
     }
-    int64_t seq = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE));
-    int64_t ts = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE + SEQ_SIZE));
-
-    uint8_t* rawEvent = nullptr;
-    uint32_t eventSize = 0;
-    auto ret = BuildRawEvent(&rawEvent, eventSize, content, contentSize);
-    delete[] content;
-    if (ret != DOC_STORE_SUCCESS) {
+    // build raw data
+    auto rawData = BuildRawData(content, contentSize);
+    if (rawData == nullptr) {
         return;
     }
-
     // check extra condition
-    EventRaw::DecodedEvent decodedEvent(rawEvent);
-    delete[] rawEvent;
-    if (!query.IsContainExtraConds(decodedEvent)) {
+    if (!query.IsContainExtraConds(rawData->GetData())) {
         return;
     }
-
-    // build the json string of the event
-    std::string eventJson = decodedEvent.AsJsonStr();
-    if (BuildEventJson(eventJson, eventSize, seq) != DOC_STORE_SUCCESS) {
-        return;
-    }
-
+    // add to entry queue
     num++;
-    Entry entry;
-    entry.id = seq;
-    entry.ts = ts;
-    entry.value = eventJson;
-    entries.emplace(entry);
+    entries.emplace(info_.seq, info_.timestamp, rawData);
+}
+
+bool SysEventDocReader::CheckEventInfo(uint8_t* content)
+{
+    if (strlen(info_.domain) == 0 || strlen(info_.name) == 0 || info_.level.empty()) {
+        HIVIEW_LOGE("domain=%{public}s or name=%{public}s or level=%{public}s is empty",
+            info_.domain, info_.name, info_.level.c_str());
+        return false;
+    }
+
+    int64_t seq = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE));
+    if (seq < 0) {
+        HIVIEW_LOGE("event seq is invalid, seq=%{public}" PRId64, seq);
+        return false;
+    }
+    info_.seq = seq;
+
+    int64_t timestamp = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE + SEQ_SIZE));
+    if (timestamp < 0) {
+        HIVIEW_LOGE("event seq is invalid, timestamp=%{public}" PRId64, timestamp);
+        return false;
+    }
+    info_.timestamp = timestamp;
+
+    return true;
 }
 } // EventStore
 } // HiviewDFX

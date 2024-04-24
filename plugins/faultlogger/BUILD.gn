@@ -18,6 +18,7 @@ ohos_shared_library("libfaultlogger") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
   configs = [ "service/idl:faultlogger_service_impl_config" ]
@@ -55,6 +56,7 @@ group("unittest") {
   testonly = true
   deps = [
     "interfaces/js/test/unittest:unittest",
+    "test:AsanUnittest",
     "test:FaultloggerClientUnittest",
     "test:FaultloggerUnittest",
   ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,22 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+/* Object returned by the event query */
+struct Entry {
+    /* Event sequence */
+    int64_t id = 0;
+
+    /* Event timestamp */
+    int64_t ts = 0;
+
+    /* Event data */
+    std::shared_ptr<EventRaw::RawData> data = nullptr;
+
+    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data) : id(id), ts(ts), data(data) {}
+};
+using CompareFunc = bool(*)(const Entry&, const Entry&);
+using EntryQueue = std::priority_queue<Entry, std::vector<Entry>, CompareFunc>;
+
 enum DbQueryStatus { SUCCEED = 0, CONCURRENT, OVER_TIME, OVER_LIMIT, TOO_FREQENTLY };
 using DbQueryTag = struct {
     bool isInnerQuery;
@@ -41,9 +57,6 @@ using DbQueryTag = struct {
 };
 using DbQueryCallback = std::function<void(DbQueryStatus)>;
 using QueryProcessInfo = std::pair<pid_t, std::string>; // first: pid of process, second: process name
-
-using CompareFunc = bool(*)(const Entry&, const Entry&);
-using EntryQueue = std::priority_queue<Entry, std::vector<Entry>, CompareFunc>;
 
 constexpr pid_t INNER_PROCESS_ID = -1;
 

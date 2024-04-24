@@ -34,7 +34,9 @@
                 "battery_statistics",
                 "bundle_framework",
                 "common_event_service",
+                "cJSON",
                 "c_utils",
+                "data_share",
                 "device_usage_statistics",
                 "display_manager",
                 "ets_runtime",
@@ -65,8 +67,7 @@
                 "libxml2",
                 "sqlite",
                 "openssl",
-                "bounds_checking_function",
-                "zlib"
+                "bounds_checking_function"
             ]
         },
         "build": {

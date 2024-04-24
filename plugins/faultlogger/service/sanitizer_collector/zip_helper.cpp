@@ -27,13 +27,19 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time_util.h>
 #include <unistd.h>
+
 #include "string_ex.h"
 #include "securec.h"
 #include "limits.h"
 #include "bundle_mgr_client.h"
+#include "event_publish.h"
+#include "hisysevent.h"
+#include "json/json.h"
 #include "sanitizerd_log.h"
 #include "parameters.h"
+#include "parameter_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -175,6 +181,7 @@ static std::string CalcCollectedLogName(T_SANITIZERD_PARAMS *params)
     std::string fullName = filePath + fileName;
 
     params->logName = fileName;
+    params->logPath = fullName;
 
     return fullName;
 }
@@ -199,6 +206,8 @@ static bool WriteNewFile(const int32_t fd, const T_SANITIZERD_PARAMS *params)
             system::GetParameter(DEVICE_OHOS_VERSION_PARAM, EMPTY_PARAM) + "\n" +
             "=================================================================\n" +
             "TIMESTAMP:" + std::to_string(params->happenTime) + "\n" +
+            "Device Info:" + Parameter::GetString("const.product.name", "Unknown") + "\n" +
+            "Build Info:" + Parameter::GetString("const.product.software.version", "Unknown") + "\n" +
             "Pid:" + std::to_string(params->pid) + "\n" +
             "Uid:" + std::to_string(params->uid) + "\n" +
             "Process name:" + params->procName + "\n" +
@@ -225,6 +234,20 @@ void WriteCollectedData(T_SANITIZERD_PARAMS *params)
     if (!WriteNewFile(fd, params)) {
         SANITIZERD_LOGE("Fail to write %{public}s,  err: %{public}s.", fullName.c_str(), strerror(errno));
     }
+    Json::Value eventParams;
+    auto timeNow = TimeUtil::GetMilliseconds();
+    eventParams["time"] = timeNow;
+    eventParams["type"] = params->errType;
+    eventParams["bundle_version"] = params->appVersion;
+    eventParams["bundle_name"] = params->procName;
+    eventParams["external_log"] = params->logPath;
+    eventParams["pid"] = params->pid;
+    eventParams["uid"] = params->uid;
+
+    std::string paramsStr = Json::FastWriter().write(eventParams);
+    SANITIZERD_LOGI("ReportAppEvent: uid:%{public}d, json:%{public}s.",
+        params->uid, paramsStr.c_str());
+    EventPublish::GetInstance().PushEvent(params->uid, "ADDRESS_SANITIZER", HiSysEvent::EventType::FAULT, paramsStr);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

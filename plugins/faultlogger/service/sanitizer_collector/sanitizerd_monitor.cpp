@@ -26,7 +26,7 @@
 #include "securec.h"
 
 #include "sanitizerd_log.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -56,28 +56,33 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
 
     while (res >= sizeof(*event)) {
         event = reinterpret_cast<struct inotify_event*>(eventBuf + eventPos);
-        if (event->len) {
-            if (strcpy_s(filename, PATH_MAX,  event->name) != EOK) {
-                HIVIEW_LOGI("try to copy the file name error, continue");
+        if (event->len <= 0) {
+            eventSize = sizeof(*event);
+            res -= eventSize;
+            eventPos += eventSize;
+            continue;
+        }
+        if (strcpy_s(filename, PATH_MAX,  event->name) != EOK) {
+            HIVIEW_LOGI("try to copy the file name error, continue");
+            continue;
+        }
+
+        // Check the full path of log file.
+        if (event->mask & NOTIFY_MASK) {
+            *sfilename = filename;
+
+            if (event->wd == gAsanWd) {
+                strSanLogPath = std::string(ASAN_LOG_PATH);
+                type = ASAN_LOG_RPT;
             }
 
-            // Check the full path of log file.
-            if (event->mask & NOTIFY_MASK) {
-                *sfilename = filename;
+            ret = 0;
+            std::string strFileName(filename);
+            std::string fullPath = strSanLogPath + "/" + strFileName;
 
-                if (event->wd == gAsanWd) {
-                    strSanLogPath = std::string(ASAN_LOG_PATH);
-                    type = ASAN_LOG_RPT;
-                }
-
-                ret = 0;
-                std::string strFileName(filename);
-                std::string fullPath = strSanLogPath + "/" + strFileName;
-
-                HIVIEW_LOGI("recv filename is:[%{public}s]\n", fullPath.c_str());
-                if (gCallback != nullptr) {
-                    gCallback(type, strFileName);
-                }
+            HIVIEW_LOGI("recv filename is:[%{public}s]\n", fullPath.c_str());
+            if (gCallback != nullptr) {
+                gCallback(type, strFileName);
             }
         }
         eventSize = sizeof(*event) + event->len;
@@ -91,7 +96,12 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
 {
     const std::string asanLogPath = std::string(ASAN_LOG_PATH);
     gNfds = 1;
-    gUfds = reinterpret_cast<pollfd*>(calloc(1, sizeof(gUfds[0])));
+    void* area = calloc(1, sizeof(gUfds[0]));
+    if (!area) {
+        HIVIEW_LOGI("Memory allocation failed.");
+        return 1;
+    }
+    gUfds = reinterpret_cast<pollfd *>(area);
     gUfds[0].fd = inotify_init();
     if (gUfds[0].fd < 0) {
         HIVIEW_LOGI("inotify_init failed: %{public}d-%{public}s.", gUfds[0].fd, strerror(errno));

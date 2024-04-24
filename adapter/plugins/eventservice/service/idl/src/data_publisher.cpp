@@ -38,7 +38,7 @@
 #include "hiview_event_common.h"
 #include "iquery_base_callback.h"
 #include "json/json.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "ret_code.h"
 #include "string_util.h"
 #include "sys_event_query.h"

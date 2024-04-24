@@ -42,13 +42,14 @@ public:
     std::string GetProcessName(int32_t pid);
     ProcessState GetProcessState(int32_t pid);
     uint64_t GetProcessLastForegroundTime(int32_t pid);
-    void NotifyProcessState(int32_t pid, ProcessState procState);
+    void NotifyProcessState(int32_t pid, ProcessState procState, const std::string& name = "");
 
 private:
     bool UpdateProcessName(int32_t pid, const std::string& procName);
-    void UpdateProcessState(int32_t pid, ProcessState procState);
+    void UpdateProcessState(int32_t pid, ProcessState procState, const std::string& name);
     void UpdateProcessForegroundState(int32_t pid);
     void UpdateProcessBackgroundState(int32_t pid);
+    void UpdateProcessCreatedState(int32_t pid, const std::string& name);
     bool NeedClearProcessInfos();
     void ClearProcessInfos();
     void ClearProcessInfo(int32_t pid);

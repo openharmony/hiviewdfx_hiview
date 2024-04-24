@@ -15,7 +15,7 @@
 
 #include "encoded/raw_data_encoder.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {

@@ -21,16 +21,21 @@
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 
+#include "app_caller_event.h"
+#include "bundle_mgr_client.h"
+#include "collect_event.h"
 #include "file_util.h"
+#include "hiview_logger.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
-#include "logger.h"
+#include "time_util.h"
 #include "trace_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-Service");
 namespace {
+std::mutex traceMutex;
 constexpr int MIN_SUPPORT_CMD_SIZE = 1;
 constexpr int32_t ERR_DEFAULT = -1;
 }
@@ -359,7 +364,7 @@ CollectResult<int32_t> HiviewService::CloseTrace()
     TraceManager manager;
     int32_t closeRet = manager.CloseTrace();
     if (closeRet != UCollect::UcError::SUCCESS) {
-        HIVIEW_LOGW("failed to close the trace.");
+        HIVIEW_LOGW("failed to close the trace. errorCode=%{public}d", closeRet);
     }
     CollectResult<int32_t> ret;
     ret.retCode = UCollect::UcError(closeRet);
@@ -376,6 +381,56 @@ CollectResult<int32_t> HiviewService::RecoverTrace()
     CollectResult<int32_t> ret;
     ret.retCode = UCollect::UcError(recoverRet);
     return ret;
+}
+
+CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t pid,
+    UCollectClient::AppCaller &appCaller)
+{
+    std::lock_guard<std::mutex> guard(traceMutex);
+
+    CollectResult<int32_t> result;
+    result.data = 0;
+    result.retCode = UCollect::UcError::SUCCESS;
+    if (!AppCallerEvent::enableDynamicTrace_) {
+        HIVIEW_LOGE("disable dynamic trace, can not capture trace for uid=%{public}d, pid=%{public}d", uid, pid);
+        result.retCode = UCollect::UcError::UNSUPPORT;
+        return result;
+    }
+
+    if (AppCallerEvent::isDynamicTraceOpen_) {
+        HIVIEW_LOGE("dynamic trace is already open uid=%{public}d, pid=%{public}d", uid, pid);
+        result.retCode = UCollect::UcError::EXISTS_CAPTURE_TASK;
+        return result;
+    }
+
+    std::shared_ptr<Plugin> plugin = HiviewPlatform::GetInstance().GetPluginByName(UCollectUtil::UCOLLECTOR_PLUGIN);
+    if (plugin == nullptr) {
+        HIVIEW_LOGE("UnifiedCollector plugin does not exists, uid=%{public}d, pid=%{public}d", uid, pid);
+        result.retCode = UCollect::UcError::SYSTEM_ERROR;
+        return result;
+    }
+
+    AppCallerEvent::isDynamicTraceOpen_ = true;
+    std::shared_ptr<AppCallerEvent> appCallerEvent = std::make_shared<AppCallerEvent>("HiViewService");
+    appCallerEvent->messageType_ = Event::MessageType::PLUGIN_MAINTENANCE;
+    appCallerEvent->eventName_ = UCollectUtil::START_CAPTURE_TRACE;
+    appCallerEvent->bundleName_ = appCaller.bundleName;
+    appCallerEvent->bundleVersion_ = appCaller.bundleVersion;
+    appCallerEvent->uid_ = appCaller.uid;
+    appCallerEvent->pid_ = appCaller.pid;
+    appCallerEvent->happenTime_ = appCaller.happenTime;
+    appCallerEvent->beginTime_ = appCaller.beginTime;
+    appCallerEvent->endTime_ = appCaller.endTime;
+    appCallerEvent->taskBeginTime_ = TimeUtil::GetMilliseconds();
+
+    std::shared_ptr<Event> mainThreadJankEvent = std::dynamic_pointer_cast<Event>(appCallerEvent);
+    if (!plugin->OnEvent(mainThreadJankEvent)) {
+        AppCallerEvent::isDynamicTraceOpen_ = false;
+        HIVIEW_LOGE("capture trace failed for uid=%{public}d pid=%{public}d error code=%{public}d",
+            uid, pid, appCallerEvent->resultCode_);
+        result.retCode = UCollect::UcError(appCallerEvent->resultCode_);
+    }
+    return result;
 }
 
 CollectResult<double> HiviewService::GetSysCpuUsage()

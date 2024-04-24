@@ -22,7 +22,7 @@
 #include "data_publisher.h"
 #include "hiview_event_common.h"
 #include "ipc_skeleton.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "ret_code.h"
 #include "string_ex.h"
 
@@ -263,7 +263,7 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
             details.second++;
             continue;
         }
-        if (cachedEvents_.size() >= queryLimit_ ||
+        if (cachedEvents_.size() >= static_cast<size_t> (queryLimit_) ||
             cachedEventTotalSize_ + eventJsonSize >= MAX_TRANS_BUF) {
             TransportCachedEvents(callback);
         }

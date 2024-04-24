@@ -16,7 +16,7 @@
 
 #include "hiview_event_common.h"
 #include "hiview_event_cacher.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "plugin_fault_event_factory.h"
 #include "plugin_load_event_factory.h"
 #include "plugin_unload_event_factory.h"

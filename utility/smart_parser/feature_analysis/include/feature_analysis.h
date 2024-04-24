@@ -41,8 +41,17 @@ class FeatureAnalysis {
     };
 public:
     FeatureAnalysis(FeatureSet featureSet, std::map<std::string, std::string> composeRule,
-        const std::string& eventType) : taskId_(time(nullptr)), eventType_(eventType), lineCursor_(0),
-        errorCode_(DEFAULT), line_(""), featureSet_(featureSet), composeRule_(composeRule) {};
+        const std::string& eventType)
+        : eventType_(eventType), lineCursor_(0), errorCode_(DEFAULT), line_(""),
+          featureSet_(featureSet), composeRule_(composeRule)
+    {
+        time_t epochTime = time(nullptr);
+        if (epochTime > 0) {
+            taskId_ = epochTime;
+        } else {
+            taskId_ = 0;
+        }
+    };
     ~FeatureAnalysis();
     FeatureAnalysis(const FeatureAnalysis&) = delete;
     FeatureAnalysis& operator=(const FeatureAnalysis&) = delete;

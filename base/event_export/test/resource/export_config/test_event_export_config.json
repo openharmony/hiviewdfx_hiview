@@ -1,0 +1,16 @@
+{
+    "settingDbParam": {
+        "name": "test_param_key",
+        "enabledValue": "1",
+        "disabledValue": "0"
+    },
+    "exportDir": "/data/test/test_data",
+    "exportDirMaxCapacity": 100,
+    "exportSingleFileMaxSize": 2,
+    "taskExecutingCycle": 3600,
+    "exportEventListConfigPaths": [
+         "/data/test/test_data/test_events.json",
+         "/data/test/test_data/test_events_v2.json"
+    ],
+    "fileStoredMaxDayCnt": 7
+}

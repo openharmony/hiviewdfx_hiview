@@ -21,7 +21,8 @@ namespace HiviewDFX {
 constexpr char KEY_BUILD_CHARACTER[] = "ro.build.characteristics";
 constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
 constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state";
-constexpr char HIVIEW_UCOLLECTION_STATE[] = "sys.hiview.diag.ucollection";
+constexpr char HIVIEW_UCOLLECTION_STATE[] = "hiviewdfx.ucollection.switchon";
+constexpr char DEVELOP_HIVIEW_TRACE_RECORDER[] = "persist.hiview.trace_recorder";
 namespace Parameter {
 enum DeviceType {
     UNKNOWN = 0,
@@ -42,6 +43,7 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
 bool IsBetaVersion();
 bool IsDeveloperMode();
 bool IsUCollectionSwitchOn();
+bool IsTraceCollectionSwitchOn();
 DeviceType GetDeviceType();
 std::string GetDisplayVersionStr();
 };

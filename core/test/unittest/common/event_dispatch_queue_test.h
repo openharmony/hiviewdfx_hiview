@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,6 @@
 
 #include "event.h"
 #include "event_dispatch_queue.h"
-#include "hiview_platform.h"
 
 class EventDispatchQueueTest : public testing::Test {
 public:
@@ -31,8 +30,7 @@ public:
     void SetUp();
     void TearDown();
     std::shared_ptr<OHOS::HiviewDFX::Event> CreateEvent(const std::string& name, int32_t id,
-                                                             const std::string& message,
-                                                             OHOS::HiviewDFX::Event::MessageType type);
+        const std::string& message, OHOS::HiviewDFX::Event::MessageType type);
     static constexpr int EVENT_ID_0 = 0;
     static constexpr int EVENT_ID_1 = 1;
     static constexpr int EVENT_ID_2 = 2;

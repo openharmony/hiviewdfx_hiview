@@ -19,7 +19,7 @@
 
 #include "file_util.h"
 #include "log_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "string_util.h"
 
 using namespace std;
@@ -243,7 +243,8 @@ void ExtractRule::ParseRuleParam(const Json::Value& object, list<FeatureRule>& f
 }
 
 void ExtractRule::GetExtractParam(const Json::Value& rules,
-    std::map<std::string, std::string>& param, const std::string& preKey) const {
+    std::map<std::string, std::string>& param, const std::string& preKey) const
+{
     for (auto iter = rules.begin(); iter != rules.end(); iter++) {
         auto pos = iter.key().asString().find(preKey);
         if (pos == 0) {

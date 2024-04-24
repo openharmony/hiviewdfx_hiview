@@ -15,7 +15,7 @@
 
 #include "network_collector_impl.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "network_decorator.h"
 #ifdef COMMUNICATION_WIFI_ENABLE
 #include "wifi_device.h"

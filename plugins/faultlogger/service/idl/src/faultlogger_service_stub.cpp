@@ -21,7 +21,7 @@
 #include "faultlog_info_ohos.h"
 #include "hiviewfaultlogger_ipc_interface_code.h"
 
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -43,7 +43,9 @@ int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                 HIVIEW_LOGE("failed to Unmarshalling info.");
                 return ERR_FLATTEN_OBJECT;
             }
-
+            if (data.ContainFileDescriptors()) {
+                ohosInfo->pipeFd = data.ReadFileDescriptor();
+            }
             FaultLogInfoOhos info(*ohosInfo);
             AddFaultLog(info);
             return ERR_OK;

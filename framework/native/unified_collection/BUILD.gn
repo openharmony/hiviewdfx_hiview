@@ -26,6 +26,7 @@ config("ucolletciton_source_config") {
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
   ]
+  defines = [ "PC_APP_STATE_COLLECT_ENABLE = $hiview_unified_collector_PC_app_state_collect_enable" ]
 }
 
 ohos_source_set("ucollection_source") {
@@ -41,6 +42,7 @@ ohos_source_set("ucollection_source") {
     "collector/common_util.cpp",
     "collector/cpu_collector_impl.cpp",
     "collector/gpu_collector_impl.cpp",
+    "collector/hiebpf_collector_impl.cpp",
     "collector/hilog_collector_impl.cpp",
     "collector/io_collector_impl.cpp",
     "collector/memory_collector_impl.cpp",
@@ -50,6 +52,7 @@ ohos_source_set("ucollection_source") {
     "collector/sys_cpu_usage_collector.cpp",
     "collector/thread_state_info_collector.cpp",
     "collector/trace_collector_impl.cpp",
+    "collector/utils/app_event_task_storage.cpp",
     "collector/utils/trace_flow_controller.cpp",
     "collector/utils/trace_manager.cpp",
     "collector/utils/trace_storage.cpp",
@@ -59,6 +62,7 @@ ohos_source_set("ucollection_source") {
     "decorator/cpu_decorator.cpp",
     "decorator/decorator.cpp",
     "decorator/gpu_decorator.cpp",
+    "decorator/hiebpf_decorator.cpp",
     "decorator/hilog_decorator.cpp",
     "decorator/io_decorator.cpp",
     "decorator/memory_decorator.cpp",

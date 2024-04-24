@@ -108,6 +108,7 @@ public:
         Builder& InitExternalLog(const std::string& externalLog);
         Builder& InitPid(long pid);
         Builder& InitUid(long uid);
+        Builder& InitAppRunningUniqueId(const std::string& appRunningUniqueId);
         Builder& InitException(const std::string& exception);
         Builder& InitHilog(const std::string& hilog);
         Builder& InitEventHandler(const std::string& eventHandler);
@@ -129,6 +130,7 @@ public:
         std::string externalLog_ = "";
         long pid_ = 0;
         long uid_ = 0;
+        std::string appRunningUniqueId_ = "";
         std::string exception_ = "{}";
         std::string hilog_ = "[]";
         std::string eventHandler_ = "[]";
@@ -155,6 +157,7 @@ private:
     static const inline std::string jsonParamsExternalLog = "external_log";
     static const inline std::string jsonParamsPid = "pid";
     static const inline std::string jsonParamsUid = "uid";
+    static const inline std::string jsonParamsAppRunningUniqueId = "app_running_unique_id";
     static const inline std::string jsonParamsException = "exception";
     static const inline std::string jsonParamsHilog = "hilog";
     static const inline std::string jsonParamsEventHandler = "event_handler";
@@ -174,6 +177,7 @@ private:
     std::string externalLog_ = "";
     long pid_ = 0;
     long uid_ = 0;
+    std::string appRunningUniqueId_ = "";
     std::string exception_;
     std::string hilog_;
     std::string eventHandler_;

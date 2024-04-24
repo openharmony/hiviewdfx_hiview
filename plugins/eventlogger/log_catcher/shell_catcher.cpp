@@ -15,7 +15,7 @@
 #include "shell_catcher.h"
 #include <unistd.h>
 #include <sys/wait.h>
-#include "logger.h"
+#include "hiview_logger.h"
 #include "common_utils.h"
 #include "log_catcher_utils.h"
 #include "securec.h"

@@ -19,7 +19,7 @@
 
 #include "event_log_task.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "sys_event.h"
 #include "time_util.h"
 #include "trace_collector.h"

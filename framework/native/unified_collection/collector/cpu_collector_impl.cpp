@@ -18,7 +18,7 @@
 #include <memory>
 
 #include "cpu_decorator.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -49,7 +49,6 @@ std::shared_ptr<CpuCollector> CpuCollector::Create(bool isSingleton)
     if (!isSingleton) {
         return std::make_shared<CpuDecorator>(std::make_shared<CpuCollectorImpl>());
     }
-
     static std::shared_ptr<CpuCollector> instance_ =
         std::make_shared<CpuDecorator>(std::make_shared<CpuCollectorImpl>());
     return instance_;
@@ -110,7 +109,7 @@ CollectResult<ProcessCpuStatInfo> CpuCollectorImpl::CollectProcessCpuStatInfo(in
     return error;
 }
 
-std::shared_ptr<ThreadCollector> CpuCollectorImpl::CreateThreadCollector(int pid)
+std::shared_ptr<ThreadCpuCollector> CpuCollectorImpl::CreateThreadCollector(int pid)
 {
     if (deviceClient_ == nullptr) {
         return nullptr;

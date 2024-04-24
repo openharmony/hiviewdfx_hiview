@@ -14,6 +14,8 @@
  */
 #include <algorithm>
 #include <chrono>
+#include <fcntl.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -21,7 +23,7 @@
 #include "cpu_collector.h"
 #include "file_util.h"
 #include "ffrt.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "securec.h"
 #include "string_util.h"
@@ -42,8 +44,10 @@ const std::string RELIABILITY = "Reliability";
 const std::string XPERF = "Xperf";
 const std::string XPOWER = "Xpower";
 const std::string BETACLUB = "BetaClub";
+const std::string APP = "APP";
 const std::string OTHER = "Other";
 const uint32_t UNIFIED_SHARE_COUNTS = 20;
+const uint32_t UNIFIED_APP_SHARE_COUNTS = 40;
 const uint32_t UNIFIED_SPECIAL_XPERF = 3;
 const uint32_t UNIFIED_SPECIAL_RELIABILITY = 3;
 const uint32_t UNIFIED_SPECIAL_OTHER = 5;
@@ -148,6 +152,26 @@ protected:
     }
 };
 
+class AppShareCleanPolicy : public CleanPolicy {
+public:
+    explicit AppShareCleanPolicy(int type) : CleanPolicy(type) {}
+    ~AppShareCleanPolicy() override {}
+
+protected:
+    bool IsMine(const std::string &fileName) override
+    {
+        if (fileName.find("/"+APP) != std::string::npos) {
+            return true;
+        }
+        return false;
+    }
+
+    uint32_t MyThreshold() override
+    {
+        return UNIFIED_APP_SHARE_COUNTS;
+    }
+};
+
 class SpecialXperfCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialXperfCleanPolicy(int type) : CleanPolicy(type) {}
@@ -209,6 +233,10 @@ protected:
 std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &caller)
 {
     if (type == SHARE) {
+        if (caller == TraceCollector::Caller::APP) {
+            return std::make_shared<AppShareCleanPolicy>(type);
+        }
+
         return std::make_shared<ShareCleanPolicy>(type);
     }
 
@@ -234,6 +262,9 @@ void FileRemove(TraceCollector::Caller &caller)
         case TraceCollector::Caller::XPERF:
             shareCleaner->DoClean();
             specialCleaner->DoClean();
+            break;
+        case TraceCollector::Caller::APP:
+            shareCleaner->DoClean();
             break;
         default:
             specialCleaner->DoClean();
@@ -279,6 +310,8 @@ const std::string EnumToString(TraceCollector::Caller &caller)
             return XPOWER;
         case TraceCollector::Caller::BETACLUB:
             return BETACLUB;
+        case TraceCollector::Caller::APP:
+            return APP;
         default:
             return OTHER;
     }
@@ -302,7 +335,7 @@ void CheckCurrentCpuLoad()
     int32_t pid = getpid();
     auto collectResult = collector->CollectProcessCpuStatInfo(pid);
     HIVIEW_LOGI("first get cpu load %{public}f", collectResult.data.cpuLoad);
-    int32_t retryTime = 0;
+    uint32_t retryTime = 0;
     while (collectResult.data.cpuLoad > CPU_LOAD_THRESHOLD && retryTime < MAX_TRY_COUNT) {
         ffrt::this_task::sleep_for(5s);
         collectResult = collector->CollectProcessCpuStatInfo(pid);
@@ -463,14 +496,30 @@ void TraceCollector::RecoverTmpTrace()
         std::string fileName = FileUtil::ExtractFileName(filePath);
         HIVIEW_LOGI("unfinished trace file: %{public}s", fileName.c_str());
         std::string originTraceFile = StringUtil::ReplaceStr("/data/log/hitrace/" + fileName, ".zip", ".sys");
-        if (FileUtil::FileExists(originTraceFile)) {
-            HIVIEW_LOGI("originTraceFile path: %{public}s", originTraceFile.c_str());
+        if (!FileUtil::FileExists(originTraceFile)) {
+            HIVIEW_LOGI("source file not exist: %{public}s", originTraceFile.c_str());
             FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
-            UcollectionTask traceTask = [=]() {
-                ZipTraceFile(originTraceFile, UNIFIED_SHARE_PATH + fileName);
-            };
-            TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+            continue;
         }
+        int fd = open(originTraceFile.c_str(), O_RDONLY | O_NONBLOCK);
+        if (fd == -1) {
+            HIVIEW_LOGI("open source file failed: %{public}s", originTraceFile.c_str());
+            continue;
+        }
+        // add lock before zip trace file, in case hitrace delete origin trace file.
+        if (flock(fd, LOCK_EX | LOCK_NB) < 0) {
+            HIVIEW_LOGI("get source file lock failed: %{public}s", originTraceFile.c_str());
+            close(fd);
+            continue;
+        }
+        HIVIEW_LOGI("originTraceFile path: %{public}s", originTraceFile.c_str());
+        FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
+        UcollectionTask traceTask = [=]() {
+            ZipTraceFile(originTraceFile, UNIFIED_SHARE_PATH + fileName);
+            flock(fd, LOCK_UN);
+            close(fd);
+        };
+        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
     }
 }
 } // HiViewDFX

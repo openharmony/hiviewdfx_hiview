@@ -21,6 +21,7 @@
 #include <string>
 
 #include "rdb_store.h"
+#include "app_event_task_storage.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -38,6 +39,9 @@ public:
     void Store(const UcollectionTraceStorage& traceStorage);
     void Query(UcollectionTraceStorage &traceStorage);
 
+    bool QueryAppEventTask(int32_t uid, int32_t date, AppEventTask &appEventTask);
+    bool StoreAppEventTask(AppEventTask &appEventTask);
+
 private:
     void InitDbStore();
     int32_t CreateTable();
@@ -47,6 +51,7 @@ private:
 private:
     std::string dbStorePath_;
     std::shared_ptr<NativeRdb::RdbStore> dbStore_;
+    std::shared_ptr<AppEventTaskStorage> appTaskStore_;
 }; // TraceStorage
 } // namespace HiviewDFX
 } // namespace OHOS

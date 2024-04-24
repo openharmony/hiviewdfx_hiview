@@ -22,7 +22,7 @@
 
 #include "base/raw_data_base_def.h"
 #include "decoded/raw_data_decoder.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -30,6 +30,7 @@ namespace EventRaw {
 DEFINE_LOG_TAG("HiView-DecodedEvent");
 namespace {
 constexpr size_t MAX_BLOCK_SIZE = 384 * 1024; // 384K
+constexpr size_t MAX_PARAM_CNT = 128 + 10; // 128 for Write, 10 for hiview
 
 std::string TransUInt64ToFixedLengthStr(uint64_t src)
 {
@@ -290,6 +291,11 @@ void DecodedEvent::ParseCustomizedParams(const size_t maxLen)
         return;
     }
     auto paramCnt = static_cast<size_t>(*(reinterpret_cast<int32_t*>(rawData_ + pos_)));
+    if (paramCnt > MAX_PARAM_CNT) {
+        HIVIEW_LOGW("invalid param cnt=%{public}zu.", paramCnt);
+        isValid_ = false;
+        return;
+    }
     pos_ += sizeof(int32_t);
     while (paramCnt > 0) {
         auto decodedParam = ParseCustomizedParam(maxLen);

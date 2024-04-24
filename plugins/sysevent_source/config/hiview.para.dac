@@ -13,11 +13,15 @@
 
 persist.sys.hiview.="shell:log:755"
 persist.hiviewdfx.priv.="hiview:log:755"
-hiviewdfx.logservice.remotelog.on="hiview:log:755"
+hiviewdfx.logservice.remotelog.="hiview:log:755"
 sys.hiview.diag.remotemodem="hiview:log:755"
 sys.hiview.diag.remotetcpdump="hiview:log:755"
 persist.sys.hiview.diag.chrmodem="hiview:log:755"
 persist.sys.hiview.diag.chrtcpdump="hiview:log:755"
 sys.hiview.chr.fluchcache="hiview:log:755"
 hiviewdfx.freeze.filter.="hiview:log:666"
-sys.hiview.diag.ucollection="hiview:log:755"
+hiviewdfx.ucollection.="hiview:log:755"
+
+persist.hiview.leak_detector="hiview:log:755"
+persist.hiview.freeze_detector="hiview:log:755"
+persist.hiview.trace_recorder="hiview:log:755"

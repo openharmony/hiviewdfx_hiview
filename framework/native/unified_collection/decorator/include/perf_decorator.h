@@ -36,6 +36,7 @@ public:
     void SetCallGraph(const std::string &sampleTypes) override;
     void SetSelectEvents(const std::vector<std::string> &selectEvents) override;
     void SetCpuPercent(int cpuPercent) override;
+    void SetReport(bool enable) override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
     // for prepare recod mode

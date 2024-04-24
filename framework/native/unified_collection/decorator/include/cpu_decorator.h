@@ -22,9 +22,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class CpuDecorator : public CpuCollector, public UCDecorator {
+class CpuDecorator : public CpuCollector, public ThreadCpuCollector, public UCDecorator {
 public:
-    CpuDecorator(std::shared_ptr<CpuCollector> collector) : cpuCollector_(collector) {};
+    CpuDecorator(std::shared_ptr<CpuCollector> collector,
+        std::shared_ptr<ThreadCpuCollector> threadCpuCollector = nullptr) : cpuCollector_(collector),
+        threadCpuCollector_(threadCpuCollector) {};
     virtual ~CpuDecorator() = default;
 
 public:
@@ -36,13 +38,15 @@ public:
     virtual CollectResult<std::vector<CpuFreq>> CollectCpuFrequency() override;
     virtual CollectResult<std::vector<ProcessCpuStatInfo>> CollectProcessCpuStatInfos(
         bool isNeedUpdate = false) override;
-    virtual std::shared_ptr<ThreadCollector> CreateThreadCollector(int pid) override;
-
+    virtual std::shared_ptr<ThreadCpuCollector> CreateThreadCollector(int pid) override;
+    virtual CollectResult<std::vector<ThreadCpuStatInfo>> CollectThreadStatInfos(bool isNeedUpdate = false) override;
+    virtual int GetCollectPid() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 
 private:
     std::shared_ptr<CpuCollector> cpuCollector_;
+    std::shared_ptr<ThreadCpuCollector> threadCpuCollector_;
     static StatInfoWrapper statInfoWrapper_;
 };
 } // namespace UCollectUtil

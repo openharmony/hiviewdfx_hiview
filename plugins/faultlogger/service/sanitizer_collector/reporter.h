@@ -56,6 +56,7 @@ using T_SANITIZERD_PARAMS = struct {
     std::string errType;
     std::string errTypeInShort;
     std::string logName;
+    std::string logPath;
     std::string description;
     uint64_t    happenTime;
     std::string func;

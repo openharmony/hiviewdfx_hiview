@@ -32,7 +32,7 @@ class FaultLogDatabase;
 class FaultLogManager {
 public:
     // use rawdb manage fault log infos
-    explicit FaultLogManager(std::shared_ptr<EventLoop> looper) : looper_(looper) {};
+    explicit FaultLogManager(const std::shared_ptr<EventLoop>& looper) : looper_(looper) {};
     virtual ~FaultLogManager();
     void Init();
 

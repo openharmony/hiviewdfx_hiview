@@ -40,6 +40,8 @@ struct GwpAsanCurrInfo {
     /** type of fault */
     std::string procName;
     /** name of module which fault occurred */
+    std::string logPath;
+    /** logPath of module which fault occurred */
     std::string appVersion;
     /** the reason why fault occurred */
     std::string errType;
@@ -52,9 +54,9 @@ constexpr unsigned BUF_SIZE = 128;
 constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr int MIN_APP_UID = 10000;
 
-void ReadGwpAsanRecord(std::string& gwpAsanBuffer, std::string& errType);
+void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
 std::string GetApplicationNameById(int32_t uid);
-std::string GetNameByPid(uint32_t pid);
+std::string GetNameByPid(int32_t pid);
 std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);

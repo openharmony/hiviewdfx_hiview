@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,13 +34,13 @@ public:
 private:
     int WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize);
     int WriteContent(const std::shared_ptr<SysEvent>& sysEvent, uint32_t contentSize);
-    int BuildContent(const std::shared_ptr<SysEvent>& sysEvent, uint8_t** contentPtr, uint32_t contentSize);
     uint32_t GetCurrPageRemainSize(int fileSize, uint32_t pageSize);
     int FillCurrPageWithZero(uint32_t remainSize);
     int GetContentSize(const std::shared_ptr<SysEvent>& sysEvent, uint32_t& contentSize);
 
 private:
     std::ofstream out_;
+    uint32_t headerSize_ = 0;
 }; // EventDocWriter
 } // EventStore
 } // HiviewDFX

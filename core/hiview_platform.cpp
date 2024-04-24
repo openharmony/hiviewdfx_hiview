@@ -34,7 +34,7 @@
 #include "hiview_event_report.h"
 #include "hiview_global.h"
 #include "hiview_platform_config.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_config.h"
 #include "plugin_factory.h"
@@ -312,8 +312,7 @@ void HiviewPlatform::ProcessArgsRequest(int argc, char* argv[])
     int ch = -1;
     while ((ch = getopt(argc, argv, "v")) != -1) {
         if (ch == 'v') {
-            HIVIEW_LOGI("hiview version: %s%s%s", VERSION, SEPARATOR_VERSION,
-                            RECORDER_VERSION);
+            HIVIEW_LOGI("hiview version: %s%s%s", VERSION, SEPARATOR_VERSION, RECORDER_VERSION);
             printf("hiview version: %s%s%s\n", VERSION, SEPARATOR_VERSION, RECORDER_VERSION);
             _exit(1);
         }
@@ -560,7 +559,7 @@ void HiviewPlatform::StartLoop()
 void HiviewPlatform::StartPlatformDispatchQueue()
 {
     if (unorderQueue_ == nullptr) {
-        unorderQueue_ = std::make_unique<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED, this);
+        unorderQueue_ = std::make_shared<EventDispatchQueue>("plat_unorder", Event::ManageType::UNORDERED, this);
         unorderQueue_->Start();
     }
 

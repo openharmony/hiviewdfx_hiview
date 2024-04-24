@@ -43,7 +43,10 @@ ohos_unittest("FreezeDetectorTest") {
     "//third_party/libxml2:xml2",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 
   resource_config_file =
       "$hiview_plugin/freeze_detector/test/resource/ohos_test.xml"

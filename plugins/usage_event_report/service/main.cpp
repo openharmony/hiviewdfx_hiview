@@ -14,7 +14,7 @@
  */
 #include <unistd.h>
 
-#include "logger.h"
+#include "hiview_logger.h"
 #include "usage_event_report_service.h"
 
 namespace {

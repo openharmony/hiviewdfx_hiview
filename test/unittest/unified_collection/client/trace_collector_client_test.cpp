@@ -122,3 +122,26 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
     }
     DisablePermissionAccess();
 }
+
+/**
+ * @tc.name: TraceCollectorTest003
+ * @tc.desc: capture 3 second trace.
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
+{
+    auto traceCollector = TraceCollector::Create();
+    ASSERT_TRUE(traceCollector != nullptr);
+    EnablePermissionAccess();
+    AppCaller appCaller;
+    appCaller.bundleName = "com.example.helloworld";
+    appCaller.bundleVersion = "2.0.1";
+    appCaller.uid = 20020141;
+    appCaller.pid = 100;
+    appCaller.happenTime = 1713232218000;
+    appCaller.beginTime = appCaller.happenTime - 100;
+    appCaller.endTime = appCaller.happenTime + 100;
+    auto result = traceCollector->CaptureDurationTrace(appCaller);
+    ASSERT_TRUE(result.data == 0);
+    DisablePermissionAccess();
+}

@@ -16,7 +16,7 @@
 #include "cpu_perf_dump.h"
 #include "file_util.h"
 #include "time_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 
 namespace OHOS {
@@ -42,7 +42,7 @@ CpuPerfDump::CpuPerfDump()
     }
     systemUpTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     lastRecordTime_ = systemUpTime_;
-    isSwitchOn_ = Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn();
+    isBetaVersion_ = Parameter::IsBetaVersion();
 }
 
 void CpuPerfDump::DumpTopNCpuProcessPerfData()
@@ -74,7 +74,7 @@ bool CpuPerfDump::CompareCpuUsage(const ProcessCpuStatInfo &info1, const Process
 
 bool CpuPerfDump::CheckRecordInterval()
 {
-    if (!isSwitchOn_) {
+    if (!isBetaVersion_) {
         return false;
     }
     int64_t nowTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
@@ -150,7 +150,6 @@ bool CpuPerfDump::CompareFilenames(const std::string &name1, const std::string &
 {
     std::string timestamp1 = GetTimestamp(name1);
     std::string timestamp2 = GetTimestamp(name2);
-
     uint64_t time1 = std::stoull(timestamp1);
     uint64_t time2 = std::stoull(timestamp2);
     return time1 < time2;

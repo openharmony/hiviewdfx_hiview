@@ -16,7 +16,7 @@ import("//build/test.gni")
 
 module_output_path = "hiview/usage_event_report"
 
-config("usage_event_report_cache_test_config") {
+config("usage_event_report_test_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
@@ -26,6 +26,7 @@ config("usage_event_report_cache_test_config") {
     "$hiview_base/event_report/include",
     "$hiview_plugin/usage_event_report/cache/include",
     "$hiview_plugin/usage_event_report/event/include",
+    "$hiview_plugin/usage_event_report/idl/include",
     "$hiview_plugin/usage_event_report/include",
     "$hiview_plugin/usage_event_report/service/factory/include",
   ]
@@ -33,9 +34,37 @@ config("usage_event_report_cache_test_config") {
   cflags = [ "-D__UNITTEST__" ]
 }
 
+ohos_unittest("UsageEventReportTest") {
+  module_out_path = module_output_path
+  configs = [ ":usage_event_report_test_config" ]
+
+  sources = [ "usage_event_report_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_report:hiview_event_report",
+    "$hiview_plugin/usage_event_report:usage_event_report",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "relational_store:native_rdb",
+  ]
+
+  defines = []
+  if (power_manager_enable) {
+    external_deps += [ "power_manager:powermgr_client" ]
+    defines += [ "POWER_MANAGER_ENABLE" ]
+  }
+}
+
 ohos_unittest("UsageEventReportCacheTest") {
   module_out_path = module_output_path
-  configs = [ ":usage_event_report_cache_test_config" ]
+  configs = [ ":usage_event_report_test_config" ]
 
   sources = [ "usage_event_report_cache_test.cpp" ]
 

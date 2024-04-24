@@ -17,7 +17,7 @@
 
 #include "hilog/log.h"
 #include "hitrace_dump.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "trace_collector.h"
 #include "trace_manager.h"

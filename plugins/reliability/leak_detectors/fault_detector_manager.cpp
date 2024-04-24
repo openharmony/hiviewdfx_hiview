@@ -25,7 +25,7 @@
 #include "event_loop.h"
 #include "fault_detector_util.h"
 #include "fault_state_base.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "native_leak_detector.h"
 #include "native_leak_state_context.h"
 #include "plugin.h"
@@ -46,7 +46,7 @@ bool FaultDetectorManager::OnEvent(std::shared_ptr<Event> &event)
 
 bool FaultDetectorManager::ReadyToLoad()
 {
-    if (FaultDetectorUtil::IsMemLeakDisable()) {
+    if (!FaultDetectorUtil::IsMemLeakEnable()) {
         HIVIEW_LOGW("fault detector not enable, Load is not ready");
         return false;
     }
@@ -57,7 +57,7 @@ bool FaultDetectorManager::ReadyToLoad()
 
 void FaultDetectorManager::PrepareFaultDetectorEnv()
 {
-    if (!FaultDetectorUtil::IsMemLeakDisable()) {
+    if (FaultDetectorUtil::IsMemLeakEnable()) {
         HIVIEW_LOGI("Prepare Enviroment for memory leak");
         NativeLeakDetector::GetInstance().PrepareNativeLeakEnv();
         detectorList_.push_back(NATIVE_LEAK_DETECTOR);
@@ -102,10 +102,10 @@ void FaultDetectorManager::OnLoad()
         return;
     }
 
-    auto detectorProcessLoop = [&] {
+    auto detectorProcessLoop = [this]() {
         HIVIEW_LOGI("start detectorProcessLoop task");
         while (isLoopContinue_) {
-            FaultDetectorManager::MonitorProcess(); // if FaultDetectorManager need?
+            FaultDetectorManager::MonitorProcess();
             ffrt::this_task::sleep_for(std::chrono::microseconds(TASK_TIMER_INTERVAL * 1000 * 1000)); // 5s
         }
     };

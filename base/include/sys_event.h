@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,15 +50,17 @@ public:
 };
 }
 
-constexpr int8_t LOG_ALLOW_PACK = 0 << 5;
-constexpr int8_t LOG_NOT_ALLOW_PACK = 1 << 5;
-constexpr int8_t LOG_PACKED = 1;
-constexpr int8_t LOG_REPEAT = 1;
-constexpr int8_t LOG_THRESHOLD = 2;
+constexpr uint8_t LOG_ALLOW_PACK = 0 << 5;
+constexpr uint8_t LOG_NOT_ALLOW_PACK = 1 << 5;
+constexpr uint8_t LOG_PACKED = 1;
+constexpr uint8_t LOG_REPEAT = 1;
+constexpr uint8_t LOG_THRESHOLD = 2;
 
 class SysEventCreator;
 class SysEvent : public PipelineEvent {
 public:
+    SysEvent(const std::string& sender, PipelineEventProducer* handler,
+        std::shared_ptr<EventRaw::RawData> rawData, int64_t seq);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, std::shared_ptr<EventRaw::RawData> rawData);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, const std::string& jsonStr);
@@ -77,6 +79,9 @@ public:
     int64_t GetSeq() const;
     void SetEventSeq(int64_t eventSeq);
     int64_t GetEventSeq() const;
+    int GetEventType() const;
+    void SetId(uint64_t id);
+
     std::string GetEventValue(const std::string& key);
     int64_t GetEventIntValue(const std::string& key);
     uint64_t GetEventUintValue(const std::string& key);
@@ -85,7 +90,6 @@ public:
     bool GetEventUintArrayValue(const std::string& key, std::vector<uint64_t>& dest);
     bool GetEventDoubleArrayValue(const std::string& key, std::vector<double>& dest);
     bool GetEventStringArrayValue(const std::string& key, std::vector<std::string>& dest);
-    int GetEventType();
     std::string AsJsonStr();
     uint8_t* AsRawData();
 
@@ -93,7 +97,7 @@ public:
     template<typename T>
     void SetEventValue(const std::string& key, T value, bool appendValue = false)
     {
-        if (builder_ == nullptr) {
+        if (!InitBuilder()) {
             return;
         }
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
@@ -107,32 +111,13 @@ public:
             value = EscapeJsonStringValue(value);
         }
         builder_->AppendValue(key, value);
-    }
-
-    template<typename T,
-        std::enable_if_t<std::is_same_v<std::decay_t<T>, uint64_t> ||
-        std::is_same_v<std::decay_t<T>, std::string>>* = nullptr>
-    void SetId(T id)
-    {
-        if (builder_ == nullptr) {
-            return;
-        }
-        uint64_t eventHash = 0;
-        if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
-            auto idStream = std::stringstream(id);
-            idStream >> eventHash;
-        }
-        if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
-            eventHash = id;
-        }
-        builder_->AppendId(eventHash);
-        rawData_ = builder_->Build(); // update
+        isUpdated_ = true;
     }
 
 public:
-    int eventType_;
+    int32_t eventType_;
     bool preserve_;
-    int8_t log_;
+    uint8_t log_;
 
 public:
     static std::atomic<uint32_t> totalCount_;
@@ -140,17 +125,20 @@ public:
 
 private:
     void InitialMembers();
+    bool InitBuilder();
+    bool TryToUpdateRawData();
     std::shared_ptr<EventRaw::RawData> TansJsonStrToRawData(const std::string& jsonStr);
     std::string EscapeJsonStringValue(const std::string& src);
     std::string UnescapeJsonStringValue(const std::string& src);
 
 private:
-    int64_t seq_;
-    int32_t pid_;
-    int32_t tid_;
-    int32_t uid_;
-    int16_t tz_;
-    int64_t eventSeq_;
+    bool isUpdated_ = false;
+    int64_t seq_ = 0;
+    int32_t pid_ = 0;
+    int32_t tid_ = 0;
+    int32_t uid_ = 0;
+    int16_t tz_ = 0;
+    int64_t eventSeq_ = -1;
     std::string tag_;
     std::string level_;
     std::shared_ptr<EventRaw::RawDataBuilder> builder_;

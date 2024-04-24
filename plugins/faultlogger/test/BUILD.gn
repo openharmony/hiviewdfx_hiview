@@ -71,6 +71,7 @@ ohos_unittest("FaultloggerUnittest") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "faultloggerd:crash_exception",
+    "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hisysevent:libhisyseventmanager",
@@ -96,6 +97,8 @@ ohos_unittest("FaultloggerClientUnittest") {
     "$hiview_faultlogger:libfaultlogger",
     "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ohos_unittest("AsanUnittest") {

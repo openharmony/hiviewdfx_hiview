@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,6 @@
 #include "event_server.h"
 #include "event_source.h"
 #include "pipeline.h"
-#include "plugin.h"
 #include "platform_monitor.h"
 #include "base/raw_data.h"
 #include "sys_event_stat.h"
@@ -32,15 +31,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventSource;
-
-class SysEventParser {
-public:
-    explicit SysEventParser(PipelineEventProducer* producer): pipeProducer(producer) {};
-    ~SysEventParser() {};
-    std::shared_ptr<PipelineEvent> Parser(std::shared_ptr<EventRaw::RawData> rawData) const;
-private:
-    PipelineEventProducer* pipeProducer;
-};
 
 class SysEventReceiver : public EventReceiver {
 public:
@@ -60,12 +50,12 @@ public:
     void StartEventSource() override;
     void Recycle(PipelineEvent *event) override;
     void PauseDispatch(std::weak_ptr<Plugin> plugin) override;
-    bool CheckValidSysEvent(std::shared_ptr<Event> event);
+    bool CheckEvent(std::shared_ptr<Event> event);
     bool PublishPipelineEvent(std::shared_ptr<PipelineEvent> event);
     void Dump(int fd, const std::vector<std::string>& cmds) override;
 
 private:
-    EventServer eventServer;
+    EventServer eventServer_;
     PlatformMonitor platformMonitor_;
     std::unique_ptr<SysEventStat> sysEventStat_ = nullptr;
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;

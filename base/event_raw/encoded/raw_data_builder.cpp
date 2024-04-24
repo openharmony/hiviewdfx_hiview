@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "decoded/decoded_event.h"
-#include "logger.h"
+#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -266,11 +266,7 @@ RawDataBuilder& RawDataBuilder::AppendValue(std::shared_ptr<EncodedParam> param)
 std::shared_ptr<EncodedParam> RawDataBuilder::GetValue(const std::string& key)
 {
     std::lock_guard<std::mutex> lock(paramsOptMtx_);
-    auto paramCnt = allParams_.size();
     for (auto iter = allParams_.begin(); iter != allParams_.end(); ++iter) {
-        if (paramCnt != allParams_.size()) {
-            HIVIEW_LOGI("count of all params: [%{public}zu, %{public}zu]", paramCnt, allParams_.size());
-        }
         if ((*iter) == nullptr) {
             continue;
         }

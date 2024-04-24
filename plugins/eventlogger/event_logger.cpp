@@ -270,7 +270,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
-        if (strList.size() != 7) { // 7: valid array size
+        if (strList.size() < 7) { // more than or equal to 7: valid array size
             continue;
         }
         // 2: binder peer id
@@ -279,7 +279,12 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
             continue;
         }
         if (processNameMap.find(pidStr) == processNameMap.end()) {
-            std::ifstream cmdLineFile("/proc/" + pidStr + "/cmdline");
+            std::string filePath = "/proc/" + pidStr + "/cmdline";
+            std::string realPath;
+            if (!FileUtil::PathToRealPath(filePath, realPath)) {
+                continue;
+            }
+            std::ifstream cmdLineFile(realPath);
             std::string processName;
             if (cmdLineFile) {
                 std::getline(cmdLineFile, processName);
@@ -349,6 +354,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         std::string message;
         std::string eventHandlerStr;
         ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
+        std::string appRunningUniqueId = event->GetEventValue("APP_RUNNING_UNIQUE_ID");
 
         std::string jsonStack = event->GetEventValue("STACK");
         if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
@@ -364,6 +370,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
+            FreezeJsonUtil::WriteKeyValue(jsonFd, "appRunningUniqueId", appRunningUniqueId);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
         } else {
             HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);

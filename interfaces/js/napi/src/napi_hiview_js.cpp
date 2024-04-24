@@ -17,7 +17,7 @@
 #include "hiview_napi_adapter.h"
 #include "hiview_napi_util.h"
 #include "hiview_service_agent.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "string_util.h"
@@ -96,7 +96,10 @@ static napi_value CopyOrMoveFile(napi_env env, napi_callback_info info, bool isM
         return result;
     }
     HiviewFileParams* hiviewFileParams = new(std::nothrow) HiviewFileParams(logType, logName, destDir);
-    if (paramNum == maxParamNum) {
+    if (hiviewFileParams == nullptr) {
+        HIVIEW_LOGE("failed to allocate memory");
+        return result;
+    } else if (paramNum == maxParamNum) {
         if (!HiviewNapiUtil::IsMatchType(env, params[paramNumWithoutCallback], napi_function)) {
             HIVIEW_LOGE("no valid function param");
             HiviewNapiUtil::ThrowParamTypeError(env, "callback", "function");

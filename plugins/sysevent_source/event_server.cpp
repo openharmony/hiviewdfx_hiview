@@ -34,7 +34,7 @@
 #include "decoded/decoded_event.h"
 #include "device_node.h"
 #include "init_socket.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "socket_util.h"
 
 #define SOCKET_FILE_DIR "/dev/unix/socket/hisysevent"
@@ -49,34 +49,12 @@ constexpr int EVENT_READ_BUFFER = 2048;
 #else
 constexpr int EVENT_READ_BUFFER = KERNEL_DEVICE_BUFFER;
 #endif
-constexpr char SOCKET_CONFIG_FILE[] = "/system/etc/hiview/hisysevent_extra_socket";
-std::string g_extraSocketPath;
 
 struct Header {
     unsigned short len;
     unsigned short headerSize;
     char msg[0];
 };
-
-struct Initializer {
-    Initializer()
-    {
-        if (access(SOCKET_CONFIG_FILE, F_OK) != 0) {
-            HIVIEW_LOGE("socket config file does not exist");
-            return;
-        }
-        std::ifstream file;
-        file.open(SOCKET_CONFIG_FILE);
-        if (file.fail()) {
-            HIVIEW_LOGE("open socket config file failed");
-            return;
-        }
-        g_extraSocketPath.clear();
-        file >> g_extraSocketPath;
-        HIVIEW_LOGI("read extra socket path: %{public}s", g_extraSocketPath.c_str());
-    }
-};
-Initializer g_initializer;
 
 void InitSocketBuf(int socketId, int optName)
 {
@@ -99,49 +77,12 @@ void InitSocketBuf(int socketId, int optName)
     HIVIEW_LOGI("reset buffer size old=%{public}d, new=%{public}d", bufferSizeOld, bufferSizeNew);
 }
 
-void InitSendBuffer(int socketId)
-{
-    InitSocketBuf(socketId, SO_SNDBUF);
-}
-
 void InitRecvBuffer(int socketId)
 {
     InitSocketBuf(socketId, SO_RCVBUF);
 }
 
-void TransferEvent(std::string& text)
-{
-    HIVIEW_LOGD("event need to transfer: %{public}s", text.c_str());
-    if (text.back() == '}') {
-        text.pop_back();
-        text += ", \"transfer_\":1}";
-    }
-    struct sockaddr_un serverAddr;
-    serverAddr.sun_family = AF_UNIX;
-    if (strcpy_s(serverAddr.sun_path, sizeof(serverAddr.sun_path), g_extraSocketPath.c_str()) != EOK) {
-        HIVIEW_LOGE("can not assign server path");
-        return;
-    }
-    serverAddr.sun_path[sizeof(serverAddr.sun_path) - 1] = '\0';
-
-    int socketId = TEMP_FAILURE_RETRY(socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
-    if (socketId < 0) {
-        HIVIEW_LOGE("create hisysevent socket failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
-        return;
-    }
-    InitSendBuffer(socketId);
-    if (TEMP_FAILURE_RETRY(sendto(socketId, text.c_str(), text.size(), 0, reinterpret_cast<sockaddr*>(&serverAddr),
-        sizeof(serverAddr))) < 0) {
-        close(socketId);
-        socketId = -1;
-        HIVIEW_LOGE("send data failed, error=%{public}d, msg=%{public}s", errno, strerror(errno));
-        return;
-    }
-    close(socketId);
-    HIVIEW_LOGD("send data successful");
-}
-
-uint8_t* ConverRawData(char* source)
+std::shared_ptr<EventRaw::RawData> ConverRawData(char* source)
 {
     if (source == nullptr) {
         HIVIEW_LOGE("invalid source.");
@@ -168,7 +109,9 @@ uint8_t* ConverRawData(char* source)
         return nullptr;
     }
     *(reinterpret_cast<int32_t*>(des)) = desLen;
-    return des;
+    auto rawData = std::make_shared<EventRaw::RawData>(des, desLen);
+    free(des);
+    return rawData;
 }
 }
 
@@ -234,37 +177,34 @@ std::string SocketDevice::GetName()
     return "SysEventSocket";
 }
 
+bool SocketDevice::IsValidMsg(char* msg, int32_t len)
+{
+    if (len < static_cast<int32_t>(EventRaw::GetValidDataMinimumByteCount())) {
+        HIVIEW_LOGD("the data length=%{public}d is invalid", len);
+        return false;
+    }
+    int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(msg));
+    if (dataByteCnt != len) {
+        HIVIEW_LOGW("the data lengths=%{public}d are not equal", len);
+        return false;
+    }
+    msg[len] = '\0';
+    return true;
+}
+
 int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
 {
     char* buffer = new char[BUFFER_SIZE + 1]();
     while (true) {
         struct sockaddr_un clientAddr;
         socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
-        int n = recvfrom(socketId_, buffer, sizeof(char) * BUFFER_SIZE, 0,
+        int ret = recvfrom(socketId_, buffer, sizeof(char) * BUFFER_SIZE, 0,
             reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
-        if (n < static_cast<int>(EventRaw::GetValidDataMinimumByteCount())) {
+        if (!IsValidMsg(buffer, ret)) {
             break;
-        }
-
-        buffer[n] = 0;
-        int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
-        if (dataByteCnt != n) {
-            HIVIEW_LOGE("length of data received from client is invalid.");
-            break;
-        }
-        uint8_t* des = ConverRawData(buffer);
-        if (des == nullptr) {
-            HIVIEW_LOGE("des is nullptr.");
-            break;
-        }
-        EventRaw::DecodedEvent event(des);
-        free(des);
-        if (!g_extraSocketPath.empty()) {
-            std::string eventJsonStr = event.AsJsonStr();
-            TransferEvent(eventJsonStr);
         }
         for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
-            (*receiver)->HandlerEvent(event.GetRawData());
+            (*receiver)->HandlerEvent(ConverRawData(buffer));
         }
     }
     delete[] buffer;
@@ -306,34 +246,32 @@ std::string BBoxDevice::GetName()
     return "BBox";
 }
 
+bool BBoxDevice::IsValidMsg(char* msg, int32_t len)
+{
+    if (len < static_cast<int32_t>(EventRaw::GetValidDataMinimumByteCount())) {
+        HIVIEW_LOGW("the data length=%{public}d is invalid", len);
+        return false;
+    }
+    int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(msg));
+    if ((hasBbox_ && dataByteCnt != len) ||
+        (!hasBbox_ && dataByteCnt != (len - sizeof(struct Header) - 1))) { // extra bytes in kernel write
+        HIVIEW_LOGW("the data lengths=%{public}d are not equal", len);
+        return false;
+    }
+    msg[EVENT_READ_BUFFER - 1] = '\0';
+    return true;
+}
+
 int BBoxDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
 {
     char buffer[EVENT_READ_BUFFER];
     (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
     int ret = read(fd_, buffer, EVENT_READ_BUFFER);
-    if (ret < static_cast<int>(EventRaw::GetValidDataMinimumByteCount())) {
+    if (!IsValidMsg(buffer, ret)) {
         return -1;
-    }
-    buffer[EVENT_READ_BUFFER - 1] = '\0';
-    int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(buffer));
-    if ((hasBbox_ && dataByteCnt != ret) ||
-        (!hasBbox_ && dataByteCnt != (ret - sizeof(struct Header) - 1))) { // extra bytes in kernel write
-        HIVIEW_LOGE("length of data received from kernel is invalid.");
-        return -1;
-    }
-    uint8_t* des = ConverRawData(buffer);
-    if (des == nullptr) {
-        HIVIEW_LOGE("des is nullptr.");
-        return -1;
-    }
-    EventRaw::DecodedEvent event(des);
-    free(des);
-    if (!g_extraSocketPath.empty()) {
-        std::string eventJsonStr = event.AsJsonStr();
-        TransferEvent(eventJsonStr);
     }
     for (auto receiver = receivers.begin(); receiver != receivers.end(); receiver++) {
-        (*receiver)->HandlerEvent(event.GetRawData());
+        (*receiver)->HandlerEvent(ConverRawData(buffer));
     }
     return 0;
 }

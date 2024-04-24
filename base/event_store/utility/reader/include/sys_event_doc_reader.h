@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,34 +37,31 @@ public:
     int ReadFileSize();
     int ReadPageSize(uint32_t& pageSize);
     int ReadHeader(DocHeader& header);
+    int ReadHeader(DocHeader& header, std::string& sysVersion);
 
 private:
-    int Read(ReadCallback callback);
     void Init(const std::string& path);
+    void InitEventInfo(const std::string& path);
+    int Read(ReadCallback callback);
     int ReadContent(uint8_t** content, uint32_t& contentSize);
     int ReadPages(ReadCallback callback);
     bool HasReadFileEnd();
     bool HasReadPageEnd();
     bool IsValidHeader(const DocHeader& header);
-    bool IsValidContent(uint8_t* content, uint32_t contentSize);
+    bool CheckEventInfo(uint8_t* content);
     int SeekgPage(uint32_t pageIndex);
-    int BuildRawEvent(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize);
-    int BuildEventJson(std::string& eventJson, uint32_t eventSize, int64_t seq);
+    std::shared_ptr<RawData> BuildRawData(uint8_t* content, uint32_t contentSize);
     void TryToAddEntry(uint8_t* content, uint32_t contentSize, const DocQuery& query,
         EntryQueue& entries, int& num);
-    int ReadHeaderFromHistoryData(uint8_t** rawEvent, uint32_t& eventSize, uint8_t* content, uint32_t contentSize);
-    int WriteDomainNameInfo(uint8_t** event, uint32_t eventSize);
 
 private:
     std::ifstream in_;
-    int fileSize_;
-    uint32_t pageSize_;
-    uint8_t version_;
-
-    std::string domain_;
-    std::string name_;
-    std::string level_;
-    std::string tag_;
+    int fileSize_ = 0;
+    uint32_t pageSize_ = 0;
+    uint8_t dataFmtVersion_ = 0;
+    uint64_t docHeaderSize_ = 0;
+    std::string sysVersion_;
+    EventInfo info_;
 }; // EventDocWriter
 } // EventStore
 } // HiviewDFX

@@ -19,7 +19,7 @@
 #include "binder_catcher.h"
 #include "common_utils.h"
 #include "dmesg_catcher.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "open_stacktrace_catcher.h"
 #include "parameter_ex.h"
 #include "peer_binder_catcher.h"

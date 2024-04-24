@@ -41,10 +41,12 @@ void AdapterLoglibraryIdlTest::SetUp()
 {
     AdapterLoglibraryTestTools::ApplyPermissionAccess();
     AdapterLoglibraryTestTools::CreateDir(SOURCE_PATH);
-    AdapterLoglibraryTestTools::CreateDir(DEST_PATH);
 }
 
-void AdapterLoglibraryIdlTest::TearDown() {}
+void AdapterLoglibraryIdlTest::TearDown()
+{
+    AdapterLoglibraryTestTools::RemoveDir(SOURCE_PATH);
+}
 
 HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyListTest001, testing::ext::TestSize.Level1)
 {

@@ -47,6 +47,8 @@ void AdapterLoglibraryAbilityTest::SetUp()
 
 void AdapterLoglibraryAbilityTest::TearDown()
 {
+    AdapterLoglibraryTestTools::RemoveDir(DEST_PATH);
+    AdapterLoglibraryTestTools::RemoveDir(SOURCE_PATH);
     if (service != nullptr) {
         delete service;
         service = nullptr;

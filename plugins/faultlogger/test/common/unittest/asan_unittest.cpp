@@ -44,11 +44,24 @@ HWTEST_F(AsanUnittest, WriteGwpAsanLogTest001, testing::ext::TestSize.Level1)
 {
     char gwpAsanBuf[] = "Test GWP-ASAN, End GWP-ASan report";
     WriteGwpAsanLog(gwpAsanBuf, strlen(gwpAsanBuf));
-    char asanBuf[] = "Test ASAN, End of process memory map";
-    WriteGwpAsanLog(asanBuf, strlen(asanBuf));
-    char tsanBuf[] = "Test TSAN, End TSAN report";
+    char ubsanBuf[] = "Test UBSAN, End CFI report";
+    WriteGwpAsanLog(ubsanBuf, strlen(ubsanBuf));
+    char tsanBuf[] = "Test TSAN, End Tsan report";
     WriteGwpAsanLog(tsanBuf, strlen(tsanBuf));
     ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: AsanTest002
+ * @tc.desc: Test calling GetApplicationVersion Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(AsanUnittest, GetApplicationVersionTest001, testing::ext::TestSize.Level1)
+{
+    int32_t uid = getuid();
+    std::string procName = GetApplicationNameById(uid);
+    std::string appVersion = GetApplicationVersion(uid, procName);
+    ASSERT_TRUE(appVersion == "");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

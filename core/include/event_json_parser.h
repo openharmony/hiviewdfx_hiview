@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,7 +44,7 @@ public:
     bool IsDuplicateEvent(const uint64_t sysEventId);
 
 private:
-    std::list<uint64_t> sysEventIds;
+    std::list<uint64_t> sysEventIds_;
 };
 
 class EventJsonParser {
@@ -59,10 +59,10 @@ public:
     bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
 
 private:
-    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event, uint64_t sysEventId) const;
-    bool CheckBaseInfoValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;
-    bool CheckEventValidity(std::shared_ptr<SysEvent> event) const;
-    bool CheckTypeValidity(const BaseInfo& baseInfo, std::shared_ptr<SysEvent> event) const;
+    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const;
+    bool CheckEvent(std::shared_ptr<SysEvent> event);
+    bool CheckBaseInfo(std::shared_ptr<SysEvent> event) const;
+    bool CheckDuplicate(std::shared_ptr<SysEvent> event);
     BaseInfo GetDefinedBaseInfoByDomainName(const std::string& domain, const std::string& name) const;
     bool HasIntMember(const Json::Value& jsonObj, const std::string& name) const;
     bool HasStringMember(const Json::Value& jsonObj, const std::string& name) const;

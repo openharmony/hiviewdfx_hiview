@@ -12,22 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-#ifndef I_CONTENT_READER_H
-#define I_CONTENT_READER_H
-
+#ifndef INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_HIEBPF_COLLECTOR_H
+#define INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_HIEBPF_COLLECTOR_H
 #include <string>
 
-#include "base_def.h"
+#include "collect_result.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class IContentReader {
+namespace UCollectUtil {
+class HiebpfCollector {
 public:
-    virtual int GetContentHead(uint8_t* content, EventStore::ContentHeader& head) = 0;
-    virtual size_t GetHeaderSize() = 0;
-    virtual ~IContentReader() {};
+    HiebpfCollector() = default;
+    virtual ~HiebpfCollector() = default;
+    virtual CollectResult<bool> StartHiebpf(int duration,
+        const std::string processName, const std::string outFile) = 0;
+    virtual CollectResult<bool> StopHiebpf() = 0;
+    static std::shared_ptr<HiebpfCollector> Create();
 };
-} // HiviewDFX
+} // UCollectUtil
+} // HivewDFX
 } // OHOS
-#endif // I_CONTENT_READER_H
+#endif // INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_HIEBPF_COLLECTOR_H

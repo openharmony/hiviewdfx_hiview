@@ -51,13 +51,14 @@
 #include "faultlog_query_result_inner.h"
 #include "faultlog_util.h"
 #include "faultlogger_adapter.h"
+#include "ffrt.h"
 #include "file_util.h"
 #include "hisysevent.h"
 #include "hiview_global.h"
 #include "ipc_skeleton.h"
 #include "json/json.h"
 #include "log_analyzer.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"
@@ -101,6 +102,7 @@ constexpr int RETRY_DELAY = 10;
 constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
+constexpr int REPORT_HILOG_LINE = 100;
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -531,6 +533,7 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
+    params["app_running_unique_id"] = sysEvent->GetEventValue("APP_RUNNING_UNIQUE_ID");
     FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
@@ -542,7 +545,8 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         std::stringstream logStream(log);
         std::string oneLine;
-        while (getline(logStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
     }
@@ -571,21 +575,20 @@ void Faultlogger::OnLoad()
     mgr_ = std::make_unique<FaultLogManager>(GetHiviewContext()->GetSharedWorkLoop());
     mgr_->Init();
     hasInit_ = true;
+    workLoop_ = GetHiviewContext()->GetSharedWorkLoop();
 #ifndef UNITTEST
     FaultloggerAdapter::StartService(this);
-#endif
 
     // some crash happened before hiview start, ensure every crash event is added into eventdb
-    auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
-    if (eventloop != nullptr) {
+    if (workLoop_ != nullptr) {
         auto task = std::bind(&Faultlogger::StartBootScan, this);
-        eventloop->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
-        workLoop_ = eventloop;
+        workLoop_->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
     }
+#endif
 #ifndef UNIT_TEST
-    std::thread sanitizerdThread(&Faultlogger::RunSanitizerd);
-    pthread_setname_np(sanitizerdThread.native_handle(), "RunSanitizerd");
-    sanitizerdThread.detach();
+    ffrt::submit([&] {
+        Faultlogger::RunSanitizerd();
+        }, {}, {});
 #endif
 }
 
@@ -801,45 +804,46 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
 
 void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const
 {
-    if (info.sectionMap.count("stackInfo") == 0) {
-        HIVIEW_LOGE("stackInfo is not exist");
+    if (info.pipeFd == -1) {
+        HIVIEW_LOGE("invalid fd");
         return;
     }
-    std::string stackInfoOriginal = info.sectionMap.at("stackInfo");
-    if (stackInfoOriginal.length() == 0) {
-        HIVIEW_LOGE("stackInfo original is empty");
+    ssize_t nread = -1;
+    char *buffer = new char[MAX_PIPE_SIZE];
+    do {
+        nread = read(info.pipeFd, buffer, MAX_PIPE_SIZE);
+    } while (nread == -1 && errno == EINTR);
+    close(info.pipeFd);
+    if (nread <= 0) {
+        HIVIEW_LOGE("read pipe failed");
+        delete []buffer;
         return;
     }
-
+    std::string stackInfoOriginal(buffer, nread);
+    delete []buffer;
     Json::Reader reader;
     Json::Value stackInfoObj;
     if (!reader.parse(stackInfoOriginal, stackInfoObj)) {
         HIVIEW_LOGE("parse stackInfo failed");
         return;
     }
-
     stackInfoObj["bundle_name"] = info.module;
     stackInfoObj["external_log"] = info.logPath;
     if (info.sectionMap.count("VERSION") == 1) {
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
     if (info.sectionMap.count("FOREGROUND") == 1) {
-        std::string foreground = info.sectionMap.at("FOREGROUND");
-        if (foreground == "Yes") {
-            stackInfoObj["foreground"] = true;
-        } else {
-            stackInfoObj["foreground"] = false;
-        }
+        stackInfoObj["foreground"] = (info.sectionMap.at("FOREGROUND") == "Yes") ? true : false;
     }
     if (info.sectionMap.count("FINGERPRINT") == 1) {
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
-
     if (info.sectionMap.count("HILOG") == 1) {
         Json::Value hilog;
         std::stringstream logStream(info.sectionMap.at("HILOG"));
         std::string oneLine;
-        while (getline(logStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
             hilog.append(oneLine);
         }
         if (info.sectionMap.at("HILOG").length() == 0) {
@@ -860,7 +864,7 @@ int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
     }
 
     int ret = -1;
-    ret = execl("/system/bin/hilog", "hilog", "-z", "100", "-P", std::to_string(pid).c_str(), nullptr);
+    ret = execl("/system/bin/hilog", "hilog", "-z", "2000", "-P", std::to_string(pid).c_str(), nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         return ret;
@@ -933,6 +937,9 @@ std::list<std::string> GetDightStrArr(const std::string& target)
 
 std::string Faultlogger::GetMemoryStrByPid(long pid) const
 {
+    if (pid <= 0) {
+        return "";
+    }
     unsigned long long rss = 0; // statm col = 2 *4
     unsigned long long vss = 0; // statm col = 1 *4
     unsigned long long sysFreeMem = 0; // meminfo row=2
@@ -1007,7 +1014,8 @@ FreezeJsonUtil::FreezeJsonCollector Faultlogger::GetFreezeJsonCollector(const Fa
     } else {
         std::stringstream hilogStream(hilogStr);
         std::string oneLine;
-        while (std::getline(hilogStream, oneLine)) {
+        int count = 0;
+        while (++count <= REPORT_HILOG_LINE && std::getline(hilogStream, oneLine)) {
             hilogList.push_back(StringUtil::EscapeJsonStringValue(oneLine));
         }
     }
@@ -1048,6 +1056,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
         .InitExternalLog(info.logPath)
         .InitPid(collector.pid)
         .InitUid(collector.uid)
+        .InitAppRunningUniqueId(collector.appRunningUniqueId)
         .InitException(collector.exception)
         .InitHilog(collector.hilog)
         .InitEventHandler(collector.event_handler)

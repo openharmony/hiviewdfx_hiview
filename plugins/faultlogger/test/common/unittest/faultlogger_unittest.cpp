@@ -54,24 +54,53 @@ namespace {
     static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
 }
 
+static HiviewContext& InitHiviewContext()
+{
+    OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    bool result = platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
+    printf("InitHiviewContext result:%d\n", result);
+    return platform;
+}
+
+static HiviewContext& GetHiviewContext()
+{
+    static HiviewContext& hiviewContext = InitHiviewContext();
+    return hiviewContext;
+}
+
+static void StartHisyseventListen(std::string domain, std::string eventName)
+{
+    faultEventListener = std::make_shared<FaultEventListener>();
+    ListenerRule tagRule(domain, eventName, RuleType::WHOLE_WORD);
+    std::vector<ListenerRule> sysRules = {tagRule};
+    HiSysEventManager::AddListener(faultEventListener, sysRules);
+}
+
+static std::shared_ptr<Faultlogger> InitFaultloggerInstance()
+{
+    auto plugin = std::make_shared<Faultlogger>();
+    plugin->SetName("Faultlogger");
+    plugin->SetHandle(nullptr);
+    plugin->SetHiviewContext(&GetHiviewContext());
+    plugin->OnLoad();
+    return plugin;
+}
+
+static std::shared_ptr<Faultlogger> GetFaultloggerInstance()
+{
+    static std::shared_ptr<Faultlogger> faultloggerInstance = InitFaultloggerInstance();
+    return faultloggerInstance;
+}
+
+
 class FaultloggerUnittest : public testing::Test {
 public:
     void SetUp()
     {
         sleep(1);
+        GetHiviewContext();
     };
-    void TearDown(){};
-
-    std::shared_ptr<Faultlogger> CreateFaultloggerInstance() const
-    {
-        static std::unique_ptr<HiviewPlatform> platform = std::make_unique<HiviewPlatform>();
-        auto plugin = std::make_shared<Faultlogger>();
-        plugin->SetName("Faultlogger");
-        plugin->SetHandle(nullptr);
-        plugin->SetHiviewContext(platform.get());
-        plugin->OnLoad();
-        return plugin;
-    }
+    void TearDown() {};
 
     static void CheckSumarryParseResult(std::string& info, int& matchCount)
     {
@@ -161,21 +190,6 @@ public:
     }
 };
 
-static void InitHiviewContext()
-{
-    OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    bool result = platform.InitEnvironment("/data/test/test_faultlogger_data/hiview_platform_config");
-    printf("InitHiviewContext result:%d\n", result);
-}
-
-static void StartHisyseventListen(std::string domain, std::string eventName)
-{
-    faultEventListener = std::make_shared<FaultEventListener>();
-    ListenerRule tagRule(domain, eventName, RuleType::WHOLE_WORD);
-    std::vector<ListenerRule> sysRules = {tagRule};
-    HiSysEventManager::AddListener(faultEventListener, sysRules);
-}
-
 /**
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
@@ -188,7 +202,7 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
      * @tc.steps: step1. add multiple cmds to faultlogger
      * @tc.expected: check the content size of the dump function
      */
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770);
     if (fd < 0) {
         printf("Fail to create test result file.\n");
@@ -220,7 +234,7 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
 
     std::string result;
     if (FileUtil::LoadStringFromFile("/data/test/testFile", result)) {
-        ASSERT_GT(result.length(), 0ul);
+        ASSERT_GT(result.length(), 0uL);
     } else {
         FAIL();
     }
@@ -235,11 +249,9 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
  */
 HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
 {
-    /**
-     * @tc.steps: step1. create a cpp crash event with stackInfo and pass it to faultlogger
-     * @tc.expected: the calling is success and the appevent info test file has been created
-     */
-    auto plugin = CreateFaultloggerInstance();
+    int pipeFd[2] = {-1, -1};
+    ASSERT_EQ(pipe(pipeFd), 0) << "create pipe failed";
+    auto plugin = GetFaultloggerInstance();
     FaultLogInfo info;
     info.time = 1607161163;
     info.id = 0;
@@ -252,7 +264,8 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    info.sectionMap["stackInfo"] = R"~({"crash_type":"NativeCrash", "exception":{"frames":
+    info.pipeFd = pipeFd[0];
+    std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
         [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4",
         "symbol":"test_abc"}, {"buildId":"12345abcde",
         "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278, "pc":"0000bef3",
@@ -266,25 +279,26 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
         "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
         "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
         "time":1701863741296, "uid":20010043, "uuid":""})~";
+    ssize_t nwrite = -1;
+    do {
+        nwrite = write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size());
+    } while (nwrite == -1 && errno == EINTR);
+    close(pipeFd[1]);
     plugin->AddFaultLog(info);
+    close(info.pipeFd);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
-    bool exist = FileUtil::FileExists(fileName);
-    ASSERT_EQ(exist, true);
-    auto size = FileUtil::GetFileSize(fileName);
-    ASSERT_GT(size, 0ul);
+    ASSERT_EQ(FileUtil::FileExists(fileName), true);
+    ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
 
     // check appevent json info
     std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
     ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);
-    ASSERT_GT(FileUtil::GetFileSize(appeventInfofileName), 0ul);
-    string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":",
-        "\"thread_name\":", "\"tid\":" };
+    string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":", "\"thread_name\":", "\"tid\":" };
     int length = sizeof(keywords) / sizeof(keywords[0]);
-    int count = CheckKeyWordsInFile(appeventInfofileName, keywords, length, false);
-    ASSERT_EQ(count, length) << "GenCppCrashLogTest001 check keywords failed";
+    ASSERT_EQ(CheckKeyWordsInFile(appeventInfofileName, keywords, length, false), length);
 }
 
 /**
@@ -361,7 +375,7 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
     sysEventCreator.SetKeyValue("VERSION", "1.0.0");
 
     auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
-    auto testPlugin = CreateFaultloggerInstance();
+    auto testPlugin = GetFaultloggerInstance();
     std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
     bool result = testPlugin->OnEvent(event);
     ASSERT_EQ(result, true);
@@ -374,12 +388,11 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
  */
 HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = std::time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
     faultEventListener->SetKeyWords(keyWords);
-    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase(GetHiviewContext().GetSharedWorkLoop());
     FaultLogInfo info;
     info.time = now;
     info.pid = getpid();
@@ -405,19 +418,17 @@ HWTEST_F(FaultloggerUnittest, SaveFaultLogInfoTest001, testing::ext::TestSize.Le
  */
 HWTEST_F(FaultloggerUnittest, GetFaultInfoListTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
-
-    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,"tz_":
-    "+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,"MODULE":"FaultloggerUnittest",
-    "REASON":"unittest for SaveFaultLogInfo","SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"",
-    "HAPPEN_TIME":"1501973701","PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/","FINGERPRINT":
-    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d","level_":"CRITICAL","tag_":"STABILITY","id_":
-    "17165544771317691984","info_":""})~";
+    std::string jsonStr = R"~({"domain_":"RELIABILITY", "name_":"CPP_CRASH", "type_":1, "time_":1501973701070, "tz_":
+    "+0800", "pid_":1854, "tid_":1854, "uid_":0, "FAULT_TYPE":"2", "PID":1854, "UID":0, "MODULE":"FaultloggerUnittest",
+    "REASON":"unittest for SaveFaultLogInfo", "SUMMARY":"summary for SaveFaultLogInfo", "LOG_PATH":"", "VERSION":"",
+    "HAPPEN_TIME":"1501973701", "PNAME":"/", "FIRST_FRAME":"/", "SECOND_FRAME":"/", "LAST_FRAME":"/", "FINGERPRINT":
+    "04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d", "level_":"CRITICAL", "tag_":"STABILITY", "id_":
+    "17165544771317691984", "info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     sysEvent->SetLevel("MINOR");
     sysEvent->SetEventSeq(447); // 447: test seq
     EventStore::SysEventDao::Insert(sysEvent);
-    FaultLogDatabase *faultLogDb = new FaultLogDatabase();
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase(GetHiviewContext().GetSharedWorkLoop());
     std::list<FaultLogInfo> infoList = faultLogDb->GetFaultInfoList("FaultloggerUnittest", 0, 2, 10);
     ASSERT_GT(infoList.size(), 0);
 }
@@ -442,7 +453,6 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
  */
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = std::time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
@@ -461,7 +471,8 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    std::unique_ptr<FaultLogManager> faultLogManager =
+        std::make_unique<FaultLogManager>(GetHiviewContext().GetSharedWorkLoop());
     faultLogManager->Init();
     faultLogManager->SaveFaultInfoToRawDb(info);
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
@@ -474,8 +485,6 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
  */
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
-
     FaultLogInfo info;
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
@@ -508,15 +517,13 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
  */
 HWTEST_F(FaultloggerUnittest, FaultLogManagerTest002, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
-
-    std::string jsonStr = R"~({"domain_":"RELIABILITY","name_":"CPP_CRASH","type_":1,"time_":1501973701070,
-        "tz_":"+0800","pid_":1854,"tid_":1854,"uid_":0,"FAULT_TYPE":"2","PID":1854,"UID":0,
-        "MODULE":"FaultloggerUnittest","REASON":"unittest for SaveFaultLogInfo",
-        "SUMMARY":"summary for SaveFaultLogInfo","LOG_PATH":"","VERSION":"","HAPPEN_TIME":"1501973701",
-        "PNAME":"/","FIRST_FRAME":"/","SECOND_FRAME":"/","LAST_FRAME":"/",
+    std::string jsonStr = R"~({"domain_":"RELIABILITY", "name_":"CPP_CRASH", "type_":1, "time_":1501973701070,
+        "tz_":"+0800", "pid_":1854, "tid_":1854, "uid_":0, "FAULT_TYPE":"2", "PID":1854, "UID":0,
+        "MODULE":"FaultloggerUnittest", "REASON":"unittest for SaveFaultLogInfo",
+        "SUMMARY":"summary for SaveFaultLogInfo", "LOG_PATH":"", "VERSION":"", "HAPPEN_TIME":"1501973701",
+        "PNAME":"/", "FIRST_FRAME":"/", "SECOND_FRAME":"/", "LAST_FRAME":"/",
         "FINGERPRINT":"04c0d6f03c73da531f00eb112479a8a2f19f59fafba6a474dcbe455a13288f4d",
-        "level_":"CRITICAL","tag_":"STABILITY","id_":"17165544771317691984","info_":""})~";
+        "level_":"CRITICAL", "tag_":"STABILITY", "id_":"17165544771317691984", "info_":""})~";
     auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, jsonStr);
     sysEvent->SetLevel("MINOR");
     sysEvent->SetEventSeq(448); // 448: test seq
@@ -596,7 +603,6 @@ HWTEST_F(FaultloggerUnittest, FaultLogUtilTest002, testing::ext::TestSize.Level3
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerAdapterTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     FaultloggerAdapter::StartService(nullptr);
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), nullptr);
 
@@ -612,9 +618,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerAdapterTest001, testing::ext::TestSize.
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
-
-    auto service = CreateFaultloggerInstance();
+    auto service = GetFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
@@ -657,9 +661,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest001, testing::ext::TestS
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
-
-    auto service = CreateFaultloggerInstance();
+    auto service = GetFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
@@ -678,7 +680,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     fd = -1;
     std::string result;
     if (FileUtil::LoadStringFromFile("/data/test/testFile2", result)) {
-        ASSERT_GT(result.length(), 0ul);
+        ASSERT_GT(result.length(), 0uL);
     } else {
         FAIL();
     }
@@ -692,7 +694,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
@@ -701,7 +702,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
         "Fault thread info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-101-" + std::to_string(now), content));
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
     //check faultlog file content
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
@@ -720,7 +721,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH_NO_LOG");
     std::vector<std::string> keyWords = { "BootScanUnittest" };
     faultEventListener->SetKeyWords(keyWords);
@@ -730,7 +730,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
         "Fault thread info:\nTid:102, Name:BootScanUnittest\n";
     std::string fileName = "/data/log/faultlog/temp/cppcrash-102-" + std::to_string(now);
     ASSERT_TRUE(FileUtil::SaveStringToFile(fileName, content));
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
     ASSERT_FALSE(FileUtil::FileExists(fileName));
 
@@ -745,7 +745,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
@@ -762,7 +761,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
         "Memory near registers:\nr1(/data/xxxxx):\n    0097cd34 47886849\n    0097cd38 96059d05\n\n" +
         "Maps:\n96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-111-" + std::to_string(now), content));
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
 
     //check faultlog file content
@@ -789,7 +788,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
  */
 HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
 {
-    InitHiviewContext();
     StartHisyseventListen("RELIABILITY", "CPP_CRASH");
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
@@ -812,7 +810,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     }
 
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-114-" + std::to_string(now), content));
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
     // check faultlog file content
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
@@ -836,10 +834,12 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
 HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::TestSize.Level3)
 {
     remove("/data/test_jsError_info");
-    auto plugin = CreateFaultloggerInstance();
+    auto plugin = GetFaultloggerInstance();
     std::string summaryHasErrorCodeAndSourceCode = R"~(Error name:TypeErrorError message:Obj is not a Valid object
-        Error code:\n    get BLO\nSourceCode:CKSSvalue() {\n        ^\nStacktrace:\n    at anonymous
-        (entry/src/main/ets/pages/index.ets:76:10))~";
+        Error code:\n    get BLO\nSourceCode:CKSSvalue() {\n        ^\nStacktrace:
+        at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+        at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+        at anonymous3(entry/src/main/ets/pages/index.ets:76:10)\n)~";
     ReportJsErrorToAppEventTestCommon(summaryHasErrorCodeAndSourceCode, "summaryHasErrorCodeAndSourceCode", plugin);
     std::string summaryHasSourceCode = R"~(Error name:TypeError\naaaError message:Obj is not a Valid object\nSourceCode:
         CKSSvalue(){\n        ^\nStacktrace:aaaa\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";

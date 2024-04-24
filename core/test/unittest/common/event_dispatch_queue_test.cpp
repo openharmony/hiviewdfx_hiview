@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,7 +35,7 @@ void EventDispatchQueueTest::TearDown()
 }
 
 std::shared_ptr<Event> EventDispatchQueueTest::CreateEvent(const std::string& name, int32_t id,
-                                                           const std::string& message, Event::MessageType type)
+    const std::string& message, Event::MessageType type)
 {
     auto event = std::make_shared<Event>(name);
     event->messageType_ = type;
@@ -56,24 +56,54 @@ std::string ExtendEventListener::GetListenerName()
 {
     return name_;
 }
+
+namespace {
+const std::string TEST_QUEUE_NAME = "test_queue";
+const std::string TEST_EVENT_NAME = "test_event";
+const std::string TEST_MESSAGE = "test_message";
+}
+
 /**
  * @tc.name: EventDispatchQueueCreateTest001
  * @tc.desc: create and init an event dispatch queue
  * @tc.type: FUNC
- * @tc.require: AR000DPTSU
+ * @tc.require: issueI9IA2M
  */
 HWTEST_F(EventDispatchQueueTest, EventDispatchQueueCreateTest001, TestSize.Level3)
 {
-    printf("EventDispatchQueueTest.\n");
-    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config0")) {
-        printf("Fail to init environment. \n");
-    }
-    auto unorderQueue = std::make_shared<EventDispatchQueue>("test1", Event::ManageType::UNORDERED, &platform);
+    auto unorderQueue = std::make_shared<EventDispatchQueue>(TEST_QUEUE_NAME, Event::ManageType::UNORDERED, nullptr);
     ASSERT_EQ(false, unorderQueue->IsRunning());
+
     unorderQueue->Start();
-    sleep(1);
+
+    auto event = CreateEvent(TEST_EVENT_NAME, 0, TEST_MESSAGE, Event::MessageType::SYS_EVENT);
+    unorderQueue->Enqueue(event);
+    sleep(1); // 1s
     ASSERT_EQ(true, unorderQueue->IsRunning());
+
+    unorderQueue->Stop();
+    ASSERT_EQ(false, unorderQueue->IsRunning());
+}
+
+/**
+ * @tc.name: EventDispatchQueueCreateTest002
+ * @tc.desc: create and init an event dispatch queue
+ * @tc.type: FUNC
+ * @tc.require: issueI9IA2M
+ */
+HWTEST_F(EventDispatchQueueTest, EventDispatchQueueCreateTest002, TestSize.Level3)
+{
+    OHOS::HiviewDFX::HiviewContext context;
+    auto unorderQueue = std::make_shared<EventDispatchQueue>(TEST_QUEUE_NAME, Event::ManageType::UNORDERED, &context);
+    ASSERT_EQ(false, unorderQueue->IsRunning());
+
+    unorderQueue->Start();
+
+    auto event = CreateEvent(TEST_EVENT_NAME, 0, TEST_MESSAGE, Event::MessageType::SYS_EVENT);
+    unorderQueue->Enqueue(event);
+    sleep(1); // 1s
+    ASSERT_EQ(true, unorderQueue->IsRunning());
+
     unorderQueue->Stop();
     ASSERT_EQ(false, unorderQueue->IsRunning());
 }

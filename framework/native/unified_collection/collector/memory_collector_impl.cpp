@@ -15,7 +15,6 @@
 
 #include "memory_collector_impl.h"
 
-
 #include <csignal>
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -32,10 +31,11 @@
 #include "common_util.h"
 #include "common_utils.h"
 #include "file_util.h"
-#include "logger.h"
+#include "hiview_logger.h"
 #include "memory_decorator.h"
 #include "string_util.h"
 #include "time_util.h"
+#include "process_status.h"
 
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
@@ -49,6 +49,7 @@ namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil");
 
 std::mutex g_memMutex;
+const int NON_PC_APP_STATE = -1;
 
 static std::string GetCurrTimestamp()
 {
@@ -92,10 +93,12 @@ static bool WriteProcessMemoryToFile(std::string& filePath, const std::vector<Pr
     }
 
     file << "pid" << '\t' << "pname" << '\t' << "rss(KB)" << '\t' <<
-            "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << std::endl;
+            "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << '\t' <<
+            "procState" << std::endl;
     for (auto& processMem : processMems) {
         file << processMem.pid << '\t' << processMem.name << '\t' << processMem.rss << '\t' <<
-                processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << std::endl;
+                processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << '\t' <<
+                processMem.procState << std::endl;
     }
     file.close();
     return true;
@@ -263,7 +266,7 @@ static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::str
     };
     auto iter = assignFuncMap.find(attrName);
     if (iter == assignFuncMap.end() || iter->second == nullptr) {
-        HIVIEW_LOGI("%{public}s isn't defined in ProcessMemory.", attrName.c_str());
+        HIVIEW_LOGD("%{public}s isn't defined in ProcessMemory.", attrName.c_str());
         return;
     }
     iter->second(processMemory, value);
@@ -310,6 +313,15 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
     }
     memory.pid = pid;
     memory.name = CommonUtils::GetProcFullNameByPid(pid);
+    if (memory.name.empty()) {
+        HIVIEW_LOGD("process name is empty, pid=%{public}d.", pid);
+        return false;
+    }
+#if PC_APP_STATE_COLLECT_ENABLE
+    memory.procState = ProcessStatus::GetInstance().GetProcessState(pid);
+#else
+    memory.procState = NON_PC_APP_STATE;
+#endif
     InitSmapsOfProcessMemory(procDir, memory);
     InitAdjOfProcessMemory(procDir, memory);
     return true;
