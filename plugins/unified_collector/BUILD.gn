@@ -33,6 +33,7 @@ ohos_source_set("unified_collector") {
 
   sources = [
     "observer/uc_app_state_observer.cpp",
+    "observer/uc_native_process_observer.cpp",
     "observer/uc_observer_mgr.cpp",
     "observer/uc_render_state_observer.cpp",
     "storage/cpu_storage.cpp",
@@ -53,6 +54,8 @@ ohos_source_set("unified_collector") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_dump",
+    "init:libbeget_proxy",
+    "init:libbegetutil",
     "relational_store:native_rdb",
   ]
 

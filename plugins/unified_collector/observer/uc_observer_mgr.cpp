@@ -17,22 +17,28 @@
 #include "app_mgr_client.h"
 #include "hiview_logger.h"
 #include "process_status.h"
+#include "uc_native_process_observer.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
+namespace {
+const std::string NATIVE_PROC_PARAM = "startup.service.ctl.";
+}
 
 UcObserverManager::UcObserverManager()
 {
     RegisterAppObserver();
     RegisterRenderObserver();
+    RegisterNativeProcessObserver();
 }
 
 UcObserverManager::~UcObserverManager()
 {
     UnregisterAppObserver();
     UnregisterRenderObserver();
+    UnregisterNativeProcessObserver();
 }
 
 void UcObserverManager::RegisterAppObserver()
@@ -60,6 +66,17 @@ void UcObserverManager::RegisterRenderObserver()
     }
     auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
         RegisterRenderStateObserver(renderStateObserver_);
+    if (res != ERR_OK) {
+        HIVIEW_LOGE("failed to register observer, res=%{public}d", res);
+        return;
+    }
+    HIVIEW_LOGI("succ to register observer");
+}
+
+void UcObserverManager::RegisterNativeProcessObserver()
+{
+    nativeProcessObserver_ = UcNativeProcessObserver::OnParamChanged;
+    auto res = Parameter::WatchParamChange(NATIVE_PROC_PARAM.c_str(), nativeProcessObserver_, nullptr);
     if (res != ERR_OK) {
         HIVIEW_LOGE("failed to register observer, res=%{public}d", res);
         return;
@@ -97,5 +114,18 @@ void UcObserverManager::UnregisterRenderObserver()
     HIVIEW_LOGI("succ to unregister observer");
 }
 
+void UcObserverManager::UnregisterNativeProcessObserver()
+{
+    if (nativeProcessObserver_ == nullptr) {
+        return;
+    }
+    auto res = Parameter::RemoveParamWatcher(NATIVE_PROC_PARAM.c_str(), nativeProcessObserver_, nullptr);
+    if (res != ERR_OK) {
+        HIVIEW_LOGE("failed to unregister observer, res=%{public}d", res);
+        return;
+    }
+    nativeProcessObserver_ = nullptr;
+    HIVIEW_LOGI("succ to unregister observer");
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

@@ -45,7 +45,7 @@ std::string GetProcessNameFromProcCmdline(int32_t pid)
     size_t procNameStartPos = 0;
     size_t procNameEndPos = procCmdlineContent.size();
     for (size_t i = 0; i < procCmdlineContent.size(); i++) {
-        if (procCmdlineContent[i] == '/') {
+        if (procCmdlineContent[0] == '/' && procCmdlineContent[i] == '/') {
             // for the format '/system/bin/hiview' of the cmdline file
             procNameStartPos = i + 1; // 1 for next char
         } else if (procCmdlineContent[i] == '\0') {

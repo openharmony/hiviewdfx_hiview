@@ -56,6 +56,11 @@ int WatchParamChange(const char *keyPrefix, ParameterChgPtr callback, void *cont
     return WatchParameter(keyPrefix, callback, context);
 }
 
+int RemoveParamWatcher(const char *keyPrefix, ParameterChgPtr callback, void *context)
+{
+    return RemoveParameterWatcher(keyPrefix, callback, context);
+}
+
 std::string GetDisplayVersionStr()
 {
     static std::string displayedVersionStr = std::string(GetDisplayVersion());
