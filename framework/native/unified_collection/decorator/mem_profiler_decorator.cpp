@@ -38,8 +38,20 @@ int MemProfilerDecorator::Start(ProfilerType type, int pid, int duration, int sa
 
 int MemProfilerDecorator::Stop(int pid)
 {
-    auto task = std::bind(&MemProfilerCollector::Stop, memProfilerCollector_.get(), pid);
-    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+    auto task = std::bind(
+        static_cast<int(MemProfilerCollector::*)(int)>(&MemProfilerCollector::Stop),
+        memProfilerCollector_.get(), pid);
+    // has same func name, rename it with num "-1"
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1");
+}
+
+int MemProfilerDecorator::Stop(const std::string& processName)
+{
+    auto task = std::bind(
+        static_cast<int(MemProfilerCollector::*)(const std::string&)>(&MemProfilerCollector::Stop),
+        memProfilerCollector_.get(), processName);
+    // has same func name, rename it with num "-1"
+    return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
 int MemProfilerDecorator::Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval)
