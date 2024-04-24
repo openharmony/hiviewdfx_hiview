@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERBER_MGR_H
-#define HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERBER_MGR_H
+#ifndef HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERVER_MGR_H
+#define HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERVER_MGR_H
 
 #include <mutex>
 #include <string>
@@ -53,9 +53,9 @@ private:
 
 private:
     std::unordered_map<std::string, sptr<SettingObserver>> observers_;
-    std::mutex  observersMutex_;
+    std::mutex observersMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERBER_MGR_H
+#endif // HIVIEW_BASE_EVENT_EXPORT_SETTING_OBSERVER_MGR_H

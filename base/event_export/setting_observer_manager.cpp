@@ -29,7 +29,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("EventExport-SettingObserverManager");
+DEFINE_LOG_TAG("HiView-SettingObserverManager");
 namespace {
 const std::string SETTINGS_DATA_BASE_URI =
     "datashare:///com.ohos.settingsdata/entry/settingsdata/SETTINGSDATA?Proxy=true";

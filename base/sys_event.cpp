@@ -101,7 +101,7 @@ std::atomic<uint32_t> SysEvent::totalCount_(0);
 std::atomic<int64_t> SysEvent::totalSize_(0);
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
-    std::shared_ptr<EventRaw::RawData> rawData, int64_t seq)
+    std::shared_ptr<EventRaw::RawData> rawData, int64_t seq, const std::string& sysVersion)
     : PipelineEvent(sender, handler), eventType_(0), preserve_(true), log_(0),  seq_(seq)
 {
     messageType_ = Event::MessageType::SYS_EVENT;
@@ -109,10 +109,17 @@ SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
         rawData->GetDataLength() < EventRaw::GetValidDataMinimumByteCount()) {
         return;
     }
+    sysVersion_ = sysVersion;
     rawData_ = rawData;
     totalCount_.fetch_add(1);
     totalSize_.fetch_add(*(reinterpret_cast<int32_t*>(rawData_->GetData())));
     InitialMembers();
+}
+
+SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
+    std::shared_ptr<EventRaw::RawData> rawData, int64_t seq)
+    : SysEvent(sender, handler, rawData, seq, "")
+{
 }
 
 SysEvent::SysEvent(const std::string& sender, PipelineEventProducer* handler,
@@ -520,6 +527,11 @@ std::string SysEvent::EscapeJsonStringValue(const std::string& src)
 std::string SysEvent::UnescapeJsonStringValue(const std::string& src)
 {
     return StringUtil::UnescapeJsonStringValue(src);
+}
+
+std::string SysEvent::GetSysVersion()
+{
+    return sysVersion_;
 }
 
 SysEventCreator::SysEventCreator(const std::string& domain, const std::string& eventName,

@@ -84,5 +84,14 @@ void SysEventServiceAdapter::SetWorkLoop(std::shared_ptr<EventLoop> looper)
     service->SetWorkLoop(looper);
 }
 
+int64_t SysEventServiceAdapter::GetCurrentEventSeq()
+{
+    auto service = OHOS::HiviewDFX::SysEventServiceOhos::GetInstance();
+    if (service == nullptr) {
+        HIVIEW_LOGE("SysEventServiceOhos service is null.");
+        return -1; // -1 means invalid event sequence
+    }
+    return service->GetCurrentEventSeq();
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

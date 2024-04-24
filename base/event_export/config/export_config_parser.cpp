@@ -23,8 +23,8 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-using  ExportEventListParsers = std::map<std::string, std::shared_ptr<ExportEventListParser>>;
 DEFINE_LOG_TAG("HiView-EventConfigParser");
+using  ExportEventListParsers = std::map<std::string, std::shared_ptr<ExportEventListParser>>;
 namespace {
 constexpr char SETTING_DB_PARAM[] = "settingDbParam";
 constexpr char SETTING_DB_PARAM_NAME[] = "name";
