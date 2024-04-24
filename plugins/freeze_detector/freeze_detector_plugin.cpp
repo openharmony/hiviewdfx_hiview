@@ -192,9 +192,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
         }
     }
     auto task = std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint);
-    ffrt::submit([task] {
-        task();
-        }, {}, {}, ffrt::task_attr().name("dfr_freeze_detector").qos(ffrt::qos_default)
+    ffrt::submit([task]{task();}, {}, {}, ffrt::task_attr().name("dfr_freeze_detector").qos(ffrt::qos_default)
         .delay(static_cast<unsigned long long>(delayTime) * TO_NANOSECOND_MULTPLE));
 }
 
