@@ -82,6 +82,7 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             break;
         case CATCHER_SCBVIEWPARAM:
             ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
+            break;
         default:
             break;
     }
