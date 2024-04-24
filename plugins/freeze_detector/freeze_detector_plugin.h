@@ -39,6 +39,8 @@ public:
     void OnEventListeningCallback(const Event& msg) override;
 
 private:
+    const static uint64_t TO_NANOSECOND_MULTPLE = 1000000;
+
     std::string RemoveRedundantNewline(const std::string& content) const;
     WatchPoint MakeWatchPoint(const Event& event);
     void ProcessEvent(WatchPoint watchPoint);
