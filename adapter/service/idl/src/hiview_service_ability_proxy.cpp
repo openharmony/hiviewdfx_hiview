@@ -210,6 +210,11 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CaptureDurationTrace
     auto parcelHandler = [&appCaller] (MessageParcel& data) {
         std::string errField;
         do {
+            if (!data.WriteInt32(appCaller.actionId)) {
+                errField = "actionId";
+                break;
+            }
+
             if (!data.WriteString(appCaller.bundleName)) {
                 errField = "bundleName";
                 break;
@@ -217,6 +222,16 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CaptureDurationTrace
 
             if (!data.WriteString(appCaller.bundleVersion)) {
                 errField = "bundleVersion";
+                break;
+            }
+
+            if (!data.WriteString(appCaller.threadName)) {
+                errField = "threadName";
+                break;
+            }
+
+            if (!data.WriteInt32(appCaller.foreground)) {
+                errField = "foreground";
                 break;
             }
 

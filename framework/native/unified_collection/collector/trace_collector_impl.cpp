@@ -66,9 +66,14 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(Trace
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
     CollectResult<std::vector<std::string>> result;
     if (!Parameter::IsBetaVersion() && !Parameter::IsUCollectionSwitchOn()) {
-        result.retCode = UcError::UNSUPPORT;
-        HIVIEW_LOGI("hitrace service not permitted to load on current version");
-        return result;
+        if (OHOS::HiviewDFX::Hitrace::GetTraceMode() != OHOS::HiviewDFX::Hitrace::TraceMode::CLOSE &&
+            TraceCollector::Caller::APP == caller) {
+            HIVIEW_LOGD("app cloud dump trace");
+        } else {
+            result.retCode = UcError::UNSUPPORT;
+            HIVIEW_LOGI("hitrace service not permitted to load on current version");
+            return result;
+        }
     }
     std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
     std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
@@ -92,7 +97,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(Trace
         return result;
     }
     if (traceRetInfo.errorCode == TraceErrorCode::SUCCESS) {
-        if (caller == TraceCollector::Caller::DEVELOP) {
+        if (caller == TraceCollector::Caller::DEVELOP || caller == TraceCollector::Caller::APP) {
             result.data = traceRetInfo.outputFiles;
         } else {
             std::vector<std::string> outputFiles = GetUnifiedFiles(traceRetInfo, caller);

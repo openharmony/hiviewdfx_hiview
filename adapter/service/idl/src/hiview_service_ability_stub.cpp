@@ -375,14 +375,31 @@ int32_t HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest(MessageParce
 
     std::string errField;
     do {
+        if (!data.ReadInt32(appCaller.actionId)) {
+            errField = "actionId";
+            break;
+        }
+
         if (!data.ReadString(appCaller.bundleName)) {
             errField = "bundleName";
             break;
         }
+
         if (!data.ReadString(appCaller.bundleVersion)) {
             errField = "bundleVersion";
             break;
         }
+
+        if (!data.ReadString(appCaller.threadName)) {
+            errField = "threadName";
+            break;
+        }
+
+        if (!data.ReadInt32(appCaller.foreground)) {
+            errField = "foreground";
+            break;
+        }
+
         if (!data.ReadInt32(appCaller.uid)) {
             errField = "uid";
             break;
@@ -402,6 +419,7 @@ int32_t HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest(MessageParce
             errField = "beginTime";
             break;
         }
+
         if (!data.ReadInt64(appCaller.endTime)) {
             errField = "endTime";
             break;

@@ -37,6 +37,20 @@ public:
 
     void OnRemoteDied(const wptr<IRemoteObject>& remote)
     {
+        std::lock_guard<std::mutex> proxyGuard(g_proxyMutex);
+        if (g_hiviewServiceAbilityProxy == nullptr) {
+            HIVIEW_LOGW("hiview remote service died and local instance is null.");
+            return;
+        }
+
+        if (g_hiviewServiceAbilityProxy == remote.promote()) {
+            g_hiviewServiceAbilityProxy->RemoveDeathRecipient(g_deathRecipient);
+            g_hiviewServiceAbilityProxy = nullptr;
+            g_deathRecipient = nullptr;
+            HIVIEW_LOGW("hiview remote service died.");
+        } else {
+            HIVIEW_LOGW("unknown service died.");
+        }
     }
 };
 
