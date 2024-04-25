@@ -133,7 +133,7 @@ void StopRecordAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
         HIVIEW_LOGE("close trace for uid=%{public}d pid=%{public}d error code=%{public}d",
             appJankEvent->uid_, appJankEvent->pid_, result.retCode);
     }
-    appJankEvent->taskEndTime_ = TimeUtil::GetMilliseconds();
+    appJankEvent->taskEndTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
 
     if (result.data.empty()) {
         HIVIEW_LOGE("failed to collect app trace for uid=%{public}d pid=%{public}d",
