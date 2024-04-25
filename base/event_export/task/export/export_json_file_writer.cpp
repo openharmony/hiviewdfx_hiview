@@ -25,7 +25,7 @@
 #include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "time_util.h"
-#include "zip_util.h"
+#include "hiview_zip_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -178,7 +178,7 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 void ZipDbFile(const std::string& src, const std::string& dest)
 {
     HIVIEW_LOGI("zip file: %{public}s to %{public}s", src.c_str(), dest.c_str());
-    ZipUtil::ZipFile(src, dest);
+    HiviewZipUtil::ZipFile(src, dest);
     auto ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXOTH | S_IWOTH);
     if (!ret) {
         HIVIEW_LOGE("failed to chmod file %{public}s.", dest.c_str());

@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-#ifndef UTILITY_ZIP_UTIL_H
-#define UTILITY_ZIP_UTIL_H
+#ifndef UTILITY_HIVIEW_ZIP_UTIL_H
+#define UTILITY_HIVIEW_ZIP_UTIL_H
 
 #include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace ZipUtil {
+namespace HiviewZipUtil {
 void ZipFile(const std::string& srcFile, const std::string& destZipFile);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // UTILITY_ZIP_UTIL_H
+#endif // UTILITY_HIVIEW_ZIP_UTIL_H
