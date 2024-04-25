@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 
-#include "zip_util.h"
+#include "hiview_zip_util.h"
 
 #include <contrib/minizip/zip.h>
-#include <contrib/minizip/unzip.h>
 
 #include "file_util.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace ZipUtil {
+namespace HiviewZipUtil {
 namespace {
 constexpr uint32_t BUFFER_SIZE = 100 * 1024;
 }
