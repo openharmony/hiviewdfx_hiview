@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("EventExport");
+DEFINE_LOG_TAG("HiView-ExportDbStorage");
 namespace {
 constexpr int32_t DB_VERSION = 1;
 constexpr char EXPORT_DB_NAME[] = "event_export_mgr.db";

@@ -35,7 +35,7 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
         if (writer.second == nullptr) {
             continue;
         }
-        writer.second->Write();
+        writer.second->Write(true);
     }
     return true;
 }
@@ -54,9 +54,10 @@ std::shared_ptr<ExportJsonFileWriter> EventWriteHandler::GetEventWriter(const st
         HIVIEW_LOGI("create json file writer with version %{public}s", sysVersion.c_str());
         auto jsonFileWriter = std::make_shared<ExportJsonFileWriter>(writeReq->moduleName, sysVersion,
             writeReq->exportDir, writeReq->maxSingleFileSize);
-        jsonFileWriter->SetMaxSequenceWriteListener([this, &writeReq] (int64_t maxEventSeq) {
+        auto moduleName = writeReq->moduleName;
+        jsonFileWriter->SetMaxSequenceWriteListener([this, moduleName] (int64_t maxEventSeq) {
             if (this->exportDoneListener_ != nullptr) {
-                this->exportDoneListener_(writeReq->moduleName, maxEventSeq);
+                this->exportDoneListener_(moduleName, maxEventSeq);
             }
         });
         allJsonFileWriters_.emplace(writerKey, jsonFileWriter);

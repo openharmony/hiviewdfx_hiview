@@ -41,17 +41,17 @@ private:
 
 private:
     void Init();
-    void RegistSettingsObservers();
-    void UnregistSettingsObservers();
+    void InitAndRunTasks();
     void HandleExportSwitchOn(const std::string& moduleName);
     void HandleExportSwitchOff(const std::string& moduleName);
+    bool RegistSettingObserver(std::shared_ptr<ExportConfig> config);
+    void InitAndRunTask(std::shared_ptr<ExportConfig> config);
 
 private:
     bool isTaskRunning_ = false;
     std::shared_ptr<ExportDbManager> dbMgr_ = nullptr;
     std::mutex mgrMutex_;
     std::vector<std::shared_ptr<ExportConfig>> configs_;
-    std::vector<std::shared_ptr<ExportBaseTask>> tasks_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
