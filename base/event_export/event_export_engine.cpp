@@ -53,7 +53,6 @@ EventExportEngine& EventExportEngine::GetInstance()
 
 EventExportEngine::EventExportEngine()
 {
-    Init();
 }
 
 EventExportEngine::~EventExportEngine()
@@ -71,11 +70,12 @@ void EventExportEngine::Start()
         return;
     }
     isTaskRunning_ = true;
-
-    for (auto& config : configs_) {
-        auto task = std::bind(&EventExportEngine::InitAndRunTask, this, config);
-        ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_hiview_export").qos(ffrt::qos_default));
-    }
+    auto initTask = std::bind(&EventExportEngine::Init, this);
+    auto initTaskHandle = ffrt::submit_h(initTask, {}, {},
+        ffrt::task_attr().name("dft_export_init").qos(ffrt::qos_default));
+    auto exportTask = std::bind(&EventExportEngine::InitAndRunTasks, this);
+    ffrt::submit(exportTask, { initTaskHandle }, {},
+        ffrt::task_attr().name("dft_export_start").qos(ffrt::qos_default));
 }
 
 void EventExportEngine::Stop()
@@ -106,16 +106,24 @@ void EventExportEngine::Init()
     HIVIEW_LOGD("count of configuration: %{public}zu", configs_.size());
 }
 
-bool EventExportEngine::RegistSettingDbObserver(std::shared_ptr<ExportConfig> config)
+void EventExportEngine::InitAndRunTasks()
+{
+    HIVIEW_LOGI("total count of module is %{public}zu", configs_.size());
+    for (const auto& config : configs_) {
+        auto task = std::bind(&EventExportEngine::InitAndRunTask, this, config);
+        ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_event_export").qos(ffrt::qos_default));
+    }
+}
+
+bool EventExportEngine::RegistSettingObserver(std::shared_ptr<ExportConfig> config)
 {
     SettingObserver::ObserverCallback callback =
         [this, &config] (const std::string& paramKey) {
-            auto setVal = SettingObserverManager::GetInstance()->GetStringValue(paramKey);
-            HIVIEW_LOGI("value of param key[%{public}s] is set to be %{public}s", paramKey.c_str(),
-                setVal.c_str());
-            if (setVal == config->settingDbParam.enabledVal) {
+            std::string val = SettingObserverManager::GetInstance()->GetStringValue(paramKey);
+            HIVIEW_LOGI("value of param key[%{public}s] is %{public}s", paramKey.c_str(), val.c_str());
+            if (val == config->settingDbParam.enabledVal) {
                 this->HandleExportSwitchOn(config->moduleName);
-            } else if (setVal == config->settingDbParam.disabledVal) {
+            } else {
                 this->HandleExportSwitchOff(config->moduleName);
             }
         };
@@ -147,15 +155,13 @@ bool EventExportEngine::RegistSettingDbObserver(std::shared_ptr<ExportConfig> co
 void EventExportEngine::InitAndRunTask(std::shared_ptr<ExportConfig> config)
 {
     // reg setting db observer
-    auto regRet = RegistSettingDbObserver(config);
+    auto regRet = RegistSettingObserver(config);
     if (!regRet) {
         return;
     }
     // init tasks of current config then run them
     auto expireTask = std::make_shared<EventExpireTask>(config, dbMgr_);
-    tasks_.emplace_back(expireTask);
     auto exportTask = std::make_shared<EventExportTask>(config, dbMgr_);
-    tasks_.emplace_back(exportTask);
     while (isTaskRunning_) {
         expireTask->Run();
         exportTask->Run();
