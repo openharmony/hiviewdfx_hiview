@@ -124,7 +124,7 @@
                         "EventLogger": "event_logger",
                         "BBoxDetectorPlugin": "bbox_detector",
                         "FaultDetectorManager": "leak_detector",
-                        "SysEventDispatcher": "sys_dispatcher"
+                        "SysEventDispatcher": "sysevent_store"
                     }
                 }
             }
