@@ -196,6 +196,10 @@ std::string GetZipFilePath(const std::string& storeDir, bool needExportDir)
     if (!FileUtil::IsDirectory(zipDir) && !FileUtil::ForceCreateDirectory(zipDir)) {
         return "";
     }
+    auto ret = FileUtil::ChangeModeDirectory(zipDir, FileUtil::DEFAULT_FILE_MODE | S_IXOTH | S_IWOTH);
+    if (!ret) {
+        HIVIEW_LOGE("failed to chmod directory %{public}s.", zipDir.c_str());
+    }
     zipDir.append("HSE").append(ZIP_FILE_DELIM)
         .append(Parameter::GetBrandStr()).append(std::string(ZIP_FILE_DELIM))
         .append(Parameter::GetProductModelStr()).append(std::string(ZIP_FILE_DELIM))
@@ -215,7 +219,7 @@ void PersistJsonStrToLocalFile(cJSON* root, const std::string& localFile)
     }
     FILE* file = fopen(localFile.c_str(), "w+");
     if (file == nullptr) {
-        HIVIEW_LOGE("failed to open file %{public}s.", localFile.c_str());
+        HIVIEW_LOGE("failed to open file: %{public}s.", localFile.c_str());
         cJSON_free(parsedJsonStr);
         return;
     }
@@ -309,7 +313,6 @@ void ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, c
 
 void ExportJsonFileWriter::Write(bool isLastPartialQuery)
 {
-    HIVIEW_LOGD("start pack events to json file");
     PackJsonStrToFile(eventInDomains_);
     if (isLastPartialQuery && maxSequenceWriteListener_ != nullptr && maxEventSeq_ != INVALID_SEQ_VAL) {
         maxSequenceWriteListener_(maxEventSeq_);

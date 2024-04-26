@@ -45,7 +45,9 @@ void EventExportTask::OnTaskRun()
     // init write handler
     auto writeHandler = std::make_shared<EventWriteHandler>();
     writeHandler->SetExportDoneListener([this] (const std::string& moduleName, int64_t seq) {
-        this->dbMgr_->HandleExportTaskFinished(moduleName, seq);
+        HIVIEW_LOGI("update maximum seqeuence of exported event: %{public}" PRId64 " for module %{public}s",
+            seq, moduleName.c_str());
+            this->dbMgr_->HandleExportTaskFinished(moduleName, seq);
     });
     // init read handler
     auto readHandler = std::make_shared<EventReadHandler>();

@@ -41,10 +41,10 @@ private:
 
 private:
     void Init();
-    void RegistSettingsObservers();
-    void UnregistSettingsObservers();
     void HandleExportSwitchOn(const std::string& moduleName);
     void HandleExportSwitchOff(const std::string& moduleName);
+    bool RegistSettingDbObserver(std::shared_ptr<ExportConfig> config);
+    void InitAndRunTask(std::shared_ptr<ExportConfig> config);
 
 private:
     bool isTaskRunning_ = false;

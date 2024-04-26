@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("EventExport");
+DEFINE_LOG_TAG("HiView-ExportDbManager");
 ExportDbManager::ExportDbManager(const std::string& dbStoreDir)
 {
     HIVIEW_LOGD("db store directory is %{public}s.", dbStoreDir.c_str());
