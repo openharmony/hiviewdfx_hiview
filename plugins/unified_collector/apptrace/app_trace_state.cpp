@@ -139,8 +139,8 @@ void InnerReportMainThreadJankForTrace(std::shared_ptr<AppCallerEvent> appCaller
 }
 }
 
-AppTraceContext::AppTraceContext(std::shared_ptr<AppTraceState> state):
-    pid_(0), traceBegin_(0), isOpenTrace_(false), isDumpTrace_(false), state_(state)
+AppTraceContext::AppTraceContext(std::shared_ptr<AppTraceState> state)
+    : pid_(0), traceBegin_(0), isOpenTrace_(false), isDumpTrace_(false), state_(state)
 {}
 
 int32_t AppTraceContext::TransferTo(std::shared_ptr<AppTraceState> state)

@@ -368,6 +368,64 @@ int32_t HiviewServiceAbilityStub::HandleRecoverTraceRequest(MessageParcel& data,
     return WritePracelableToMessage(reply, ret);
 }
 
+static bool ReadAppCallerBase(MessageParcel& data, UCollectClient::AppCaller &appCaller, std::string &errField)
+{
+    if (!data.ReadInt32(appCaller.actionId)) {
+        errField = "actionId";
+        return false;
+    }
+
+    if (!data.ReadString(appCaller.bundleName)) {
+        errField = "bundleName";
+        return false;
+    }
+
+    if (!data.ReadString(appCaller.bundleVersion)) {
+        errField = "bundleVersion";
+        return false;
+    }
+
+    if (!data.ReadString(appCaller.threadName)) {
+        errField = "threadName";
+        return false;
+    }
+
+    if (!data.ReadInt32(appCaller.foreground)) {
+        errField = "foreground";
+        return false;
+    }
+    return true;
+}
+
+static bool ReadAppCallerExternal(MessageParcel& data, UCollectClient::AppCaller &appCaller, std::string &errField)
+{
+    if (!data.ReadInt32(appCaller.uid)) {
+        errField = "uid";
+        return false;
+    }
+
+    if (!data.ReadInt32(appCaller.pid)) {
+        errField = "pid";
+        return false;
+    }
+
+    if (!data.ReadInt64(appCaller.happenTime)) {
+        errField = "happenTime";
+        return false;
+    }
+
+    if (!data.ReadInt64(appCaller.beginTime)) {
+        errField = "beginTime";
+        return false;
+    }
+
+    if (!data.ReadInt64(appCaller.endTime)) {
+        errField = "endTime";
+        return false;
+    }
+    return true;
+}
+
 int32_t HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
@@ -375,53 +433,10 @@ int32_t HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest(MessageParce
 
     std::string errField;
     do {
-        if (!data.ReadInt32(appCaller.actionId)) {
-            errField = "actionId";
+        if (!ReadAppCallerBase(data, appCaller, errField)) {
             break;
         }
-
-        if (!data.ReadString(appCaller.bundleName)) {
-            errField = "bundleName";
-            break;
-        }
-
-        if (!data.ReadString(appCaller.bundleVersion)) {
-            errField = "bundleVersion";
-            break;
-        }
-
-        if (!data.ReadString(appCaller.threadName)) {
-            errField = "threadName";
-            break;
-        }
-
-        if (!data.ReadInt32(appCaller.foreground)) {
-            errField = "foreground";
-            break;
-        }
-
-        if (!data.ReadInt32(appCaller.uid)) {
-            errField = "uid";
-            break;
-        }
-
-        if (!data.ReadInt32(appCaller.pid)) {
-            errField = "pid";
-            break;
-        }
-
-        if (!data.ReadInt64(appCaller.happenTime)) {
-            errField = "happenTime";
-            break;
-        }
-
-        if (!data.ReadInt64(appCaller.beginTime)) {
-            errField = "beginTime";
-            break;
-        }
-
-        if (!data.ReadInt64(appCaller.endTime)) {
-            errField = "endTime";
+        if (!ReadAppCallerExternal(data, appCaller, errField)) {
             break;
         }
     } while (0);
