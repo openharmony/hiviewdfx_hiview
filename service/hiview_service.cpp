@@ -420,8 +420,8 @@ static CollectResult<int32_t> InnerResponseAppTrace(int32_t uid, int32_t pid,
     std::shared_ptr<AppCallerEvent> appCallerEvent = InnerCreateAppCallerEvent(appCaller, eventName);
     std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(appCallerEvent);
     if (!plugin->OnEvent(event)) {
-        HIVIEW_LOGE("start trace failed for uid=%{public}d pid=%{public}d error code=%{public}d",
-            uid, pid, appCallerEvent->resultCode_);
+        HIVIEW_LOGE("%{public}s failed for uid=%{public}d pid=%{public}d error code=%{public}d",
+            eventName.c_str(), uid, pid, appCallerEvent->resultCode_);
         result.retCode = UCollect::UcError(appCallerEvent->resultCode_);
         return result;
     }
