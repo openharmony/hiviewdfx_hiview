@@ -53,13 +53,13 @@ public:
      * @param appEvent app caller
      * @return true: save success; false: save fail
      */
-    bool AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent);
+    bool RecordCaller(std::shared_ptr<AppCallerEvent> appEvent);
 
     /**
      * @brief clean which remain in share create by app
      *
      */
-    void CleanAppTrace();
+    void CleanOldAppTrace();
 private:
     void InitTraceDb();
     void InitTraceStorage();

@@ -205,43 +205,73 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::RecoverTrace()
         parcelHandler);
 }
 
+static bool WriteAppCallerBase(MessageParcel& data, UCollectClient::AppCaller &appCaller, std::string &errField)
+{
+    if (!data.WriteInt32(appCaller.actionId)) {
+        errField = "actionId";
+        return false;
+    }
+
+    if (!data.WriteString(appCaller.bundleName)) {
+        errField = "bundleName";
+        return false;
+    }
+
+    if (!data.WriteString(appCaller.bundleVersion)) {
+        errField = "bundleVersion";
+        return false;
+    }
+
+    if (!data.WriteString(appCaller.threadName)) {
+        errField = "threadName";
+        return false;
+    }
+
+    if (!data.WriteInt32(appCaller.foreground)) {
+        errField = "foreground";
+        return false;
+    }
+    return true;
+}
+
+static bool WriteAppCallerExternal(MessageParcel& data, UCollectClient::AppCaller &appCaller, std::string &errField)
+{
+    if (!data.WriteInt32(appCaller.uid)) {
+        errField = "uid";
+        return false;
+    }
+
+    if (!data.WriteInt32(appCaller.pid)) {
+        errField = "pid";
+        return false;
+    }
+
+    if (!data.WriteInt64(appCaller.happenTime)) {
+        errField = "happenTime";
+        return false;
+    }
+
+    if (!data.WriteInt64(appCaller.beginTime)) {
+        errField = "beginTime";
+        return false;
+    }
+
+    if (!data.WriteInt64(appCaller.endTime)) {
+        errField = "endTime";
+        return false;
+    }
+    return true;
+}
+
 CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
 {
     auto parcelHandler = [&appCaller] (MessageParcel& data) {
         std::string errField;
         do {
-            if (!data.WriteString(appCaller.bundleName)) {
-                errField = "bundleName";
+            if (!WriteAppCallerBase(data, appCaller, errField)) {
                 break;
             }
-
-            if (!data.WriteString(appCaller.bundleVersion)) {
-                errField = "bundleVersion";
-                break;
-            }
-
-            if (!data.WriteInt32(appCaller.uid)) {
-                errField = "uid";
-                break;
-            }
-
-            if (!data.WriteInt32(appCaller.pid)) {
-                errField = "pid";
-                break;
-            }
-
-            if (!data.WriteInt64(appCaller.happenTime)) {
-                errField = "happenTime";
-                break;
-            }
-
-            if (!data.WriteInt64(appCaller.beginTime)) {
-                errField = "beginTime";
-                break;
-            }
-
-            if (!data.WriteInt64(appCaller.endTime)) {
-                errField = "endTime";
+            if (!WriteAppCallerExternal(data, appCaller, errField)) {
                 break;
             }
         } while (0);

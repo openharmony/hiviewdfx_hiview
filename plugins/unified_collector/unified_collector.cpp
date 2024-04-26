@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "app_caller_event.h"
+#include "app_trace_context.h"
 #include "collect_event.h"
 #include "event_publish.h"
 #include "ffrt.h"
@@ -24,7 +25,6 @@
 #include "hitrace_dump.h"
 #include "hiview_logger.h"
 #include "io_collector.h"
-#include "json/json.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"
@@ -47,7 +47,6 @@ std::mutex g_traceLock;
 const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
-const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 const std::string DEVELOPER_MODE_TRACE_ARGS = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0";
 const std::string OTHER = "Other";
 const std::string HIVIEW_UCOLLECTION_STATE_TRUE = "true";
@@ -82,123 +81,12 @@ ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
 }
 #endif // PC_APP_STATE_COLLECT_ENABLE
 
-bool StartCatpureAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
-{
-    TraceManager manager;
-    std::string appArgs = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1";
-    int32_t retCode = manager.OpenRecordingTrace(appArgs);
-    if (retCode != UCollect::UcError::SUCCESS) {
-        manager.CloseTrace();
-        HIVIEW_LOGE("failed to open trace in recording mode, error code %{public}d", retCode);
-        appJankEvent->resultCode_ = UCollect::UcError(retCode);
-        return false;
-    }
-
-    std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
-    CollectResult<int32_t> result = traceCollector->TraceOn();
-    if (result.retCode != UCollect::UcError::SUCCESS) {
-        manager.CloseTrace();
-        HIVIEW_LOGE("failed to trace on, error code %{public}d", result.retCode);
-        appJankEvent->resultCode_ = result.retCode;
-        return false;
-    }
-    appJankEvent->resultCode_ = 0;
-    return true;
-}
-
-std::string MakeTraceFileName(const std::string &bundleName, int32_t pid,
-    int64_t beginTime, int64_t endTime, int32_t costTime)
-{
-    std::string d1 = TimeUtil::TimestampFormatToDate(beginTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
-    std::string d2 = TimeUtil::TimestampFormatToDate(endTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
-
-    std::string name;
-    name.append(UNIFIED_SHARE_PATH).append("APP_").append(bundleName).append("_").append(std::to_string(pid));
-    name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append(".sys");
-    return name;
-}
-
-void StopRecordAppTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
-{
-    std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
-    CollectResult<std::vector<std::string>> result = traceCollector->TraceOff();
-    if (result.retCode != UCollect::UcError::SUCCESS) {
-        HIVIEW_LOGE("trace off for uid=%{public}d pid=%{public}d error code=%{public}d",
-            appJankEvent->uid_, appJankEvent->pid_, result.retCode);
-    }
-
-    TraceManager manager;
-    int32_t retCode = manager.CloseTrace();
-    if (retCode != UCollect::UcError::SUCCESS) {
-        HIVIEW_LOGE("close trace for uid=%{public}d pid=%{public}d error code=%{public}d",
-            appJankEvent->uid_, appJankEvent->pid_, result.retCode);
-    }
-    appJankEvent->taskEndTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
-
-    if (result.data.empty()) {
-        HIVIEW_LOGE("failed to collect app trace for uid=%{public}d pid=%{public}d",
-            appJankEvent->uid_, appJankEvent->pid_);
-    } else {
-        std::string traceFileName = MakeTraceFileName(appJankEvent->bundleName_,
-            appJankEvent->pid_, appJankEvent->taskBeginTime_, appJankEvent->taskEndTime_,
-            (appJankEvent->taskEndTime_ - appJankEvent->taskBeginTime_));
-        FileUtil::RenameFile(result.data[0], traceFileName);
-        appJankEvent->externalLog_ = traceFileName;
-    }
-}
-
-void ShareAppEvent(std::shared_ptr<AppCallerEvent> appJankEvent)
-{
-    Json::Value eventJson;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_UID] = appJankEvent->uid_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_PID] = appJankEvent->pid_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_TIME] = appJankEvent->happenTime_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_NAME] = appJankEvent->bundleName_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_VERSION] = appJankEvent->bundleVersion_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_BEGIN_TIME] = appJankEvent->beginTime_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = appJankEvent->endTime_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = appJankEvent->externalLog_;
-    std::string param = Json::FastWriter().write(eventJson);
-
-    HIVIEW_LOGI("send for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
-    EventPublish::GetInstance().PushEvent(appJankEvent->uid_, UCollectUtil::MAIN_THREAD_JANK,
-        HiSysEvent::EventType::FAULT, param);
-}
-
-void ReportMainThreadJankForTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
-{
-    HiSysEventWrite(HiSysEvent::Domain::FRAMEWORK, UCollectUtil::MAIN_THREAD_JANK, HiSysEvent::EventType::FAULT,
-        UCollectUtil::SYS_EVENT_PARAM_BUNDLE_NAME, appJankEvent->bundleName_,
-        UCollectUtil::SYS_EVENT_PARAM_BUNDLE_VERSION, appJankEvent->bundleVersion_,
-        UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME, appJankEvent->beginTime_,
-        UCollectUtil::SYS_EVENT_PARAM_END_TIME, appJankEvent->endTime_,
-        UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL, 1); // 1: over 450ms
-}
-
-bool IsRemoteLogOpen()
-{
-    std::string remoteLogState = Parameter::GetString(HIVIEW_UCOLLECTION_STATE, HIVIEW_UCOLLECTION_STATE_FALSE);
-    if (remoteLogState == HIVIEW_UCOLLECTION_STATE_TRUE) {
-        return true;
-    }
-    return false;
-}
-
-bool IsDevelopTraceRecorderOpen()
-{
-    std::string traceRecorderState = Parameter::GetString(DEVELOP_HIVIEW_TRACE_RECORDER, DEVELOP_TRACE_RECORDER_FALSE);
-    if (traceRecorderState == DEVELOP_TRACE_RECORDER_TRUE) {
-        return true;
-    }
-    return false;
-}
-
 void InitDynamicTrace()
 {
     bool s1 = Parameter::IsBetaVersion();
-    bool s2 = IsRemoteLogOpen();
-    bool s3 = IsDevelopTraceRecorderOpen();
-    HIVIEW_LOGI("IsBetaVersion=%{public}d, IsRemoteLogOpen=%{public}d, IsDevelopTraceRecorderOpen=%{public}d",
+    bool s2 = Parameter::IsUCollectionSwitchOn();
+    bool s3 = Parameter::IsTraceCollectionSwitchOn();
+    HIVIEW_LOGI("IsBetaVersion=%{public}d, IsUCollectionSwitchOn=%{public}d, IsTraceCollectionSwitchOn=%{public}d",
         s1, s2, s3);
     AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[s1][s2][s3];
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
@@ -215,7 +103,7 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
     }
 
     bool s1 = Parameter::IsBetaVersion();
-    bool s2 = IsRemoteLogOpen();
+    bool s2 = Parameter::IsUCollectionSwitchOn();
     bool s3;
     if (std::string(DEVELOP_TRACE_RECORDER_TRUE) == value) {
         s3 = true;
@@ -282,48 +170,22 @@ void UnifiedCollector::OnUnload()
     observerMgr_ = nullptr;
 }
 
-bool UnifiedCollector::OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
+bool UnifiedCollector::OnStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
-    HIVIEW_LOGI("start trace to capture serval seconds for uid=%{public}d pid=%{public}d",
-        appJankEvent->uid_, appJankEvent->pid_);
-
-    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
-
-    // app only has one trace file each day
-    if (traceController->HasCallOnceToday(appJankEvent->uid_, appJankEvent->happenTime_)) {
-        HIVIEW_LOGI("already capture trace uid=%{public}d pid=%{public}d",
-            appJankEvent->uid_, appJankEvent->pid_);
-        appJankEvent->resultCode_ = UCollect::UcError(UCollect::HAS_CAPTURE_TRACE);
-        return false;
-    }
-
-    if (!StartCatpureAppTrace(appJankEvent)) {
-        return false;
-    }
-
-    appJankEvent->eventName_ = UCollectUtil::STOP_CAPTURE_TRACE;
-    DelayProcessEvent(appJankEvent, 3); // 3: delay 3 second to stop trace
-    HIVIEW_LOGI("trace is on, wait for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
-    return true;
+    auto nextState = std::make_shared<StartTraceState>(appTraceContext_, appCallerEvent, shared_from_this());
+    return appTraceContext_->TransferTo(nextState) == 0;
 }
 
-bool UnifiedCollector::OnStopCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent)
+bool UnifiedCollector::OnDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
-    HIVIEW_LOGI("stop trace for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
+    auto nextState = std::make_shared<DumpTraceState>(appTraceContext_, appCallerEvent, shared_from_this());
+    return appTraceContext_->TransferTo(nextState) == 0;
+}
 
-    StopRecordAppTrace(appJankEvent);
-
-    // hicollie capture stack in application process, only need to share app event to application by hiview
-    ShareAppEvent(appJankEvent);
-
-    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
-    traceController->AddNewFinishTask(appJankEvent);
-    traceController->CleanAppTrace();
-
-    ReportMainThreadJankForTrace(appJankEvent);
-    HIVIEW_LOGI("has stop trace for uid=%{public}d pid=%{public}d", appJankEvent->uid_, appJankEvent->pid_);
-    AppCallerEvent::isDynamicTraceOpen_ = false;
-    return true;
+bool UnifiedCollector::OnStopAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
+{
+    auto nextState = std::make_shared<StopTraceState>(appTraceContext_, appCallerEvent);
+    return appTraceContext_->TransferTo(nextState) == 0;
 }
 
 bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
@@ -331,16 +193,20 @@ bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
     if (event == nullptr) {
         return true;
     }
+
     HIVIEW_LOGI("Receive Event %{public}s", event->GetEventName().c_str());
     if (event->messageType_ == Event::MessageType::PLUGIN_MAINTENANCE) {
-        if (event->eventName_ == UCollectUtil::START_CAPTURE_TRACE) {
-            std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
-            return OnStartCaptureTrace(appCallerEvent);
+        std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
+        if (event->eventName_ == UCollectUtil::START_APP_TRACE) {
+            return OnStartAppTrace(appCallerEvent);
         }
 
-        if (event->eventName_ == UCollectUtil::STOP_CAPTURE_TRACE) {
-            std::shared_ptr<AppCallerEvent> appCallerEvent = Event::DownCastTo<AppCallerEvent>(event);
-            return OnStopCaptureTrace(appCallerEvent);
+        if (event->eventName_ == UCollectUtil::DUMP_APP_TRACE) {
+            return OnDumpAppTrace(appCallerEvent);
+        }
+
+        if (event->eventName_ == UCollectUtil::STOP_APP_TRACE) {
+            return OnStopAppTrace(appCallerEvent);
         }
     }
 
@@ -349,30 +215,7 @@ bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
 
 void UnifiedCollector::OnMainThreadJank(SysEvent& sysEvent)
 {
-    if (sysEvent.GetEventIntValue(UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL) <
-        UCollectUtil::SYS_EVENT_JANK_LEVEL_VALUE_TRACE) {
-        // hicollie capture stack in application process, only need to share app event to application by hiview
-        Json::Value eventJson;
-        eventJson[UCollectUtil::APP_EVENT_PARAM_UID] = sysEvent.GetUid();
-        eventJson[UCollectUtil::APP_EVENT_PARAM_PID] = sysEvent.GetPid();
-        eventJson[UCollectUtil::APP_EVENT_PARAM_TIME] = sysEvent.happenTime_;
-        eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_NAME] = sysEvent.GetEventValue(
-            UCollectUtil::SYS_EVENT_PARAM_BUNDLE_NAME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_VERSION] = sysEvent.GetEventValue(
-            UCollectUtil::SYS_EVENT_PARAM_BUNDLE_VERSION);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_BEGIN_TIME] = sysEvent.GetEventIntValue(
-            UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = sysEvent.GetEventIntValue(
-            UCollectUtil::SYS_EVENT_PARAM_END_TIME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = sysEvent.GetEventValue(
-            UCollectUtil::SYS_EVENT_PARAM_EXTERNAL_LOG);
-        std::string param = Json::FastWriter().write(eventJson);
-
-        HIVIEW_LOGI("send as stack trigger for uid=%{public}d pid=%{public}d", sysEvent.GetUid(), sysEvent.GetPid());
-        EventPublish::GetInstance().PushEvent(sysEvent.GetUid(), UCollectUtil::MAIN_THREAD_JANK,
-            HiSysEvent::EventType::FAULT, param);
-        return;
-    }
+    appTraceContext_->PublishStackEvent(sysEvent);
 }
 
 void UnifiedCollector::OnEventListeningCallback(const Event& event)
@@ -412,6 +255,9 @@ void UnifiedCollector::Dump(int fd, const std::vector<std::string>& cmds)
     dprintf(fd, "trace recorder state is %s.\n", traceRecorderState.c_str());
 
     dprintf(fd, "dynamic trace state is %s.\n", AppCallerEvent::enableDynamicTrace_ ? "true" : "false");
+
+    TraceManager traceManager;
+    dprintf(fd, "trace mode is %d.\n", traceManager.GetTraceMode());
 }
 
 void UnifiedCollector::Init()
@@ -420,6 +266,9 @@ void UnifiedCollector::Init()
         HIVIEW_LOGE("hiview context is null");
         return;
     }
+
+    appTraceContext_ = std::make_shared<AppTraceContext>(std::make_shared<StopTraceState>(nullptr, nullptr));
+
     InitWorkLoop();
     InitWorkPath();
     bool isAllowCollect = Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn();
@@ -495,7 +344,7 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         unifiedCollectorPtr->CleanDataFiles();
     }
 
-    bool s3 = IsDevelopTraceRecorderOpen();
+    bool s3 = Parameter::IsTraceCollectionSwitchOn();
     AppCallerEvent::enableDynamicTrace_ = DYNAMIC_TRACE_FSM[COML_STATE][s2][s3];
 }
 

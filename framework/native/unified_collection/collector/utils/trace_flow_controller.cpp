@@ -200,7 +200,7 @@ bool TraceFlowController::HasCallOnceToday(int32_t uid, uint64_t happenTime)
     return appEventTask.id_ > 0;
 }
 
-bool TraceFlowController::AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEvent)
+bool TraceFlowController::RecordCaller(std::shared_ptr<AppCallerEvent> appEvent)
 {
     AppEventTask appEventTask;
 
@@ -220,7 +220,7 @@ bool TraceFlowController::AddNewFinishTask(std::shared_ptr<AppCallerEvent> appEv
     return traceStorage_->StoreAppEventTask(appEventTask);
 }
 
-void TraceFlowController::CleanAppTrace()
+void TraceFlowController::CleanOldAppTrace()
 {
     TraceCollector::Caller caller = TraceCollector::Caller::APP;
     FileRemove(caller);

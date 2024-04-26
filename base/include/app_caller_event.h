@@ -35,6 +35,8 @@ public:
     int32_t resultCode_;        // handle event error code
     int64_t taskBeginTime_;     // task start time
     int64_t taskEndTime_;       // task finish time
+    int32_t foreground_;        // app foreground
+    std::string threadName_;    // app thread name
     std::string externalLog_;   // trace file
 
 public:

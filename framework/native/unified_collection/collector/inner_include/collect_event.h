@@ -23,8 +23,9 @@ constexpr char UCOLLECTOR_PLUGIN[] = "UnifiedCollector";
 // define unified collection event
 constexpr char MAIN_THREAD_JANK[] = "MAIN_THREAD_JANK";
 
-constexpr char START_CAPTURE_TRACE[] = "START_CAPTURE_TRACE";
-constexpr char STOP_CAPTURE_TRACE[] = "STOP_CAPTURE_TRACE";
+constexpr char START_APP_TRACE[] = "START_APP_TRACE";
+constexpr char STOP_APP_TRACE[] = "STOP_APP_TRACE";
+constexpr char DUMP_APP_TRACE[] = "DUMP_APP_TRACE";
 
 constexpr char EVENT_PARAM_TRACE_FILE[] = "tracefile";
 constexpr char EVENT_PARAM_SYS_EVENT[] = "sysevent";
@@ -45,6 +46,9 @@ constexpr char SYS_EVENT_PARAM_BEGIN_TIME[] = "BEGIN_TIME";
 constexpr char SYS_EVENT_PARAM_END_TIME[] = "END_TIME";
 constexpr char SYS_EVENT_PARAM_JANK_LEVEL[] = "JANK_LEVEL";
 constexpr char SYS_EVENT_PARAM_EXTERNAL_LOG[] = "EXTERNAL_LOG";
+constexpr char SYS_EVENT_PARAM_THREAD_NAME[] = "THREAD_NAME";
+constexpr char SYS_EVENT_PARAM_FOREGROUND[] = "FOREGROUND";
+constexpr char SYS_EVENT_PARAM_LOG_TIME[] = "LOG_TIME";
 constexpr int32_t SYS_EVENT_JANK_LEVEL_VALUE_TRACE = 1;
 } // UCollectUtil
 } // HiviewDFX

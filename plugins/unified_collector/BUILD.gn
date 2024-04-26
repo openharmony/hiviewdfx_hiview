@@ -16,6 +16,7 @@ import("//build/ohos.gni")
 config("unified_collector_config") {
   visibility = [ "*:*" ]
   include_dirs = [
+    "app_trace/include",
     "include",
     "observer/include",
     "storage/include",
@@ -32,6 +33,7 @@ ohos_source_set("unified_collector") {
   configs = [ ":unified_collector_config" ]
 
   sources = [
+    "app_trace/app_trace_context.cpp",
     "observer/uc_app_state_observer.cpp",
     "observer/uc_native_process_observer.cpp",
     "observer/uc_observer_mgr.cpp",

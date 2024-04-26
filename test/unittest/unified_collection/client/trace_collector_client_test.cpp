@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <chrono>
 #include <iostream>
 
 #include "accesstoken_kit.h"
@@ -123,9 +124,16 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
     DisablePermissionAccess();
 }
 
+static uint64_t GetMilliseconds()
+{
+    auto now = std::chrono::system_clock::now();
+    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return millisecs.count();
+}
+
 /**
  * @tc.name: TraceCollectorTest003
- * @tc.desc: capture 3 second trace.
+ * @tc.desc: start app trace.
  * @tc.type: FUNC
 */
 HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
@@ -134,14 +142,45 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
     ASSERT_TRUE(traceCollector != nullptr);
     EnablePermissionAccess();
     AppCaller appCaller;
+    appCaller.actionId = ACTION_ID_START_TRACE;
     appCaller.bundleName = "com.example.helloworld";
     appCaller.bundleVersion = "2.0.1";
-    appCaller.uid = 20020141;
-    appCaller.pid = 100;
-    appCaller.happenTime = 1713232218000;
-    appCaller.beginTime = appCaller.happenTime - 100;
-    appCaller.endTime = appCaller.happenTime + 100;
+    appCaller.foreground = 1;
+    appCaller.threadName = "mainThread";
+    appCaller.uid = 20020143; // 20020143: user uid
+    appCaller.pid = 100; // 100: pid
+    appCaller.happenTime = GetMilliseconds();
+    appCaller.beginTime = appCaller.happenTime - 100; // 100: ms
+    appCaller.endTime = appCaller.happenTime + 100; // 100: ms
     auto result = traceCollector->CaptureDurationTrace(appCaller);
+    std::cout << "retCode=" << result.retCode << ", data=" << result.data << std::endl;
+    ASSERT_TRUE(result.data == 0);
+    DisablePermissionAccess();
+}
+
+/**
+ * @tc.name: TraceCollectorTest004
+ * @tc.desc: stop app trace.
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest004, TestSize.Level1)
+{
+    auto traceCollector = TraceCollector::Create();
+    ASSERT_TRUE(traceCollector != nullptr);
+    EnablePermissionAccess();
+    AppCaller appCaller;
+    appCaller.actionId = ACTION_ID_DUMP_TRACE;
+    appCaller.bundleName = "com.example.helloworld";
+    appCaller.bundleVersion = "2.0.1";
+    appCaller.foreground = 1;
+    appCaller.threadName = "mainThread";
+    appCaller.uid = 20020143; // 20020143: user id
+    appCaller.pid = 100; // 100: pid
+    appCaller.happenTime = GetMilliseconds();
+    appCaller.beginTime = appCaller.happenTime - 100; // 100: ms
+    appCaller.endTime = appCaller.happenTime + 100; // 100: ms
+    auto result = traceCollector->CaptureDurationTrace(appCaller);
+    std::cout << "retCode=" << result.retCode << ", data=" << result.data << std::endl;
     ASSERT_TRUE(result.data == 0);
     DisablePermissionAccess();
 }

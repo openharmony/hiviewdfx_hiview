@@ -30,6 +30,7 @@ public:
     int32_t OpenRecordingTrace(const std::string &args);
     int32_t CloseTrace();
     int32_t RecoverTrace();
+    int32_t GetTraceMode();
 };
 } // HiViewDFX
 } // OHOS

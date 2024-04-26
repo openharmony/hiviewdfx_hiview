@@ -18,11 +18,12 @@
 #include <memory>
 
 #include "app_caller_event.h"
+#include "app_trace_context.h"
 #include "cpu_collection_task.h"
 #include "plugin.h"
+#include "sys_event.h"
 #include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
-#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -51,8 +52,9 @@ private:
     void LoadHitraceService();
     void ExitHitraceService();
     void OnMainThreadJank(SysEvent& sysEvent);
-    bool OnStartCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
-    bool OnStopCaptureTrace(std::shared_ptr<AppCallerEvent> appJankEvent);
+    bool OnStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent);
+    bool OnStopAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent);
+    bool OnDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent);
     void RunRecordTraceTask();
     static void OnSwitchStateChanged(const char* key, const char* value, void* context);
 
@@ -63,6 +65,7 @@ private:
     std::list<uint64_t> taskList_;
     volatile bool isCpuTaskRunning_;
     static bool isEnableRecordTrace_;
+    std::shared_ptr<AppTraceContext> appTraceContext_;
 }; // UnifiedCollector
 } // namespace HiviewDFX
 } // namespace OHOS

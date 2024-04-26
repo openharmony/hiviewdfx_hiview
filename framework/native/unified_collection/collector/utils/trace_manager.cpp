@@ -107,5 +107,10 @@ int32_t TraceManager::RecoverTrace()
 
     return TransCodeToUcError(ret);
 }
+
+int32_t TraceManager::GetTraceMode()
+{
+    return OHOS::HiviewDFX::Hitrace::GetTraceMode();
+}
 } // HiviewDFX
 } // OHOS

@@ -24,9 +24,15 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectClient {
+constexpr int32_t ACTION_ID_START_TRACE = 1;
+constexpr int32_t ACTION_ID_DUMP_TRACE = 2;
+
 struct AppCaller {
+    int32_t actionId;          // 1: start trace; 2: dump trace
     std::string bundleName;    // app bundle name
     std::string bundleVersion; // app bundle version
+    std::string threadName;    // app thread name
+    int32_t foreground;        // app foreground
     int32_t uid;               // app user id
     int32_t pid;               // app process id
     int64_t happenTime;  // jank happend time, millisecond unit
