@@ -122,7 +122,7 @@ void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState, cons
 
 void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, const std::string& name)
 {
-    HIVIEW_LOGI("update process=%{public}d state=%{public}d", pid, procState);
+    HIVIEW_LOGD("update process=%{public}d state=%{public}d", pid, procState);
     switch (procState) {
         case FOREGROUND:
             UpdateProcessForegroundState(pid);
@@ -143,6 +143,7 @@ void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, cons
 
 void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
 {
+    HIVIEW_LOGI("update process=%{public}d state=FOREGROUND", pid);
     uint64_t nowTime = TimeUtil::GetMilliseconds();
     if (processInfos_.find(pid) != processInfos_.end()) {
         processInfos_[pid].state = FOREGROUND;
@@ -158,6 +159,7 @@ void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
 
 void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
 {
+    HIVIEW_LOGI("update process=%{public}d state=BACKGROUND", pid);
     if (processInfos_.find(pid) != processInfos_.end()) {
         // last foreground time needs to be updated when the foreground status is switched to the background
         if (processInfos_[pid].state == FOREGROUND) {
@@ -175,8 +177,9 @@ void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
 
 void ProcessStatus::UpdateProcessCreatedState(int32_t pid, const std::string& name)
 {
+    std::string procName = name.empty() ? CommonUtils::GetProcFullNameByPid(pid) : name;
     processInfos_[pid] = {
-        .name = name,
+        .name = procName,
         .state = BACKGROUND,
         .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
     };
