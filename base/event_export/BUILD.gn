@@ -14,30 +14,51 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("event_export_mgr_config") {
+config("event_export_engine_config") {
   visibility = [ "*:*" ]
 
-  include_dirs = [ "include" ]
+  include_dirs = [
+    "config/include",
+    "include",
+    "task/include",
+    "database/include",
+  ]
 }
 
-ohos_source_set("event_export_mgr_source") {
+ohos_shared_library("event_export_engine") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
 
-  public_configs = [ ":event_export_mgr_config" ]
+  public_configs = [ ":event_export_engine_config" ]
 
-  configs = [ ":event_export_mgr_config" ]
+  configs = [ ":event_export_engine_config" ]
 
-  sources = [ "setting_observer_manager.cpp" ]
+  sources = [
+    "config/export_config_manager.cpp",
+    "config/export_config_parser.cpp",
+    "config/export_event_list_parser.cpp",
+    "database/adapter/export_db_storage.cpp",
+    "database/export_db_manager.cpp",
+    "event_export_engine.cpp",
+    "setting_observer_manager.cpp",
+    "task/expire/event_delete_handler.cpp",
+    "task/expire/event_expire_task.cpp",
+    "task/expire/event_scan_handler.cpp",
+    "task/export/event_export_task.cpp",
+    "task/export/event_read_handler.cpp",
+    "task/export/event_write_handler.cpp",
+    "task/export/export_json_file_writer.cpp",
+    "task/export_base_task.cpp",
+  ]
 
   deps = [
     "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
-    "$hiview_base:hiviewbase",
-    "$hiview_base/event_export/config:event_export_config_source",
-    "$hiview_base/event_export/seq_db:event_export_db_mgr_source",
+    "$hiview_base:hiview_base",
+    "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
   ]
 
@@ -51,8 +72,10 @@ ohos_source_set("event_export_mgr_source") {
     "data_share:datashare_consumer",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "ipc:ipc_core",
     "relational_store:native_rdb",
+    "samgr:samgr_proxy",
   ]
 
   part_name = "hiview"

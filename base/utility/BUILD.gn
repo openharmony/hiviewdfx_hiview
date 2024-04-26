@@ -32,6 +32,7 @@ ohos_source_set("hiview_utility") {
     "dynamic_module.cpp",
     "file_util.cpp",
     "freeze_json_util.cpp",
+    "hiview_zip_util.cpp",
     "memory_util.cpp",
     "parameter_ex.cpp",
     "socket_util.cpp",
@@ -54,6 +55,7 @@ ohos_source_set("hiview_utility") {
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
+    "zlib:libz",
   ]
 
   part_name = "hiview"

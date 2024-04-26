@@ -99,3 +99,10 @@ XPOWER_STACKTRACE:
 
 CPU_COLLECTION:
   __BASE: {type: FAULT, level: MINOR, desc: HiView CPU Unified Collection Event}
+
+DEL_EXPORTED_EVENTS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: record the periodic deletion of exported event files, preserve: true}
+  MODULE_NAME: {type: STRING, desc: name of the module which export the deleted event files}
+  BEGIN_SEQS: {type: INT64, arrsize: 100, desc: list consists of sysevent begin sequence stored in all of the deleted event files}
+  END_SEQS: {type: INT64, arrsize: 100, desc: list consists of sysevent end sequence stored in all of the deleted event files}
+  EVENT_NAMES: {type: STRING, arrsize: 100, desc: list consists of sysevent name stored in all of the deleted event files}

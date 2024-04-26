@@ -73,7 +73,7 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
     reader.ReadHeader(header, sysVersion);
     headerSize_ = header.blockSize + sizeof(header.magicNum); // for GetCurrPageRemainSize
     if (header.version != EventStore::EVENT_DATA_FORMATE_VERSION::CURRENT ||
-        sysVersion != Parameter::GetDisplayVersionStr()) {
+        sysVersion != Parameter::GetSysVersionStr()) {
         return DOC_STORE_NEW_FILE;
     }
 
@@ -156,7 +156,7 @@ int SysEventDocWriter::WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, ui
     if (!sysEvent->GetTag().empty() && strcpy_s(header.tag, MAX_TAG_LEN, sysEvent->GetTag().c_str()) != EOK) {
         HIVIEW_LOGW("failed to copy tag to event, tag=%{public}s", sysEvent->GetTag().c_str());
     }
-    auto sysVersion = Parameter::GetDisplayVersionStr();
+    auto sysVersion = Parameter::GetSysVersionStr();
     uint32_t sysVersionSize = sysVersion.length() + 1; // reserve one byte for '\0'
     header.blockSize = sizeof(DocHeader) - sizeof(header.magicNum)
         + sizeof(sysVersionSize) + sysVersionSize;

@@ -22,8 +22,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-ExportDbManager");
-
+DEFINE_LOG_TAG("EventExport");
 ExportDbManager::ExportDbManager(const std::string& dbStoreDir)
 {
     HIVIEW_LOGD("db store directory is %{public}s.", dbStoreDir.c_str());
@@ -43,7 +42,7 @@ int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
         HIVIEW_LOGI("export switch of %{public}s is off, no need to export event", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
-    return std::max(record.exportEnabledSeq, record.exportedMaxSeq);
+    return std::max(record.exportEnabledSeq, record.exportedMaxSeq + 1); // next sequence
 }
 
 void ExportDbManager::HandleExportModuleInit(const std::string& moduleName, int64_t curSeq)
@@ -61,9 +60,9 @@ void ExportDbManager::HandleExportModuleInit(const std::string& moduleName, int6
     }
 }
 
-void ExportDbManager::HandleExportSwitchOn(const std::string& moduleName, int64_t curSeq)
+void ExportDbManager::HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq)
 {
-    HIVIEW_LOGD("export switch for %{public}s module is on, current event sequence is %{public}" PRId64 "",
+    HIVIEW_LOGD("export switch for %{public}s module is changed, current event sequence is %{public}" PRId64 "",
         moduleName.c_str(), curSeq);
     if (IsUnrecordedModule(moduleName)) {
         HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
@@ -78,26 +77,6 @@ void ExportDbManager::HandleExportSwitchOn(const std::string& moduleName, int64_
     ExportDetailRecord record {
         .moduleName = moduleName,
         .exportEnabledSeq = curSeq,
-    };
-    storage_->UpdateExportEnabledSeq(record);
-}
-
-void ExportDbManager::HandleExportSwitchOff(const std::string& moduleName)
-{
-    HIVIEW_LOGD("export switch for %{public}s module is closed", moduleName.c_str());
-    if (IsUnrecordedModule(moduleName)) {
-        HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
-        ExportDetailRecord record = {
-            .moduleName = moduleName,
-            .exportEnabledSeq = INVALID_SEQ_VAL,
-            .exportedMaxSeq = INVALID_SEQ_VAL,
-        };
-        storage_->InsertExportDetailRecord(record);
-        return;
-    }
-    ExportDetailRecord record {
-        .moduleName = moduleName,
-        .exportEnabledSeq = INVALID_SEQ_VAL,
     };
     storage_->UpdateExportEnabledSeq(record);
 }

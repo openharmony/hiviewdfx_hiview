@@ -39,10 +39,11 @@ public:
     void OnEventListeningCallback(const Event& msg) override;
 
 private:
+    const static uint64_t TO_NANOSECOND_MULTPLE = 1000000;
+
     std::string RemoveRedundantNewline(const std::string& content) const;
     WatchPoint MakeWatchPoint(const Event& event);
     void ProcessEvent(WatchPoint watchPoint);
-    std::shared_ptr<EventLoop> threadLoop_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::unique_ptr<FreezeResolver> freezeResolver_ = nullptr;
 };

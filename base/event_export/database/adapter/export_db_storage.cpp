@@ -22,11 +22,12 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-ExportDbStorage");
+DEFINE_LOG_TAG("EventExport");
 namespace {
 constexpr int32_t DB_VERSION = 1;
 constexpr char EXPORT_DB_NAME[] = "event_export_mgr.db";
 constexpr char MODULE_EXPORT_DETAILS_TABLE_NAME[] = "module_export_details";
+constexpr char COLUMN_ID[] = "id";
 constexpr char COLUMN_MODULE_NAME[] = "module_name";
 constexpr char COLUMN_EXPORT_ENABLED_SEQ[] = "export_enabled_seq";
 constexpr char COLUMN_EXPORTED_MAX_SEQ[] = "exported_max_seq";
@@ -35,8 +36,11 @@ int32_t CreateTable(NativeRdb::RdbStore& dbStore, const std::string& tableName,
     const std::vector<std::pair<std::string, std::string>>& fields)
 {
     std::string sql = SqlUtil::GenerateCreateSql(tableName, fields);
-    HIVIEW_LOGD("try to create %{public}s table, sql=%{public}s.", tableName.c_str(), sql.c_str());
-    return dbStore.ExecuteSql(sql);
+    auto ret = dbStore.ExecuteSql(sql);
+    if (ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to execute sql=%{public}s.", sql.c_str());
+    }
+    return ret;
 }
 
 int32_t CreateExportDetailsTable(NativeRdb::RdbStore& dbStore)
@@ -88,8 +92,8 @@ void ExportDbStorage::InsertExportDetailRecord(ExportDetailRecord& record)
     bucket.PutString(COLUMN_MODULE_NAME, record.moduleName);
     bucket.PutLong(COLUMN_EXPORT_ENABLED_SEQ, record.exportEnabledSeq);
     bucket.PutLong(COLUMN_EXPORTED_MAX_SEQ, record.exportedMaxSeq);
-    int64_t seq = 0;
-    if (dbStore_->Insert(seq, MODULE_EXPORT_DETAILS_TABLE_NAME, bucket) != NativeRdb::E_OK) {
+    int64_t id = 0;
+    if (dbStore_->Insert(id, MODULE_EXPORT_DETAILS_TABLE_NAME, bucket) != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to insert record into %{public}s table.", MODULE_EXPORT_DETAILS_TABLE_NAME);
     }
 }
@@ -117,21 +121,27 @@ void ExportDbStorage::QueryExportDetailRecord(const std::string& moduleName, Exp
     columns.emplace_back(COLUMN_EXPORT_ENABLED_SEQ);
     columns.emplace_back(COLUMN_EXPORTED_MAX_SEQ);
     std::shared_ptr<NativeRdb::ResultSet> records = dbStore_->Query(predicates, columns);
-    if (records == nullptr || records->GoToFirstRow() != NativeRdb::E_OK) {
+    if (records == nullptr) {
+        HIVIEW_LOGE("records is null");
+        return;
+    }
+    if (records->GoToFirstRow() != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to query record from %{public}s table.", MODULE_EXPORT_DETAILS_TABLE_NAME);
+        records->Close();
         return;
     }
     NativeRdb::RowEntity entity;
     if (records->GetRow(entity) != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to read row entity from result set.");
+        records->Close();
         return;
     }
     if (entity.Get(COLUMN_MODULE_NAME).GetString(record.moduleName) != NativeRdb::E_OK ||
         entity.Get(COLUMN_EXPORT_ENABLED_SEQ).GetLong(record.exportEnabledSeq) != NativeRdb::E_OK ||
         entity.Get(COLUMN_EXPORTED_MAX_SEQ).GetLong(record.exportedMaxSeq) != NativeRdb::E_OK) {
         HIVIEW_LOGE("failed to read module_name/export_enabled_seq/exported_max_seq from entity.");
-        return;
     }
+    records->Close();
 }
 
 void ExportDbStorage::InitDbStore(const std::string& dbStoreDir)

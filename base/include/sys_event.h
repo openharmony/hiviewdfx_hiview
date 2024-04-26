@@ -60,6 +60,8 @@ class SysEventCreator;
 class SysEvent : public PipelineEvent {
 public:
     SysEvent(const std::string& sender, PipelineEventProducer* handler,
+        std::shared_ptr<EventRaw::RawData> rawData, int64_t seq, const std::string& sysVersion);
+    SysEvent(const std::string& sender, PipelineEventProducer* handler,
         std::shared_ptr<EventRaw::RawData> rawData, int64_t seq);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, std::shared_ptr<EventRaw::RawData> rawData);
     SysEvent(const std::string& sender, PipelineEventProducer* handler, SysEventCreator& sysEventCreator);
@@ -92,6 +94,7 @@ public:
     bool GetEventStringArrayValue(const std::string& key, std::vector<std::string>& dest);
     std::string AsJsonStr();
     uint8_t* AsRawData();
+    std::string GetSysVersion();
 
 public:
     template<typename T>
@@ -142,6 +145,7 @@ private:
     std::string tag_;
     std::string level_;
     std::shared_ptr<EventRaw::RawDataBuilder> builder_;
+    std::string sysVersion_;
 };
 
 class SysEventCreator {

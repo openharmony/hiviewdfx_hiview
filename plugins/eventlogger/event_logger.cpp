@@ -29,6 +29,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <iostream>
+#include <filesystem>
 
 #include "parameter.h"
 
@@ -345,6 +347,22 @@ void EventLogger::WriteCallStack(std::shared_ptr<SysEvent> event, int fd)
         FileUtil::SaveStringToFd(fd, appNameOss.str());
     }
 }
+
+std::string EventLogger::GetAppFreezeFile(std::string& stackPath)
+{
+    std::string result = "";
+    if (!FileUtil::FileExists(stackPath)) {
+        result = "";
+        HIVIEW_LOGE("File is not exist");
+        return result;
+    }
+
+    FileUtil::LoadStringFromFile(stackPath, result);
+    bool isRemove = FileUtil::RemoveFile(stackPath.c_str());
+    HIVIEW_LOGI("Remove file? isRemove:%{public}d", isRemove);
+    return result;
+}
+
 bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
 {
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
@@ -357,6 +375,11 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         std::string appRunningUniqueId = event->GetEventValue("APP_RUNNING_UNIQUE_ID");
 
         std::string jsonStack = event->GetEventValue("STACK");
+        HIVIEW_LOGI("Current jsonStack is? jsonStack:%{public}s", jsonStack.c_str());
+        if (FileUtil::FileExists(jsonStack)) {
+            jsonStack = GetAppFreezeFile(jsonStack);
+        }
+
         if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
             jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
             if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
@@ -377,12 +400,20 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         }
 
         if (!binderInfo.empty() && jsonFd >= 0) {
+            HIVIEW_LOGI("Current binderInfo is? binderInfo:%{public}s", binderInfo.c_str());
+            if (FileUtil::FileExists(binderInfo)) {
+                binderInfo = GetAppFreezeFile(binderInfo);
+            }
             std::string binderInfoJsonStr;
             ParsePeerBinder(binderInfo, binderInfoJsonStr);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "peer_binder", binderInfoJsonStr);
         }
     } else {
         stack = event->GetEventValue("STACK");
+        HIVIEW_LOGI("Current stack is? stack:%{public}s", stack.c_str());
+        if (FileUtil::FileExists(stack)) {
+            stack = GetAppFreezeFile(stack);
+        }
     }
 
     std::ostringstream oss;

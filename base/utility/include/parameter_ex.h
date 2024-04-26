@@ -44,8 +44,17 @@ bool IsBetaVersion();
 bool IsDeveloperMode();
 bool IsUCollectionSwitchOn();
 bool IsTraceCollectionSwitchOn();
+std::string GetDeviceTypeStr();
 DeviceType GetDeviceType();
 std::string GetDisplayVersionStr();
+std::string GetBrandStr();
+std::string GetManufactureStr();
+std::string GetMarketNameStr();
+std::string GetDeviceModelStr();
+std::string GetSysVersionStr();
+std::string GetDistributionOsVersionStr();
+std::string GetProductModelStr();
+std::string GetSysVersionDetailsStr();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -208,7 +208,6 @@ void ParseJsErrorSummary(std::string& summary, std::string& name, std::string& m
     std::string rightStr = StringUtil::GetRightSubstr(summary, "Error message:");
     name = StringUtil::GetRightSubstr(leftStr, "Error name:");
     stack = StringUtil::GetRightSubstr(rightStr, "Stacktrace:");
-
     leftStr = StringUtil::GetLeftSubstr(rightStr, "Stacktrace:");
     do {
         if (leftStr.find("Error code:") != std::string::npos) {
@@ -234,10 +233,6 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
             break;
         }
         ParseJsErrorSummary(summary, name, message, stack);
-        name.erase(name.find_last_not_of(R"(\n)") + 1);
-        message.erase(message.find_last_not_of(R"(\n)") + 1);
-        stack.erase(stack.find_last_not_of(R"(\n)") + 1);
-        stack.erase(0, stack.find_first_not_of(R"(\n    )"));
     } while (false);
     exception["name"] = name;
     exception["message"] = message;
@@ -515,7 +510,7 @@ bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
 
 void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
-    std::string summary = sysEvent->GetEventValue("SUMMARY");
+    std::string summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
     HIVIEW_LOGD("ReportAppEvent:summary:%{public}s.", summary.c_str());
 
     Json::Value params;
@@ -887,7 +882,7 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         syscall(SYS_close, fds[0]);
         int rc = DoGetHilogProcess(pid, fds[1]);
         syscall(SYS_close, fds[1]);
-        exit(rc);
+        _exit(rc);
     } else {
         syscall(SYS_close, fds[1]);
 

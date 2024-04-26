@@ -29,7 +29,7 @@ private:
 
     friend class CollectDeviceClient;
     struct ucollection_process_cpu_entry *entry_;
-    int current_;
+    unsigned int current_;
 };
 } // HiviewDFX
 } // OHOS
