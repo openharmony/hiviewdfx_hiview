@@ -18,7 +18,7 @@
 #include <memory>
 
 #include "app_caller_event.h"
-#include "app_trace_state.h"
+#include "app_trace_context.h"
 #include "cpu_collection_task.h"
 #include "plugin.h"
 #include "sys_event.h"

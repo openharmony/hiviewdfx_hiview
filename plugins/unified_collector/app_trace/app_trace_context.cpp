@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_trace_state.h"
+#include "app_trace_context.h"
 
 #include <cinttypes>
 #include <memory>
@@ -35,7 +35,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-AppTrace");
 namespace {
 std::recursive_mutex traceMutex;
-// start -> dump; start -> stop; dump -> stop; stop -> start;
+// start => dump, start => stop, dump => stop, stop -> start
 constexpr int32_t TRACE_STATE_START_APP_TRACE = 1;
 constexpr int32_t TRACE_STATE_DUMP_APP_TRACE = 2;
 constexpr int32_t TRACE_STATE_STOP_APP_TRACE = 3;
@@ -62,7 +62,7 @@ bool InnerStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &is
     if (retCode != UCollect::UcError::SUCCESS) {
         HIVIEW_LOGE("failed to open trace for uid=%{public}d, pid=%{public}d, error code %{public}d",
             appCallerEvent->uid_, appCallerEvent->pid_, retCode);
-        appCallerEvent->resultCode_ = UCollect::UcError(retCode);
+        appCallerEvent->resultCode_ = retCode;
         return false;
     }
     isOpenTrace = true;
@@ -79,7 +79,7 @@ bool InnerStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &is
     return true;
 }
 
-int32_t InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isDumpTrace, bool &isTraceOn)
+void InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isDumpTrace, bool &isTraceOn)
 {
     auto caller = UCollectUtil::TraceCollector::Caller::APP;
     std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
@@ -88,7 +88,7 @@ int32_t InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &
         HIVIEW_LOGE("trace off for uid=%{public}d pid=%{public}d error code=%{public}d",
             appCallerEvent->uid_, appCallerEvent->pid_, result.retCode);
         appCallerEvent->resultCode_ = result.retCode;
-        return -1;
+        return;
     }
 
     isTraceOn = false;
@@ -104,7 +104,6 @@ int32_t InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &
         FileUtil::RenameFile(result.data[0], traceFileName);
         appCallerEvent->externalLog_ = traceFileName;
     }
-    return 0;
 }
 
 void InnerShareAppEvent(std::shared_ptr<AppCallerEvent> appCallerEvent)
@@ -132,10 +131,22 @@ void InnerReportMainThreadJankForTrace(std::shared_ptr<AppCallerEvent> appCaller
         UCollectUtil::SYS_EVENT_PARAM_BUNDLE_VERSION, appCallerEvent->bundleVersion_,
         UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME, appCallerEvent->beginTime_,
         UCollectUtil::SYS_EVENT_PARAM_END_TIME, appCallerEvent->endTime_,
-        UCollectUtil::SYS_EVENT_PARAM_THREAD_NAME, appCallerEvent->threadName,
-        UCollectUtil::SYS_EVENT_PARAM_FOREGROUND, appCallerEvent->foreground,
+        UCollectUtil::SYS_EVENT_PARAM_THREAD_NAME, appCallerEvent->threadName_,
+        UCollectUtil::SYS_EVENT_PARAM_FOREGROUND, appCallerEvent->foreground_,
         UCollectUtil::SYS_EVENT_PARAM_LOG_TIME, appCallerEvent->taskEndTime_,
         UCollectUtil::SYS_EVENT_PARAM_JANK_LEVEL, 1); // 1: over 450ms
+}
+
+bool InnerHasCallAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
+{
+    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
+    if (traceController->HasCallOnceToday(appCallerEvent->uid_, appCallerEvent->happenTime_)) {
+        HIVIEW_LOGE("already capture trace uid=%{public}d pid=%{public}d",
+            appCallerEvent->uid_, appCallerEvent->pid_);
+        appCallerEvent->resultCode_ = UCollect::UcError::HAD_CAPTURED_TRACE;
+        return true;
+    }
+    return false;
 }
 }
 
@@ -186,7 +197,7 @@ void AppTraceContext::PublishStackEvent(SysEvent& sysEvent)
     }
 }
 
-void AppTraceContext::ResetAll()
+void AppTraceContext::Reset()
 {
     pid_ = 0;
     traceBegin_ = 0;
@@ -238,16 +249,11 @@ int32_t StartTraceState::DoCaptureTrace()
     }
 
     // app only has one trace file each day
-    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
-    if (traceController->HasCallOnceToday(appCallerEvent_->uid_, appCallerEvent_->happenTime_)) {
-        HIVIEW_LOGE("already capture trace uid=%{public}d pid=%{public}d",
-            appCallerEvent_->uid_, appCallerEvent_->pid_);
-        appCallerEvent_->resultCode_ = UCollect::UcError(UCollect::HAS_CAPTURE_TRACE);
+    if (InnerHasCallAppTrace(appCallerEvent_)) {
         return -1;
     }
 
     AppCallerEvent::isDynamicTraceOpen_ = true;
-
     HIVIEW_LOGI("start trace serval seconds for uid=%{public}d pid=%{public}d",
         appCallerEvent_->uid_, appCallerEvent_->pid_);
 
@@ -303,24 +309,21 @@ int32_t DumpTraceState::DoCaptureTrace()
         return -1;
     }
 
-    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
-    if (traceController->HasCallOnceToday(appCallerEvent_->uid_, appCallerEvent_->happenTime_)) {
-        HIVIEW_LOGE("already capture trace uid=%{public}d pid=%{public}d",
-            appCallerEvent_->uid_, appCallerEvent_->pid_);
-        appCallerEvent_->resultCode_ = UCollect::UcError(UCollect::HAS_CAPTURE_TRACE);
+    // app only has one trace file each day
+    if (InnerHasCallAppTrace(appCallerEvent_)) {
         return -1;
     }
 
     int64_t delay = appCallerEvent_->taskBeginTime_ - appCallerEvent_->happenTime_;
-
     appCallerEvent_->taskBeginTime_ = appTraceContext_->traceBegin_;
     InnerDumpAppTrace(appCallerEvent_, appTraceContext_->isDumpTrace_, appTraceContext_->isTraceOn_);
 
     // hicollie capture stack in application process, only need to share app event to application by hiview
     InnerShareAppEvent(appCallerEvent_);
 
-    traceController->AddNewFinishTask(appCallerEvent_);
-    traceController->CleanAppTrace();
+    std::shared_ptr<TraceFlowController> traceController = std::make_shared<TraceFlowController>();
+    traceController->RecordCaller(appCallerEvent_);
+    traceController->CleanOldAppTrace();
 
     InnerReportMainThreadJankForTrace(appCallerEvent_);
 
@@ -360,8 +363,7 @@ int32_t StopTraceState::CaptureTrace()
     }
 
     int32_t retCode = DoCaptureTrace();
-
-    appTraceContext_->ResetAll();
+    appTraceContext_->Reset();
     AppCallerEvent::isDynamicTraceOpen_ = false;
     return retCode;
 }
@@ -383,12 +385,8 @@ int32_t StopTraceState::DoCaptureTrace()
         }
     }
 
-    if (appTraceContext_->isDumpTrace_) {
-        HIVIEW_LOGI("stop trace for uid=%{public}d pid=%{public}d", appCallerEvent_->uid_, appCallerEvent_->pid_);
-    } else {
-        HIVIEW_LOGI("no dump, stop trace for uid=%{public}d pid=%{public}d",
-            appCallerEvent_->uid_, appCallerEvent_->pid_);
-    }
+    HIVIEW_LOGI("%{public}s for uid=%{public}d pid=%{public}d",
+        (appTraceContext_->isDumpTrace_ ? "stop trace" : "no dump"), appCallerEvent_->uid_, appCallerEvent_->pid_);
 
     TraceManager manager;
     int32_t retCode = manager.CloseTrace();

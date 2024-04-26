@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_STATE_H
-#define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_STATE_H
+#ifndef HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_CONTEXT_H
+#define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_CONTEXT_H
 #include <cinttypes>
 #include <memory>
 
@@ -32,7 +32,7 @@ public:
 public:
     int32_t TransferTo(std::shared_ptr<AppTraceState> state);
     void PublishStackEvent(SysEvent& sysEvent);
-    void ResetAll();
+    void Reset();
 
     friend class StartTraceState;
     friend class DumpTraceState;
@@ -119,4 +119,4 @@ private:
 };
 }; // HiviewDFX
 }; // HiviewDFX
-#endif // HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_STATE_H
+#endif // HIVIEW_PLUGINS_UNIFIED_COLLECTOR_DYNTRACE_INCLUDE_TRACE_CONTEXT_H

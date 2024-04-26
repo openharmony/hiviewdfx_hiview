@@ -17,7 +17,7 @@
 #include <memory>
 
 #include "app_caller_event.h"
-#include "app_trace_state.h"
+#include "app_trace_context.h"
 #include "collect_event.h"
 #include "event_publish.h"
 #include "ffrt.h"
@@ -173,28 +173,19 @@ void UnifiedCollector::OnUnload()
 bool UnifiedCollector::OnStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
     auto nextState = std::make_shared<StartTraceState>(appTraceContext_, appCallerEvent, shared_from_this());
-    if (appTraceContext_->TransferTo(nextState) != 0) {
-        return false;
-    }
-    return true;
+    return appTraceContext_->TransferTo(nextState) == 0;
 }
 
 bool UnifiedCollector::OnDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
     auto nextState = std::make_shared<DumpTraceState>(appTraceContext_, appCallerEvent, shared_from_this());
-    if (appTraceContext_->TransferTo(nextState) != 0) {
-        return false;
-    }
-    return true;
+    return appTraceContext_->TransferTo(nextState) == 0;
 }
 
 bool UnifiedCollector::OnStopAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
     auto nextState = std::make_shared<StopTraceState>(appTraceContext_, appCallerEvent);
-    if (appTraceContext_->TransferTo(nextState) != 0) {
-        return false;
-    }
-    return true;
+    return appTraceContext_->TransferTo(nextState) == 0;
 }
 
 bool UnifiedCollector::OnEvent(std::shared_ptr<Event>& event)
