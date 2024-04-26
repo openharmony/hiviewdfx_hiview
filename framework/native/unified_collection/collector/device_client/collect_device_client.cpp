@@ -137,7 +137,7 @@ std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchSelfThreadCpuData(int p
     return FetchThreadData(IOCTRL_COLLECT_APP_THREAD, pid);
 }
 
-std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadData(unsigned int magic, int pid)
+std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadData(int magic, int pid)
 {
     int threadCount = GetThreadCount(pid);
     if (threadCount <= 0) {
