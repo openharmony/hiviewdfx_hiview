@@ -44,22 +44,6 @@ HWTEST_F(SystemServiceOhosTest, SystemServiceTest001, testing::ext::TestSize.Lev
 
 /**
  * @tc.name: SystemServiceTest002
- * @tc.desc: Check device type
- * @tc.type: FUNC
- * @tc.require: issueI64Q4L
- */
-HWTEST_F(SystemServiceOhosTest, SystemServiceTest002, testing::ext::TestSize.Level3)
-{
-    auto ret = Parameter::GetDeviceType();
-    ASSERT_TRUE(ret == Parameter::DeviceType::UNKNOWN ||
-        ret == Parameter::DeviceType::PHONE ||
-        ret == Parameter::DeviceType::WATCH ||
-        ret == Parameter::DeviceType::TV ||
-        ret == Parameter::DeviceType::IVI);
-}
-
-/**
- * @tc.name: SystemServiceTest003
  * @tc.desc: Test getter
  * @tc.type: FUNC
  * @tc.require: issueI64QXL

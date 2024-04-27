@@ -100,22 +100,6 @@ std::string GetDeviceTypeStr()
     return deviceType;
 }
 
-DeviceType GetDeviceType()
-{
-    auto deviceType = GetDeviceTypeStr();
-    if (deviceType == "phone" || deviceType == "default") {
-        return DeviceType::PHONE;
-    } else if (deviceType == "watch") {
-        return DeviceType::WATCH;
-    } else if (deviceType == "tv") {
-        return DeviceType::TV;
-    } else if (deviceType == "car") {
-        return DeviceType::IVI;
-    } else {
-        return DeviceType::UNKNOWN;
-    }
-}
-
 std::string GetBrandStr()
 {
     static std::string brandStr = std::string(GetBrand());
