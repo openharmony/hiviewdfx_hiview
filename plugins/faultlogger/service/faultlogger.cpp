@@ -710,7 +710,6 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
 
     mgr_->SaveFaultLogToFile(info);
-    CheckFaultLogAsync(info);
     if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
@@ -724,6 +723,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.summary.c_str());
 
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
+        CheckFaultLogAsync(info);
         ReportCppCrashToAppEvent(info);
     }
 
