@@ -96,7 +96,7 @@ bool IsTraceCollectionSwitchOn()
 
 std::string GetDeviceTypeStr()
 {
-    static std::string deviceType = GetString(KEY_BUILD_CHARACTER, "unknown");
+    static std::string deviceType = OHOS::system::GetDeviceType();
     return deviceType;
 }
 
