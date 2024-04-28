@@ -8,10 +8,6 @@
             "path": "plugins/event_store",
             "name": "sys_event_store"
         },
-        "Faultlogger": {
-            "path": "plugins/faultlogger",
-            "name": "faultlogger"
-        },
         "EventLogger": {
             "path": "plugins/eventlogger",
             "name": "eventlogger"
@@ -23,10 +19,6 @@
         "UsageEventReport": {
             "path": "plugins/usage_event_report",
             "name": "usage_event_report"
-        },
-        "BBoxDetectorPlugin": {
-            "path": "plugins/reliability/bbox_detectors",
-            "name": "bbox_detector"
         },
         "FaultDetectorManager": {
             "path": "plugins/reliability/leak_detectors",
@@ -63,13 +55,7 @@
                     "SysEventStore": {
                         "loadtime": 0
                     },
-                    "Faultlogger": {
-                        "loadtime": 0
-                    },
                     "UsageEventReport": {
-                        "loadtime": 0
-                    },
-                    "BBoxDetectorPlugin": {
                         "loadtime": 0
                     },
                     "FaultDetectorManager": {
@@ -92,16 +78,6 @@
                         "SysEventDispatcher",
                         "SysEventStore"
                     ],
-                    "faultloggerPipeline": [
-                        "Faultlogger",
-                        "SysEventDispatcher",
-                        "SysEventStore"
-                    ],
-                    "BBoxDetectorPipeline": [
-                        "BBoxDetectorPlugin",
-                        "SysEventDispatcher",
-                        "SysEventStore"
-                    ],
                     "LeakDetectorPipeline": [
                         "FaultDetectorManager",
                         "SysEventDispatcher",
@@ -111,8 +87,6 @@
                 "pipelinegroups": {
                     "SysEventSource": [
                         "EventloggerPipeline",
-                        "faultloggerPipeline",
-                        "BBoxDetectorPipeline",
                         "LeakDetectorPipeline",
                         "SysEventPipeline"
                     ]
@@ -122,7 +96,6 @@
                         "SysEventSource": "sysevent_source",
                         "SysEventStore": "sysevent_store",
                         "EventLogger": "event_logger",
-                        "BBoxDetectorPlugin": "bbox_detector",
                         "FaultDetectorManager": "leak_detector",
                         "SysEventDispatcher": "sysevent_store"
                     }

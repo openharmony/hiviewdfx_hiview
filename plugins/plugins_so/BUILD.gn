@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,34 +10,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("collect_device_client_config") {
-  visibility = [ "*:*" ]
-  include_dirs = [
-    ".",
-    "$hiview_framework/native/unified_collection/collector/inner_include",
+ohos_shared_library("dfr") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  deps = [
+    ":dfr_plugin_config",
+    "$hiview_plugin/faultlogger:faultlogger",
+    "$hiview_plugin/faultlogger:libfaultlogger",
+    "$hiview_plugin/reliability/bbox_detectors:bbox_detector",
   ]
-}
-
-ohos_source_set("collect_device_client") {
-  public_configs = [ ":collect_device_client_config" ]
-
-  sources = [
-    "collect_device_client.cpp",
-    "process_cpu_data.cpp",
-    "thread_cpu_data.cpp",
-  ]
-
-  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
   ]
 
+  version_script = "libdfr.map"
+
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
+}
+
+ohos_prebuilt_etc("dfr_plugin_config") {
+  source = "dfr_plugin_config"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  relative_install_dir = "hiview"
 }
