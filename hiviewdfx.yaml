@@ -106,3 +106,18 @@ DEL_EXPORTED_EVENTS:
   BEGIN_SEQS: {type: INT64, arrsize: 100, desc: list consists of sysevent begin sequence stored in all of the deleted event files}
   END_SEQS: {type: INT64, arrsize: 100, desc: list consists of sysevent end sequence stored in all of the deleted event files}
   EVENT_NAMES: {type: STRING, arrsize: 100, desc: list consists of sysevent name stored in all of the deleted event files}
+
+DUMP_CATCHER_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, tag: HivewDFX, desc: dumpcatcher stats}
+  CALLER_PROCESS_NAME: {type: STRING, desc: caller process name}
+  CALLER_FUNC_NAME: {type: STRING, desc: caller elf name}
+  TARGET_PROCESS_NAME: {type: STRING, desc: target process name}
+  PID: {type: UINT32, desc: target process id}
+  RESULT: {type: UINT32, desc: result code}
+  SUMMARY: {type: STRING, desc: dumpcatcher msg if result is failure}
+  REQUEST_TIME: {type: UINT32, desc: the time when calling dumpcatcher}
+  OVERALL_TIME: {type: UINT32, desc: overall time of dumpcatacher}
+  SIGNAL_TIME: {type: UINT32, desc: from faultloggerd request to target signal handler}
+  DUMPER_START_TIME: {type: UINT32, desc: from signal handler to the entry of processdump}
+  UNWIND_TIME: {type: UINT32, desc: from signal handler to the entry of processdump}
+
