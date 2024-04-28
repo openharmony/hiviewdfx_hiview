@@ -24,14 +24,6 @@ constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state"
 constexpr char HIVIEW_UCOLLECTION_STATE[] = "hiviewdfx.ucollection.switchon";
 constexpr char DEVELOP_HIVIEW_TRACE_RECORDER[] = "persist.hiview.trace_recorder";
 namespace Parameter {
-enum DeviceType {
-    UNKNOWN = 0,
-    PHONE,
-    WATCH,
-    TV,
-    IVI,
-};
-
 std::string GetString(const std::string& key, const std::string& defaultValue);
 int64_t GetInteger(const std::string& key, const int64_t defaultValue);
 uint64_t GetUnsignedInteger(const std::string& key, const uint64_t defaultValue);
@@ -46,7 +38,6 @@ bool IsDeveloperMode();
 bool IsUCollectionSwitchOn();
 bool IsTraceCollectionSwitchOn();
 std::string GetDeviceTypeStr();
-DeviceType GetDeviceType();
 std::string GetDisplayVersionStr();
 std::string GetBrandStr();
 std::string GetManufactureStr();
