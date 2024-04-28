@@ -34,11 +34,12 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-AppTrace");
 namespace {
-std::recursive_mutex traceMutex;
+std::recursive_mutex g_traceMutex;
 // start => dump, start => stop, dump => stop, stop -> start
 constexpr int32_t TRACE_STATE_START_APP_TRACE = 1;
 constexpr int32_t TRACE_STATE_DUMP_APP_TRACE = 2;
 constexpr int32_t TRACE_STATE_STOP_APP_TRACE = 3;
+constexpr int32_t DURATION_TRACE = 10; // unit second
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 
 std::string InnerMakeTraceFileName(const std::string &bundleName, int32_t pid,
@@ -156,7 +157,7 @@ AppTraceContext::AppTraceContext(std::shared_ptr<AppTraceState> state)
 
 int32_t AppTraceContext::TransferTo(std::shared_ptr<AppTraceState> state)
 {
-    std::lock_guard<std::recursive_mutex> guard(traceMutex);
+    std::lock_guard<std::recursive_mutex> guard(g_traceMutex);
     if (state_ == nullptr) {
         state_ = state;
         return state_->CaptureTrace();
@@ -228,8 +229,8 @@ int32_t StartTraceState::CaptureTrace()
 
     appCallerEvent_->eventName_ = UCollectUtil::STOP_APP_TRACE;
     if (retCode == 0) {
-        // start -> stop after 3 seconds
-        plugin_->DelayProcessEvent(appCallerEvent_, 3); // 3: delay 3 second to stop trace
+        // start -> stop after DURATION_TRACE seconds
+        plugin_->DelayProcessEvent(appCallerEvent_, DURATION_TRACE);
     } else {
         // start -> stop right now as start trace fail
         // need to change to stop state then can wait for next start
