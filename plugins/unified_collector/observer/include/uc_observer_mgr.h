@@ -17,17 +17,21 @@
 #define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_OBSERVER_INCLUDE_UC_OBSERVER_MANAGER_H
 
 #include "parameter_ex.h"
+#include "singleton.h"
 #include "uc_app_state_observer.h"
 #include "uc_render_state_observer.h"
+#include "uc_system_ability_listener.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class UcObserverManager {
+class UcObserverManager : public DelayedRefSingleton<UcObserverManager> {
 public:
-    UcObserverManager();
-    ~UcObserverManager();
+    void RegisterObservers();
+    void UnregisterObservers();
 
 private:
+    void RegisterSysAbilityListener();
+    void UnregisterSysAbilityListener();
     void RegisterAppObserver();
     void UnregisterAppObserver();
     void RegisterRenderObserver();
@@ -35,11 +39,14 @@ private:
     void RegisterNativeProcessObserver();
     void UnregisterNativeProcessObserver();
 
+    friend class UcSystemAbilityListener;
+
 private:
+    sptr<ISystemAbilityStatusChange> sysAbilityListener_ = nullptr;
     sptr<UcAppStateObserver> appStateObserver_ = nullptr;
     sptr<UcRenderStateObserver> renderStateObserver_ = nullptr;
     Parameter::ParameterChgPtr nativeProcessObserver_ = nullptr;
-}; // UcRenderStateObserver
+}; // UcObserverManager
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLUGINS_UNIFIED_COLLECTOR_OBSERVER_INCLUDE_UC_OBSERVER_MANAGER_H
