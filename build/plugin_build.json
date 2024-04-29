@@ -12,14 +12,6 @@
             "path": "plugins/faultlogger",
             "name": "faultlogger"
         },
-        "EventLogger": {
-            "path": "plugins/eventlogger",
-            "name": "eventlogger"
-        },
-        "FreezeDetectorPlugin": {
-            "path": "plugins/freeze_detector",
-            "name": "freeze_detector"
-        },
         "UsageEventReport": {
             "path": "plugins/usage_event_report",
             "name": "usage_event_report"
@@ -54,12 +46,6 @@
                     "SysEventSource": {
                         "loadtime": 0
                     },
-                    "EventLogger": {
-                        "loadtime": 0
-                    },
-                    "FreezeDetectorPlugin": {
-                        "loadtime": 0
-                    },
                     "SysEventStore": {
                         "loadtime": 0
                     },
@@ -87,11 +73,6 @@
                         "SysEventDispatcher",
                         "SysEventStore"
                     ],
-                    "EventloggerPipeline": [
-                        "EventLogger",
-                        "SysEventDispatcher",
-                        "SysEventStore"
-                    ],
                     "faultloggerPipeline": [
                         "Faultlogger",
                         "SysEventDispatcher",
@@ -110,7 +91,6 @@
                 },
                 "pipelinegroups": {
                     "SysEventSource": [
-                        "EventloggerPipeline",
                         "faultloggerPipeline",
                         "BBoxDetectorPipeline",
                         "LeakDetectorPipeline",
@@ -121,7 +101,6 @@
                     "singledthread": {
                         "SysEventSource": "sysevent_source",
                         "SysEventStore": "sysevent_store",
-                        "EventLogger": "event_logger",
                         "BBoxDetectorPlugin": "bbox_detector",
                         "FaultDetectorManager": "leak_detector",
                         "SysEventDispatcher": "sysevent_store"
