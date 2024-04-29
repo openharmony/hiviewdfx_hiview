@@ -26,7 +26,10 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
     auto writeReq = BaseRequest::DownCastTo<EventWriteRequest>(req);
     for (const auto& sysEvent : writeReq->sysEvents) {
         auto writer = GetEventWriter(sysEvent.version, writeReq);
-        writer->AppendEvent(sysEvent.domain, sysEvent.seq, sysEvent.name, sysEvent.eventStr);
+        if (!writer->AppendEvent(sysEvent.domain, sysEvent.seq, sysEvent.name, sysEvent.eventStr)) {
+            HIVIEW_LOGE("failed to append event to event writer");
+            return false;
+        }
     }
     if (!writeReq->isQueryCompleted) {
         return true;
@@ -35,7 +38,10 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
         if (writer.second == nullptr) {
             continue;
         }
-        writer.second->Write(true);
+        if (!writer.second->Write(true)) {
+            HIVIEW_LOGE("failed to write export event");
+            return false;
+        }
     }
     return true;
 }

@@ -49,7 +49,7 @@ public:
     bool HandleRequest(RequestPtr request) override;
 
 private:
-    using QueryCallback = std::function<void(bool)>;
+    using QueryCallback = std::function<bool(bool)>;
     bool QuerySysEvent(const int64_t beginSeq, const int64_t endSeq, const ExportEventList& eventList,
         QueryCallback callback);
     bool NeedSwitchToNextQuery(EventStore::ResultSet& result, QueryCallback callback,

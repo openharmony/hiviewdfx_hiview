@@ -39,11 +39,11 @@ public:
     void SetMaxSequenceWriteListener(MaxSequenceWriteListener listener);
 
 public:
-    void AppendEvent(const std::string& domain, int64_t seq, const std::string& name, const std::string& eventStr);
-    void Write(bool isLastPartialQuery = false);
+    bool AppendEvent(const std::string& domain, int64_t seq, const std::string& name, const std::string& eventStr);
+    bool Write(bool isLastPartialQuery = false);
 
 private:
-    void PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents);
+    bool PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents);
 
 private:
     std::string moduleName_;

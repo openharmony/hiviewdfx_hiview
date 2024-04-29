@@ -21,7 +21,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiviewZipUtil {
-void ZipFile(const std::string& srcFile, const std::string& destZipFile);
+bool ZipFile(const std::string& srcFile, const std::string& destZipFile);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
