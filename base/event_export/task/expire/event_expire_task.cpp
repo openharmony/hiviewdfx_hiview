@@ -24,7 +24,7 @@ DEFINE_LOG_TAG("HiView-EventExpireTask");
 namespace {
 constexpr char SYSEVENT_EXPORT_TMP_DIR[] = "tmp";
 
-std::string GetExpireFileScanDir(const std::string& baseDir, const std::string moduleName)
+std::string GetExpireFileScanDir(const std::string& baseDir, const std::string& moduleName)
 {
     std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYSEVENT_EXPORT_TMP_DIR));
