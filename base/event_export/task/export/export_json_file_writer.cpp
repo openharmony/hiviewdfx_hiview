@@ -24,6 +24,7 @@
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "hiview_zip_util.h"
+#include "parameter.h"
 #include "parameter_ex.h"
 #include "time_util.h"
 
@@ -41,10 +42,12 @@ constexpr char ZIP_FILE_DELIM[] = "_";
 constexpr char CUR_HEADER_VERSION[] = "1.0";
 constexpr char H_HEADER_KEY[] = "HEADER";
 constexpr char H_VERSION_KEY[] = "VERSION";
+constexpr char H_MSG_ID_KEY[] = "MESSAGE_ID";
 constexpr char H_MANUFACTURE_KEY[] = "MANUFACTURER";
 constexpr char H_NAME_KEY[] = "NAME";
 constexpr char H_BRAND_KEY[] = "BRAND";
 constexpr char H_DEVICE_KEY[] = "DEVICE";
+constexpr char H_ID_KEY[] = "ID";
 constexpr char H_MODEL_KEY[] = "MODEL";
 constexpr char H_CATEGORY_KEY[] = "CATEGORY";
 constexpr char H_SYSTEM_KEY[] = "SYSTEM";
@@ -53,6 +56,23 @@ constexpr char DOMAINS_KEY[] = "DOMAINS";
 constexpr char DOMAIN_INFO_KEY[] = "DOMAIN_INFO";
 constexpr char EVENTS_KEY[] = "EVENTS";
 constexpr char DATA_KEY[] = "DATA";
+constexpr char DEFAULT_MSG_ID[] = "00000000000000000000000000000000";
+
+std::string GenerateDeviceId()
+{
+    constexpr int32_t DEVICE_ID_LENGTH = 65;
+    char id[DEVICE_ID_LENGTH] = {0};
+    if (GetDevUdid(id, DEVICE_ID_LENGTH) == 0) {
+        return std::string(id);
+    }
+    return "";
+}
+
+std::string GetDeviceId()
+{
+    static std::string deviceId = GenerateDeviceId();
+    return deviceId;
+}
  
 cJSON* CreateHeaderJsonObj()
 {
@@ -62,6 +82,7 @@ cJSON* CreateHeaderJsonObj()
         return nullptr;
     }
     cJSON_AddStringToObject(header, H_VERSION_KEY, CUR_HEADER_VERSION);
+    cJSON_AddStringToObject(header, H_MSG_ID_KEY, DEFAULT_MSG_ID);
     return header;
 }
 
@@ -84,6 +105,7 @@ cJSON* CreateDeviceJsonObj()
         HIVIEW_LOGE("failed to create device json object");
         return nullptr;
     }
+    cJSON_AddStringToObject(device, H_ID_KEY, GetDeviceId().c_str());
     cJSON_AddStringToObject(device, H_MODEL_KEY, Parameter::GetProductModelStr().c_str());
     cJSON_AddStringToObject(device, H_NAME_KEY, Parameter::GetMarketNameStr().c_str());
     cJSON_AddStringToObject(device, H_CATEGORY_KEY, Parameter::GetDeviceTypeStr().c_str());
@@ -202,6 +224,7 @@ void AppendZipFile(std::string& dir)
         .append(Parameter::GetBrandStr()).append(std::string(ZIP_FILE_DELIM))
         .append(Parameter::GetProductModelStr()).append(std::string(ZIP_FILE_DELIM))
         .append(Parameter::GetSysVersionStr()).append(std::string(ZIP_FILE_DELIM))
+        .append(GetDeviceId()).append(std::string(ZIP_FILE_DELIM))
         .append(TimeUtil::GetFormattedTimestampEndWithMilli()).append(std::string(".zip"));
 }
 
