@@ -22,7 +22,6 @@
 #include "cpu_collection_task.h"
 #include "plugin.h"
 #include "sys_event.h"
-#include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
 
 namespace OHOS {
@@ -61,7 +60,6 @@ private:
 private:
     std::string workPath_;
     std::shared_ptr<CpuCollectionTask> cpuCollectionTask_;
-    std::shared_ptr<UcObserverManager> observerMgr_;
     std::list<uint64_t> taskList_;
     volatile bool isCpuTaskRunning_;
     static bool isEnableRecordTrace_;

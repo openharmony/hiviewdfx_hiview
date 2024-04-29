@@ -16,7 +16,9 @@
 
 #include "app_mgr_client.h"
 #include "hiview_logger.h"
+#include "iservice_registry.h"
 #include "process_status.h"
+#include "system_ability_definition.h"
 #include "uc_native_process_observer.h"
 
 namespace OHOS {
@@ -27,18 +29,53 @@ namespace {
 const std::string NATIVE_PROC_PARAM = "startup.service.ctl.";
 }
 
-UcObserverManager::UcObserverManager()
+void UcObserverManager::RegisterObservers()
 {
-    RegisterAppObserver();
-    RegisterRenderObserver();
+    RegisterSysAbilityListener();
     RegisterNativeProcessObserver();
 }
 
-UcObserverManager::~UcObserverManager()
+void UcObserverManager::UnregisterObservers()
 {
-    UnregisterAppObserver();
-    UnregisterRenderObserver();
+    UnregisterSysAbilityListener();
     UnregisterNativeProcessObserver();
+}
+
+void UcObserverManager::RegisterSysAbilityListener()
+{
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        HIVIEW_LOGE("failed to get samgr");
+        return;
+    }
+    sysAbilityListener_ = new(std::nothrow) UcSystemAbilityListener();
+    if (sysAbilityListener_ == nullptr) {
+        HIVIEW_LOGE("new listener is null");
+        return;
+    }
+    if (auto ret = samgr->SubscribeSystemAbility(APP_MGR_SERVICE_ID, sysAbilityListener_); ret != ERR_OK) {
+        HIVIEW_LOGE("failed to subscribe app mgr service status, ret=%{public}d", ret);
+        return;
+    }
+    HIVIEW_LOGI("succ to subscribe app mgr service status");
+}
+
+void UcObserverManager::UnregisterSysAbilityListener()
+{
+    if (sysAbilityListener_ == nullptr) {
+        return;
+    }
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        HIVIEW_LOGE("failed to get samgr");
+        return;
+    }
+    if (auto ret = samgr->UnSubscribeSystemAbility(APP_MGR_SERVICE_ID, sysAbilityListener_); ret != ERR_OK) {
+        HIVIEW_LOGE("failed to unSubscribe app mgr service status, ret=%{public}d", ret);
+        return;
+    }
+    sysAbilityListener_ = nullptr;
+    HIVIEW_LOGI("succ to unsubscribe app mgr service status");
 }
 
 void UcObserverManager::RegisterAppObserver()

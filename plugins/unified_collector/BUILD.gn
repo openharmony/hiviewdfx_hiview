@@ -38,6 +38,7 @@ ohos_source_set("unified_collector") {
     "observer/uc_native_process_observer.cpp",
     "observer/uc_observer_mgr.cpp",
     "observer/uc_render_state_observer.cpp",
+    "observer/uc_system_ability_listener.cpp",
     "storage/cpu_storage.cpp",
     "task/cpu_collection_task.cpp",
     "task/cpu_perf_dump.cpp",
@@ -59,6 +60,8 @@ ohos_source_set("unified_collector") {
     "init:libbeget_proxy",
     "init:libbegetutil",
     "relational_store:native_rdb",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 
   if (has_hiperf) {

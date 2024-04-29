@@ -32,6 +32,7 @@
 #include "time_util.h"
 #include "trace_flow_controller.h"
 #include "trace_manager.h"
+#include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
 #include "utility/trace_collector.h"
 
@@ -167,7 +168,7 @@ void UnifiedCollector::OnLoad()
 void UnifiedCollector::OnUnload()
 {
     HIVIEW_LOGI("start to unload UnifiedCollector plugin");
-    observerMgr_ = nullptr;
+    UcObserverManager::GetInstance().UnregisterObservers();
 }
 
 bool UnifiedCollector::OnStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
@@ -287,7 +288,7 @@ void UnifiedCollector::Init()
 
     InitDynamicTrace();
 
-    observerMgr_ = std::make_shared<UcObserverManager>();
+    UcObserverManager::GetInstance().RegisterObservers();
 
     if (Parameter::IsDeveloperMode()) {
         RunRecordTraceTask();
