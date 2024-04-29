@@ -62,10 +62,12 @@ bool EventReadHandler::HandleRequest(RequestPtr req)
                 writeReq->sysEvents = this->cachedSysEvents_;
                 writeReq->exportDir = readReq->exportDir;
                 writeReq->isQueryCompleted = isQueryCompleted;
+                auto ret = false;
                 if (nextHandler_ != nullptr) {
-                    nextHandler_->HandleRequest(writeReq);
+                    ret = nextHandler_->HandleRequest(writeReq);
                 }
                 this->cachedSysEvents_.clear();
+                return ret;
             });
         if (!queryRet) {
             return false;
@@ -137,7 +139,7 @@ bool EventReadHandler::QuerySysEvent(const int64_t beginSeq, const int64_t endSe
                 queryResult = statusToCode[status];
             });
         if (queryResult != QUERY_SUCCESS) {
-            callback(true);
+            (void)callback(true);
             return false;
         }
         if (NeedSwitchToNextQuery(resultSet, callback, queryLimit, queryCnt)) {
@@ -145,8 +147,7 @@ bool EventReadHandler::QuerySysEvent(const int64_t beginSeq, const int64_t endSe
         }
         isFirstPartialQuery = false;
     }
-    callback(true);
-    return true;
+    return callback(true);
 }
 } // HiviewDFX
 } // OHOS

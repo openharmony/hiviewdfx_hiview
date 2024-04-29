@@ -18,31 +18,36 @@
 #include <contrib/minizip/zip.h>
 
 #include "file_util.h"
+#include "hiview_logger.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiviewZipUtil {
+DEFINE_LOG_TAG("HiView-ZipUtil");
 namespace {
 constexpr uint32_t BUFFER_SIZE = 100 * 1024;
 }
 
-void ZipFile(const std::string& srcFile, const std::string& destZipFile)
+bool ZipFile(const std::string& srcFile, const std::string& destZipFile)
 {
     FILE* src = fopen(srcFile.c_str(), "rb");
     if (src == nullptr) {
-        return;
+        HIVIEW_LOGE("failed to open src file");
+        return false;
     }
     zip_fileinfo zInfo;
     errno_t ret = memset_s(&zInfo, sizeof(zInfo), 0, sizeof(zInfo));
     if (ret != EOK) {
+        HIVIEW_LOGE("failed to build zip file info");
         (void)fclose(src);
-        return;
+        return false;
     }
     zipFile zipFile = zipOpen(destZipFile.c_str(), APPEND_STATUS_CREATE);
     if (zipFile == nullptr) {
+        HIVIEW_LOGE("failed to open zip file");
         (void)fclose(src);
-        return;
+        return false;
     }
     std::string srcFileName = FileUtil::ExtractFileName(srcFile);
     zipOpenNewFileInZip(
@@ -61,6 +66,7 @@ void ZipFile(const std::string& srcFile, const std::string& destZipFile)
     zipCloseFileInZip(zipFile);
     zipClose(zipFile, nullptr);
     (void)fclose(src);
+    return true;
 }
 }
 } // HiviewDFX

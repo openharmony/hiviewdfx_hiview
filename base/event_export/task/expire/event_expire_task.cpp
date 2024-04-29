@@ -16,7 +16,6 @@
 #include "event_expire_task.h"
 
 #include "file_util.h"
-#include "hiview_global.h"
 #include "hiview_logger.h"
 
 namespace OHOS {
@@ -24,23 +23,17 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventExpireTask");
 namespace {
 constexpr char SYSEVENT_EXPORT_TMP_DIR[] = "tmp";
-constexpr char SYSEVENT_EXPORT_DIR[] = "sys_event_export";
 
-std::string GetExpireFileScanDir(const std::string moduleName)
+std::string GetExpireFileScanDir(const std::string& baseDir, const std::string moduleName)
 {
-    auto& context = HiviewGlobal::GetInstance();
-    if (context == nullptr) {
+    std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYSEVENT_EXPORT_TMP_DIR));
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(moduleName));
+    if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
         return "";
     }
-    std::string workDir = context->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
-    workDir = FileUtil::IncludeTrailingPathDelimiter(workDir.append(SYSEVENT_EXPORT_DIR));
-    workDir = FileUtil::IncludeTrailingPathDelimiter(workDir.append(SYSEVENT_EXPORT_TMP_DIR));
-    auto scanDir = FileUtil::IncludeTrailingPathDelimiter(workDir.append(moduleName));
-    if (!FileUtil::IsDirectory(scanDir) && !FileUtil::ForceCreateDirectory(scanDir)) {
-        return "";
-    }
-    HIVIEW_LOGD("scan directory is %{public}s", scanDir.c_str());
-    return scanDir;
+    HIVIEW_LOGD("scan directory is %{public}s", dir.c_str());
+    return dir;
 }
 }
 void EventExpireTask::OnTaskRun()
@@ -58,7 +51,7 @@ void EventExpireTask::OnTaskRun()
     // start handler chain, try to scan expired event file
     auto scanReq = std::make_shared<EventScanRequest>();
     scanReq->moduleName = config_->moduleName;
-    scanReq->scanDir = GetExpireFileScanDir(config_->moduleName);
+    scanReq->scanDir = GetExpireFileScanDir(config_->exportDir, config_->moduleName);
     scanReq->storedDayCnt = static_cast<uint8_t>(config_->dayCnt);
     if (!scanHandler->HandleRequest(scanReq)) {
         HIVIEW_LOGI("failed to run expire task");

@@ -23,9 +23,9 @@
 #include "file_util.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
+#include "hiview_zip_util.h"
 #include "parameter_ex.h"
 #include "time_util.h"
-#include "hiview_zip_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -172,49 +172,81 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
     if (!FileUtil::IsDirectory(tmpDir) && !FileUtil::ForceCreateDirectory(tmpDir)) {
         return "";
     }
+    auto ret = FileUtil::ChangeModeDirectory(tmpDir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
+    if (!ret) {
+        HIVIEW_LOGE("failed to chmod directory %{public}s.", tmpDir.c_str());
+    }
     return tmpDir;
 }
 
-void ZipDbFile(const std::string& src, const std::string& dest)
+bool ZipDbFile(const std::string& src, const std::string& dest)
 {
     HIVIEW_LOGI("zip file: %{public}s to %{public}s", src.c_str(), dest.c_str());
-    HiviewZipUtil::ZipFile(src, dest);
-    auto ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXOTH | S_IWOTH);
+    bool ret = HiviewZipUtil::ZipFile(src, dest);
+    if (!ret) {
+        return false;
+    }
+    ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
     if (!ret) {
         HIVIEW_LOGE("failed to chmod file %{public}s.", dest.c_str());
+        return false;
     }
     // delete json file
     FileUtil::RemoveFile(src);
+    return true;
 }
 
-std::string GetZipFilePath(const std::string& storeDir, bool needExportDir)
+void AppendZipFile(std::string& dir)
 {
-    std::string zipDir = FileUtil::IncludeTrailingPathDelimiter(storeDir);
-    if (needExportDir) {
-        zipDir = FileUtil::IncludeTrailingPathDelimiter(zipDir.append(SYS_EVENT_EXPORT_DIR_NAME));
-    }
-    if (!FileUtil::IsDirectory(zipDir) && !FileUtil::ForceCreateDirectory(zipDir)) {
-        return "";
-    }
-    auto ret = FileUtil::ChangeModeDirectory(zipDir, FileUtil::DEFAULT_FILE_MODE | S_IXOTH | S_IWOTH);
-    if (!ret) {
-        HIVIEW_LOGE("failed to chmod directory %{public}s.", zipDir.c_str());
-    }
-    zipDir.append("HSE").append(ZIP_FILE_DELIM)
+    dir.append("HSE").append(ZIP_FILE_DELIM)
         .append(Parameter::GetBrandStr()).append(std::string(ZIP_FILE_DELIM))
         .append(Parameter::GetProductModelStr()).append(std::string(ZIP_FILE_DELIM))
         .append(Parameter::GetSysVersionStr()).append(std::string(ZIP_FILE_DELIM))
         .append(TimeUtil::GetFormattedTimestampEndWithMilli()).append(std::string(".zip"));
-    return zipDir;
+}
+
+std::string GetTmpZipFile(const std::string& baseDir, const std::string& moduleName,
+    const std::string& version)
+{
+    std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYSEVENT_EXPORT_TMP_DIR));
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(moduleName));
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(version));
+    if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
+        return "";
+    }
+    auto ret = FileUtil::ChangeModeDirectory(dir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
+    if (!ret) {
+        HIVIEW_LOGE("failed to chmod directory %{public}s.", dir.c_str());
+    }
+    AppendZipFile(dir);
+    return dir;
+}
+
+std::string GetZipFile(const std::string& baseDir)
+{
+    std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYS_EVENT_EXPORT_DIR_NAME));
+    if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
+        return "";
+    }
+    auto ret = FileUtil::ChangeModeDirectory(dir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
+    if (!ret) {
+        HIVIEW_LOGE("failed to chmod directory %{public}s.", dir.c_str());
+    }
+    AppendZipFile(dir);
+    return dir;
 }
 
 void PersistJsonStrToLocalFile(cJSON* root, const std::string& localFile)
 {
     if (root == nullptr) {
+        HIVIEW_LOGE("root of json is null");
         return;
     }
     char* parsedJsonStr = cJSON_PrintUnformatted(root);
     if (parsedJsonStr == nullptr) {
+        HIVIEW_LOGE("formatted json str is null");
         return;
     }
     FILE* file = fopen(localFile.c_str(), "w+");
@@ -229,15 +261,15 @@ void PersistJsonStrToLocalFile(cJSON* root, const std::string& localFile)
 }
 }
 
-void ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents)
+bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents)
 {
     cJSON* root = CreateJsonObjectByVersion(eventVersion_);
     if (root == nullptr) {
-        return;
+        return false;
     }
     cJSON* domainsJsonArray = cJSON_CreateArray();
     if (domainsJsonArray == nullptr) {
-        return;
+        return false;
     }
     for (const auto& cachedToPackEvent : cachedToPackEvents) {
         cJSON* domainJsonObj = cJSON_CreateObject();
@@ -266,16 +298,22 @@ void ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cac
     HIVIEW_LOGD("packagedFile: %{public}s", packagedFile.c_str());
     PersistJsonStrToLocalFile(root, packagedFile);
     // zip json file into a temporary zip file
-    auto tmpZipFile = GetZipFilePath(GetHiSysEventJsonTempDir(moduleName_, eventVersion_), false);
-    HIVIEW_LOGD("tmpZipFile: %{public}s", tmpZipFile.c_str());
-    ZipDbFile(packagedFile, tmpZipFile);
+    auto tmpZipFile = GetTmpZipFile(exportDir_, moduleName_, eventVersion_);
+    if (!ZipDbFile(packagedFile, tmpZipFile)) {
+        HIVIEW_LOGE("failed to zip %{public}s to %{public}s", packagedFile.c_str(), tmpZipFile.c_str());
+        return false;
+    }
     // move tmp zip file to output directory
-    auto zipFile = GetZipFilePath(FileUtil::IncludeTrailingPathDelimiter(exportDir_), true);
+    auto zipFile = GetZipFile(exportDir_);
     HIVIEW_LOGD("zipFile: %{public}s", zipFile.c_str());
-    FileUtil::RenameFile(tmpZipFile, zipFile);
+    if (!FileUtil::RenameFile(tmpZipFile, zipFile)) {
+        HIVIEW_LOGE("failed to rename %{public}s to %{public}s", tmpZipFile.c_str(), zipFile.c_str());
+        return false;
+    }
     cJSON_Delete(root);
     totalJsonStrSize_ = 0;
     cachedToPackEvents.clear(); // clear cache;
+    return true;
 }
 
 ExportJsonFileWriter::ExportJsonFileWriter(const std::string& moduleName, const std::string& eventVersion,
@@ -292,12 +330,13 @@ void ExportJsonFileWriter::SetMaxSequenceWriteListener(MaxSequenceWriteListener 
     maxSequenceWriteListener_ = listener;
 }
 
-void ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, const std::string& name,
+bool ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, const std::string& name,
     const std::string& eventStr)
 {
     maxEventSeq_ = std::max(maxEventSeq_, seq);
-    if (totalJsonStrSize_ + eventStr.size() > maxFileSize_) {
-        Write();
+    if (totalJsonStrSize_ + eventStr.size() > maxFileSize_ && !Write()) {
+        HIVIEW_LOGE("failed to write export events");
+        return false;
     }
     auto iter = eventInDomains_.find(domain);
     if (iter == eventInDomains_.end()) {
@@ -305,18 +344,20 @@ void ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, c
             {seq, std::make_pair(name, eventStr)},
         });
         totalJsonStrSize_ += eventStr.size();
-        return;
+        return true;
     }
     iter->second.emplace(seq, std::make_pair(name, eventStr));
     totalJsonStrSize_ += eventStr.size();
+    return true;
 }
 
-void ExportJsonFileWriter::Write(bool isLastPartialQuery)
+bool ExportJsonFileWriter::Write(bool isLastPartialQuery)
 {
-    PackJsonStrToFile(eventInDomains_);
-    if (isLastPartialQuery && maxSequenceWriteListener_ != nullptr && maxEventSeq_ != INVALID_SEQ_VAL) {
+    bool ret = PackJsonStrToFile(eventInDomains_);
+    if (ret && isLastPartialQuery && maxSequenceWriteListener_ != nullptr && maxEventSeq_ != INVALID_SEQ_VAL) {
         maxSequenceWriteListener_(maxEventSeq_);
     }
+    return ret;
 }
 } // HiviewDFX
 } // OHOS
