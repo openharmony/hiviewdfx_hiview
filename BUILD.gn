@@ -91,6 +91,7 @@ ohos_executable("hiview") {
     "base:hiviewbase",
     "core:hiview_core",
     "plugins/crash_validator:libcrashvalidator",
+    "plugins/performance:xperf",
     "service:hiview_service",
   ]
 

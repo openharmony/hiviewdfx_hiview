@@ -24,7 +24,8 @@
         "hisysevent_config": [
             "//base/hiviewdfx/hiview/hisysevent.yaml",
             "//base/hiviewdfx/hiview/hiviewdfx.yaml",
-            "//base/hiviewdfx/hiview/kernel_vendor.yaml"
+            "//base/hiviewdfx/hiview/kernel_vendor.yaml",
+            "//base/hiviewdfx/hiview/plugins/performance/hisysevent.yaml"
         ],
         "deps": {
             "components": [

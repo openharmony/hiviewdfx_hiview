@@ -1,0 +1,123 @@
+#  Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+domain: PERFORMANCE
+
+APP_START:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: app start}
+  APP_PID: {type: INT32, desc: app pid}
+  VERSION_CODE: {type: INT32, desc: version code}
+  VERSION_NAME: {type: STRING, desc: version name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  BUNDLE_NAME: {type: STRING, desc: bundle name}
+  ABILITY_NAME: {type: STRING, desc: ability name}
+  PAGE_URL: {type: STRING, desc: page url}
+  SCENE_ID: {type: STRING, desc: interaction scene id}
+  START_TYPE: {type: INT32, desc: start type}
+  SOURCE_TYPE: {type: STRING, desc: input source type}
+  INPUT_TIME: {type: UINT64, desc: input time when multimodel receive from kernel}
+  RESPONSE_LATENCY: {type: UINT64, desc: click app icon to launcher animation time}
+  LAUN_TO_START_ABILITY_DUR: {type: UINT64, desc: launcher to start ability time}
+  STARTABILITY_PROCESSSTART_DUR: {type: UINT64, desc: start ability to process start time from ams}
+  PROCESSSTART_TO_APPATTACH_DUR: {type: UINT64, desc: app process start to app attach time from ams}
+  APPATTACH_TO_APPFOREGROUND_DUR: {type: UINT64, desc: app attach to foreground time from ams}
+  STARTABILITY_APPFOREGROUND_DUR: {type: UINT64, desc: start ability to app foreground time from ams}
+  APPFOREGR_ABILITYONFOREGR_DUR: {type: UINT64, desc: app foreground to ability onforeground time from ams}
+  ABILITYONFOREG_STARTWINDOW_DUR: {type: UINT64, desc: ability onforeground to start window time}
+  DRAWN_LATENCY: {type: UINT64, desc: page drawn whole time}
+  FIRST_FRAEM_DRAWN_LATENCY: {type: UINT64, desc: first frame draw completed time}
+  ANIMATION_LATENCY: {type: UINT64, desc: animation completed time}
+  E2E_LATENCY: {type: UINT64, desc: end to end time}
+
+APP_START_SLOW:
+  __BASE: { type: BEHAVIOR, level: MINOR, desc: app start }
+  APP_PID: { type: INT32, desc: app pid }
+  VERSION_CODE: { type: INT32, desc: version code }
+  VERSION_NAME: { type: STRING, desc: version name }
+  PROCESS_NAME: { type: STRING, desc: process name }
+  BUNDLE_NAME: { type: STRING, desc: bundle name }
+  ABILITY_NAME: { type: STRING, desc: ability name }
+  PAGE_URL: { type: STRING, desc: page url }
+  SCENE_ID: { type: STRING, desc: interaction scene id }
+  START_TYPE: { type: INT32, desc: start type }
+  SOURCE_TYPE: { type: STRING, desc: input source type }
+  INPUT_TIME: { type: UINT64, desc: input time when multimodel receive from kernel }
+  RESPONSE_LATENCY: { type: UINT64, desc: click app icon to launcher animation time }
+  LAUN_TO_START_ABILITY_DUR: { type: UINT64, desc: launcher to start ability time }
+  STARTABILITY_PROCESSSTART_DUR: { type: UINT64, desc: start ability to process start time from ams }
+  PROCESSSTART_TO_APPATTACH_DUR: { type: UINT64, desc: app process start to app attach time from ams }
+  APPATTACH_TO_APPFOREGROUND_DUR: { type: UINT64, desc: app attach to foreground time from ams }
+  STARTABILITY_APPFOREGROUND_DUR: { type: UINT64, desc: start ability to app foreground time from ams }
+  APPFOREGR_ABILITYONFOREGR_DUR: { type: UINT64, desc: app foreground to ability onforeground time from ams }
+  ABILITYONFOREG_STARTWINDOW_DUR: { type: UINT64, desc: ability onforeground to start window time }
+  DRAWN_LATENCY: { type: UINT64, desc: page drawn whole time }
+  FIRST_FRAEM_DRAWN_LATENCY: { type: UINT64, desc: first frame draw completed time }
+  ANIMATION_LATENCY: { type: UINT64, desc: animation completed time }
+  E2E_LATENCY: { type: UINT64, desc: end to end time }
+  TRACE_NAME: { type: STRING, desc: trace file name }
+  INFO_FILE: { type: STRING, desc: info file name }
+
+INTERACTION_JANK:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: interaction jank statistics}
+  APP_PID: {type: INT32, desc: app pid}
+  VERSION_CODE: {type: INT32, desc: version code}
+  VERSION_NAME: {type: STRING, desc: version name}
+  BUNDLE_NAME: {type: STRING, desc: package name}
+  PROCESS_NAME: {type: STRING, desc: process name}
+  ABILITY_NAME: {type: STRING, desc: ability name}
+  PAGE_URL: {type: STRING, desc: page url}
+  SCENE_ID: {type: STRING, desc: interaction scene id}
+  STARTTIME: {type: UINT64, desc: interaction scene begin time}
+  DURATION: {type: UINT64, desc: interaction duration}
+  TOTAL_APP_FRAMES: {type: INT32, desc: total app frames during the scene}
+  TOTAL_APP_MISSED_FRAMES: {type: INT32, desc: total missed frames during the scene}
+  MAX_APP_FRAMETIME: {type: UINT64, desc: max single frame time during the scene}
+  MAX_APP_SEQ_MISSED_FRAMES: {type: INT32, desc: max successive missed frames during the scene}
+  TOTAL_RENDER_FRAMES: {type: INT32, desc: total render frames during the scene}
+  TOTAL_RENDER_MISSED_FRAMES: {type: INT32, desc: total missed frames during the scene}
+  MAX_RENDER_FRAMETIME: {type: UINT64, desc: max single frame time during the scene}
+  AVERAGE_RENDER_FRAMETIME: {type: FLOAT, desc: average frame time during the scene}
+  MAX_RENDER_SEQ_MISSED_FRAMES: {type: INT32, desc: max successive missed frames during the scene}
+  IS_FOLD_DISP: {type: BOOL, desc: default false and set true if fold screen in expand state}
+  BUNDLE_NAME_EX: {type: STRING, desc: real package name when sceneboard start app}
+  IS_FOCUS: {type: BOOL, desc: set ture if app is in focus currently}
+  DISPLAY_ANIMATOR: {type: BOOL, desc: display animator or not}
+
+INTERACTION_JANK_FAULT:
+  __BASE: { type: BEHAVIOR, level: MINOR, desc: interaction jank statistics }
+  APP_PID: { type: INT32, desc: app pid }
+  VERSION_CODE: { type: INT32, desc: version code }
+  VERSION_NAME: { type: STRING, desc: version name }
+  BUNDLE_NAME: { type: STRING, desc: package name }
+  PROCESS_NAME: { type: STRING, desc: process name }
+  ABILITY_NAME: { type: STRING, desc: ability name }
+  PAGE_URL: { type: STRING, desc: page url }
+  SCENE_ID: { type: STRING, desc: interaction scene id }
+  STARTTIME: { type: UINT64, desc: interaction scene begin time }
+  DURATION: { type: UINT64, desc: interaction duration }
+  TOTAL_APP_FRAMES: { type: INT32, desc: total app frames during the scene }
+  TOTAL_APP_MISSED_FRAMES: { type: INT32, desc: total missed frames during the scene }
+  MAX_APP_FRAMETIME: { type: UINT64, desc: max single frame time during the scene }
+  MAX_APP_SEQ_MISSED_FRAMES: { type: INT32, desc: max successive missed frames during the scene }
+  TOTAL_RENDER_FRAMES: { type: INT32, desc: total render frames during the scene }
+  TOTAL_RENDER_MISSED_FRAMES: { type: INT32, desc: total missed frames during the scene }
+  MAX_RENDER_FRAMETIME: { type: UINT64, desc: max single frame time during the scene }
+  AVERAGE_RENDER_FRAMETIME: { type: FLOAT, desc: average frame time during the scene }
+  MAX_RENDER_SEQ_MISSED_FRAMES: { type: INT32, desc: max successive missed frames during the scene }
+  IS_FOLD_DISP: { type: BOOL, desc: default false and set true if fold screen in expand state }
+  TRACE_NAME: { type: STRING, desc: trace file name }
+  INFO_FILE: { type: STRING, desc: info file name }
+  BUNDLE_NAME_EX: { type: STRING, desc: real package name when sceneboard start app }
+  IS_FOCUS: { type: BOOL, desc: set ture if app is in focus currently }
+  DISPLAY_ANIMATOR: { type: BOOL, desc: display animator or not }
+  HAPPEN_TIME: { type: UINT64, desc: happen time }
