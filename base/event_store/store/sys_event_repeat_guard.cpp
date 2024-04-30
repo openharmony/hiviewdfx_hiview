@@ -27,8 +27,8 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Guard");
 namespace {
-constexpr uint64_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
-constexpr uint64_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
+constexpr time_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
+constexpr time_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
 }
 
 bool SysEventRepeatGuard::IsEventTypeMatched(std::shared_ptr<SysEvent> event, const std::string& file)
@@ -50,13 +50,10 @@ bool SysEventRepeatGuard::IsEventTypeMatched(std::shared_ptr<SysEvent> event, co
 
 uint64_t SysEventRepeatGuard::GetMinValidTime()
 {
-    uint64_t timeRange = TIME_RANGE_COMMERCIAL;
-    if (Parameter::IsBetaVersion()) {
-        timeRange = TIME_RANGE_BETA;
-    }
-    uint64_t timeNow = time(nullptr);
-    uint64_t timeMin = timeNow > timeRange ? (timeNow - timeRange) : 0;
-    return timeMin;
+    static time_t timeRange = Parameter::IsBetaVersion() ? TIME_RANGE_BETA : TIME_RANGE_COMMERCIAL;
+    time_t timeNow = time(nullptr);
+    time_t timeMin = timeNow > timeRange ? (timeNow - timeRange) : 0;
+    return static_cast<uint64_t>(timeMin);
 }
 
 bool SysEventRepeatGuard::IsTimeRangeMatched(const std::string& file)
