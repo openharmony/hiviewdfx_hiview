@@ -22,7 +22,7 @@ bool AppCallerEvent::enableDynamicTrace_ = false;
 
 AppCallerEvent::AppCallerEvent(const std::string &sender) : Event(sender),
     bundleName_(""), bundleVersion_(""), uid_(0), pid_(0), beginTime_(0), endTime_(0),
-    resultCode_(0), taskBeginTime_(0), taskEndTime_(0), externalLog_("")
+    resultCode_(0), taskBeginTime_(0), taskEndTime_(0), foreground_(0), threadName_(""), externalLog_("")
 {
 }
 
