@@ -90,9 +90,11 @@ ohos_executable("hiview") {
   deps = [
     "$hiview_plugin/eventlogger:eventloggerso",
     "$hiview_plugin/faultlogger:libfaultlogger",
+    "$hiview_plugin/plugins_so:dfr",
     "base:hiviewbase",
     "core:hiview_core",
     "plugins/crash_validator:libcrashvalidator",
+    "plugins/performance:xperf",
     "service:hiview_service",
   ]
 

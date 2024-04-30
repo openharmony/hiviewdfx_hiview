@@ -18,7 +18,9 @@ group("unittest") {
   testonly = true
   deps = [
     "eventlogger:unittest",
+    "faultlogger:unittest",
     "freeze_detector:unittest",
+    "reliability/bbox_detectors:unittest",
     "sysevent_source:unittest",
     "unified_collector:unittest",
   ]
@@ -27,7 +29,10 @@ group("unittest") {
 group("moduletest") {
   testonly = true
   deps = []
-  deps += [ "faultlogger:moduletest" ]
+  deps += [
+    "faultlogger:moduletest",
+    "reliability/bbox_detectors:moduletest",
+  ]
 }
 
 group("fuzztest") {
