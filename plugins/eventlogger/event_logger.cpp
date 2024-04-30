@@ -49,7 +49,6 @@
 #include "event_log_task.h"
 #include "event_logger_config.h"
 #include "freeze_common.h"
-#include "utility/trace_collector.h"
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventLogger);

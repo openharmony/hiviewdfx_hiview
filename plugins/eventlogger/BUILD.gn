@@ -36,7 +36,6 @@ ohos_source_set("eventlogger") {
     "$hiview_plugin/freeze_detector:freeze_detector",
     "config:eventlogger_config",
     "log_catcher:log_catcher",
-    "//third_party/libxml2:xml2",
   ]
 
   external_deps = [
@@ -45,6 +44,22 @@ ohos_source_set("eventlogger") {
     "init:libbegetutil",
     "input:libmmi-client",
   ]
+}
+
+ohos_shared_library("eventloggerso") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  part_name = "hiview"
+
+  deps = [ ":eventlogger" ]
+
+  external_deps = [ "hilog:libhilog" ]
+
+  version_script = "eventlogger.map"
+  subsystem_name = "hiviewdfx"
 }
 
 group("unittest") {
