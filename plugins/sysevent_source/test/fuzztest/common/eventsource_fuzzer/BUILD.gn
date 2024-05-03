@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,7 +19,11 @@ ohos_fuzztest("EventSourceFuzzTest") {
 
   fuzz_config_file = "../eventsource_fuzzer"
 
-  include_dirs = [ "eventsource_fuzzer.h" ]
+  include_dirs = [
+    "eventsource_fuzzer.h",
+    "$hiview_plugin/sysevent_source/control/include",
+    "$hiview_plugin/sysevent_source/include",
+  ]
 
   cflags = [
     "-g",

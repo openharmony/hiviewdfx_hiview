@@ -18,6 +18,7 @@
 #include <functional>
 #include <memory>
 
+#include "daily_controller.h"
 #include "decoded/decoded_event.h"
 #include "defines.h"
 #include "event_export_engine.h"
@@ -55,6 +56,21 @@ void SysEventSource::OnLoad()
     sysEventParser_ = HiviewPlatform::GetInstance().GetEventJsonParser();
     sysEventStat_ = std::make_unique<SysEventStat>();
     EventExportEngine::GetInstance().Start();
+    InitController();
+}
+
+void SysEventSource::InitController()
+{
+    auto context = GetHiviewContext();
+    if (context == nullptr) {
+        HIVIEW_LOGW("context is null");
+        return;
+    }
+
+    std::string workPath = context->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
+    std::string configPath = context->GetHiViewDirectory(HiviewContext::DirectoryType::CONFIG_DIRECTORY);
+    const std::string configFileName = "event_threshold.json";
+    controller_ = std::make_unique<DailyController>(workPath, configPath.append(configFileName));
 }
 
 void SysEventSource::OnUnload()
@@ -109,6 +125,10 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent == nullptr || sysEventParser_ == nullptr) {
         HIVIEW_LOGE("event or event parser is null.");
+        sysEventStat_->AccumulateEvent(false);
+        return false;
+    }
+    if (controller_ != nullptr && !controller_->CheckThreshold(sysEvent)) {
         sysEventStat_->AccumulateEvent(false);
         return false;
     }

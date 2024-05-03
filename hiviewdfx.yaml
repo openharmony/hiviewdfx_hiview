@@ -100,6 +100,10 @@ XPOWER_STACKTRACE:
 CPU_COLLECTION:
   __BASE: {type: FAULT, level: MINOR, desc: HiView CPU Unified Collection Event}
 
+EVENTS_DAILY:
+  __BASE: {type: FAULT, level: MINOR, desc: HiView daily logging data collection}
+  DATE: {type: STRING, desc: date when logging data is collected}
+
 DEL_EXPORTED_EVENTS:
   __BASE: {type: STATISTIC, level: MINOR, desc: record the periodic deletion of exported event files, preserve: true}
   MODULE_NAME: {type: STRING, desc: name of the module which export the deleted event files}

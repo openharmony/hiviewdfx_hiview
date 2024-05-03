@@ -49,11 +49,11 @@ void Sleep(unsigned int seconds)
     sleep(seconds);
 }
 
-int GetMillSecOfSec()
+int64_t GetSeconds()
 {
     auto now = std::chrono::system_clock::now();
-    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    return millisecs.count() % SEC_TO_MILLISEC;
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
+    return secs.count();
 }
 
 uint64_t GetMilliseconds()
