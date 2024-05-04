@@ -193,13 +193,13 @@ HWTEST_F(AdapterUtilityOhosTest, CommonUtilsOhosTest004, testing::ext::TestSize.
 
 /**
  * @tc.name: TimeUtilOhosTest001
- * @tc.desc: Test Sleep/GetMillSecOfSec defined in namespace TimeUtil
+ * @tc.desc: Test Sleep/GetSeconds defined in namespace TimeUtil
  * @tc.type: FUNC
  * @tc.require: issueI65DUW
  */
 HWTEST_F(AdapterUtilityOhosTest, TimeUtilOhosTest001, testing::ext::TestSize.Level3)
 {
-    auto time = TimeUtil::GetMillSecOfSec();
+    auto time = TimeUtil::GetSeconds();
     ASSERT_GE(time, 0);
     int sleepSecs = 1;
     TimeUtil::Sleep(sleepSecs);

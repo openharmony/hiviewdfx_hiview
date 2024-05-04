@@ -13,9 +13,13 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-config("hiview_core_config") {
-  visibility = [ "*:*" ]
-  include_dirs = [ "include" ]
+config("sysevent_source_config") {
+  include_dirs = [
+    "control/config/include",
+    "control/db/include",
+    "control/include",
+    "include",
+  ]
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
 }
 
@@ -34,12 +38,15 @@ ohos_prebuilt_etc("monitor_config") {
 }
 
 ohos_source_set("sysevent_source") {
-  part_name = "hiview"
-  subsystem_name = "hiviewdfx"
-  public_configs = [ ":hiview_core_config" ]
-  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
+  configs = [
+    ":sysevent_source_config",
+    "//third_party/jsoncpp:jsoncpp_public_config",
+  ]
 
   sources = [
+    "control/config/daily_config.cpp",
+    "control/daily_controller.cpp",
+    "control/db/daily_db_helper.cpp",
     "event_server.cpp",
     "monitor_config.cpp",
     "platform_monitor.cpp",
@@ -62,6 +69,9 @@ ohos_source_set("sysevent_source") {
     "init:libbegetutil",
     "relational_store:native_rdb",
   ]
+
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 }
 
 group("unittest") {

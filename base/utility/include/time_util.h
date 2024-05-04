@@ -53,7 +53,7 @@ uint64_t GenerateTimestamp();
 uint64_t GetMilliseconds();
 time_t StrToTimeStamp(const std::string &tmStr, const std::string& format);
 void Sleep(unsigned int seconds);
-int GetMillSecOfSec();
+int64_t GetSeconds();
 std::string TimestampFormatToDate(time_t timeStamp, const std::string& format);
 std::string GetTimeZone();
 int64_t Get0ClockStampMs();

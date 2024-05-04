@@ -33,7 +33,7 @@ cJSON* ParseJsonRoot(const std::string& configFile)
     return root;
 }
 
-int64_t GetIntValue(cJSON* json, const std::string& key, int64_t defaultValue)
+int64_t GetIntValue(const cJSON* json, const std::string& key, int64_t defaultValue)
 {
     if (json == nullptr || !cJSON_IsObject(json)) {
         return defaultValue;
@@ -89,6 +89,18 @@ void GetStringArray(cJSON* json, const std::string& key, std::vector<std::string
         }
         dest.emplace_back(strItem->valuestring);
     }
+}
+
+cJSON* GetObjectValue(const cJSON* json, const std::string& key)
+{
+    if (json == nullptr || !cJSON_IsObject(json)) {
+        return nullptr;
+    }
+    cJSON* obj = cJSON_GetObjectItem(json, key.c_str());
+    if (obj == nullptr || !cJSON_IsObject(obj)) {
+        return nullptr;
+    }
+    return obj;
 }
 } // namespace CJsonUtil
 } // namespace HiviewDFX

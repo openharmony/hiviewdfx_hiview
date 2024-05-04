@@ -14,20 +14,18 @@
  */
 #include "cpu_storage.h"
 
-#include <algorithm>
-#include <cmath>
 #include <functional>
 #include <map>
 
 #include "file_util.h"
 #include "hisysevent.h"
+#include "hiview_db_util.h"
 #include "hiview_logger.h"
 #include "process_status.h"
 #include "parameter_ex.h"
 #include "rdb_predicates.h"
 #include "sql_util.h"
 #include "string_util.h"
-#include "time_util.h"
 #include "power_status_manager.h"
 
 namespace OHOS {
@@ -50,38 +48,11 @@ const std::string COLUMN_CPU_LOAD = "cpu_load";
 const std::string COLUMN_CPU_USAGE = "cpu_usage";
 const std::string COLUMN_THREAD_CNT = "thread_cnt";
 const std::string COLUMN_VERSION_NAME = "name";
-constexpr uint32_t MAX_NUM_OF_DB_FILES = 7; // save files for one week
 constexpr uint32_t DEFAULT_PRECISION_OF_DECIMAL = 6; // 0.123456
 
 std::string CreateDbFileName()
 {
-    std::string dbFileName;
-    std::string dateStr = TimeUtil::TimestampFormatToDate(std::time(nullptr), "%Y%m%d");
-    dbFileName.append("cpu_stat_").append(dateStr).append(".db"); // cpu_stat_yyyymmdd.db
-    return dbFileName;
-}
-
-bool NeedCleanDbFiles(const std::vector<std::string>& dbFiles)
-{
-    return dbFiles.size() > MAX_NUM_OF_DB_FILES;
-}
-
-void ClearDbFilesByTimestampOrder(const std::vector<std::string>& dbFiles)
-{
-    uint32_t numOfCleanFiles = dbFiles.size() - MAX_NUM_OF_DB_FILES;
-    for (size_t i = 0; i < numOfCleanFiles; i++) {
-        HIVIEW_LOGI("start to clear db file=%{public}s", dbFiles[i].c_str());
-        if (!FileUtil::RemoveFile(dbFiles[i])) {
-            HIVIEW_LOGW("failed to delete db file=%{public}s", dbFiles[i].c_str());
-        }
-    }
-}
-
-bool IsDbFile(const std::string& dbFilePath)
-{
-    std::string dbFileName = FileUtil::ExtractFileName(dbFilePath);
-    std::string dbFileExt = FileUtil::ExtractFileExt(dbFileName);
-    return dbFileExt == "db";
+    return HiviewDbUtil::CreateFileNameByDate("cpu_stat_");
 }
 
 bool IsValidProcess(const ProcessCpuStatInfo& cpuCollectionInfo)
@@ -425,78 +396,18 @@ void CpuStorage::PrepareOldDbFilesBeforeReport()
     // 1. Close the current db file
     ResetDbStore();
     // 2. Init upload directory
-    if (!InitDbStoreUploadPath()) {
+    if (!HiviewDbUtil::InitDbUploadPath(dbStorePath_, dbStoreUploadPath_)) {
         return;
     }
     // 3. Move the db file to the upload directory
-    MoveDbFilesToUploadDir();
-    // 4. Aging upload db files, only the latest N db files are retained
-    TryToAgeUploadDbFiles();
+    HiviewDbUtil::MoveDbFilesToUploadDir(dbStorePath_, dbStoreUploadPath_);
+    // 4. Aging upload db files, only the latest 7 db files are retained
+    HiviewDbUtil::TryToAgeUploadDbFiles(dbStoreUploadPath_);
 }
 
 void CpuStorage::ResetDbStore()
 {
     dbStore_ = nullptr;
-}
-
-bool CpuStorage::InitDbStoreUploadPath()
-{
-    if (!dbStoreUploadPath_.empty()) {
-        return true;
-    }
-    const std::string uploadDirName = "upload";
-    std::string tmpUploadPath = FileUtil::IncludeTrailingPathDelimiter(
-        FileUtil::ExtractFilePath(dbStorePath_)).append(uploadDirName);
-    if (!FileUtil::IsDirectory(tmpUploadPath) && !FileUtil::ForceCreateDirectory(tmpUploadPath)) {
-        HIVIEW_LOGE("failed to create upload dir=%{public}s", tmpUploadPath.c_str());
-        return false;
-    }
-    dbStoreUploadPath_ = tmpUploadPath;
-    HIVIEW_LOGI("init db upload path=%{public}s", dbStoreUploadPath_.c_str());
-    return true;
-}
-
-void CpuStorage::MoveDbFilesToUploadDir()
-{
-    std::vector<std::string> dbFiles;
-    FileUtil::GetDirFiles(FileUtil::ExtractFilePath(dbStorePath_), dbFiles, false);
-    for (auto& dbFile : dbFiles) {
-        // upload only xxx.db, and delete xxx.db-shm/xxx.db-wal
-        if (IsDbFile(dbFile)) {
-            MoveDbFileToUploadDir(dbFile);
-            continue;
-        }
-        HIVIEW_LOGI("start to remove db file=%{public}s", dbFile.c_str());
-        if (!FileUtil::RemoveFile(dbFile)) {
-            HIVIEW_LOGW("failed to remove db file=%{public}s", dbFile.c_str());
-        }
-    }
-}
-
-void CpuStorage::MoveDbFileToUploadDir(const std::string dbFilePath)
-{
-    std::string uploadFilePath = FileUtil::IncludeTrailingPathDelimiter(dbStoreUploadPath_)
-        .append(FileUtil::ExtractFileName(dbFilePath));
-    HIVIEW_LOGI("start to move db file, src=%{public}s, dst=%{public}s", dbFilePath.c_str(), uploadFilePath.c_str());
-    if (FileUtil::CopyFile(dbFilePath, uploadFilePath) != 0) {
-        HIVIEW_LOGW("failed to copy db file");
-        return;
-    }
-    if (!FileUtil::RemoveFile(dbFilePath)) {
-        HIVIEW_LOGW("failed to delete db file=%{public}s", dbFilePath.c_str());
-    }
-}
-
-void CpuStorage::TryToAgeUploadDbFiles()
-{
-    std::vector<std::string> dbFiles;
-    FileUtil::GetDirFiles(dbStoreUploadPath_, dbFiles);
-    if (!NeedCleanDbFiles(dbFiles)) {
-        return;
-    }
-    HIVIEW_LOGI("start to clean db files, size=%{public}zu", dbFiles.size());
-    std::sort(dbFiles.begin(), dbFiles.end());
-    ClearDbFilesByTimestampOrder(dbFiles);
 }
 
 void CpuStorage::ReportCpuCollectionEvent()

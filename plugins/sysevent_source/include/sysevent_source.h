@@ -23,6 +23,7 @@
 #include "event_json_parser.h"
 #include "event_server.h"
 #include "event_source.h"
+#include "i_controller.h"
 #include "pipeline.h"
 #include "platform_monitor.h"
 #include "base/raw_data.h"
@@ -55,11 +56,15 @@ public:
     void Dump(int fd, const std::vector<std::string>& cmds) override;
 
 private:
+    void InitController();
+    std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
+
+private:
     EventServer eventServer_;
     PlatformMonitor platformMonitor_;
     std::unique_ptr<SysEventStat> sysEventStat_ = nullptr;
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
-    std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
+    std::shared_ptr<IController> controller_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -41,15 +41,11 @@ public:
 private:
     void InitDbStorePath();
     void InitDbStore();
-    bool InitDbStoreUploadPath();
     void StoreProcessData(const ProcessCpuStatInfo& cpuCollection);
     void StoreThreadData(const ThreadCpuStatInfo& cpuCollection);
     bool NeedReport();
     void PrepareOldDbFilesBeforeReport();
     void ResetDbStore();
-    void MoveDbFilesToUploadDir();
-    void MoveDbFileToUploadDir(const std::string dbFilePath);
-    void TryToAgeUploadDbFiles();
     void ReportCpuCollectionEvent();
     void PrepareNewDbFilesAfterReport();
     std::string GetStoredSysVersion();

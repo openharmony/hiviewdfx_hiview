@@ -38,7 +38,7 @@ cJSON* ParseJsonRoot(const std::string& configFile);
  * @param defaultValue default value when the integer value was parsed failed
  * @return the parsed integer value.
  */
-int64_t GetIntValue(cJSON* json, const std::string& key, int64_t defaultValue = 0);
+int64_t GetIntValue(const cJSON* json, const std::string& key, int64_t defaultValue = 0);
 
 /**
  * @brief try to parse a double value from json string.
@@ -64,6 +64,14 @@ std::string GetStringValue(cJSON* json, const std::string& key);
  * @param dest the parsed string array value.
  */
 void GetStringArray(cJSON* json, const std::string& key, std::vector<std::string>& dest);
+
+/**
+ * @brief try to parse an object value from json object.
+ * @param json json object.
+ * @param key key defined for the object value.
+ * @return the parsed object value.
+ */
+cJSON* GetObjectValue(const cJSON* json, const std::string& key);
 };
 } // HiviewDFX
 } // OHOS
