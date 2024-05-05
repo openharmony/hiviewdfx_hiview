@@ -42,7 +42,7 @@ std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper()
         HIVIEW_LOGE("SAMGR is nullptr");
         return nullptr;
     }
-    sptr<IRemoteObject> remoteObj = samgr->GetSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
+    sptr<IRemoteObject> remoteObj = samgr->GetSystemAbility(DFX_SYS_EVENT_SERVICE_ABILITY_ID);
     if (remoteObj == nullptr) {
         HIVIEW_LOGE("UE SA ability is nullptr");
         return nullptr;

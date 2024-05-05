@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "event.h"
+#include "event_export_engine.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "sys_event.h"
@@ -34,11 +35,13 @@ void SysEventDispatcher::OnLoad()
     };
     SysEventServiceAdapter::StartService(this, notifyFunc);
     SysEventServiceAdapter::SetWorkLoop(this->GetHiviewContext()->GetSharedWorkLoop());
+    EventExportEngine::GetInstance().Start();
     HIVIEW_LOGI("OnLoad.");
 }
 
 void SysEventDispatcher::OnUnload()
 {
+    EventExportEngine::GetInstance().Stop();
     HIVIEW_LOGI("OnUnload.");
 }
 
