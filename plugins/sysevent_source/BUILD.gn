@@ -58,7 +58,6 @@ ohos_source_set("sysevent_source") {
     ":hiview.para.dac",
     ":monitor_config",
     "$hiview_base:hiviewbase",
-    "$hiview_base/event_export:event_export_engine",
     "$hiview_core:hiview_core",
   ]
 
