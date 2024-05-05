@@ -75,7 +75,10 @@ group("unittest") {
   deps = []
 
   if (enable_hiview_usage_event_report_build) {
-    deps += [ "test/unittest:UsageEventReportCacheTest" ]
+    deps += [
+      "test/unittest:UsageEventReportCacheTest",
+      "test/unittest:UsageEventReportTest",
+    ]
   }
 }
 

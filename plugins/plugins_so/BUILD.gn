@@ -13,7 +13,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-ohos_shared_library("dfr") {
+ohos_shared_library("bdfr") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
@@ -22,7 +22,7 @@ ohos_shared_library("dfr") {
   }
 
   deps = [
-    ":dfr_plugin_config",
+    ":bdfr_plugin_config",
     "$hiview_plugin/faultlogger:faultlogger",
     "$hiview_plugin/faultlogger:libfaultlogger",
     "$hiview_plugin/reliability/bbox_detectors:bbox_detector",
@@ -39,8 +39,8 @@ ohos_shared_library("dfr") {
   subsystem_name = "hiviewdfx"
 }
 
-ohos_prebuilt_etc("dfr_plugin_config") {
-  source = "dfr_plugin_config"
+ohos_prebuilt_etc("bdfr_plugin_config") {
+  source = "bdfr_plugin_config"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   relative_install_dir = "hiview"

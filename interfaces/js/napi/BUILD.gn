@@ -23,10 +23,7 @@ ohos_shared_library("loglibrary_napi") {
     "./src/napi_hiview_js.cpp",
   ]
 
-  deps = [
-    "$hiview_adapter/service/idl:hiview_service_impl_for_js",
-    "$hiview_base/utility:hiview_utility",
-  ]
+  deps = [ "$hiview_adapter/service/idl:hiview_service_impl_for_js" ]
 
   external_deps = [
     "access_token:libtokenid_sdk",

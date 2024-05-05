@@ -10,7 +10,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/test.gni")
+
+ohos_prebuilt_etc("adft_plugin_config") {
+  source = "adft_plugin_config"
+  relative_install_dir = "hiview"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
+
+ohos_shared_library("adft") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  deps = [
+    ":adft_plugin_config",
+    "$hiview_base:hiviewbase",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
+    "$hiview_plugin/event_store:sys_event_store",
+    "$hiview_plugin/sys_dispatcher:sys_dispatcher",
+    "$hiview_plugin/sysevent_source:sysevent_source",
+    "$hiview_plugin/unified_collector:unified_collector",
+    "$hiview_plugin/usage_event_report:usage_event_report",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
+
+  version_script = "libdft.map"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+}
 
 # all the plugin test with the name of hiview will be executed in daily pipeline
 # module_output_path = "hiview/hiview/plugins"
@@ -23,6 +60,7 @@ group("unittest") {
     "reliability/bbox_detectors:unittest",
     "sysevent_source:unittest",
     "unified_collector:unittest",
+    "usage_event_report:unittest",
   ]
 }
 

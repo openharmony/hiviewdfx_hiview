@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -43,7 +43,6 @@ ohos_source_set("hiview_param_update") {
 
   deps = [
     "$hiview_base:hiviewbase",
-    "$hiview_base/utility:hiview_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "//third_party/openssl:libcrypto_shared",
   ]
