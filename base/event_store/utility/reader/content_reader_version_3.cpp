@@ -35,7 +35,7 @@ int ContentReaderVersion3::ReadDocDetails(std::ifstream& docStream, EventStore::
     docStream.read(reinterpret_cast<char*>(&header), sizeof(EventStore::DocHeader));
     uint32_t sysVersionSize = 0;
     docStream.read(reinterpret_cast<char*>(&sysVersionSize), sizeof(uint32_t));
-    if (sysVersionSize - 1 > MAX_VERSION_LENG) { // end with '\0'
+    if (sysVersionSize > (MAX_VERSION_LENG + 1)) { // end with '\0'
         HIVIEW_LOGD("version size is invalid, size=%{public}" PRIu32 "", sysVersionSize);
         return DOC_STORE_ERROR_INVALID;
     }

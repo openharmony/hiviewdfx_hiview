@@ -33,7 +33,7 @@ bool ZipFile(const std::string& srcFile, const std::string& destZipFile)
 {
     FILE* src = fopen(srcFile.c_str(), "rb");
     if (src == nullptr) {
-        HIVIEW_LOGE("failed to open src file");
+        HIVIEW_LOGE("failed to open source file");
         return false;
     }
     zip_fileinfo zInfo;
@@ -54,11 +54,11 @@ bool ZipFile(const std::string& srcFile, const std::string& destZipFile)
         zipFile, srcFileName.c_str(), &zInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
     char buf[BUFFER_SIZE] = {0};
     while (!feof(src)) {
-        int readBytesCnt = fread(buf, sizeof(char), sizeof(buf), src);
-        if (readBytesCnt <= 0) {
+        size_t readBytesCnt = fread(buf, sizeof(char), sizeof(buf), src);
+        if (readBytesCnt == 0) {
             break;
         }
-        zipWriteInFileInZip(zipFile, buf, static_cast<unsigned int>(readBytesCnt));
+        zipWriteInFileInZip(zipFile, buf, readBytesCnt);
         if (ferror(src)) {
             break;
         }
