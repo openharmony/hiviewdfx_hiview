@@ -1,29 +1,5 @@
 {
     "plugins": {
-        "SysEventSource": {
-            "path": "plugins/sysevent_source",
-            "name": "sysevent_source"
-        },
-        "SysEventStore": {
-            "path": "plugins/event_store",
-            "name": "sys_event_store"
-        },
-        "UsageEventReport": {
-            "path": "plugins/usage_event_report",
-            "name": "usage_event_report"
-        },
-        "FaultDetectorManager": {
-            "path": "plugins/reliability/leak_detectors",
-            "name": "leak_detector"
-        },
-        "SysEventDispatcher": {
-            "path": "plugins/sys_dispatcher",
-            "name": "sys_dispatcher"
-        },
-        "UnifiedCollector": {
-            "path": "plugins/unified_collector",
-            "name": "unified_collector"
-        }
     },
     "rules": [
         {
@@ -35,48 +11,13 @@
             ],
             "info": {
                 "loadorder": {
-                    "SysEventSource": {
-                        "loadtime": 0
-                    },
-                    "SysEventStore": {
-                        "loadtime": 0
-                    },
-                    "UsageEventReport": {
-                        "loadtime": 0
-                    },
-                    "FaultDetectorManager": {
-                        "loadtime": 0
-                    },
-                    "SysEventDispatcher": {
-                        "loadtime": 0
-                    },
-                    "UnifiedCollector": {
-                        "loadtime": 0
-                    }
                 },
                 "pipelines": {
-                    "SysEventPipeline": [
-                        "SysEventDispatcher",
-                        "SysEventStore"
-                    ],
-                    "LeakDetectorPipeline": [
-                        "FaultDetectorManager",
-                        "SysEventDispatcher",
-                        "SysEventStore"
-                    ]
                 },
                 "pipelinegroups": {
-                    "SysEventSource": [
-                        "LeakDetectorPipeline",
-                        "SysEventPipeline"
-                    ]
                 },
                 "threads": {
                     "singledthread": {
-                        "SysEventSource": "sysevent_source",
-                        "SysEventStore": "sysevent_store",
-                        "FaultDetectorManager": "leak_detector",
-                        "SysEventDispatcher": "sysevent_store"
                     }
                 }
             }

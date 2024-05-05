@@ -295,6 +295,7 @@ void HiviewPlatform::LoadPluginBundles()
 {
     std::vector<std::string> configFiles;
     FileUtil::GetDirFiles(defaultConfigDir_, configFiles);
+    sort(configFiles.begin(), configFiles.end()); // guarantee DFT plugins config parse first
     for (const auto& filePath : configFiles) {
         auto bundleName = SplitBundleNameFromPath(filePath);
         if (bundleName.empty()) {

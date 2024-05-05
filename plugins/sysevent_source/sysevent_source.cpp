@@ -53,7 +53,13 @@ void SysEventSource::OnLoad()
     HIVIEW_LOGI("SysEventSource load ");
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
-    sysEventParser_ = HiviewPlatform::GetInstance().GetEventJsonParser();
+    auto context = GetHiviewContext();
+    HiviewPlatform* hiviewPlatform = static_cast<HiviewPlatform*>(context);
+    if (hiviewPlatform == nullptr) {
+        HIVIEW_LOGW("hiviewPlatform is null");
+        return;
+    }
+    sysEventParser_ = hiviewPlatform->GetEventJsonParser();
     sysEventStat_ = std::make_unique<SysEventStat>();
     EventExportEngine::GetInstance().Start();
     InitController();
@@ -105,9 +111,14 @@ bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
 {
     platformMonitor_.CollectEvent(event);
     platformMonitor_.Breaking();
-    auto &platform = HiviewPlatform::GetInstance();
-    auto const &pipelineRules = platform.GetPipelineConfigMap();
-    auto const &pipelineMap = platform.GetPipelineMap();
+    auto context = GetHiviewContext();
+    HiviewPlatform* hiviewPlatform = static_cast<HiviewPlatform*>(context);
+    if (hiviewPlatform == nullptr) {
+        HIVIEW_LOGW("hiviewPlatform is null");
+        return false;
+    }
+    auto const &pipelineRules = hiviewPlatform->GetPipelineConfigMap();
+    auto const &pipelineMap = hiviewPlatform->GetPipelineMap();
     for (auto it = pipelineRules.begin(); it != pipelineRules.end(); it++) {
         std::string pipelineName = it->first;
         auto dispathRule = it->second;

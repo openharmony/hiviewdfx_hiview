@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,8 +41,13 @@ void SysEventStore::OnLoad()
 {
     HIVIEW_LOGI("sys event service load");
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
-    auto &platform = HiviewPlatform::GetInstance();
-    sysEventParser_ = platform.GetEventJsonParser();
+    auto context = GetHiviewContext();
+    HiviewPlatform* hiviewPlatform = static_cast<HiviewPlatform*>(context);
+    if (hiviewPlatform == nullptr) {
+        HIVIEW_LOGW("hiviewPlatform is null");
+        return;
+    }
+    sysEventParser_ = hiviewPlatform->GetEventJsonParser();
     if (sysEventParser_ == nullptr) {
         hasLoaded_ = false;
         return;
