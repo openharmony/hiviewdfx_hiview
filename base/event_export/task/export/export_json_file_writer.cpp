@@ -60,9 +60,9 @@ constexpr char DEFAULT_MSG_ID[] = "00000000000000000000000000000000";
 
 std::string GenerateDeviceId()
 {
-    constexpr int32_t DEVICE_ID_LENGTH = 65;
-    char id[DEVICE_ID_LENGTH] = {0};
-    if (GetDevUdid(id, DEVICE_ID_LENGTH) == 0) {
+    constexpr int32_t deviceIdLength = 65;
+    char id[deviceIdLength] = {0};
+    if (GetDevUdid(id, deviceIdLength) == 0) {
         return std::string(id);
     }
     return "";

@@ -49,8 +49,8 @@ private:
     std::string moduleName_;
     std::string eventVersion_;
     std::string exportDir_;
-    uint64_t maxFileSize_ = 0;
-    uint64_t totalJsonStrSize_ = 0;
+    int64_t maxFileSize_ = 0;
+    int64_t totalJsonStrSize_ = 0;
     int64_t maxEventSeq_ = INVALID_SEQ_VAL;
     MaxSequenceWriteListener maxSequenceWriteListener_;
     EventsDividedInDomainGroupType eventInDomains_;
