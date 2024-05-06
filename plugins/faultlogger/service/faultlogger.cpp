@@ -1081,7 +1081,7 @@ bool Faultlogger::CheckFaultLog(FaultLogInfo info) const
     } else {
         err = CheckCrashLogValid(file);
     }
-    ReportCrashException(info.module, info.pid, info.id, info.time, err);
+    ReportCrashException(info.module, info.pid, info.id, err);
 
     return (err == CrashExceptionCode::CRASH_ESUCCESS);
 }
