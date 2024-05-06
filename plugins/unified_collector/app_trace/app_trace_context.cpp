@@ -93,7 +93,7 @@ void InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isD
     }
 
     isTraceOn = false;
-    appCallerEvent->taskEndTime_ = TimeUtil::GetMilliseconds();
+    appCallerEvent->taskEndTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     if (result.data.empty()) {
         HIVIEW_LOGE("failed to collect app trace for uid=%{public}d pid=%{public}d",
             appCallerEvent->uid_, appCallerEvent->pid_);
@@ -152,7 +152,7 @@ bool InnerHasCallAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent)
 }
 
 AppTraceContext::AppTraceContext(std::shared_ptr<AppTraceState> state)
-    : pid_(0), traceBegin_(0), isOpenTrace_(false), isDumpTrace_(false), state_(state)
+    : pid_(0), traceBegin_(0), isOpenTrace_(false), isTraceOn_(false), isDumpTrace_(false), state_(state)
 {}
 
 int32_t AppTraceContext::TransferTo(std::shared_ptr<AppTraceState> state)
@@ -262,7 +262,7 @@ int32_t StartTraceState::DoCaptureTrace()
         return -1;
     }
 
-    appTraceContext_->traceBegin_ = TimeUtil::GetMilliseconds();
+    appTraceContext_->traceBegin_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     appCallerEvent_->resultCode_ = UCollect::UcError::SUCCESS;
     int64_t delay = appCallerEvent_->taskBeginTime_ - appCallerEvent_->happenTime_;
     int64_t cost = appTraceContext_->traceBegin_ - appCallerEvent_->happenTime_;
