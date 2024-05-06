@@ -21,11 +21,9 @@
 
 #include "export_config_parser.h"
 #include "export_db_manager.h"
-#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-using TaskCycle = std::chrono::duration<int64_t, std::ratio<TimeUtil::SECONDS_PER_HOUR>>;
 class ExportBaseTask {
 public:
     ExportBaseTask(std::shared_ptr<ExportConfig> config, std::shared_ptr<ExportDbManager> dbMgr)
@@ -35,7 +33,7 @@ public:
 
 public:
     void Run();
-    virtual TaskCycle GetExecutingCycle();
+    virtual std::chrono::seconds GetExecutingCycle();
 
 protected:
     virtual void OnTaskRun() = 0;

@@ -20,22 +20,15 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-ExportBaseTask");
-namespace {
-constexpr int64_t DEFAULT_TASK_CYCLE = 1; // unit: hour
-}
 
 void ExportBaseTask::Run()
 {
     OnTaskRun();
 }
 
-TaskCycle ExportBaseTask::GetExecutingCycle()
+std::chrono::seconds ExportBaseTask::GetExecutingCycle()
 {
-    if (config_ == nullptr) {
-        HIVIEW_LOGE("export config of this task is invalid");
-        return TaskCycle(DEFAULT_TASK_CYCLE);
-    }
-    return TaskCycle(config_->taskCycle);
+    return std::chrono::seconds(config_->taskCycle);
 }
 } // HiviewDFX
 } // OHOS
