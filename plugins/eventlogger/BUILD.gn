@@ -40,6 +40,7 @@ ohos_source_set("eventlogger") {
 
   external_deps = [
     "faultloggerd:libjson_stack_formatter",
+    "ffrt:libffrt",
     "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
