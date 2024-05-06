@@ -18,7 +18,6 @@ config("hiview_base_config") {
 
   include_dirs = [
     "$hiview_root/include",
-    "event_pool",
     "event_publish/include",
     "event_raw/include",
     "event_store/include",
@@ -79,7 +78,6 @@ ohos_source_set("hiview_base") {
 
   deps = [
     ":logger",
-    "event_pool:eventpool",
     "event_publish:hiview_event_publish",
     "event_raw:hiview_event_raw_base",
     "event_raw:hiview_event_raw_decode",

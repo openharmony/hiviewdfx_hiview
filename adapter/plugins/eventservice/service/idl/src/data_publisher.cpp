@@ -32,7 +32,6 @@
 #include "data_share_store.h"
 #include "data_share_util.h"
 #include "event_publish.h"
-#include "event_thread_pool.h"
 #include "file_util.h"
 #include "hisysevent.h"
 #include "hiview_event_common.h"

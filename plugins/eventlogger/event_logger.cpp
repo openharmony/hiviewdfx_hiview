@@ -121,10 +121,10 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         }
         this->StartLogCollect(sysEvent);
     };
-    HIVIEW_LOGI("before add task to eventpool, eventName=%{public}s, pid=%{public}ld",
+    HIVIEW_LOGI("before submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
         sysEvent->eventName_.c_str(), pid);
-    eventPool_->AddTask(task, "eventlogger");
-    HIVIEW_LOGI("after add task to eventpool, eventName=%{public}s, pid=%{public}ld",
+    ffrt::submit(task, {}, {}, ffrt::task_attr().name("eventlogger"));
+    HIVIEW_LOGI("after submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
         sysEvent->eventName_.c_str(), pid);
     return true;
 }
@@ -440,7 +440,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     std::string eventName = event->eventName_;
     std::string eventPid = std::to_string(pid);
 
-    std::unique_lock<std::mutex> lck(intervalMutex_);
+    intervalMutex_.lock();
     std::time_t now = std::time(0);
     for (auto it = eventTagTime_.begin(); it != eventTagTime_.end();) {
         if (it->first.find(eventName) != it->first.npos) {
@@ -459,6 +459,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
             HIVIEW_LOGE("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
                 interval:%{public}" PRId32 " There's not enough interval",
                 event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
+            intervalMutex_.unlock();
             return false;
         }
     }
@@ -466,6 +467,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
     HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
         interval:%{public}" PRId32 " normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
+    intervalMutex_.unlock();
     return true;
 }
 
@@ -526,11 +528,8 @@ void EventLogger::OnLoad()
     EventLoggerConfig logConfig;
     eventLoggerConfig_ = logConfig.GetConfig();
 
-    eventPool_ = std::make_shared<EventThreadPool>(maxEventPoolCount, "EventLog");
-    eventPool_->Start();
-
     activeKeyEvent_ = std::make_unique<ActiveKeyEvent>();
-    activeKeyEvent_ ->Init(eventPool_, logStore_);
+    activeKeyEvent_ ->Init(logStore_);
     FreezeCommon freezeCommon;
     if (!freezeCommon.Init()) {
         HIVIEW_LOGE("FreezeCommon filed.");
@@ -560,7 +559,6 @@ void EventLogger::OnLoad()
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-    eventPool_->Stop();
 }
 
 std::string EventLogger::GetListenerName()
