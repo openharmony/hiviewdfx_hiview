@@ -14,8 +14,6 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-defines = []
-
 if (enable_performance_monitor) {
   config("xperf_service_config") {
     visibility = [ "*:*" ]
