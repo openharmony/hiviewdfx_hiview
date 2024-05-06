@@ -15,7 +15,10 @@
 #ifndef HIVIEW_BASE_APP_EVENT_HANDLER_H
 #define HIVIEW_BASE_APP_EVENT_HANDLER_H
 
+#include <cstdint>
+#include <ostream>
 #include <string>
+#include <vector>
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -69,9 +72,36 @@ public:
         int32_t maxRenderSeqFrames = 0;
     };
 
+    struct ThreadInfo {
+        std::string name;
+        int32_t tid = 0;
+        double usage = 0;
+        friend std::ostream &operator<<(std::ostream &os, const ThreadInfo &p)
+        {
+            os << "{\"name\":\"" << p.name << "\",\"tid\":" << p.tid << ",\"usage\":" << p.usage << "}";
+            return os;
+        }
+    };
+
+    struct LogInfo {
+        std::string file;
+        LogInfo(std::string file_)
+        {
+            file = file_;
+        }
+        friend std::ostream &operator<<(std::ostream &os, const LogInfo &f)
+        {
+            os << "\"" << f.file << "\"";
+            return os;
+        }
+    };
+
     struct CpuUsageHighInfo : public BundleInfo, public TimeInfo {
         bool isForeground = false;
         uint64_t usage = 0;
+        std::vector<ThreadInfo> threads;
+        std::vector<LogInfo> externalLog;
+        bool logOverLimit = false;
     };
 
     struct UsageStatInfo {

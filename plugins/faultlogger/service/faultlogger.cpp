@@ -533,7 +533,9 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         params["foreground"] = false;
     }
-    params["external_log"] = sysEvent->GetEventValue("LOG_PATH");
+    Json::Value externalLog;
+    externalLog.append(sysEvent->GetEventValue("LOG_PATH"));
+    params["external_log"] = externalLog;
     params["bundle_version"] = sysEvent->GetEventValue("VERSION");
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
     params["pid"] = sysEvent->GetPid();
@@ -834,7 +836,9 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         return;
     }
     stackInfoObj["bundle_name"] = info.module;
-    stackInfoObj["external_log"] = info.logPath;
+    Json::Value externalLog;
+    externalLog.append(info.logPath);
+    stackInfoObj["external_log"] = externalLog;
     if (info.sectionMap.count("VERSION") == 1) {
         stackInfoObj["bundle_version"] = info.sectionMap.at("VERSION");
     }
@@ -845,19 +849,24 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
     if (info.sectionMap.count("HILOG") == 1) {
-        Json::Value hilog;
-        std::stringstream logStream(info.sectionMap.at("HILOG"));
-        std::string oneLine;
-        int count = 0;
-        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
-            hilog.append(oneLine);
-        }
-        if (info.sectionMap.at("HILOG").length() == 0) {
-            hilog.append("");
-        }
-        stackInfoObj["hilog"] = hilog;
+        AddHilogInfo(stackInfoObj, info);
     }
     stackInfo.append(Json::FastWriter().write(stackInfoObj));
+}
+
+void Faultlogger::AddHilogInfo(Json::Value& stackInfoObj, const FaultLogInfo& info) const
+{
+    Json::Value hilog;
+    std::stringstream logStream(info.sectionMap.at("HILOG"));
+    std::string oneLine;
+    int count = 0;
+    while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
+        hilog.append(oneLine);
+    }
+    if (info.sectionMap.at("HILOG").length() == 0) {
+        hilog.append("");
+    }
+    stackInfoObj["hilog"] = hilog;
 }
 
 int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
@@ -1050,6 +1059,9 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
     HIVIEW_LOGI("Start to report freezeJson !!!");
 
     FreezeJsonUtil::FreezeJsonCollector collector = GetFreezeJsonCollector(info);
+    std::list<std::string> externalLogList;
+    externalLogList.push_back(info.logPath);
+    std::string externalLog = FreezeJsonUtil::GetStrByList(externalLogList);
 
     FreezeJsonParams freezeJsonParams = FreezeJsonParams::Builder()
         .InitTime(collector.timestamp)
@@ -1059,7 +1071,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
         .InitBundleVersion(collector.version)
         .InitBundleName(collector.package_name)
         .InitProcessName(collector.process_name)
-        .InitExternalLog(info.logPath)
+        .InitExternalLog(externalLog)
         .InitPid(collector.pid)
         .InitUid(collector.uid)
         .InitAppRunningUniqueId(collector.appRunningUniqueId)
