@@ -127,7 +127,7 @@ public:
         std::string bundleVersion_ = "";
         std::string bundleName_ = "";
         std::string processName_ = "";
-        std::string externalLog_ = "";
+        std::string externalLog_ = "[]";
         long pid_ = 0;
         long uid_ = 0;
         std::string appRunningUniqueId_ = "";
