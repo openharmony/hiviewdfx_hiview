@@ -224,6 +224,11 @@ void TraceFlowController::CleanOldAppTrace()
 {
     TraceCollector::Caller caller = TraceCollector::Caller::APP;
     FileRemove(caller);
+
+    uint64_t happenTimeInSecond = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+    std::string date = TimeUtil::TimestampFormatToDate(happenTimeInSecond, "%Y%m%d");
+    int32_t eventDate = std::stoll(date, nullptr, 0) - 3; // 3: clean 3 days ago
+    traceStorage_->RemoveOldAppEventTask(eventDate);
 }
 } // HiViewDFX
 } // OHOS

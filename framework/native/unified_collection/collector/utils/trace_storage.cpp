@@ -204,5 +204,13 @@ bool TraceStorage::StoreAppEventTask(AppEventTask &appEventTask)
 
     return appTaskStore_->InsertAppEventTask(appEventTask);
 }
+
+void TraceStorage::RemoveOldAppEventTask(int32_t eventDate)
+{
+    if (appTaskStore_ == nullptr) {
+        return;
+    }
+    appTaskStore_->RemoveAppEventTask(eventDate);
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS

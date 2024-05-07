@@ -189,5 +189,16 @@ bool AppEventTaskStorage::InsertAppEventTask(AppEventTask &appEventTask)
     }
     return true;
 }
+
+void AppEventTaskStorage::RemoveAppEventTask(int32_t eventDate)
+{
+    NativeRdb::AbsRdbPredicates predicates(TABLE_NAME_TASK);
+    predicates.LessThan(COLUMN_TASK_DATE, eventDate);
+    int32_t deleteRows = 0;
+    int ret = dbStore_->Delete(deleteRows, predicates);
+    if (ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to insert app event task, ret=%{public}d", ret);
+    }
+}
 } // namespace HiviewDFX
 } // namespace OHOS
