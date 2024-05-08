@@ -41,6 +41,7 @@ public:
 
     bool QueryAppEventTask(int32_t uid, int32_t date, AppEventTask &appEventTask);
     bool StoreAppEventTask(AppEventTask &appEventTask);
+    void RemoveOldAppEventTask(int32_t eventDate);
 
 private:
     void InitDbStore();
