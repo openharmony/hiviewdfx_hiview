@@ -108,6 +108,24 @@ std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const 
     return path;
 }
 
+static bool CheckInSandBoxLog(std::string& externalLog, std::string& sandBoxLogPath,
+    const ExternalLogInfo& externalLogInfo, Json::Value& params)
+{
+    if (externalLog.find(SANDBOX_DIR) == 0) {
+        HIVIEW_LOGI("File in sandbox path not copy.");
+        uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
+        if (dirSize <= externalLogInfo.maxFileSize_) {
+            params[EXTERNAL_LOG].append(externalLog);
+        } else {
+            HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
+                ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
+            params[LOG_OVER_LIMIT] = true;
+        }
+        return true;
+    }
+    return false;
+}
+
 void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
     const ExternalLogInfo &externalLogInfo)
 {
@@ -124,11 +142,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
         return;
     }
-    if (externalLog.find(SANDBOX_DIR) == 0) {
-        HIVIEW_LOGI("File in sandbox path not copy.");
-        params[EXTERNAL_LOG].append(externalLog);
+
+    if (CheckInSandBoxLog(externalLog, sandBoxLogPath, externalLogInfo, params)) {
         return;
     }
+
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     uint64_t fileSize = FileUtil::GetFileSize(externalLog);
     if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
