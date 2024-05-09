@@ -52,7 +52,7 @@ std::vector<std::string> GetUnifiedShareFiles(Hitrace::TraceRetInfo ret, UCollec
 std::vector<std::string> GetUnifiedSpecialFiles(Hitrace::TraceRetInfo ret,
     UCollectUtil::TraceCollector::Caller &caller);
 void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath);
-void RenameZipFile(const std::string &srcZipPath, const std::string &destZipWithoutVersion);
+std::string AddVersionInfoToZipName(const std::string &srcZipPath);
 void CheckCurrentCpuLoad();
 } // HiViewDFX
 } // OHOS
