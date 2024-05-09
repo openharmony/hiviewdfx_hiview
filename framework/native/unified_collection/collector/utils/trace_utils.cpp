@@ -344,13 +344,11 @@ void CheckCurrentCpuLoad()
     }
 }
 
-void RenameZipFile(const std::string &srcZipPath, const std::string &destZipWithoutVersion)
+std::string AddVersionInfoToZipName(const std::string &srcZipPath)
 {
     std::string displayVersion = Parameter::GetDisplayVersionStr();
     std::string versionStr = StringUtil::ReplaceStr(StringUtil::ReplaceStr(displayVersion, "_", "-"), " ", "_");
-    std::string destZipName = StringUtil::ReplaceStr(destZipWithoutVersion, ".zip", "_" + versionStr + ".zip");
-    FileUtil::RenameFile(srcZipPath, destZipName);
-    HIVIEW_LOGI("finish rename file %{public}s", destZipName.c_str());
+    return StringUtil::ReplaceStr(srcZipPath, ".zip", "@" + versionStr + ".zip");
 }
 
 void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath)
@@ -399,7 +397,9 @@ void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath)
     if (errcode != 0) {
         return;
     }
-    RenameZipFile(UNIFIED_SHARE_TEMP_PATH + zipFileName, destZipPath);
+    std::string destZipPathWithVersion = AddVersionInfoToZipName(destZipPath);
+    FileUtil::RenameFile(UNIFIED_SHARE_TEMP_PATH + zipFileName, destZipPathWithVersion);
+    HIVIEW_LOGI("finish rename file %{public}s", destZipPathWithVersion.c_str());
 }
 
 void CopyFile(const std::string &src, const std::string &dst)
@@ -439,8 +439,9 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
             ZipTraceFile(tracePath, destZipPath);
         };
         TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
-        files.push_back(destZipPath);
-        HIVIEW_LOGI("trace file : %{public}s.", destZipPath.c_str());
+        std::string destZipPathWithVersion = AddVersionInfoToZipName(destZipPath);
+        files.push_back(destZipPathWithVersion);
+        HIVIEW_LOGI("trace file : %{public}s.", destZipPathWithVersion.c_str());
     }
 
     // file delete
