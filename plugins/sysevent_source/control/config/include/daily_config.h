@@ -35,7 +35,8 @@ class DailyConfig {
 public:
     DailyConfig(const std::string& configPath);
     ~DailyConfig() = default;
-    int32_t GetThreshold(const std::string& domain, const std::string name, int32_t type);
+    bool IsValid() const;
+    int32_t GetThreshold(const std::string& domain, const std::string name, int32_t type) const;
 
 private:
     bool Parse(const std::string& configPath);
@@ -43,9 +44,8 @@ private:
     bool ParseCustomThreshold(const cJSON* config);
     bool ParseThresholdOfDomain(const cJSON* config);
     bool ParseThresholdOfName(const cJSON* config, std::string& name, int32_t& threshold);
-    void InitDefaultThreshold();
-    void InitDefaultCommonThreshold();
 
+    bool isValid_ = false;
     /* <type, threshold> */
     std::unordered_map<int32_t, int32_t> commonThresholds_;
     /* <<domain, name>, threshold> */

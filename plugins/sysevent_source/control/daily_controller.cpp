@@ -51,7 +51,7 @@ bool DailyController::CheckThreshold(std::shared_ptr<SysEvent> event)
 
     // update cache and db after checking
     UpdateCacheAndDb(cacheKey, threshold, count);
-    return count <= threshold;
+    return config_->IsValid() ? (count <= threshold) : true;
 }
 
 void DailyController::TryToUpdateCacheToDb(int64_t nowTime)
