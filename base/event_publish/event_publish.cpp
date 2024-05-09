@@ -43,10 +43,12 @@ const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
 const std::string MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
+constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 
 struct ExternalLogInfo {
     std::string extensionType_;
     std::string subPath_;
+    uint64_t maxFileSize_;
 };
 
 void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalLogInfo)
@@ -54,9 +56,11 @@ void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalL
     if (eventName == MAIN_THREAD_JANK) {
         externalLogInfo.extensionType_ = ".trace";
         externalLogInfo.subPath_ = "watchdog";
+        externalLogInfo.maxFileSize_ = WATCHDOG_MAX_FILE_SIZE;
     } else {
         externalLogInfo.extensionType_ = ".log";
         externalLogInfo.subPath_ = "hiappevent";
+        externalLogInfo.maxFileSize_ = MAX_FILE_SIZE;
     }
 }
 
@@ -127,7 +131,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
     }
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     uint64_t fileSize = FileUtil::GetFileSize(externalLog);
-    if (dirSize + fileSize <= MAX_FILE_SIZE) {
+    if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
         std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
         int pid = 0;
         if (params.isMember(PID) && params[PID].isInt()) {
@@ -150,7 +154,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         }
     } else {
         HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
-            ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, MAX_FILE_SIZE);
+            ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
         params[LOG_OVER_LIMIT] = true;
     }
 }
