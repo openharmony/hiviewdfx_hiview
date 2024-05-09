@@ -51,6 +51,13 @@ void EventThresholdTest(DailyController& controller, std::shared_ptr<SysEvent> e
     // failed to check after the threshold is exceeded
     ASSERT_FALSE(controller.CheckThreshold(event));
 }
+
+void EventWithoutThresholdTest(DailyController& controller, std::shared_ptr<SysEvent> event, uint32_t threshold)
+{
+    for (uint32_t i = 0; i < threshold; i++) {
+        ASSERT_TRUE(controller.CheckThreshold(event));
+    }
+}
 }
 
 void DailyControllerTest::SetUp()
@@ -190,4 +197,60 @@ HWTEST_F(DailyControllerTest, DailyControllerTest008, TestSize.Level0)
     constexpr uint32_t thresholdOnCommercial = 200;
     uint32_t threshold = Parameter::IsBetaVersion() ? thresholdOnBeta : thresholdOnCommercial;
     EventThresholdTest(controller, event, threshold);
+}
+
+/**
+ * @tc.name: DailyControllerTest009
+ * @tc.desc: FAULT event test without threshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI9NVZ1
+ */
+HWTEST_F(DailyControllerTest, DailyControllerTest009, TestSize.Level0)
+{
+    DailyController controller(WORK_PATH, "");
+    auto event = CreateEvent(TEST_DOMAIN, TEST_NAME, SysEventCreator::FAULT);
+    constexpr uint32_t threshold = 1000;
+    EventWithoutThresholdTest(controller, event, threshold);
+}
+
+/**
+ * @tc.name: DailyControllerTest010
+ * @tc.desc: STATISTIC event test without threshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI9NVZ1
+ */
+HWTEST_F(DailyControllerTest, DailyControllerTest010, TestSize.Level0)
+{
+    DailyController controller(WORK_PATH, "");
+    auto event = CreateEvent(TEST_DOMAIN, TEST_NAME, SysEventCreator::STATISTIC);
+    constexpr uint32_t threshold = 1000;
+    EventWithoutThresholdTest(controller, event, threshold);
+}
+
+/**
+ * @tc.name: DailyControllerTest011
+ * @tc.desc: SECURITY event test without threshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI9NVZ1
+ */
+HWTEST_F(DailyControllerTest, DailyControllerTest011, TestSize.Level0)
+{
+    DailyController controller(WORK_PATH, "");
+    auto event = CreateEvent(TEST_DOMAIN, TEST_NAME, SysEventCreator::SECURITY);
+    constexpr uint32_t threshold = 1000;
+    EventWithoutThresholdTest(controller, event, threshold);
+}
+
+/**
+ * @tc.name: DailyControllerTest012
+ * @tc.desc: BEHAVIOR event test without threshold.
+ * @tc.type: FUNC
+ * @tc.require: issueI9NVZ1
+ */
+HWTEST_F(DailyControllerTest, DailyControllerTest012, TestSize.Level0)
+{
+    DailyController controller(WORK_PATH, "");
+    auto event = CreateEvent(TEST_DOMAIN, TEST_NAME, SysEventCreator::BEHAVIOR);
+    constexpr uint32_t threshold = 10000;
+    EventWithoutThresholdTest(controller, event, threshold);
 }

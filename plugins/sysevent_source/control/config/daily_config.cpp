@@ -37,9 +37,7 @@ std::string GetVersion()
 
 DailyConfig::DailyConfig(const std::string& configPath)
 {
-    if (!Parse(configPath)) {
-        InitDefaultThreshold();
-    }
+    isValid_ = Parse(configPath);
 }
 
 bool DailyConfig::Parse(const std::string& configPath)
@@ -151,31 +149,23 @@ bool DailyConfig::ParseThresholdOfName(const cJSON* config, std::string& name, i
     return true;
 }
 
-void DailyConfig::InitDefaultThreshold()
-{
-    InitDefaultCommonThreshold();
-}
-
-void DailyConfig::InitDefaultCommonThreshold()
-{
-    commonThresholds_[TYPE_FAULT] = 100; // 100: default threshold of fault event
-    commonThresholds_[TYPE_STATISTIC] = 100; // 100: default threshold of statistic event
-    commonThresholds_[TYPE_SECURITY] = 100; // 100: default threshold of security event
-    commonThresholds_[TYPE_BEHAVIOR] = 2000; // 2000: default threshold of behavior event
-}
-
-int32_t DailyConfig::GetThreshold(const std::string& domain, const std::string name, int32_t type)
+int32_t DailyConfig::GetThreshold(const std::string& domain, const std::string name, int32_t type) const
 {
     auto keyPair = std::make_pair(domain, name);
     if (customThresholds_.find(keyPair) != customThresholds_.end()) {
-        return customThresholds_[keyPair];
+        return customThresholds_.at(keyPair);
     }
 
     if (commonThresholds_.find(type) != commonThresholds_.end()) {
-        return commonThresholds_[type];
+        return commonThresholds_.at(type);
     }
 
     return 0;
+}
+
+bool DailyConfig::IsValid() const
+{
+    return isValid_;
 }
 } // namespace HiviewDFX
 } // namespace OHOS
