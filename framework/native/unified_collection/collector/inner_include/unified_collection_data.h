@@ -45,8 +45,8 @@ struct ucollection_process_cpu_entry {
 };
 
 struct ucollection_process_thread_count {
-    uint32_t pid;
-    uint32_t thread_count;
+    int pid;
+    unsigned int thread_count;
 };
 
 struct ucollection_thread_cpu_item {
@@ -78,6 +78,7 @@ enum collection_type {
     COLLECT_THREAD_COUNT,
     COLLECT_APP_THREAD,
     COLLECT_THE_THREAD,
+    COLLECT_APP_THREAD_COUNT,
 };
 
 #define PROCESS_TOTAL_COUNT 2500
@@ -89,6 +90,8 @@ enum collection_type {
 #define IOCTRL_COLLECT_PROC_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_PROC_COUNT, unsigned int)
 #define IOCTRL_COLLECT_THREAD_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THREAD_COUNT, \
     struct ucollection_process_thread_count)
+#define IOCTRL_COLLECT_APP_THREAD_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_APP_THREAD_COUNT, \
+	struct ucollection_process_thread_count)
 #define IOCTRL_COLLECT_APP_THREAD _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_APP_THREAD, struct ucollection_thread_cpu_entry)
 #define IOCTRL_COLLECT_THE_THREAD _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THE_THREAD, struct ucollection_thread_cpu_entry)
 #endif // FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_UNIFIED_COLLECTION_DATA

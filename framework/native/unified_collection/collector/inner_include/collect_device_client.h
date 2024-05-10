@@ -37,8 +37,8 @@ public:
 private:
     int GetDeviceFd(bool readOnly);
     unsigned int GetProcessCount();
-    int GetThreadCount(int pid);
-    std::shared_ptr<ThreadCpuData> FetchThreadData(int magic, int pid);
+    unsigned int GetThreadCount(int pid);
+    unsigned int GetSelfThreadCount(int pid);
     int fd_;
 };
 } // HiviewDFX

@@ -112,7 +112,7 @@ std::shared_ptr<ProcessCpuData> CollectDeviceClient::FetchProcessCpuData(int pid
     return data;
 }
 
-int CollectDeviceClient::GetThreadCount(int pid)
+unsigned int CollectDeviceClient::GetThreadCount(int pid)
 {
     HIVIEW_LOGD("send IOCTRL_COLLECT_THREAD_COUNT, cmd=%{public}zu", IOCTRL_COLLECT_THREAD_COUNT);
     struct ucollection_process_thread_count threadCount {pid, 0};
@@ -125,29 +125,48 @@ int CollectDeviceClient::GetThreadCount(int pid)
     return threadCount.thread_count;
 }
 
+unsigned int CollectDeviceClient::GetSelfThreadCount(int pid)
+{
+    HIVIEW_LOGD("send IOCTRL_COLLECT_THREAD_COUNT, cmd=%{public}zu", IOCTRL_COLLECT_APP_THREAD_COUNT);
+    struct ucollection_process_thread_count threadCount {pid, 0};
+    int ret = ioctl(fd_, IOCTRL_COLLECT_APP_THREAD_COUNT, &threadCount);
+    if (ret < 0) {
+        HIVIEW_LOGE("ioctl IOCTRL_COLLECT_PROC_THREAD_COUNT cmd=%{public}zu, ret=%{public}d",
+                    IOCTRL_COLLECT_APP_THREAD_COUNT, ret);
+        return 0;
+    }
+    return threadCount.thread_count;
+}
+
 std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadCpuData(int pid)
 {
     HIVIEW_LOGD("send IOCTRL_COLLECT_THE_THREAD, cmd=%{public}zu", IOCTRL_COLLECT_THE_THREAD);
-    return FetchThreadData(IOCTRL_COLLECT_THE_THREAD, pid);
+    unsigned int threadCount = GetThreadCount(pid);
+    if (threadCount <= 0) {
+        HIVIEW_LOGE("ioctl GetThreadCount error");
+        return nullptr;
+    }
+    auto data = std::make_shared<ThreadCpuData>(IOCTRL_COLLECT_THE_THREAD, pid, threadCount);
+    int ret = ioctl(fd_, IOCTRL_COLLECT_THE_THREAD, data->entry_);
+    if (ret < 0) {
+        HIVIEW_LOGE("ioctl FetchThreadData cmd=%{public}u, ret=%{public}d", IOCTRL_COLLECT_THE_THREAD, ret);
+        return data;
+    }
+    return data;
 }
 
 std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchSelfThreadCpuData(int pid)
 {
     HIVIEW_LOGD("send IOCTRL_COLLECT_APP_THREAD, cmd=%{public}zu", IOCTRL_COLLECT_APP_THREAD);
-    return FetchThreadData(IOCTRL_COLLECT_APP_THREAD, pid);
-}
-
-std::shared_ptr<ThreadCpuData> CollectDeviceClient::FetchThreadData(int magic, int pid)
-{
-    int threadCount = GetThreadCount(pid);
+    unsigned int threadCount = GetSelfThreadCount(pid);
     if (threadCount <= 0) {
         HIVIEW_LOGE("ioctl GetThreadCount error");
         return nullptr;
     }
-    auto data = std::make_shared<ThreadCpuData>(magic, pid, threadCount);
-    int ret = ioctl(fd_, magic, data->entry_);
+    auto data = std::make_shared<ThreadCpuData>(IOCTRL_COLLECT_APP_THREAD, pid, threadCount);
+    int ret = ioctl(fd_, IOCTRL_COLLECT_APP_THREAD, data->entry_);
     if (ret < 0) {
-        HIVIEW_LOGE("ioctl FetchThreadData cmd=%{public}u, ret=%{public}d", magic, ret);
+        HIVIEW_LOGE("ioctl FetchThreadData cmd=%{public}u, ret=%{public}d", IOCTRL_COLLECT_APP_THREAD, ret);
         return data;
     }
     return data;

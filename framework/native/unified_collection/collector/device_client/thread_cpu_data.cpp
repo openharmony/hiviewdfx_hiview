@@ -23,12 +23,12 @@ namespace HiviewDFX {
 namespace {
 constexpr int ADD_COUNT = 10;
 }
-ThreadCpuData::ThreadCpuData(int magic, int pid, uint32_t threadCount): entry_(nullptr), current_(0)
+ThreadCpuData::ThreadCpuData(int magic, int pid, unsigned int threadCount): entry_(nullptr), current_(0)
 {
     Init(magic, threadCount + ADD_COUNT, pid);
 }
 
-void ThreadCpuData::Init(int magic, uint32_t totalCount, int pid)
+void ThreadCpuData::Init(int magic, unsigned int totalCount, int pid)
 {
     auto totalSize = sizeof(struct ucollection_thread_cpu_entry)
         + sizeof(struct ucollection_thread_cpu_item) * totalCount;
