@@ -108,7 +108,7 @@ std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const 
     return path;
 }
 
-static bool CheckInSandBoxLog(std::string& externalLog, std::string& sandBoxLogPath,
+bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBoxLogPath,
     const ExternalLogInfo& externalLogInfo, Json::Value& params)
 {
     if (externalLog.find(SANDBOX_DIR) == 0) {
