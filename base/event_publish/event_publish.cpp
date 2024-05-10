@@ -108,73 +108,64 @@ std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const 
     return path;
 }
 
-static bool CheckInSandBoxLog(std::string& externalLog, std::string& sandBoxLogPath,
-    const ExternalLogInfo& externalLogInfo, Json::Value& params)
+bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::string& destPath)
 {
-    if (externalLog.find(SANDBOX_DIR) == 0) {
-        HIVIEW_LOGI("File in sandbox path not copy.");
-        uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
-        if (dirSize <= externalLogInfo.maxFileSize_) {
-            params[EXTERNAL_LOG].append(externalLog);
-        } else {
-            HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
-                ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
-            params[LOG_OVER_LIMIT] = true;
+    if (FileUtil::CopyFile(externalLog, destPath) == 0) {
+        std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
+        if (OHOS::StorageDaemon::AclSetAccess(destPath, entryTxt) != 0) {
+            HIVIEW_LOGE("failed to set acl access dir=%{public}s", destPath.c_str());
         }
         return true;
     }
+    HIVIEW_LOGE("failed to move log file=%{public}s to destPath=%{public}s.", externalLog.c_str(), destPath.c_str());
     return false;
 }
 
 void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
     const ExternalLogInfo &externalLogInfo)
 {
+    if (!params.isMember(EXTERNAL_LOG) || !params[EXTERNAL_LOG].isArray() || params[EXTERNAL_LOG].empty()) {
+        HIVIEW_LOGE("no external log need to copy.");
+        return;
+    }
     params[LOG_OVER_LIMIT] = false;
-    Json::Value externalLogJson;
-    externalLogJson.resize(0);
-    if (!params.isMember(EXTERNAL_LOG) || !params[EXTERNAL_LOG].isString()) {
-        params[EXTERNAL_LOG] = externalLogJson;
-        return;
-    }
-    std::string externalLog = params[EXTERNAL_LOG].asString();
-    params[EXTERNAL_LOG] = externalLogJson;
-    if (externalLog.empty()) {
-        HIVIEW_LOGE("externalLog=%{public}s.", externalLog.c_str());
-        return;
-    }
-
-    if (CheckInSandBoxLog(externalLog, sandBoxLogPath, externalLogInfo, params)) {
-        return;
-    }
-
+    Json::Value externalLogJson(Json::arrayValue);
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
-    uint64_t fileSize = FileUtil::GetFileSize(externalLog);
-    if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
-        std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
-        int pid = 0;
-        if (params.isMember(PID) && params[PID].isInt()) {
-            pid = params[PID].asInt();
+    for (Json::ArrayIndex i = 0; i < params[EXTERNAL_LOG].size(); ++i) {
+        std::string externalLog = params[EXTERNAL_LOG][i].asString();
+        if (externalLog.empty()) {
+            HIVIEW_LOGI("externalLog is empty.");
+            continue;
         }
-        std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
-            + externalLogInfo.extensionType_;
-        sandBoxLogPath.append("/").append(desFileName);
-        if (FileUtil::CopyFile(externalLog, sandBoxLogPath) == 0) {
-            std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
-            if (OHOS::StorageDaemon::AclSetAccess(sandBoxLogPath, entryTxt) != 0) {
-                HIVIEW_LOGE("failed to set acl access dir=%{public}s", sandBoxLogPath.c_str());
+        if (externalLog.find(SANDBOX_DIR) == 0) {
+            HIVIEW_LOGI("file in sandbox path not copy.");
+            externalLogJson.append(externalLog);
+            continue;
+        }
+        uint64_t fileSize = FileUtil::GetFileSize(externalLog);
+        if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
+            std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+            int pid = 0;
+            if (params.isMember(PID) && params[PID].isInt()) {
+                pid = params[PID].asInt();
             }
-            params[EXTERNAL_LOG].append("/data/storage/el2/log/" + externalLogInfo.subPath_ + "/" + desFileName);
-            HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
-                externalLog.c_str(), sandBoxLogPath.c_str());
+            std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+                + externalLogInfo.extensionType_;
+            sandBoxLogPath.append("/").append(desFileName);
+            if (CopyExternalLog(uid, externalLog, sandBoxLogPath)) {
+                dirSize += fileSize;
+                externalLogJson.append("/data/storage/el2/log/" + externalLogInfo.subPath_ + "/" + desFileName);
+                HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
+                    externalLog.c_str(), sandBoxLogPath.c_str());
+            }
         } else {
-            HIVIEW_LOGE("failed to move log file=%{public}s to sandBoxLogPath=%{public}s.",
-                externalLog.c_str(), sandBoxLogPath.c_str());
+            HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
+                ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
+            params[LOG_OVER_LIMIT] = true;
+            break;
         }
-    } else {
-        HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
-            ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
-        params[LOG_OVER_LIMIT] = true;
     }
+    params[EXTERNAL_LOG] = externalLogJson;
 }
 
 void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
