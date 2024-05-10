@@ -24,6 +24,7 @@
 #include "utility/trace_collector.h"
 #include "utility/cpu_collector.h"
 #include "client/trace_collector.h"
+#include "client/memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -50,7 +51,7 @@ public:
     CollectResult<int32_t> RecoverTrace();
     CollectResult<int32_t> CaptureDurationTrace(int32_t uid, int32_t pid, UCollectClient::AppCaller &appCaller);
     CollectResult<double> GetSysCpuUsage();
-
+    CollectResult<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller);
 private:
     void DumpDetailedInfo(int fd);
     void DumpPluginInfo(int fd, const std::vector<std::string>& cmds) const;

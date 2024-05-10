@@ -3,6 +3,7 @@
     extern "C++" {
       "OHOS::HiviewDFX::UCollectClient::CpuCollector::Create()";
       "OHOS::HiviewDFX::UCollectClient::TraceCollector::Create()";
+      "OHOS::HiviewDFX::UCollectClient::MemoryCollector::Create()";
     };
   local:
     *;

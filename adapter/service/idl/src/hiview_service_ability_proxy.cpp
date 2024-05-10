@@ -294,5 +294,34 @@ CollectResultParcelable<double> HiviewServiceAbilityProxy::GetSysCpuUsage()
     return SendTraceRequest<double>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE,
         parcelHandler);
 }
+
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::SetAppResourceLimit(
+    UCollectClient::MemoryCaller& memoryCaller)
+{
+    auto parcelHandler = [&memoryCaller] (MessageParcel& data) {
+        if (!data.WriteInt32(memoryCaller.pid)) {
+            HIVIEW_LOGE("SetAppResourceLimit failed. write pid failed");
+            return false;
+        }
+
+        if (!data.WriteString(memoryCaller.resourceType)) {
+            HIVIEW_LOGE("SetAppResourceLimit failed. write type failed");
+            return false;
+        }
+
+        if (!data.WriteInt32(memoryCaller.limitValue)) {
+            HIVIEW_LOGE("SetAppResourceLimit failed. write value failed");
+            return false;
+        }
+
+        if (!data.WriteBool(memoryCaller.enabledDebugLog)) {
+            HIVIEW_LOGE("SetAppResourceLimit failed. write enabledDebugLog failed");
+            return false;
+        }
+        return true;
+    };
+    return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT,
+        parcelHandler);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

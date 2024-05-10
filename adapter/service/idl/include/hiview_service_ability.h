@@ -28,6 +28,7 @@
 #include "singleton.h"
 #include "system_ability.h"
 #include "client/trace_collector.h"
+#include "client/memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -57,6 +58,7 @@ public:
     CollectResultParcelable<int32_t> RecoverTrace() override;
     CollectResultParcelable<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller) override;
     CollectResultParcelable<double> GetSysCpuUsage() override;
+    CollectResultParcelable<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller) override;
 
 protected:
     void OnDump() override;

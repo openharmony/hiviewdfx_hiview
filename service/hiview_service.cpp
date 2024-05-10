@@ -474,5 +474,34 @@ CollectResult<double> HiviewService::GetSysCpuUsage()
     }
     return cpuUsageRet;
 }
+
+CollectResult<int32_t> HiviewService::SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller)
+{
+    CollectResult<int32_t> result;
+    result.data = 0;
+    result.retCode = UCollect::UcError::SUCCESS;
+
+    std::shared_ptr<Plugin> plugin = HiviewPlatform::GetInstance().GetPluginByName("XPower");
+    if (plugin == nullptr) {
+        HIVIEW_LOGE("XPower plugin does not exists. pid=%{public}d", memoryCaller.pid);
+        result.retCode = UCollect::UcError::SYSTEM_ERROR;
+        return result;
+    }
+
+    std::string eventName = "APP_RESOURCE_LIMIT";
+    SysEventCreator sysEventCreator("HIVIEWDFX", eventName, SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("PID", memoryCaller.pid);
+    sysEventCreator.SetKeyValue("RESOURCE_TYPE", memoryCaller.resourceType);
+    sysEventCreator.SetKeyValue("RESOURCE_LIMIT", memoryCaller.limitValue);
+    sysEventCreator.SetKeyValue("RESOURCE_DEBUG_ENABLE", memoryCaller.enabledDebugLog);
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(eventName, nullptr, sysEventCreator);
+    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+    if (!plugin->OnEvent(event)) {
+        HIVIEW_LOGE("%{public}s failed for pid=%{public}d error", eventName.c_str(), memoryCaller.pid);
+        result.retCode = UCollect::UcError::SYSTEM_ERROR;
+        return result;
+    }
+    return result;
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
