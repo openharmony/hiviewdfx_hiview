@@ -30,7 +30,7 @@ config("hiview_reliability_common_utils_config") {
 ohos_source_set("hiview_reliability_common_utils") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  configs = [ ":hiview_reliability_common_utils_config" ]
+  public_configs = [ ":hiview_reliability_common_utils_config" ]
 
   sources = [
     "calc_fingerprint.cpp",
@@ -41,7 +41,8 @@ ohos_source_set("hiview_reliability_common_utils") {
   external_deps = [ "hilog:libhilog" ]
 
   deps = [
-    "$hiview_base:hiviewbase",
+    "$hiview_base:logger",
+    "$hiview_base/utility:hiview_utility",
     "//third_party/openssl:libcrypto_shared",
   ]
 }

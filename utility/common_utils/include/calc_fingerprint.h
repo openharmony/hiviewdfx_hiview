@@ -54,6 +54,15 @@ public:
     */
     static int CalcBufferSha(const std::string& buffer, size_t bufSize, char *hash, size_t len);
 
+    /*
+    * CalcBufferSha: calculate a source sha1 hash for given source
+    *
+    * This function read the source and calc the sha1 value ,
+    * The caller can pass a char hash[41] to get the hash string
+    * The return value: 0 means successful,others mean failed.
+    */
+    static int CalcBufferSha(unsigned char* source, size_t sourceLen, char *hash, size_t hashLen);
+
 private:
     static int ConvertToString(const unsigned char hash[SHA256_DIGEST_LENGTH], char *outstr, size_t len);
 
