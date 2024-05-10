@@ -39,25 +39,6 @@ void ReadValueAndReset(std::ifstream& in, T& value)
     in.read(reinterpret_cast<char*>(&value), sizeof(T));
     in.seekg(GetNegativeNum(sizeof(T)), std::ios::cur);
 }
-
-template<typename T>
-void ReadValue(std::ifstream& in, T& value)
-{
-    in.read(reinterpret_cast<char*>(&value), sizeof(T));
-}
-
-template<typename T>
-void AppendJsonValue(std::string& eventJson, const std::string& key, T val)
-{
-    std::string appendStr;
-    appendStr.append(",\"").append(key).append("\":");
-    if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
-        appendStr.append("\"").append(val).append("\"");
-    } else {
-        appendStr.append(std::to_string(val));
-    }
-    eventJson.insert(eventJson.size() - 1, appendStr); // 1 for '}'
-}
 }
 
 SysEventDocReader::SysEventDocReader(const std::string& path): EventDocReader(path)
