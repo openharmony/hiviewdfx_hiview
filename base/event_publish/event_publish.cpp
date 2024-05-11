@@ -149,10 +149,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
             if (params.isMember(PID) && params[PID].isInt()) {
                 pid = params[PID].asInt();
             }
+            std::string destPath;
             std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
                 + externalLogInfo.extensionType_;
-            sandBoxLogPath.append("/").append(desFileName);
-            if (CopyExternalLog(uid, externalLog, sandBoxLogPath)) {
+            destPath.append(sandBoxLogPath).append("/").append(desFileName);
+            if (CopyExternalLog(uid, externalLog, destPath)) {
                 dirSize += fileSize;
                 externalLogJson.append("/data/storage/el2/log/" + externalLogInfo.subPath_ + "/" + desFileName);
                 HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
