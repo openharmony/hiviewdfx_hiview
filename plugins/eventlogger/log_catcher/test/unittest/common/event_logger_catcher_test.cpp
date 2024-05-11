@@ -379,7 +379,7 @@ HWTEST_F(EventloggerCatcherTest, EventLogCatcherTest_001, TestSize.Level3)
     }
     int res = eventLogCatcher->Catch(fd, 1);
     EXPECT_TRUE(res == 0);
-    std::string fileName = "/data/test/testFile";
+    std::string fileName = "/data/test/catcherFile";
     eventLogCatcher->AppendFile(fd, fileName);
     EXPECT_TRUE(eventLogCatcher->AppendFile(fd, "") == 0);
     close(fd);
