@@ -136,7 +136,7 @@ void NativeLeakDetector::UpdateUserMonitorInfo()
     }
 }
 
-void NativeLeakDetector::RemoveDiedPid()
+void NativeLeakDetector::RemoveInvalidLeakedPid()
 {
     for (auto it = monitoredPidsInfo_.begin(); it != monitoredPidsInfo_.end(); it++) {
         auto userMonitorInfo = static_pointer_cast<NativeLeakInfo>(it->second);
@@ -156,7 +156,7 @@ void NativeLeakDetector::RemoveDiedPid()
 
 void NativeLeakDetector::RemoveInvalidUserInfo()
 {
-    RemoveDiedPid();
+    RemoveInvalidLeakedPid();
     for (auto it = grayList_.begin(); it != grayList_.end();) {
         if (it->second == nullptr) {
             it = grayList_.erase(it);

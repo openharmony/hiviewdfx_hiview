@@ -46,7 +46,7 @@ private:
     void InitMonitorInfo();
     void UpdateUserMonitorInfo();
     void RecordNativeInfo();
-    void RemoveDiedPid();
+    void RemoveInvalidLeakedPid();
     void RemoveInvalidUserInfo();
     void UpdateProcessedPidsList();
     void RemoveFinishedInfo(int64_t pid);
