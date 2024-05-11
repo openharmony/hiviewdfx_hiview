@@ -344,6 +344,14 @@ CollectResultParcelable<double> HiviewServiceAbility::GetSysCpuUsage()
     });
 }
 
+CollectResultParcelable<int32_t> HiviewServiceAbility::SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller)
+{
+    auto handler = [&memoryCaller] (HiviewService* service) {
+        return service->SetAppResourceLimit(memoryCaller);
+    };
+    return TraceCalling<int32_t>(handler);
+}
+
 HiviewServiceAbilityDeathRecipient::HiviewServiceAbilityDeathRecipient()
 {
     HIVIEW_LOGI("called");

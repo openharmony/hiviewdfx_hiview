@@ -21,6 +21,7 @@
 #include "accesstoken_kit.h"
 #include "ash_memory_utils.h"
 #include "client/trace_collector.h"
+#include "client/memory_collector.h"
 #include "errors.h"
 #include "hiview_err_code.h"
 #include "ipc_skeleton.h"
@@ -80,6 +81,10 @@ const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE), ""}
 };
 
+const std::unordered_map<uint32_t, std::string> MEMORY_PERMISSION_MAP = {
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""}
+};
+
 bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
 {
     using namespace Security::AccessToken;
@@ -131,7 +136,7 @@ int32_t HiviewServiceAbilityStub::OnRemoteRequest(uint32_t code, MessageParcel &
 bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
 {
     return HasAccessPermission(code, ALL_PERMISSION_MAP) || HasAccessPermission(code, TRACE_PERMISSION_MAP) ||
-        HasAccessPermission(code, CPU_PERMISSION_MAP);
+        HasAccessPermission(code, CPU_PERMISSION_MAP) || HasAccessPermission(code, MEMORY_PERMISSION_MAP);
 }
 
 std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
@@ -194,12 +199,23 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuReq
     return cpuRequestHandlers;
 }
 
+std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemoryRequestHandlers()
+{
+    static std::unordered_map<uint32_t, RequestHandler> memoryRequestHandlers = {
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT),
+         std::bind(&HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest, this,
+                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+    };
+    return memoryRequestHandlers;
+}
+
 RequestHandler HiviewServiceAbilityStub::GetRequestHandler(uint32_t code)
 {
     std::vector<std::unordered_map<uint32_t, RequestHandler>> allHandlerMaps = {
         GetRequestHandlers(),
         GetTraceRequestHandlers(),
-        GetCpuRequestHandlers()
+        GetCpuRequestHandlers(),
+        GetMemoryRequestHandlers()
     };
     for (const auto &handlerMap : allHandlerMaps) {
         auto iter = handlerMap.find(code);
@@ -454,6 +470,33 @@ int32_t HiviewServiceAbilityStub::HandleGetSysCpuUsageRequest(MessageParcel& dat
     MessageOption& option)
 {
     auto ret = GetSysCpuUsage();
+    return WritePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    UCollectClient::MemoryCaller memoryCaller;
+    if (!data.ReadInt32(memoryCaller.pid)) {
+        HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read pid from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+
+    if (!data.ReadString(memoryCaller.resourceType)) {
+        HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read type from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+
+    if (!data.ReadInt32(memoryCaller.limitValue)) {
+        HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read value from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+
+    if (!data.ReadBool(memoryCaller.enabledDebugLog)) {
+        HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read enabledDebugLog from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    auto ret = SetAppResourceLimit(memoryCaller);
     return WritePracelableToMessage(reply, ret);
 }
 } // namespace HiviewDFX

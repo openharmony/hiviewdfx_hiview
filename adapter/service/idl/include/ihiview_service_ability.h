@@ -23,6 +23,7 @@
 #include "hiview_service_ipc_interface_code.h"
 #include "collect_result_pracelable.h"
 #include "client/trace_collector.h"
+#include "client/memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -45,6 +46,7 @@ public:
     virtual CollectResultParcelable<int32_t> RecoverTrace() = 0;
     virtual CollectResultParcelable<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller) = 0;
     virtual CollectResultParcelable<double> GetSysCpuUsage() = 0;
+    virtual CollectResultParcelable<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller) = 0;
 
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.HiviewDFX.IHiviewServiceAbility");
