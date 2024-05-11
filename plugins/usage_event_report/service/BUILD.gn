@@ -26,6 +26,12 @@ config("usage_report_config") {
 }
 
 ohos_executable("usage_report") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
   configs = [ ":usage_report_config" ]
 
   sources = [

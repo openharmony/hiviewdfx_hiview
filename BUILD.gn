@@ -85,6 +85,13 @@ config("hiview_plus_config") {
 }
 
 ohos_executable("hiview") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
   install_enable = true
 
   deps = [
