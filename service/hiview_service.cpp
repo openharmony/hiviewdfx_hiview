@@ -493,7 +493,7 @@ CollectResult<int32_t> HiviewService::SetAppResourceLimit(UCollectClient::Memory
     sysEventCreator.SetKeyValue("PID", memoryCaller.pid);
     sysEventCreator.SetKeyValue("RESOURCE_TYPE", memoryCaller.resourceType);
     sysEventCreator.SetKeyValue("RESOURCE_LIMIT", memoryCaller.limitValue);
-    sysEventCreator.SetKeyValue("RESOURCE_DEBUG_ENABLE", memoryCaller.enabledDebugLog);
+    sysEventCreator.SetKeyValue("RESOURCE_DEBUG_ENABLE", memoryCaller.enabledDebugLog ? "true" : "false");
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(eventName, nullptr, sysEventCreator);
     std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
     if (!plugin->OnEvent(event)) {
