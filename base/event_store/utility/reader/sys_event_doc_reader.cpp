@@ -106,22 +106,6 @@ void SysEventDocReader::InitEventInfo(const std::string& path)
     info_.level = fileNames[EVENT_LEVEL_INDEX];
 }
 
-int SysEventDocReader::Read(EventStore::ContentList& contentList)
-{
-    auto saveFunc = [&contentList](uint8_t* content, uint32_t& contentSize) {
-        if (content == nullptr) {
-            return false;
-        }
-        std::unique_ptr<uint8_t[]> contentPtr = std::make_unique<uint8_t[]>(contentSize);
-        if (memcpy_s(contentPtr.get(), contentSize, content, contentSize) != 0) {
-            return false;
-        }
-        contentList.emplace_back(std::move(contentPtr));
-        return true;
-    };
-    return Read(saveFunc);
-}
-
 int SysEventDocReader::Read(const DocQuery& query, EntryQueue& entries, int& num)
 {
     auto saveFunc = [this, &query, &entries, &num](uint8_t* content, uint32_t& contentSize) {

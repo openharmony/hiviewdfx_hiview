@@ -15,13 +15,12 @@
 
 #include "sys_event_repeat_guard.h"
 
-#include <algorithm>
-
+#include "calc_fingerprint.h"
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "string_util.h"
-#include "sys_event_database.h"
+#include "sys_event_repeat_db.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -29,97 +28,69 @@ DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Guard");
 namespace {
 constexpr time_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
 constexpr time_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
-}
 
-bool SysEventRepeatGuard::IsEventTypeMatched(std::shared_ptr<SysEvent> event, const std::string& file)
+inline bool GetShaStr(uint8_t* eventData, std::string& hashStr)
 {
-    std::string fileName = file.substr(file.rfind("/") + 1);
-    std::vector<std::string> splitStrs;
-    StringUtil::SplitStr(fileName, "-", splitStrs);
-    if (splitStrs.size() < FILE_NAME_SPLIT_SIZE) {
-        HIVIEW_LOGE("invalid file name, file = %{public}s", fileName.c_str());
+    EventRawDataInfo<EventRaw::HiSysEventHeader> eventInfo(eventData);
+    constexpr int buffLen = SHA256_DIGEST_LENGTH * 2 + 1;
+    char buff[buffLen] = {0};
+    if (CalcFingerprint::CalcBufferSha(
+        eventData + eventInfo.dataPos, eventInfo.dataSize - eventInfo.dataPos, buff, buffLen) != 0) {
+        HIVIEW_LOGE("fail to calc sha.");
         return false;
     }
-    std::string eventName = splitStrs[EVENT_NAME_INDEX];
-    std::string eventType = splitStrs[EVENT_TYPE_INDEX];
-    if (eventName == event->eventName_ && eventType == std::to_string(event->GetEventType())) {
-        return true;
-    }
-    return false;
+    hashStr = buff;
+    return true;
+}
 }
 
-uint64_t SysEventRepeatGuard::GetMinValidTime()
+int64_t SysEventRepeatGuard::GetMinValidTime()
 {
     static time_t timeRange = Parameter::IsBetaVersion() ? TIME_RANGE_BETA : TIME_RANGE_COMMERCIAL;
     time_t timeNow = time(nullptr);
     time_t timeMin = timeNow > timeRange ? (timeNow - timeRange) : 0;
-    return static_cast<uint64_t>(timeMin);
+    return timeMin;
 }
 
-bool SysEventRepeatGuard::IsTimeRangeMatched(const std::string& file)
-{
-    struct stat fileInfo;
-    stat(file.c_str(), &fileInfo);
-    uint64_t modiTime = static_cast<uint64_t> (fileInfo.st_mtime);
-    return modiTime >= GetMinValidTime();
-}
-
-bool SysEventRepeatGuard::IsFileMatched(std::shared_ptr<SysEvent> event, const std::string& file)
-{
-    return IsEventTypeMatched(event, file) && IsTimeRangeMatched(file);
-}
-
-bool SysEventRepeatGuard::GetMatchedFileList(std::shared_ptr<SysEvent> event, std::vector<std::string>& fileList)
-{
-    std::string domainDir = EventStore::SysEventDatabase::GetInstance().GetDatabaseDir() + "/" + event->domain_;
-    std::vector<std::string> files;
-    FileUtil::GetDirFiles(domainDir, files);
-    for (const auto& file : files) {
-        if (IsFileMatched(event, file)) {
-            fileList.emplace_back(file);
-        }
-    }
-    return true;
-}
  
 void SysEventRepeatGuard::Check(std::shared_ptr<SysEvent> event)
 {
     if (event->GetEventType() != SysEventCreator::EventType::FAULT) {
         return;
     }
-    std::vector<std::string> fileList;
-    GetMatchedFileList(event, fileList);
-    for (const auto& fileName : fileList) {
-        EventStore::ContentList contentList;
-        EventStore::SysEventDocReader reader(fileName);
-        reader.Read(contentList);
-        if (IsEventRepeat(event, contentList)) {
-            event->log_ = LOG_NOT_ALLOW_PACK|LOG_REPEAT;
-            return;
-        }
+    if (IsEventRepeat(event)) {
+        event->log_ = LOG_NOT_ALLOW_PACK|LOG_REPEAT;
+        return;
     }
     event->log_ = LOG_ALLOW_PACK|LOG_PACKED;
     return;
 }
 
-bool SysEventRepeatGuard::IsEventRepeat(std::shared_ptr<SysEvent> event, EventStore::ContentList& contentList)
+bool SysEventRepeatGuard::IsEventRepeat(std::shared_ptr<SysEvent> event)
 {
     uint8_t* eventData = event->AsRawData();
     if (eventData == nullptr) {
         HIVIEW_LOGE("invalid eventData.");
         return false;
     }
-    EventRawDataInfo<EventRaw::HiSysEventHeader> eventInfo(eventData);
-    for (const auto& content : contentList) {
-        EventRawDataInfo<EventStore::ContentHeader> contentInfo(content.get());
-        if (!contentInfo.IsInTimeRange(GetMinValidTime()) || !contentInfo.IsLogPacked() ||
-            (eventInfo.dataSize - eventInfo.dataPos) > (contentInfo.dataSize - contentInfo.dataPos)) {
-            continue;
-        }
-        if (memcmp(eventData + eventInfo.dataPos, content.get() + contentInfo.dataPos,
-            eventInfo.dataSize - eventInfo.dataPos) == 0) {
-            return true;
-        }
+
+    SysEventHashRecord sysEventHashRecord(event->domain_, event->eventName_);
+    if (!GetShaStr(eventData, sysEventHashRecord.eventHash) || sysEventHashRecord.eventHash.empty()) {
+        HIVIEW_LOGE("GetShaStr failed.");
+        return false;
+    }
+    auto happentime = SysEventRepeatDb::GetInstance().QueryHappentime(sysEventHashRecord);
+    int64_t minValidTime = GetMinValidTime();
+    if (happentime > minValidTime) {    // event repeat
+        return true;
+    }
+
+    sysEventHashRecord.happentime = time(nullptr);
+    if (happentime > 0) {   // > 0 means has record
+        SysEventRepeatDb::GetInstance().Update(sysEventHashRecord);
+    } else {
+        SysEventRepeatDb::GetInstance().Insert(sysEventHashRecord);
+        SysEventRepeatDb::GetInstance().CheckAndClearDb(minValidTime);
     }
     return false;
 }

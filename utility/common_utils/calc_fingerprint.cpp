@@ -118,12 +118,32 @@ int CalcFingerprint::CalcFileShaOriginal(const string& filePath, unsigned char *
  */
 int CalcFingerprint::CalcBufferSha(const string& buffer, size_t bufSize, char *hash, size_t len)
 {
-    if (buffer.empty() || hash == nullptr) {
+    if (buffer.empty()) {
+        return EINVAL;
+    }
+    return CalcBufferSha((unsigned char *)buffer.c_str(), bufSize, hash, len);
+}
+
+/*
+ * API name : calc_buffer_sha1
+ * Description : calculate a buffer sha1 hash for given buffer
+ * Input parameters
+ * source : buffer to store the content which needed to be calculated
+ * sourceLen : input buffer len
+ * hash : buffer to store output sha1 string
+ * hashLen : output buff len
+ * Return
+ * 0 : successful
+ * x : fail
+ */
+int CalcFingerprint::CalcBufferSha(unsigned char* source, size_t sourceLen, char *hash, size_t hashLen)
+{
+    if (source == nullptr || hash == nullptr || sourceLen == 0) {
         return EINVAL;
     }
     unsigned char value[SHA256_DIGEST_LENGTH] = {0};
-    SHA256((unsigned char *)buffer.c_str(), bufSize, value);
-    return ConvertToString(value, hash, len);
+    SHA256(source, sourceLen, value);
+    return ConvertToString(value, hash, hashLen);
 }
 }
 }

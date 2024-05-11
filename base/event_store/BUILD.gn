@@ -48,12 +48,14 @@ ohos_source_set("event_store_source") {
     "store/sys_event_database.cpp",
     "store/sys_event_doc.cpp",
     "store/sys_event_doc_lru_cache.cpp",
+    "store/sys_event_repeat_db.cpp",
     "store/sys_event_repeat_guard.cpp",
   ]
 
   deps = [
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_base/running_status_logger:running_status_logger_source",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "config:event_store_config_source",
     "utility:event_store_utility_source",
     "//third_party/jsoncpp:jsoncpp",
@@ -62,5 +64,7 @@ ohos_source_set("event_store_source") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "openssl:libcrypto_shared",
+    "relational_store:native_rdb",
   ]
 }

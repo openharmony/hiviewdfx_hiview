@@ -50,6 +50,7 @@
                 "init",
                 "input",
                 "ipc",
+                "openssl",
                 "os_account",
                 "power_manager",
                 "relational_store",

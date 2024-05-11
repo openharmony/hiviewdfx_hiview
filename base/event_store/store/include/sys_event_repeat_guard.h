@@ -43,12 +43,6 @@ struct EventRawDataInfo {
         dataPos += sizeof(int32_t);
     };
 
-    bool IsInTimeRange(const uint64_t minTime)
-    {
-        constexpr time_t timeMs = 1000;
-        return head.timestamp / timeMs >= minTime;
-    }
-
     bool IsLogPacked()
     {
         constexpr uint8_t logLowBit = 5;
@@ -64,12 +58,8 @@ class SysEventRepeatGuard {
 public:
     static void Check(std::shared_ptr<SysEvent> event);
 private:
-    static bool GetMatchedFileList(std::shared_ptr<SysEvent> event, std::vector<std::string>& fileList);
-    static bool IsFileMatched(std::shared_ptr<SysEvent> event, const std::string& file);
-    static bool IsEventTypeMatched(std::shared_ptr<SysEvent> event, const std::string& file);
-    static bool IsTimeRangeMatched(const std::string& file);
-    static bool IsEventRepeat(std::shared_ptr<SysEvent> event, EventStore::ContentList& contentList);
-    static uint64_t GetMinValidTime();
+    static bool IsEventRepeat(std::shared_ptr<SysEvent> event);
+    static int64_t GetMinValidTime();
 };
 } // HiviewDFX
 } // OHOS

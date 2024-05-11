@@ -45,6 +45,7 @@ ohos_unittest("UtilityCommonUtilsTest") {
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
   deps = [
+    "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "//third_party/googletest:gtest_main",

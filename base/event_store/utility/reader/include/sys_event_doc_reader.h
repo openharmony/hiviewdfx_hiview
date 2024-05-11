@@ -27,13 +27,11 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 using ReadCallback = std::function<bool(uint8_t* content, uint32_t& contentSize)>;
-using ContentList = std::vector<std::unique_ptr<uint8_t[]>>;
 class SysEventDocReader : public EventDocReader {
 public:
     SysEventDocReader(const std::string& path);
     ~SysEventDocReader();
     int Read(const DocQuery& query, EntryQueue& entries, int& num) override;
-    int Read(ContentList& contentList);
     int ReadFileSize();
     int ReadPageSize(uint32_t& pageSize);
     int ReadHeader(DocHeader& header);
