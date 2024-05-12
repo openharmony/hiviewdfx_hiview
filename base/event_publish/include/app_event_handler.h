@@ -96,6 +96,9 @@ public:
         int32_t pid = 0;
         int32_t uid = 0;
         std::string resourceType;
+        uint64_t limitSize;
+        uint64_t liveobjectSize;
+        std::vector<std::string> logPath;
     };
 
     int PostEvent(const AppLaunchInfo& event);

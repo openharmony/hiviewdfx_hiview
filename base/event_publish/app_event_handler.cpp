@@ -158,13 +158,20 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
     AddValueToJsonString("pid", event.pid, jsonStr);
     AddValueToJsonString("uid", event.uid, jsonStr);
     AddValueToJsonString("resource_type", event.resourceType, jsonStr);
-    AddObjectToJsonString("memory", jsonStr);
-    AddValueToJsonString("pss", event.pss, jsonStr);
-    AddValueToJsonString("rss", event.rss, jsonStr);
-    AddValueToJsonString("vss", event.vss, jsonStr);
-    AddValueToJsonString("sys_avail_mem", event.avaliableMem, jsonStr);
-    AddValueToJsonString("sys_free_mem", event.freeMem, jsonStr);
-    AddValueToJsonString("sys_total_mem", event.totalMem, jsonStr, true);
+    if (event.resourceType == "pss_memory") {
+        AddObjectToJsonString("memory", jsonStr);
+        AddValueToJsonString("pss", event.pss, jsonStr);
+        AddValueToJsonString("rss", event.rss, jsonStr);
+        AddValueToJsonString("vss", event.vss, jsonStr);
+        AddValueToJsonString("sys_avail_mem", event.avaliableMem, jsonStr);
+        AddValueToJsonString("sys_free_mem", event.freeMem, jsonStr);
+        AddValueToJsonString("sys_total_mem", event.totalMem, jsonStr, true);
+    } else if (event.resourceType == "js_heap") {
+        AddObjectToJsonString("memory", jsonStr);
+        AddValueToJsonString("limit_size", event.limitSize, jsonStr);
+        AddValueToJsonString("live_object_size", event.liveobjectSize, jsonStr, true);
+    }
+    AddVectorToJsonString("external_log", event.logPath, jsonStr);
     jsonStr << "}" << std::endl;
     EventPublish::GetInstance().PushEvent(event.uid, "RESOURCE_OVERLIMIT", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;
