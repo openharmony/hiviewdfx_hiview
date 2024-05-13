@@ -172,6 +172,26 @@ protected:
     }
 };
 
+class AppSpecialCleanPolicy : public CleanPolicy {
+public:
+    explicit AppSpecialCleanPolicy(int type) : CleanPolicy(type) {}
+    ~AppSpecialCleanPolicy() override {}
+
+protected:
+    bool IsMine(const std::string &fileName) override
+    {
+        if (fileName.find("/"+APP) != std::string::npos) {
+            return true;
+        }
+        return false;
+    }
+
+    uint32_t MyThreshold() override
+    {
+        return 0;
+    }
+};
+
 class SpecialXperfCleanPolicy : public CleanPolicy {
 public:
     explicit SpecialXperfCleanPolicy(int type) : CleanPolicy(type) {}
@@ -247,6 +267,10 @@ std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &ca
     if (caller == TraceCollector::Caller::RELIABILITY) {
         return std::make_shared<SpecialReliabilityCleanPolicy>(type);
     }
+
+    if (caller == TraceCollector::Caller::APP) {
+        return std::make_shared<AppSpecialCleanPolicy>(type);
+    }
     return std::make_shared<SpecialOtherCleanPolicy>(type);
 }
 
@@ -265,6 +289,7 @@ void FileRemove(TraceCollector::Caller &caller)
             break;
         case TraceCollector::Caller::APP:
             shareCleaner->DoClean();
+            specialCleaner->DoClean();
             break;
         default:
             specialCleaner->DoClean();

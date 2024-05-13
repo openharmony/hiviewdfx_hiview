@@ -57,7 +57,7 @@ std::string InnerMakeTraceFileName(const std::string &bundleName, int32_t pid,
 bool InnerStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isOpenTrace, bool &isTraceOn)
 {
     TraceManager manager;
-    std::string appArgs = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1 ";
+    std::string appArgs = "tags:graphic,ace,app clockType:boot bufferSize:1024 overwrite:1 fileLimit:20 ";
     appArgs.append("appPid:").append(std::to_string(appCallerEvent->pid_));
     int32_t retCode = manager.OpenRecordingTrace(appArgs);
     if (retCode != UCollect::UcError::SUCCESS) {
@@ -82,7 +82,6 @@ bool InnerStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &is
 
 void InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isDumpTrace, bool &isTraceOn)
 {
-    auto caller = UCollectUtil::TraceCollector::Caller::APP;
     std::shared_ptr<UCollectUtil::TraceCollector> traceCollector = UCollectUtil::TraceCollector::Create();
     CollectResult<std::vector<std::string>> result = traceCollector->TraceOff();
     if (result.retCode != UCollect::UcError::SUCCESS) {
