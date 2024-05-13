@@ -114,10 +114,12 @@ bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::str
         std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
         if (OHOS::StorageDaemon::AclSetAccess(destPath, entryTxt) != 0) {
             HIVIEW_LOGE("failed to set acl access dir=%{public}s", destPath.c_str());
+            FileUtil::RemoveFile(destPath);
+            return false;
         }
         return true;
     }
-    HIVIEW_LOGE("failed to move log file=%{public}s to destPath=%{public}s.", externalLog.c_str(), destPath.c_str());
+    HIVIEW_LOGE("failed to move log file=%{public}s to sandbox.", externalLog.c_str());
     return false;
 }
 
@@ -132,9 +134,12 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
     Json::Value externalLogJson(Json::arrayValue);
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     for (Json::ArrayIndex i = 0; i < params[EXTERNAL_LOG].size(); ++i) {
-        std::string externalLog = params[EXTERNAL_LOG][i].asString();
-        if (externalLog.empty()) {
-            HIVIEW_LOGI("externalLog is empty.");
+        std::string externalLog = "";
+        if (params[EXTERNAL_LOG][i].isString()) {
+            externalLog = params[EXTERNAL_LOG][i].asString();
+        }
+        if (externalLog.empty() || !FileUtil::FileExists(externalLog)) {
+            HIVIEW_LOGI("externalLog is empty or not exist.");
             continue;
         }
         if (externalLog.find(SANDBOX_DIR) == 0) {
