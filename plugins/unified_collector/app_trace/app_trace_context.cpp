@@ -117,7 +117,9 @@ void InnerShareAppEvent(std::shared_ptr<AppCallerEvent> appCallerEvent)
     eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_VERSION] = appCallerEvent->bundleVersion_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_BEGIN_TIME] = appCallerEvent->beginTime_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = appCallerEvent->endTime_;
-    eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = appCallerEvent->externalLog_;
+    Json::Value externalLog;
+    externalLog.append(appCallerEvent->externalLog_);
+    eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = externalLog;
     std::string param = Json::FastWriter().write(eventJson);
 
     HIVIEW_LOGI("send for uid=%{public}d pid=%{public}d", appCallerEvent->uid_, appCallerEvent->pid_);
@@ -188,8 +190,9 @@ void AppTraceContext::PublishStackEvent(SysEvent& sysEvent)
             UCollectUtil::SYS_EVENT_PARAM_BEGIN_TIME);
         eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = sysEvent.GetEventIntValue(
             UCollectUtil::SYS_EVENT_PARAM_END_TIME);
-        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = sysEvent.GetEventValue(
-            UCollectUtil::SYS_EVENT_PARAM_EXTERNAL_LOG);
+        Json::Value externalLog;
+        externalLog.append(sysEvent.GetEventValue(UCollectUtil::SYS_EVENT_PARAM_EXTERNAL_LOG));
+        eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = externalLog;
         std::string param = Json::FastWriter().write(eventJson);
 
         HIVIEW_LOGI("send as stack trigger for uid=%{public}d pid=%{public}d", sysEvent.GetUid(), sysEvent.GetPid());
