@@ -21,12 +21,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class ThreadCpuData {
 public:
-    ThreadCpuData(int magic, int pid, uint32_t thread_count);
+    ThreadCpuData(int magic, int pid, unsigned int thread_count);
     ~ThreadCpuData();
     struct ucollection_thread_cpu_item* GetNextThread();
 
 private:
-    void Init(int magic, uint32_t totalCount, int pid);
+    void Init(int magic, unsigned int totalCount, int pid);
 
     friend class CollectDeviceClient;
     struct ucollection_thread_cpu_entry *entry_;
