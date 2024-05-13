@@ -34,7 +34,6 @@ struct ProcessMemory {
     std::string name;            // process name
     int32_t rss = 0;             // resident set size, unit KB
     int32_t pss = 0;             // proportional set Size, unit KB
-    int32_t vss = 0;             // virtual set size memory, unit KB
     int32_t swapPss = 0;         // swap pss, unit KB
     int32_t adj = 0;             // /proc/$pid/oom_score_adj
     int32_t sharedDirty = 0;     //process Shared_Dirty
