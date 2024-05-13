@@ -290,7 +290,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     }
     eventJson[PARAM_PROPERTY] = params;
     const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER",
-        "APP_LAUNCH", "CPU_USAGE_HIGH", MAIN_THREAD_JANK};
+        "APP_LAUNCH", "CPU_USAGE_HIGH", "RESOURCE_OVERLIMIT", MAIN_THREAD_JANK};
     if (immediateEvents.find(eventName) != immediateEvents.end()) {
         SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
     } else {
