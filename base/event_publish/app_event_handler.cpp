@@ -166,13 +166,19 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
         AddValueToJsonString("sys_avail_mem", event.avaliableMem, jsonStr);
         AddValueToJsonString("sys_free_mem", event.freeMem, jsonStr);
         AddValueToJsonString("sys_total_mem", event.totalMem, jsonStr, true);
+        jsonStr << "," << std::endl;
     } else if (event.resourceType == "js_heap") {
         AddObjectToJsonString("memory", jsonStr);
         AddValueToJsonString("limit_size", event.limitSize, jsonStr);
         AddValueToJsonString("live_object_size", event.liveobjectSize, jsonStr, true);
+        jsonStr << "," << std::endl;
     }
-    AddVectorToJsonString("external_log", event.logPath, jsonStr);
-    jsonStr << "}" << std::endl;
+    std::vector<std::string> paths;
+    for (auto &path : event.logPath) {
+        paths.push_back("\"" + path + "\"");
+    }
+    AddVectorToJsonString("external_log", paths, jsonStr, true);
+
     EventPublish::GetInstance().PushEvent(event.uid, "RESOURCE_OVERLIMIT", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;
 }
