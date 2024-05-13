@@ -173,7 +173,7 @@ void PeerBinderCatcher::GetFileToList(std::string line,
     while (lineStream >> tmpstr) {
         strList.push_back(tmpstr);
     }
-    HIVIEW_LOGI("strList size: %{public}zu", strList.size());
+    HIVIEW_LOGD("strList size: %{public}zu", strList.size());
 }
 
 void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
@@ -221,7 +221,7 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
             info.server = std::strtol(server.c_str(), nullptr, DECIMAL);
             info.client = std::strtol(client.c_str(), nullptr, DECIMAL);
             info.wait = std::strtol(wait.c_str(), nullptr, DECIMAL);
-            HIVIEW_LOGI("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
+            HIVIEW_LOGD("server:%{public}d, client:%{public}d, wait:%{public}d", info.server, info.client, info.wait);
             manager[info.client].push_back(info);
             outputInfo.info = StringUtil::TrimStr(line);
             outputInfo.pid = info.server;
