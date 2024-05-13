@@ -91,7 +91,7 @@ enum collection_type {
 #define IOCTRL_COLLECT_THREAD_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THREAD_COUNT, \
     struct ucollection_process_thread_count)
 #define IOCTRL_COLLECT_APP_THREAD_COUNT _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_APP_THREAD_COUNT, \
-	struct ucollection_process_thread_count)
+    struct ucollection_process_thread_count)
 #define IOCTRL_COLLECT_APP_THREAD _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_APP_THREAD, struct ucollection_thread_cpu_entry)
 #define IOCTRL_COLLECT_THE_THREAD _IOR(IOCTRL_COLLECT_CPU_BASE, COLLECT_THE_THREAD, struct ucollection_thread_cpu_entry)
 #endif // FRAMEWORK_NATIVE_UNIFIED_COLLECTION_COLLECTOR_UNIFIED_COLLECTION_DATA
