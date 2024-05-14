@@ -12,16 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <fcntl.h>
 #include <map>
 #include <mutex>
+#include <sys/file.h>
+#include <unistd.h>
 
+#include "trace_manager.h"
+
+#include "file_util.h"
 #include "hilog/log.h"
 #include "hitrace_dump.h"
 #include "hiview_logger.h"
+#include "string_util.h"
 #include "parameter_ex.h"
 #include "trace_collector.h"
-#include "trace_manager.h"
 #include "trace_utils.h"
+#include "trace_worker.h"
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::UCollect::UcError;
@@ -33,6 +40,8 @@ namespace {
 DEFINE_LOG_TAG("UCollectUtil-TraceCollector");
 std::mutex g_traceLock;
 TraceMode g_recoverMode = Parameter::IsBetaVersion() ? TraceMode::SERVICE_MODE : TraceMode::CLOSE;
+const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
+const std::string UNIFIED_SHARE_TEMP_PATH = UNIFIED_SHARE_PATH + "temp/";
 }
 
 int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroups)
@@ -111,6 +120,42 @@ int32_t TraceManager::RecoverTrace()
 int32_t TraceManager::GetTraceMode()
 {
     return OHOS::HiviewDFX::Hitrace::GetTraceMode();
+}
+
+void TraceManager::RecoverTmpTrace()
+{
+    std::vector<std::string> traceFiles;
+    FileUtil::GetDirFiles(UNIFIED_SHARE_TEMP_PATH, traceFiles, false);
+    HIVIEW_LOGI("traceFiles need recover: %{public}zu", traceFiles.size());
+    for (auto &filePath : traceFiles) {
+        std::string fileName = FileUtil::ExtractFileName(filePath);
+        HIVIEW_LOGI("unfinished trace file: %{public}s", fileName.c_str());
+        std::string originTraceFile = StringUtil::ReplaceStr("/data/log/hitrace/" + fileName, ".zip", ".sys");
+        if (!FileUtil::FileExists(originTraceFile)) {
+            HIVIEW_LOGI("source file not exist: %{public}s", originTraceFile.c_str());
+            FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
+            continue;
+        }
+        int fd = open(originTraceFile.c_str(), O_RDONLY | O_NONBLOCK);
+        if (fd == -1) {
+            HIVIEW_LOGI("open source file failed: %{public}s", originTraceFile.c_str());
+            continue;
+        }
+        // add lock before zip trace file, in case hitrace delete origin trace file.
+        if (flock(fd, LOCK_EX | LOCK_NB) < 0) {
+            HIVIEW_LOGI("get source file lock failed: %{public}s", originTraceFile.c_str());
+            close(fd);
+            continue;
+        }
+        HIVIEW_LOGI("originTraceFile path: %{public}s", originTraceFile.c_str());
+        FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
+        UcollectionTask traceTask = [=]() {
+            ZipTraceFile(originTraceFile, UNIFIED_SHARE_PATH + fileName);
+            flock(fd, LOCK_UN);
+            close(fd);
+        };
+        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+    }
 }
 } // HiviewDFX
 } // OHOS

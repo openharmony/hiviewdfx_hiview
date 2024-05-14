@@ -35,6 +35,7 @@
       "OHOS::HiviewDFX::TraceFlowController::CleanOldAppTrace()";
       "OHOS::HiviewDFX::UCollectUtil::CommonUtil::EndWith(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
       "OHOS::HiviewDFX::TraceManager::GetTraceMode()";
+      "OHOS::HiviewDFX::TraceManager::RecoverTmpTrace()";
     };
   local:
     *;

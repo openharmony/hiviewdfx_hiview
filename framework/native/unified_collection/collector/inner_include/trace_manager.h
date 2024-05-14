@@ -31,6 +31,7 @@ public:
     int32_t CloseTrace();
     int32_t RecoverTrace();
     int32_t GetTraceMode();
+    static void RecoverTmpTrace();
 };
 } // HiViewDFX
 } // OHOS
