@@ -301,6 +301,7 @@ void PeerBinderCatcher::DoExecHiperf(const std::string& fileName, const std::set
             }
         }
         perfCollector->SetSelectPids(selectPids);
+        perfCollector->SetReport(true);
     } else {
         perfCollector->SetTargetSystemWide(true);
     }
