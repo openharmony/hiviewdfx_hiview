@@ -184,17 +184,7 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
-
-    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        APPFREEZE : SYSFREEZE;
-    if (type == SYSFREEZE) {
-        processName = stringId;
-    } else if (processName == "" && packageName != "") {
-        processName = packageName;
-    }
-    if (processName == "" && packageName == "") {
-        processName = stringId;
-    }
+    processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
 
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName +
