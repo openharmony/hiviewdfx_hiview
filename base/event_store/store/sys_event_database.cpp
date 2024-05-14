@@ -110,7 +110,6 @@ int SysEventDatabase::Insert(const std::shared_ptr<SysEvent>& event)
 
 void SysEventDatabase::CheckRepeat(std::shared_ptr<SysEvent> event)
 {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
     SysEventRepeatGuard::Check(event);
 }
 
