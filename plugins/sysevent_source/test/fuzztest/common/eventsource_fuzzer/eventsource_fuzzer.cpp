@@ -33,8 +33,8 @@ int g_fd = 0;
 struct Initializer {
     Initializer()
     {
-        HiviewContext context;
-        g_eventSource.SetHiviewContext(&context);
+        HiviewPlatform platform;
+        g_eventSource.SetHiviewContext(&platform);
         g_eventSource.OnLoad();
 
         g_fd = open("/dev/null", O_RDWR | O_CREAT | O_TRUNC, 0644); //0644 for file mode
@@ -61,8 +61,6 @@ Initializer g_initializer;
 
 static void SysEventSourceDumpTest(const uint8_t* data, size_t size)
 {
-    HiviewPlatform platform;
-    (void)platform.IsReady();
     std::string strData = std::string(reinterpret_cast<const char*>(data), size);
     g_eventSource.Dump(g_fd, {strData});
     g_eventSource.Dump(g_fd, {strData, strData});
