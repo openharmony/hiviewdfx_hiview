@@ -1,8 +1,0 @@
-{
-  global:
-    extern "C++" {
-      "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::UCollectUtil::ProcessStatus>::instance_";
-    };
-  local:
-    *;
-};

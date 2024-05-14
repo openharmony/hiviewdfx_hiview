@@ -88,10 +88,10 @@ ohos_executable("hiview") {
   install_enable = true
 
   deps = [
-    "$hiview_plugin:adft",
     "$hiview_plugin/eventlogger:eventloggerso",
     "$hiview_plugin/faultlogger:libfaultlogger",
-    "$hiview_plugin/plugins_so:bdfr",
+    "$hiview_plugin/plugin_build:adft",
+    "$hiview_plugin/plugin_build:bdfr",
     "base:hiviewbase",
     "core:hiview_core",
     "plugins/crash_validator:libcrashvalidator",
