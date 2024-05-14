@@ -114,7 +114,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     sysEvent->OnPending();
 
     auto task = [this, sysEvent]() {
-        HIVIEW_LOGD("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
@@ -124,7 +124,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     HIVIEW_LOGI("before submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
         sysEvent->eventName_.c_str(), pid);
     ffrt::submit(task, {}, {}, ffrt::task_attr().name("eventlogger"));
-    HIVIEW_LOGI("after submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
+    HIVIEW_LOGD("after submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
         sysEvent->eventName_.c_str(), pid);
     return true;
 }
@@ -220,7 +220,7 @@ bool ParseMsgForMessageAndEventHandler(const std::string& msg, std::string& mess
         if (isGetMessage) {
             if ((*line).find(messageEndFlag) != std::string::npos) {
                 isGetMessage = false;
-                HIVIEW_LOGI("Get FreezeJson message jsonStr: %{public}s", message.c_str());
+                HIVIEW_LOGD("Get FreezeJson message jsonStr: %{public}s", message.c_str());
                 continue;
             }
             message += StringUtil::TrimStr(*line);
@@ -240,7 +240,7 @@ bool ParseMsgForMessageAndEventHandler(const std::string& msg, std::string& mess
                 continue;
             }
             std::string handlerStr = StringUtil::TrimStr(*line).substr(pos);
-            HIVIEW_LOGI("Get EventHandler str: %{public}s.", handlerStr.c_str());
+            HIVIEW_LOGD("Get EventHandler str: %{public}s.", handlerStr.c_str());
             eventHandlerList.push_back(handlerStr);
         }
     }
@@ -464,7 +464,7 @@ bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
         }
     }
     eventTagTime_[tagTimeName] = now;
-    HIVIEW_LOGI("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
+    HIVIEW_LOGD("event: id:0x%{public}d, eventName:%{public}s pid:%{public}s. \
         interval:%{public}" PRId32 " normal interval",
         event->eventId_, eventName.c_str(), eventPid.c_str(), interval);
     intervalMutex_.unlock();
