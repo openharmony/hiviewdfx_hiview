@@ -184,6 +184,8 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
+    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
+        ? APPFREEZE : SYSFREEZE;
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
 
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
