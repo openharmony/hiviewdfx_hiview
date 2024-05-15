@@ -34,7 +34,6 @@
 #include "trace_manager.h"
 #include "uc_observer_mgr.h"
 #include "unified_collection_stat.h"
-#include "utility/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -161,7 +160,7 @@ bool UnifiedCollector::isEnableRecordTrace_ = false;
 void UnifiedCollector::OnLoad()
 {
     HIVIEW_LOGI("start to load UnifiedCollector plugin");
-    UCollectUtil::TraceCollector::RecoverTmpTrace();
+    TraceManager::RecoverTmpTrace();
     Init();
 }
 
