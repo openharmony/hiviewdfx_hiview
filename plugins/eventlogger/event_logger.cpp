@@ -332,7 +332,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
 }
 void EventLogger::WriteCallStack(std::shared_ptr<SysEvent> event, int fd)
 {
-    if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_CARD_BLOCK") == 0) {
+    if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_BLOCK_CALLSTACK") == 0) {
         std::ostringstream stackOss;
         std::string stackMsg = StringUtil::ReplaceStr(event->GetEventValue("EVENT_KEY_FORM_BLOCK_CALLSTACK"),
         "\\n", "\n");
