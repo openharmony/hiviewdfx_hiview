@@ -88,17 +88,10 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
-    
+
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
         APPFREEZE : SYSFREEZE;
-    if (type == SYSFREEZE) {
-        processName = stringId;
-    } else if (processName == "" && packageName != "") {
-        processName = packageName;
-    }
-    if (processName == "" && packageName == "") {
-        processName = stringId;
-    }
+    processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
 
     FaultLogInfoInner info;
     info.time = watchPoint.GetTimestamp();
