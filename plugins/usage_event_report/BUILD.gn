@@ -44,11 +44,11 @@ if (enable_hiview_usage_event_report_build) {
 
     deps = [
       "$hiview_base:hiviewbase",
-      "//third_party/bounds_checking_function:libsec_shared",
       "//third_party/jsoncpp:jsoncpp",
     ]
 
     external_deps = [
+      "bounds_checking_function:libsec_shared",
       "ffrt:libffrt",
       "hilog:libhilog",
       "hisysevent:libhisysevent",

@@ -71,12 +71,12 @@ ohos_source_set("faultlogger_service") {
     "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
-    "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
@@ -116,12 +116,12 @@ ohos_source_set("faultlogger_service_fuzz_src") {
     "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
-    "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
