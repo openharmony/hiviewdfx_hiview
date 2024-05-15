@@ -59,10 +59,10 @@ void SysEventRepeatGuard::Check(std::shared_ptr<SysEvent> event)
         return;
     }
     if (IsEventRepeat(event)) {
-        event->log_ = LOG_NOT_ALLOW_PACK|LOG_REPEAT;
+        event->SetLog(LOG_NOT_ALLOW_PACK|LOG_REPEAT);
         return;
     }
-    event->log_ = LOG_ALLOW_PACK|LOG_PACKED;
+    event->SetLog(LOG_ALLOW_PACK|LOG_PACKED);
     return;
 }
 

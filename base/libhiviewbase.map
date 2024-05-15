@@ -453,6 +453,7 @@
         "OHOS::HiviewDFX::UnloadModule(void*)";
         "OHOS::HiviewDFX::FileUtil::CreateDirWithDefaultPerm(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int, unsigned int)";
         "OHOS::HiviewDFX::AshMemoryUtils::GetAshmem(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int)";
+        "OHOS::HiviewDFX::SysEvent::SetLog(unsigned char)";
     };
   local:
     *;

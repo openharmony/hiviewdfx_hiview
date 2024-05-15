@@ -83,6 +83,7 @@ public:
     int64_t GetEventSeq() const;
     int GetEventType() const;
     void SetId(uint64_t id);
+    void SetLog(uint8_t log);
 
     std::string GetEventValue(const std::string& key);
     int64_t GetEventIntValue(const std::string& key);

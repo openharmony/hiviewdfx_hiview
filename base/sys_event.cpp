@@ -261,6 +261,15 @@ void SysEvent::SetId(uint64_t id)
     }
 }
 
+void SysEvent::SetLog(uint8_t log)
+{
+    log_ = log;
+    if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
+        reinterpret_cast<struct HiSysEventHeader*>(
+            rawData_->GetData() + BLOCK_SIZE_OFFSET)->log = log;
+    }
+}
+
 std::string SysEvent::GetEventValue(const std::string& key)
 {
     if (!InitBuilder()) {
