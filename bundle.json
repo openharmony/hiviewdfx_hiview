@@ -33,6 +33,7 @@
                 "ability_runtime",
                 "access_token",
                 "battery_statistics",
+                "bounds_checking_function",
                 "bundle_framework",
                 "common_event_service",
                 "cJSON",
@@ -68,8 +69,7 @@
                 "jsoncpp",
                 "libxml2",
                 "sqlite",
-                "openssl",
-                "bounds_checking_function"
+                "openssl"
             ]
         },
         "build": {

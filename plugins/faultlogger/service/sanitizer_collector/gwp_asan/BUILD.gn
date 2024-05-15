@@ -22,6 +22,7 @@ ohos_shared_library("libasan_logger") {
 
   external_deps = [
     "ability_base:want",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
@@ -37,7 +38,6 @@ ohos_shared_library("libasan_logger") {
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
-    "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/openssl:libcrypto_shared",
   ]
 
