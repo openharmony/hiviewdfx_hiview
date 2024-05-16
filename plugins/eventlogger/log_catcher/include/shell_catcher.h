@@ -32,22 +32,26 @@ public:
     void SetEvent(std::shared_ptr<SysEvent> event);
 
     enum CATCHER_TYPE {
-        CATCHER_AMS,
-        CATCHER_WMS,
         CATCHER_CPU,
         CATCHER_MEM,
+        CATCHER_WMS,
+        CATCHER_AMS,
         CATCHER_PMS,
         CATCHER_DPMS,
         CATCHER_RS,
-        CATCHER_HILOG,
+        CATCHER_MMI,
+        CATCHER_DMS,
         CATCHER_SNAPSHOT,
+        CATCHER_HILOG,
+        CATCHER_LIGHT_HILOG,
         CATCHER_SCBSESSION,
         CATCHER_SCBVIEWPARAM,
-        CATCHER_LIGHT_HILOG,
         CATCHER_SCBWMS,
+        CATCHER_SCBWMSEVT,
         CATCHER_DAM,
     };
 private:
+    static const inline int32_t DEFAULT_WINDOW_ID = 14;
     std::string catcherCmd_;
     int pid_;
     CATCHER_TYPE catcherType_;

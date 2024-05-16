@@ -57,6 +57,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:d", std::bind(&EventLogTask::DPMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:rs", std::bind(&EventLogTask::RSUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:mmi", std::bind(&EventLogTask::MMIUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:dms", std::bind(&EventLogTask::DMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:ss", std::bind(&EventLogTask::Screenshot, this)));
     captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("t", std::bind(&EventLogTask::LightHilogCapture, this)));
@@ -72,6 +74,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
         std::bind(&EventLogTask::SCBViewParamCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbWMS",
         std::bind(&EventLogTask::SCBWMSCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:scbWMSEVT",
+        std::bind(&EventLogTask::SCBWMSEVTCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:dam",
         std::bind(&EventLogTask::DumpAppMapCapture, this)));
 }
@@ -261,20 +265,6 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
     return true;
 }
 
-void EventLogTask::WMSUsageCapture()
-{
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s WindowManagerService -a -a", ShellCatcher::CATCHER_WMS, pid_);
-    tasks_.push_back(capture);
-}
-
-void EventLogTask::AMSUsageCapture()
-{
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s AbilityManagerService -a -a", ShellCatcher::CATCHER_AMS, pid_);
-    tasks_.push_back(capture);
-}
-
 void EventLogTask::CpuUsageCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
@@ -286,6 +276,20 @@ void EventLogTask::MemoryUsageCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hidumper --mem", ShellCatcher::CATCHER_MEM, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::WMSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s WindowManagerService -a -a", ShellCatcher::CATCHER_WMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::AMSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s AbilityManagerService -a -a", ShellCatcher::CATCHER_AMS, pid_);
     tasks_.push_back(capture);
 }
 
@@ -303,6 +307,34 @@ void EventLogTask::DPMSUsageCapture()
     tasks_.push_back(capture);
 }
 
+void EventLogTask::RSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s RenderService -a allInfo", ShellCatcher::CATCHER_RS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::MMIUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s MultimodalInput -a -w", ShellCatcher::CATCHER_MMI, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::DMSUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s DisplayManagerService -a -a", ShellCatcher::CATCHER_DMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::Screenshot()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("snapshot_display -f x.jpeg", ShellCatcher::CATCHER_SNAPSHOT, pid_);
+    tasks_.push_back(capture);
+}
+
 void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
@@ -314,20 +346,6 @@ void EventLogTask::LightHilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hilog -z 1000 -P", ShellCatcher::CATCHER_LIGHT_HILOG, pid_);
-    tasks_.push_back(capture);
-}
-
-void EventLogTask::RSUsageCapture()
-{
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s RenderService -a allInfo", ShellCatcher::CATCHER_RS, pid_);
-    tasks_.push_back(capture);
-}
-
-void EventLogTask::Screenshot()
-{
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("snapshot_display -f x.jpeg", ShellCatcher::CATCHER_SNAPSHOT, pid_);
     tasks_.push_back(capture);
 }
 
@@ -379,6 +397,16 @@ void EventLogTask::SCBWMSCapture()
     std::string cmd = "hidumper -s WindowManagerService -a " +
         std::to_string(event_->GetEventIntValue("FOCUS_WINDOW")) + " -default";
     capture->Initialize(cmd, ShellCatcher::CATCHER_SCBWMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::SCBWMSEVTCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->SetEvent(event_);
+    std::string cmd = "hidumper -s WindowManagerService -a " +
+        std::to_string(event_->GetEventIntValue("FOCUS_WINDOW")) + " -event";
+    capture->Initialize(cmd, ShellCatcher::CATCHER_SCBWMSEVT, pid_);
     tasks_.push_back(capture);
 }
 

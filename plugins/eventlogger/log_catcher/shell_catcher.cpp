@@ -57,13 +57,15 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "1910", "-a", "DumpAppMap", nullptr);
             break;
         case CATCHER_SCBWMS:
+        case CATCHER_SCBWMSEVT:
             {
                 if (event_ == nullptr) {
                     HIVIEW_LOGI("event is null");
                     break;
                 }
                 int32_t windowId = event_->GetEventIntValue("FOCUS_WINDOW");
-                std::string cmd = "-w " + std::to_string(windowId) + " -default";
+                std::string cmdSuffix = (catcherType_ == CATCHER_SCBWMS) ? " -default" : " -event";
+                std::string cmd = "-w " + std::to_string(windowId > 0 ? windowId : DEFAULT_WINDOW_ID) + cmdSuffix;
                 ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a",
                     cmd.c_str(), nullptr);
             }
@@ -119,6 +121,12 @@ void ShellCatcher::DoChildProcess(int writeFd)
             break;
         case CATCHER_RS:
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "RenderService", "-a", "allInfo", nullptr);
+            break;
+        case CATCHER_MMI:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "MultimodalInput", "-a", "-w", nullptr);
+            break;
+        case CATCHER_DMS:
+            ret = execl("/system/bin/hidumper", "hidumper", "-s", "DisplayManagerService", "-a", "-a", nullptr);
             break;
         default:
             ret = CaDoInChildProcesscatcher(writeFd);

@@ -78,6 +78,8 @@ private:
     void PMSUsageCapture();
     void DPMSUsageCapture();
     void RSUsageCapture();
+    void MMIUsageCapture();
+    void DMSUsageCapture();
     void Screenshot();
     void HilogCapture();
     void LightHilogCapture();
@@ -87,6 +89,7 @@ private:
     void SCBSessionCapture();
     void SCBViewParamCapture();
     void SCBWMSCapture();
+    void SCBWMSEVTCapture();
     void DumpAppMapCapture();
 };
 } // namespace HiviewDFX
