@@ -17,11 +17,7 @@ import("//build/ohos.gni")
 config("hiview_reliability_common_utils_config") {
   visibility = [ "*:*" ]
 
-  include_dirs = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
-    "//third_party/openssl",
-    "include",
-  ]
+  include_dirs = [ "include" ]
 
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
   defines = [ "OPENSSL_SUPPRESS_DEPRECATED" ]
@@ -38,12 +34,14 @@ ohos_source_set("hiview_reliability_common_utils") {
     "tbox.cpp",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "openssl:libcrypto_shared",
+  ]
 
   deps = [
     "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
-    "//third_party/openssl:libcrypto_shared",
   ]
 }
 

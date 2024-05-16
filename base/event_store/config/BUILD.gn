@@ -30,12 +30,12 @@ ohos_source_set("event_store_config_source") {
 
   sources = [ "src/event_store_config.cpp" ]
 
-  deps = [
-    ":event_store_config.cfg",
-    "//third_party/jsoncpp:jsoncpp",
-  ]
+  deps = [ ":event_store_config.cfg" ]
 
-  external_deps = [ "c_utils:utils" ]
+  external_deps = [
+    "c_utils:utils",
+    "jsoncpp:jsoncpp",
+  ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

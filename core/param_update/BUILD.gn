@@ -44,7 +44,6 @@ ohos_source_set("hiview_param_update") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
-    "//third_party/openssl:libcrypto_shared",
   ]
 
   external_deps = [
@@ -54,6 +53,7 @@ ohos_source_set("hiview_param_update") {
     "common_event_service:cesfwk_innerkits",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "openssl:libcrypto_shared",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

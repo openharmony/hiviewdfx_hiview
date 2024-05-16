@@ -17,11 +17,9 @@ import("//build/ohos.gni")
 config("freeze_detector_config") {
   visibility = [ ":*" ]
   include_dirs = [
-    "//third_party/libxml2/include",
     "//base/hiviewdfx/hiview/base/include",
     "//base/hiviewdfx/hiview/utility/smart_parser",
     "//base/hiviewdfx/hiview/base/event_store/include",
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//base/hiviewdfx/hiview/plugins/faultlogger/interfaces/cpp/innerkits/include",
     ".",
   ]
@@ -46,6 +44,7 @@ ohos_source_set("freeze_detector") {
     "display_manager:displaymgr",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "libxml2:libxml2",
     "power_manager:powermgr_client",
   ]
 
@@ -53,7 +52,6 @@ ohos_source_set("freeze_detector") {
     "$hiview_base:hiviewbase",
     "$hiview_plugin/faultlogger:libfaultlogger",
     "config:config",
-    "//third_party/libxml2:xml2",
   ]
 }
 

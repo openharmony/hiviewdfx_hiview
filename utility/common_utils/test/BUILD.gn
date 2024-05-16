@@ -29,7 +29,6 @@ config("unittest_config") {
     "$hiview_root/utility/common_utils/include",
     "//base/hiviewdfx/hiview/utility/common_utils/include",
     "//base/hiviewdfx/hiview/utility/common_utils/test/unittest/common",
-    "//third_party/openssl",
   ]
 
   cflags_cc = [ "-D__UNITTEST__" ]
@@ -49,12 +48,12 @@ ohos_unittest("UtilityCommonUtilsTest") {
     "$hiview_base/utility:hiview_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "//third_party/googletest:gtest_main",
-    "//third_party/openssl:libcrypto_shared",
   ]
 
   external_deps = [
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }

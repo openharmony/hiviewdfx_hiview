@@ -17,8 +17,6 @@ config("event_store_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
-    "//third_party/bounds_checking_function/include",
-    "//commonlibrary/c_utils/base/include",
     "include",
     "$hiview_base/event_raw/include",
     "$hiview_base/include",
@@ -58,12 +56,12 @@ ohos_source_set("event_store_source") {
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "config:event_store_config_source",
     "utility:event_store_utility_source",
-    "//third_party/jsoncpp:jsoncpp",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "openssl:libcrypto_shared",
     "relational_store:native_rdb",
   ]

@@ -46,10 +46,7 @@ ohos_executable("usage_report") {
     "usage_event_report_service.cpp",
   ]
 
-  deps = [
-    "$hiview_base:hiviewbase",
-    "//third_party/jsoncpp:jsoncpp",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "ability_runtime:wantagent_innerkits",
@@ -59,6 +56,7 @@ ohos_executable("usage_report") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
+    "jsoncpp:jsoncpp",
     "os_account:os_account_innerkits",
     "relational_store:native_rdb",
     "time_service:time_client",

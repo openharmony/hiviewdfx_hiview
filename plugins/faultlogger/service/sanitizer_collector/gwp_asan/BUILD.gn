@@ -30,6 +30,7 @@ ohos_shared_library("libasan_logger") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
     "zlib:libz",
   ]
 
@@ -38,7 +39,6 @@ ohos_shared_library("libasan_logger") {
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
-    "//third_party/openssl:libcrypto_shared",
   ]
 
   install_enable = true

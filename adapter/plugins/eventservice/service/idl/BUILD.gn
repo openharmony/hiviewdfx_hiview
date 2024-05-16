@@ -33,7 +33,6 @@ ohos_source_set("sys_event_service_ohos") {
   part_name = "hiview"
   include_dirs = [
     "$hiview_plugin/eventservice/include",
-    "//utils/system/safwk/native/include",
     "$hiview_base/event_store/include",
     "$hiview_base/event_threshold/include",
     "$hiview_base/running_status_logger/include",
@@ -57,10 +56,7 @@ ohos_source_set("sys_event_service_ohos") {
     "src/sys_event_service_stub.cpp",
   ]
 
-  configs = [
-    ":sys_event_service_ohos_private_config",
-    "//third_party/jsoncpp:jsoncpp_public_config",
-  ]
+  configs = [ ":sys_event_service_ohos_private_config" ]
 
   public_configs = [ ":sys_event_service_ohos_public_config" ]
 
