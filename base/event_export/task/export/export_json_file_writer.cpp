@@ -356,8 +356,9 @@ void ExportJsonFileWriter::SetMaxSequenceWriteListener(MaxSequenceWriteListener 
 bool ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, const std::string& name,
     const std::string& eventStr)
 {
+    int64_t eventSize = static_cast<int64_t>(eventStr.size());
     maxEventSeq_ = std::max(maxEventSeq_, seq);
-    if (totalJsonStrSize_ + eventStr.size() > maxFileSize_ && !Write()) {
+    if (totalJsonStrSize_ + eventSize > maxFileSize_ && !Write()) {
         HIVIEW_LOGE("failed to write export events");
         return false;
     }
@@ -366,11 +367,11 @@ bool ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, c
         eventInDomains_.emplace(domain, std::unordered_map<int64_t, std::pair<std::string, std::string>> {
             {seq, std::make_pair(name, eventStr)},
         });
-        totalJsonStrSize_ += eventStr.size();
+        totalJsonStrSize_ += eventSize;
         return true;
     }
     iter->second.emplace(seq, std::make_pair(name, eventStr));
-    totalJsonStrSize_ += eventStr.size();
+    totalJsonStrSize_ += eventSize;
     return true;
 }
 
