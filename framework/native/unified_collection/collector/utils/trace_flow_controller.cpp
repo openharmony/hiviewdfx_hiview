@@ -18,14 +18,15 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "app_caller_event.h"
+#include "app_event_task_storage.h"
+#include "file_util.h"
+#include "hiview_logger.h"
+#include "parameter_ex.h"
+#include "string_util.h"
 #include "time_util.h"
 #include "trace_flow_controller.h"
 #include "trace_utils.h"
-#include "file_util.h"
-#include "hiview_logger.h"
-#include "string_util.h"
-#include "app_event_task_storage.h"
-#include "app_caller_event.h"
 
 using namespace OHOS::HiviewDFX;
 
@@ -88,10 +89,11 @@ bool TraceFlowController::NeedDump(TraceCollector::Caller &caller)
         ucollectionTraceStorage_.reliabilitySize = 0;
         return true;
     }
-
+    int64_t actualReliabilitySize = Parameter::IsLaboratoryMode() ?
+        RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
     switch (caller) {
         case TraceCollector::Caller::RELIABILITY:
-            return ucollectionTraceStorage_.reliabilitySize < RELIABILITY_SIZE;
+            return ucollectionTraceStorage_.reliabilitySize < actualReliabilitySize;
         case TraceCollector::Caller::XPERF:
             return ucollectionTraceStorage_.xperfSize < XPERF_SIZE;
         case TraceCollector::Caller::XPOWER:
@@ -106,9 +108,11 @@ bool TraceFlowController::NeedUpload(TraceCollector::Caller &caller, TraceRetInf
     int64_t traceSize = GetTraceSize(ret);
     HIVIEW_LOGI("start to upload , systemTime = %{public}s, traceSize = %{public}" PRId64 ".",
         ucollectionTraceStorage_.systemTime.c_str(), traceSize);
+    int64_t actualReliabilitySize = Parameter::IsLaboratoryMode() ?
+        RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
     switch (caller) {
         case TraceCollector::Caller::RELIABILITY:
-            if (IsLowerLimit(ucollectionTraceStorage_.reliabilitySize, traceSize, RELIABILITY_SIZE)) {
+            if (IsLowerLimit(ucollectionTraceStorage_.reliabilitySize, traceSize, actualReliabilitySize)) {
                 ucollectionTraceStorage_.reliabilitySize += traceSize;
                 return true;
             } else {

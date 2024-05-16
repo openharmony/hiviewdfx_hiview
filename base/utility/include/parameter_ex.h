@@ -23,6 +23,7 @@ constexpr char KEY_HIVIEW_VERSION_TYPE[] = "const.logsystem.versiontype";
 constexpr char KEY_DEVELOPER_MODE_STATE[] = "const.security.developermode.state";
 constexpr char HIVIEW_UCOLLECTION_STATE[] = "hiviewdfx.ucollection.switchon";
 constexpr char DEVELOP_HIVIEW_TRACE_RECORDER[] = "persist.hiview.trace_recorder";
+constexpr char KEY_LABORATORY_MODE_STATE[] = "persist.sys.hiview.testtype";
 namespace Parameter {
 std::string GetString(const std::string& key, const std::string& defaultValue);
 int64_t GetInteger(const std::string& key, const int64_t defaultValue);
@@ -37,6 +38,7 @@ bool IsBetaVersion();
 bool IsDeveloperMode();
 bool IsUCollectionSwitchOn();
 bool IsTraceCollectionSwitchOn();
+bool IsLaboratoryMode();
 std::string GetDeviceTypeStr();
 std::string GetDisplayVersionStr();
 std::string GetBrandStr();
