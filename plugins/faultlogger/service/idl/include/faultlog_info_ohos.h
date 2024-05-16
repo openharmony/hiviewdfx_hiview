@@ -38,7 +38,6 @@ public:
     std::string summary;
     std::string logPath;
     std::string registers;
-    std::string otherThreadInfo;
     std::map<std::string, std::string> sectionMaps;
 
     bool Marshalling(Parcel &parcel) const override;
