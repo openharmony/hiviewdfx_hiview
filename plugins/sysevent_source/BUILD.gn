@@ -44,10 +44,8 @@ ohos_source_set("sysevent_source") {
     cfi_vcall_icall_only = true
     debug = false
   }
-  configs = [
-    ":sysevent_source_config",
-    "//third_party/jsoncpp:jsoncpp_public_config",
-  ]
+
+  configs = [ ":sysevent_source_config" ]
 
   sources = [
     "control/config/daily_config.cpp",

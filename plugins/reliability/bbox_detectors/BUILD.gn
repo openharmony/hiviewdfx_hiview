@@ -33,12 +33,12 @@ ohos_source_set("bbox_detector") {
   external_deps = [
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "libxml2:libxml2",
   ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "config:config",
-    "//third_party/libxml2:xml2",
   ]
 }
 

@@ -32,7 +32,6 @@ ohos_source_set("hiview_core") {
   }
   part_name = "hiview"
   public_configs = [ ":hiview_core_config" ]
-  configs = [ "//third_party/jsoncpp:jsoncpp_public_config" ]
 
   sources = [
     "event_json_parser.cpp",

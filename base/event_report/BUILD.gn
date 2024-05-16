@@ -46,12 +46,10 @@ ohos_source_set("hiview_event_report") {
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "jsoncpp:jsoncpp",
   ]
 
-  deps = [
-    "$hiview_base:logger",
-    "//third_party/jsoncpp:jsoncpp",
-  ]
+  deps = [ "$hiview_base:logger" ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"

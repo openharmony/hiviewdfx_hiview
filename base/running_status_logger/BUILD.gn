@@ -46,8 +46,10 @@ ohos_source_set("running_status_logger_source") {
   deps = [
     "$hiview_base/event_raw:hiview_event_raw_base",
     "$hiview_base/utility:hiview_utility",
-    "//third_party/jsoncpp:jsoncpp",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "jsoncpp:jsoncpp",
+  ]
 }

@@ -18,8 +18,6 @@ config("smart_parser_config") {
   visibility = [ "*:*" ]
 
   include_dirs = [
-    "//third_party/bounds_checking_function/include",
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     ".",
     "include",
     "../include",
@@ -45,12 +43,12 @@ ohos_source_set("smart_parser") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 
   deps = [
     "$hiview_base:hiviewbase",
     "config:config",
-    "//third_party/jsoncpp:jsoncpp",
   ]
 }
 

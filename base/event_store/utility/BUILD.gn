@@ -40,14 +40,12 @@ ohos_source_set("event_store_utility_source") {
     "writer/sys_event_doc_writer.cpp",
   ]
 
-  deps = [
-    "../config:event_store_config_source",
-    "//third_party/jsoncpp:jsoncpp",
-  ]
+  deps = [ "../config:event_store_config_source" ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 
   part_name = "hiview"
