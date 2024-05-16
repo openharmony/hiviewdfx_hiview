@@ -30,6 +30,7 @@ constexpr int64_t THIRD_ENABLED_SEQ = 350;
 constexpr int64_t FIRST_FINISH_SEQ = 150;
 constexpr int64_t SECOND_FINISH_SEQ = 200;
 constexpr int64_t THIRD_FINISH_SEQ = 400;
+constexpr int64_t QUERY_OFFSET = 1;
 }
 
 void EventExportDbMgrTest::SetUpTestCase()
@@ -66,16 +67,16 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest001, testing::ext::TestSize.L
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_ENABLED_SEQ);
     // export task finish at 150
     manager.HandleExportTaskFinished(TEST_MODULE_NAME, FIRST_FINISH_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_FINISH_SEQ);
+    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_FINISH_SEQ + QUERY_OFFSET);
     // export switch off
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, INVALID_SEQ_VAL);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export switch on at 100
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, SECOND_ENABLED_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_FINISH_SEQ);
+    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_FINISH_SEQ + QUERY_OFFSET);
     // export task finish at 200
     manager.HandleExportTaskFinished(TEST_MODULE_NAME, SECOND_FINISH_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), SECOND_FINISH_SEQ);
+    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), SECOND_FINISH_SEQ + QUERY_OFFSET);
     // export switch off
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, INVALID_SEQ_VAL);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
@@ -84,7 +85,7 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest001, testing::ext::TestSize.L
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), THIRD_ENABLED_SEQ);
     // export task finish at 400
     manager.HandleExportTaskFinished(TEST_MODULE_NAME, THIRD_FINISH_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), THIRD_FINISH_SEQ);
+    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), THIRD_FINISH_SEQ + QUERY_OFFSET);
 }
 
 /**
@@ -143,7 +144,7 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest004, testing::ext::TestSize.L
     ExportDbManager manager("/data/test/test_data/db_dir4");
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export task finish at 150
-    manager.HandleExportTaskFinished(TEST_MODULE_NAME, FIRST_FINISH_SEQ);
+    manager.HandleExportTaskFinished(TEST_MODULE_NAME, FIRST_FINISH_SEQ + QUERY_OFFSET);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // init with seq 2
     manager.HandleExportModuleInit(TEST_MODULE_NAME, INIT_SEQ);
