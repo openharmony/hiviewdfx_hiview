@@ -30,7 +30,7 @@
             "include": ["SCREEN_ON_TIMEOUT"]
         },{
             "domain":"FORM_MANAGER",
-            "include":["FORM_RENDER_BLOCK"]
+            "include":["FORM_BLOCK_CALLSTACK"]
         }
     ]
 }
