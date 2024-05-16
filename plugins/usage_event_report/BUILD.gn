@@ -28,6 +28,12 @@ if (enable_hiview_usage_event_report_build) {
   }
 
   ohos_source_set("usage_event_report") {
+    sanitize = {
+      cfi = true
+      cfi_cross_dso = true
+      cfi_vcall_icall_only = true
+      debug = false
+    }
     configs = [ ":usage_event_report_config" ]
 
     sources = [

@@ -25,6 +25,13 @@ config("hiview_service_ability_config") {
 }
 
 ohos_source_set("hiview_service_impl") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
   public_configs = [ ":hiview_service_ability_config" ]
 
   include_dirs = [
