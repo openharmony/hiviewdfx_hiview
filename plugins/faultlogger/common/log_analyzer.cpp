@@ -35,6 +35,11 @@ static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo&
         return;
     }
 
+    if (info.reason.compare("SERVICE_TIMEOUT") == 0) {
+        fingerRawString = info.module;
+        return;
+    }
+
     auto eventType = GetFaultNameByType(info.faultLogType, false);
     fingerRawString = info.module + StringUtil::GetLeftSubstr(info.reason, "@") +
         eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"] +
