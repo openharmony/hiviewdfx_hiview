@@ -15,7 +15,6 @@ import("//build/ohos.gni")
 
 ohos_shared_library("faultlogger_napi") {
   include_dirs = [
-    "//third_party/node/src",
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits/include",
     "//base/hiviewdfx/hiview/base/include",
   ]

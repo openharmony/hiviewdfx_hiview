@@ -13,7 +13,6 @@
 
 import("//build/config/ohos/config.gni")
 import("//build/ohos.gni")
-import("//foundation/arkui/napi/napi.gni")
 
 config("config") {
   visibility = [ ":*" ]
