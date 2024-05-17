@@ -38,6 +38,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
   configs = [ ":bbox_detector_test_config" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
   ]
@@ -65,6 +66,7 @@ ohos_moduletest("BBoxDetectorModuleTest") {
   cflags = [ "-DUNITTEST" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
   ]
