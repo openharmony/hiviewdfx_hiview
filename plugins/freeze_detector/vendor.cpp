@@ -108,6 +108,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.logPath = logPath;
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
+    info.sectionMaps[FreezeCommon::EVENT_MODULE_NAME] = watchPoint.GetModuleName();
     AddFaultLog(info);
     return logPath;
 }
