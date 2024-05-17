@@ -18,12 +18,13 @@
 #include "hiview_logger.h"
 #include "rdb_helper.h"
 #include "sql_util.h"
+#include "sys_event_database.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Db");
 namespace {
-    const std::string DB_FULL_NAME = "/data/log/hiview/sys_event_db/sys_event_history.db";
+    const std::string DB_FILE_NAME = "sys_event_history.db";
     const std::string TABLE_NAME = "sys_event_history";
     constexpr int32_t DB_VERSION = 1;
 
@@ -60,13 +61,14 @@ SysEventRepeatDb::SysEventRepeatDb()
 
 void SysEventRepeatDb::InitDbStore()
 {
-    NativeRdb::RdbStoreConfig config(DB_FULL_NAME);
+    auto dbFullName = EventStore::SysEventDatabase::GetInstance().GetDatabaseDir() + DB_FILE_NAME;
+    NativeRdb::RdbStoreConfig config(dbFullName);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
     SysEventRepeatDbCallback callback;
     auto ret = NativeRdb::E_OK;
     dbStore_ = NativeRdb::RdbHelper::GetRdbStore(config, DB_VERSION, callback, ret);
     if (ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to init db store, db store path=%{public}s", DB_FULL_NAME.c_str());
+        HIVIEW_LOGE("failed to init db store, db store path=%{public}s", dbFullName.c_str());
         dbStore_ = nullptr;
         return;
     }
@@ -75,6 +77,9 @@ void SysEventRepeatDb::InitDbStore()
 
 void SysEventRepeatDb::CreateTable()
 {
+    if (dbStore_ == nullptr) {
+        return;
+    }
     /**
      * table: sys_event_history
      *
@@ -124,6 +129,9 @@ void SysEventRepeatDb::CheckAndClearDb(const int64_t happentime)
 
 bool SysEventRepeatDb::Insert(const SysEventHashRecord &sysEventHashRecord)
 {
+    if (dbStore_ == nullptr) {
+        return false;
+    }
     NativeRdb::ValuesBucket bucket;
     bucket.PutString(COLUMN_DOMAIN, sysEventHashRecord.domain);
     bucket.PutString(COLUMN_NAME, sysEventHashRecord.name);
@@ -141,6 +149,9 @@ bool SysEventRepeatDb::Insert(const SysEventHashRecord &sysEventHashRecord)
 
 bool SysEventRepeatDb::Update(const SysEventHashRecord &sysEventHashRecord)
 {
+    if (dbStore_ == nullptr) {
+        return false;
+    }
     NativeRdb::AbsRdbPredicates predicates(TABLE_NAME);
     predicates.EqualTo(COLUMN_DOMAIN, sysEventHashRecord.domain);
     predicates.EqualTo(COLUMN_NAME, sysEventHashRecord.name);
@@ -157,6 +168,9 @@ bool SysEventRepeatDb::Update(const SysEventHashRecord &sysEventHashRecord)
 
 void SysEventRepeatDb::ClearHistory(const int64_t happentime)
 {
+    if (dbStore_ == nullptr) {
+        return;
+    }
     std::string whereClause = COLUMN_HAPPENTIME;
         whereClause.append(" < ").append(std::to_string(happentime));
     int deleteRows = 0;
@@ -168,6 +182,9 @@ void SysEventRepeatDb::ClearHistory(const int64_t happentime)
 
 void SysEventRepeatDb::RefreshDbCount()
 {
+    if (dbStore_ == nullptr) {
+        return;
+    }
     std::string sql;
     sql.append("SELECT count(*) from ").append(TABLE_NAME).append(";");
     std::shared_ptr<NativeRdb::ResultSet> resultSet = dbStore_->QuerySql(sql, std::vector<std::string> {});
@@ -185,6 +202,9 @@ void SysEventRepeatDb::RefreshDbCount()
 
 int64_t SysEventRepeatDb::QueryHappentime(SysEventHashRecord &sysEventHashRecord)
 {
+    if (dbStore_ == nullptr) {
+        return 0;
+    }
     NativeRdb::AbsRdbPredicates predicates(TABLE_NAME);
     predicates.EqualTo(COLUMN_DOMAIN, sysEventHashRecord.domain);
     predicates.EqualTo(COLUMN_NAME, sysEventHashRecord.name);
