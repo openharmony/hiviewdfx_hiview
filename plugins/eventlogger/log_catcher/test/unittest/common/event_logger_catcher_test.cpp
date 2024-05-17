@@ -34,6 +34,7 @@
 #include "peer_binder_catcher.h"
 #undef private
 #include "binder_catcher.h"
+#include "memory_catcher.h"
 #include "event_logger.h"
 #include "event_log_catcher.h"
 #include "sys_event.h"
@@ -329,7 +330,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
     }
 
     sleep(6);
-    constexpr int minQuantity = 500;
+    constexpr int minQuantity = 60;
     auto ret = StartCreate("cmd:m", pid, "EventlogTest03", 0, minQuantity);
     if (ret < 0) {
         printf("EventloggerCatcherTest003 is error ret == %d\n", ret);
@@ -346,7 +347,7 @@ HWTEST_F(EventloggerCatcherTest, EventloggerCatcherTest003, TestSize.Level3)
     ret = -1;
     while (read(fd, readTmp, BUF_SIZE_256)) {
         std::string tmp = readTmp;
-        if (tmp.find("[memory]") != tmp.npos) {
+        if (tmp.find("memTotal") != tmp.npos) {
             ret = 0;
             break;
         }
@@ -492,6 +493,26 @@ HWTEST_F(EventloggerCatcherTest, BinderCatcherTest_001, TestSize.Level1)
         FAIL();
     }
     int res = binderCatcher->Catch(fd, 1);
+    EXPECT_TRUE(res > 0);
+    close(fd);
+}
+
+/**
+ * @tc.name: MemoryCatcherTest_001
+ * @tc.desc: add testcase code coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, MemoryCatcherTest_001, TestSize.Level1)
+{
+    auto memoryCatcher = std::make_shared<MemoryCatcher>();
+    bool ret = memoryCatcher->Initialize("test", 1, 2);
+    EXPECT_EQ(ret, true);
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        FAIL();
+    }
+    int res = memoryCatcher->Catch(fd, 1);
     EXPECT_TRUE(res > 0);
     close(fd);
 }
@@ -838,9 +859,6 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
     shellCatcher->Initialize("hidumper --cpuusage", ShellCatcher::CATCHER_CPU, pid);
-    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
-
-    shellCatcher->Initialize("hidumper --mem", ShellCatcher::CATCHER_MEM, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
     shellCatcher->Initialize("hidumper -s PowerManagerService -a -s", ShellCatcher::CATCHER_PMS, pid);

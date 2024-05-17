@@ -110,9 +110,6 @@ void ShellCatcher::DoChildProcess(int writeFd)
         case CATCHER_CPU:
             ret = execl("/system/bin/hidumper", "hidumper", "--cpuusage", nullptr);
             break;
-        case CATCHER_MEM:
-            ret = execl("/system/bin/hidumper", "hidumper", "--mem", std::to_string(pid_).c_str(), nullptr);
-            break;
         case CATCHER_PMS:
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "PowerManagerService", "-a", "-s", nullptr);
             break;

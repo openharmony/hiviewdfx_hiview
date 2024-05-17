@@ -20,6 +20,7 @@
 #include "common_utils.h"
 #include "dmesg_catcher.h"
 #include "hiview_logger.h"
+#include "memory_catcher.h"
 #include "open_stacktrace_catcher.h"
 #include "parameter_ex.h"
 #include "peer_binder_catcher.h"
@@ -50,8 +51,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("s", std::bind(&EventLogTask::AppStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("S", std::bind(&EventLogTask::SystemStackCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("b", std::bind(&EventLogTask::BinderLogCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
@@ -244,6 +245,13 @@ void EventLogTask::BinderLogCapture()
     tasks_.push_back(capture);
 }
 
+void EventLogTask::MemoryUsageCapture()
+{
+    auto capture = std::make_shared<MemoryCatcher>();
+    capture->Initialize("", 0, 0);
+    tasks_.push_back(capture);
+}
+
 bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 {
     auto find = cmd.find("pb");
@@ -269,13 +277,6 @@ void EventLogTask::CpuUsageCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hidumper --cpuusage", ShellCatcher::CATCHER_CPU, pid_);
-    tasks_.push_back(capture);
-}
-
-void EventLogTask::MemoryUsageCapture()
-{
-    auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper --mem", ShellCatcher::CATCHER_MEM, pid_);
     tasks_.push_back(capture);
 }
 
