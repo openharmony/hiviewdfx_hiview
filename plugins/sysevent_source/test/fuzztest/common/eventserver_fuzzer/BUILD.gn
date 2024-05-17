@@ -40,6 +40,7 @@ ohos_fuzztest("EventServerFuzzTest") {
   deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "init:libbegetutil",
   ]

@@ -33,7 +33,10 @@ ohos_source_set("log_analyzer") {
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+  ]
 
   part_name = "hiview"
 }
