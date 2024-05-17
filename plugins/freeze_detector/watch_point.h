@@ -36,7 +36,8 @@ public:
         Builder& InitStringId(const std::string& stringId);
         Builder& InitMsg(const std::string& msg);
         Builder& InitPackageName(const std::string& packageName);
-        Builder& InitProcessName(const std::string& processNam);
+        Builder& InitProcessName(const std::string& processName);
+        Builder& InitModuleName(const std::string& moduleName);
         Builder& InitLogPath(const std::string& logPath);
         Builder& InitHitraceTime(const std::string& hitraceTime);
         Builder& InitSysrqTime(const std::string& sysrqTime);
@@ -53,6 +54,7 @@ public:
         std::string msg_;
         std::string packageName_;
         std::string processName_;
+        std::string moduleName_;
         std::string logPath_;
         std::string hitraceTime_;
         std::string sysrqTime_;
@@ -73,6 +75,7 @@ public:
     std::string GetMsg() const;
     std::string GetPackageName() const;
     std::string GetProcessName() const;
+    std::string GetModuleName() const;
     std::string GetLogPath() const;
     std::string GetHitraceTime() const;
     std::string GetSysrqTime() const;
@@ -92,6 +95,7 @@ private:
     std::string msg_;
     std::string packageName_;
     std::string processName_;
+    std::string moduleName_;
     std::string logPath_;
     std::string hitraceTime_;
     std::string sysrqTime_;

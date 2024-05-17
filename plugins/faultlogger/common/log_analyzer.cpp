@@ -36,8 +36,11 @@ static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo&
     }
 
     if (info.reason.compare("SERVICE_TIMEOUT") == 0) {
-        fingerRawString = info.module;
-        return;
+        auto it = info.sectionMap.find("MODULE_NAME");
+        if (it != info.sectionMap.end()) {
+            fingerRawString = it->second;
+            return;
+        }
     }
 
     auto eventType = GetFaultNameByType(info.faultLogType, false);

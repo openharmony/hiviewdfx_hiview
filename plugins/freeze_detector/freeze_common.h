@@ -41,6 +41,7 @@ public:
     static const inline std::string EVENT_UID = "UID";
     static const inline std::string EVENT_PACKAGE_NAME = "PACKAGE_NAME";
     static const inline std::string EVENT_PROCESS_NAME = "PROCESS_NAME";
+    static const inline std::string EVENT_MODULE_NAME = "MODULE_NAME";
     static const inline std::string EVENT_MSG = "MSG";
     static const inline std::string HIREACE_TIME = "HITRACE_TIME";
     static const inline std::string SYSRQ_TIME = "SYSRQ_TIME";
