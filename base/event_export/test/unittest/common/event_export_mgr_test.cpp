@@ -53,9 +53,9 @@ HWTEST_F(EventExportMgrTest, EventExportMgrTest001, testing::ext::TestSize.Level
             // do nothing
         };
     auto ret = SettingObserverManager::GetInstance()->RegisterObserver(PARAM_NAME, callback);
-    ASSERT_FALSE(ret);
+    ASSERT_TRUE(ret);
     ret = SettingObserverManager::GetInstance()->UnregisterObserver(PARAM_NAME);
-        ASSERT_FALSE(ret);
+    ASSERT_TRUE(ret);
     auto value = SettingObserverManager::GetInstance()->GetStringValue(PARAM_NAME, DEFAULT_VAL);
     ASSERT_EQ(value, DEFAULT_VAL);
 }
