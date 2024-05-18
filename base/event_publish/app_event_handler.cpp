@@ -173,11 +173,7 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
         AddValueToJsonString("live_object_size", event.liveobjectSize, jsonStr, true);
         jsonStr << "," << std::endl;
     }
-    std::vector<std::string> paths;
-    for (auto &path : event.logPath) {
-        paths.push_back("\"" + path + "\"");
-    }
-    AddVectorToJsonString("external_log", paths, jsonStr, true);
+    AddVectorToJsonString("external_log", event.logPath, jsonStr, true);
 
     EventPublish::GetInstance().PushEvent(event.uid, "RESOURCE_OVERLIMIT", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;
