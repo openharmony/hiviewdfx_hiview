@@ -33,7 +33,6 @@ public:
 
     enum CATCHER_TYPE {
         CATCHER_CPU,
-        CATCHER_MEM,
         CATCHER_WMS,
         CATCHER_AMS,
         CATCHER_PMS,

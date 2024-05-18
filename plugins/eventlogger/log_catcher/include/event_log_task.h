@@ -70,9 +70,9 @@ private:
     void AppStackCapture();
     void SystemStackCapture();
     void BinderLogCapture();
+    void MemoryUsageCapture();
     bool PeerBinderCapture(const std::string &cmd);
     void CpuUsageCapture();
-    void MemoryUsageCapture();
     void WMSUsageCapture();
     void AMSUsageCapture();
     void PMSUsageCapture();
