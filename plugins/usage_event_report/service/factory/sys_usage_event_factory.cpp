@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,6 @@
 
 #include <cinttypes>
 
-#ifdef BATTERY_STATISTICS_ENABLE
-#include "battery_stats_client.h"
-#endif
 #include "hiview_logger.h"
 #include "sys_usage_event.h"
 #include "time_service_client.h"
@@ -30,9 +27,6 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-SysUsageEventFactory");
 namespace {
 constexpr uint64_t TIME_ERROR = 10;
-#ifdef BATTERY_STATISTICS_ENABLE
-constexpr uint64_t SEC_TO_MILLISEC = 1000;
-#endif
 }
 using namespace SysUsageEventSpace;
 
@@ -52,7 +46,6 @@ std::unique_ptr<LoggerEvent> SysUsageEventFactory::Create()
 
     event->Update(KEY_OF_POWER, bootTime);
     event->Update(KEY_OF_RUNNING, monotonicTime);
-    event->Update(KEY_OF_SCREEN, GetScreenTime());
     return event;
 }
 
@@ -76,18 +69,6 @@ uint64_t SysUsageEventFactory::GetMonotonicTime()
         return DEFAULT_UINT64;
     }
     return static_cast<uint64_t>(runningTime);
-}
-
-uint64_t SysUsageEventFactory::GetScreenTime()
-{
-#ifdef BATTERY_STATISTICS_ENABLE
-    auto screenTime = PowerMgr::BatteryStatsClient::GetInstance().GetTotalTimeSecond(
-        PowerMgr::StatsUtils::STATS_TYPE_SCREEN_ON);
-    HIVIEW_LOGI("get screenTime=%{public}" PRId64, screenTime);
-    return screenTime * SEC_TO_MILLISEC;
-#else
-    return 0;
-#endif
 }
 } // namespace HiviewDFX
 } // namespace OHOS

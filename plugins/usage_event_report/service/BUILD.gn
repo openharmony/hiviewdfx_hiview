@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,7 +19,6 @@ config("usage_report_config") {
     "../cache/include",
     "../event/include",
     "../include",
-    "//base/powermgr/battery_statistics/utils/native/include",
     "factory/include",
     "include",
   ]
@@ -66,11 +65,6 @@ ohos_executable("usage_report") {
   if (device_usage_statistics_enable) {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
-  }
-
-  if (battery_statistics_enable) {
-    external_deps += [ "battery_statistics:batterystats_client" ]
-    defines += [ "BATTERY_STATISTICS_ENABLE" ]
   }
 
   part_name = "hiview"
