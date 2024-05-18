@@ -95,29 +95,19 @@ ohos_unittest("ReportXPowerEventTest") {
 
 if (!defined(ohos_lite)) {
   import("//build/test.gni")
-  import("//foundation/arkui/ace_engine/ace_config.gni")
-  import("//foundation/arkui/napi/napi.gni")
-  import("//foundation/arkui/napi/test/unittest/ut.gni")
 
   ohos_unittest("ReportXPowerJsEventTest") {
     module_out_path = module_output_path
     cflags = [ "-g3" ]
     defines = [ "NAPI_TEST" ]
-    include_dirs = ark_include
-    include_dirs += [
+    include_dirs = [
       "//foundation/arkui/napi/test/unittest/engine/",
       "//foundation/arkui/napi/test/unittest/common/",
     ]
 
-    sources = [
-      "//foundation/arkui/napi/test/unittest/engine/test_ark.cpp",
-      "unittest/xpower_event/xpower_jsevent_test.cpp",
-    ]
-
-    deps = ark_deps
-    deps +=
+    sources = [ "unittest/xpower_event/xpower_jsevent_test.cpp" ]
+    deps =
         [ "$hiview_root/interfaces/innerkits/xpower_event:libxpower_event_js" ]
-
     external_deps = [
       "bounds_checking_function:libsec_shared",
       "c_utils:utils",
