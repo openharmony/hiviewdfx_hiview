@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,7 +31,7 @@ using namespace SysUsageDbSpace;
 namespace {
 constexpr char ARG_SELECTION[] = "p:t:T:sSA";
 const std::string DEFAULT_WORK_PATH = "/data/log/hiview";
-const std::string SYS_USAGE_KEYS[] = { KEY_OF_POWER, KEY_OF_RUNNING, KEY_OF_SCREEN };
+const std::string SYS_USAGE_KEYS[] = { KEY_OF_POWER, KEY_OF_RUNNING };
 }
 
 UsageEventReportService::UsageEventReportService() : workPath_(DEFAULT_WORK_PATH), lastReportTime_(0),

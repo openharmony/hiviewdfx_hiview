@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,6 @@ const std::string EVENT_NAME = "SYS_USAGE";
 const std::string KEY_OF_START = "START";
 const std::string KEY_OF_END = "END";
 const std::string KEY_OF_POWER = "POWER";
-const std::string KEY_OF_SCREEN = "SCREEN";
 const std::string KEY_OF_RUNNING = "RUNNING";
 }
 

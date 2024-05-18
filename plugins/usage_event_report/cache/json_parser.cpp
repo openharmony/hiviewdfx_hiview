@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,6 @@ const std::vector<std::string> SYS_USAGE_FIELDS = {
     SysUsageEventSpace::KEY_OF_START,
     SysUsageEventSpace::KEY_OF_END,
     SysUsageEventSpace::KEY_OF_POWER,
-    SysUsageEventSpace::KEY_OF_SCREEN,
     SysUsageEventSpace::KEY_OF_RUNNING
 };
 }
@@ -125,7 +124,6 @@ bool JsonParser::ParseSysUsageEvent(std::shared_ptr<LoggerEvent>& event, const s
     event->Update(KEY_OF_START, ParseUInt64(root[KEY_OF_START]));
     event->Update(KEY_OF_END, ParseUInt64(root[KEY_OF_END]));
     event->Update(KEY_OF_POWER, ParseUInt64(root[KEY_OF_POWER]));
-    event->Update(KEY_OF_SCREEN, ParseUInt64(root[KEY_OF_SCREEN]));
     event->Update(KEY_OF_RUNNING, ParseUInt64(root[KEY_OF_RUNNING]));
     return true;
 }
