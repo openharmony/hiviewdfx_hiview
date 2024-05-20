@@ -401,7 +401,7 @@ void UnifiedCollector::RunCpuCollectionTask()
     }
     isCpuTaskRunning_ = true;
     auto task = std::bind(&UnifiedCollector::CpuCollectionFfrtTask, this);
-    ffrt::submit(task, {}, {}, ffrt::task_attr().name("UC_CPU").qos(ffrt::qos_default));
+    ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_uc_cpu").qos(ffrt::qos_default));
 }
 
 void UnifiedCollector::CpuCollectionFfrtTask()

@@ -148,7 +148,7 @@ void UsageEventReport::Stop()
 void UsageEventReport::RunTask()
 {
     auto task = bind(&UsageEventReport::TimeOut, this);
-    ffrt::submit(task, {}, {}, ffrt::task_attr().name("UsageEventReport").delay(TRIGGER_CYCLE));
+    ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_ue_report").delay(TRIGGER_CYCLE));
 }
 
 void UsageEventReport::TimeOut()
