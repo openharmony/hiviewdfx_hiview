@@ -42,8 +42,10 @@ const std::string LOG_OVER_LIMIT = "log_over_limit";
 const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
 const std::string MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+const std::string RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
+constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 300 * 1024 * 1024; // 300M
 
 struct ExternalLogInfo {
     std::string extensionType_;
@@ -57,13 +59,16 @@ void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalL
         externalLogInfo.extensionType_ = ".trace";
         externalLogInfo.subPath_ = "watchdog";
         externalLogInfo.maxFileSize_ = WATCHDOG_MAX_FILE_SIZE;
+    } else if (eventName == RESOURCE_OVERLIMIT) {
+        externalLogInfo.extensionType_ = ".log";
+        externalLogInfo.subPath_ = "hiappevent";
+        externalLogInfo.maxFileSize_ = RESOURCE_OVERLIMIT_MAX_FILE_SIZE;
     } else {
         externalLogInfo.extensionType_ = ".log";
         externalLogInfo.subPath_ = "hiappevent";
         externalLogInfo.maxFileSize_ = MAX_FILE_SIZE;
     }
 }
-
 
 std::string GetTempFilePath(int32_t uid)
 {
@@ -110,7 +115,7 @@ std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const 
 
 bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::string& destPath)
 {
-    if (FileUtil::CopyFile(externalLog, destPath) == 0) {
+    if (FileUtil::CopyFileFast(externalLog, destPath) == 0) {
         std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
         if (OHOS::StorageDaemon::AclSetAccess(destPath, entryTxt) != 0) {
             HIVIEW_LOGE("failed to set acl access dir=%{public}s", destPath.c_str());
@@ -206,6 +211,32 @@ void SaveEventToTempFile(int32_t uid, Json::Value& eventJson)
 }
 }
 
+void EventPublish::StartOverLimitThread(int32_t uid, const std::string& eventName, const std::string& bundleName,
+    Json::Value& eventJson)
+{
+    if (sendingOverlimitThread_) {
+        return;
+    }
+    HIVIEW_LOGI("start send overlimit thread.");
+    sendingOverlimitThread_ = std::make_unique<std::thread>(&EventPublish::SendOverLimitEventToSandBox,
+                                                            this, uid, eventName, bundleName, eventJson);
+    sendingOverlimitThread_->detach();
+}
+
+void EventPublish::SendOverLimitEventToSandBox(int32_t uid, const std::string& eventName,
+                                               const std::string& bundleName, Json::Value eventJson)
+{
+    ExternalLogInfo externalLogInfo;
+    GetExternalLogInfo(eventName, externalLogInfo);
+    std::string sandBoxLogPath = GetSandBoxLogPath(uid, bundleName, externalLogInfo);
+    SendLogToSandBox(uid, eventName, sandBoxLogPath, eventJson[PARAM_PROPERTY], externalLogInfo);
+    std::string desPath = GetSandBoxBasePath(uid, bundleName);
+    std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+    desPath.append(FILE_PREFIX).append(timeStr).append(".txt");
+    WriteEventJson(eventJson, desPath);
+    sendingOverlimitThread_.reset();
+}
+
 void EventPublish::StartSendingThread()
 {
     if (sendingThread_ == nullptr) {
@@ -290,9 +321,11 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     }
     eventJson[PARAM_PROPERTY] = params;
     const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER",
-        "APP_LAUNCH", "CPU_USAGE_HIGH", "RESOURCE_OVERLIMIT", MAIN_THREAD_JANK};
+        "APP_LAUNCH", "CPU_USAGE_HIGH", MAIN_THREAD_JANK};
     if (immediateEvents.find(eventName) != immediateEvents.end()) {
         SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
+    } else if (eventName == RESOURCE_OVERLIMIT) {
+        StartOverLimitThread(uid, eventName, bundleName, std::ref(eventJson));
     } else {
         SaveEventToTempFile(uid, eventJson);
         StartSendingThread();

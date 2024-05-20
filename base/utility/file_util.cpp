@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <istream>
+#include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -298,6 +299,34 @@ int CopyFile(const std::string &src, const std::string &des)
     }
     fout.flush();
     return 0;
+}
+
+int CopyFileFast(const std::string &src, const std::string &des)
+{
+    int fdIn = open(src.c_str(), O_RDONLY);
+    if (fdIn < 0) {
+        return -1;
+    }
+    int fdOut = open(des.c_str(), O_CREAT | O_RDWR, 0777);
+    if (fdOut < 0) {
+        close(fdIn);
+        return -1;
+    }
+    struct stat st;
+    uint64_t totalLen = stat(src.c_str(), &st) ? 0 : static_cast<uint64_t>(st.st_size);
+    int copyTotalLen = 0;
+    ssize_t copyLen = 0;
+    while (copyTotalLen < totalLen) {
+        copyLen = sendfile(fdOut, fdIn, nullptr, totalLen - copyTotalLen);
+        if (copyLen <= 0) {
+            break;
+        }
+        copyTotalLen += copyLen;
+    }
+    close(fdIn);
+    close(fdOut);
+    int ret = copyTotalLen == totalLen ? 0 : -1;
+    return ret;
 }
 
 bool IsDirectory(const std::string &path)

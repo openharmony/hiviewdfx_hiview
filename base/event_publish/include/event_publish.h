@@ -20,6 +20,7 @@
 #include <string>
 #include <thread>
 
+#include "json/json.h"
 #include "hisysevent.h"
 #include "singleton.h"
 
@@ -37,10 +38,15 @@ public:
 private:
     void StartSendingThread();
     void SendEventToSandBox();
+    void StartOverLimitThread(int32_t uid, const std::string& eventName,
+                              const std::string& bundleName, Json::Value& eventJson);
+    void SendOverLimitEventToSandBox(int32_t uid, const std::string& eventName,
+                                     const std::string& bundleName, Json::Value eventJson);
 
 private:
     std::mutex mutex_;
     std::unique_ptr<std::thread> sendingThread_ = nullptr;
+    std::unique_ptr<std::thread> sendingOverlimitThread_ = nullptr;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
