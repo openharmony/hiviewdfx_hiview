@@ -16,10 +16,13 @@
 
 #include <unistd.h>
 
+#include "hiview_logger.h"
 #include "parameter_ex.h"
+#include "trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("Hiview-CpuCollectionTask");
 CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(workPath)
 {
     InitCpuCollector();
@@ -62,6 +65,29 @@ void CpuCollectionTask::ReportCpuCollectionEvent()
     cpuStorage_->Report();
 }
 
+void CpuCollectionTask::CheckAndDumpTraceData()
+{
+    static bool hasOverThreshold = false;
+    const double DUMP_TRACE_CPULOAD_THRESHOLD = 0.07; // 0.07 : 7% cpu load
+    int32_t pid = getpid();
+    auto selfProcessCpuStatInfo = cpuCollector_->CollectProcessCpuStatInfo(pid);
+    double cpuLoad = selfProcessCpuStatInfo.data.cpuLoad;
+    if (!hasOverThreshold && cpuLoad >= DUMP_TRACE_CPULOAD_THRESHOLD) {
+        HIVIEW_LOGI("over threshold, current cpu load:%{public}f", cpuLoad);
+        hasOverThreshold = true;
+        return;
+    }
+
+    // when cpu load restore to normal, start capture history trace
+    if (hasOverThreshold && cpuLoad < DUMP_TRACE_CPULOAD_THRESHOLD) {
+        HIVIEW_LOGI("start capture history trace");
+        auto traceCollector = UCollectUtil::TraceCollector::Create();
+        UCollectUtil::TraceCollector::Caller caller = UCollectUtil::TraceCollector::Caller::HIVIEW;
+        traceCollector->DumpTrace(caller);
+        hasOverThreshold = false;
+    }
+}
+
 void CpuCollectionTask::CollectCpuData()
 {
     auto cpuCollectionsResult = cpuCollector_->CollectProcessCpuStatInfos(true);
@@ -80,6 +106,10 @@ void CpuCollectionTask::CollectCpuData()
     }
     // collect the system cpu usage periodically for hidumper
     cpuCollector_->CollectSysCpuUsage(true);
+
+    if (Parameter::IsBetaVersion()) {
+        CheckAndDumpTraceData();
+    }
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

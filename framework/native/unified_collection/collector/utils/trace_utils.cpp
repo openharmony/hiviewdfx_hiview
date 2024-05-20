@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,8 +43,9 @@ const std::string XPERF = "Xperf";
 const std::string XPOWER = "Xpower";
 const std::string BETACLUB = "BetaClub";
 const std::string APP = "APP";
+const std::string HIVIEW = "Hiview";
 const std::string OTHER = "Other";
-const uint32_t UNIFIED_SHARE_COUNTS = 20;
+const uint32_t UNIFIED_SHARE_COUNTS = 25;
 const uint32_t UNIFIED_APP_SHARE_COUNTS = 40;
 const uint32_t UNIFIED_SPECIAL_XPERF = 3;
 const uint32_t UNIFIED_SPECIAL_RELIABILITY = 3;
@@ -278,6 +279,7 @@ void FileRemove(TraceCollector::Caller &caller)
     std::shared_ptr<CleanPolicy> specialCleaner = GetCleanPolicy(SPECIAL, caller);
     switch (caller) {
         case TraceCollector::Caller::XPOWER:
+        case TraceCollector::Caller::HIVIEW:
             shareCleaner->DoClean();
             break;
         case TraceCollector::Caller::RELIABILITY:
@@ -335,6 +337,8 @@ const std::string EnumToString(TraceCollector::Caller &caller)
             return BETACLUB;
         case TraceCollector::Caller::APP:
             return APP;
+        case TraceCollector::Caller::HIVIEW:
+            return HIVIEW;
         default:
             return OTHER;
     }
@@ -342,10 +346,10 @@ const std::string EnumToString(TraceCollector::Caller &caller)
 
 std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
 {
-    if (EnumToString(caller) == OTHER || EnumToString(caller) == BETACLUB) {
+    if (caller == TraceCollector::Caller::OTHER || caller == TraceCollector::Caller::BETACLUB) {
         return GetUnifiedSpecialFiles(ret, caller);
     }
-    if (EnumToString(caller) == XPOWER) {
+    if (caller == TraceCollector::Caller::XPOWER || caller == TraceCollector::Caller::HIVIEW) {
         return GetUnifiedShareFiles(ret, caller);
     }
     GetUnifiedSpecialFiles(ret, caller);
