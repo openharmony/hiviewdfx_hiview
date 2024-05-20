@@ -42,7 +42,7 @@ bool SanitizerdCollector::ComputeStackSignature(
 
     if (stackHash == 0) {
         if (printDiagnostics) {
-            printf("Found not a stack, failing.\n");
+            HILOG_ERROR(LOG_CORE, "Found not a stack, failing.\n");
         }
         return false;
     }
@@ -58,7 +58,7 @@ bool SanitizerdCollector::IsDuplicate(const std::string hash) const
 
 void SanitizerdCollector::Collect(const std::string& szfile) const
 {
-    SANITIZERD_LOGI("sanCollecting(%{public}s)\n", szfile.c_str());
+    HILOG_INFO(LOG_CORE, "sanCollecting(%{public}s)\n", szfile.c_str());
 }
 } // namespace HiviewDFX
 } // namespace OHOS

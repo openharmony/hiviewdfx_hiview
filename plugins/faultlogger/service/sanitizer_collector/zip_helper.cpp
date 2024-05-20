@@ -30,14 +30,14 @@
 #include <time_util.h>
 #include <unistd.h>
 
-#include "string_ex.h"
-#include "securec.h"
-#include "limits.h"
 #include "bundle_mgr_client.h"
+#include "climits"
 #include "event_publish.h"
 #include "hisysevent.h"
 #include "json/json.h"
 #include "sanitizerd_log.h"
+#include "securec.h"
+#include "string_ex.h"
 #include "parameters.h"
 #include "parameter_ex.h"
 
@@ -67,7 +67,7 @@ bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
     std::regex re("^[a-zA-Z][a-zA-Z0-9_]*$");
     for (auto const& splitName : nameVec) {
         if (!std::regex_match(splitName, re)) {
-            SANITIZERD_LOGI("Invalid splitName:%{public}s", splitName.c_str());
+            HILOG_INFO(LOG_CORE, "Invalid splitName:%{public}s", splitName.c_str());
             return false;
         }
     }
@@ -77,14 +77,14 @@ bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
 bool IsModuleNameValid(const std::string& name)
 {
     if (name.empty() || name.size() > MAX_NAME_LENGTH) {
-        SANITIZERD_LOGI("invalid log name.");
+        HILOG_INFO(LOG_CORE, "invalid log name.");
         return false;
     }
 
     if (name.find("/") != std::string::npos || name.find(".") == std::string::npos) {
         std::string path = name.substr(1); // may skip first .
         path.erase(path.find_last_not_of(" \n\r\t") + 1);
-        SANITIZERD_LOGI("module name:%{public}s", name.c_str());
+        HILOG_INFO(LOG_CORE, "module name:%{public}s", name.c_str());
         return IsNameValid(path, "/", false);
     }
 
@@ -96,9 +96,9 @@ std::string GetApplicationNameById(int32_t uid)
     std::string bundleName;
     AppExecFwk::BundleMgrClient client;
     if (client.GetNameForUid(uid, bundleName) != ERR_OK) {
-        SANITIZERD_LOGW("Failed to query bundleName from bms, uid:%{public}d.", uid);
+        HILOG_WARN(LOG_CORE, "Failed to query bundleName from bms, uid:%{public}d.", uid);
     } else {
-        SANITIZERD_LOGI("bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
+        HILOG_INFO(LOG_CORE, "bundleName of uid:%{public}d is %{public}s", uid, bundleName.c_str());
     }
     return bundleName;
 }
@@ -109,11 +109,11 @@ bool GetDfxBundleInfo(const std::string& bundleName, DfxBundleInfo& bundleInfo)
     AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
                               info, Constants::ALL_USERID)) {
-        SANITIZERD_LOGW("Failed to query BundleInfo from bms, bundle:%{public}s.", bundleName.c_str());
+        HILOG_WARN(LOG_CORE, "Failed to query BundleInfo from bms, bundle:%{public}s.", bundleName.c_str());
         return false;
     } else {
-        SANITIZERD_LOGI("The version of %{public}s is %{public}s", bundleName.c_str(),
-                        info.versionName.c_str());
+        HILOG_INFO(LOG_CORE, "The version of %{public}s is %{public}s", bundleName.c_str(),
+            info.versionName.c_str());
     }
     bundleInfo.isPreInstalled = info.isPreInstallApp;
     bundleInfo.versionName = info.versionName;
@@ -141,8 +141,8 @@ int32_t CreateMultiTierDirectory(const std::string &directoryPath, const std::st
             ret = mkdir(tmpDirPath, DEFAULT_LOG_DIR_MODE);
             ret += chown(tmpDirPath, dirOwner, dirGroup);
             if (ret != 0) {
-                SANITIZERD_LOGE("Fail to create dir %{public}s,  err: %{public}s.",
-                                tmpDirPath, strerror(errno));
+                HILOG_ERROR(LOG_CORE, "Fail to create dir %{public}s,  err: %{public}s.",
+                    tmpDirPath, strerror(errno));
                 return ret;
             }
         }
@@ -190,7 +190,7 @@ static int32_t CreateLogFile(const std::string& name)
 {
     int32_t fd = -1;
     if (!FileUtil::FileExists(name)) {
-        SANITIZERD_LOGW("file %{public}s is creating now.", name.c_str());
+        HILOG_WARN(LOG_CORE, "file %{public}s is creating now.", name.c_str());
     }
     fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     return fd;
@@ -232,7 +232,7 @@ void WriteCollectedData(T_SANITIZERD_PARAMS *params)
     }
 
     if (!WriteNewFile(fd, params)) {
-        SANITIZERD_LOGE("Fail to write %{public}s,  err: %{public}s.", fullName.c_str(), strerror(errno));
+        HILOG_ERROR(LOG_CORE, "Fail to write %{public}s,  err: %{public}s.", fullName.c_str(), strerror(errno));
     }
     Json::Value eventParams;
     auto timeNow = TimeUtil::GetMilliseconds();
@@ -247,7 +247,7 @@ void WriteCollectedData(T_SANITIZERD_PARAMS *params)
     eventParams["uid"] = params->uid;
 
     std::string paramsStr = Json::FastWriter().write(eventParams);
-    SANITIZERD_LOGI("ReportAppEvent: uid:%{public}d, json:%{public}s.",
+    HILOG_INFO(LOG_CORE, "ReportAppEvent: uid:%{public}d, json:%{public}s.",
         params->uid, paramsStr.c_str());
     EventPublish::GetInstance().PushEvent(params->uid, "ADDRESS_SANITIZER", HiSysEvent::EventType::FAULT, paramsStr);
 }
