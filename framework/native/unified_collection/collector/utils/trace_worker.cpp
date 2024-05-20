@@ -28,7 +28,7 @@ TraceWorker& TraceWorker::GetInstance()
 
 void TraceWorker::HandleUcollectionTask(UcollectionTask ucollectionTask)
 {
-    ffrt::submit(ucollectionTask, {}, {}, ffrt::task_attr().name("UC_TRACE").qos(ffrt::qos_default));
+    ffrt::submit(ucollectionTask, {}, {}, ffrt::task_attr().name("dft_uc_trace").qos(ffrt::qos_default));
 }
 } // HiViewDFX
 } // OHOS
