@@ -126,8 +126,12 @@ public:
         int32_t pid = 0;
         int32_t uid = 0;
         std::string resourceType;
-        uint64_t limitSize;
-        uint64_t liveobjectSize;
+        uint64_t limitSize = 0;
+        uint64_t liveobjectSize = 0;
+        uint32_t fdNum = 0;
+        std::string topFdType;
+        uint32_t topFdNum = 0;
+        uint32_t threadNum = 0;
         std::vector<std::string> logPath;
     };
 

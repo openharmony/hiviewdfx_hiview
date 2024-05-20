@@ -172,6 +172,18 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
         AddValueToJsonString("limit_size", event.limitSize, jsonStr);
         AddValueToJsonString("live_object_size", event.liveobjectSize, jsonStr, true);
         jsonStr << "," << std::endl;
+    } else if (event.resourceType == "fd") {
+        AddObjectToJsonString("fd", jsonStr);
+        AddValueToJsonString("num", event.fdNum, jsonStr);
+        AddValueToJsonString("top_fd_type", event.topFdType, jsonStr);
+        AddValueToJsonString("top_fd_num", event.topFdNum, jsonStr, true);
+        jsonStr << "," << std::endl;
+    } else if (event.resourceType == "thread") {
+        AddObjectToJsonString("thread", jsonStr);
+        AddValueToJsonString("num", event.threadNum, jsonStr, true);
+        jsonStr << "," << std::endl;
+    } else {
+        return -1;
     }
     AddVectorToJsonString("external_log", event.logPath, jsonStr, true);
 
