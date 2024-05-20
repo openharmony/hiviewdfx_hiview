@@ -55,9 +55,7 @@ constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr int MIN_APP_UID = 10000;
 
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
-std::string GetApplicationNameById(int32_t uid);
 std::string GetNameByPid(int32_t pid);
-std::string GetApplicationVersion(int32_t uid, const std::string& bundleName);
 void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
 bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo);

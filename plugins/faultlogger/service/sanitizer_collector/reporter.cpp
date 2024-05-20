@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("Faultlogger");
 
 int Init(SanitizerdType type)
 {
@@ -40,7 +39,7 @@ int Init(SanitizerdType type)
 void Upload(T_SANITIZERD_PARAMS *params)
 {
     if (!params || Init(params->type) < 0) {
-        HIVIEW_LOGI("Error Params...");
+        HILOG_ERROR(LOG_CORE, "Error upload Params.");
         return;
     }
 
