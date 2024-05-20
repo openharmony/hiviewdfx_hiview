@@ -16,5 +16,16 @@
 #define HIVIEW_XPOWER_JSEVENT_TEST_H
 
 #include "gtest/gtest.h"
+#include "native_engine/impl/ark/ark_native_engine.h"
 
+class NapiXPowerEventTest : public testing::Test {
+public:
+    void SetUp();
+    void TearDown();
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+
+protected:
+    NativeEngine *engine_ = nullptr;
+};
 #endif // HIVIEW_XPOWER_JSEVENT_TEST_H

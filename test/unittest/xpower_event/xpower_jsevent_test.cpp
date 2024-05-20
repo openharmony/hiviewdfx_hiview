@@ -22,23 +22,39 @@
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
+using panda::RuntimeOption;
 
-
-class NapiXPowerEventTest : public NativeEngineTest {
-public:
-    static void SetUpTestCase()
-    {
-        GTEST_LOG_(INFO) << "NapiXPowerEventTest SetUpTestCase";
+void NapiXPowerEventTest::SetUp()
+{
+    printf("SetUp ArkNativeEngine.\n");
+    RuntimeOption option;
+    option.SetGcType(RuntimeOption::GC_TYPE::GEN_GC);
+    const int64_t poolSize = 0x1000000;  // 16M
+    option.SetGcPoolSize(poolSize);
+    option.SetLogLevel(RuntimeOption::LOG_LEVEL::ERROR);
+    option.SetDebuggerLibraryPath("");
+    EcmaVM *vm = panda::JSNApi::CreateJSVM(option);
+    if (vm == nullptr) {
+        printf("Failed to CreateJSVM.\n");
+        return;
     }
+    engine_ = new ArkNativeEngine(vm, nullptr);
+}
 
-    static void TearDownTestCase()
-    {
-        GTEST_LOG_(INFO) << "NapiXPowerEventTest TearDownTestCase";
-    }
+void NapiXPowerEventTest::SetUpTestCase()
+{
+    printf("SetUpTestCase.\n");
+}
 
-    void SetUp() override {}
-    void TearDown() override {}
-};
+void NapiXPowerEventTest::TearDownTestCase()
+{
+    printf("TearDownTestCase.\n");
+}
+
+void NapiXPowerEventTest::TearDown()
+{
+    printf("TearDown.\n");
+}
 
 /**
  * @tc.name: ReportXPowerJsEventTest001
