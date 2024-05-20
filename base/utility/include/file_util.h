@@ -93,6 +93,7 @@ int Open(const std::string& path, const int flags, const mode_t mode);
 void FormatPath2UnixStyle(std::string &path);
 void CreateDirWithDefaultPerm(const std::string& path, uid_t aidRoot, uid_t aid_system);
 int CopyFile(const std::string &src, const std::string &des);
+int CopyFileFast(const std::string &src, const std::string &des);
 bool IsDirectory(const std::string &path);
 bool GetLastLine(std::istream &fin, std::string &line, uint32_t maxLen = 10240); // 10240 : max line len
 std::string GetFirstLine(const std::string& path);
