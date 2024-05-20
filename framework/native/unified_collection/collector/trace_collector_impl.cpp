@@ -71,9 +71,9 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(Trace
         return result;
     }
     std::lock_guard<std::mutex> lock(g_dumpTraceMutex);
-    std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>();
+    std::shared_ptr<TraceFlowController> controlPolicy = std::make_shared<TraceFlowController>(caller);
     // check 1, judge whether need to dump
-    if (!controlPolicy->NeedDump(caller)) {
+    if (!controlPolicy->NeedDump()) {
         result.retCode = UcError::TRACE_OVER_FLOW;
         HIVIEW_LOGI("trace is over flow, can not dump.");
         return result;
@@ -86,7 +86,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(Trace
         traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(timeLimit);
     }
     // check 2, judge whether to upload or not
-    if (!controlPolicy->NeedUpload(caller, traceRetInfo)) {
+    if (!controlPolicy->NeedUpload(traceRetInfo)) {
         result.retCode = UcError::TRACE_OVER_FLOW;
         HIVIEW_LOGI("trace is over flow, can not upload.");
         return result;

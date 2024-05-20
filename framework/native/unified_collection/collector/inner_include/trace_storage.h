@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,29 +25,28 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct UcollectionTraceStorage {
-    std::string systemTime = "";
-    int64_t xperfSize = 0;
-    int64_t xpowerSize = 0;
-    int64_t reliabilitySize = 0;
+struct TraceFlowRecord {
+    std::string systemTime;
+    std::string callerName;
+    int64_t usedSize = 0;
 };
 
 class TraceStorage {
 public:
     TraceStorage();
     ~TraceStorage() = default;
-    void Store(const UcollectionTraceStorage& traceStorage);
-    void Query(UcollectionTraceStorage &traceStorage);
+    void Store(const TraceFlowRecord& traceFlowRecord);
+    void Query(TraceFlowRecord& traceFlowRecord);
 
-    bool QueryAppEventTask(int32_t uid, int32_t date, AppEventTask &appEventTask);
-    bool StoreAppEventTask(AppEventTask &appEventTask);
+    bool QueryAppEventTask(int32_t uid, int32_t date, AppEventTask& appEventTask);
+    bool StoreAppEventTask(AppEventTask& appEventTask);
     void RemoveOldAppEventTask(int32_t eventDate);
 
 private:
     void InitDbStore();
-    int32_t CreateTable();
-    void InsertTable(const UcollectionTraceStorage& traceStorage);
-    void GetResultItems(UcollectionTraceStorage &traceStorage);
+    void InsertTable(const TraceFlowRecord& traceFlowRecord);
+    void QueryTable(TraceFlowRecord& traceFlowRecord);
+    void UpdateTable(const TraceFlowRecord& traceFlowRecord);
 
 private:
     std::string dbStorePath_;

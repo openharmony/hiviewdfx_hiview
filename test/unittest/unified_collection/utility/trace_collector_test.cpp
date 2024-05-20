@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -356,5 +356,28 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
     }
     ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
+}
+
+/**
+ * @tc.name: TraceCollectorTest017
+ * @tc.desc: used to test TraceCollector for hiview dump
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest017, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceCollector::Caller caller = TraceCollector::Caller::HIVIEW;
+    std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
+    ASSERT_TRUE(g_traceManager.OpenSnapshotTrace(tagGroups) == 0);
+    sleep(10);
+    std::cout << "caller : " << caller << std::endl;
+    CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
+    std::vector<std::string> items = resultDumpTrace.data;
+    std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }

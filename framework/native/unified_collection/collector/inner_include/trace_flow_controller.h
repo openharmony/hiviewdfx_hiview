@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,9 +33,10 @@ namespace HiviewDFX {
 class TraceFlowController {
 public:
     TraceFlowController();
+    TraceFlowController(TraceCollector::Caller caller);
     ~TraceFlowController() = default;
-    bool NeedDump(TraceCollector::Caller &caller);
-    bool NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret);
+    bool NeedDump();
+    bool NeedUpload(TraceRetInfo ret);
     void StoreDb();
 
     /**
@@ -66,11 +67,12 @@ private:
     std::string GetDate();
     int64_t GetTraceSize(Hitrace::TraceRetInfo ret);
     bool IsLowerLimit(int64_t nowSize, int64_t traceSize, int64_t limitSize);
-    UcollectionTraceStorage QueryDb();
+    TraceFlowRecord QueryDb();
 
 private:
-    struct UcollectionTraceStorage ucollectionTraceStorage_;
+    struct TraceFlowRecord traceFlowRecord_;
     std::shared_ptr<TraceStorage> traceStorage_;
+    TraceCollector::Caller caller_;
 };
 } // HiViewDFX
 } // OHOS

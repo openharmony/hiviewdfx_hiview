@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #include <cinttypes>
 #include <ctime>
 #include <sys/stat.h>
+#include <unordered_map>
 #include <vector>
 
 #include "app_caller_event.h"
@@ -39,7 +40,20 @@ const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/tr
 const int64_t XPERF_SIZE = 1750 * 1024 * 1024;
 const int64_t XPOWER_SIZE = 700 * 1024 * 1024;
 const int64_t RELIABILITY_SIZE = 350 * 1024 * 1024;
+const int64_t HIVIEW_SIZE = 350 * 1024 * 1024;
 const float TEN_PERCENT_LIMIT = 0.1;
+
+int64_t GetActualReliabilitySize()
+{
+    return  Parameter::IsLaboratoryMode() ? RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
+}
+
+const std::unordered_map<TraceCollector::Caller, std::pair<std::string, int64_t>> TRACE_QUOTA = {
+    {TraceCollector::Caller::XPERF, {"xperf", XPERF_SIZE}},
+    {TraceCollector::Caller::XPOWER, {"xpower", XPOWER_SIZE}},
+    {TraceCollector::Caller::RELIABILITY, {"reliability", GetActualReliabilitySize()}},
+    {TraceCollector::Caller::HIVIEW, {"hiview", HIVIEW_SIZE}},
+};
 }
 
 void CreateTracePath(const std::string &filePath)
@@ -55,11 +69,10 @@ void CreateTracePath(const std::string &filePath)
 
 void TraceFlowController::InitTraceDb()
 {
-    ucollectionTraceStorage_ = QueryDb();
-    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}" PRId64 ", xpowerSize:%{public}" PRId64
-        ", reliabilitySize:%{public}" PRId64, ucollectionTraceStorage_.systemTime.c_str(),
-        ucollectionTraceStorage_.xperfSize, ucollectionTraceStorage_.xpowerSize,
-        ucollectionTraceStorage_.reliabilitySize);
+    traceFlowRecord_ = QueryDb();
+    HIVIEW_LOGI("systemTime:%{public}s, callerName:%{public}s, usedSize:%{public}" PRId64,
+        traceFlowRecord_.systemTime.c_str(), traceFlowRecord_.callerName.c_str(),
+        traceFlowRecord_.usedSize);
 }
 
 void TraceFlowController::InitTraceStorage()
@@ -76,65 +89,38 @@ TraceFlowController::TraceFlowController()
     InitTraceDb();
 }
 
-bool TraceFlowController::NeedDump(TraceCollector::Caller &caller)
+TraceFlowController::TraceFlowController(TraceCollector::Caller caller) : TraceFlowController()
+{
+    caller_ = caller;
+}
+
+bool TraceFlowController::NeedDump()
 {
     std::string nowDays = GetDate();
     HIVIEW_LOGI("start to dump, nowDays = %{public}s, systemTime = %{public}s.",
-        nowDays.c_str(), ucollectionTraceStorage_.systemTime.c_str());
-    if (nowDays != ucollectionTraceStorage_.systemTime) {
+        nowDays.c_str(), traceFlowRecord_.systemTime.c_str());
+    if (nowDays != traceFlowRecord_.systemTime) {
         // date changes
-        ucollectionTraceStorage_.systemTime = nowDays;
-        ucollectionTraceStorage_.xperfSize = 0;
-        ucollectionTraceStorage_.xpowerSize = 0;
-        ucollectionTraceStorage_.reliabilitySize = 0;
+        traceFlowRecord_.systemTime = nowDays;
+        traceFlowRecord_.usedSize = 0;
         return true;
     }
-    int64_t actualReliabilitySize = Parameter::IsLaboratoryMode() ?
-        RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
-    switch (caller) {
-        case TraceCollector::Caller::RELIABILITY:
-            return ucollectionTraceStorage_.reliabilitySize < actualReliabilitySize;
-        case TraceCollector::Caller::XPERF:
-            return ucollectionTraceStorage_.xperfSize < XPERF_SIZE;
-        case TraceCollector::Caller::XPOWER:
-            return ucollectionTraceStorage_.xpowerSize < XPOWER_SIZE;
-        default:
-            return true;
-    }
+    return TRACE_QUOTA.find(caller_) != TRACE_QUOTA.end() ?
+        traceFlowRecord_.usedSize < TRACE_QUOTA.at(caller_).second : true;
 }
 
-bool TraceFlowController::NeedUpload(TraceCollector::Caller &caller, TraceRetInfo ret)
+bool TraceFlowController::NeedUpload(TraceRetInfo ret)
 {
     int64_t traceSize = GetTraceSize(ret);
-    HIVIEW_LOGI("start to upload , systemTime = %{public}s, traceSize = %{public}" PRId64 ".",
-        ucollectionTraceStorage_.systemTime.c_str(), traceSize);
-    int64_t actualReliabilitySize = Parameter::IsLaboratoryMode() ?
-        RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
-    switch (caller) {
-        case TraceCollector::Caller::RELIABILITY:
-            if (IsLowerLimit(ucollectionTraceStorage_.reliabilitySize, traceSize, actualReliabilitySize)) {
-                ucollectionTraceStorage_.reliabilitySize += traceSize;
-                return true;
-            } else {
-                return false;
-            }
-        case TraceCollector::Caller::XPERF:
-            if (IsLowerLimit(ucollectionTraceStorage_.xperfSize, traceSize, XPERF_SIZE)) {
-                ucollectionTraceStorage_.xperfSize += traceSize;
-                return true;
-            } else {
-                return false;
-            }
-        case TraceCollector::Caller::XPOWER:
-            if (IsLowerLimit(ucollectionTraceStorage_.xpowerSize, traceSize, XPOWER_SIZE)) {
-                ucollectionTraceStorage_.xpowerSize += traceSize;
-                return true;
-            } else {
-                return false;
-            }
-        default:
-            return true;
+    HIVIEW_LOGI("start to upload , traceSize = %{public}" PRId64 ".", traceSize);
+    if (TRACE_QUOTA.find(caller_) == TRACE_QUOTA.end()) {
+        return true;
     }
+    if (IsLowerLimit(traceFlowRecord_.usedSize, traceSize, TRACE_QUOTA.at(caller_).second)) {
+        traceFlowRecord_.usedSize += traceSize;
+        return true;
+    }
+    return false;
 }
 
 bool TraceFlowController::IsLowerLimit(int64_t nowSize, int64_t traceSize, int64_t limitSize)
@@ -158,11 +144,14 @@ bool TraceFlowController::IsLowerLimit(int64_t nowSize, int64_t traceSize, int64
 
 void TraceFlowController::StoreDb()
 {
-    HIVIEW_LOGI("systemTime:%{public}s, xperfSize:%{public}" PRId64 ", xpowerSize:%{public}" PRId64
-        ", reliabilitySize:%{public}" PRId64, ucollectionTraceStorage_.systemTime.c_str(),
-        ucollectionTraceStorage_.xperfSize, ucollectionTraceStorage_.xpowerSize,
-        ucollectionTraceStorage_.reliabilitySize);
-    traceStorage_->Store(ucollectionTraceStorage_);
+    if (TRACE_QUOTA.find(caller_) == TRACE_QUOTA.end()) {
+        HIVIEW_LOGI("caller %{public}d not need store", caller_);
+        return;
+    }
+    HIVIEW_LOGI("systemTime:%{public}s, callerName:%{public}s, usedSize:%{public}" PRId64,
+        traceFlowRecord_.systemTime.c_str(), traceFlowRecord_.callerName.c_str(),
+        traceFlowRecord_.usedSize);
+    traceStorage_->Store(traceFlowRecord_);
 }
 
 int64_t TraceFlowController::GetTraceSize(TraceRetInfo ret)
@@ -186,11 +175,15 @@ std::string TraceFlowController::GetDate()
     return dateStr;
 }
 
-UcollectionTraceStorage TraceFlowController::QueryDb()
+TraceFlowRecord TraceFlowController::QueryDb()
 {
-    struct UcollectionTraceStorage ucollectionTraceStorage;
-    traceStorage_->Query(ucollectionTraceStorage);
-    return ucollectionTraceStorage;
+    struct TraceFlowRecord tmpTraceFlowRecord;
+    if (TRACE_QUOTA.find(caller_) == TRACE_QUOTA.end()) {
+        return tmpTraceFlowRecord;
+    }
+    tmpTraceFlowRecord.callerName = TRACE_QUOTA.at(caller_).first;
+    traceStorage_->Query(tmpTraceFlowRecord);
+    return tmpTraceFlowRecord;
 }
 
 bool TraceFlowController::HasCallOnceToday(int32_t uid, uint64_t happenTime)
