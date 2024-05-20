@@ -203,14 +203,14 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 
 bool ZipDbFile(const std::string& src, const std::string& dest)
 {
-    HIVIEW_LOGI("zip file: %{public}s to %{public}s", src.c_str(), dest.c_str());
+    HIVIEW_LOGI("zip file: %{public}s to %{private}s", src.c_str(), dest.c_str());
     bool ret = HiviewZipUtil::ZipFile(src, dest);
     if (!ret) {
         return false;
     }
     ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
     if (!ret) {
-        HIVIEW_LOGE("failed to chmod file %{public}s.", dest.c_str());
+        HIVIEW_LOGE("failed to chmod file %{private}s.", dest.c_str());
         return false;
     }
     // delete json file
@@ -323,14 +323,14 @@ bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cac
     // zip json file into a temporary zip file
     auto tmpZipFile = GetTmpZipFile(exportDir_, moduleName_, eventVersion_);
     if (!ZipDbFile(packagedFile, tmpZipFile)) {
-        HIVIEW_LOGE("failed to zip %{public}s to %{public}s", packagedFile.c_str(), tmpZipFile.c_str());
+        HIVIEW_LOGE("failed to zip %{public}s to %{private}s", packagedFile.c_str(), tmpZipFile.c_str());
         return false;
     }
     // move tmp zip file to output directory
     auto zipFile = GetZipFile(exportDir_);
-    HIVIEW_LOGD("zipFile: %{public}s", zipFile.c_str());
+    HIVIEW_LOGD("zipFile: %{private}s", zipFile.c_str());
     if (!FileUtil::RenameFile(tmpZipFile, zipFile)) {
-        HIVIEW_LOGE("failed to rename %{public}s to %{public}s", tmpZipFile.c_str(), zipFile.c_str());
+        HIVIEW_LOGE("failed to rename %{private}s to %{private}s", tmpZipFile.c_str(), zipFile.c_str());
         return false;
     }
     cJSON_Delete(root);
