@@ -27,7 +27,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-const std::string UC_STAT_LOG_PATH = "data/log/hiview/unified_collection/ucollection_stat_detail.log";
+const std::string UC_STAT_LOG_PATH = "/data/log/hiview/unified_collection/ucollection_stat_detail.log";
 const std::string UC_SEPARATOR = "::";
 
 struct StatInfo {

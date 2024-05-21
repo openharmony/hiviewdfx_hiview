@@ -138,6 +138,7 @@ group("hiview_test_package") {
     "adapter/service/idl:unittest",
     "base/test:unittest",
     "core/test:unittest",
+    "framework/native/unified_collection:unittest",
     "interfaces/js/napi/test:unittest",
     "plugins:fuzztest",
     "plugins:moduletest",
