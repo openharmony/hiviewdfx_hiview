@@ -39,18 +39,15 @@ int MemoryCatcher::Catch(int fd, int jsonFd)
     int originSize = GetFdSize(fd);
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     CollectResult<SysMemory> result = collector->CollectSysMemory();
-    if (result.retCode != UcError::SUCCESS) {
-        goto end;
+    if (result.retCode == UcError::SUCCESS) {
+        FileUtil::SaveStringToFd(fd, "memTotal " + std::to_string(result.data.memTotal) + "\n");
+        FileUtil::SaveStringToFd(fd, "memFree " + std::to_string(result.data.memFree) + "\n");
+        FileUtil::SaveStringToFd(fd, "memAvailable " + std::to_string(result.data.memAvailable) + "\n");
+        FileUtil::SaveStringToFd(fd, "zramUsed " + std::to_string(result.data.zramUsed) + "\n");
+        FileUtil::SaveStringToFd(fd, "swapCached " + std::to_string(result.data.swapCached) + "\n");
+        FileUtil::SaveStringToFd(fd, "cached " + std::to_string(result.data.cached) + "\n");
     }
 
-    FileUtil::SaveStringToFd(fd, "memTotal " + std::to_string(result.data.memTotal) + "\n");
-    FileUtil::SaveStringToFd(fd, "memFree " + std::to_string(result.data.memFree) + "\n");
-    FileUtil::SaveStringToFd(fd, "memAvailable " + std::to_string(result.data.memAvailable) + "\n");
-    FileUtil::SaveStringToFd(fd, "zramUsed " + std::to_string(result.data.zramUsed) + "\n");
-    FileUtil::SaveStringToFd(fd, "swapCached " + std::to_string(result.data.swapCached) + "\n");
-    FileUtil::SaveStringToFd(fd, "cached " + std::to_string(result.data.cached) + "\n");
-
-    end:
     logSize_ = GetFdSize(fd) - originSize;
     if (logSize_ <= 0) {
         FileUtil::SaveStringToFd(fd, "sysMemory content is empty!");
