@@ -114,3 +114,8 @@ ohos_source_set("ucollection_source") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
 }
+
+group("unittest") {
+  testonly = true
+  deps = [ "decorator/test:DecoratorUnitTest" ]
+}
