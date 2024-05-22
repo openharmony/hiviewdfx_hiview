@@ -46,6 +46,7 @@ enum FaultLogType {
     APP_FREEZE,
     SYS_FREEZE,
     RUST_PANIC,
+    ADDR_SANITIZER,
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

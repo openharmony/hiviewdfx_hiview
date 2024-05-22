@@ -12,14 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "asan_collector.h"
+
 #include <fcntl.h>
 #include <map>
 #include <regex>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include "faultlog_util.h"
 #include "file_util.h"
 #include "hiview_logger.h"
@@ -112,7 +113,7 @@ void AsanCollector::ProcessStackTrace(
             function_name = stack_entry_captured[FUNC_NAME].str();
             if (frm_no == "0") {
                 if (printDiagnostics) {
-                    HIVIEW_LOGI("Stack trace starting.%{public}s",
+                    HILOG_DEBUG(LOG_CORE, "Stack trace starting.%{public}s",
                                 hashable.empty() ? "" : "  Saving prior trace.");
                 }
                 previous_hashable = hashable;
@@ -129,7 +130,7 @@ void AsanCollector::ProcessStackTrace(
             }
         } else if (std::regex_search(str_line.begin(), str_line.end(), stack_end_captured, STACK_END_RE)) {
             if (printDiagnostics) {
-                SANITIZERD_LOGI("end of stack matched reline:(%{public}s)\n", str_line.c_str());
+                HILOG_INFO(LOG_CORE, "end of stack matched reline:(%{public}s)\n", str_line.c_str());
             }
             break;
         }
@@ -157,7 +158,7 @@ bool AsanCollector::ComputeStackSignature(const std::string& asanDump, std::stri
 
     if (stackHash == 0) {
         if (printDiagnostics) {
-            HIVIEW_LOGI("Maple Found not a stack, failing.");
+            HILOG_DEBUG(LOG_CORE, "Found not a stack, failing.");
         }
         return false;
     }
@@ -179,7 +180,7 @@ int AsanCollector::UpdateCollectedData(const std::string& hash, const std::strin
     std::lock_guard<std::mutex> lockGuard(mutex_);
     stacks_.insert(jstack);
 
-    HIVIEW_LOGI("Updating collected data ...");
+    HILOG_INFO(LOG_CORE, "Updating collected data.");
     // Do upload when data ready
     OHOS::HiviewDFX::Upload(&curr_);
     return 0;
@@ -220,13 +221,13 @@ bool AsanCollector::ReadRecordToString(std::string& fullFile, const std::string&
     std::smatch captured;
     record.clear();
     if (!FileUtil::LoadStringFromFile(fullFile, record)) {
-        HIVIEW_LOGI("Unable to open %{public}s", fullFile.c_str());
+        HILOG_INFO(LOG_CORE, "Unable to open %{public}s", fullFile.c_str());
         return false;
     }
     int hitcount = 0;
     struct stat st;
     if (stat(fullFile.c_str(), &st) == -1) {
-        HIVIEW_LOGI("stat %{public}s error", fullFile.c_str());
+        HILOG_INFO(LOG_CORE, "stat %{public}s error", fullFile.c_str());
     } else {
         curr_.uid = static_cast<int32_t>(st.st_uid);
     }
@@ -279,3 +280,4 @@ void AsanCollector::Collect(const std::string& filepath)
 }
 } // namespace HiviewDFX
 } // namespace OHOS
+

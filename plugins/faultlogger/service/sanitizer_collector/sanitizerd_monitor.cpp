@@ -50,7 +50,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
 
     res = read(nfd, eventBuf, sizeof(eventBuf));
     if (res < sizeof(*event)) {
-        HIVIEW_LOGI("could not get notify events, %s\n", strerror(errno));
+        HILOG_INFO(LOG_CORE, "could not get notify events, %s\n", strerror(errno));
         return ret;
     }
 
@@ -63,7 +63,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
             continue;
         }
         if (strcpy_s(filename, PATH_MAX,  event->name) != EOK) {
-            HIVIEW_LOGI("try to copy the file name error, continue");
+            HILOG_INFO(LOG_CORE, "try to copy the file name error, continue");
             continue;
         }
 
@@ -80,7 +80,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
             std::string strFileName(filename);
             std::string fullPath = strSanLogPath + "/" + strFileName;
 
-            HIVIEW_LOGI("recv filename is:[%{public}s]\n", fullPath.c_str());
+            HILOG_INFO(LOG_CORE, "recv filename is:[%{public}s]\n", fullPath.c_str());
             if (gCallback != nullptr) {
                 gCallback(type, strFileName);
             }
@@ -98,13 +98,13 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
     gNfds = 1;
     void* area = calloc(1, sizeof(gUfds[0]));
     if (!area) {
-        HIVIEW_LOGI("Memory allocation failed.");
+        HILOG_ERROR(LOG_CORE, "Memory allocation failed.");
         return 1;
     }
     gUfds = reinterpret_cast<pollfd *>(area);
     gUfds[0].fd = inotify_init();
     if (gUfds[0].fd < 0) {
-        HIVIEW_LOGI("inotify_init failed: %{public}d-%{public}s.", gUfds[0].fd, strerror(errno));
+        HILOG_ERROR(LOG_CORE, "inotify_init failed: %{public}d-%{public}s.", gUfds[0].fd, strerror(errno));
         Uninit();
         return 1;
     }
@@ -112,12 +112,12 @@ int SanitizerdMonitor::Init(SANITIZERD_NOTIFY_CALLBACK pcb)
     gUfds[0].events = POLLIN;
     gAsanWd = inotify_add_watch(gUfds[0].fd, asanLogPath.c_str(), NOTIFY_MASK);
     if (gAsanWd < 0) {
-        HIVIEW_LOGI("add watch %{public}s failed: %{public}d-%{public}s.", asanLogPath.c_str(), gUfds[0].fd,
+        HILOG_INFO(LOG_CORE, "add watch %{public}s failed: %{public}d-%{public}s.", asanLogPath.c_str(), gUfds[0].fd,
             strerror(errno));
         Uninit();
         return 1;
     } else {
-        HIVIEW_LOGI("add watch %{public}s successfully: %{public}d.", asanLogPath.c_str(), gUfds[0].fd);
+        HILOG_INFO(LOG_CORE, "add watch %{public}s successfully: %{public}d.", asanLogPath.c_str(), gUfds[0].fd);
     }
 
     gCallback = pcb;
