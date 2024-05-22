@@ -96,6 +96,7 @@ group("fuzztest") {
   testonly = true
   deps = [
     "test/fuzztest/common/eventserver_fuzzer:EventServerFuzzTest",
+    "test/fuzztest/common/eventserversocket_fuzzer:EventServerSocketFuzzTest",
     "test/fuzztest/common/eventsource_fuzzer:EventSourceFuzzTest",
   ]
 }
