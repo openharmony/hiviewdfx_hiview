@@ -152,6 +152,7 @@ std::optional<ProcessCpuStatInfo> ProcessStatInfoCollector::CalculateProcessCpuS
         return std::nullopt;
     }
     if (lastProcCpuTimeInfos_.find(procCpuItem->pid) == lastProcCpuTimeInfos_.end()) {
+        HIVIEW_LOGI("lastProcCpuTimeInfos not has pid:%{public}d", procCpuItem->pid);
         return std::nullopt;
     }
     ProcessCpuStatInfo processCpuStatInfo;
@@ -197,15 +198,18 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
 
     std::unique_lock<std::mutex> lock(collectMutex_);
     if (!CommonUtils::IsPidExist(pid)) {
+        HIVIEW_LOGW("pid%{public}d not exist", pid);
         TryToDeleteDeadProcessInfoByPid(pid);
         return cpuCollectResult;
     }
     auto processCpuData = FetchProcessCpuData(pid);
     if (processCpuData == nullptr) {
+        HIVIEW_LOGE("pid%{public}d processCpuData is null", pid);
         return cpuCollectResult;
     }
     auto procCpuItem = processCpuData->GetNextProcess();
     if (procCpuItem == nullptr) {
+        HIVIEW_LOGE("pid%{public}d procCpuItem is null", pid);
         return cpuCollectResult;
     }
 
