@@ -68,8 +68,8 @@ bool FaultEventListener::CheckKeyWords()
         return allFindFlag;
     };
 
-    // 6: wait allFindFlag set true for 6 seconds
-    if (keyWordCheckCondition.wait_for(lock, std::chrono::seconds(6), flagCheckFunc)) {
+    // 8: wait allFindFlag set true for 8 seconds
+    if (keyWordCheckCondition.wait_for(lock, std::chrono::seconds(8), flagCheckFunc)) {
         std::cout << "match ok, return true"  << std::endl;
         return true;
     } else {
