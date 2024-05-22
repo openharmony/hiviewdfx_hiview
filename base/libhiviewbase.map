@@ -455,6 +455,7 @@
         "OHOS::HiviewDFX::AshMemoryUtils::GetAshmem(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int)";
         "OHOS::HiviewDFX::SysEvent::SetLog(unsigned char)";
         "OHOS::HiviewDFX::Parameter::IsLaboratoryMode()";
+        "OHOS::HiviewDFX::EventRaw::RawData::RawData(unsigned char*, unsigned int)";
     };
   local:
     *;
