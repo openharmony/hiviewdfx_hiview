@@ -27,6 +27,7 @@
 #include "app_event_publisher.h"
 #include "app_event_publisher_factory.h"
 #include "audit.h"
+#include "backtrace_local.h"
 #include "common_utils.h"
 #include "defines.h"
 #include "dynamic_module.h"
@@ -40,6 +41,7 @@
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "time_util.h"
+#include "xcollie/xcollie.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -141,7 +143,48 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
     NotifyPluginReady();
     ScheduleCheckUnloadablePlugins();
     paramEventManager.SubscriberEvent();
+    if (Parameter::IsBetaVersion()) {
+        AddWatchDog();
+    }
     return true;
+}
+
+void HiviewPlatform::SaveStack()
+{
+    if (hasDumpStack_) {
+        return;
+    }
+
+    std::string workPath = HiviewGlobal::GetInstance()->GetHiViewDirectory(
+        HiviewContext::DirectoryType::WORK_DIRECTORY);
+    std::string stackPath = FileUtil::IncludeTrailingPathDelimiter(workPath) + "hiview_stack.log";
+    std::string stackTrace = GetProcessStacktrace();
+    HIVIEW_LOGI("XCollieCallback: %{public}zu", stackTrace.length());
+    if (!FileUtil::SaveStringToFile(stackPath, stackTrace)) {
+        HIVIEW_LOGE("XCollieCallback: save stack fail.");
+        return;
+    }
+
+    if (chmod(stackPath.c_str(), FileUtil::FILE_PERM_600) != 0) {
+        HIVIEW_LOGE("XCollieCallback: chmod fail.");
+    }
+    hasDumpStack_ = true;
+}
+
+void HiviewPlatform::AddWatchDog()
+{
+    constexpr int HICOLLIE_TIMER_SECOND = 60 * 5;
+    watchDogTimer_ = HiviewDFX::XCollie::GetInstance().SetTimer("hiview_watchdog", HICOLLIE_TIMER_SECOND,
+        [this](void *) { SaveStack(); }, nullptr, HiviewDFX::XCOLLIE_FLAG_NOOP);
+
+    auto task = [this] {
+        HiviewDFX::XCollie::GetInstance().CancelTimer(watchDogTimer_);
+        watchDogTimer_ = HiviewDFX::XCollie::GetInstance().SetTimer("hiview_watchdog", HICOLLIE_TIMER_SECOND,
+            [this](void *) { SaveStack(); }, nullptr, HiviewDFX::XCOLLIE_FLAG_NOOP);
+    };
+    constexpr int RESET_TIMER_SECOND = 60;
+    sharedWorkLoop_->AddTimerEvent(nullptr, nullptr, task, RESET_TIMER_SECOND, true);
+    HIVIEW_LOGI("add watch dog task");
 }
 
 void HiviewPlatform::CreateWorkingDirectories(const std::string& platformConfigDir)

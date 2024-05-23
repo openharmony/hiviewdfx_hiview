@@ -73,8 +73,8 @@ std::string GetDisplayVersionStr()
 
 bool IsBetaVersion()
 {
-    auto versionType = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown");
-    return (versionType.find("beta") != std::string::npos);
+    static bool isBetaVersion = GetString(KEY_HIVIEW_VERSION_TYPE, "unknown").find("beta") != std::string::npos;
+    return isBetaVersion;
 }
 
 bool IsDeveloperMode()
