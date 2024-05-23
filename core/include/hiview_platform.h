@@ -187,6 +187,8 @@ private:
     void ScheduleCheckUnloadablePlugins();
     void CheckUnloadablePlugins();
     std::string SearchPluginBundle(const std::string& name) const;
+    void AddWatchDog();
+    void SaveStack();
 
     bool isReady_;
     std::string defaultConfigDir_;
@@ -215,6 +217,8 @@ private:
     time_t maxIdleTime_ = DEFAULT_IDLE_TIME;
     time_t checkIdlePeriod_ = DEFAULT_IDLE_TIME / 2; // 2 : half idle time
     ParamEventManager paramEventManager;
+    int watchDogTimer_ = 0;
+    bool hasDumpStack_ = false;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

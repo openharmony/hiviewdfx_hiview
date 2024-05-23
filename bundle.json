@@ -43,6 +43,7 @@
                 "ets_runtime",
                 "faultloggerd",
                 "ffrt",
+                "hicollie",
                 "hidumper",
                 "hilog",
                 "hiprofiler",
