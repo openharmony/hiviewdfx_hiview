@@ -54,6 +54,8 @@ public:
     void OnUnorderedEvent(const Event& msg) override;
     std::string GetAppFreezeFile(std::string& stackPath);
 private:
+    enum {APP, SYS, TOP};
+
     static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
     static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
     static const inline std::string LONG_PRESS = "LONG_PRESS";
@@ -63,15 +65,26 @@ private:
     static const inline std::string PATTERN_WITHOUT_SPACE = "\\s*=\\s*([^ \\n]*)";
     static const inline std::string DOMAIN_LONGPRESS = "KERNEL_VENDOR";
     static const inline std::string STRINGID_LONGPRESS = "COM_LONG_PRESS";
+    static const inline std::string FFRT_HEADER = "=== ffrt info ===\n";
     static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };
     static const inline std::string MONITOR_LOG_PATH[] = {
         MONITOR_STACK_LOG_PATH,
     };
+    static const inline std::vector<std::string> FFRT_VECTOR = {
+        "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
+        "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
+        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN"
+    };
+
+    static constexpr int DUMP_TIME_RATIO = 2;
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
+    static constexpr int TOP_WINDOW_NUM = 3;
+    static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
+    static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
 
     std::shared_ptr<LogStoreEx> logStore_;
     long lastPid_ = 0;
@@ -88,8 +101,11 @@ private:
     std::string lastEventName_ = "";
     std::vector<std::string> rebootReasons_;
 
+    void StartFfrtDump(std::shared_ptr<SysEvent> event);
+    void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
+    void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd, int& count) const;
     void StartLogCollect(std::shared_ptr<SysEvent> event);
-    int Getfile(std::shared_ptr<SysEvent> event, std::string& logFile);
+    int GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
     bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);

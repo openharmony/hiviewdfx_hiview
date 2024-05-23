@@ -28,12 +28,14 @@ namespace OHOS {
 namespace HiviewDFX {
 class FreezeResult {
 public:
-    FreezeResult() : window_(0), code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), action_("and") {};
+    FreezeResult() : window_(0), code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), action_("and"),
+        ffrt_("") {};
     FreezeResult(long window, const std::string& domain, const std::string& stringId)
         : window_(window), code_(0), scope_(""), samePackage_(""), domain_(domain), stringId_(stringId),
-        action_("and") {};
+        action_("and"), ffrt_("") {};
     FreezeResult(unsigned long code, const std::string& scope)
-        : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), action_("and") {};
+        : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), action_("and"),
+        ffrt_("") {};
     ~FreezeResult() {};
     std::string GetDomain() const
     {
@@ -90,6 +92,16 @@ public:
         action_ = action;
     }
 
+    std::string GetFfrt() const
+    {
+        return ffrt_;
+    }
+
+    void SetFfrt(const std::string& ffrt)
+    {
+        ffrt_ = ffrt;
+    }
+
 private:
     long window_;
     unsigned long code_;
@@ -98,6 +110,7 @@ private:
     std::string domain_;
     std::string stringId_;
     std::string action_;
+    std::string ffrt_;
 };
 
 class FreezeRule {
@@ -194,6 +207,7 @@ private:
     static const inline std::string ATTRIBUTE_SCOPE = "scope";
     static const inline std::string ATTRIBUTE_SAME_PACKAGE = "samePackage";
     static const inline std::string attributeAction = "action";
+    static const inline std::string attributeFfrt = "ffrt";
     static const inline std::string ATTRIBUTE_APPLICATION = "application";
     static const inline std::string ATTRIBUTE_SYSTEM = "system";
     static const int MAX_FILE_SIZE = 512 * 1024;

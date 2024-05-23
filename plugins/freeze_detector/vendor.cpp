@@ -232,6 +232,21 @@ void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream
     }
 }
 
+void Vendor::InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt) const
+{
+    std::string ffrtPath = "/data/log/eventlog/ffrt_" + std::to_string(watchPoint.GetPid()) + "_" +
+        TimeUtil::TimestampFormatToDate(watchPoint.GetTimestamp() / TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
+
+    std::ifstream ifs(ffrtPath, std::ios::in);
+    if (!ifs.is_open()) {
+        HIVIEW_LOGE("cannot open ffrt file for reading:%{public}s", ffrtPath.c_str());
+        return;
+    }
+    ffrt << ifs.rdbuf();
+    ifs.close();
+    FreezeJsonUtil::DelFile(ffrtPath);
+}
+
 std::string Vendor::MergeEventLog(
     const WatchPoint &watchPoint, const std::vector<WatchPoint>& list,
     const std::vector<FreezeResult>& result) const
@@ -258,8 +273,16 @@ std::string Vendor::MergeEventLog(
     bool isFileExists = true;
     InitLogBody(list, body, isFileExists);
     HIVIEW_LOGI("After Init --body size: %{public}zu.", body.str().size());
+
+    std::ostringstream ffrt;
+    if (std::any_of(result.begin(), result.end(), [](auto& res) {
+        return res.GetFfrt() == "true";
+    })) {
+        InitLogFfrt(watchPoint, ffrt);
+    }
+
     if (!isFileExists) {
-        HIVIEW_LOGE("Failed to open the file.");
+        HIVIEW_LOGE("Failed to open the body file.");
         return "";
     }
 
@@ -275,6 +298,7 @@ std::string Vendor::MergeEventLog(
 
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
+    FileUtil::SaveStringToFd(fd, ffrt.str());
     close(fd);
     return SendFaultLog(watchPoint, logPath, logName);
 }
