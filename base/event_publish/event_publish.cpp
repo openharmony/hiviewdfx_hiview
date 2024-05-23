@@ -61,7 +61,7 @@ void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalL
         externalLogInfo.maxFileSize_ = WATCHDOG_MAX_FILE_SIZE;
     } else if (eventName == RESOURCE_OVERLIMIT) {
         externalLogInfo.extensionType_ = ".log";
-        externalLogInfo.subPath_ = "hiappevent";
+        externalLogInfo.subPath_ = "resourcelimit";
         externalLogInfo.maxFileSize_ = RESOURCE_OVERLIMIT_MAX_FILE_SIZE;
     } else {
         externalLogInfo.extensionType_ = ".log";
