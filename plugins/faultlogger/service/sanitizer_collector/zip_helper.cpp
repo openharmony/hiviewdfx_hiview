@@ -64,7 +64,7 @@ bool IsNameValid(const std::string& name, const std::string& sep, bool canEmpty)
 {
     std::vector<std::string> nameVec;
     SplitStr(name, sep, nameVec, canEmpty, false);
-    std::regex re("^[a-zA-Z][a-zA-Z0-9_]*$");
+    std::regex re("^[a-zA-Z0-9][a-zA-Z0-9_]{0,127}$");
     for (auto const& splitName : nameVec) {
         if (!std::regex_match(splitName, re)) {
             HILOG_INFO(LOG_CORE, "Invalid splitName:%{public}s", splitName.c_str());
