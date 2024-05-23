@@ -152,7 +152,7 @@ std::optional<ProcessCpuStatInfo> ProcessStatInfoCollector::CalculateProcessCpuS
         return std::nullopt;
     }
     if (lastProcCpuTimeInfos_.find(procCpuItem->pid) == lastProcCpuTimeInfos_.end()) {
-        HIVIEW_LOGD("lastProcCpuTimeInfos not has pid:%{public}d", procCpuItem->pid);
+        HIVIEW_LOGD("lastProcCpuTimeInfos do not have pid:%{public}d", procCpuItem->pid);
         return std::nullopt;
     }
     ProcessCpuStatInfo processCpuStatInfo;
