@@ -20,6 +20,7 @@
 #ifdef UNIT_TEST
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #endif
 #include <memory>
 #include <regex>
@@ -103,6 +104,7 @@ constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
 constexpr int REPORT_HILOG_LINE = 100;
+constexpr const char STACK_ERROR_MESSAGE[] = "Cannot get SourceMap info, dump raw stack:";
 DumpRequest InitDumpRequest()
 {
     DumpRequest request;
@@ -233,6 +235,15 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
             break;
         }
         ParseJsErrorSummary(summary, name, message, stack);
+        name.erase(name.find_last_not_of("\n") + 1);
+        message.erase(message.find_last_not_of("\n") + 1);
+        if (stack.size() > 1) {
+            stack.erase(0, 1);
+            if ((stack.size() >= strlen(STACK_ERROR_MESSAGE)) &&
+                (strcmp(STACK_ERROR_MESSAGE, stack.substr(0, strlen(STACK_ERROR_MESSAGE)).c_str()) == 0)) {
+                stack.erase(0, strlen(STACK_ERROR_MESSAGE) + 1);
+            }
+        }
     } while (false);
     exception["name"] = name;
     exception["message"] = message;
