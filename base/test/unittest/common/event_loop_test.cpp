@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -293,7 +293,7 @@ HWTEST_F(EventLoopTest, EventLoopEventProcessTest003, TestSize.Level3)
     auto eventhandler1 = std::make_shared<RealEventHandler>();
     auto event1 = std::make_shared<Event>("test1");
     currentLooper_->AddTimerEvent(eventhandler1, event1, nullptr, 2, true);
-    sleep(10);
+    sleep(9); // 9 = 4(num of event) * 2(delay) + 1(free)
     /**
      * @tc.expected: step1. the event has been processed
      */
