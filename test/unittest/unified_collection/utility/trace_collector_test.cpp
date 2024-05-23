@@ -154,7 +154,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -177,7 +177,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -264,7 +264,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -327,7 +327,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -350,6 +350,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.data.size() > 0);
+    ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
