@@ -266,8 +266,8 @@ int32_t StartTraceState::DoCaptureTrace()
 
     appTraceContext_->traceBegin_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     appCallerEvent_->resultCode_ = UCollect::UcError::SUCCESS;
-    int64_t delay = appCallerEvent_->taskBeginTime_ - appCallerEvent_->happenTime_;
-    int64_t cost = appTraceContext_->traceBegin_ - appCallerEvent_->happenTime_;
+    int64_t delay = appCallerEvent_->taskBeginTime_ - static_cast<int64_t>(appCallerEvent_->happenTime_);
+    int64_t cost = appTraceContext_->traceBegin_ - static_cast<int64_t>(appCallerEvent_->happenTime_);
     HIVIEW_LOGI("trace is start for uid=%{public}d pid=%{public}d delay=%{public}" PRId64 ", cost=%{public}" PRId64 "",
         appCallerEvent_->uid_, appCallerEvent_->pid_, delay, cost);
     return 0;
