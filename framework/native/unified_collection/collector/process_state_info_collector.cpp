@@ -198,7 +198,7 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
 
     std::unique_lock<std::mutex> lock(collectMutex_);
     if (!CommonUtils::IsPidExist(pid)) {
-        HIVIEW_LOGD("pid%{public}d not exist", pid);
+        HIVIEW_LOGD("pid:%{public}d not exist", pid);
         TryToDeleteDeadProcessInfoByPid(pid);
         return cpuCollectResult;
     }
