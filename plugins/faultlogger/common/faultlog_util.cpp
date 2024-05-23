@@ -79,7 +79,19 @@ std::string GetFaultLogName(const FaultLogInfo& info)
     }
 
     std::string ret = "";
-    ret.append(GetFaultNameByType(info.faultLogType, true));
+    if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
+        if (info.reason == "TSAN") {
+            ret.append("tsan");
+        } else if (info.reason == "UBSAN") {
+            ret.append("ubsan");
+        } else if (info.reason == "GWP-ASAN") {
+            ret.append("gwpasan");
+        } else {
+            ret.append("sanitizer");
+        }
+    } else {
+        ret.append(GetFaultNameByType(info.faultLogType, true));
+    }
     ret.append("-");
     ret.append(name);
     ret.append("-");

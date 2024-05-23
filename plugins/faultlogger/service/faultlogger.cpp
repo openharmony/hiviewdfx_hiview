@@ -716,7 +716,8 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
 
     mgr_->SaveFaultLogToFile(info);
-    if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC) {
+    if (info.faultLogType != FaultLogType::JS_CRASH && info.faultLogType != FaultLogType::RUST_PANIC
+        && info.faultLogType != FaultLogType::ADDR_SANITIZER) {
         mgr_->SaveFaultInfoToRawDb(info);
     }
     HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"
