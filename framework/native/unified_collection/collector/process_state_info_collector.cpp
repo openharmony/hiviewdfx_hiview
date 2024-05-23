@@ -204,12 +204,10 @@ CollectResult<ProcessCpuStatInfo> ProcessStatInfoCollector::CollectProcessCpuSta
     }
     auto processCpuData = FetchProcessCpuData(pid);
     if (processCpuData == nullptr) {
-        HIVIEW_LOGE("pid:%{public}d processCpuData is null", pid);
         return cpuCollectResult;
     }
     auto procCpuItem = processCpuData->GetNextProcess();
     if (procCpuItem == nullptr) {
-        HIVIEW_LOGE("pid:%{public}d procCpuItem is null", pid);
         return cpuCollectResult;
     }
 
