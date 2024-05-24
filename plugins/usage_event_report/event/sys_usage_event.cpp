@@ -14,10 +14,12 @@
  */
 #include "sys_usage_event.h"
 
+#include "hiview_logger.h"
 #include "usage_event_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("SysUsageEvent");
 using namespace SysUsageEventSpace;
 
 SysUsageEvent::SysUsageEvent(const std::string &name, HiSysEvent::EventType type)
@@ -31,12 +33,32 @@ SysUsageEvent::SysUsageEvent(const std::string &name, HiSysEvent::EventType type
 
 void SysUsageEvent::Report()
 {
-    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
+    ReportDFX();
+    ReportDFXUE();
+}
+
+void SysUsageEvent::ReportDFX()
+{
+    auto ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
         KEY_OF_START, this->paramMap_[KEY_OF_START].GetUint64(),
         KEY_OF_END, this->paramMap_[KEY_OF_END].GetUint64(),
         KEY_OF_POWER, this->paramMap_[KEY_OF_POWER].GetUint64(),
-        KEY_OF_RUNNING, this->paramMap_[KEY_OF_RUNNING].GetUint64()
-    );
+        KEY_OF_RUNNING, this->paramMap_[KEY_OF_RUNNING].GetUint64());
+    if (ret != 0) {
+        HIVIEW_LOGW("failed to report sys usage event, ret=%{public}d", ret);
+    }
+}
+
+void SysUsageEvent::ReportDFXUE()
+{
+    auto ret = HiSysEventWrite(DomainSpace::HIVIEWDFX_UE_DOMAIN, this->eventName_, this->eventType_,
+        KEY_OF_START, this->paramMap_[KEY_OF_START].GetUint64(),
+        KEY_OF_END, this->paramMap_[KEY_OF_END].GetUint64(),
+        KEY_OF_POWER, this->paramMap_[KEY_OF_POWER].GetUint64(),
+        KEY_OF_RUNNING, this->paramMap_[KEY_OF_RUNNING].GetUint64());
+    if (ret != 0) {
+        HIVIEW_LOGW("failed to report sys usage event, ret=%{public}d", ret);
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
