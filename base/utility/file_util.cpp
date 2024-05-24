@@ -307,7 +307,7 @@ int CopyFileFast(const std::string &src, const std::string &des)
     if (fdIn < 0) {
         return -1;
     }
-    int fdOut = open(des.c_str(), O_CREAT | O_RDWR, 0777);
+    int fdOut = open(des.c_str(), O_CREAT | O_RDWR, 0664);
     if (fdOut < 0) {
         close(fdIn);
         return -1;
