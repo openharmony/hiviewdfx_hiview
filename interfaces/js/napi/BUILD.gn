@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,20 +15,27 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 ohos_shared_library("loglibrary_napi") {
-  include_dirs = [ "include/" ]
+  include_dirs = [
+    "include/",
+    "$hiview_interfaces/inner_api/unified_collection",
+  ]
 
   sources = [
     "./src/hiview_napi_adapter.cpp",
     "./src/hiview_napi_util.cpp",
+    "./src/hiview_service_agent.cpp",
     "./src/napi_hiview_js.cpp",
   ]
 
   deps = [ "$hiview_adapter/service/idl:hiview_service_impl_for_js" ]
 
   external_deps = [
+    "ability_runtime:app_context",
     "access_token:libtokenid_sdk",
+    "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
     "napi:ace_napi",
+    "storage_service:storage_manager_acl",
   ]
 
   relative_install_dir = "module"
