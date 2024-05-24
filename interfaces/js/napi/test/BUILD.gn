@@ -17,12 +17,18 @@ module_output_path = "hiview/hiview/interface"
 
 group("unittest") {
   testonly = true
-  deps = [ ":InterfaceJsNapiTest" ]
+  deps = [
+    ":InterfaceJsNapiTest",
+    ":LoglibraryAgentTest",
+  ]
 }
 
 config("unittest_config") {
   include_dirs = [
+    "$hiview_adapter/service/idl/test/unittest/common",
     "$hiview_base/include",
+    "$hiview_interfaces/inner_api/unified_collection",
+    "$hiview_interfaces/js/napi/include",
     "unittest/common",
   ]
 
@@ -47,5 +53,37 @@ ohos_unittest("InterfaceJsNapiTest") {
     "access_token:libtokenid_sdk",
     "hilog:libhilog",
     "napi:ace_napi",
+  ]
+}
+
+ohos_unittest("LoglibraryAgentTest") {
+  module_out_path = module_output_path
+  configs = [ ":unittest_config" ]
+
+  sources = [
+    "$hiview_adapter/service/idl/test/unittest/common/adapter_loglibrary_test_tools.cpp",
+    "$hiview_interfaces/js/napi/src/hiview_service_agent.cpp",
+    "unittest/common/loglibrary_agent_test.cpp",
+  ]
+
+  cflags_cc = [ "-DTEST_LOCAL_SRC" ]
+
+  deps = [
+    "$hiview_adapter/service/idl:hiview_service_impl_for_js",
+    "$hiview_base:hiview_base",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "bundle_framework:appexecfwk_core",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_acl",
   ]
 }

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "adapter_loglibrary_idl_test.h"
+#include "loglibrary_agent_test.h"
 
 #include <string>
 #include <vector>
@@ -33,22 +33,22 @@ const std::string DEST_PATH = "";
 const std::string SOURCE_PATH = "/data/log/logpack/remotelog/";
 const std::string LOG_TYPE = "REMOTELOG";
 }
-void AdapterLoglibraryIdlTest::SetUpTestCase() {}
+void LoglibraryAgentTest::SetUpTestCase() {}
 
-void AdapterLoglibraryIdlTest::TearDownTestCase() {}
+void LoglibraryAgentTest::TearDownTestCase() {}
 
-void AdapterLoglibraryIdlTest::SetUp()
+void LoglibraryAgentTest::SetUp()
 {
     AdapterLoglibraryTestTools::ApplyPermissionAccess();
     AdapterLoglibraryTestTools::CreateDir(SOURCE_PATH);
 }
 
-void AdapterLoglibraryIdlTest::TearDown()
+void LoglibraryAgentTest::TearDown()
 {
     AdapterLoglibraryTestTools::RemoveDir(SOURCE_PATH);
 }
 
-HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyListTest001, testing::ext::TestSize.Level1)
+HWTEST_F(LoglibraryAgentTest, LoglibraryAgentListTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "List.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "listtestcontent", true);
@@ -57,7 +57,7 @@ HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyListTest001, testing::ext::Tes
     ASSERT_EQ(result, 0);
 }
 
-HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyCopyTest001, testing::ext::TestSize.Level1)
+HWTEST_F(LoglibraryAgentTest, LoglibraryAgentCopyTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "Copy.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "copytestcontent", true);
@@ -65,7 +65,7 @@ HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyCopyTest001, testing::ext::Tes
     ASSERT_EQ(result, -1);
 }
 
-HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyMoveTest001, testing::ext::TestSize.Level1)
+HWTEST_F(LoglibraryAgentTest, LoglibraryAgentMoveTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "Move.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "movetestcontent", true);
@@ -73,7 +73,7 @@ HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyMoveTest001, testing::ext::Tes
     ASSERT_EQ(result, -1);
 }
 
-HWTEST_F(AdapterLoglibraryIdlTest, LoglibraryProxyRemoveTest001, testing::ext::TestSize.Level1)
+HWTEST_F(LoglibraryAgentTest, LoglibraryAgentRemoveTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "Reove.txt";
     FileUtil::SaveStringToFile(SOURCE_PATH + fileName, "removetestcontent", true);

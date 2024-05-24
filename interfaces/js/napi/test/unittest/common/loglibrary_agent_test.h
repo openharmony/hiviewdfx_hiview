@@ -12,14 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ADAPTER_LOGLIBRARY_IDL_TEST_H
-#define ADAPTER_LOGLIBRARY_IDL_TEST_H
+#ifndef LOGLIBRARY_AGENT_TEST_H
+#define LOGLIBRARY_AGENT_TEST_H
 
 #include <gtest/gtest.h>
 
 namespace OHOS {
 namespace HiviewDFX {
-class AdapterLoglibraryIdlTest : public testing::Test {
+class LoglibraryAgentTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -28,4 +28,4 @@ public:
 };
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // ADAPTER_LOGLIBRARY_IDL_TEST_H
+#endif // LOGLIBRARY_AGENT_TEST_H
