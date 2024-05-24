@@ -204,12 +204,12 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 bool ZipDbFile(const std::string& src, const std::string& dest)
 {
     HIVIEW_LOGI("zip file: %{public}s to %{private}s", src.c_str(), dest.c_str());
-    bool ret = HiviewZipUtil::ZipFile(src, dest);
-    if (!ret) {
+    HiviewZipUnit zipUnit(dest);
+    if (int32_t ret = zipUnit.AddFileInZip(src, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
+        HIVIEW_LOGW("zip db failed, ret: %{public}d.", ret);
         return false;
     }
-    ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
-    if (!ret) {
+    if (bool ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH); !ret) {
         HIVIEW_LOGE("failed to chmod file %{private}s.", dest.c_str());
         return false;
     }

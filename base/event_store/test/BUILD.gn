@@ -18,6 +18,7 @@ module_output_path = "hiview/base/event_store"
 group("unittest") {
   testonly = true
   deps = [
+    ":SysEventBackupTest",
     ":SysEventDaoTest",
     ":SysEventStoreUtilityTest",
   ]
@@ -76,6 +77,35 @@ ohos_unittest("SysEventStoreUtilityTest") {
   ]
 
   external_deps = [ "hilog:libhilog" ]
+
+  resource_config_file =
+      "//base/hiviewdfx/hiview/base/event_store/test/resource/ohos_test.xml"
+}
+
+config("sys_event_backup_test_config") {
+  visibility = [ ":*" ]
+  include_dirs = [ "$hiview_base/event_store/store/include" ]
+  cflags = []
+}
+
+ohos_unittest("SysEventBackupTest") {
+  module_out_path = module_output_path
+  configs = [ ":sys_event_backup_test_config" ]
+
+  sources = [ "unittest/common/sys_event_backup_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_store:event_store_source",
+    "$hiview_core:hiview_core",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 
   resource_config_file =
       "//base/hiviewdfx/hiview/base/event_store/test/resource/ohos_test.xml"

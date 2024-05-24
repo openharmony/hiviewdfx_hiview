@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #include <cinttypes>
 
 #include "hiview_logger.h"
+#include "sys_event_backup.h"
 #include "sys_event_database.h"
 #include "sys_event_query_wrapper.h"
 
@@ -24,6 +25,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDao");
+const std::string BACKUP_DIR = "/log/hiview/backup/";
 
 std::shared_ptr<SysEventQuery> SysEventDao::BuildQuery(const std::string& domain,
     const std::vector<std::string>& names)
@@ -53,9 +55,26 @@ void SysEventDao::CheckRepeat(std::shared_ptr<SysEvent> event)
     SysEventDatabase::GetInstance().CheckRepeat(event);
 }
 
+void SysEventDao::Backup()
+{
+    SysEventBackup backup(BACKUP_DIR);
+    backup.Backup();
+}
+
+void SysEventDao::Restore()
+{
+    SysEventBackup backup(BACKUP_DIR);
+    backup.Restore(GetDatabaseDir());
+}
+
 void SysEventDao::Clear()
 {
     SysEventDatabase::GetInstance().Clear();
+}
+
+std::string SysEventDao::GetDatabaseDir()
+{
+    return SysEventDatabase::GetInstance().GetDatabaseDir();
 }
 } // EventStore
 } // namespace HiviewDFX

@@ -43,6 +43,7 @@ ohos_source_set("event_store_source") {
     "dao/sys_event_dao.cpp",
     "dao/sys_event_query.cpp",
     "dao/sys_event_query_wrapper.cpp",
+    "store/sys_event_backup.cpp",
     "store/sys_event_database.cpp",
     "store/sys_event_doc.cpp",
     "store/sys_event_doc_lru_cache.cpp",
@@ -64,5 +65,6 @@ ohos_source_set("event_store_source") {
     "jsoncpp:jsoncpp",
     "openssl:libcrypto_shared",
     "relational_store:native_rdb",
+    "zlib:shared_libz",
   ]
 }
