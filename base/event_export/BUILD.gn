@@ -82,6 +82,7 @@ ohos_shared_library("event_export_engine") {
     "ipc:ipc_core",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   part_name = "hiview"

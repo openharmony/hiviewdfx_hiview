@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,10 +35,17 @@ public:
 
 private:
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
+    std::string GetSequenceFile() const;
+    void ReadSeqFromFile(int64_t& seq);
+    void WriteSeqToFile(int64_t seq) const;
+    bool IsNeedBackup(const std::string& dateStr);
+
 private:
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::unique_ptr<SysEventDbMgr> sysEventDbMgr_ = nullptr;
-    std::atomic<bool> hasLoaded_;
+    std::atomic<bool> hasLoaded_ { false };
+    std::string lastBackupTime_;
+    int64_t curSeq_ { 0 };
 }; // SysEventService
 } // namespace HiviewDFX
 } // namespace OHOS

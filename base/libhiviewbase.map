@@ -456,6 +456,9 @@
         "OHOS::HiviewDFX::SysEvent::SetLog(unsigned char)";
         "OHOS::HiviewDFX::Parameter::IsLaboratoryMode()";
         "OHOS::HiviewDFX::EventRaw::RawData::RawData(unsigned char*, unsigned int)";
+        "OHOS::HiviewDFX::EventStore::SysEventDao::Backup()";
+        "OHOS::HiviewDFX::EventStore::SysEventDao::GetDatabaseDir()";
+        "OHOS::HiviewDFX::EventStore::SysEventDao::Restore()";
     };
   local:
     *;

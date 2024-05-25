@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,7 +37,9 @@ public:
 
     static int Insert(std::shared_ptr<SysEvent> sysEvent);
     static void CheckRepeat(std::shared_ptr<SysEvent> event);
-
+    static void Backup();
+    static void Restore();
+    static std::string GetDatabaseDir();
     static void Clear();
 }; // SysEventDao
 } // EventStore

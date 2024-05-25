@@ -22,15 +22,13 @@
 #include <map>
 #include <cstdlib>
 
-#include "file_util.h"
-#include "hiview_global.h"
 #include "hiview_logger.h"
 #include "parameter.h"
-#include "sys_event_service_adapter.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+DEFINE_LOG_TAG("Event-JsonParser");
 constexpr uint64_t PRIME = 0x100000001B3ULL;
 constexpr uint64_t BASIS = 0xCBF29CE484222325ULL;
 constexpr int INVALID_EVENT_TYPE = 0;
@@ -41,7 +39,6 @@ constexpr char TYPE[] = "type";
 constexpr char PRESERVE[] = "preserve";
 constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
-constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
 const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
@@ -91,8 +88,6 @@ bool ReadSysEventDefFromFile(const std::string& path, Json::Value& hiSysEventDef
 }
 }
 
-DEFINE_LOG_TAG("Event-JsonParser");
-
 bool DuplicateIdFilter::IsDuplicateEvent(const uint64_t sysEventId)
 {
     for (auto iter = sysEventIds_.begin(); iter != sysEventIds_.end(); iter++) {
@@ -126,7 +121,6 @@ void EventJsonParser::WatchParameterAndReadLatestSeq()
     if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, nullptr) != 0) {
         HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
     }
-    ReadSeqFromFile(curSeq_);
 }
 
 std::string EventJsonParser::GetTagByDomainAndName(const std::string& domain, const std::string& name) const
@@ -150,7 +144,6 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
         return false;
     }
     AppendExtensiveInfo(event);
-    WriteSeqToFile(++curSeq_);
     return true;
 }
 
@@ -239,8 +232,6 @@ void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const
         event->SetEventValue(TEST_TYPE_KEY, testTypeConfigured);
     }
 
-    // add seq to sys event and then persist it into local file
-    event->SetEventSeq(curSeq_);
     event->SetTag(GetTagByDomainAndName(event->domain_, event->eventName_));
     event->preserve_ = GetPreserveByDomainAndName(event->domain_, event->eventName_);
 }
@@ -333,59 +324,6 @@ NAME_INFO_MAP EventJsonParser::ParseNameConfig(const Json::Value& domainJson) co
         allNames[key] = ParseBaseConfig(value);
     });
     return allNames;
-}
-
-std::string EventJsonParser::GetSequenceFile() const
-{
-    std::string workPath = HiviewGlobal::GetInstance()->GetHiViewDirectory(
-        HiviewContext::DirectoryType::WORK_DIRECTORY);
-    if (workPath.back() != '/') {
-        workPath = workPath + "/";
-    }
-    return workPath + "sys_event_db/" + SEQ_PERSISTS_FILE_NAME;
-}
-
-void EventJsonParser::ReadSeqFromFile(int64_t& seq)
-{
-    std::string content;
-    std::string seqFile = GetSequenceFile();
-    if (!FileUtil::LoadStringFromFile(seqFile, content) && !content.empty()) {
-        HIVIEW_LOGE("failed to read sequence value from %{public}s.", seqFile.c_str());
-        return;
-    }
-    seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
-    HIVIEW_LOGI("read max sequence from local file successful, value is %{public}" PRId64 ".", seq);
-    SysEventServiceAdapter::UpdateEventSeq(seq);
-}
-
-void EventJsonParser::WriteSeqToFile(int64_t seq) const
-{
-    std::string seqFile = GetSequenceFile();
-    std::string content = std::to_string(seq);
-    if (!SaveStringToFile(seqFile, content)) {
-        HIVIEW_LOGE("failed to write sequence %{public}s to %{public}s.", content.c_str(), seqFile.c_str());
-    }
-    SysEventServiceAdapter::UpdateEventSeq(seq);
-}
-
-bool EventJsonParser::SaveStringToFile(const std::string& filePath, const std::string& content) const
-{
-    std::ofstream file;
-    file.open(filePath.c_str(), std::ios::in | std::ios::out);
-    if (!file.is_open()) {
-        file.open(filePath.c_str(), std::ios::out);
-        if (!file.is_open()) {
-            return false;
-        }
-    }
-    file.seekp(0);
-    file.write(content.c_str(), content.length() + 1);
-    bool ret = true;
-    if (file.fail()) {
-        ret = false;
-    }
-    file.close();
-    return ret;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

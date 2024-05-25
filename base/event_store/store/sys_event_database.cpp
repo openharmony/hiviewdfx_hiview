@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,8 +19,10 @@
 
 #include "event_store_config.h"
 #include "file_util.h"
+#include "hisysevent.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
+#include "hiview_zip_util.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
 #include "sys_event_repeat_guard.h"
@@ -62,6 +64,17 @@ bool CompareFileLessFunc(const std::string& fileA, const std::string& fileB)
 bool CompareFileGreaterFunc(const std::string& fileA, const std::string& fileB)
 {
     return GetFileSeq(fileA) > GetFileSeq(fileB);
+}
+
+std::string GetEventTypeFromFileName(const std::string& fileName)
+{
+    std::vector<std::string> splitStrs;
+    StringUtil::SplitStr(fileName, FILE_NAME_DELIMIT_STR, splitStrs);
+    if (splitStrs.size() < FILE_NAME_SPLIT_SIZE) {
+        HIVIEW_LOGW("invalid file name, file=%{public}s", fileName.c_str());
+        return "";
+    }
+    return splitStrs[EVENT_TYPE_INDEX];
 }
 }
 
@@ -111,6 +124,67 @@ int SysEventDatabase::Insert(const std::shared_ptr<SysEvent>& event)
 void SysEventDatabase::CheckRepeat(std::shared_ptr<SysEvent> event)
 {
     SysEventRepeatGuard::Check(event);
+}
+
+bool SysEventDatabase::Backup(const std::string& zipFilePath)
+{
+    HIVIEW_LOGI("start backup.");
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    std::vector<std::string> domainDirs;
+    std::string dbDir(GetDatabaseDir());
+    FileUtil::GetDirDirs(dbDir, domainDirs);
+    if (domainDirs.empty()) {
+        HIVIEW_LOGI("no event files exist.");
+        return false;
+    }
+    std::string seqFilePath(dbDir + "event_sequence");
+    if (!FileUtil::FileExists(seqFilePath)) {
+        HIVIEW_LOGW("seq id file not exist.");
+        return false;
+    }
+
+    HiviewZipUnit zipUnit(zipFilePath);
+    if (int32_t ret = zipUnit.AddFileInZip(seqFilePath, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
+        HIVIEW_LOGW("zip seq id file failed, ret: %{public}d.", ret);
+        return false;
+    }
+
+    const std::string faultType(std::to_string(HiSysEvent::EventType::FAULT));
+    for (const auto& domainDir : domainDirs) {
+        std::vector<std::string> eventFiles;
+        FileUtil::GetDirFiles(domainDir, eventFiles, false);
+        for (const auto& eventFile : eventFiles) {
+            std::string fileName(FileUtil::ExtractFileName(eventFile));
+            if (GetEventTypeFromFileName(fileName) != faultType) {
+                continue;
+            }
+            if (int32_t ret = zipUnit.AddFileInZip(eventFile, ZipFileLevel::KEEP_ONE_PARENT_PATH); ret != 0) {
+                HIVIEW_LOGW("zip file failed: %{public}s, ret: %{public}d", fileName.c_str(), ret);
+                return false;
+            }
+        }
+    }
+    HIVIEW_LOGI("finish backup.");
+    return true;
+}
+
+bool SysEventDatabase::Restore(const std::string& zipFilePath, const std::string& restoreDir)
+{
+    // no need to get lock, for restore only be called during plugin loaded time
+    HIVIEW_LOGI("start restore.");
+    HiviewUnzipUnit unzipUnit(zipFilePath, restoreDir);
+    if (!unzipUnit.UnzipFile()) {
+        HIVIEW_LOGW("unzip event backup file failed.");
+        return false;
+    }
+
+    std::string seqFilePath(restoreDir + "event_sequence");
+    if (!FileUtil::FileExists(seqFilePath)) {
+        HIVIEW_LOGW("seq id file not exist in zip file.");
+        return false;
+    }
+    HIVIEW_LOGI("finish restore.");
+    return true;
 }
 
 void SysEventDatabase::Clear()
