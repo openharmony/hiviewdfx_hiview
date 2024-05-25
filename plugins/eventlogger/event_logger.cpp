@@ -163,7 +163,7 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
 
 void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 {
-    int type = AMS;
+    int type = APP;
     long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
     std::vector<Rosen::MainWindowInfo> windowInfos;
 
@@ -179,7 +179,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         sam->GetRunningSystemProcess(systemProcessInfos);
         for (const auto& systemProcessInfo : systemProcessInfos) {
             if (pid == systemProcessInfo.pid) {
-                type = SAM;
+                type = SYS;
                 break;
             }
         }
@@ -210,7 +210,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         }
     } else {
         std::string cmd = "--ffrt " + std::to_string(pid);
-        std::string serviceName = (type == AMS) ? "ApplicationManagerService" : "SystemAbilityManager";
+        std::string serviceName = (type == APP) ? "ApplicationManagerService" : "SystemAbilityManager";
         ReadShellToFile(ffrtFd, serviceName, cmd, count);
     }
     close(ffrtFd);
@@ -231,7 +231,7 @@ void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const 
         }
         if (ret !=0) {
             HIVIEW_LOGI("waitpid return ret=%{public}d, errno:%{public}d", ret, errno);
-            return;            
+            return;
         }
         kill(childPid, SIGKILL);
         int retryCount = MAX_RETRY_COUNT;
