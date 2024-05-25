@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,7 +65,7 @@ public:
     void StartMonitor(std::shared_ptr<EventLoop> looper);
 
 private:
-    void AccumulateTimeInterval(int64_t costTime, std::map<int8_t, uint32_t> &stat);
+    void AccumulateTimeInterval(uint64_t costTime, std::map<int8_t, uint32_t> &stat);
     void CalcOverBenckMarkPct(PerfMeasure &perfMeasure);
     std::shared_ptr<SysEvent> CreateProfileReport(PerfMeasure &perfMeasure);
     void GetCostTimeInterval(PerfMeasure &perfMeasure);

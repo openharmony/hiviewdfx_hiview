@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -85,7 +85,10 @@ bool PipelineEvent::OnContinue()
 
 bool PipelineEvent::OnFinish()
 {
-    processTime_ = TimeUtil::GenerateTimestamp() - createTime_;
+    {
+        uint64_t nowTime = TimeUtil::GenerateTimestamp();
+        processTime_ = nowTime > createTime_ ? (nowTime - createTime_) : 0;
+    }
     if (handler_ != nullptr) {
         handler_->Recycle(this);
     }
