@@ -229,10 +229,17 @@ void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const 
             usleep(WAIT_CHILD_PROCESS_INTERVAL);
             count--;
         }
-        if (ret !=0) {
-            HIVIEW_LOGI("waitpid return ret=%{public}d, errno:%{public}d", ret, errno);
+
+        if (ret == childPid) {
+            HIVIEW_LOGI("waitpid pid:%{public}d success", childPid);
             return;
         }
+
+        if (ret < 0) {
+            HIVIEW_LOGE("waitpid return ret=%{public}d, errno:%{public}d", ret, errno);
+            return;
+        }
+
         kill(childPid, SIGKILL);
         int retryCount = MAX_RETRY_COUNT;
         while (retryCount > 0 && waitpid(childPid, nullptr, WNOHANG) == 0) {
