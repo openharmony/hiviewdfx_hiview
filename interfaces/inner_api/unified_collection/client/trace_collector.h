@@ -53,6 +53,7 @@ public:
         APP,
         OTHER,
         HIVIEW,
+        INVALIDITY,
     };
 
 public:

@@ -83,15 +83,10 @@ void TraceFlowController::InitTraceStorage()
     traceStorage_ = std::make_shared<TraceStorage>();
 }
 
-TraceFlowController::TraceFlowController()
+TraceFlowController::TraceFlowController(TraceCollector::Caller caller) : caller_(caller)
 {
     InitTraceStorage();
     InitTraceDb();
-}
-
-TraceFlowController::TraceFlowController(TraceCollector::Caller caller) : TraceFlowController()
-{
-    caller_ = caller;
 }
 
 bool TraceFlowController::NeedDump()
