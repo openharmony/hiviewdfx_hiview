@@ -43,6 +43,9 @@ namespace SysUsageDbSpace {
 const std::string SYS_USAGE_TABLE = "sys_usage";
 const std::string LAST_SYS_USAGE_TABLE = "last_sys_usage";
 }
+namespace DomainSpace {
+constexpr char HIVIEWDFX_UE_DOMAIN[] = "HIVIEWDFX_UE";
+}
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLUGINS_USAGE_EVENT_REPORT_SREVICE_USAGE_EVENT_COMMON_H

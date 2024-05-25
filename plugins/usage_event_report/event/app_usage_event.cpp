@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,12 @@
  */
 #include "app_usage_event.h"
 
+#include "hiview_logger.h"
 #include "usage_event_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+DEFINE_LOG_TAG("AppUsageEvent");
 using namespace AppUsageEventSpace;
 
 AppUsageEvent::AppUsageEvent(const std::string &name, HiSysEvent::EventType type)
@@ -32,12 +34,34 @@ AppUsageEvent::AppUsageEvent(const std::string &name, HiSysEvent::EventType type
 
 void AppUsageEvent::Report()
 {
-    HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
+    ReportDFX();
+    ReportDFXUE();
+}
+
+void AppUsageEvent::ReportDFX()
+{
+    auto ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, this->eventName_, this->eventType_,
         KEY_OF_PACKAGE, this->paramMap_[KEY_OF_PACKAGE].GetString(),
         KEY_OF_VERSION, this->paramMap_[KEY_OF_VERSION].GetString(),
         KEY_OF_USAGE, this->paramMap_[KEY_OF_USAGE].GetUint64(),
         KEY_OF_DATE, this->paramMap_[KEY_OF_DATE].GetString(),
         KEY_OF_START_NUM, this->paramMap_[KEY_OF_START_NUM].GetUint32());
+    if (ret != 0) {
+        HIVIEW_LOGW("failed to report app usage event, ret=%{public}d", ret);
+    }
+}
+
+void AppUsageEvent::ReportDFXUE()
+{
+    auto ret = HiSysEventWrite(DomainSpace::HIVIEWDFX_UE_DOMAIN, this->eventName_, this->eventType_,
+        KEY_OF_PACKAGE, this->paramMap_[KEY_OF_PACKAGE].GetString(),
+        KEY_OF_VERSION, this->paramMap_[KEY_OF_VERSION].GetString(),
+        KEY_OF_USAGE, this->paramMap_[KEY_OF_USAGE].GetUint64(),
+        KEY_OF_DATE, this->paramMap_[KEY_OF_DATE].GetString(),
+        KEY_OF_START_NUM, this->paramMap_[KEY_OF_START_NUM].GetUint32());
+    if (ret != 0) {
+        HIVIEW_LOGW("failed to report app usage event, ret=%{public}d", ret);
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
