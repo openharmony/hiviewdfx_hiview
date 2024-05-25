@@ -98,30 +98,30 @@ void OnTestAppTraceStateChanged(const char* key, const char* value, void* contex
         return;
     }
 
-    bool IsBetaVersion = Parameter::IsBetaVersion();
-    bool IsUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
-    bool IsTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
+    bool isBetaVersion = Parameter::IsBetaVersion();
+    bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
+    bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
 
-    bool IsDeveloperMode = Parameter::IsDeveloperMode();
+    bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTraceStateActive = std::string(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE_TRUE) == value;
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[IsDeveloperMode][isTraceStateActive] && 
-                                        DYNAMIC_TRACE_FSM[IsBetaVersion][IsUCollectionSwitchOn][IsTraceCollectionSwitchOn];
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTraceStateActive] && 
+        DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace change to:%{public}d as test trace state", AppCallerEvent::enableDynamicTrace_);
 }
 
 void InitDynamicTrace()
 {
-    bool IsBetaVersion = Parameter::IsBetaVersion();
-    bool IsUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
-    bool IsTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
+    bool isBetaVersion = Parameter::IsBetaVersion();
+    bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
+    bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     HIVIEW_LOGI("IsBetaVersion=%{public}d, IsUCollectionSwitchOn=%{public}d, IsTraceCollectionSwitchOn=%{public}d",
-        IsBetaVersion, IsUCollectionSwitchOn, IsTraceCollectionSwitchOn);
+        isBetaVersion, isUCollectionSwitchOn, isTraceCollectionSwitchOn);
 
-    bool IsDeveloperMode = Parameter::IsDeveloperMode();
-    bool IsTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    HIVIEW_LOGI("IsDeveloperMode=%{public}d, IsTestAppTraceOn=%{public}d", IsDeveloperMode, IsTestAppTraceOn);
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[IsDeveloperMode][IsTestAppTraceOn] && 
-                                        DYNAMIC_TRACE_FSM[IsBetaVersion][IsUCollectionSwitchOn][IsTraceCollectionSwitchOn];
+    bool isDeveloperMode = Parameter::IsDeveloperMode();
+    bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
+    HIVIEW_LOGI("IsDeveloperMode=%{public}d, IsTestAppTraceOn=%{public}d", isDeveloperMode, isTestAppTraceOn);
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+        DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 
     int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, OnTestAppTraceStateChanged, nullptr);
@@ -138,14 +138,14 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
         return;
     }
 
-    bool IsBetaVersion = Parameter::IsBetaVersion();
-    bool IsUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
+    bool isBetaVersion = Parameter::IsBetaVersion();
+    bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceRecorderOn = std::string(DEVELOP_TRACE_RECORDER_TRUE) == value;
 
-    bool IsDeveloperMode = Parameter::IsDeveloperMode();
-    bool IsTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[IsDeveloperMode][IsTestAppTraceOn] && 
-                                        DYNAMIC_TRACE_FSM[IsBetaVersion][IsUCollectionSwitchOn][isTraceRecorderOn];
+    bool isDeveloperMode = Parameter::IsDeveloperMode();
+    bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+        DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceRecorderOn];
     HIVIEW_LOGI("dynamic trace change to:%{public}d as trace recorder state", AppCallerEvent::enableDynamicTrace_);
 }
 
@@ -363,15 +363,15 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         return;
     }
 
-    bool IsUCollectionSwitchOn;
+    bool isUCollectionSwitchOn;
     if (value == HIVIEW_UCOLLECTION_STATE_TRUE) {
-        IsUCollectionSwitchOn = true;
+        isUCollectionSwitchOn = true;
         unifiedCollectorPtr->RunCpuCollectionTask();
         unifiedCollectorPtr->RunIoCollectionTask();
         unifiedCollectorPtr->RunUCollectionStatTask();
         unifiedCollectorPtr->LoadHitraceService();
     } else {
-        IsUCollectionSwitchOn = false;
+        isUCollectionSwitchOn = false;
         if (!Parameter::IsDeveloperMode()) {
             unifiedCollectorPtr->isCpuTaskRunning_ = false;
         }
@@ -383,12 +383,12 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         unifiedCollectorPtr->CleanDataFiles();
     }
 
-    bool IsTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
+    bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
 
-    bool IsDeveloperMode = Parameter::IsDeveloperMode();
-    bool IsTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[IsDeveloperMode][IsTestAppTraceOn] && 
-                                        DYNAMIC_TRACE_FSM[COML_STATE][IsUCollectionSwitchOn][IsTraceCollectionSwitchOn];
+    bool isDeveloperMode = Parameter::IsDeveloperMode();
+    bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+        DYNAMIC_TRACE_FSM[COML_STATE][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
 }
 
 void UnifiedCollector::LoadHitraceService()
