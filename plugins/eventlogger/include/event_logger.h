@@ -54,7 +54,7 @@ public:
     void OnUnorderedEvent(const Event& msg) override;
     std::string GetAppFreezeFile(std::string& stackPath);
 private:
-    enum {AMS, SAM, TOP};
+    enum {APP, SYS, TOP};
 
     static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
     static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
