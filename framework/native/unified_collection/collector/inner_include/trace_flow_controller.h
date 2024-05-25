@@ -32,8 +32,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class TraceFlowController {
 public:
-    TraceFlowController();
-    TraceFlowController(TraceCollector::Caller caller);
+    TraceFlowController(TraceCollector::Caller caller = TraceCollector::Caller::INVALIDITY);
     ~TraceFlowController() = default;
     bool NeedDump();
     bool NeedUpload(TraceRetInfo ret);
