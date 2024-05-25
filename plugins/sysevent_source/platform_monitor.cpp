@@ -36,7 +36,7 @@ namespace {
 constexpr uint8_t SLEEP_TEN_SECONDS = 10;
 constexpr char EVENT_SERVICE_PLUGIN[] = "SysEventService";
 };
-void PlatformMonitor::AccumulateTimeInterval(int64_t costTime, std::map<int8_t, uint32_t> &stat)
+void PlatformMonitor::AccumulateTimeInterval(uint64_t costTime, std::map<int8_t, uint32_t> &stat)
 {
     std::lock_guard<std::mutex> lock(statMutex_);
     auto it = std::lower_bound(intervals_, intervals_ + sizeof(intervals_) / sizeof(intervals_[0]), costTime);
@@ -63,10 +63,11 @@ void PlatformMonitor::CollectCostTime(PipelineEvent *event)
     onceTotalCnt_++;
     onceTotalRealTime_ += event->realtime_;
     onceTotalProcTime_ += event->processTime_;
-    onceTotalWaitTime_ += event->processTime_ - event->realtime_;
+    uint64_t waitTime = event->processTime_ > event->realtime_ ? (event->processTime_ - event->realtime_) : 0;
+    onceTotalWaitTime_ += waitTime;
     AccumulateTimeInterval(event->realtime_, realStat_);
     AccumulateTimeInterval(event->processTime_, processStat_);
-    AccumulateTimeInterval((event->processTime_ - event->realtime_), waitTimeStat_);
+    AccumulateTimeInterval(waitTime, waitTimeStat_);
     if (event->realtime_ > realTimeBenchMark_) {
         overRealTotalCount_++;
     }
