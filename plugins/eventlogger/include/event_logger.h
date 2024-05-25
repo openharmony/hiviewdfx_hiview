@@ -82,6 +82,7 @@ private:
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
+    static constexpr int MAX_RETRY_COUNT = 20;
     static constexpr int TOP_WINDOW_NUM = 3;
     static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
     static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
