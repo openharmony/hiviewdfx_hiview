@@ -91,6 +91,7 @@ HWTEST_F(CpuStorageTest, CpuStorageTest002, TestSize.Level3)
     FileUtil::RemoveFile(DB_PATH);
     CpuStorage cpuStorage(DB_PATH);
     auto cpuCollector = UCollectUtil::CpuCollector::Create();
+    sleep(1);
     auto cpuCollectionsResult = cpuCollector->CollectProcessCpuStatInfos(true);
     if (cpuCollectionsResult.retCode == UCollect::UcError::SUCCESS) {
         cpuStorage.StoreProcessDatas(cpuCollectionsResult.data);
