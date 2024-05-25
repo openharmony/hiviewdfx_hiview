@@ -143,8 +143,8 @@ group("hiview_test_package") {
   deps = [
     "$hiview_adapter:moduletest",
     "$hiview_adapter:unittest",
-    "adapter/service/idl:fuzztest",
-    "adapter/service/idl:unittest",
+    "adapter/service:fuzztest",
+    "adapter/service:unittest",
     "base/test:unittest",
     "core/test:unittest",
     "framework/native/unified_collection:unittest",
