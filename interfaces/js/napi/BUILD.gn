@@ -17,6 +17,7 @@ import("//build/ohos.gni")
 ohos_shared_library("loglibrary_napi") {
   include_dirs = [
     "include/",
+    "$hiview_base/include",
     "$hiview_interfaces/inner_api/unified_collection",
   ]
 
@@ -27,7 +28,10 @@ ohos_shared_library("loglibrary_napi") {
     "./src/napi_hiview_js.cpp",
   ]
 
-  deps = [ "$hiview_adapter/service/idl:hiview_service_impl_for_js" ]
+  deps = [
+    "$hiview_adapter/service/client:hiview_service_impl_for_js",
+    "$hiview_base/utility:hiview_utility",
+  ]
 
   external_deps = [
     "ability_runtime:app_context",

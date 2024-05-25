@@ -22,7 +22,8 @@ config("event_export_engine_config") {
     "include",
     "task/include",
     "database/include",
-    "$hiview_adapter/service/idl/include",
+    "$hiview_adapter/service/client/include",
+    "$hiview_adapter/service/common/include",
     "$hiview_interfaces/inner_api/unified_collection",
   ]
 }

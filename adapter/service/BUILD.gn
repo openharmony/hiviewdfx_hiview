@@ -39,7 +39,7 @@ ohos_source_set("hiview_service_adapter") {
 
   deps = [
     "$hiview_base:hiviewbase",
-    "idl:hiview_service_impl",
+    "server:hiview_service_impl",
   ]
 
   external_deps = [
@@ -47,5 +47,18 @@ ohos_source_set("hiview_service_adapter") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+  ]
+}
+
+group("unittest") {
+  testonly = true
+  deps = [ "test:unittest" ]
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [
+    "test/fuzztest/hiviewlogconfigmanager_fuzzer:HiviewLogConfigManagerFuzzTest",
+    "test/fuzztest/hiviewserviceabilitystub_fuzzer:HiviewServiceAbilityStubFuzzTest",
   ]
 }

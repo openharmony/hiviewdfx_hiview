@@ -25,7 +25,7 @@ group("unittest") {
 
 config("unittest_config") {
   include_dirs = [
-    "$hiview_adapter/service/idl/test/unittest/common",
+    "$hiview_adapter/service/test/unittest/common",
     "$hiview_base/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/js/napi/include",
@@ -61,7 +61,7 @@ ohos_unittest("LoglibraryAgentTest") {
   configs = [ ":unittest_config" ]
 
   sources = [
-    "$hiview_adapter/service/idl/test/unittest/common/adapter_loglibrary_test_tools.cpp",
+    "$hiview_adapter/service/test/unittest/common/adapter_loglibrary_test_tools.cpp",
     "$hiview_interfaces/js/napi/src/hiview_service_agent.cpp",
     "unittest/common/loglibrary_agent_test.cpp",
   ]
@@ -69,7 +69,7 @@ ohos_unittest("LoglibraryAgentTest") {
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
   deps = [
-    "$hiview_adapter/service/idl:hiview_service_impl_for_js",
+    "$hiview_adapter/service/client:hiview_service_impl_for_js",
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]

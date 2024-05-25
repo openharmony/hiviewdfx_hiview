@@ -27,7 +27,9 @@ config("unittest_config") {
   include_dirs = [
     "//third_party/bounds_checking_function/include",
     "unittest/common",
-    "$hiview_adapter/service/idl/include",
+    "$hiview_adapter/service/client/include",
+    "$hiview_adapter/service/common/include",
+    "$hiview_adapter/service/server/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_service",
   ]
@@ -44,7 +46,7 @@ ohos_unittest("HiviewSATest") {
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
   deps = [
-    "$hiview_adapter/service/idl:hiview_service_impl_for_js",
+    "$hiview_adapter/service/client:hiview_service_impl_for_js",
     "$hiview_base:hiview_base",
     "//third_party/googletest:gtest_main",
   ]
