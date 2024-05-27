@@ -71,6 +71,7 @@ private:
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
         const std::string& logName) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
+    void InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt) const;
     static std::string GetDisPlayPowerInfo();
     static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
 

@@ -39,16 +39,20 @@
 #include "event_source.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
+#include "iservice_registry.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
+#include "wm_common.h"
+#include "window_manager_lite.h"
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
 #include "freeze_common.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(EventLogger);
@@ -114,11 +118,15 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     sysEvent->OnPending();
 
-    auto task = [this, sysEvent]() {
+    bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), sysEvent->eventName_) != FFRT_VECTOR.end();
+    auto task = [this, sysEvent, isFfrt]() {
         HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
+        }
+        if (isFfrt) {
+            this->StartFfrtDump(sysEvent);
         }
         this->StartLogCollect(sysEvent);
     };
@@ -130,27 +138,131 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     return true;
 }
 
-int EventLogger::Getfile(std::shared_ptr<SysEvent> event, std::string& logFile)
+int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt)
 {
-    std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
+    std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
     int32_t pid = static_cast<int32_t>(event->GetEventIntValue("PID"));
     pid = pid ? pid : event->GetPid();
-    logFile = idStr + "-" + std::to_string(pid) + "-"
-                          + TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S") + ".log";
-    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
-        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
-        UpdateDB(event, logFile);
-        return -1;
+    if (!isFfrt) {
+        std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
+        logFile = idStr + "-" + std::to_string(pid) + "-" + formatTime + ".log";
+    } else {
+        logFile = "ffrt_" + std::to_string(pid) + "_" + formatTime;
     }
 
+    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
+        HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
+        if (!isFfrt) {
+            UpdateDB(event, logFile);
+        }
+        return -1;
+    }
     return logStore_->CreateLogFile(logFile);
+}
+
+void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
+{
+    int type = APP;
+    long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+    std::vector<Rosen::MainWindowInfo> windowInfos;
+
+    if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
+        Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
+        if (windowInfos.size() <= 0) {
+            return;
+        }
+        type = TOP;
+    } else {
+        std::list<SystemProcessInfo> systemProcessInfos;
+        sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        sam->GetRunningSystemProcess(systemProcessInfos);
+        for (const auto& systemProcessInfo : systemProcessInfos) {
+            if (pid == systemProcessInfo.pid) {
+                type = SYS;
+                break;
+            }
+        }
+    }
+
+    std::string ffrtFile;
+    int ffrtFd = GetFile(event, ffrtFile, true);
+    if (ffrtFd < 0) {
+        HIVIEW_LOGE("create ffrt log file %{public}s failed, %{public}d", ffrtFile.c_str(), ffrtFd);
+        return;
+    }
+
+    int count = (type == TOP) ? WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO : WAIT_CHILD_PROCESS_COUNT;
+    if (type == TOP) {
+        int size = windowInfos.size();
+        std::string cmdAms = "--ffrt ";
+        std::string cmdSam = "--ffrt ";
+        FileUtil::SaveStringToFd(ffrtFd, "dump topWindowInfos, process infos:\n");
+        for (int i = 0; i < size ; i++) {
+            auto info = windowInfos[i];
+            FileUtil::SaveStringToFd(ffrtFd, "    " + std::to_string(info.pid_) + ":" + info.bundleName_ + "\n");
+            cmdAms += std::to_string(info.pid_) + (i < size -1 ? "," : "");
+            cmdSam += std::to_string(info.pid_) + (i < size -1 ? "|" : "");
+        }
+        ReadShellToFile(ffrtFd, "ApplicationManagerService", cmdAms, count);
+        if (count > WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
+            ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
+        }
+    } else {
+        std::string cmd = "--ffrt " + std::to_string(pid);
+        std::string serviceName = (type == APP) ? "ApplicationManagerService" : "SystemAbilityManager";
+        ReadShellToFile(ffrtFd, serviceName, cmd, count);
+    }
+    close(ffrtFd);
+}
+
+void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)
+{
+    int childPid = fork();
+    if (childPid < 0) {
+        HIVIEW_LOGE("fork falied");
+    } else if (childPid == 0) {
+        FfrtChildProcess(fd, serviceName, cmd, count);
+    } else {
+        int ret = 0;
+        while (count > 0 && (ret = waitpid(childPid, nullptr, WNOHANG) == 0)) {
+            usleep(WAIT_CHILD_PROCESS_INTERVAL);
+            count--;
+        }
+
+        if (ret == childPid) {
+            HIVIEW_LOGI("waitpid pid:%{public}d success", childPid);
+            return;
+        }
+
+        if (ret < 0) {
+            HIVIEW_LOGE("waitpid return ret=%{public}d, errno:%{public}d", ret, errno);
+            return;
+        }
+
+        kill(childPid, SIGKILL);
+        int retryCount = MAX_RETRY_COUNT;
+        while (retryCount > 0 && waitpid(childPid, nullptr, WNOHANG) == 0) {
+            usleep(WAIT_CHILD_PROCESS_INTERVAL);
+            retryCount--;
+        }
+    }
+}
+
+void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd, int& count) const
+{
+    if (fd < 0 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1) {
+        HIVIEW_LOGE("dup2 fd failed");
+        _exit(-1);
+    }
+    FileUtil::SaveStringToFd(fd, FFRT_HEADER);
+    execl("/system/bin/hidumper", "hidumper", "-s", serviceName.c_str(), "-a", cmd.c_str(), nullptr);
 }
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
     std::string logFile;
-    int fd = Getfile(event, logFile);
+    int fd = GetFile(event, logFile, false);
     if (fd < 0) {
         HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
         return;
