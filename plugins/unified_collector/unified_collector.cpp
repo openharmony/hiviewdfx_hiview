@@ -140,12 +140,12 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
 
     bool isBetaVersion = Parameter::IsBetaVersion();
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
-    bool isTraceRecorderOn = std::string(DEVELOP_TRACE_RECORDER_TRUE) == value;
+    bool isTraceCollectionSwitchOn = std::string(DEVELOP_TRACE_RECORDER_TRUE) == value;
 
     bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
-        DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceRecorderOn];
+        DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace change to:%{public}d as trace recorder state", AppCallerEvent::enableDynamicTrace_);
 }
 

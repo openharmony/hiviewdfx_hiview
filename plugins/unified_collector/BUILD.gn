@@ -40,7 +40,7 @@ ohos_source_set("unified_collector") {
     cfi_vcall_icall_only = true
     debug = false
   }
-  configs = [ ":unified_collector_config" ]
+  public_configs = [ ":unified_collector_config" ]
 
   sources = [
     "app_trace/app_trace_context.cpp",
@@ -93,7 +93,7 @@ ohos_source_set("unified_collector") {
 
 group("unittest") {
   testonly = true
-  deps = [ "test/unittest/common:CpuStorageTest" ]
+  deps = [ "test/unittest/common:CpuStorageTest", "test/unittest/common:TraceStateChangeTest" ]
 }
 
 group("moduletest") {
