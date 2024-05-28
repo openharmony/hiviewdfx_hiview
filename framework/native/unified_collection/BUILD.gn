@@ -33,6 +33,7 @@ ohos_source_set("ucollection_source") {
   configs = [
     ":ucolletciton_source_config",
     "$hiview_base:logger_config",
+    "$hiview_base/event_report:hiview_event_report_config",
   ]
 
   public_configs = [ ":ucolletciton_source_config" ]

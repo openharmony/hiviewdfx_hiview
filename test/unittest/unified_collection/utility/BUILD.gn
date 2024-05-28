@@ -53,6 +53,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
   cflags_cc = []
 
   deps = [
+    "$hiview_base/event_report:hiview_event_report",
     "$hiview_base/utility:hiview_utility",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "//third_party/googletest:gtest_main",
