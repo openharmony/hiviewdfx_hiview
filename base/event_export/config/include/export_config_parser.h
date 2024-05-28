@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "cJSON.h"
 #include "export_event_list_parser.h"
@@ -26,21 +27,24 @@ namespace OHOS {
 namespace HiviewDFX {
 struct SettingDbParam {
     // name of the congifured setting db parameter
-    std::string paramName;
+    std::string name;
 
     // the value set when the parameter is enabled
     std::string enabledVal;
 
     // the value set when the parameter is disabled
     std::string disabledVal;
+
+    // Check vadility of this parameter
+    bool IsInValid();
 };
 
 struct ExportConfig {
     // name of the module which this config belong to
     std::string moduleName;
 
-    // setting db parameter associated with export ability switch
-    SettingDbParam settingDbParam;
+    // setting db parameters associated with event export ability
+    std::vector<SettingDbParam> settingDbParams;
 
     // the directory to store exported event file
     std::string exportDir;
@@ -59,6 +63,12 @@ struct ExportConfig {
 
     // the maximum count of day for event files to store. unit: day
     int64_t dayCnt = 0;
+
+    // Get paramter configured which is accociated with event export
+    SettingDbParam GetExportAbilityParam();
+
+    // Get paramter configured which is accociated with system upgrade
+    SettingDbParam GetUpgradeAbilityParam();
 };
 
 class ExportConfigParser {
@@ -71,7 +81,7 @@ public:
 
 private:
     bool ParseExportEventList(ExportEventList& list);
-    bool ParseSettingDbParam(SettingDbParam& settingDbParam);
+    bool ParseSettingDbParamList(std::vector<SettingDbParam>& settingDbParams);
     bool ParseResidualContent(std::shared_ptr<ExportConfig> config);
 
 private:

@@ -26,7 +26,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventConfigParser");
 using  ExportEventListParsers = std::map<std::string, std::shared_ptr<ExportEventListParser>>;
 namespace {
-constexpr char SETTING_DB_PARAM[] = "settingDbParam";
+constexpr char SETTING_DB_PARAMS[] = "settingDbParams";
 constexpr char SETTING_DB_PARAM_NAME[] = "name";
 constexpr char SETTING_DB_ENABLED[] = "enabledValue";
 constexpr char SETTING_DB_DISABLED[] = "disabledValue";
@@ -38,6 +38,8 @@ constexpr char EXPORT_EVENT_LIST_CONFIG_PATHS[] = "exportEventListConfigPaths";
 constexpr char FILE_STORED_MAX_DAY_CNT[] = "fileStoredMaxDayCnt";
 constexpr int32_t INVALID_INT_VAL = -1;
 constexpr double INVALID_DOUBLE_VAL = -1.0;
+constexpr size_t EXPORT_ABILITY_PARAM_INDEX = 0;
+constexpr size_t UPGRADE_ABILITY_PARAM_INDEX = 1;
 
 std::shared_ptr<ExportEventListParser> GetParser(ExportEventListParsers& parsers,
     const std::string& path)
@@ -49,6 +51,61 @@ std::shared_ptr<ExportEventListParser> GetParser(ExportEventListParsers& parsers
     }
     return iter->second;
 }
+
+bool AddConfiguredParamToList(cJSON* paramItem, std::vector<SettingDbParam>& paramList)
+{
+    if (paramItem == nullptr || !cJSON_IsObject(paramItem)) {
+        HIVIEW_LOGW("setting parameter configured is invalid");
+        return false;
+    }
+    SettingDbParam param {
+        .name = "",
+        .enabledVal = "",
+        .disabledVal = "",
+    };
+    param.name = CJsonUtil::GetStringValue(paramItem, SETTING_DB_PARAM_NAME);
+    if (param.name.empty()) {
+        HIVIEW_LOGE("name of setting db parameter configured is empty.");
+        return false;
+    }
+    param.enabledVal = CJsonUtil::GetStringValue(paramItem, SETTING_DB_ENABLED);
+    if (param.enabledVal.empty()) {
+        HIVIEW_LOGW("enabled value of setting db parameter configured is invalid.");
+    }
+    param.disabledVal = CJsonUtil::GetStringValue(paramItem, SETTING_DB_DISABLED);
+    if (param.disabledVal.empty()) {
+        HIVIEW_LOGW("disabled value of setting db parameter configured is invalid.");
+    }
+    return true;
+}
+
+SettingDbParam GetParamByIndex(const std::vector<SettingDbParam> params, const size_t index)
+{
+    SettingDbParam invalidParam {
+        .name = "",
+        .enabledVal = "",
+        .disabledVal = "",
+    };
+    if (params.size() <= index) {
+        return invalidParam;
+    }
+    return params[index];
+}
+}
+
+bool SettingDbParam::IsInValid()
+{
+    return name.empty();
+}
+
+SettingDbParam ExportConfig::GetExportAbilityParam()
+{
+    return GetParamByIndex(settingDbParams, EXPORT_ABILITY_PARAM_INDEX);
+}
+
+SettingDbParam ExportConfig::GetUpgradeAbilityParam()
+{
+    return GetParamByIndex(settingDbParams, UPGRADE_ABILITY_PARAM_INDEX);
 }
 
 ExportConfigParser::ExportConfigParser(const std::string& configFile)
@@ -76,9 +133,9 @@ std::shared_ptr<ExportConfig> ExportConfigParser::Parse()
         HIVIEW_LOGE("failed to parse export event list.");
         return nullptr;
     }
-    // parse setting db param
-    if (!ParseSettingDbParam(exportConfig->settingDbParam)) {
-        HIVIEW_LOGE("failed to parse setting db parameter.");
+    // parse setting db param list
+    if (!ParseSettingDbParamList(exportConfig->settingDbParams)) {
+        HIVIEW_LOGE("failed to parse setting db parameter list.");
         return nullptr;
     }
     // parse residual content of the config file
@@ -110,28 +167,24 @@ bool ExportConfigParser::ParseExportEventList(ExportEventList& list)
     return true;
 }
 
-bool ExportConfigParser::ParseSettingDbParam(SettingDbParam& settingDbParam)
+bool ExportConfigParser::ParseSettingDbParamList(std::vector<SettingDbParam>& settingDbParams)
 {
     // read exportAbilitySwitchParam
-    cJSON* settingDbParamJson = cJSON_GetObjectItem(jsonRoot_, SETTING_DB_PARAM);
-    if (settingDbParamJson == nullptr || !cJSON_IsObject(settingDbParamJson)) {
-        HIVIEW_LOGW("settingDbParam configured is invalid.");
+    cJSON* settingDbParamsJson = cJSON_GetObjectItem(jsonRoot_, SETTING_DB_PARAMS);
+    if (settingDbParamsJson == nullptr || !cJSON_IsArray(settingDbParamsJson)) {
+        HIVIEW_LOGW("setting parameter list configured is invalid.");
         return false;
     }
-    settingDbParam.paramName = CJsonUtil::GetStringValue(settingDbParamJson, SETTING_DB_PARAM_NAME);
-    if (settingDbParam.paramName.empty()) {
-        HIVIEW_LOGW("name of setting db parameter configured is invalid.");
+    int paramSize = cJSON_GetArraySize(settingDbParamsJson);
+    if (paramSize <= 0) {
+        HIVIEW_LOGW("setting parameter list configured is empty");
         return false;
     }
-    settingDbParam.enabledVal = CJsonUtil::GetStringValue(settingDbParamJson, SETTING_DB_ENABLED);
-    if (settingDbParam.enabledVal.empty()) {
-        HIVIEW_LOGW("enabled value of setting db parameter configured is invalid.");
-        return false;
-    }
-    settingDbParam.disabledVal = CJsonUtil::GetStringValue(settingDbParamJson, SETTING_DB_DISABLED);
-    if (settingDbParam.disabledVal.empty()) {
-        HIVIEW_LOGW("disabled value of setting db parameter configured is invalid.");
-        return false;
+    for (int index = 0; index < paramSize; ++paramSize) {
+        cJSON* paramItem = cJSON_GetArrayItem(settingDbParamsJson, index);
+        if (!AddConfiguredParamToList(paramItem, settingDbParams)) {
+            return false;
+        }
     }
     return true;
 }

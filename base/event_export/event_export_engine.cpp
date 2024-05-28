@@ -33,6 +33,7 @@ namespace {
 constexpr char SYS_EVENT_EXPORT_DIR_NAME[] = "sys_event_export";
 constexpr int REGISTER_RETRY_CNT = 6;
 constexpr int REGISTER_LOOP_DURATION = 6;
+
 std::string GetExportDir(HiviewContext::DirectoryType type)
 {
     auto& context = HiviewGlobal::GetInstance();
@@ -58,7 +59,11 @@ EventExportEngine::EventExportEngine()
 EventExportEngine::~EventExportEngine()
 {
     for (auto& config : configs_) {
-        SettingObserverManager::GetInstance()->UnregisterObserver(config->settingDbParam.paramName);
+        auto param = config->GetExportAbilityParam();
+        if (param.IsInValid()) {
+            continue;
+        }
+        SettingObserverManager::GetInstance()->UnregisterObserver(param.name);
     }
 }
 
@@ -121,7 +126,11 @@ bool EventExportEngine::RegistSettingObserver(std::shared_ptr<ExportConfig> conf
         [this, &config] (const std::string& paramKey) {
             std::string val = SettingObserverManager::GetInstance()->GetStringValue(paramKey);
             HIVIEW_LOGI("value of param key[%{public}s] is %{public}s", paramKey.c_str(), val.c_str());
-            if (val == config->settingDbParam.enabledVal) {
+            auto param = config->GetExportAbilityParam();
+            if (param.IsInValid()) {
+                return;
+            }
+            if (val == param.enabledVal) {
                 this->HandleExportSwitchOn(config->moduleName);
             } else {
                 this->HandleExportSwitchOff(config->moduleName);
@@ -129,9 +138,13 @@ bool EventExportEngine::RegistSettingObserver(std::shared_ptr<ExportConfig> conf
         };
     bool regRet = false;
     int retryCount = REGISTER_RETRY_CNT;
+    auto exportParam = config->GetExportAbilityParam();
+    if (exportParam.IsInValid()) {
+        HIVIEW_LOGE("export parameter nmae is empty for module %{public}s", exportParam.name.c_str());
+        return false;
+    }
     while (!regRet && retryCount > 0) {
-        regRet = SettingObserverManager::GetInstance()->RegisterObserver(config->settingDbParam.paramName,
-            callback);
+        regRet = SettingObserverManager::GetInstance()->RegisterObserver(exportParam.name, callback);
         if (regRet) {
             break;
         }
@@ -143,9 +156,14 @@ bool EventExportEngine::RegistSettingObserver(std::shared_ptr<ExportConfig> conf
         return regRet;
     }
     auto enabledSeq = INVALID_SEQ_VAL;
-    if (SettingObserverManager::GetInstance()->GetStringValue(config->settingDbParam.paramName) ==
-        config->settingDbParam.enabledVal) {
+    if (SettingObserverManager::GetInstance()->GetStringValue(exportParam.name) == exportParam.enabledVal) {
         enabledSeq = SysEventServiceAdapter::GetCurrentEventSeq();
+        auto upgradeParam = config->GetUpgradeAbilityParam();
+        if (!upgradeParam.IsInValid() &&
+            SettingObserverManager::GetInstance()->GetStringValue(upgradeParam.name) == upgradeParam.enabledVal) {
+            HIVIEW_LOGW("set enabled export sequence to be 0");
+            enabledSeq = 0;
+        }
     }
     dbMgr_->HandleExportModuleInit(config->moduleName, enabledSeq);
     HIVIEW_LOGI("succeed to regist setting db observer for module %{public}s", config->moduleName.c_str());
