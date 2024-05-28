@@ -31,7 +31,9 @@
 #include "sys_event.h"
 
 #include "active_key_event.h"
+#include "db_helper.h"
 #include "event_logger_config.h"
+#include "freeze_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -83,10 +85,13 @@ private:
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
     static constexpr int MAX_RETRY_COUNT = 20;
+    static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
     static constexpr int TOP_WINDOW_NUM = 3;
     static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
     static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
 
+    std::unique_ptr<DBHelper> dbHelper_ = nullptr;
+    std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::shared_ptr<LogStoreEx> logStore_;
     long lastPid_ = 0;
     uint64_t startTime_;
@@ -119,6 +124,7 @@ private:
     std::string GetRebootReason() const;
     void GetCmdlineContent();
     void GetRebootReasonConfig();
+    void GetFailedDumpStackMsg(std::string& stack, std::shared_ptr<SysEvent> event);
     bool GetMatchString(const std::string& src, std::string& dst, const std::string& pattern) const;
     void WriteCallStack(std::shared_ptr<SysEvent> event, int fd);
 };

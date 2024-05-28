@@ -51,7 +51,6 @@
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
-#include "freeze_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -500,6 +499,8 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             stack = jsonStack;
         }
 
+        GetFailedDumpStackMsg(stack, event);
+
         if (jsonFd >= 0) {
             HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
             FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
@@ -525,6 +526,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         if (FileUtil::FileExists(stack)) {
             stack = GetAppFreezeFile(stack);
         }
+        GetFailedDumpStackMsg(stack, event);
     }
 
     std::ostringstream oss;
@@ -538,6 +540,33 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     FileUtil::SaveStringToFd(fd, oss.str());
     WriteCallStack(event, fd);
     return true;
+}
+
+void EventLogger::GetFailedDumpStackMsg(std::string& stack, std::shared_ptr<SysEvent> event)
+{
+    std::string failedStackStart = " Failed to dump stacktrace for ";
+    if (dbHelper_ != nullptr && stack.size() >= failedStackStart.size()
+        && !stack.compare(0, failedStackStart.size(), failedStackStart)
+        && stack.find("syscall SIGDUMP error") != std::string::npos) {
+        long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+        std::string packageName = event->GetEventValue("PACKAGE_NAME").empty() ?
+            event->GetEventValue("PROCESS_NAME") : event->GetEventValue("PACKAGE_NAME");
+
+        std::vector<WatchPoint> list;
+        FreezeResult freezeResult(0, "FRAMEWORK", "PROCESS_KILL");
+        freezeResult.SetSamePackage("true");
+        dbHelper_->SelectEventFromDB(event->happenTime_ - QUERY_PROCESS_KILL_INTERVAL, event->happenTime_, list,
+            packageName, freezeResult);
+
+        std::string appendStack = "";
+        for (auto watchPoint : list) {
+            if (watchPoint.GetPid() == pid) {
+                appendStack += "\n" + watchPoint.GetMsg();
+            }
+        }
+        stack += appendStack.empty() ? "\ncan not get process kill reason" : "\nprocess may be killed by : "
+            + appendStack;
+    }
 }
 
 bool EventLogger::JudgmentRateLimiting(std::shared_ptr<SysEvent> event)
@@ -666,6 +695,11 @@ void EventLogger::OnLoad()
 
     GetCmdlineContent();
     GetRebootReasonConfig();
+
+    freezeCommon_ = std::make_shared<FreezeCommon>();
+    if (freezeCommon_->Init() && freezeCommon_ != nullptr && freezeCommon_->GetFreezeRuleCluster() != nullptr) {
+        dbHelper_ = std::make_unique<DBHelper>(freezeCommon_);
+    }
 }
 
 void EventLogger::OnUnload()
