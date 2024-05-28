@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +17,11 @@
 #include "hiview_event_common.h"
 #include "hiview_event_cacher.h"
 #include "hiview_logger.h"
+#include "parameter_ex.h"
 #include "plugin_fault_event_factory.h"
 #include "plugin_load_event_factory.h"
 #include "plugin_unload_event_factory.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -70,6 +72,23 @@ void HiviewEventReport::UpdatePluginStats(const std::string &name, const std::st
     HIVIEW_LOGD("UpdatePluginStats pluginName=%{public}s, procName=%{public}s, time=%{public}d",
         name.c_str(), procName.c_str(), procTime);
     HiviewEventCacher::GetInstance().UpdatePluginStatsEvent(name, procName, procTime);
+}
+
+void HiviewEventReport::ReportCpuScene(const std::string &sceneId)
+{
+    if (!Parameter::IsBetaVersion()) {
+        HIVIEW_LOGD("no need to report cpu scene event");
+        return;
+    }
+    auto ret = HiSysEventWrite(CpuSceneEvent::DOMAIN, "CPU_SCENE_ENTRY", HiSysEvent::BEHAVIOR,
+        "PACKAGE_NAME", "hiview",
+        "SCENE_ID", sceneId,
+        "HAPPEN_TIME", TimeUtil::GetMilliseconds());
+    if (ret != 0) {
+        HIVIEW_LOGW("failed to report cpu scene event, sceneId=%{public}s, ret=%{public}d", sceneId.c_str(), ret);
+    } else {
+        HIVIEW_LOGI("succ to report cpu scene event, sceneId=%{public}s", sceneId.c_str());
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

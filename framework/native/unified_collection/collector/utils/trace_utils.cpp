@@ -22,6 +22,7 @@
 #include "file_util.h"
 #include "ffrt.h"
 #include "hiview_logger.h"
+#include "hiview_event_report.h"
 #include "parameter_ex.h"
 #include "securec.h"
 #include "string_util.h"
@@ -399,6 +400,7 @@ void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath)
         return;
     }
     CheckCurrentCpuLoad();
+    HiviewEventReport::ReportCpuScene("5");
     std::string sysFileName = FileUtil::ExtractFileName(srcSysPath);
     zipOpenNewFileInZip(
         zipFile, sysFileName.c_str(), &zipInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);

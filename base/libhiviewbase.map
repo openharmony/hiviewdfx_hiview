@@ -103,6 +103,7 @@
         "OHOS::HiviewDFX::ParamValue::ParamValue()";
         "OHOS::HiviewDFX::LoggerEvent::InnerUpdate(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::ParamValue const&)";
         "OHOS::HiviewDFX::HiviewEventReport::ReportPluginStats()";
+        "OHOS::HiviewDFX::HiviewEventReport::ReportCpuScene(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::HiviewEventCacher::GetPluginStatsEvents(std::__h::vector<std::__h::shared_ptr<OHOS::HiviewDFX::LoggerEvent>, std::__h::allocator<std::__h::shared_ptr<OHOS::HiviewDFX::LoggerEvent>>>&)";
         "OHOS::HiviewDFX::SysEvent::SetSeq(long long)";
         "OHOS::HiviewDFX::HiviewGlobal::PostUnorderedEvent(std::__h::shared_ptr<OHOS::HiviewDFX::Event>)";
