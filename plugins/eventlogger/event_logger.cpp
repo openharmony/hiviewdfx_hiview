@@ -526,6 +526,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         if (FileUtil::FileExists(stack)) {
             stack = GetAppFreezeFile(stack);
         }
+        GetFailedDumpStackMsg(stack, event);
     }
 
     std::ostringstream oss;
