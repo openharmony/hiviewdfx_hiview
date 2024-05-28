@@ -45,7 +45,7 @@ std::string ProcessStatus::GetProcessName(int32_t pid)
     if (UpdateProcessName(pid, procName)) {
         return procName;
     }
-    HIVIEW_LOGW("failed to get proc name from pid=%{public}d", pid);
+    HIVIEW_LOGD("failed to get proc name from pid=%{public}d", pid);
     return "";
 }
 

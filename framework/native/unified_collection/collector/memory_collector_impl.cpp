@@ -351,7 +351,7 @@ static void SetValueOfSysMemory(SysMemory& sysMemory, const std::string& attrNam
     };
     auto iter = assignFuncMap.find(attrName);
     if (iter == assignFuncMap.end() || iter->second == nullptr) {
-        HIVIEW_LOGI("%{public}s isn't defined in SysMemory.", attrName.c_str());
+        HIVIEW_LOGD("%{public}s isn't defined in SysMemory.", attrName.c_str());
         return;
     }
     iter->second(sysMemory, value);
