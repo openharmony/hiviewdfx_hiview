@@ -133,7 +133,7 @@ UCollect::UcError CpuUtil::GetCpuFrequency(std::vector<CpuFreq>& cpuFreqs)
             .maxFreq = GetIntegerFromFile(cpuMaxFreqPath),
         };
         cpuFreqs.emplace_back(cpuFreq);
-        HIVIEW_LOGI("cpu%{public}u: curFreq=%{public}u, minFreq=%{public}u, maxFreq=%{public}u",
+        HIVIEW_LOGD("cpu%{public}u: curFreq=%{public}u, minFreq=%{public}u, maxFreq=%{public}u",
             i, cpuFreq.cpuId, cpuFreq.minFreq, cpuFreq.maxFreq);
     }
     return UCollect::SUCCESS;
