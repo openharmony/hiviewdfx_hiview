@@ -16,13 +16,23 @@
 
 #include <unistd.h>
 
+#include "common_utils.h"
 #include "hiview_logger.h"
 #include "parameter_ex.h"
 #include "trace_collector.h"
 
+using namespace OHOS::HiviewDFX::UCollectUtil;
+
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("Hiview-CpuCollectionTask");
+struct CpuThresholdItem {
+    std::string processName;
+    TraceCollector::Caller caller;
+    double cpuLoadThreshold = 0.0;
+    bool hasOverThreshold = false;
+};
+
 CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(workPath)
 {
     InitCpuCollector();
@@ -67,24 +77,32 @@ void CpuCollectionTask::ReportCpuCollectionEvent()
 
 void CpuCollectionTask::CheckAndDumpTraceData()
 {
-    static bool hasOverThreshold = false;
-    const double DUMP_TRACE_CPULOAD_THRESHOLD = 0.07; // 0.07 : 7% cpu load
-    int32_t pid = getpid();
-    auto selfProcessCpuStatInfo = cpuCollector_->CollectProcessCpuStatInfo(pid);
-    double cpuLoad = selfProcessCpuStatInfo.data.cpuLoad;
-    if (!hasOverThreshold && cpuLoad >= DUMP_TRACE_CPULOAD_THRESHOLD) {
-        HIVIEW_LOGI("over threshold, current cpu load:%{public}f", cpuLoad);
-        hasOverThreshold = true;
-        return;
-    }
+    static std::vector<CpuThresholdItem> checkItems = {
+        {"hiview", TraceCollector::Caller::HIVIEW, 0.07, false}, // 0.07 : 7% cpu load
+        {"foundation", TraceCollector::Caller::FOUNDATION, 0.2, false}, // 0.2 : 20% cpu load
+    };
 
-    // when cpu load restore to normal, start capture history trace
-    if (hasOverThreshold && cpuLoad < DUMP_TRACE_CPULOAD_THRESHOLD) {
-        HIVIEW_LOGI("start capture history trace");
-        auto traceCollector = UCollectUtil::TraceCollector::Create();
-        UCollectUtil::TraceCollector::Caller caller = UCollectUtil::TraceCollector::Caller::HIVIEW;
-        traceCollector->DumpTrace(caller);
-        hasOverThreshold = false;
+    for (auto &item : checkItems) {
+        int32_t pid = CommonUtils::GetPidByName(item.processName);
+        if (pid <= 0) {
+            HIVIEW_LOGW("get pid failed, process:%{public}s", item.processName.c_str());
+            continue;
+        }
+        auto processCpuStatInfo = cpuCollector_->CollectProcessCpuStatInfo(pid);
+        double cpuLoad = processCpuStatInfo.data.cpuLoad;
+        if (!item.hasOverThreshold && cpuLoad >= item.cpuLoadThreshold) {
+            HIVIEW_LOGI("over threshold, current cpu load:%{public}f", cpuLoad);
+            item.hasOverThreshold = true;
+            return;
+        }
+
+        // when cpu load restore to normal, start capture history trace
+        if (item.hasOverThreshold && cpuLoad < item.cpuLoadThreshold) {
+            HIVIEW_LOGI("capture history trace");
+            auto traceCollector = TraceCollector::Create();
+            traceCollector->DumpTrace(item.caller);
+            item.hasOverThreshold = false;
+        }
     }
 }
 
