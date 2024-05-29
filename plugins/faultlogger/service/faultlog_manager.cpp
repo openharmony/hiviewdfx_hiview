@@ -40,7 +40,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 using namespace FaultLogger;
-DEFINE_LOG_TAG("FaultLogManager");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLogManager");
 LogStoreEx::LogFileFilter CreateLogFileFilter(time_t time, int32_t id, int32_t faultLogType, const std::string& module)
 {
     LogStoreEx::LogFileFilter filter = [time, id, faultLogType, module](const LogFile &file) {

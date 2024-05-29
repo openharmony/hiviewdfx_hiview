@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultloggerAdapter");
+DEFINE_LOG_LABEL(0xD002D11, "FaultloggerAdapter");
 void FaultloggerAdapter::StartService(Faultlogger* faultlogger)
 {
     if (faultlogger == nullptr) {

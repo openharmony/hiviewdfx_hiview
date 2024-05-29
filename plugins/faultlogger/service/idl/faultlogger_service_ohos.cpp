@@ -31,7 +31,7 @@
 #include "faultlog_query_result_ohos.h"
 #include "faultlogger.h"
 
-DEFINE_LOG_TAG("FaultloggerServiceOhos");
+DEFINE_LOG_LABEL(0xD002D11, "FaultloggerServiceOhos");
 namespace OHOS {
 namespace HiviewDFX {
 constexpr int32_t UID_SHELL = 2000;

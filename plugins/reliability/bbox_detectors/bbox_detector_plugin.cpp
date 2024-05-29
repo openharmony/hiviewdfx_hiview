@@ -35,7 +35,7 @@ namespace OHOS {
 namespace HiviewDFX {
 using namespace std;
 REGISTER(BBoxDetectorPlugin);
-DEFINE_LOG_TAG("BBoxDetectorPlugin");
+DEFINE_LOG_LABEL(0xD002D11, "BBoxDetectorPlugin");
 
 namespace {
     const std::string HISIPATH = "/data/hisi_logs/";

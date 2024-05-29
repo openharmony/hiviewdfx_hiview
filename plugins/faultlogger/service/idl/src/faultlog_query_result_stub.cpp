@@ -23,7 +23,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultLogQueryResultStub");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLogQueryResultStub");
 int FaultLogQueryResultStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {

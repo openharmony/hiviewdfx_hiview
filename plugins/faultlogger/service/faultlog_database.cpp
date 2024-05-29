@@ -35,7 +35,7 @@
 using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultLogDatabase");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLogDatabase");
 namespace {
 static const std::vector<std::string> QUERY_ITEMS = {
     "time_", "name_", "uid_", "pid_", "MODULE", "REASON", "SUMMARY", "LOG_PATH", "FAULT_TYPE"

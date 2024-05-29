@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultLogInfoOhos");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLogInfoOhos");
 bool FaultLogInfoOhos::Marshalling(Parcel& parcel) const
 {
     if (!parcel.WriteInt64(time) || !parcel.WriteInt32(uid) ||

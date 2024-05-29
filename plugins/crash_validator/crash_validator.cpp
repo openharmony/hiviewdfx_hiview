@@ -30,7 +30,7 @@ namespace HiviewDFX {
 static const int CHECK_TIME = 10;
 
 REGISTER(CrashValidator);
-DEFINE_LOG_TAG("HiView-CrashValidator");
+DEFINE_LOG_LABEL(0xD002D11, "HiView-CrashValidator");
 CrashValidator::CrashValidator() : hasLoaded_(false)
 {
 }

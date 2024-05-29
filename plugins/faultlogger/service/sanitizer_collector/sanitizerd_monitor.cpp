@@ -33,7 +33,7 @@ namespace HiviewDFX {
 namespace {
 constexpr uint32_t NOTIFY_MASK = IN_CLOSE_WRITE | IN_MOVED_TO;
 constexpr int EVENT_BUF_LEN = 512;
-DEFINE_LOG_TAG("Faultlogger");
+DEFINE_LOG_LABEL(0xD002D11, "Faultlogger");
 }
 
 int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
