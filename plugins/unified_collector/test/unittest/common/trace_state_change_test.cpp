@@ -54,45 +54,83 @@ inline const std::string ConvertBoolToString(bool value)
 
 /**
  * @tc.name: TraceStateChangeTest001
- * @tc.desc: Test UnifiedCollector state change
+ * @tc.desc: Test UnifiedCollector state inttialization
  * @tc.type: FUNC
  * @tc.require: issueI5NULM
  */
 HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
 {
-    std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
-    ASSERT_NE(unifiedCollector, nullptr);
-
-    unifiedCollector->OnLoad();
-
-    // bool isDeveloperMode = false;
-    // bool isTestAppTraceOn = false;
-    // bool isBetaVersion = false;
-    // bool isUCollectionSwitchOn = false;
-    // bool isTraceCollectionSwitchOn = false;
-    bool isDeveloperMode, isTestAppTraceOn, isBetaVersion, isUCollectionSwitchOn, isTraceCollectionSwitchOn;
-    constexpr std::size_t stateVariableCount = 5;    
-    constexpr uint64_t testCaseNumber = 1<<stateVariableCount;
+    bool isTestAppTraceOn, isUCollectionSwitchOn, isTraceCollectionSwitchOn;
+    constexpr std::size_t stateConstantCount = 5;    
+    constexpr uint64_t testCaseNumber = 1<<stateConstantCount;
     for(uint64_t binaryExpression = 0; binaryExpression < testCaseNumber; binaryExpression++)
     {
-        isDeveloperMode = (binaryExpression & 1<<0) != 0;
-        isTestAppTraceOn = (binaryExpression & 1<<1) != 0;
-        isBetaVersion = (binaryExpression & 1<<2) != 0;
+        isBetaVersion = (binaryExpression & 1<<0) != 0;
+        isDeveloperMode = (binaryExpression & 1<<1) != 0;
+        isTestAppTraceOn = (binaryExpression & 1<<2) != 0;
         isUCollectionSwitchOn = (binaryExpression & 1<<3) != 0;
         isTraceCollectionSwitchOn = (binaryExpression & 1<<4) != 0;
-        
+
         Parameter::SetDeveloperMode(isDeveloperMode);
         Parameter::SetBetaVersion(isBetaVersion);
-
         Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
         Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
         Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
 
+        std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
+        ASSERT_NE(unifiedCollector, nullptr);
+
+        unifiedCollector->OnLoad();
+        
         bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
             DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
         ASSERT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);
+            
+        unifiedCollector->OnUnload();
     }    
-
-    unifiedCollector->OnUnload();
 }
 
+/**
+ * @tc.name: TraceStateChangeTest002
+ * @tc.desc: Test UnifiedCollector state change
+ * @tc.type: FUNC
+ * @tc.require: issueI5NULM
+ */
+HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
+{
+    bool isBetaVersion, isDeveloperMode, isTestAppTraceOn, isUCollectionSwitchOn, isTraceCollectionSwitchOn;
+    constexpr std::size_t stateConstantCount = 3;    
+    constexpr uint64_t constantTestCaseNumber = 1<<stateConstantCount;
+    constexpr std::size_t stateVariableCount = 2;
+    constexpr uint64_t variableTestCaseNumber = 1<<stateVariableCount;
+    for(uint64_t constantBinaryExpression = 0; constantBinaryExpression < constantTestCaseNumber; constantBinaryExpression++)
+    {
+        isBetaVersion = (constantBinaryExpression & 1<<0) != 0;
+        isDeveloperMode = (constantBinaryExpression & 1<<1) != 0;
+        isTestAppTraceOn = (constantBinaryExpression & 1<<2) != 0;
+
+        Parameter::SetBetaVersion(isBetaVersion);
+        Parameter::SetDeveloperMode(isDeveloperMode);
+        Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
+
+        std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
+        ASSERT_NE(unifiedCollector, nullptr);
+
+        unifiedCollector->OnLoad();
+
+        for(uint64_t variableBinaryExpression = 0; variableBinaryExpression < variableTestCaseNumber; variableBinaryExpression++)
+        {
+            isUCollectionSwitchOn = (variableBinaryExpression & 1<<0) != 0;
+            isTraceCollectionSwitchOn = (variableBinaryExpression & 1<<1) != 0;
+
+            Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
+            Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
+            
+            bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+                DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
+            ASSERT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);
+        }
+
+        unifiedCollector->OnUnload();
+    }    
+}

@@ -92,10 +92,7 @@ ohos_unittest("TraceStateChangeTest") {
   configs = [ ":statetest_config" ]
 
   sources = [
-    #"$hiview_base/event_publish/event_publish.cpp",
     "$hiview_base/plugin_factory.cpp",
-    #"$hiview_plugin/usage_event_report/usage_event_report.cpp",
-    #"$hiview_base/event_loop.cpp",
     "$hiview_base/plugin.cpp",
     "$hiview_base/app_caller_event.cpp",
     "$hiview_base/utility/ash_memory_utils.cpp",
@@ -124,7 +121,8 @@ ohos_unittest("TraceStateChangeTest") {
     "$hiview_plugin/unified_collector/unified_collector.cpp", # unified_collector
     "mock/parameter_ex_mock.cpp",
     "mock/function_jumble_mock.cpp",
-    "trace_state_change_test.cpp"]
+    "trace_state_change_test.cpp"
+    ]
 
   deps = [
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
