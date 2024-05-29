@@ -37,6 +37,7 @@ public:
         APP,
         OTHER,
         HIVIEW,
+        FOUNDATION,
         INVALIDITY,
     };
 
