@@ -18,7 +18,8 @@
 #include <sys/types.h>
 
 #include <gtest/gtest.h>
-
+namespace OHOS {
+namespace HiviewDFX {
 class ActiveKeyEventTest : public testing::Test {
 public:
     void SetUp();
@@ -28,4 +29,6 @@ public:
 
 private:
 };
+} // namesapce HiviewDFX
+} // namespace OHOS
 #endif // ACTIVE_KEY_EVENT_TEST_H

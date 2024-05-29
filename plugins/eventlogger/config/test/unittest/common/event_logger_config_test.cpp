@@ -20,7 +20,8 @@
 #include "event_logger_config.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
-
+namespace OHOS {
+namespace HiviewDFX {
 void EventLoggerConfigTest::SetUp()
 {
     /**
@@ -53,4 +54,8 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest002, TestSize.Level3)
     bool ret = config->FindConfigLine(0, "FWK_BLOCK", configOut);
     EXPECT_EQ(configOut.action == "b,s=1,n=2,pb:0,aa:11,b:3", false);
     printf("ret:%d\n", ret);
+    auto result = config->GetConfig();
+    auto config1 = std::make_unique<EventLoggerConfig>();
 }
+} // namesapce HiviewDFX
+} // namespace OHOS

@@ -15,11 +15,13 @@
 #ifndef EVENT_LOGGER_CONFIG_TEST_H
 #define EVENT_LOGGER_CONFIG_TEST_H
 #include <gtest/gtest.h>
-
+namespace OHOS {
+namespace HiviewDFX {
 class EventLoggerConfigTest : public testing::Test {
 public:
     void SetUp();
     void TearDown();
 };
-
+} // namesapce HiviewDFX
+} // namespace OHOS
 #endif // HIVIEW_PLATFORM_CONFIG_TEST_H
