@@ -24,8 +24,8 @@ namespace HiviewDFX {
 namespace Parameter {
 namespace {
 constexpr char DEFAULT_DES[] = "unknown";
-bool betaVersionToTest = true;
-bool developerModeToTest = true;
+bool betaVersionToTest = false;
+bool developerModeToTest = false;
 }
 std::string GetString(const std::string& key, const std::string& defaultValue)
 {
