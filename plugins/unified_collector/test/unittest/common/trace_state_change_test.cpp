@@ -16,6 +16,7 @@
 #include "trace_state_change_test.h"
 #include "unified_collector.h"
 #include "parameter_ex.h"
+#include "hiview_platform.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -29,6 +30,7 @@ constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
 const bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
+HiviewContext &g_hiviewContext = InitHiviewContext();
 }
 
 void TraceStateChangeTest::SetUpTestCase()
@@ -52,9 +54,17 @@ inline const std::string ConvertBoolToString(bool value)
     return value ? "true" : "false";
 }
 
+static HiviewContext& InitHiviewContext()
+{
+    HiviewPlatform &platform = HiviewPlatform::GetInstance();
+    bool res = platform.InitEnvironment("/data/test/test_trace_state_data/hiview_platform_config")
+    printf("HiviewPlatform inititalization result = %d\n", res);
+    return platform;
+}
+
 /**
  * @tc.name: TraceStateChangeTest001
- * @tc.desc: Test UnifiedCollector state inttialization
+ * @tc.desc: Test UnifiedCollector state initialization
  * @tc.type: FUNC
  * @tc.require: issueI5NULM
  */
@@ -79,7 +89,8 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
 
         std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
         ASSERT_NE(unifiedCollector, nullptr);
-
+        
+        unifiedCollector->SetHiViewContext(g_hiviewContext);
         unifiedCollector->OnLoad();        
         bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
             DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
@@ -112,6 +123,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
         std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
         ASSERT_NE(unifiedCollector, nullptr);
 
+        unifiedCollector->SetHiViewContext(g_hiviewContext);
         unifiedCollector->OnLoad();
         for(uint64_t variableBinaryExpression = 0; variableBinaryExpression < variableTestCaseNumber; variableBinaryExpression++)
         {
