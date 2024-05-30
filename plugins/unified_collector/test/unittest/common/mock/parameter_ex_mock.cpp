@@ -29,7 +29,6 @@ constexpr char DEFAULT_DES[] = "unknown";
 bool betaVersionToTest = false;
 bool developerModeToTest = false;
 std::map<std::string, std::string> mockSystemMap;
-
 }
 std::string GetString(const std::string& key, const std::string& defaultValue)
 {
@@ -37,7 +36,6 @@ std::string GetString(const std::string& key, const std::string& defaultValue)
         return mockSystemMap[key];
     }
     return defaultValue;
-    // return OHOS::system::GetParameter(key, defaultValue);
 }
 
 int64_t GetInteger(const std::string& key, const int64_t defaultValue)
@@ -93,7 +91,6 @@ bool IsBetaVersion()
 {
     return betaVersionToTest;
 }
-
 
 bool SetDeveloperMode(bool isDeveloperMode)
 {

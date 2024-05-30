@@ -20,13 +20,9 @@
 #include "hiview_event_report.h"
 #include "base/raw_data_base_def.h"
 
-
 namespace OHOS {
 namespace HiviewDFX {
-
-
 namespace EventRaw {
-      
 bool RawDataBuilder::IsBaseInfo(const std::string& key)
 {
     return true;
@@ -101,6 +97,5 @@ bool EventLoop::RemoveEvent(uint64_t seq)
 {
     return true;
 }
-
 } // namespace HiviewDFX
 } // namespace OHOS
