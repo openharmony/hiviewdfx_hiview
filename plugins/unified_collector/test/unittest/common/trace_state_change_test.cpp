@@ -16,7 +16,6 @@
 #include "trace_state_change_test.h"
 #include "unified_collector.h"
 #include "parameter_ex.h"
-#include "hiview_platform.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -30,7 +29,10 @@ constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
 const bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
-HiviewContext &g_hiviewContext = InitHiviewContext();
+
+HiviewContext g_hiviewContext;
+HiviewContext* g_hiviewContextPtr = &g_hiviewContext;
+
 }
 
 void TraceStateChangeTest::SetUpTestCase()
@@ -52,14 +54,6 @@ void TraceStateChangeTest::TearDown()
 inline const std::string ConvertBoolToString(bool value)
 {
     return value ? "true" : "false";
-}
-
-static HiviewContext& InitHiviewContext()
-{
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    bool res = platform.InitEnvironment("/data/test/test_trace_state_data/hiview_platform_config")
-    printf("HiviewPlatform inititalization result = %d\n", res);
-    return platform;
 }
 
 /**
@@ -90,7 +84,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
         std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
         ASSERT_NE(unifiedCollector, nullptr);
         
-        unifiedCollector->SetHiViewContext(g_hiviewContext);
+        unifiedCollector->SetHiviewContext(g_hiviewContextPtr);
         unifiedCollector->OnLoad();        
         bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
             DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
@@ -123,7 +117,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
         std::shared_ptr unifiedCollector = std::make_shared<UnifiedCollector>();
         ASSERT_NE(unifiedCollector, nullptr);
 
-        unifiedCollector->SetHiViewContext(g_hiviewContext);
+        unifiedCollector->SetHiviewContext(g_hiviewContextPtr);
         unifiedCollector->OnLoad();
         for(uint64_t variableBinaryExpression = 0; variableBinaryExpression < variableTestCaseNumber; variableBinaryExpression++)
         {

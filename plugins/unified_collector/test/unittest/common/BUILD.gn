@@ -46,7 +46,10 @@ config("statetest_config") {
     "$hiview_framework/native/unified_collection/decorator/include",
     "$hiview_base/event_report/include/",
     "$hiview_plugin/usage_event_report/include/",
-    #"$powermgr_root_path/interfaces/inner_api/native/include",
+    "$hiview_core/include/",
+    "$hiview_core/param_update/include",
+    "$hiview_root/include",
+    "$hiview_base/include/",
   ]
 
     if (power_manager_enable) {

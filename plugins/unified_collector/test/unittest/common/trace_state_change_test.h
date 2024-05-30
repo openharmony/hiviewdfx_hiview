@@ -32,7 +32,6 @@ namespace Parameter{
     bool SetDeveloperMode(bool isDeveloperMode);
 }
 
-static HiviewContext& InitHiviewContext();
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // PLUGIN_UNIFIED_COLLECTOR_TRACE_STATE_CHANGE_TEST_H

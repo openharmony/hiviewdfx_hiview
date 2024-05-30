@@ -446,7 +446,7 @@ void UnifiedCollector::RunCpuCollectionTask()
     auto task = std::bind(&UnifiedCollector::CpuCollectionFfrtTask, this);
     ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_uc_cpu").qos(ffrt::qos_default));
 }
-
+ 
 void UnifiedCollector::CpuCollectionFfrtTask()
 {
     cpuCollectionTask_ = std::make_shared<CpuCollectionTask>(workPath_);
