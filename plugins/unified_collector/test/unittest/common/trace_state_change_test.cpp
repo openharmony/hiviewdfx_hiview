@@ -21,6 +21,24 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace {
+
+class MockHiviewPlatform : public HiviewContext {
+public:
+    MockHiviewPlatform() = default;
+    ~MockHiviewPlatform() = default;
+
+    std::string GetHiViewDirectory(DirectoryType type __UNUSED)
+    {
+        return "";
+    }
+
+    std::shared_ptr<EventLoop> GetSharedWorkLoop()
+    {
+        return nullptr;
+    }
+
+};
+
 constexpr int8_t STATE_COUNT = 2;
 constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
     {{true,  false}, {false, false}},
@@ -30,8 +48,8 @@ const bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
 
-HiviewContext g_hiviewContext;
-HiviewContext* g_hiviewContextPtr = &g_hiviewContext;
+MockHiviewPlatform g_hiviewContext;
+MockHiviewPlatform* g_hiviewContextPtr;
 
 }
 
@@ -45,6 +63,8 @@ void TraceStateChangeTest::TearDownTestCase()
 
 void TraceStateChangeTest::SetUp()
 {    
+    g_hiviewContext = MockHiviewPlatform();
+    g_hiviewContextPtr = &g_hiviewContext;
 }
 
 void TraceStateChangeTest::TearDown()
