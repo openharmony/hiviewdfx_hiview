@@ -137,6 +137,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_001, TestSize.Level3)
     logTask->AddStopReason(fd, nullptr, "Test");
     auto eventLogCatcher = std::make_shared<EventLogCatcher>();
     logTask->AddStopReason(fd, eventLogCatcher, "Test");
+    logTask->AddSeparator(fd, eventLogCatcher);
     bool ret = logTask->ShouldStopLogTask(fd, 1, -1, eventLogCatcher);
     EXPECT_EQ(ret, false);
     ret = logTask->ShouldStopLogTask(fd, 1, 20000, eventLogCatcher);
@@ -152,7 +153,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_001, TestSize.Level3)
  * @tc.desc: test EventlogTask
  * @tc.type: FUNC
  */
-static HWTEST_F(EventloggerCatcherTest, EventlogTask_002, TestSize.Level3)
+HWTEST_F(EventloggerCatcherTest, EventlogTask_002, TestSize.Level3)
 {
     auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
     if (fd < 0) {
@@ -177,7 +178,7 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_002, TestSize.Level3)
  * @tc.desc: test EventlogTask
  * @tc.type: FUNC
  */
-static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
+HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
 {
     auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
     if (fd < 0) {
@@ -187,6 +188,7 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     SysEventCreator sysEventCreator("HIVIEWDFX", "EventlogTask", SysEventCreator::FAULT);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventlogTask", nullptr, sysEventCreator);
     std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, 1, sysEvent);
+    logTask->AddLog("cmd:scbCS");
     logTask->AppStackCapture();
     logTask->SystemStackCapture();
     logTask->BinderLogCapture();
@@ -203,6 +205,18 @@ static HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->LightHilogCapture();
     logTask->SCBWMSCapture();
     logTask->DumpAppMapCapture();
+    logTask->SCBWMSEVTCapture();
+    logTask->SysrqCapture(true);
+    logTask->MemoryUsageCapture();
+    logTask->DMSUsageCapture();
+    logTask->CpuUsageCapture();
+    logTask->MMIUsageCapture();
+    logTask->HitraceCapture();
+    logTask->SCBWMSEVTCapture();
+    logTask->AddLog("Test");
+    logTask->AddLog("cmd:w");
+    logTask->status_ = EventLogTask::Status::TASK_RUNNING;
+    auto ret = logTask->StartCompose();
     printf("task size: %d\n", static_cast<int>(logTask->tasks_.size()));
     EXPECT_EQ(logTask->PeerBinderCapture("Test"), false);
     EXPECT_EQ(logTask->PeerBinderCapture("pb"), false);

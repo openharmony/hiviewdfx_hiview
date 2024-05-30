@@ -49,7 +49,7 @@ void EventLoggerTest::TearDownTestCase()
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
@@ -71,7 +71,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
@@ -103,7 +103,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
 {
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_003",
@@ -118,8 +118,6 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
     EXPECT_EQ(ret, true);
     ret = eventLogger->UpdateDB(sysEvent, "nolog");
     EXPECT_EQ(ret, true);
-    eventLogger->OnLoad();
-    eventLogger->OnUnload();
 }
 
 /**
@@ -127,7 +125,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_004, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_004, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     eventLogger->cmdlineContent_ = "reboot_reason = EventLoggerTest "
@@ -148,7 +146,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_004, TestSize.Level3)
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_005, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_005, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     eventLogger->GetCmdlineContent();
@@ -164,7 +162,7 @@ static HWTEST_F(EventLoggerTest, EventLoggerTest_005, TestSize.Level3)
  * @tc.desc: Loging aging test
  * @tc.type: FUNC
  */
-static HWTEST_F(EventLoggerTest, EventLoggerTest_006, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_006, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     eventLogger->OnLoad();
