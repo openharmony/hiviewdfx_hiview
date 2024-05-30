@@ -28,8 +28,12 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+constexpr uint8_t INVALID_EVENT_TYPE = 0;
+constexpr uint8_t DEFAULT_PRIVACY = 4;
+
 struct BaseInfo {
-    uint8_t type;
+    uint8_t type = INVALID_EVENT_TYPE;
+    uint8_t privacy = DEFAULT_PRIVACY;
     std::string level;
     std::string tag;
     bool preserve = true;

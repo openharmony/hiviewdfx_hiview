@@ -46,7 +46,6 @@
 #include "string_util.h"
 #include "sys_event_callback_proxy.h"
 #include "sys_event_service_stub.h"
-#include "sys_dispatcher.h"
 #include "time_util.h"
 
 using namespace std;

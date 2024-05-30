@@ -102,6 +102,31 @@ cJSON* GetObjectValue(const cJSON* json, const std::string& key)
     }
     return obj;
 }
+
+cJSON* GetArrayValue(const cJSON* json, const std::string& key)
+{
+    if (json == nullptr || !cJSON_IsObject(json)) {
+        return nullptr;
+    }
+    cJSON* value = cJSON_GetObjectItem(json, key.c_str());
+    if (value == nullptr || !cJSON_IsArray(value)) {
+        return nullptr;
+    }
+    return value;
+}
+
+bool GetBoolValue(const cJSON* json, const std::string& key, bool& value)
+{
+    if (json == nullptr || !cJSON_IsObject(json)) {
+        return false;
+    }
+    cJSON* boolJson = cJSON_GetObjectItem(json, key.c_str());
+    if (boolJson == nullptr || !cJSON_IsBool(boolJson)) {
+        return false;
+    }
+    value = cJSON_IsTrue(boolJson);
+    return true;
+}
 } // namespace CJsonUtil
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -72,6 +72,23 @@ void GetStringArray(cJSON* json, const std::string& key, std::vector<std::string
  * @return the parsed object value.
  */
 cJSON* GetObjectValue(const cJSON* json, const std::string& key);
+
+/**
+ * @brief try to parse an object value from json object.
+ * @param json json object.
+ * @param key key defined for the object value.
+ * @return the parsed object value.
+ */
+cJSON* GetArrayValue(const cJSON* json, const std::string& key);
+
+/**
+ * @brief try to parse an object value from json object.
+ * @param json json object.
+ * @param key key defined for the object value.
+ * @param value parsed value.
+ * @return parsed result.
+ */
+bool GetBoolValue(const cJSON* json, const std::string& key, bool& value);
 };
 } // HiviewDFX
 } // OHOS

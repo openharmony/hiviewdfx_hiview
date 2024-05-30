@@ -171,6 +171,17 @@ std::string GetSysVersionDetailsStr()
     sysVersionDetails += std::to_string(GetFeatureVersion());
     return sysVersionDetails;
 }
+
+std::string GetVersionStr()
+{
+    return IsBetaVersion() ? "Beta" : "Commercial";
+}
+
+int32_t GetRegionCode()
+{
+    constexpr int32_t defaultCode = 156;
+    return defaultCode;
+}
 } // namespace Parameter
 } // namespace HiviewDFX
 } // namespace OHOS

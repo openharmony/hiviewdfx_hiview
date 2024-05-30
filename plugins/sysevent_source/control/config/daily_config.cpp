@@ -26,13 +26,6 @@ constexpr int32_t TYPE_FAULT = 1;
 constexpr int32_t TYPE_STATISTIC = 2;
 constexpr int32_t TYPE_SECURITY = 3;
 constexpr int32_t TYPE_BEHAVIOR = 4;
-
-std::string GetVersion()
-{
-    const std::string keyOfBeta = "Beta";
-    const std::string keyOfCommercial = "Commercial";
-    return Parameter::IsBetaVersion() ? keyOfBeta : keyOfCommercial;
-}
 }
 
 DailyConfig::DailyConfig(const std::string& configPath)
@@ -47,7 +40,7 @@ bool DailyConfig::Parse(const std::string& configPath)
         HIVIEW_LOGW("failed to parse config file=%{public}s", configPath.c_str());
         return false;
     }
-    std::string version = GetVersion();
+    std::string version = Parameter::GetVersionStr();
     auto config = CJsonUtil::GetObjectValue(root, version);
     if (config == nullptr) {
         HIVIEW_LOGW("failed to parse config file=%{public}s, version=%{public}s",

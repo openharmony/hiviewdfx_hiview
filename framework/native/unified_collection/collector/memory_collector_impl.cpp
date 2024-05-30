@@ -185,7 +185,7 @@ static void DoClearFiles(const std::string& filePrefix)
     std::map<uint64_t, std::string> fileLists;
     for (auto& file : files) {
         std::string fileName = FileUtil::ExtractFileName(file);
-        if (!CommonUtil::StartWith(fileName, filePrefix)) {
+        if (!StringUtil::StartWith(fileName, filePrefix)) {
             continue;
         }
         struct stat fileInfo;
@@ -531,7 +531,7 @@ static std::string GetNewestSnapshotPath(const std::string& path)
         if (ptr == nullptr) {
             break;
         }
-        if ((!CommonUtil::StartWith(ptr->d_name, "jsheap") && !CommonUtil::EndWith(ptr->d_name, "heapsnapshot"))) {
+        if ((!StringUtil::StartWith(ptr->d_name, "jsheap") && !StringUtil::EndWith(ptr->d_name, "heapsnapshot"))) {
             continue;
         }
 

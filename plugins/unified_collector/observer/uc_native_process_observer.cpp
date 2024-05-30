@@ -14,7 +14,6 @@
  */
 #include "uc_native_process_observer.h"
 
-#include "common_util.h"
 #include "hiview_logger.h"
 #include "process_status.h"
 #include "string_util.h"
@@ -34,7 +33,7 @@ void UcNativeProcessObserver::OnParamChanged(const char* key, const char* value,
     }
 
     int32_t pid = 0;
-    if (!CommonUtil::EndWith(key, PID_SUFFIX) || !StringUtil::StrToInt(value, pid) || pid <= 0) {
+    if (!StringUtil::EndWith(key, PID_SUFFIX) || !StringUtil::StrToInt(value, pid) || pid <= 0) {
         return;
     }
     HIVIEW_LOGD("process changed, key=%{public}s, value=%{public}s", key, value);

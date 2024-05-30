@@ -270,6 +270,16 @@ void SysEvent::SetLog(uint8_t log)
     }
 }
 
+void SysEvent::SetPrivacy(uint8_t privacy)
+{
+    privacy_ = privacy;
+}
+
+uint8_t SysEvent::GetPrivacy() const
+{
+    return privacy_;
+}
+
 std::string SysEvent::GetEventValue(const std::string& key)
 {
     if (!InitBuilder()) {
