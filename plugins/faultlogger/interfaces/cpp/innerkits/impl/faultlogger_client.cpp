@@ -33,7 +33,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultloggerClient");
+DEFINE_LOG_LABEL(0xD002D11, "FaultloggerClient");
 std::string GetPrintableStr(const std::string& str)
 {
     size_t index = 0;

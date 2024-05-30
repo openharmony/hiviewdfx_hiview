@@ -77,7 +77,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(Faultlogger);
-DEFINE_LOG_TAG("Faultlogger");
+DEFINE_LOG_LABEL(0xD002D11, "Faultlogger");
 using namespace FaultLogger;
 using namespace OHOS::AppExecFwk;
 #ifndef UNIT_TEST

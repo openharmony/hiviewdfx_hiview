@@ -30,7 +30,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("Faultlogger-napi");
+DEFINE_LOG_LABEL(0xD002D11, "Faultlogger-napi");
 namespace {
     constexpr size_t ONE_PARAMETER = 1;
     constexpr size_t TWO_PARAMETER = 2;

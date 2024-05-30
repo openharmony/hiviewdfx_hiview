@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultLoggerProxy");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLoggerProxy");
 void FaultLoggerServiceProxy::AddFaultLog(const FaultLogInfoOhos& info)
 {
     sptr<IRemoteObject> remote = Remote();

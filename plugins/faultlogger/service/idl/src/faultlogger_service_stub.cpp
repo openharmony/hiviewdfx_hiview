@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FaultLoggerServiceStub");
+DEFINE_LOG_LABEL(0xD002D11, "FaultLoggerServiceStub");
 int FaultLoggerServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
