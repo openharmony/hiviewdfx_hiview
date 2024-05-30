@@ -446,6 +446,20 @@ std::string HideSnInfo(const std::string& str)
     }
     return str;
 }
+
+bool StartWith(const std::string& str, const std::string& sub)
+{
+    return str.find(sub) == 0;
+}
+
+bool EndWith(const std::string& str, const std::string& sub)
+{
+    size_t index = str.rfind(sub);
+    if (index == std::string::npos) {
+        return false;
+    }
+    return index + sub.size() == str.size();
+}
 } // namespace StringUtil
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -42,8 +42,6 @@ public:
     template <typename T>
     static bool StrToNum(const std::string& sString, T &tX);
     static bool ParseTypeAndValue(const std::string &str, std::string &type, int32_t &value);
-    static bool StartWith(const std::string& str, const std::string& sub);
-    static bool EndWith(const std::string& str, const std::string& sub);
     static void GetDirRegexFiles(const std::string& path, const std::string& pattern, std::vector<std::string>& files);
     static int GetFileNameNum(const std::string& fileName, const std::string& ext);
     static std::string CreateExportFile(const std::string& path, int32_t maxFileNum, const std::string& prefix,

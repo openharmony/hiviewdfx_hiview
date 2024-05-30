@@ -34,8 +34,8 @@ ohos_shared_library("adft") {
   deps = [
     ":adft_plugin_config",
     "$hiview_base:hiviewbase",
-    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "$hiview_plugin/event_store:sys_event_store",
+    "$hiview_plugin/privacy_controller:privacy_controller",
     "$hiview_plugin/sys_dispatcher:sys_dispatcher",
     "$hiview_plugin/sysevent_source:sysevent_source",
     "$hiview_plugin/unified_collector:unified_collector",

@@ -58,20 +58,6 @@ bool CommonUtil::ParseTypeAndValue(const std::string &str, std::string &type, in
     return false;
 }
 
-bool CommonUtil::StartWith(const std::string& str, const std::string& sub)
-{
-    return str.find(sub) == 0;
-}
-
-bool CommonUtil::EndWith(const std::string& str, const std::string& sub)
-{
-    size_t index = str.rfind(sub);
-    if (index == std::string::npos) {
-        return false;
-    }
-    return index + sub.size() == str.size();
-}
-
 void CommonUtil::GetDirRegexFiles(const std::string& path, const std::string& pattern,
     std::vector<std::string>& files)
 {

@@ -84,6 +84,8 @@ public:
     int GetEventType() const;
     void SetId(uint64_t id);
     void SetLog(uint8_t log);
+    void SetPrivacy(uint8_t privacy);
+    uint8_t GetPrivacy() const;
 
     std::string GetEventValue(const std::string& key);
     int64_t GetEventIntValue(const std::string& key);
@@ -143,6 +145,7 @@ private:
     int32_t uid_ = 0;
     int16_t tz_ = 0;
     int64_t eventSeq_ = -1;
+    uint8_t privacy_ = 0;
     std::string tag_;
     std::string level_;
     std::shared_ptr<EventRaw::RawDataBuilder> builder_;

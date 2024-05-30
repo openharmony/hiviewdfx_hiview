@@ -460,6 +460,10 @@
         "OHOS::HiviewDFX::EventStore::SysEventDao::Backup()";
         "OHOS::HiviewDFX::EventStore::SysEventDao::GetDatabaseDir()";
         "OHOS::HiviewDFX::EventStore::SysEventDao::Restore()";
+        "OHOS::HiviewDFX::SysEvent::SetPrivacy(unsigned char)";
+        "OHOS::HiviewDFX::SysEvent::GetPrivacy() const";
+        "OHOS::HiviewDFX::StringUtil::StartWith(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::StringUtil::EndWith(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;

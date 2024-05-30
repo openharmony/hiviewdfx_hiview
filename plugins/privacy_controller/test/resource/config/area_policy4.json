@@ -1,0 +1,8 @@
+{
+    "Beta": [
+        {"code": 156, "allowLevel": 1, "allowPrivacy": 1, "allowSysUe": false, "allowUe": true}
+    ],
+    "Commercial": [
+        {"code": 156, "allowLevel": 1, "allowPrivacy": 1, "allowSysUe": false, "allowUe": true}
+    ]
+}

@@ -31,11 +31,11 @@ namespace {
 DEFINE_LOG_TAG("Event-JsonParser");
 constexpr uint64_t PRIME = 0x100000001B3ULL;
 constexpr uint64_t BASIS = 0xCBF29CE484222325ULL;
-constexpr int INVALID_EVENT_TYPE = 0;
 constexpr char BASE[] = "__BASE";
 constexpr char LEVEL[] = "level";
 constexpr char TAG[] = "tag";
 constexpr char TYPE[] = "type";
+constexpr char PRIVACY[] = "privacy";
 constexpr char PRESERVE[] = "preserve";
 constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
@@ -186,28 +186,23 @@ bool EventJsonParser::CheckBaseInfo(std::shared_ptr<SysEvent> event) const
     if (!baseInfo.tag.empty()) {
         event->SetTag(baseInfo.tag);
     }
+    event->SetPrivacy(baseInfo.privacy);
     return true;
 }
 
 BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& domain,
     const std::string& name) const
 {
-    BaseInfo baseInfo = {
-        .type = INVALID_EVENT_TYPE,
-        .level = "",
-        .tag = "",
-        .preserve = true
-    };
     auto domainIter = hiSysEventDef_.find(domain);
     if (domainIter == hiSysEventDef_.end()) {
         HIVIEW_LOGD("domain %{public}s is not defined.", domain.c_str());
-        return baseInfo;
+        return BaseInfo();
     }
     auto domainNames = hiSysEventDef_.at(domain);
     auto nameIter = domainNames.find(name);
     if (nameIter == domainNames.end()) {
         HIVIEW_LOGD("%{public}s is not defined in domain %{public}s.", name.c_str(), domain.c_str());
-        return baseInfo;
+        return BaseInfo();
     }
     return nameIter->second;
 }
@@ -270,16 +265,12 @@ void EventJsonParser::InitEventInfoMapRef(const Json::Value& eventJson, JSON_VAL
 
 BaseInfo EventJsonParser::ParseBaseConfig(const Json::Value& eventNameJson) const
 {
-    BaseInfo baseInfo = {
-        .type = INVALID_EVENT_TYPE,
-        .level = "",
-        .tag = "",
-        .preserve = true
-    };
+    BaseInfo baseInfo;
     if (!eventNameJson.isObject() || !eventNameJson[BASE].isObject()) {
         HIVIEW_LOGD("__BASE definition is invalid.");
         return baseInfo;
     }
+
     Json::Value baseJsonInfo = eventNameJson[BASE];
     if (!baseJsonInfo.isObject() || !HasStringMember(baseJsonInfo, TYPE)) {
         HIVIEW_LOGD("type is not defined in __BASE.");
@@ -292,18 +283,26 @@ BaseInfo EventJsonParser::ParseBaseConfig(const Json::Value& eventNameJson) cons
         return baseInfo;
     }
     baseInfo.type = EVENT_TYPE_MAP.at(typeDes);
-    if (!baseJsonInfo.isObject() || !HasStringMember(baseJsonInfo, LEVEL)) {
+
+    if (!HasStringMember(baseJsonInfo, LEVEL)) {
         HIVIEW_LOGD("level is not defined in __BASE.");
         return baseInfo;
     }
     baseInfo.level = baseJsonInfo[LEVEL].asString();
-    if (baseJsonInfo.isObject() && HasStringMember(baseJsonInfo, TAG)) {
+
+    if (HasStringMember(baseJsonInfo, TAG)) {
         baseInfo.tag = baseJsonInfo[TAG].asString();
     }
-    if (baseJsonInfo.isObject() && HasBoolMember(baseJsonInfo, PRESERVE)) {
-        baseInfo.preserve = baseJsonInfo[PRESERVE].asBool();
-        return baseInfo;
+
+    if (HasIntMember(baseJsonInfo, PRIVACY)) {
+        int privacy = baseJsonInfo[PRIVACY].asInt();
+        baseInfo.privacy = privacy > 0 ? static_cast<uint8_t>(privacy) : baseInfo.privacy;
     }
+
+    if (HasBoolMember(baseJsonInfo, PRESERVE)) {
+        baseInfo.preserve = baseJsonInfo[PRESERVE].asBool();
+    }
+
     return baseInfo;
 }
 
