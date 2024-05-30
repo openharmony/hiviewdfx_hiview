@@ -114,3 +114,19 @@ ohos_unittest("AsanUnittest") {
     "//third_party/googletest:gtest_main",
   ]
 }
+
+ohos_unittest("FreezeJsonGeneratorUnittest") {
+  module_out_path = module_output_path
+
+  configs = [ ":hiview_faultlogger_test_config" ]
+
+  sources = [ "common/unittest/freeze_json_generator_unittest.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_faultlogger:libfaultlogger",
+    "$hiview_faultlogger/service:faultlogger_service",
+    "//third_party/googletest:gtest_main",
+  ]
+  external_deps = [ "hilog:libhilog" ]
+}
