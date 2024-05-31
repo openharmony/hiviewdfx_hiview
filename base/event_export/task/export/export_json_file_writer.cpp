@@ -57,6 +57,8 @@ constexpr char DOMAIN_INFO_KEY[] = "DOMAIN_INFO";
 constexpr char EVENTS_KEY[] = "EVENTS";
 constexpr char DATA_KEY[] = "DATA";
 constexpr char DEFAULT_MSG_ID[] = "00000000000000000000000000000000";
+constexpr mode_t EVENT_EXPORT_DIR_MODE = S_IRWXU | S_IROTH | S_IWOTH | S_IXOTH; // rwx---rwx
+constexpr mode_t EVENT_EXPORT_FILE_MODE = S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH; // rw----rw-
 
 std::string GenerateDeviceId()
 {
@@ -192,11 +194,8 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
     tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(moduleName));
     tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(version));
     if (!FileUtil::IsDirectory(tmpDir) && !FileUtil::ForceCreateDirectory(tmpDir)) {
+        HIVIEW_LOGE("failed to init directory %{public}s.", tmpDir.c_str());
         return "";
-    }
-    auto ret = FileUtil::ChangeModeDirectory(tmpDir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
-    if (!ret) {
-        HIVIEW_LOGE("failed to chmod directory %{public}s.", tmpDir.c_str());
     }
     return tmpDir;
 }
@@ -209,7 +208,7 @@ bool ZipDbFile(const std::string& src, const std::string& dest)
         HIVIEW_LOGW("zip db failed, ret: %{public}d.", ret);
         return false;
     }
-    if (bool ret = FileUtil::ChangeModeFile(dest, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH); !ret) {
+    if (bool ret = FileUtil::ChangeModeFile(dest, EVENT_EXPORT_FILE_MODE); !ret) {
         HIVIEW_LOGE("failed to chmod file %{private}s.", dest.c_str());
         return false;
     }
@@ -236,11 +235,8 @@ std::string GetTmpZipFile(const std::string& baseDir, const std::string& moduleN
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(moduleName));
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(version));
     if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
+        HIVIEW_LOGE("failed to init directory %{public}s.", dir.c_str());
         return "";
-    }
-    auto ret = FileUtil::ChangeModeDirectory(dir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
-    if (!ret) {
-        HIVIEW_LOGE("failed to chmod directory %{public}s.", dir.c_str());
     }
     AppendZipFile(dir);
     return dir;
@@ -251,11 +247,12 @@ std::string GetZipFile(const std::string& baseDir)
     std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYS_EVENT_EXPORT_DIR_NAME));
     if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
+        HIVIEW_LOGE("failed to init directory %{public}s.", dir.c_str());
         return "";
     }
-    auto ret = FileUtil::ChangeModeDirectory(dir, FileUtil::DEFAULT_FILE_MODE | S_IXUSR | S_IWOTH | S_IXOTH);
-    if (!ret) {
-        HIVIEW_LOGE("failed to chmod directory %{public}s.", dir.c_str());
+    if (!FileUtil::ChangeModeFile(dir, EVENT_EXPORT_DIR_MODE)) {
+        HIVIEW_LOGE("failed to change file mode of %{public}s.", dir.c_str());
+        return "";
     }
     AppendZipFile(dir);
     return dir;
