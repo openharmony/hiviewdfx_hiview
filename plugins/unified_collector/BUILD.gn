@@ -40,7 +40,7 @@ ohos_source_set("unified_collector") {
     cfi_vcall_icall_only = true
     debug = false
   }
-  public_configs = [ ":unified_collector_config" ]
+  configs = [ ":unified_collector_config" ]
 
   sources = [
     "app_trace/app_trace_context.cpp",
