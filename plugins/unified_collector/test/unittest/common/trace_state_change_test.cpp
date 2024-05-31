@@ -82,12 +82,11 @@ void TraceStateChangeTest::TearDown()
     usleep(100*1000);
 }
 
-
 /**
  * @tc.name: TraceStateChangeTest001
  * @tc.desc: Test UnifiedCollector state initialization
  * @tc.type: FUNC
- * @tc.require: issueI5NULM
+ * @tc.require: issue#I9S4U8
  */
 HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
 {
@@ -123,7 +122,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
  * @tc.name: TraceStateChangeTest002
  * @tc.desc: Test UnifiedCollector state change
  * @tc.type: FUNC
- * @tc.require: issueI5NULM
+ * @tc.require: issue#I9S4U8
  */
 HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
 {
