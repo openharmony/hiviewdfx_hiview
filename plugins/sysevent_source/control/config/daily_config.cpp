@@ -40,7 +40,7 @@ bool DailyConfig::Parse(const std::string& configPath)
         HIVIEW_LOGW("failed to parse config file=%{public}s", configPath.c_str());
         return false;
     }
-    std::string version = Parameter::GetVersionStr();
+    std::string version = Parameter::GetVersionTypeStr();
     auto config = CJsonUtil::GetObjectValue(root, version);
     if (config == nullptr) {
         HIVIEW_LOGW("failed to parse config file=%{public}s, version=%{public}s",

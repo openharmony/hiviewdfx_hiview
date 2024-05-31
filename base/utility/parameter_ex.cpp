@@ -172,7 +172,7 @@ std::string GetSysVersionDetailsStr()
     return sysVersionDetails;
 }
 
-std::string GetVersionStr()
+std::string GetVersionTypeStr()
 {
     return IsBetaVersion() ? "Beta" : "Commercial";
 }

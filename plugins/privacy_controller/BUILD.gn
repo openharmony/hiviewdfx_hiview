@@ -42,7 +42,10 @@ ohos_source_set("privacy_controller") {
 
   deps = [ "$hiview_base:hiviewbase" ]
 
-  external_deps = [ "cJSON:cjson" ]
+  external_deps = [
+    "cJSON:cjson",
+    "hilog:libhilog",
+  ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
