@@ -59,6 +59,7 @@ group("unittest") {
     "test:AsanUnittest",
     "test:FaultloggerClientUnittest",
     "test:FaultloggerUnittest",
+    "test:FreezeJsonGeneratorUnittest",
   ]
 }
 
