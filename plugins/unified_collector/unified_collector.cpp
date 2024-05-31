@@ -104,7 +104,7 @@ void OnTestAppTraceStateChanged(const char* key, const char* value, void* contex
 
     bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTraceStateActive = std::string(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE_TRUE) == value;
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTraceStateActive] && 
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTraceStateActive] &&
         DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace change to:%{public}d as test trace state", AppCallerEvent::enableDynamicTrace_);
 }
@@ -120,7 +120,7 @@ void InitDynamicTrace()
     bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     HIVIEW_LOGI("IsDeveloperMode=%{public}d, IsTestAppTraceOn=%{public}d", isDeveloperMode, isTestAppTraceOn);
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
         DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace open:%{public}d", AppCallerEvent::enableDynamicTrace_);
 
@@ -144,7 +144,7 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
 
     bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
         DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
     HIVIEW_LOGI("dynamic trace change to:%{public}d as trace recorder state", AppCallerEvent::enableDynamicTrace_);
 }
@@ -387,7 +387,7 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
 
     bool isDeveloperMode = Parameter::IsDeveloperMode();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+    AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
         DYNAMIC_TRACE_FSM[COML_STATE][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
 }
 
@@ -426,7 +426,7 @@ void UnifiedCollector::InitWorkLoop()
 
 void UnifiedCollector::InitWorkPath()
 {
-    std::string hiviewWorkDir = GetHiviewContext()->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
+    std::string hiviewWorkDir = GetHiviewContext()-> (HiviewContext::DirectoryType::WORK_DIRECTORY);
     const std::string uCollectionDirName = "unified_collection";
     std::string tempWorkPath = FileUtil::IncludeTrailingPathDelimiter(hiviewWorkDir.append(uCollectionDirName));
     if (!FileUtil::IsDirectory(tempWorkPath) && !FileUtil::ForceCreateDirectory(tempWorkPath)) {

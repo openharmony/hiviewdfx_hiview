@@ -27,7 +27,7 @@ public:
     void SetUp();
     void TearDown();
 };
-namespace Parameter{
+namespace Parameter {
     bool SetBetaVersion(bool isBetaVersion);
     bool SetDeveloperMode(bool isDeveloperMode);
 }
@@ -35,4 +35,3 @@ namespace Parameter{
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // PLUGIN_UNIFIED_COLLECTOR_TRACE_STATE_CHANGE_TEST_H
-

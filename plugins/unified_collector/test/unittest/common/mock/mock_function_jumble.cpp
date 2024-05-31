@@ -40,7 +40,7 @@ int ParseTimeZone(const std::string& tzStr)
 } // namespace EventRaw
 
 void HiviewEventReport::UpdatePluginStats(const std::string &name, const std::string &procName, uint32_t procTime)
-{   
+{
 }
 
 bool Audit::IsEnabled()

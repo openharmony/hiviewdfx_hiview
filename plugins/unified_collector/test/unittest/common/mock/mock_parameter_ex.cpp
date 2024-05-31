@@ -26,8 +26,8 @@ namespace HiviewDFX {
 namespace Parameter {
 namespace {
 constexpr char DEFAULT_DES[] = "unknown";
-bool betaVersionToTest = false;
-bool developerModeToTest = false;
+bool g_betaVersionToTest = false;
+bool g_developerModeToTest = false;
 std::map<std::string, std::string> mockSystemMap;
 }
 std::string GetString(const std::string& key, const std::string& defaultValue)
