@@ -26,10 +26,8 @@ namespace {
 constexpr char TEST_CONFIG_DIR[] = "/data/test/test_data/";
 constexpr char TEST_CONFIG_FILE[] = "/data/test/test_data/test_event_export_config.json";
 constexpr char TEST_MODULE_NAME[] = "test";
-constexpr char TEST_SETTING_DB_PARAM_NAME1[] = "test_param_key1";
-constexpr char TEST_SETTING_DB_PARAM_NAME2[] = "test_param_key2";
+constexpr char TEST_SETTING_DB_PARAM_NAME[] = "test_param_key";
 constexpr char TEST_SETTING_DB_PARAM_ENABLED_VAL[] = "1";
-constexpr char TEST_SETTING_DB_PARAM_DISABLED_VAL[] = "0";
 constexpr size_t TEST_MODULE_CNT = 1;
 constexpr int64_t TEST_CAPACITY = 100;
 constexpr int64_t TEST_SIZE = 2;
@@ -125,16 +123,10 @@ HWTEST_F(EventExportConfigParseTest, EventExportConfigParseTest004, testing::ext
     ExportConfigParser parser(TEST_CONFIG_FILE);
     auto exportConfig = parser.Parse();
     ASSERT_NE(exportConfig, nullptr);
-    auto exportParam = exportConfig->GetExportAbilityParam();
-    ASSERT_TRUE(!exportParam.IsInValid());
-    ASSERT_EQ(exportParam.name, TEST_SETTING_DB_PARAM_NAME1);
-    ASSERT_EQ(exportParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
-    ASSERT_EQ(exportParam.disabledVal, TEST_SETTING_DB_PARAM_DISABLED_VAL);
-    auto upgradeParam = exportConfig->GetUpgradeAbilityParam();
-    ASSERT_TRUE(!upgradeParam.IsInValid());
-    ASSERT_EQ(upgradeParam.name, TEST_SETTING_DB_PARAM_NAME2);
-    ASSERT_EQ(upgradeParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
-    ASSERT_EQ(upgradeParam.disabledVal, TEST_SETTING_DB_PARAM_DISABLED_VAL);
+    ASSERT_EQ(exportConfig->exportSwitchParam.name, TEST_SETTING_DB_PARAM_NAME);
+    ASSERT_EQ(exportConfig->exportSwitchParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
+    ASSERT_EQ(exportConfig->sysUpgradeParam.name, TEST_SETTING_DB_PARAM_NAME);
+    ASSERT_EQ(exportConfig->sysUpgradeParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -32,13 +32,14 @@ public:
     ~ExportDbManager() = default;
 
 public:
+    int64_t GetExportEnabledSeq(const std::string& moduleName);
     int64_t GetExportBeginningSeq(const std::string& moduleName);
-    void HandleExportModuleInit(const std::string& moduleName, int64_t curSeq);
     void HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq);
     void HandleExportTaskFinished(const std::string& moduleName, int64_t eventSeq);
+    bool IsUnrecordedModule(const std::string& moduleName);
 
 private:
-    bool IsUnrecordedModule(const std::string& moduleName);
+    ExportDetailRecord GetExportDetailRecord(const std::string& moduleName);
 
 private:
     std::shared_ptr<ExportDbStorage> storage_;

@@ -24,8 +24,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 constexpr int64_t INVALID_SEQ_VAL = -1;
-constexpr int64_t INVALID_FILE_ID = -1;
-const std::string INVALID_MODULE_NAME = "";
 struct ExportDetailRecord {
     // name of the module which export sysevents
     std::string moduleName;

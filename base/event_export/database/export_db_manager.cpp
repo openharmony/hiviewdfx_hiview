@@ -29,35 +29,26 @@ ExportDbManager::ExportDbManager(const std::string& dbStoreDir)
     storage_ = std::make_shared<ExportDbStorage>(dbStoreDir);
 }
 
-int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
+int64_t ExportDbManager::GetExportEnabledSeq(const std::string& moduleName)
 {
-    HIVIEW_LOGD("get beginning sequence of event for module %{public}s to export", moduleName.c_str());
-    ExportDetailRecord record;
-    storage_->QueryExportDetailRecord(moduleName, record);
+    ExportDetailRecord record = GetExportDetailRecord(moduleName);
     if (record.moduleName.empty()) {
         HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
+    HIVIEW_LOGD("export enabled sequence is %{public}" PRId64 "", record.exportEnabledSeq);
+    return record.exportEnabledSeq;
+}
+
+int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
+{
+    HIVIEW_LOGD("get beginning sequence of event for module %{public}s to export", moduleName.c_str());
+    ExportDetailRecord record = GetExportDetailRecord(moduleName);
     if (record.exportEnabledSeq == INVALID_SEQ_VAL) {
         HIVIEW_LOGI("export switch of %{public}s is off, no need to export event", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
     return std::max(record.exportEnabledSeq, record.exportedMaxSeq + 1); // next sequence
-}
-
-void ExportDbManager::HandleExportModuleInit(const std::string& moduleName, int64_t curSeq)
-{
-    HIVIEW_LOGD("try to initilize export %{public}s module, current event sequence is %{public}" PRId64 "",
-        moduleName.c_str(), curSeq);
-    if (IsUnrecordedModule(moduleName)) {
-        HIVIEW_LOGW("no export details record found of %{public}s module in db", moduleName.c_str());
-        ExportDetailRecord record {
-            .moduleName = moduleName,
-            .exportEnabledSeq = curSeq,
-            .exportedMaxSeq = INVALID_SEQ_VAL,
-        };
-        storage_->InsertExportDetailRecord(record);
-    }
 }
 
 void ExportDbManager::HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq)
@@ -102,10 +93,16 @@ void ExportDbManager::HandleExportTaskFinished(const std::string& moduleName, in
     storage_->UpdateExportedMaxSeq(record);
 }
 
-bool ExportDbManager::IsUnrecordedModule(const std::string& moduleName)
+ExportDetailRecord ExportDbManager::GetExportDetailRecord(const std::string& moduleName)
 {
     ExportDetailRecord record;
     storage_->QueryExportDetailRecord(moduleName, record);
+    return record;
+}
+
+bool ExportDbManager::IsUnrecordedModule(const std::string& moduleName)
+{
+    ExportDetailRecord record = GetExportDetailRecord(moduleName);
     return record.moduleName.empty();
 }
 } // HiviewDFX
