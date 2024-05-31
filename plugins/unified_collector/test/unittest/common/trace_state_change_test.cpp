@@ -46,8 +46,8 @@ constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
 constexpr bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
-constexpr useconds_t SET_PROPERTY_NANO_SECONDS_DELAY = 100 * 1000;
-constexpr useconds_t STATE_CHANGE_CALLBACK_NANO_SECONDS_DELAY = 1500 * 1000;
+constexpr useconds_t SET_PROPERTY_NANO_SECONDS_DELAY = 200;
+constexpr useconds_t STATE_CHANGE_CALLBACK_NANO_SECONDS_DELAY = 200 * 1000;
 std::shared_ptr g_unifiedCollector = std::make_shared<UnifiedCollector>();
 bool g_originalTestAppTraceOn, g_originalUCollectionSwitchOn, g_originalTraceCollectionSwitchOn;
 } // namespace
