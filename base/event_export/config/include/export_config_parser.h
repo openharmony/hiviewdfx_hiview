@@ -26,13 +26,10 @@ namespace OHOS {
 namespace HiviewDFX {
 struct SettingDbParam {
     // name of the congifured setting db parameter
-    std::string paramName;
+    std::string name;
 
     // the value set when the parameter is enabled
     std::string enabledVal;
-
-    // the value set when the parameter is disabled
-    std::string disabledVal;
 };
 
 struct ExportConfig {
@@ -40,7 +37,10 @@ struct ExportConfig {
     std::string moduleName;
 
     // setting db parameter associated with export ability switch
-    SettingDbParam settingDbParam;
+    SettingDbParam exportSwitchParam;
+
+    // setting db parameter associated with system upgrade
+    SettingDbParam sysUpgradeParam;
 
     // the directory to store exported event file
     std::string exportDir;
@@ -71,7 +71,7 @@ public:
 
 private:
     bool ParseExportEventList(ExportEventList& list);
-    bool ParseSettingDbParam(SettingDbParam& settingDbParam);
+    bool ParseSettingDbParam(SettingDbParam& settingDbParam, const std::string& paramKey);
     bool ParseResidualContent(std::shared_ptr<ExportConfig> config);
 
 private:

@@ -1,8 +1,11 @@
 {
-    "settingDbParam": {
+    "exportSwitchParam": {
         "name": "test_param_key",
-        "enabledValue": "1",
-        "disabledValue": "0"
+        "enabledValue": "1"
+    },
+    "sysUpgradeParam": {
+        "name": "test_param_key",
+        "enabledValue": "1"
     },
     "exportDir": "/data/test/test_data",
     "exportDirMaxCapacity": 100,

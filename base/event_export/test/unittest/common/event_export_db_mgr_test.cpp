@@ -23,7 +23,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr char TEST_MODULE_NAME[] = "test_module";
-constexpr int64_t INIT_SEQ = 2;
 constexpr int64_t FIRST_ENABLED_SEQ = 10;
 constexpr int64_t SECOND_ENABLED_SEQ = 100;
 constexpr int64_t THIRD_ENABLED_SEQ = 350;
@@ -59,9 +58,6 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest001, testing::ext::TestSize.L
 {
     ExportDbManager manager("/data/test/test_data/db_dir1");
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
-    // init with seq 2
-    manager.HandleExportModuleInit(TEST_MODULE_NAME, INIT_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INIT_SEQ);
     // export switch on at 10
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, FIRST_ENABLED_SEQ);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_ENABLED_SEQ);
@@ -101,9 +97,6 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest002, testing::ext::TestSize.L
     // export switch on at 10
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, FIRST_ENABLED_SEQ);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_ENABLED_SEQ);
-    // init with seq 2
-    manager.HandleExportModuleInit(TEST_MODULE_NAME, INIT_SEQ);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), FIRST_ENABLED_SEQ);
     // export switch on at 100
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, SECOND_ENABLED_SEQ);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), SECOND_ENABLED_SEQ);
@@ -121,9 +114,6 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest003, testing::ext::TestSize.L
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export switch off
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, INVALID_SEQ_VAL);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
-    // init with seq 2
-    manager.HandleExportModuleInit(TEST_MODULE_NAME, INIT_SEQ);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export switch off
     manager.HandleExportSwitchChanged(TEST_MODULE_NAME, INVALID_SEQ_VAL);
@@ -145,9 +135,6 @@ HWTEST_F(EventExportDbMgrTest, EventExportDbMgrTest004, testing::ext::TestSize.L
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export task finish at 150
     manager.HandleExportTaskFinished(TEST_MODULE_NAME, FIRST_FINISH_SEQ + QUERY_OFFSET);
-    ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
-    // init with seq 2
-    manager.HandleExportModuleInit(TEST_MODULE_NAME, INIT_SEQ);
     ASSERT_EQ(manager.GetExportBeginningSeq(TEST_MODULE_NAME), INVALID_SEQ_VAL);
     // export task finish at 200
     manager.HandleExportTaskFinished(TEST_MODULE_NAME, SECOND_FINISH_SEQ);
