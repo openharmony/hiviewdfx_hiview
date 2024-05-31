@@ -93,7 +93,10 @@ ohos_source_set("unified_collector") {
 
 group("unittest") {
   testonly = true
-  deps = [ "test/unittest/common:CpuStorageTest" ]
+  deps = [
+    "test/unittest/common:CpuStorageTest",
+    "test/unittest/common:TraceStateChangeTest",
+  ]
 }
 
 group("moduletest") {
