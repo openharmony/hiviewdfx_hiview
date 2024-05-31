@@ -51,7 +51,7 @@ std::string GetSysVersionStr();
 std::string GetDistributionOsVersionStr();
 std::string GetProductModelStr();
 std::string GetSysVersionDetailsStr();
-std::string GetVersionStr();
+std::string GetVersionTypeStr();
 int32_t GetRegionCode();
 };
 } // namespace HiviewDFX
