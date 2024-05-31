@@ -426,7 +426,7 @@ void UnifiedCollector::InitWorkLoop()
 
 void UnifiedCollector::InitWorkPath()
 {
-    std::string hiviewWorkDir = GetHiviewContext()-> (HiviewContext::DirectoryType::WORK_DIRECTORY);
+    std::string hiviewWorkDir = GetHiviewContext()->GetHiViewDirectory(HiviewContext::DirectoryType::WORK_DIRECTORY);
     const std::string uCollectionDirName = "unified_collection";
     std::string tempWorkPath = FileUtil::IncludeTrailingPathDelimiter(hiviewWorkDir.append(uCollectionDirName));
     if (!FileUtil::IsDirectory(tempWorkPath) && !FileUtil::ForceCreateDirectory(tempWorkPath)) {
