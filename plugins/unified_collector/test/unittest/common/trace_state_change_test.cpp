@@ -162,5 +162,5 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
             EXPECT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);
         }
         g_unifiedCollector->OnUnload();
-    }    
+    }
 }
