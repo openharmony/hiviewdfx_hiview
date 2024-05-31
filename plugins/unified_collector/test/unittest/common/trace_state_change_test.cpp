@@ -43,10 +43,11 @@ constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
     {{true,  false}, {false, false}},
     {{false, false}, {false, false}},
 };
-const bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
+constexpr bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
-
+constexpr useconds_t SET_PROPERTY_NANO_SECONDS_DELAY = 100 * 1000;
+constexpr useconds_t STATE_CHANGE_CALLBACK_NANO_SECONDS_DELAY = 1500 * 1000;
 std::shared_ptr g_unifiedCollector = std::make_shared<UnifiedCollector>();
 bool g_originalTestAppTraceOn, g_originalUCollectionSwitchOn, g_originalTraceCollectionSwitchOn;
 } // namespace
@@ -75,11 +76,11 @@ void TraceStateChangeTest::SetUp()
 void TraceStateChangeTest::TearDown()
 {
     Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(g_originalTestAppTraceOn));
-    usleep(100*1000);
+    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
     Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(g_originalUCollectionSwitchOn));
-    usleep(100*1000);
+    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
     Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(g_originalTraceCollectionSwitchOn));
-    usleep(100*1000);
+    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
 }
 
 /**
@@ -111,7 +112,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
         hiviewContext = MockHiviewPlatform();
         g_unifiedCollector->SetHiviewContext(&hiviewContext);
         g_unifiedCollector->OnLoad();
-        bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] && 
+        bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
             DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
         EXPECT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);
         g_unifiedCollector->OnUnload();
@@ -127,7 +128,7 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
 HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
 {
     bool isBetaVersion, isDeveloperMode, isTestAppTraceOn, isUCollectionSwitchOn, isTraceCollectionSwitchOn;
-    constexpr std::size_t stateConstantCount = 2;    
+    constexpr std::size_t stateConstantCount = 2;
     constexpr uint64_t constantTestCaseNumber = 1<<stateConstantCount;
     constexpr std::size_t stateVariableCount = 3;
     constexpr uint64_t variableTestCaseNumber = 1<<stateVariableCount;
@@ -150,12 +151,12 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
             isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;
             
             Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
-            usleep(100*1000);
+            usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
             Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
-            usleep(100*1000);
+            usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
             Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
                         
-            usleep(1500*1000);
+            usleep(STATE_CHANGE_CALLBACK_NANO_SECONDS_DELAY);
             bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
                 DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
             EXPECT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);

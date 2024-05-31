@@ -83,24 +83,24 @@ std::string GetDisplayVersionStr()
 
 bool SetBetaVersion(bool isBetaVersion)
 {
-    betaVersionToTest = isBetaVersion;
+    g_betaVersionToTest = isBetaVersion;
     return true;
 }
 
 bool IsBetaVersion()
 {
-    return betaVersionToTest;
+    return g_betaVersionToTest;
 }
 
 bool SetDeveloperMode(bool isDeveloperMode)
 {
-    developerModeToTest = isDeveloperMode;
+    g_developerModeToTest = isDeveloperMode;
     return true;
 }
 
 bool IsDeveloperMode()
 {
-    return developerModeToTest;
+    return g_developerModeToTest;
 }
 
 bool IsUCollectionSwitchOn()

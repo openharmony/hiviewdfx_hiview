@@ -122,8 +122,8 @@ ohos_unittest("TraceStateChangeTest") {
     "$hiview_plugin/unified_collector/task/cpu_collection_task.cpp",
     "$hiview_plugin/unified_collector/task/cpu_perf_dump.cpp",
     "$hiview_plugin/unified_collector/unified_collector.cpp", # unified_collector
-    "mock/parameter_ex_mock.cpp",
-    "mock/function_jumble_mock.cpp",
+    "mock/mock_parameter_ex.cpp",
+    "mock/mock_function_jumble.cpp",
     "trace_state_change_test.cpp"
     ]
 
