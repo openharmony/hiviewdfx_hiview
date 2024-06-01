@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FreezeDetector");
+DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult& result,
     EventStore::ResultSet& set, std::map<std::string, WatchPoint>& resultMap)
 {
