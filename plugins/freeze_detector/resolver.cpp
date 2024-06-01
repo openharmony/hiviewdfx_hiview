@@ -26,7 +26,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("FreezeDetector");
+DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 bool FreezeResolver::Init()
 {
     if (freezeCommon_ == nullptr) {

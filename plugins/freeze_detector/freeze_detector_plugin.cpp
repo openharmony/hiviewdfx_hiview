@@ -28,7 +28,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER_PROXY(FreezeDetectorPlugin);
-DEFINE_LOG_TAG("FreezeDetector");
+DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 FreezeDetectorPlugin::FreezeDetectorPlugin()
 {
 }
