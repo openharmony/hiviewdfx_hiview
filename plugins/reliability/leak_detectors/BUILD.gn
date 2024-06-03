@@ -14,7 +14,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-if (enable_leak_detector) {
+if (hiview_enable_leak_detector) {
   config("leak_detector_config") {
     visibility = [ ":*" ]
     include_dirs = [
@@ -36,7 +36,7 @@ if (enable_leak_detector) {
 }
 
 ohos_source_set("leak_detector") {
-  if (enable_leak_detector) {
+  if (hiview_enable_leak_detector) {
     part_name = "hiview"
     subsystem_name = "hiviewdfx"
 

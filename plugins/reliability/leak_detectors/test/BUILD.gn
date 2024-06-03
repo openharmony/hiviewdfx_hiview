@@ -40,7 +40,7 @@ config("leak_detector_test_config") {
 ohos_unittest("LeakDetectorUnitTest") {
   module_out_path = module_output_path
 
-  if (enable_leak_detector) {
+  if (hiview_enable_leak_detector) {
     part_name = "hiview"
     subsystem_name = "hiviewdfx"
 
@@ -74,7 +74,7 @@ ohos_unittest("LeakDetectorUnitTest") {
 ohos_moduletest("LeakDetectorModuleTest") {
   module_out_path = module_output_path
 
-  if (enable_leak_detector) {
+  if (hiview_enable_leak_detector) {
     part_name = "hiview"
     subsystem_name = "hiviewdfx"
 
