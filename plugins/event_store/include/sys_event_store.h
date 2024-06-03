@@ -35,9 +35,6 @@ public:
 
 private:
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
-    std::string GetSequenceFile() const;
-    void ReadSeqFromFile(int64_t& seq);
-    void WriteSeqToFile(int64_t seq) const;
     bool IsNeedBackup(const std::string& dateStr);
 
 private:
@@ -45,7 +42,6 @@ private:
     std::unique_ptr<SysEventDbMgr> sysEventDbMgr_ = nullptr;
     std::atomic<bool> hasLoaded_ { false };
     std::string lastBackupTime_;
-    int64_t curSeq_ { 0 };
 }; // SysEventService
 } // namespace HiviewDFX
 } // namespace OHOS

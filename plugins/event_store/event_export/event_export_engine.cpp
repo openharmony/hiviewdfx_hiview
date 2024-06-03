@@ -24,7 +24,7 @@
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "setting_observer_manager.h"
-#include "sys_event_service_adapter.h"
+#include "sys_event_sequence_mgr.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -163,7 +163,7 @@ void EventExportEngine::InitModuleExportInfo(std::shared_ptr<ExportConfig> confi
     HIVIEW_LOGI("export switch for module %{public}s is on", config->moduleName.c_str());
     bool needUpdateRecord = false;
     if (exportEnabledSeq == INVALID_SEQ_VAL) { // handle setting parameter listening error
-        exportEnabledSeq = SysEventServiceAdapter::GetCurrentEventSeq();
+        exportEnabledSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
         needUpdateRecord = true;
     }
     if (dbMgr_->IsUnrecordedModule(config->moduleName)) { // first time to export event for current module
@@ -199,7 +199,7 @@ void EventExportEngine::InitAndRunTask(std::shared_ptr<ExportConfig> config)
 
 void EventExportEngine::HandleExportSwitchOn(const std::string& moduleName)
 {
-    dbMgr_->HandleExportSwitchChanged(moduleName, SysEventServiceAdapter::GetCurrentEventSeq());
+    dbMgr_->HandleExportSwitchChanged(moduleName, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
 }
 
 void EventExportEngine::HandleExportSwitchOff(const std::string& moduleName)

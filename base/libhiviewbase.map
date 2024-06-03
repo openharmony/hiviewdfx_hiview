@@ -464,6 +464,11 @@
         "OHOS::HiviewDFX::SysEvent::GetPrivacy() const";
         "OHOS::HiviewDFX::StringUtil::StartWith(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::StringUtil::EndWith(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::GetInstance()";
+        "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::GetSequence()";
+        "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::SetSequence(long long)";
+        "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::SetSequence(long)";
+        "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::GetSequenceFile() const";
     };
   local:
     *;

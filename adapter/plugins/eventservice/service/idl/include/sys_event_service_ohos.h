@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -73,7 +73,6 @@ public:
     static SysEventServiceBase* GetSysEventService(
         OHOS::HiviewDFX::SysEventServiceBase* service = nullptr);
     void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
-    void UpdateEventSeq(int64_t seq);
     int32_t AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
     int32_t RemoveListener(const SysEventCallbackPtrOhos& callback) override;
     int32_t Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
@@ -87,7 +86,6 @@ public:
     int32_t RemoveSubscriber() override;
     int64_t Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules) override;
     void SetWorkLoop(std::shared_ptr<EventLoop> looper);
-    int64_t GetCurrentEventSeq();
 
 private:
     bool HasAccessPermission() const;
@@ -106,7 +104,6 @@ private:
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
-    std::atomic<int64_t> curSeq = 0;
     std::shared_ptr<DataPublisher> dataPublisher_;
 
 private:

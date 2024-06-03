@@ -20,6 +20,7 @@ group("unittest") {
   deps = [
     ":SysEventBackupTest",
     ":SysEventDaoTest",
+    ":SysEventSequenceMgrTest",
     ":SysEventStoreUtilityTest",
   ]
 }
@@ -77,6 +78,27 @@ ohos_unittest("SysEventStoreUtilityTest") {
   ]
 
   external_deps = [ "hilog:libhilog" ]
+
+  resource_config_file =
+      "//base/hiviewdfx/hiview/base/event_store/test/resource/ohos_test.xml"
+}
+
+ohos_unittest("SysEventSequenceMgrTest") {
+  module_out_path = module_output_path
+  configs = [ ":sys_event_dao_config_test" ]
+
+  sources = [ "unittest/common/sys_event_sequence_mgr_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 
   resource_config_file =
       "//base/hiviewdfx/hiview/base/event_store/test/resource/ohos_test.xml"

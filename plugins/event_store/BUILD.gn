@@ -45,8 +45,8 @@ ohos_source_set("sys_event_store") {
   deps = [
     "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_base:hiviewbase",
-    "$hiview_base/event_export:event_export_engine",
     "$hiview_core:hiview_core",
+    "event_export:event_export_engine",
   ]
 
   external_deps = [

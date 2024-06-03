@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -43,6 +43,7 @@ ohos_source_set("event_store_source") {
     "dao/sys_event_dao.cpp",
     "dao/sys_event_query.cpp",
     "dao/sys_event_query_wrapper.cpp",
+    "sequence/sys_event_sequence_mgr.cpp",
     "store/sys_event_backup.cpp",
     "store/sys_event_database.cpp",
     "store/sys_event_doc.cpp",
