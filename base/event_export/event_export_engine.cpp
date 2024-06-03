@@ -153,12 +153,14 @@ void EventExportEngine::InitModuleExportInfo(std::shared_ptr<ExportConfig> confi
     bool isExportSwitchOff = (SettingObserverManager::GetInstance()->GetStringValue(config->exportSwitchParam.name) !=
         config->exportSwitchParam.enabledVal);
     if (isExportSwitchOff) {
+        HIVIEW_LOGI("export switch for module %{public}s is off", config->moduleName.c_str());
         if (exportEnabledSeq != INVALID_SEQ_VAL) { // handle setting parameter listening error
             exportEnabledSeq = INVALID_SEQ_VAL;
             dbMgr_->HandleExportSwitchChanged(config->moduleName, exportEnabledSeq);
         }
         return;
     }
+    HIVIEW_LOGI("export switch for module %{public}s is on", config->moduleName.c_str());
     bool needUpdateRecord = false;
     if (exportEnabledSeq == INVALID_SEQ_VAL) { // handle setting parameter listening error
         exportEnabledSeq = SysEventServiceAdapter::GetCurrentEventSeq();
