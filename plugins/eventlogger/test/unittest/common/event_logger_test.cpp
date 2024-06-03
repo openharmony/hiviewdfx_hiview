@@ -22,10 +22,13 @@
 #include "event_logger.h"
 #undef private
 #include "event.h"
+#include "hiview_platform.h"
+#include "sysevent_source.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
+SysEventSource source;
 void EventLoggerTest::SetUp()
 {
     printf("SetUp.\n");
@@ -38,10 +41,14 @@ void EventLoggerTest::TearDown()
 
 void EventLoggerTest::SetUpTestCase()
 {
+    HiviewPlatform platform;
+    source.SetHiviewContext(&platform);
+    source.OnLoad();
 }
 
 void EventLoggerTest::TearDownTestCase()
 {
+    source.OnUnload();
 }
 
 /**

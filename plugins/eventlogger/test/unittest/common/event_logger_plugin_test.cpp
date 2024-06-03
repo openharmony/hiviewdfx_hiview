@@ -25,11 +25,13 @@
 
 #include "event_logger.h"
 #include "hiview_platform.h"
+#include "sysevent_source.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace HiviewDFX {
+SysEventSource source;
 void EventloggerPluginTest::SetUp()
 {
     printf("SetUp.\n");
@@ -42,18 +44,14 @@ void EventloggerPluginTest::TearDown()
 
 void EventloggerPluginTest::SetUpTestCase()
 {
-OHOS::HiviewDFX::HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    std::string defaultDir = "/data/test/test_data/hiview_platform_config";
-    if (!platform.InitEnvironment(defaultDir)) {
-        std::cout << "fail to init environment" << std::endl;
-    } else {
-        std::cout << "init environment successful" << std::endl;
-    }
-    printf("SetUpTestCase.\n");
+    HiviewPlatform platform;
+    source.SetHiviewContext(&platform);
+    source.OnLoad();
 }
 
 void EventloggerPluginTest::TearDownTestCase()
 {
+    source.OnUnload();
     printf("TearDownTestCase.\n");
 }
 

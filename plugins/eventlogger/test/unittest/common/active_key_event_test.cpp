@@ -23,11 +23,14 @@
 #define protected public
 #include "active_key_event.h"
 #include "log_store_ex.h"
+#include "hiview_platform.h"
+#include "sysevent_source.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace HiviewDFX {
+SysEventSource source;
 void ActiveKeyEventTest::SetUp()
 {
     printf("SetUp.\n");
@@ -40,10 +43,14 @@ void ActiveKeyEventTest::TearDown()
 
 void ActiveKeyEventTest::SetUpTestCase()
 {
+    HiviewPlatform platform;
+    source.SetHiviewContext(&platform);
+    source.OnLoad();
 }
 
 void ActiveKeyEventTest::TearDownTestCase()
 {
+    source.OnUnload();
 }
 
 /**
@@ -53,7 +60,7 @@ void ActiveKeyEventTest::TearDownTestCase()
  */
 HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_001, TestSize.Level3)
 {
-    std::string logStorePath = "/data/log/test/";
+    std::string logStorePath = "/data/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
@@ -71,7 +78,7 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_001, TestSize.Level3)
  */
 HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_002, TestSize.Level3)
 {
-    std::string logStorePath = "/data/log/test/";
+    std::string logStorePath = "/data/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
@@ -89,7 +96,7 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_002, TestSize.Level3)
  */
 HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_003, TestSize.Level3)
 {
-    std::string logStorePath = "/data/log/test/";
+    std::string logStorePath = "/data/test/";
     std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
     auto ret = logStoreEx->Init();
     EXPECT_EQ(ret, true);
@@ -136,23 +143,6 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_005, TestSize.Level3)
 HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_006, TestSize.Level3)
 {
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->triggeringTime_ = 0;
-    auto keyEvent = OHOS::MMI::KeyEvent::Create();
-    activeKeyEvent->CombinationKeyCallback(keyEvent);
-}
-
-/**
- * @tc.name: ActiveKeyEventTest_007
- * @tc.desc: ActiveKeyEventTest CombinationKeyCallback
- * @tc.type: FUNC
- */
-HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_007, TestSize.Level3)
-{
-    std::string logStorePath = "/data/log/test/";
-    std::shared_ptr<LogStoreEx> logStoreEx = std::make_shared<LogStoreEx>(logStorePath, true);
-    logStoreEx->Init();
-    std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
-    activeKeyEvent->Init(logStoreEx);
     activeKeyEvent->triggeringTime_ = 0;
     auto keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);

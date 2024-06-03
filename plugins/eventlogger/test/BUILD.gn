@@ -21,6 +21,8 @@ config("unittest_config") {
     "../include",
     "../log_catcher/include",
     "unittest/common",
+    "$hiview_plugin/sysevent_source/control/include",
+    "$hiview_plugin/sysevent_source/include",
   ]
 
   cflags_cc = [
@@ -40,6 +42,7 @@ ohos_unittest("EventloggerPluginTest") {
     "$hiview_core:hiview_core",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
+    "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -64,6 +67,7 @@ ohos_unittest("ActiveKeyEventTest") {
     "$hiview_core:hiview_core",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
+    "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -86,6 +90,7 @@ ohos_unittest("EventLoggerTest") {
     "$hiview_core:hiview_core",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
+    "$hiview_plugin/sysevent_source:sysevent_source",
     "//third_party/googletest:gtest_main",
   ]
 
