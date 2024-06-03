@@ -16,7 +16,6 @@
 #include "sys_event_store.h"
 
 #include <cstdio>
-#include <fstream>
 #include <memory>
 
 #include "event.h"
@@ -28,8 +27,8 @@
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "sys_event.h"
-#include "sys_event_dao.h"
 #include "sys_event_db_mgr.h"
+#include "sys_event_sequence_mgr.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -37,25 +36,7 @@ namespace HiviewDFX {
 namespace {
 REGISTER(SysEventStore);
 DEFINE_LOG_TAG("HiView-SysEventStore");
-constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
 const std::string PROP_LAST_BACKUP = "persist.hiviewdfx.priv.sysevent.backup_time";
-
-bool SaveStringToFile(const std::string& filePath, const std::string& content)
-{
-    std::ofstream file;
-    file.open(filePath.c_str(), std::ios::in | std::ios::out);
-    if (!file.is_open()) {
-        file.open(filePath.c_str(), std::ios::out);
-        if (!file.is_open()) {
-            return false;
-        }
-    }
-    file.seekp(0);
-    file.write(content.c_str(), content.length() + 1);
-    bool ret = !file.fail();
-    file.close();
-    return ret;
-}
 }
 
 SysEventStore::SysEventStore() : hasLoaded_(false)
@@ -87,10 +68,9 @@ void SysEventStore::OnLoad()
         std::placeholders::_1, std::placeholders::_2);
     SysEventServiceAdapter::BindGetTypeFunc(getTypeFunc);
 
-    if (!FileUtil::FileExists(GetSequenceFile())) {
+    if (!FileUtil::FileExists(EventStore::SysEventSequenceManager::GetInstance().GetSequenceFile())) {
         EventStore::SysEventDao::Restore();
     }
-    ReadSeqFromFile(curSeq_);
     lastBackupTime_ = Parameter::GetString(PROP_LAST_BACKUP, "");
     EventExportEngine::GetInstance().Start();
     hasLoaded_ = true;
@@ -100,34 +80,6 @@ void SysEventStore::OnUnload()
 {
     HIVIEW_LOGI("sys event service unload");
     EventExportEngine::GetInstance().Stop();
-}
-
-std::string SysEventStore::GetSequenceFile() const
-{
-    return EventStore::SysEventDao::GetDatabaseDir() + SEQ_PERSISTS_FILE_NAME;
-}
-
-void SysEventStore::WriteSeqToFile(int64_t seq) const
-{
-    std::string seqFile(GetSequenceFile());
-    std::string content(std::to_string(seq));
-    if (!SaveStringToFile(seqFile, content)) {
-        HIVIEW_LOGE("failed to write sequence %{public}s.", content.c_str());
-    }
-    SysEventServiceAdapter::UpdateEventSeq(seq);
-}
-
-void SysEventStore::ReadSeqFromFile(int64_t& seq)
-{
-    std::string content;
-    std::string seqFile = GetSequenceFile();
-    if (!FileUtil::LoadStringFromFile(seqFile, content)) {
-        HIVIEW_LOGE("failed to read sequence value from %{public}s.", seqFile.c_str());
-        return;
-    }
-    seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
-    HIVIEW_LOGI("read sequence successful, value is %{public}" PRId64 ".", seq);
-    SysEventServiceAdapter::UpdateEventSeq(seq);
 }
 
 bool SysEventStore::IsNeedBackup(const std::string& dateStr)
@@ -172,8 +124,9 @@ bool SysEventStore::OnEvent(std::shared_ptr<Event>& event)
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
     if (sysEvent != nullptr && sysEvent->preserve_) {
         // add seq to sys event and save it to local file
-        sysEvent->SetEventSeq(curSeq_);
-        WriteSeqToFile(++curSeq_);
+        int64_t eventSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
+        sysEvent->SetEventSeq(eventSeq);
+        EventStore::SysEventSequenceManager::GetInstance().SetSequence(++eventSeq);
         sysEventDbMgr_->SaveToStore(sysEvent);
 
         std::string dateStr(TimeUtil::TimestampFormatToDate(TimeUtil::GetSeconds(), "%Y%m%d"));

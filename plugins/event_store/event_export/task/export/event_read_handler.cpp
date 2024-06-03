@@ -18,8 +18,8 @@
 #include "event_write_handler.h"
 #include "export_db_storage.h"
 #include "hiview_logger.h"
-#include "ret_code.h"
-#include "sys_event_service_adapter.h"
+#include "sys_event_dao.h"
+#include "sys_event_sequence_mgr.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -27,6 +27,7 @@ DEFINE_LOG_TAG("HiView-EventReadHandler");
 namespace {
 constexpr int64_t EVENT_QUERY_STEP = 10000; // export 10000 events in one cycle
 constexpr int EACH_QUERY_MAX_LIMIT = 1000;
+constexpr int QUERY_FAILED = -1;
 constexpr int QUERY_SUCCESS = 0;
 }
 
@@ -38,7 +39,7 @@ bool EventReadHandler::HandleRequest(RequestPtr req)
         HIVIEW_LOGE("no need to export because of empty event export config list");
         return false;
     }
-    int64_t curEventSeq = SysEventServiceAdapter::GetCurrentEventSeq();
+    int64_t curEventSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
     if (exportBeginSeq == INVALID_SEQ_VAL || exportBeginSeq > curEventSeq) {
         HIVIEW_LOGE("invalid export: begin sequence:%{public}" PRId64 ", current event seq: %{public}" PRId64 "",
             exportBeginSeq, curEventSeq);
@@ -131,10 +132,10 @@ bool EventReadHandler::QuerySysEvent(const int64_t beginSeq, const int64_t endSe
             std::make_pair(EventStore::INNER_PROCESS_ID, ""),
             [&queryResult] (EventStore::DbQueryStatus status) {
                 std::unordered_map<EventStore::DbQueryStatus, int32_t> statusToCode {
-                    { EventStore::DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
-                    { EventStore::DbQueryStatus::OVER_TIME, ERR_QUERY_OVER_TIME },
-                    { EventStore::DbQueryStatus::OVER_LIMIT, ERR_QUERY_OVER_LIMIT },
-                    { EventStore::DbQueryStatus::TOO_FREQENTLY, ERR_QUERY_TOO_FREQUENTLY },
+                    { EventStore::DbQueryStatus::CONCURRENT, QUERY_FAILED },
+                    { EventStore::DbQueryStatus::OVER_TIME, QUERY_FAILED },
+                    { EventStore::DbQueryStatus::OVER_LIMIT, QUERY_FAILED },
+                    { EventStore::DbQueryStatus::TOO_FREQENTLY, QUERY_FAILED },
                 };
                 queryResult = statusToCode[status];
             });

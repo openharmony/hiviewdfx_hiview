@@ -22,7 +22,6 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "hiview_logger.h"
-#include "hiview_service_ability_proxy.h"
 #include "rdb_helper.h"
 #include "rdb_store.h"
 #include "system_ability_definition.h"

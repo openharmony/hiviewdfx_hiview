@@ -177,8 +177,6 @@ HWTEST_F(SysEventServiceOhosTest, SysEventServiceAdapterTest, testing::ext::Test
     sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
     OHOS::HiviewDFX::SysEventServiceAdapter::OnSysEvent(sysEvent);
     ASSERT_TRUE(true);
-    OHOS::HiviewDFX::SysEventServiceAdapter::UpdateEventSeq(0);
-    ASSERT_TRUE(true);
     OHOS::HiviewDFX::SysEventServiceAdapter::BindGetTagFunc(nullptr);
     ASSERT_TRUE(true);
     OHOS::HiviewDFX::SysEventServiceAdapter::BindGetTypeFunc(nullptr);

@@ -32,6 +32,7 @@
 #include "running_status_log_util.h"
 #include "string_ex.h"
 #include "system_ability_definition.h"
+#include "sys_event_sequence_mgr.h"
 #include "time_util.h"
 
 using namespace std;
@@ -201,11 +202,6 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
         }
     }
     dataPublisher_->OnSysEvent(event);
-}
-
-void SysEventServiceOhos::UpdateEventSeq(int64_t seq)
-{
-    curSeq.store(seq, std::memory_order_release);
 }
 
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
@@ -402,33 +398,35 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
         return ERR_LISTENER_NOT_EXIST;
     }
     if (!HasAccessPermission()) {
-        callback->OnComplete(ERR_NO_PERMISSION, 0, curSeq.load(std::memory_order_acquire));
+        callback->OnComplete(ERR_NO_PERMISSION, 0, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return ERR_NO_PERMISSION;
     }
     auto checkRet = CheckEventQueryingValidity(rules, GetCallerQueryRuleLimit());
     if (checkRet != IPC_CALL_SUCCEED) {
-        callback->OnComplete(checkRet, 0, curSeq.load(std::memory_order_acquire));
+        callback->OnComplete(checkRet, 0, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return checkRet;
     }
     auto queryWrapperBuilder = std::make_shared<EventQueryWrapperBuilder>(queryArgument);
     auto buildRet = BuildEventQuery(queryWrapperBuilder, rules);
     if (!buildRet || queryWrapperBuilder == nullptr || !queryWrapperBuilder->IsValid()) {
         HIVIEW_LOGW("invalid query rule, exit sys event querying.");
-        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
+        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0,
+            EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return ERR_QUERY_RULE_INVALID;
     }
     if (queryArgument.maxEvents == 0) {
         HIVIEW_LOGW("query count is 0, query complete directly.");
-        callback->OnComplete(IPC_CALL_SUCCEED, 0, curSeq.load(std::memory_order_acquire));
+        callback->OnComplete(IPC_CALL_SUCCEED, 0, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return IPC_CALL_SUCCEED;
     }
     auto queryWrapper = queryWrapperBuilder->Build();
     if (queryWrapper == nullptr) {
         HIVIEW_LOGW("query wrapper build failed.");
-        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0, curSeq.load(std::memory_order_acquire));
+        callback->OnComplete(ERR_QUERY_RULE_INVALID, 0,
+            EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return ERR_QUERY_RULE_INVALID;
     }
-    queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
+    queryWrapper->SetMaxSequence(EventStore::SysEventSequenceManager::GetInstance().GetSequence());
     auto queryRetCode = IPC_CALL_SUCCEED;
     queryWrapper->Query(callback, queryRetCode);
     return queryRetCode;
@@ -565,7 +563,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
         HIVIEW_LOGW("export wrapper build failed.");
         return ERR_QUERY_RULE_INVALID;
     }
-    queryWrapper->SetMaxSequence(curSeq.load(std::memory_order_acquire));
+    queryWrapper->SetMaxSequence(EventStore::SysEventSequenceManager::GetInstance().GetSequence());
     dataPublisher_->AddExportTask(queryWrapper, currentTime, uid);
     return currentTime;
 }
@@ -577,11 +575,6 @@ void SysEventServiceOhos::SetWorkLoop(std::shared_ptr<EventLoop> looper)
         return;
     }
     dataPublisher_->SetWorkLoop(looper);
-}
-
-int64_t SysEventServiceOhos::GetCurrentEventSeq()
-{
-    return curSeq.load(std::memory_order_acquire);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

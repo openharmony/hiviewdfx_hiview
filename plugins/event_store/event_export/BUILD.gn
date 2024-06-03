@@ -22,13 +22,10 @@ config("event_export_engine_config") {
     "include",
     "task/include",
     "database/include",
-    "$hiview_adapter/service/client/include",
-    "$hiview_adapter/service/common/include",
-    "$hiview_interfaces/inner_api/unified_collection",
   ]
 }
 
-ohos_shared_library("event_export_engine") {
+ohos_source_set("event_export_engine") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -62,12 +59,7 @@ ohos_shared_library("event_export_engine") {
     "task/export_base_task.cpp",
   ]
 
-  deps = [
-    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
-    "$hiview_base:hiviewbase",
-    "$hiview_base:logger",
-    "$hiview_base/utility:hiview_utility",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "ability_base:zuri",

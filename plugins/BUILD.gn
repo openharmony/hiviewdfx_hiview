@@ -17,6 +17,7 @@ import("//build/test.gni")
 group("unittest") {
   testonly = true
   deps = [
+    "event_store/event_export/test:unittest",
     "eventlogger:unittest",
     "faultlogger:unittest",
     "freeze_detector:unittest",
