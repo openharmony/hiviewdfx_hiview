@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 #include "AppStartReporterAdapter.h"
-
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 AppStartReporterAdapter::AppStartReporterAdapter(IAppStartReportInfrastructure* impl, IAppStartEventPoster* poster)
     : SimpleAppStartReporterAdapter(impl)

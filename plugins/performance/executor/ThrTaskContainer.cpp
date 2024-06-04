@@ -16,9 +16,9 @@
 #include "ThrTaskContainer.h"
 #include <sys/prctl.h>
 #include <thread>
-
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 /* ThrTaskContainer */
 void ThrTaskContainer::StartLoop(const std::string& threadName)

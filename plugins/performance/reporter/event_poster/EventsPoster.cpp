@@ -14,7 +14,8 @@
  */
 #include "EventsPoster.h"
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 void EventsPoster::RegObserver(IEventObserver* observer)
 {
