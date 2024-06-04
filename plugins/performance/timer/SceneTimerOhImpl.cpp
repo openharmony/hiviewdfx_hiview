@@ -17,9 +17,9 @@
 #include <sys/prctl.h>
 #include <chrono>
 #include <thread>
-
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 using namespace std::chrono;
 

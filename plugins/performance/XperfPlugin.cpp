@@ -95,7 +95,7 @@ namespace OHOS {
 
         REGISTER(XperfPlugin);
         REGISTER_PUBLISHER(XperfPlugin);
-        DEFINE_LOG_TAG("XPerformance");
+        DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
         void XperfPlugin::OnLoad()
         {

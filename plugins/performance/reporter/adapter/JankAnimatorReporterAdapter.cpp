@@ -14,9 +14,9 @@
  */
 
 #include "JankAnimatorReporterAdapter.h"
-
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");;
 
 JankAnimatorReporterAdapter::JankAnimatorReporterAdapter(
     IJankAnimatorReportInfrastructure* impl, IScrollJankEventPoster* eventPoster)

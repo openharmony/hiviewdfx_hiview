@@ -14,7 +14,7 @@
 import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
-if (enable_performance_monitor) {
+if (hiview_enable_performance_monitor) {
   config("xperf_service_config") {
     visibility = [ "*:*" ]
 
@@ -73,7 +73,7 @@ ohos_prebuilt_etc("xperfplugins_config") {
 }
 
 ohos_shared_library("xperf") {
-  if (enable_performance_monitor) {
+  if (hiview_enable_performance_monitor) {
     part_name = "hiview"
     subsystem_name = "hiviewdfx"
 

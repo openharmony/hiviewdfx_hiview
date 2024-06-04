@@ -74,5 +74,5 @@ declare_args() {
   hiview_enable_leak_detector = false
 
   hiview_unified_collector_PC_app_state_collect_enable = false
-  enable_performance_monitor = false
+  hiview_enable_performance_monitor = false
 }

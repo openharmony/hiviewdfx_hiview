@@ -19,7 +19,8 @@
 #include "ActionId.h"
 #include "JankAnimatorMonitorConverter.h"
 #include "hiview_logger.h"
-DEFINE_LOG_TAG("XPerformance");
+
+DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 using ActionId::JANK_ANIMATOR_FRAME;
 using OHOS::HiviewDFX::HiSysEvent;
