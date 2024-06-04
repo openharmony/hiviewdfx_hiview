@@ -17,7 +17,7 @@
         },{
             "domain": "FRAMEWORK",
             "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL", "HIT_EMPTY_WARNING",
-                        "APP_HICOLLIE"]
+                        "APP_HICOLLIE", "INPUT_EVENT_SOCKET_TIMEOUT"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "HUNGTASK", "COM_LONG_PRESS", "DMD_TP_I2C", "DMD_TP_HP", "DMD_LCD_DDR",
