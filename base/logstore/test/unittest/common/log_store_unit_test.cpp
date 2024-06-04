@@ -58,6 +58,7 @@ void LogStoreUnitTest::TearDownTestCase()
 
 void LogStoreUnitTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void LogStoreUnitTest::TearDown()

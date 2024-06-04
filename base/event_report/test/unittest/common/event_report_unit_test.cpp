@@ -48,6 +48,7 @@ void EventReportUnitTest::TearDownTestCase()
 
 void EventReportUnitTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void EventReportUnitTest::TearDown()

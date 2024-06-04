@@ -18,6 +18,8 @@
 
 #include <gtest/gtest.h>
 
+#include "hiview_platform.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 class SysEventStoreUtilityTest : public testing::Test {
@@ -26,6 +28,9 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
+
+private:
+    HiviewPlatform platform;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

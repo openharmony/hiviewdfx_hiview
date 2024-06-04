@@ -16,10 +16,15 @@
 #define HIVIEW_PLATFORM_CONFIG_FILE_TEST_H
 #include <gtest/gtest.h>
 
+#include "hiview_platform.h"
+
 class HiviewPlatformConfigTest : public testing::Test {
 public:
     void SetUp();
     void TearDown();
+
+private:
+    OHOS::HiviewDFX::HiviewPlatform platform;
 };
 
 #endif // HIVIEW_PLATFORM_CONFIG_FILE_TEST_H

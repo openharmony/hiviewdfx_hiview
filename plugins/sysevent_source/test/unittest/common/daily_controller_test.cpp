@@ -18,6 +18,7 @@
 
 #include "daily_controller.h"
 #include "file_util.h"
+#include "hiview_platform.h"
 #include "parameter_ex.h"
 
 using namespace testing::ext;
@@ -27,6 +28,9 @@ class DailyControllerTest : public testing::Test {
 public:
     void SetUp();
     void TearDown();
+
+private:
+    HiviewPlatform platform;
 };
 
 namespace {
@@ -62,6 +66,7 @@ void EventWithoutThresholdTest(DailyController& controller, std::shared_ptr<SysE
 
 void DailyControllerTest::SetUp()
 {
+    platform.GetPluginMap();
     const std::string dbDir = WORK_PATH + "sys_event_threshold/";
     if (FileUtil::IsDirectory(dbDir) && !FileUtil::ForceRemoveDirectory(dbDir)) {
         std::cout << "Failed to remove diretory=" << dbDir << std::endl;

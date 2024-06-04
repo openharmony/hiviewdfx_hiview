@@ -22,6 +22,7 @@
 
 #include "event.h"
 #include "event_dispatch_queue.h"
+#include "hiview_platform.h"
 
 class EventDispatchQueueTest : public testing::Test {
 public:
@@ -37,6 +38,9 @@ public:
     static constexpr int EVENT_ID_3 = 3;
     static constexpr int EVENT_ID_4 = 4;
     static constexpr int EVENT_ID_5 = 5;
+
+private:
+    OHOS::HiviewDFX::HiviewPlatform platform;
 };
 
 class ExtendEventListener : public OHOS::HiviewDFX::EventListener {

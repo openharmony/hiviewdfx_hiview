@@ -43,7 +43,10 @@ ohos_unittest("SysEventStatTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 }
 
 ohos_unittest("EventServerTest") {
@@ -60,7 +63,10 @@ ohos_unittest("EventServerTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 }
 
 ohos_unittest("DailyControllerTest") {
@@ -79,6 +85,7 @@ ohos_unittest("DailyControllerTest") {
 
   external_deps = [
     "cJSON:cjson",
+    "ffrt:libffrt",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]

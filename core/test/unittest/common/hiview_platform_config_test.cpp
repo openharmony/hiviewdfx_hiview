@@ -24,6 +24,7 @@ void HiviewPlatformConfigTest::SetUp()
      * @tc.setup: create an event loop and multiple event handlers
      */
     printf("SetUp.\n");
+    platform.GetPluginMap();
 }
 
 void HiviewPlatformConfigTest::TearDown()

@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "hiview_service.h"
+#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -30,6 +31,7 @@ public:
 
 private:
     HiviewService *service = nullptr;
+    HiviewPlatform platform;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

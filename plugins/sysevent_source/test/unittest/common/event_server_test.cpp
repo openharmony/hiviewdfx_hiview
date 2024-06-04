@@ -27,6 +27,7 @@ const std::string BBOX_PATH = "/dev/bbox";
 void EventServerTest::SetUp()
 {
     printf("EventServerTest SetUp\n");
+    platform.GetPluginMap();
 }
 
 void EventServerTest::TearDown()

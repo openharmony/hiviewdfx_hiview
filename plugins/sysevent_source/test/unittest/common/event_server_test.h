@@ -16,10 +16,15 @@
 #define HIVIEW_EVENT_SERVER_TEST_H
 #include <gtest/gtest.h>
 
+#include "hiview_platform.h"
+
 class EventServerTest : public testing::Test {
 public:
     void SetUp();
     void TearDown();
+
+private:
+    OHOS::HiviewDFX::HiviewPlatform platform;
 };
 
 #endif // HIVIEW_EVENT_SERVER_TEST_H

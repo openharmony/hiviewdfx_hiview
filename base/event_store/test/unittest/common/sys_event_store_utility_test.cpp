@@ -166,6 +166,7 @@ void SysEventStoreUtilityTest::TearDownTestCase()
 
 void SysEventStoreUtilityTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void SysEventStoreUtilityTest::TearDown()

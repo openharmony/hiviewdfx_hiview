@@ -45,6 +45,7 @@ void EventRawEncodedTest::TearDownTestCase()
 
 void EventRawEncodedTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void EventRawEncodedTest::TearDown()

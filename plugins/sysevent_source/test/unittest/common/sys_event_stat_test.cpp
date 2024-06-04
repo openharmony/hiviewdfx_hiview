@@ -28,7 +28,10 @@ void SysEventStatTest::SetUpTestCase() {}
 
 void SysEventStatTest::TearDownTestCase() {}
 
-void SysEventStatTest::SetUp() {}
+void SysEventStatTest::SetUp()
+{
+    platform.GetPluginMap();
+}
 
 void SysEventStatTest::TearDown() {}
 
