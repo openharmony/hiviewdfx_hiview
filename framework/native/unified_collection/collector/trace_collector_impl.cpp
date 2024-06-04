@@ -47,7 +47,7 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuration(
-    TraceCollector::Caller &caller, uint32_t timeLimit)
+    UCollect::TraceCaller &caller, uint32_t timeLimit)
 {
     if (timeLimit > INT32_MAX) {
         return StartDumpTrace(caller, INT32_MAX);
@@ -55,12 +55,12 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuratio
     return StartDumpTrace(caller, static_cast<int32_t>(timeLimit));
 }
 
-CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(TraceCollector::Caller &caller)
+CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(UCollect::TraceCaller &caller)
 {
     return StartDumpTrace(caller, FULL_TRACE_DURATION);
 }
 
-CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(TraceCollector::Caller &caller,
+CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(UCollect::TraceCaller &caller,
     int32_t timeLimit)
 {
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
@@ -92,7 +92,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(Trace
         return result;
     }
     if (traceRetInfo.errorCode == TraceErrorCode::SUCCESS) {
-        if (caller == TraceCollector::Caller::DEVELOP) {
+        if (caller == UCollect::TraceCaller::DEVELOP) {
             result.data = traceRetInfo.outputFiles;
         } else {
             std::vector<std::string> outputFiles = GetUnifiedFiles(traceRetInfo, caller);

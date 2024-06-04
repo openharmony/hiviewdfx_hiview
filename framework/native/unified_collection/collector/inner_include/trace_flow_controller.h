@@ -25,14 +25,13 @@
 
 using OHOS::HiviewDFX::Hitrace::TraceErrorCode;
 using OHOS::HiviewDFX::Hitrace::TraceRetInfo;
-using OHOS::HiviewDFX::UCollectUtil::TraceCollector;
 using OHOS::HiviewDFX::UCollect::UcError;
 
 namespace OHOS {
 namespace HiviewDFX {
 class TraceFlowController {
 public:
-    TraceFlowController(TraceCollector::Caller caller = TraceCollector::Caller::INVALIDITY);
+    TraceFlowController(UCollect::TraceCaller caller = UCollect::TraceCaller::INVALIDITY);
     ~TraceFlowController() = default;
     bool NeedDump();
     bool NeedUpload(TraceRetInfo ret);
@@ -71,7 +70,7 @@ private:
 private:
     struct TraceFlowRecord traceFlowRecord_;
     std::shared_ptr<TraceStorage> traceStorage_;
-    TraceCollector::Caller caller_;
+    UCollect::TraceCaller caller_;
 };
 } // HiViewDFX
 } // OHOS

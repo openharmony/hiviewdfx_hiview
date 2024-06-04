@@ -311,7 +311,7 @@ CollectResult<int32_t> HiviewService::OpenSnapshotTrace(const std::vector<std::s
     return ret;
 }
 
-CollectResult<std::vector<std::string>> HiviewService::DumpSnapshotTrace(UCollectUtil::TraceCollector::Caller caller)
+CollectResult<std::vector<std::string>> HiviewService::DumpSnapshotTrace(UCollect::TraceCaller caller)
 {
     HIVIEW_LOGI("caller[%{public}d] dump trace in snapshot mode.", static_cast<int32_t>(caller));
     CollectResult<std::vector<std::string>> dumpRet = traceCollector_->DumpTrace(caller);

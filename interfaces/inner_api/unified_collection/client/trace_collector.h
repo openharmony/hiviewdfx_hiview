@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "collect_result.h"
+#include "trace_caller.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -44,22 +45,11 @@ class TraceCollector {
 public:
     TraceCollector() = default;
     virtual ~TraceCollector() = default;
-    enum Caller {
-        RELIABILITY,
-        XPERF,
-        XPOWER,
-        BETACLUB,
-        DEVELOP,
-        APP,
-        OTHER,
-        HIVIEW,
-        FOUNDATION,
-        INVALIDITY,
-    };
 
 public:
     virtual CollectResult<int32_t> OpenSnapshot(const std::vector<std::string>& tagGroups) = 0;
-    virtual CollectResult<std::vector<std::string>> DumpSnapshot(Caller caller = Caller::OTHER) = 0;
+    virtual CollectResult<std::vector<std::string>> DumpSnapshot(
+        UCollect::TraceCaller caller = UCollect::TraceCaller::OTHER) = 0;
     virtual CollectResult<int32_t> OpenRecording(const std::string& tags) = 0;
     virtual CollectResult<int32_t> RecordingOn() = 0;
     virtual CollectResult<std::vector<std::string>> RecordingOff() = 0;

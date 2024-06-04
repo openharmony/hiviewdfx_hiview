@@ -369,7 +369,7 @@ void EventLogTask::SysrqCapture(bool isWriteNewFile)
 void EventLogTask::HitraceCapture()
 {
     std::shared_ptr<UCollectUtil::TraceCollector> collector = UCollectUtil::TraceCollector::Create();
-    UCollectUtil::TraceCollector::Caller caller = UCollectUtil::TraceCollector::Caller::RELIABILITY;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
     auto result = collector->DumpTrace(caller);
     if (result.retCode != 0) {
         HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);

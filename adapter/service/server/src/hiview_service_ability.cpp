@@ -281,7 +281,7 @@ CollectResultParcelable<int32_t> HiviewServiceAbility::OpenSnapshotTrace(const s
 CollectResultParcelable<std::vector<std::string>> HiviewServiceAbility::DumpSnapshotTrace(int32_t caller)
 {
     auto traceRetHandler = [caller] (HiviewService* service) {
-        return service->DumpSnapshotTrace(static_cast<UCollectUtil::TraceCollector::Caller>(caller));
+        return service->DumpSnapshotTrace(static_cast<UCollect::TraceCaller>(caller));
     };
     return TraceCalling<std::vector<std::string>>(traceRetHandler);
 }

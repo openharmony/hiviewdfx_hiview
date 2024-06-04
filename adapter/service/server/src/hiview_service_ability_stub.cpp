@@ -335,7 +335,7 @@ int32_t HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest(MessageParcel& 
 int32_t HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
-    int32_t caller = UCollectClient::TraceCollector::Caller::OTHER;
+    int32_t caller = UCollect::TraceCaller::OTHER;
     if (!data.ReadInt32(caller)) {
         HIVIEW_LOGW("failed to read trace caller from parcel");
         return TraceErrCode::ERR_READ_MSG_PARCEL;

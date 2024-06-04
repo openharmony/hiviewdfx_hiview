@@ -49,7 +49,7 @@ public:
 HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::XPERF;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
@@ -72,7 +72,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::XPOWER;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::XPOWER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
@@ -96,7 +96,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    TraceCollector::Caller caller = TraceCollector::Caller::RELIABILITY;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
@@ -143,7 +143,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest004, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::BETACLUB;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::BETACLUB;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
@@ -166,7 +166,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::OTHER;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::OTHER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
@@ -253,7 +253,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);
@@ -293,7 +293,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest013, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(TIME_10S);
@@ -316,7 +316,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(TIME_30S);
@@ -339,7 +339,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::DEVELOP;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(TIME_30S);
@@ -362,7 +362,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest017, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceCollector::Caller caller = TraceCollector::Caller::HIVIEW;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::HIVIEW;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     g_traceManager.OpenSnapshotTrace(tagGroups);
     sleep(10);

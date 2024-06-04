@@ -97,7 +97,7 @@ void CallCollectorFuncs()
     (void)perfCollector->StartPerf("/data/local/tmp/");
 #endif
     auto traceCollector = TraceCollector::Create();
-    TraceCollector::Caller caller = TraceCollector::Caller::OTHER;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::OTHER;
     const std::vector<std::string> tagGroups = {"scene_performance"};
     (void)g_traceManager.OpenSnapshotTrace(tagGroups);
     CollectResult<std::vector<std::string>> resultDumpTrace = traceCollector->DumpTrace(caller);

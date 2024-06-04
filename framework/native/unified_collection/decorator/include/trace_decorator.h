@@ -32,13 +32,13 @@ struct TraceStatItem {
     uint32_t latency = 0;
 };
 
-const std::unordered_map<TraceCollector::Caller, std::string> CallerMap {
-    {TraceCollector::RELIABILITY, "RELIABILITY"},
-    {TraceCollector::XPERF, "XPERF"},
-    {TraceCollector::XPOWER, "XPOWER"},
-    {TraceCollector::BETACLUB, "BETACLUB"},
-    {TraceCollector::DEVELOP, "DEVELOP"},
-    {TraceCollector::OTHER, "OTHER"}
+const std::unordered_map<UCollect::TraceCaller, std::string> CallerMap {
+    {UCollect::RELIABILITY, "RELIABILITY"},
+    {UCollect::XPERF, "XPERF"},
+    {UCollect::XPOWER, "XPOWER"},
+    {UCollect::BETACLUB, "BETACLUB"},
+    {UCollect::DEVELOP, "DEVELOP"},
+    {UCollect::OTHER, "OTHER"}
 };
 
 struct TraceStatInfo {
@@ -87,7 +87,7 @@ struct TraceTrafficInfo {
 
 class TraceStatWrapper {
 public:
-    void UpdateTraceStatInfo(uint64_t startTime, uint64_t endTime, TraceCollector::Caller& caller,
+    void UpdateTraceStatInfo(uint64_t startTime, uint64_t endTime, UCollect::TraceCaller& caller,
         const CollectResult<std::vector<std::string>>& result);
     std::map<std::string, TraceStatInfo> GetTraceStatInfo();
     std::map<std::string, std::vector<std::string>> GetTrafficStatInfo();
@@ -108,8 +108,8 @@ class TraceDecorator : public TraceCollector, public UCDecorator {
 public:
     TraceDecorator(std::shared_ptr<TraceCollector> collector) : traceCollector_(collector) {};
     virtual ~TraceDecorator() = default;
-    virtual CollectResult<std::vector<std::string>> DumpTrace(TraceCollector::Caller &caller) override;
-    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(TraceCollector::Caller &caller,
+    virtual CollectResult<std::vector<std::string>> DumpTrace(UCollect::TraceCaller &caller) override;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(UCollect::TraceCaller &caller,
         uint32_t timeLimit) override;
     virtual CollectResult<int32_t> TraceOn() override;
     virtual CollectResult<std::vector<std::string>> TraceOff() override;
@@ -118,7 +118,7 @@ public:
     static void ResetStatInfo();
 
 private:
-    template <typename T> auto Invoke(T task, TraceStatWrapper& traceStatWrapper, TraceCollector::Caller& caller)
+    template <typename T> auto Invoke(T task, TraceStatWrapper& traceStatWrapper, UCollect::TraceCaller& caller)
     {
         uint64_t startTime = TimeUtil::GenerateTimestamp();
         auto result = task();
