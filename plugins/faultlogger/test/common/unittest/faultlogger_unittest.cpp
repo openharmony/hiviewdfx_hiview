@@ -50,9 +50,7 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-    static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
-}
+static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
 
 static HiviewContext& InitHiviewContext()
 {
@@ -205,10 +203,10 @@ public:
         std::string oldFileName = "/data/test_jsError_info";
         int count = CheckKeyWordsInFile(oldFileName, keywords, length, true);
         std::cout << "count:" << count << std::endl;
-        ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001-"+name+" check keywords failed";
+        ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001-" + name + " check keywords failed";
         if (FileUtil::FileExists(oldFileName)) {
-            std::string NewFileName = oldFileName + "_" + name;
-            rename(oldFileName.c_str(), NewFileName.c_str());
+            std::string newFileName = oldFileName + "_" + name;
+            rename(oldFileName.c_str(), newFileName.c_str());
         }
     }
 
@@ -300,13 +298,12 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     info.pipeFd = pipeFd[0];
     std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
-        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4",
-        "symbol":"test_abc"}, {"buildId":"12345abcde",
-        "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278, "pc":"0000bef3",
-        "symbol":"OHOS::AppExecFwk::EpollIoWaiter::WaitFor(std::__h::unique_lock<std::__h::mutex>&, long long)"}],
-        "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605}, "pid":1605,
-        "threads":[{"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":72, "pc":"000c80b4",
-        "symbol":"ioctl"}, {"buildId":"2349d05884359058d3009e1fe27b15fa", "file":
+        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"},
+        {"buildId":"12345abcde", "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278,
+        "pc":"0000bef3", "symbol":"OHOS::AppExecFwk::EpollIoWaiter::WaitFor(std::__h::unique_lock<std::__h::mutex>&,
+        long long)"}], "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605},
+        "pid":1605, "threads":[{"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":72, "pc":
+        "000c80b4", "symbol":"ioctl"}, {"buildId":"2349d05884359058d3009e1fe27b15fa", "file":
         "/system/lib/platformsdk/libipc_core.z.so", "offset":26, "pc":"0002cad7",
         "symbol":"OHOS::BinderConnector::WriteBinder(unsigned long, void*)"}], "thread_name":"OS_IPC_0_1607",
         "tid":1607}, {"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":0, "pc":"000fdf4c",
@@ -326,7 +323,6 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
-
     // check appevent json info
     std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
     ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);

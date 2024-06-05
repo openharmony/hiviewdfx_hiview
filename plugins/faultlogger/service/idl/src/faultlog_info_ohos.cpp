@@ -27,43 +27,35 @@ bool FaultLogInfoOhos::Marshalling(Parcel& parcel) const
         HIVIEW_LOGE("Parcel failed to write int number.");
         return false;
     }
-
     if (!parcel.WriteString(module)) {
         HIVIEW_LOGE("Parcel failed to write module name(%{public}s).", module.c_str());
         return false;
     }
-
     if (!parcel.WriteString(reason)) {
         HIVIEW_LOGE("Parcel failed to write reason(%{public}s).", reason.c_str());
         return false;
     }
-
     if (!parcel.WriteString(summary)) {
         HIVIEW_LOGE("Parcel failed to write summary(%{public}s).", summary.c_str());
         return false;
     }
-
     if (!parcel.WriteString(logPath)) {
         HIVIEW_LOGE("Parcel failed to write log path(%{public}s).", logPath.c_str());
         return false;
     }
-
     if (!parcel.WriteString(registers)) {
         HIVIEW_LOGE("Parcel failed to write registers(%{public}s).", registers.c_str());
         return false;
     }
-
     uint32_t size = sectionMaps.size();
     if (!parcel.WriteUint32(size)) {
         return false;
     }
-
     for (const auto& [key, value] : sectionMaps) {
         if (!parcel.WriteString(key)) {
             HIVIEW_LOGE("Parcel failed to write key of sectionMaps(%{public}s).", key.c_str());
             return false;
         }
-
         if (!parcel.WriteString(value)) {
             HIVIEW_LOGE("Parcel failed to write value of sectionMaps(%{public}s).", value.c_str());
             return false;
