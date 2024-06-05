@@ -19,6 +19,11 @@
         "adapted_system_type": [
             "standard"
         ],
+        "features": [
+            "hiview_enable_leak_detector",
+            "hiview_enable_performance_monitor",
+            "hiview_unified_collector_PC_app_state_collect_enable"
+        ],
         "rom": "",
         "ram": "",
         "hisysevent_config": [
