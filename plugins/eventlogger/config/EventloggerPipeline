@@ -9,7 +9,7 @@
             "include": ["UI_BLOCK_6S", "UI_BLOCK_3S"]
         },{
             "domain": "MULTIMODALINPUT",
-            "include": ["APPLICATION_BLOCK_INPUT"]
+            "include": ["APPLICATION_BLOCK_INPUT", "INPUT_EVENT_SOCKET_TIMEOUT"]
         },{
             "domain": "AAFWK",
             "include": ["THREAD_BLOCK_6S", "THREAD_BLOCK_3S", "LIFECYCLE_TIMEOUT",
@@ -17,7 +17,7 @@
         },{
             "domain": "FRAMEWORK",
             "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL", "HIT_EMPTY_WARNING",
-                        "APP_HICOLLIE", "INPUT_EVENT_SOCKET_TIMEOUT"]
+                        "APP_HICOLLIE"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "HUNGTASK", "COM_LONG_PRESS", "DMD_TP_I2C", "DMD_TP_HP", "DMD_LCD_DDR",
