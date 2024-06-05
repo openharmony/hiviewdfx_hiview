@@ -193,7 +193,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 
     int count = (type == TOP) ? WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO : WAIT_CHILD_PROCESS_COUNT;
     if (type == TOP) {
-        int size = windowInfos.size();
+        int size = static_cast<int>(windowInfos.size());
         std::string cmdAms = "--ffrt ";
         std::string cmdSam = "--ffrt ";
         FileUtil::SaveStringToFd(ffrtFd, "dump topWindowInfos, process infos:\n");
@@ -223,10 +223,11 @@ void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const 
     } else if (childPid == 0) {
         FfrtChildProcess(fd, serviceName, cmd, count);
     } else {
-        int ret = 0;
-        while (count > 0 && (ret = waitpid(childPid, nullptr, WNOHANG) == 0)) {
+        int ret = waitpid(childPid, nullptr, WNOHANG);
+        while (count > 0 && (ret == 0)) {
             usleep(WAIT_CHILD_PROCESS_INTERVAL);
             count--;
+            ret = waitpid(childPid, nullptr, WNOHANG);
         }
 
         if (ret == childPid) {
