@@ -66,6 +66,8 @@ HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Lev
     ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("DEMO", "abc") == "");
     ASSERT_TRUE(sysEventParser->GetTypeByDomainAndName("DEMO", "abc") == 0);
 
+    sysEventParser->UpdateTestType("test_param");
+
     DuplicateIdFilter filter;
     ASSERT_FALSE(filter.IsDuplicateEvent(0));
     ASSERT_FALSE(filter.IsDuplicateEvent(1));

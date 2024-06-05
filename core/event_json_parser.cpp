@@ -72,10 +72,20 @@ std::string GetConfiguredTestType(const std::string& configuredType)
     return configuredType;
 }
 
-static std::string testTypeConfigured;
 void ParameterWatchCallback(const char* key, const char* value, void* context)
 {
-    testTypeConfigured = GetConfiguredTestType(value);
+    if (context == nullptr) {
+        HIVIEW_LOGE("context is null");
+        return;
+    }
+    auto parser = reinterpret_cast<EventJsonParser*>(context);
+    if (parser == nullptr) {
+        HIVIEW_LOGE("parser is null");
+        return;
+    }
+    std::string testType = GetConfiguredTestType(value);
+    HIVIEW_LOGI("test_type is set to be \"%{public}s\"", testType.c_str());
+    parser->UpdateTestType(testType);
 }
 
 bool ReadSysEventDefFromFile(const std::string& path, Json::Value& hiSysEventDef)
@@ -113,12 +123,12 @@ EventJsonParser::EventJsonParser(std::vector<std::string>& paths)
         }
         ParseHiSysEventDef(hiSysEventDef);
     }
-    WatchParameterAndReadLatestSeq();
+    WatchTestTypeParameter();
 }
 
-void EventJsonParser::WatchParameterAndReadLatestSeq()
+void EventJsonParser::WatchTestTypeParameter()
 {
-    if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, nullptr) != 0) {
+    if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, this) != 0) {
         HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
     }
 }
@@ -145,6 +155,11 @@ bool EventJsonParser::HandleEventJson(const std::shared_ptr<SysEvent>& event)
     }
     AppendExtensiveInfo(event);
     return true;
+}
+
+void EventJsonParser::UpdateTestType(const std::string& testType)
+{
+    testType_ = testType;
 }
 
 bool EventJsonParser::CheckEvent(std::shared_ptr<SysEvent> event)
@@ -223,8 +238,8 @@ bool EventJsonParser::CheckDuplicate(std::shared_ptr<SysEvent> event)
 void EventJsonParser::AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const
 {
     // add testtype configured as system property named persist.sys.hiview.testtype
-    if (!testTypeConfigured.empty()) {
-        event->SetEventValue(TEST_TYPE_KEY, testTypeConfigured);
+    if (!testType_.empty()) {
+        event->SetEventValue(TEST_TYPE_KEY, testType_);
     }
 
     event->SetTag(GetTagByDomainAndName(event->domain_, event->eventName_));

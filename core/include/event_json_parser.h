@@ -61,6 +61,7 @@ public:
     int GetTypeByDomainAndName(const std::string& domain, const std::string& name) const;
     bool GetPreserveByDomainAndName(const std::string& domain, const std::string& name) const;
     bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
+    void UpdateTestType(const std::string& testType);
 
 private:
     void AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const;
@@ -75,11 +76,12 @@ private:
     BaseInfo ParseBaseConfig(const Json::Value& eventNameJson) const;
     void ParseHiSysEventDef(const Json::Value& hiSysEventDef);
     NAME_INFO_MAP ParseNameConfig(const Json::Value& domainJson) const;
-    void WatchParameterAndReadLatestSeq();
+    void WatchTestTypeParameter();
 
 private:
     DOMAIN_INFO_MAP hiSysEventDef_;
     DuplicateIdFilter filter_;
+    std::string testType_;
 }; // EventJsonParser
 } // namespace HiviewDFX
 } // namespace OHOS
