@@ -66,6 +66,7 @@ Note:If the text contains special characters, please escape them according to th
                 <filteritem type="filename" name="UnifiedCollector" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="libfaultlogger.map" desc=" version script config file, not support comments"/>
                 <filteritem type="filename" name="XperfPlugin" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="CERT.SF" desc="build and load config file, not support comments"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
                 <filteritem type="filename" name="*plugin_config*" desc="build and load config file, not support comments"/>
@@ -78,12 +79,14 @@ Note:If the text contains special characters, please escape them according to th
                 <filteritem type="filename" name="UnifiedCollector" desc="build and load config file, not support comments"/>
                 <filteritem type="filename" name="libfaultlogger.map" desc=" version script config file, not support comments"/>
                 <filteritem type="filename" name="XperfPlugin" desc="build and load config file, not support comments"/>
+                <filteritem type="filename" name="CERT.SF" desc="build and load config file, not support comments"/>
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
                 <filteritem type="filepath" name="figures/.*" desc="self developed pictures used in readme documents"/>
                 <filteritem type="filename" name="TEST_VERSION1-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
                 <filteritem type="filename" name="TEST_VERSION2-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
                 <filteritem type="filename" name="TEST_VERSION3-1-CRITICAL-1.db" desc="the binary file for test, the file is self-developed"/>
+                <filteritem type="filename" name="CERT.ENC" desc="the binary file for test, the file is self-developed"/>
             </filefilter>
         </filefilterlist>
     </oatconfig>
