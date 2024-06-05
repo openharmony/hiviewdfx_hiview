@@ -47,7 +47,8 @@ std::mutex g_traceLock;
 const std::string HIPERF_LOG_PATH = "/data/log/hiperf";
 const std::string COLLECTION_IO_PATH = "/data/log/hiview/unified_collection/io/";
 const std::string UNIFIED_SPECIAL_PATH = "/data/log/hiview/unified_collection/trace/special/";
-const std::string DEVELOPER_MODE_TRACE_ARGS = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0";
+const std::string DEVELOPER_MODE_TRACE_ARGS = "tags:memory clockType:boot1 bufferSize:1024 overwrite:0 \
+    fileLimit:20 fileSize:102400";
 const std::string OTHER = "Other";
 const std::string HIVIEW_UCOLLECTION_STATE_TRUE = "true";
 const std::string HIVIEW_UCOLLECTION_STATE_FALSE = "false";
