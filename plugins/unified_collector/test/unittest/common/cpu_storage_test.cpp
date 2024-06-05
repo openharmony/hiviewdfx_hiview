@@ -57,6 +57,7 @@ void CpuStorageTest::TearDownTestCase()
 
 void CpuStorageTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void CpuStorageTest::TearDown()

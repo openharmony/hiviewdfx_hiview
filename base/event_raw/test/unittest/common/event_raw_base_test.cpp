@@ -36,6 +36,7 @@ void EventRawBaseTest::TearDownTestCase()
 
 void EventRawBaseTest::SetUp()
 {
+    platform.GetPluginMap();
 }
 
 void EventRawBaseTest::TearDown()

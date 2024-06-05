@@ -45,6 +45,37 @@ ohos_source_set("hiview_core") {
   ]
 
   deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
+    "$hiview_base:hiviewbase",
+    "param_update:hiview_param_update",
+    "platform_config:hiviewplatform_config",
+  ]
+
+  external_deps = [
+    "faultloggerd:libbacktrace_local",
+    "ffrt:libffrt",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbeget_proxy",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+  ]
+}
+
+ohos_source_set("hiview_core_for_test") {
+  part_name = "hiview"
+  public_configs = [ ":hiview_core_config" ]
+
+  sources = [
+    "event_json_parser.cpp",
+    "hiview_platform.cpp",
+    "plugin_bundle.cpp",
+    "plugin_config.cpp",
+  ]
+
+  deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_base:hiviewbase",
     "param_update:hiview_param_update",
     "platform_config:hiviewplatform_config",

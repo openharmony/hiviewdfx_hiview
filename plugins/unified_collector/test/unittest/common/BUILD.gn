@@ -76,6 +76,7 @@ ohos_unittest("CpuStorageTest") {
   ]
 
   external_deps = [
+    "ffrt:libffrt",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]

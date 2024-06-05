@@ -36,6 +36,7 @@ void AdapterLoglibraryAbilityTest::TearDownTestCase() {}
 
 void AdapterLoglibraryAbilityTest::SetUp()
 {
+    platform.GetPluginMap();
     AdapterLoglibraryTestTools::ApplyPermissionAccess();
     AdapterLoglibraryTestTools::CreateDir(SOURCE_PATH);
     AdapterLoglibraryTestTools::CreateDir(DEST_PATH);

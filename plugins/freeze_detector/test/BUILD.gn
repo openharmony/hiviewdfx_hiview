@@ -36,7 +36,7 @@ ohos_unittest("FreezeDetectorTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
+    "$hiview_core:hiview_core_for_test",
     "$hiview_eventlogger:eventlogger",
     "$hiview_plugin/freeze_detector:freeze_detector",
     "//third_party/googletest:gtest_main",

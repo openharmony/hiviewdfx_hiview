@@ -24,6 +24,7 @@ void EventDispatchQueueTest::SetUp()
      * @tc.setup: create order and unordered event dispatch queue
      */
     printf("SetUp.\n");
+    platform.GetPluginMap();
 }
 
 void EventDispatchQueueTest::TearDown()
