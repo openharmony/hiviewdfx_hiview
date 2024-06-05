@@ -32,13 +32,13 @@ const std::string UC_HITRACE_TRAFFIC_STAT_ITEM =
 StatInfoWrapper TraceDecorator::statInfoWrapper_;
 TraceStatWrapper TraceDecorator::traceStatWrapper_;
 
-CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(TraceCollector::Caller &caller)
+CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(UCollect::TraceCaller &caller)
 {
     auto task = std::bind(&TraceCollector::DumpTrace, traceCollector_.get(), caller);
     return Invoke(task, traceStatWrapper_, caller);
 }
 
-CollectResult<std::vector<std::string>> TraceDecorator::DumpTraceWithDuration(TraceCollector::Caller &caller,
+CollectResult<std::vector<std::string>> TraceDecorator::DumpTraceWithDuration(UCollect::TraceCaller &caller,
     uint32_t timeLimit)
 {
     auto task = std::bind(&TraceCollector::DumpTraceWithDuration, traceCollector_.get(), caller, timeLimit);
@@ -94,7 +94,7 @@ void TraceDecorator::ResetStatInfo()
     traceStatWrapper_.ResetStatInfo();
 }
 
-void TraceStatWrapper::UpdateTraceStatInfo(uint64_t startTime, uint64_t endTime, TraceCollector::Caller& caller,
+void TraceStatWrapper::UpdateTraceStatInfo(uint64_t startTime, uint64_t endTime, UCollect::TraceCaller& caller,
     const CollectResult<std::vector<std::string>>& result)
 {
     bool isCallSucc = (result.retCode == UCollect::UcError::SUCCESS);

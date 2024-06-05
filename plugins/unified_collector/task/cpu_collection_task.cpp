@@ -28,7 +28,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("Hiview-CpuCollectionTask");
 struct CpuThresholdItem {
     std::string processName;
-    TraceCollector::Caller caller;
+    UCollect::TraceCaller caller;
     double cpuLoadThreshold = 0.0;
     bool hasOverThreshold = false;
 };
@@ -78,8 +78,8 @@ void CpuCollectionTask::ReportCpuCollectionEvent()
 void CpuCollectionTask::CheckAndDumpTraceData()
 {
     static std::vector<CpuThresholdItem> checkItems = {
-        {"hiview", TraceCollector::Caller::HIVIEW, 0.07, false}, // 0.07 : 7% cpu load
-        {"foundation", TraceCollector::Caller::FOUNDATION, 0.2, false}, // 0.2 : 20% cpu load
+        {"hiview", UCollect::TraceCaller::HIVIEW, 0.07, false}, // 0.07 : 7% cpu load
+        {"foundation", UCollect::TraceCaller::FOUNDATION, 0.2, false}, // 0.2 : 20% cpu load
     };
 
     for (auto &item : checkItems) {

@@ -75,7 +75,7 @@ static void HiViewServiceSnapshotTraceFuzzTest(const uint8_t* data, size_t size)
 
 static void HiViewServiceDumpSnapshotTraceFuzzTest(const uint8_t* data, size_t size)
 {
-    UCollectUtil::TraceCollector::Caller caller = static_cast<UCollectUtil::TraceCollector::Caller>(*data);
+    UCollect::TraceCaller caller = static_cast<UCollect::TraceCaller>(*data);
     g_hiviewService.DumpSnapshotTrace(caller);
 }
 

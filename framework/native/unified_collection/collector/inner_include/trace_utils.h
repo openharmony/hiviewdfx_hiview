@@ -42,15 +42,15 @@ const std::map<TraceErrorCode, UcError> CODE_MAP = {
 }
 
 UcError TransCodeToUcError(TraceErrorCode ret);
-void FileRemove(UCollectUtil::TraceCollector::Caller &caller);
+void FileRemove(UCollect::TraceCaller &caller);
 void CheckAndCreateDirectory(const std::string &tmpDirPath);
 bool CreateMultiDirectory(const std::string &dirPath);
-const std::string EnumToString(UCollectUtil::TraceCollector::Caller &caller);
-std::vector<std::string> GetUnifiedFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
+const std::string EnumToString(UCollect::TraceCaller &caller);
+std::vector<std::string> GetUnifiedFiles(Hitrace::TraceRetInfo ret, UCollect::TraceCaller &caller);
 void CopyFile(const std::string &src, const std::string &dst);
-std::vector<std::string> GetUnifiedShareFiles(Hitrace::TraceRetInfo ret, UCollectUtil::TraceCollector::Caller &caller);
+std::vector<std::string> GetUnifiedShareFiles(Hitrace::TraceRetInfo ret, UCollect::TraceCaller &caller);
 std::vector<std::string> GetUnifiedSpecialFiles(Hitrace::TraceRetInfo ret,
-    UCollectUtil::TraceCollector::Caller &caller);
+    UCollect::TraceCaller &caller);
 void ZipTraceFile(const std::string &srcSysPath, const std::string &destZipPath);
 std::string AddVersionInfoToZipName(const std::string &srcZipPath);
 void CheckCurrentCpuLoad();

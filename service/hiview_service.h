@@ -43,7 +43,7 @@ public:
 
     // Trace interfaces
     CollectResult<int32_t> OpenSnapshotTrace(const std::vector<std::string>& tagGroups);
-    CollectResult<std::vector<std::string>> DumpSnapshotTrace(UCollectUtil::TraceCollector::Caller caller);
+    CollectResult<std::vector<std::string>> DumpSnapshotTrace(UCollect::TraceCaller caller);
     CollectResult<int32_t> OpenRecordingTrace(const std::string& tags);
     CollectResult<int32_t> RecordingTraceOn();
     CollectResult<std::vector<std::string>> RecordingTraceOff();

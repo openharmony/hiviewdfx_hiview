@@ -251,45 +251,45 @@ protected:
     }
 };
 
-std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, TraceCollector::Caller &caller)
+std::shared_ptr<CleanPolicy> GetCleanPolicy(int type, UCollect::TraceCaller &caller)
 {
     if (type == SHARE) {
-        if (caller == TraceCollector::Caller::APP) {
+        if (caller == UCollect::TraceCaller::APP) {
             return std::make_shared<AppShareCleanPolicy>(type);
         }
 
         return std::make_shared<ShareCleanPolicy>(type);
     }
 
-    if (caller == TraceCollector::Caller::XPERF) {
+    if (caller == UCollect::TraceCaller::XPERF) {
         return std::make_shared<SpecialXperfCleanPolicy>(type);
     }
 
-    if (caller == TraceCollector::Caller::RELIABILITY) {
+    if (caller == UCollect::TraceCaller::RELIABILITY) {
         return std::make_shared<SpecialReliabilityCleanPolicy>(type);
     }
 
-    if (caller == TraceCollector::Caller::APP) {
+    if (caller == UCollect::TraceCaller::APP) {
         return std::make_shared<AppSpecialCleanPolicy>(type);
     }
     return std::make_shared<SpecialOtherCleanPolicy>(type);
 }
 
-void FileRemove(TraceCollector::Caller &caller)
+void FileRemove(UCollect::TraceCaller &caller)
 {
     std::shared_ptr<CleanPolicy> shareCleaner = GetCleanPolicy(SHARE, caller);
     std::shared_ptr<CleanPolicy> specialCleaner = GetCleanPolicy(SPECIAL, caller);
     switch (caller) {
-        case TraceCollector::Caller::XPOWER:
-        case TraceCollector::Caller::HIVIEW:
+        case UCollect::TraceCaller::XPOWER:
+        case UCollect::TraceCaller::HIVIEW:
             shareCleaner->DoClean();
             break;
-        case TraceCollector::Caller::RELIABILITY:
-        case TraceCollector::Caller::XPERF:
+        case UCollect::TraceCaller::RELIABILITY:
+        case UCollect::TraceCaller::XPERF:
             shareCleaner->DoClean();
             specialCleaner->DoClean();
             break;
-        case TraceCollector::Caller::APP:
+        case UCollect::TraceCaller::APP:
             shareCleaner->DoClean();
             specialCleaner->DoClean();
             break;
@@ -326,35 +326,35 @@ bool CreateMultiDirectory(const std::string &dirPath)
     return true;
 }
 
-const std::string EnumToString(TraceCollector::Caller &caller)
+const std::string EnumToString(UCollect::TraceCaller &caller)
 {
     switch (caller) {
-        case TraceCollector::Caller::RELIABILITY:
+        case UCollect::TraceCaller::RELIABILITY:
             return RELIABILITY;
-        case TraceCollector::Caller::XPERF:
+        case UCollect::TraceCaller::XPERF:
             return XPERF;
-        case TraceCollector::Caller::XPOWER:
+        case UCollect::TraceCaller::XPOWER:
             return XPOWER;
-        case TraceCollector::Caller::BETACLUB:
+        case UCollect::TraceCaller::BETACLUB:
             return BETACLUB;
-        case TraceCollector::Caller::APP:
+        case UCollect::TraceCaller::APP:
             return APP;
-        case TraceCollector::Caller::HIVIEW:
+        case UCollect::TraceCaller::HIVIEW:
             return HIVIEW;
-        case TraceCollector::Caller::FOUNDATION:
+        case UCollect::TraceCaller::FOUNDATION:
             return FOUNDATION;
         default:
             return OTHER;
     }
 }
 
-std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
+std::vector<std::string> GetUnifiedFiles(TraceRetInfo ret, UCollect::TraceCaller &caller)
 {
-    if (caller == TraceCollector::Caller::OTHER || caller == TraceCollector::Caller::BETACLUB) {
+    if (caller == UCollect::TraceCaller::OTHER || caller == UCollect::TraceCaller::BETACLUB) {
         return GetUnifiedSpecialFiles(ret, caller);
     }
-    if (caller == TraceCollector::Caller::XPOWER || caller == TraceCollector::Caller::HIVIEW ||
-        caller == TraceCollector::Caller::FOUNDATION) {
+    if (caller == UCollect::TraceCaller::XPOWER || caller == UCollect::TraceCaller::HIVIEW ||
+        caller == UCollect::TraceCaller::FOUNDATION) {
         return GetUnifiedShareFiles(ret, caller);
     }
     GetUnifiedSpecialFiles(ret, caller);
@@ -449,7 +449,7 @@ void CopyFile(const std::string &src, const std::string &dst)
  *     /data/log/hiview/unified_collection/trace/share/
  *     trace_20230906111617@8290-81765922_{device}_{version}.zip
 */
-std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
+std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, UCollect::TraceCaller &caller)
 {
     if (ret.errorCode != TraceErrorCode::SUCCESS) {
         HIVIEW_LOGE("DumpTrace: failed to dump trace, error code (%{public}d).", ret.errorCode);
@@ -488,7 +488,7 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, TraceCollector::
  * trace path eg.:
  * /data/log/hiview/unified_collection/trace/special/BetaClub_trace_20230906111633@8306-299900816.sys
 */
-std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, TraceCollector::Caller &caller)
+std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, UCollect::TraceCaller &caller)
 {
     if (ret.errorCode != TraceErrorCode::SUCCESS) {
         HIVIEW_LOGE("Failed to dump trace, error code (%{public}d).", ret.errorCode);

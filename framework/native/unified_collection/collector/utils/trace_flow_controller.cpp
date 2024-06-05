@@ -49,12 +49,12 @@ int64_t GetActualReliabilitySize()
     return  Parameter::IsLaboratoryMode() ? RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
 }
 
-const std::unordered_map<TraceCollector::Caller, std::pair<std::string, int64_t>> TRACE_QUOTA = {
-    {TraceCollector::Caller::XPERF, {"xperf", XPERF_SIZE}},
-    {TraceCollector::Caller::XPOWER, {"xpower", XPOWER_SIZE}},
-    {TraceCollector::Caller::RELIABILITY, {"reliability", GetActualReliabilitySize()}},
-    {TraceCollector::Caller::HIVIEW, {"hiview", HIVIEW_SIZE}},
-    {TraceCollector::Caller::FOUNDATION, {"foundation", FOUNDATION_SIZE}},
+const std::unordered_map<UCollect::TraceCaller, std::pair<std::string, int64_t>> TRACE_QUOTA = {
+    {UCollect::TraceCaller::XPERF, {"xperf", XPERF_SIZE}},
+    {UCollect::TraceCaller::XPOWER, {"xpower", XPOWER_SIZE}},
+    {UCollect::TraceCaller::RELIABILITY, {"reliability", GetActualReliabilitySize()}},
+    {UCollect::TraceCaller::HIVIEW, {"hiview", HIVIEW_SIZE}},
+    {UCollect::TraceCaller::FOUNDATION, {"foundation", FOUNDATION_SIZE}},
 };
 }
 
@@ -85,7 +85,7 @@ void TraceFlowController::InitTraceStorage()
     traceStorage_ = std::make_shared<TraceStorage>();
 }
 
-TraceFlowController::TraceFlowController(TraceCollector::Caller caller) : caller_(caller)
+TraceFlowController::TraceFlowController(UCollect::TraceCaller caller) : caller_(caller)
 {
     InitTraceStorage();
     InitTraceDb();
@@ -216,7 +216,7 @@ bool TraceFlowController::RecordCaller(std::shared_ptr<AppCallerEvent> appEvent)
 
 void TraceFlowController::CleanOldAppTrace()
 {
-    TraceCollector::Caller caller = TraceCollector::Caller::APP;
+    UCollect::TraceCaller caller = UCollect::TraceCaller::APP;
     FileRemove(caller);
 
     uint64_t happenTimeInSecond = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;

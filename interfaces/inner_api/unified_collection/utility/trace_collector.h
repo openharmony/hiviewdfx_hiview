@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "collect_result.h"
+#include "trace_caller.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -28,22 +29,10 @@ class TraceCollector {
 public:
     TraceCollector() = default;
     virtual ~TraceCollector() = default;
-    enum Caller {
-        RELIABILITY,
-        XPERF,
-        XPOWER,
-        BETACLUB,
-        DEVELOP,
-        APP,
-        OTHER,
-        HIVIEW,
-        FOUNDATION,
-        INVALIDITY,
-    };
 
 public:
-    virtual CollectResult<std::vector<std::string>> DumpTrace(Caller &caller) = 0;
-    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(Caller &caller,
+    virtual CollectResult<std::vector<std::string>> DumpTrace(UCollect::TraceCaller &caller) = 0;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(UCollect::TraceCaller &caller,
         uint32_t timeLimit) = 0;
     virtual CollectResult<int32_t> TraceOn() = 0;
     virtual CollectResult<std::vector<std::string>> TraceOff() = 0;
