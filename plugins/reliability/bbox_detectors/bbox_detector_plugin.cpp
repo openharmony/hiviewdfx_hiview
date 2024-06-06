@@ -100,6 +100,9 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
         return;
     }
 #endif
+    if  ((module == "AP") && (event == "BFM_S_NATIVE_DATA_FAIL")) {
+        sysEvent->OnFinish();
+    }
     auto happenTime_ = static_cast<uint64_t>(Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
         "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})"));
     sysEvent->SetEventValue("HAPPEN_TIME", happenTime_);
