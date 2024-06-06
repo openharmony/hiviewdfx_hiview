@@ -50,9 +50,7 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
-namespace {
-    static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
-}
+static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
 
 static HiviewContext& InitHiviewContext()
 {
@@ -100,7 +98,13 @@ public:
         sleep(1);
         GetHiviewContext();
     };
-    void TearDown() {};
+    void TearDown()
+    {
+        auto ret = remove("/data/test_jsError_info");
+        if (ret == 0) {
+            GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
+        }
+    };
 
     static void CheckSumarryParseResult(std::string& info, int& matchCount)
     {
@@ -150,8 +154,7 @@ public:
         return matchCount;
     }
 
-    static void ReportJsErrorToAppEventTestCommon(std::string summmay, std::string name,
-        std::shared_ptr<Faultlogger> plugin)
+    static void ConstructJsErrorAppEvent(std::string summmay, std::shared_ptr<Faultlogger> plugin)
     {
         SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
         sysEventCreator.SetKeyValue("SUMMARY", summmay);
@@ -171,7 +174,10 @@ public:
         std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
         bool result = plugin->OnEvent(event);
         ASSERT_EQ(result, true);
+    }
 
+    static void CheckKeyWordsInJsErrorAppEventFile(std::string name)
+    {
         std::string keywords[] = {
             "\"bundle_name\":", "\"bundle_version\":", "\"crash_type\":", "\"exception\":",
             "\"foreground\":", "\"hilog\":", "\"pid\":", "\"time\":", "\"uid\":", "\"uuid\":",
@@ -182,11 +188,22 @@ public:
         std::string oldFileName = "/data/test_jsError_info";
         int count = CheckKeyWordsInFile(oldFileName, keywords, length, true);
         std::cout << "count:" << count << std::endl;
-        ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001-"+name+" check keywords failed";
+        ASSERT_EQ(count, length) << "ReportJsErrorToAppEventTest001-" + name + " check keywords failed";
         if (FileUtil::FileExists(oldFileName)) {
-            std::string NewFileName = oldFileName + "_" + name;
-            rename(oldFileName.c_str(), NewFileName.c_str());
+            std::string newFileName = oldFileName + "_" + name;
+            rename(oldFileName.c_str(), newFileName.c_str());
         }
+    }
+
+    static void CheckDeleteStackErrorMessage(std::string name)
+    {
+        std::string keywords[] = {"\"Cannot get SourceMap info, dump raw stack:"};
+        int length = sizeof(keywords) / sizeof(keywords[0]);
+        std::cout << "========length:" << length << std::endl;
+        std::string oldFileName = "/data/test_jsError_info";
+        int count = CheckKeyWordsInFile(oldFileName, keywords, length, true);
+        std::cout << "========count:" << count << std::endl;
+        ASSERT_NE(count, length) << "check delete stack error message failed";
     }
 };
 
@@ -266,13 +283,12 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     info.pipeFd = pipeFd[0];
     std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
-        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4",
-        "symbol":"test_abc"}, {"buildId":"12345abcde",
-        "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278, "pc":"0000bef3",
-        "symbol":"OHOS::AppExecFwk::EpollIoWaiter::WaitFor(std::__h::unique_lock<std::__h::mutex>&, long long)"}],
-        "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605}, "pid":1605,
-        "threads":[{"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":72, "pc":"000c80b4",
-        "symbol":"ioctl"}, {"buildId":"2349d05884359058d3009e1fe27b15fa", "file":
+        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"},
+        {"buildId":"12345abcde", "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278,
+        "pc":"0000bef3", "symbol":"OHOS::AppExecFwk::EpollIoWaiter::WaitFor(std::__h::unique_lock<std::__h::mutex>&,
+        long long)"}], "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605},
+        "pid":1605, "threads":[{"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":72, "pc":
+        "000c80b4", "symbol":"ioctl"}, {"buildId":"2349d05884359058d3009e1fe27b15fa", "file":
         "/system/lib/platformsdk/libipc_core.z.so", "offset":26, "pc":"0002cad7",
         "symbol":"OHOS::BinderConnector::WriteBinder(unsigned long, void*)"}], "thread_name":"OS_IPC_0_1607",
         "tid":1607}, {"frames":[{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":0, "pc":"000fdf4c",
@@ -292,7 +308,6 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
     ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
-
     // check appevent json info
     std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
     ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);
@@ -833,28 +848,147 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
  */
 HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest001, testing::ext::TestSize.Level3)
 {
-    remove("/data/test_jsError_info");
     auto plugin = GetFaultloggerInstance();
-    std::string summaryHasErrorCodeAndSourceCode = R"~(Error name:TypeError
-        Error message:Obj is not a Valid object
-        Error code:
-                get BLO
-        SourceCode:
-                CKSSvalue() {new Error("TestError");}
-        Stacktrace:
-            at anonymous(entry/src/main/ets/pages/index.ets:76:10)
-            at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
-            at anonymous3(entry/src/main/ets/pages/index.ets:76:10))~";
-    ReportJsErrorToAppEventTestCommon(summaryHasErrorCodeAndSourceCode, "summaryHasErrorCodeAndSourceCode", plugin);
-    std::string summaryHasSourceCode = R"~(Error name:TypeError\naaaError message:Obj is not a Valid object\nSourceCode:
-        CKSSvalue(){\n        ^\nStacktrace:aaaa\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
-    ReportJsErrorToAppEventTestCommon(summaryHasSourceCode, "summaryHasSourceCode", plugin);
-    std::string summaryHasErrorCode = R"~(Error name:TypeError\nError message:Obj is not a Valid object\n
-        Error code:\n    get BLOStacktrace:\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
-    ReportJsErrorToAppEventTestCommon(summaryHasErrorCode, "summaryHasErrorCode", plugin);
-    std::string summaryNoErrorCodeAndSourceCode = R"~(Error name:TypeError\nError message:Obj is not a Valid object\n
-        Stacktrace:\n    at anonymous (entry/src/main/ets/pages/index.ets:76:10)\n)~";
-    ReportJsErrorToAppEventTestCommon(summaryNoErrorCodeAndSourceCode, "summaryNoErrorCodeAndSourceCode", plugin);
+    // has Error name、Error message、Error code、SourceCode、Stacktrace
+    std::string summaryHasAll = R"~(Error name:summaryHasAll TypeError
+Error message:Obj is not a Valid object
+Error code:get BLO
+SourceCode:CKSSvalue() {new Error("TestError");}
+Stacktrace:
+    at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous3(entry/src/main/ets/pages/index.ets:76:10)
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasAll========";
+    ConstructJsErrorAppEvent(summaryHasAll, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasAll");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest002
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest002, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message、Error code、SourceCode、Stacktrace
+    std::string summaryNotFindSourcemap = R"~(Error name:summaryNotFindSourcemap Error
+Error message:BussinessError 2501000: Operation failed.
+Error code:2501000
+Stacktrace:
+Cannot get SourceMap info, dump raw stack:
+  at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+  at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+  at anonymous3(entry/src/main/ets/pages/index.ets:76:10)
+)~";
+    GTEST_LOG_(INFO) << "========summaryNotFindSourcemap========";
+    ConstructJsErrorAppEvent(summaryNotFindSourcemap, plugin);
+    CheckDeleteStackErrorMessage("summaryNotFindSourcemap");
+    CheckKeyWordsInJsErrorAppEventFile("summaryNotFindSourcemap");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest003
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest003, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message、SourceCode、Stacktrace
+    std::string summaryHasNoErrorCode = R"~(Error name:summaryHasNoErrorCode TypeError
+Error message:Obj is not a Valid object
+SourceCode:CKSSvalue() {new Error("TestError");}
+Stacktrace:
+    at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous3(entry/src/main/ets/pages/index.ets:76:10)
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasNoErrorCode========";
+    ConstructJsErrorAppEvent(summaryHasNoErrorCode, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasNoErrorCode");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest004
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest004, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message、Error code、Stacktrace
+    std::string summaryHasNoSourceCode = R"~(Error name:summaryHasNoSourceCode TypeError
+Error message:Obj is not a Valid object
+Error code:get BLO
+Stacktrace:
+    at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous3(entry/src/main/ets/pages/index.ets:76:10)
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasNoSourceCode========";
+    ConstructJsErrorAppEvent(summaryHasNoSourceCode, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasNoSourceCode");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest005
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest005, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message、Stacktrace
+    std::string summaryHasNoErrorCodeAndSourceCode = R"~(Error name:summaryHasNoErrorCodeAndSourceCode TypeError
+Error message:Obj is not a Valid object
+Stacktrace:
+    at anonymous(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous2(entry/src/main/ets/pages/index.ets:76:10)
+    at anonymous3(entry/src/main/ets/pages/index.ets:76:10)
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasNoErrorCodeAndSourceCode========";
+    ConstructJsErrorAppEvent(summaryHasNoErrorCodeAndSourceCode, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasNoErrorCodeAndSourceCode");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest006
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest006, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message、Error code、SourceCode
+    std::string summaryHasNoStacktrace = R"~(Error name:summaryHasNoStacktrace TypeError
+Error message:Obj is not a Valid object
+Error code:get BLO
+SourceCode:CKSSvalue() {new Error("TestError");}
+Stacktrace:
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasNoStacktrace========";
+    ConstructJsErrorAppEvent(summaryHasNoStacktrace, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasNoStacktrace");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest007
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest007, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message
+    std::string summaryHasErrorNameAndErrorMessage = R"~(Error name:summaryHasErrorNameAndErrorMessage TypeError
+Error message:Obj is not a Valid object
+Stacktrace:
+)~";
+    GTEST_LOG_(INFO) << "========summaryHasErrorNameAndErrorMessage========";
+    ConstructJsErrorAppEvent(summaryHasErrorNameAndErrorMessage, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("summaryHasErrorNameAndErrorMessage");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

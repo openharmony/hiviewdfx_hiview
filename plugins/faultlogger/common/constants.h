@@ -25,8 +25,8 @@ constexpr char DEFAULT_FAULTLOG_FOLDER[] = "/data/log/faultlog/faultlogger/";
 constexpr char DEFAULT_FAULTLOG_TEMP_FOLDER[] = "/data/log/faultlog/temp/";
 constexpr char FAULTLOG_BASE_FOLDER[] = "/data/log/faultlog/";
 constexpr int32_t MAX_FAULT_INFO_IN_MEM = 100; // 100 : log count
-constexpr int32_t MAX_FAULT_LOG_PER_HAP = 10; //  10 : log count per hap
-constexpr int32_t MAX_FAULTLOG_STORAGE_SIZE = 1024 * 1024 * 50; // 50M
+constexpr int32_t MAX_FAULT_LOG_PER_HAP = 10;
+constexpr int32_t MAX_FAULTLOG_STORAGE_SIZE = 10485760; // 10485760 : 10M
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

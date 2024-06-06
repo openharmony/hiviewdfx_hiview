@@ -43,7 +43,6 @@ static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo&
 
 bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos)
 {
-    std::string fingerPrint;
     bool needDelete = false;
     std::string logPath = info.logPath;
     auto eventType = GetFaultNameByType(info.faultLogType, false);
@@ -60,14 +59,13 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
     }
     if (eventInfos.empty()) {
         eventInfos.insert(std::make_pair("fingerPrint", Tbox::CalcFingerPrint(info.module + info.reason +
-                                                                            info.summary, 0, FP_BUFFER)));
+                                                                              info.summary, 0, FP_BUFFER)));
         return false;
     }
     Tbox::FilterTrace(eventInfos, eventType);
     std::string fingerRawString;
     GetFingerRawString(fingerRawString, info, eventInfos);
-    fingerPrint = Tbox::CalcFingerPrint(fingerRawString, 0, FP_BUFFER);
-    eventInfos["fingerPrint"] = fingerPrint;
+    eventInfos["fingerPrint"] = Tbox::CalcFingerPrint(fingerRawString, 0, FP_BUFFER);
 
     if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty())) {
         int32_t pid = 0;

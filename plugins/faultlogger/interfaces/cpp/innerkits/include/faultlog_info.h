@@ -86,13 +86,61 @@ public:
     */
     std::string GetFaultSummary() const;
 
+    /**
+     * @brief set user id
+     *
+     * @param id user id
+    */
     void SetId(uint32_t id);
+
+    /**
+     * @brief set process id
+     *
+     * @param pid process id
+    */
     void SetProcessId(int32_t pid);
+
+    /**
+     * @brief set timestamp when fault happened
+     *
+     * @param ts timestamp
+    */
     void SetTimeStamp(int64_t ts);
+
+    /**
+     * @brief set type of fault
+     *
+     * @param faultType type of fault
+    */
     void SetFaultType(int32_t faultType);
+
+    /**
+     * @brief set the reason for fault
+     *
+     * @param reason the reason for fault
+    */
     void SetFaultReason(const std::string &reason);
+
+    /**
+     * @brief set the name of module which occurred fault
+     *
+     * @param module the name of module
+    */
     void SetModuleName(const std::string &module);
+
+    /**
+     * @brief set the summary of fault information
+     *
+     * @param summary summary of fault information
+    */
     void SetFaultSummary(const std::string &summary);
+
+    /**
+     * @brief set file descriptor
+     * the fd is managed by fault log info obj it will be closed in destructor
+     *
+     * @param fd file descriptor
+    */
     void SetRawFileDescriptor(int32_t fd);
 
 private:
