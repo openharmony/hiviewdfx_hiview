@@ -498,6 +498,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             }
         } else {
             stack = jsonStack;
+            jsonStack = "[]";
         }
 
         GetFailedDumpStackMsg(stack, event);
