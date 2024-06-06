@@ -1,0 +1,9 @@
+Name: version.txt
+SHA-256-Digest: 5N2yyt9kSooku5ZTxJNjDOr99Ccs3+6Z/GwUAqsn1gc=
+
+Name: test.txt
+SHA-256-Digest: +9Cb0sJ0U53JTyYm5sVF80hr4utn8OJ0ZFGV+p3Yv1Q=
+
+Name: anco/anco_test.txt
+SHA-256-Digest: +9Cb0sJ0U53JTyYm5sVF80hr4utn8OJ0ZFGV+p3Yv1Q=
+
