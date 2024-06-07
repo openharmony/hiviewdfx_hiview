@@ -18,7 +18,6 @@
 #include "json_parser.h"
 #include "hiview_logger.h"
 #include "plugin_stats_event_factory.h"
-#include "rdb_helper.h"
 #include "sql_util.h"
 #include "sys_usage_event.h"
 #include "usage_event_common.h"
@@ -35,12 +34,6 @@ const std::string DB_TABLE_PLUGIN_STATS = "plugin_stats";
 const char SQL_TEXT_TYPE[] = "TEXT NOT NULL";
 constexpr int DB_VERSION = 1;
 }
-
-class EventDbStoreCallback : public NativeRdb::RdbOpenCallback {
-public:
-    int OnCreate(NativeRdb::RdbStore &rdbStore) override;
-    int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
-};
 
 int EventDbStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 {

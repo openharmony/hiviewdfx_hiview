@@ -39,11 +39,14 @@ ohos_executable("usage_report") {
 
   sources = [
     "../cache/event_db_helper.cpp",
+    "../cache/fold_app_usage_db_helper.cpp",
     "../cache/json_parser.cpp",
     "../cache/usage_event_cacher.cpp",
     "../event/app_usage_event.cpp",
+    "../event/fold_app_usage_event.cpp",
     "../event/sys_usage_event.cpp",
     "factory/app_usage_event_factory.cpp",
+    "factory/fold_app_usage_event_factory.cpp",
     "factory/sys_usage_event_factory.cpp",
     "main.cpp",
     "usage_event_report_service.cpp",
@@ -52,6 +55,8 @@ ohos_executable("usage_report") {
   deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
     "ability_runtime:wantagent_innerkits",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -62,6 +67,7 @@ ohos_executable("usage_report") {
     "jsoncpp:jsoncpp",
     "os_account:os_account_innerkits",
     "relational_store:native_rdb",
+    "samgr:samgr_proxy",
     "time_service:time_client",
   ]
 

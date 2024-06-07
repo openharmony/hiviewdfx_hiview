@@ -42,6 +42,7 @@ if (enable_hiview_usage_event_report_build) {
 
     sources = [
       "cache/event_db_helper.cpp",
+      "cache/fold_app_usage_db_helper.cpp",
       "cache/json_parser.cpp",
       "cache/usage_event_cacher.cpp",
       "event/sys_usage_event.cpp",
