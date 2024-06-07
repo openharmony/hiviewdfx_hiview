@@ -49,6 +49,8 @@ public:
     EventLogTask::Status GetTaskStatus() const;
     long GetLogSize() const;
 private:
+    static constexpr uint32_t MAX_DUMP_TRACE_LIMIT = 15;
+
     using capture = std::function<void()>;
 
     int targetFd_;
