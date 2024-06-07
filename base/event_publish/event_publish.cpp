@@ -128,6 +128,23 @@ bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::str
     return false;
 }
 
+bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBoxLogPath,
+    Json::Value& externalLogJson, bool& logOverLimit)
+{
+    if (externalLog.find(SANDBOX_DIR) == 0) {
+        HIVIEW_LOGI("File in sandbox path not copy.");
+        std::string fileName = FileUtil::ExtractFileName(externalLog);
+        if (FileUtil::FileExists(sandBoxLogPath + "/" + fileName)) {
+            externalLogJson.append(externalLog);
+        } else {
+            HIVIEW_LOGE("sand box log does not exist, file=%{public}s", externalLog.c_str());
+            logOverLimit = true;
+        }
+        return true;
+    }
+    return false;
+}
+
 void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
     const ExternalLogInfo &externalLogInfo)
 {
@@ -135,7 +152,8 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         HIVIEW_LOGE("no external log need to copy.");
         return;
     }
-    params[LOG_OVER_LIMIT] = false;
+
+    bool logOverLimit = false;
     Json::Value externalLogJson(Json::arrayValue);
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     for (Json::ArrayIndex i = 0; i < params[EXTERNAL_LOG].size(); ++i) {
@@ -143,13 +161,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         if (params[EXTERNAL_LOG][i].isString()) {
             externalLog = params[EXTERNAL_LOG][i].asString();
         }
-        if (externalLog.empty() || !FileUtil::FileExists(externalLog)) {
-            HIVIEW_LOGI("externalLog is empty or not exist.");
+        if (CheckInSandBoxLog(externalLog, sandBoxLogPath, externalLogJson, logOverLimit)) {
             continue;
         }
-        if (externalLog.find(SANDBOX_DIR) == 0) {
-            HIVIEW_LOGI("file in sandbox path not copy.");
-            externalLogJson.append(externalLog);
+        if (externalLog.empty() || !FileUtil::FileExists(externalLog)) {
+            HIVIEW_LOGI("externalLog is empty or not exist.");
             continue;
         }
         uint64_t fileSize = FileUtil::GetFileSize(externalLog);
@@ -172,10 +188,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         } else {
             HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
                 ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
-            params[LOG_OVER_LIMIT] = true;
+            logOverLimit = true;
             break;
         }
     }
+    params[LOG_OVER_LIMIT] = logOverLimit;
     params[EXTERNAL_LOG] = externalLogJson;
 }
 
