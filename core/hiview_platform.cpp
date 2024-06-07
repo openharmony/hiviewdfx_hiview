@@ -498,11 +498,11 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         plugin->BindWorkLoop(workLoop);
     }
 
-    auto begin = TimeUtil::GenerateTimestamp();
+    uint64_t beginTime = TimeUtil::GenerateTimestamp();
     plugin->OnLoad();
-    std::string dispatchConfiPath = DISPATCH_RULE_CONFIG_DIR + pluginInfo.name;
-    if (FileUtil::FileExists(dispatchConfiPath)) {
-        HiviewRuleParser ruleParser(dispatchConfiPath);
+    std::string dispatchConfigPath = DISPATCH_RULE_CONFIG_DIR + pluginInfo.name;
+    if (FileUtil::FileExists(dispatchConfigPath)) {
+        HiviewRuleParser ruleParser(dispatchConfigPath);
         auto dispatchConfig = ruleParser.getRule();
         AddDispatchInfo(std::weak_ptr<Plugin>(plugin), dispatchConfig->typeList, dispatchConfig->eventList,
             dispatchConfig->tagList, dispatchConfig->domainRuleMap);
@@ -524,8 +524,9 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         pluginProxy->LoadPluginIfNeed();
     }
 
-    auto end = TimeUtil::GenerateTimestamp();
-    HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), end - begin);
+    uint64_t endTime = TimeUtil::GenerateTimestamp();
+    uint64_t loadTime = endTime > beginTime ? (endTime - beginTime) : 0;
+    HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), loadTime);
 }
 
 void HiviewPlatform::NotifyPluginReady()
