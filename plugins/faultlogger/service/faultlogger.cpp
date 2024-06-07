@@ -456,7 +456,8 @@ bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
 
     if (event->eventName_ != "PROCESS_EXIT" &&
         event->eventName_ != "JS_ERROR" &&
-        event->eventName_ != "RUST_PANIC") {
+        event->eventName_ != "RUST_PANIC"  &&
+        event->eventName_ != "ADDR_SANITIZER") {
         return false;
     }
 
@@ -468,13 +469,15 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (!hasInit_ || event == nullptr) {
         return false;
     }
-    if (event->eventName_ != "JS_ERROR" && event->eventName_ != "RUST_PANIC") {
+    if (event->eventName_ != "JS_ERROR" && event->eventName_ != "RUST_PANIC"
+        && event->eventName_ != "ADDR_SANITIZER") {
         return true;
     }
     if (event->rawData_ == nullptr) {
         return false;
     }
     bool isJsError = event->eventName_ == "JS_ERROR";
+    bool isRustPanic = event->eventName_ == "RUST_PANIC";
     auto sysEvent = std::static_pointer_cast<SysEvent>(event);
     HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(),
         sysEvent->AsJsonStr().c_str());
@@ -482,7 +485,11 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     info.time = sysEvent->happenTime_;
     info.id = sysEvent->GetUid();
     info.pid = sysEvent->GetPid();
-    info.faultLogType = isJsError ? FaultLogType::JS_CRASH : FaultLogType::RUST_PANIC;
+    if (isJsError) {
+        info.faultLogType = FaultLogType::JS_CRASH;
+    } else {
+        info.faultLogType = isRustPanic ? FaultLogType::RUST_PANIC : FaultLogType::ADDR_SANITIZER;
+    }
     info.module = isJsError ? sysEvent->GetEventValue("PACKAGE_NAME") : sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
     auto summary = sysEvent->GetEventValue("SUMMARY");
@@ -698,7 +705,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
 
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
 {
-    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::RUST_PANIC)) {
+    if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::ADDR_SANITIZER)) {
         HIVIEW_LOGW("Unsupported fault type");
         return;
     }
@@ -716,6 +723,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         return;
     }
     AddPublicInfo(info);
+
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
     }
@@ -764,7 +772,7 @@ void Faultlogger::StartBootScan()
             continue;
         }
         time_t lastAccessTime = GetFileLastAccessTimeStamp(file);
-        if (now > lastAccessTime && now - lastAccessTime > FORTYEIGHT_HOURS) {
+        if ((now > lastAccessTime) && (now - lastAccessTime > FORTYEIGHT_HOURS)) {
             HIVIEW_LOGI("Skip this file(%{public}s) that were created 48 hours ago.", file.c_str());
             continue;
         }

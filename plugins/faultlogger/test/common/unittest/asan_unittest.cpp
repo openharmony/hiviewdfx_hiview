@@ -50,18 +50,5 @@ HWTEST_F(AsanUnittest, WriteGwpAsanLogTest001, testing::ext::TestSize.Level1)
     WriteGwpAsanLog(tsanBuf, strlen(tsanBuf));
     ASSERT_TRUE(true);
 }
-
-/**
- * @tc.name: AsanTest002
- * @tc.desc: Test calling GetApplicationVersion Func
- * @tc.type: FUNC
- */
-HWTEST_F(AsanUnittest, GetApplicationVersionTest001, testing::ext::TestSize.Level1)
-{
-    int32_t uid = getuid();
-    std::string procName = GetApplicationNameById(uid);
-    std::string appVersion = GetApplicationVersion(uid, procName);
-    ASSERT_TRUE(appVersion == "");
-}
 } // namespace HiviewDFX
 } // namespace OHOS

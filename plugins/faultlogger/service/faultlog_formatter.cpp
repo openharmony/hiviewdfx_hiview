@@ -97,6 +97,11 @@ auto RUST_PANIC_LOG_SEQUENCE = {
     MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
 };
 
+auto ADDR_SANITIZER_LOG_SEQUENCE = {
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
+    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
+};
+
 std::list<const char **> GetLogParseList(int32_t logType)
 {
     switch (logType) {
@@ -110,6 +115,8 @@ std::list<const char **> GetLogParseList(int32_t logType)
             return SYS_FREEZE_LOG_SEQUENCE;
         case FaultLogType::RUST_PANIC:
             return RUST_PANIC_LOG_SEQUENCE;
+        case FaultLogType::ADDR_SANITIZER:
+            return ADDR_SANITIZER_LOG_SEQUENCE;
         default:
             return std::list<const char **>();
     }
@@ -127,6 +134,7 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
         case FaultLogType::CPP_CRASH:
             summary = sections[KEY_THREAD_INFO[LOG_MAP_KEY]];
             break;
+        case FaultLogType::ADDR_SANITIZER:
         default:
             summary = "Could not figure out summary for this fault.";
             break;
