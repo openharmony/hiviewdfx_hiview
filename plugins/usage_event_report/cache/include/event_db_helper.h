@@ -21,6 +21,7 @@
 #include <string>
 
 #include "logger_event.h"
+#include "rdb_helper.h"
 #include "rdb_store.h"
 
 namespace OHOS {
@@ -54,6 +55,12 @@ private:
 private:
     std::string dbPath_;
     std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
+};
+
+class EventDbStoreCallback : public NativeRdb::RdbOpenCallback {
+public:
+    int OnCreate(NativeRdb::RdbStore &rdbStore) override;
+    int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

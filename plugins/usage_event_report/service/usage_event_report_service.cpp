@@ -18,6 +18,7 @@
 #include <getopt.h>
 
 #include "app_usage_event_factory.h"
+#include "fold_app_usage_event_factory.h"
 #include "hiview_logger.h"
 #include "sys_usage_event_factory.h"
 #include "time_util.h"
@@ -62,9 +63,16 @@ void UsageEventReportService::ReportAppUsage()
     auto factory = std::make_unique<AppUsageEventFactory>();
     std::vector<std::unique_ptr<LoggerEvent>> events;
     factory->Create(events);
+    HIVIEW_LOGI("report app usage event num: %{public}zu", events.size());
     for (size_t i = 0; i < events.size(); ++i) {
         events[i]->Report();
-        HIVIEW_LOGI("report app usage event=%{public}s", events[i]->ToJsonString().c_str());
+    }
+    auto foldAppUsageFactory = std::make_unique<FoldAppUsageEventFactory>();
+    std::vector<std::unique_ptr<LoggerEvent>> foldAppUsageEvents;
+    foldAppUsageFactory->Create(foldAppUsageEvents);
+    HIVIEW_LOGI("report fold app usage event num: %{public}zu", foldAppUsageEvents.size());
+    for (size_t i = 0; i < foldAppUsageEvents.size(); ++i) {
+        foldAppUsageEvents[i]->Report();
     }
 }
 
