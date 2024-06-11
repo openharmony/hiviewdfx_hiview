@@ -181,7 +181,9 @@ void WriteCollectedData(const GwpAsanCurrInfo &currInfo)
     eventParams["type"] = currInfo.errType;
     eventParams["bundle_version"] = currInfo.appVersion;
     eventParams["bundle_name"] = currInfo.procName;
-    eventParams["external_log"] = fullName;
+    Json::Value externalLog;
+    externalLog.append(fullName);
+    eventParams["external_log"] = externalLog;
     eventParams["pid"] = currInfo.pid;
     eventParams["uid"] = currInfo.uid;
 

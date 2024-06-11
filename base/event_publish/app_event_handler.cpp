@@ -191,7 +191,10 @@ int AppEventHandler::PostEvent(const CpuUsageHighInfo& event)
     AddValueToJsonString("foreground", event.isForeground, jsonStr);
     AddValueToJsonString("usage", event.usage, jsonStr);
     AddValueToJsonString("begin_time", event.beginTime, jsonStr);
-    AddValueToJsonString("end_time", event.endTime, jsonStr, true);
+    AddValueToJsonString("end_time", event.endTime, jsonStr);
+    AddVectorToJsonString("threads", event.threads, jsonStr);
+    AddVectorToJsonString("external_log", event.externalLog, jsonStr);
+    AddValueToJsonString("log_over_limit", event.logOverLimit, jsonStr, true);
     jsonStr << std::endl;
     EventPublish::GetInstance().PushEvent(uid, "CPU_USAGE_HIGH", HiSysEvent::EventType::FAULT, jsonStr.str());
     return 0;

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "event.h"
+#include "json/json.h"
 #include "plugin.h"
 #include "sys_event.h"
 
@@ -84,6 +85,7 @@ private:
     bool GetHilog(int32_t pid, std::string& log) const;
     int DoGetHilogProcess(int32_t pid, int writeFd) const;
     void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
+    void AddHilogInfo(Json::Value& stackInfoObj, const FaultLogInfo& info) const;
     void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
     std::string GetMemoryStrByPid(long pid) const;
     FreezeJsonUtil::FreezeJsonCollector GetFreezeJsonCollector(const FaultLogInfo& info) const;

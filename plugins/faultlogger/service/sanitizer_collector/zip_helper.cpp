@@ -240,7 +240,9 @@ void WriteCollectedData(T_SANITIZERD_PARAMS *params)
     eventParams["type"] = params->errType;
     eventParams["bundle_version"] = params->appVersion;
     eventParams["bundle_name"] = params->procName;
-    eventParams["external_log"] = params->logPath;
+    Json::Value externalLog;
+    externalLog.append(params->logPath);
+    eventParams["external_log"] = externalLog;
     eventParams["pid"] = params->pid;
     eventParams["uid"] = params->uid;
 
