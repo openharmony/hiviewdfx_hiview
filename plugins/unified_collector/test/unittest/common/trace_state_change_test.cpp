@@ -76,11 +76,11 @@ void TraceStateChangeTest::SetUp()
 void TraceStateChangeTest::TearDown()
 {
     Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(g_originalTestAppTraceOn));
-    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
+    usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
     Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(g_originalUCollectionSwitchOn));
-    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
+    usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
     Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(g_originalTraceCollectionSwitchOn));
-    usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
+    usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
 }
 
 /**
@@ -149,12 +149,12 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
             bool isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;
             
             Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
-            usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
+            usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
             Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
-            usleep(SET_PROPERTY_NANO_SECONDS_DELAY);
+            usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
             Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
                         
-            usleep(STATE_CHANGE_CALLBACK_NANO_SECONDS_DELAY);
+            usleep(STATE_CHANGE_CALLBACK_MICRO_SECONDS_DELAY);
             bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
                 DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
             EXPECT_EQ(AppCallerEvent::enableDynamicTrace_, targetTraceState);
