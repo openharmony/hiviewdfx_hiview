@@ -101,13 +101,21 @@ void UcObserverManager::RegisterRenderObserver()
         HIVIEW_LOGE("observer is null");
         return;
     }
-    auto res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
-        RegisterRenderStateObserver(renderStateObserver_);
-    if (res != ERR_OK) {
-        HIVIEW_LOGE("failed to register observer, res=%{public}d", res);
-        return;
-    }
-    HIVIEW_LOGI("succ to register observer");
+
+    int32_t res = -1; // -1: default value
+    constexpr uint32_t maxTryTimes = 3; // 3: max three times
+    uint32_t curTryTime = 1; // 1: first time
+    do {
+        res = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->
+            RegisterRenderStateObserver(renderStateObserver_);
+        HIVIEW_LOGI("register observer, res=%{public}d, curTryTime=%{public}u", res, curTryTime);
+        if (res == ERR_OK) {
+            HIVIEW_LOGI("succ to register observer");
+            return;
+        }
+        ++curTryTime;
+        sleep(1); // sleep 1s
+    } while (res != ERR_OK && curTryTime <= maxTryTimes);
 }
 
 void UcObserverManager::RegisterNativeProcessObserver()
