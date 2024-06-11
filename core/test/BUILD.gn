@@ -73,7 +73,7 @@ ohos_unittest("PluginPlatformTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
+    "$hiview_core:hiview_core_for_test",
     "$hiview_root/test/plugins/examples/dynamic_load_plugin_example:dynamicloadpluginexample",
     "$hiview_root/test/plugins/examples/event_processor_example1:event_processor_example1",
     "$hiview_root/test/plugins/examples/event_processor_example2:event_processor_example2",
@@ -101,7 +101,7 @@ ohos_unittest("PluginBundleTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
+    "$hiview_core:hiview_core_for_test",
     "$hiview_root/test/plugins/examples:bundletest",
     "//third_party/googletest:gtest_main",
   ]
@@ -179,7 +179,7 @@ ohos_unittest("ParamUpdateTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
+    "$hiview_core:hiview_core_for_test",
     "$hiview_core/param_update:hiview_param_update",
     "//third_party/googletest:gtest_main",
   ]
