@@ -401,6 +401,61 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
 }
 
 /**
+ * @tc.name: IsInterestedPipelineEvent
+ * @tc.desc: Test calling IsInterestedPipelineEvent Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, IsInterestedPipelineEvent, testing::ext::TestSize.Level3)
+{
+    auto testPlugin = GetFaultloggerInstance();
+    std::shared_ptr<Event> event = std::make_shared<Event>("test");
+    event->SetEventName("PROCESS_EXIT");
+    EXPECT_TRUE(testPlugin->IsInterestedPipelineEvent(event));
+    event->SetEventName("JS_ERROR");
+    EXPECT_TRUE(testPlugin->IsInterestedPipelineEvent(event));
+    event->SetEventName("RUST_PANIC");
+    EXPECT_TRUE(testPlugin->IsInterestedPipelineEvent(event));
+    event->SetEventName("ADDR_SANITIZER");
+    EXPECT_TRUE(testPlugin->IsInterestedPipelineEvent(event));
+    event->SetEventName("OTHERS");
+    EXPECT_FALSE(testPlugin->IsInterestedPipelineEvent(event));
+};
+
+/**
+ * @tc.name: CanProcessEvent
+ * @tc.desc: Test calling CanProcessEvent Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, CanProcessEvent, testing::ext::TestSize.Level3)
+{
+    auto testPlugin = GetFaultloggerInstance();
+    std::shared_ptr<Event> event = std::make_shared<Event>("test");
+    ASSERT_TRUE(testPlugin->CanProcessEvent(event));
+};
+
+/**
+ * @tc.name: ReadyToLoad
+ * @tc.desc: Test calling ReadyToLoad Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReadyToLoad, testing::ext::TestSize.Level3)
+{
+    auto testPlugin = GetFaultloggerInstance();
+    ASSERT_TRUE(testPlugin->ReadyToLoad());
+};
+
+/**
+ * @tc.name: GetListenerName
+ * @tc.desc: Test calling GetListenerName Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GetListenerName, testing::ext::TestSize.Level3)
+{
+    auto testPlugin = GetFaultloggerInstance();
+    ASSERT_EQ(testPlugin->GetListenerName(), "FaultLogger");
+};
+
+/**
  * @tc.name: SaveFaultLogInfoTest001
  * @tc.desc: Test calling SaveFaultLogInfo Func
  * @tc.type: FUNC
@@ -463,6 +518,43 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
     faultLogManager->Init();
     int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
     ASSERT_GT(fd, 0);
+    std::string content = "testContent";
+    write(fd, content.data(), content.length());
+    close(fd);
+}
+
+/**
+ * @tc.name: FaultLogManager::GetFaultLogFileList
+ * @tc.desc: Test calling GetFaultLogFileList Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GetFaultLogFileList001, testing::ext::TestSize.Level3)
+{
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
+    std::list<std::string> fileList = faultLogManager->GetFaultLogFileList("FaultloggerUnittest", 1607161344, 0, 2, 1);
+    ASSERT_EQ(fileList.size(), 1);
+}
+
+/**
+ * @tc.name: FaultLogManager::GetFaultLogContent
+ * @tc.desc: Test calling GetFaultLogContent Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GetFaultLogContent001, testing::ext::TestSize.Level3)
+{
+    std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
+    faultLogManager->Init();
+    FaultLogInfo info {
+        .time = 1607161345,
+        .id = 0,
+        .faultLogType = 2,
+        .module = "FaultloggerUnittest"
+    };
+    std::string fileName = GetFaultLogName(info);
+    std::string content;
+    ASSERT_TRUE(faultLogManager->GetFaultLogContent(fileName, content));
+    ASSERT_EQ(content, "testContent");
 }
 
 /**
