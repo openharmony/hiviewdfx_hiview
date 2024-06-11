@@ -31,6 +31,20 @@ const std::string KEY_OF_DATE = "DATE";
 const std::string KEY_OF_START_NUM = "TOTAL_START_NUM";
 }
 
+namespace FoldAppUsageEventSpace {
+const std::string EVENT_NAME = "FOLD_APP_USAGE";
+const std::string KEY_OF_PACKAGE = "PACKAGE";
+const std::string KEY_OF_VERSION = "VERSION";
+const std::string KEY_OF_USAGE = "USAGE";
+const std::string KEY_OF_FOLD_VER_USAGE = "FOLD_V";
+const std::string KEY_OF_FOLD_HOR_USAGE = "FOLD_H";
+const std::string KEY_OF_EXPD_VER_USAGE = "EXPD_V";
+const std::string KEY_OF_EXPD_HOR_USAGE = "EXPD_H";
+const std::string KEY_OF_DATE = "DATE";
+const std::string KEY_OF_START_NUM = "TOTAL_START_NUM";
+const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard"; // NOT include sceneboard
+}
+
 namespace SysUsageEventSpace {
 const std::string EVENT_NAME = "SYS_USAGE";
 const std::string KEY_OF_START = "START";

@@ -104,7 +104,7 @@ int64_t Get0ClockStampMs()
         l->tm_sec = 0;
         zero = std::mktime(l) * SEC_TO_MILLISEC;  // time is 00:00:00
     }
-    return zero;
+    return zero > 0 ? zero : 0; // result of mktime is negative, when the date is 19700101
 }
 
 uint64_t GetSteadyClockTimeMs()
