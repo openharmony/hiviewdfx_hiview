@@ -60,6 +60,61 @@ const std::string LAST_SYS_USAGE_TABLE = "last_sys_usage";
 namespace DomainSpace {
 constexpr char HIVIEWDFX_UE_DOMAIN[] = "HIVIEWDFX_UE";
 }
+
+namespace FoldEventId {
+    constexpr int EVENT_APP_START = 1101;
+    constexpr int EVENT_APP_EXIT = 1102;
+    constexpr int EVENT_SCREEN_STATUS_CHANGED = 1103;
+    constexpr int EVENT_COUNT_DURATION = 1104;
+}
+
+namespace AppEventSpace {
+    const std::string FOREGROUND_EVENT_NAME = "APP_FOREGROUND";
+    const std::string BACKGROUND_EVENT_NAME = "APP_BACKGROUND";
+    const std::string KEY_OF_PROCESS_NAME = "PROCESS_NAME";
+    const std::string KEY_OF_VERSION_NAME = "VERSION_NAME";
+    const std::string KEY_OF_CALLER_BUNDLENAME = "CALLER_BUNDLENAME";
+    const std::string KEY_OF_BUNDLE_TYPE = "BUNDLE_TYPE";
+    const std::string KEY_OF_VERSION_CODE = "VERSION_CODE";
+    const std::string KEY_OF_BUNDLE_NAME = "BUNDLE_NAME";
+    const std::string KEY_OF_APP_PID = "APP_PID";
+    const std::string KEY_OF_PROCESS_TYPE = "PROCESS_TYPE";
+}
+
+namespace FoldStateChangeEventSpace {
+    const std::string EVENT_NAME = "NOTIFY_FOLD_STATE_CHANGE";
+    const std::string KEY_OF_CURRENT_STATUS = "CURRENT_FOLD_STATUS";
+    const std::string KEY_OF_NEXT_STATUS = "NEXT_FOLD_STATUS";
+    const std::string KEY_OF_SENSOR_POSTURE = "SENSOR_POSTURE";
+}
+
+namespace VhModeChangeEventSpace {
+    const std::string EVENT_NAME = "VH_MODE";
+    const std::string KEY_OF_MODE = "MODE";
+}
+
+namespace ScreenFoldStatus {
+    constexpr int EXPAND_PORTRAIT_STATUS = 11;
+    constexpr int EXPAND_LANDSCAPE_STATUS = 12;
+    constexpr int FOLD_PORTRAIT_STATUS = 21;
+    constexpr int FOLD_LANDSCAPE_STATUS = 22;
+}
+
+namespace FoldEventTable {
+    const std::string FIELD_ID = "id";
+    const std::string FIELD_UID = "uid";
+    const std::string FIELD_EVENT_ID = "rawid";
+    const std::string FIELD_TS = "ts";
+    const std::string FIELD_FOLD_STATUS = "fold_status";
+    const std::string FIELD_PRE_FOLD_STATUS = "pre_fold_status";
+    const std::string FIELD_VERSION_NAME = "version_name";
+    const std::string FIELD_HAPPEN_TIME = "happen_time";
+    const std::string FIELD_FOLD_PORTRAIT_DURATION = "fold_portrait_duration";
+    const std::string FIELD_FOLD_LANDSCAPE_DURATION = "fold_landscape_duration";
+    const std::string FIELD_EXPAND_PORTRAIT_DURATION = "expand_portrait_duration";
+    const std::string FIELD_EXPAND_LANDSCAPE_DURATION = "expand_landscape_duration";
+    const std::string FIELD_BUNDLE_NAME = "bundle_name";
+}
 } // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLUGINS_USAGE_EVENT_REPORT_SREVICE_USAGE_EVENT_COMMON_H

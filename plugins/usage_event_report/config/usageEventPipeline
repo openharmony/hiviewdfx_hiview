@@ -1,0 +1,12 @@
+{
+    "domains": [
+        {
+            "domain": "AAFWK",
+            "include": ["APP_FOREGROUND", "APP_BACKGROUND"]
+        },
+        {
+            "domain": "WINDOWMANAGER",
+            "include": ["NOTIFY_FOLD_STATE_CHANGE", "VH_MODE"]
+        }
+    ]
+}
