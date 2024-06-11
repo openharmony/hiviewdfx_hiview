@@ -21,6 +21,8 @@
 
 #include "event_loop.h"
 #include "ffrt.h"
+#include "fold_app_usage_event_factory.h"
+#include "fold_event_cacher.h"
 #include "plugin.h"
 #include "shutdown/iasync_shutdown_callback.h"
 
@@ -32,6 +34,7 @@ public:
     ~UsageEventReport() {}
     void OnLoad() override;
     void OnUnload() override;
+    bool OnEvent(std::shared_ptr<Event>& event) override;
     bool IsRunning();
     void TimeOut();
     static void SaveEventToDb();
@@ -43,12 +46,14 @@ private:
     void Stop();
     void RunTask();
     void ReportDailyEvent();
+    void ReportFoldAppUsageEvent();
     void ReportTimeOutEvent();
     void ReportSysUsageEvent();
     void DeletePluginStatsEvents();
     static void StartServiceByOption(const std::string& opt);
     static void SavePluginStatsEvents();
     static void SaveSysUsageEvent();
+    void InitFoldEventCacher(const std::string& workPath);
 
 private:
     sptr<PowerMgr::IAsyncShutdownCallback> callback_;
@@ -59,6 +64,8 @@ private:
     static uint64_t lastReportTime_;
     static uint64_t nextReportTime_;
     static std::string workPath_;
+    std::unique_ptr<FoldEventCacher> foldEventCacher_;
+    std::unique_ptr<FoldAppUsageEventFactory> foldAppUsageFactory_;
 }; // UsageEventReport
 } // namespace HiviewDFX
 } // namespace OHOS

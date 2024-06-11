@@ -26,6 +26,7 @@ namespace HiviewDFX {
 
 class FoldAppUsageEventFactory : public LoggerEventFactory {
 public:
+    FoldAppUsageEventFactory(const std::string& workPath);
     std::unique_ptr<LoggerEvent> Create() override;
     void Create(std::vector<std::unique_ptr<LoggerEvent>> &events) override;
 

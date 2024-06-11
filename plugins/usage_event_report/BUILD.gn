@@ -43,8 +43,11 @@ if (enable_hiview_usage_event_report_build) {
     sources = [
       "cache/event_db_helper.cpp",
       "cache/fold_app_usage_db_helper.cpp",
+      "cache/fold_app_usage_event_factory.cpp",
+      "cache/fold_event_cacher.cpp",
       "cache/json_parser.cpp",
       "cache/usage_event_cacher.cpp",
+      "event/fold_app_usage_event.cpp",
       "event/sys_usage_event.cpp",
       "usage_event_report.cpp",
     ]
@@ -53,16 +56,25 @@ if (enable_hiview_usage_event_report_build) {
       sources += [ "idl/hiview_shutdown_callback.cpp" ]
     }
 
-    deps = [ "$hiview_base:hiviewbase" ]
+    deps = [
+      "$hiview_base:hiviewbase",
+      "config:usageEventPipeline",
+    ]
 
     external_deps = [
+      "ability_runtime:ability_manager",
+      "ability_runtime:app_manager",
       "bounds_checking_function:libsec_shared",
+      "bundle_framework:appexecfwk_base",
+      "bundle_framework:appexecfwk_core",
       "ffrt:libffrt",
       "hilog:libhilog",
       "hisysevent:libhisysevent",
       "ipc:ipc_single",
       "jsoncpp:jsoncpp",
       "relational_store:native_rdb",
+      "samgr:samgr_proxy",
+      "window_manager:libdm",
     ]
 
     defines = []

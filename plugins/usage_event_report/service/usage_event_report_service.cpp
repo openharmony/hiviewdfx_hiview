@@ -67,13 +67,6 @@ void UsageEventReportService::ReportAppUsage()
     for (size_t i = 0; i < events.size(); ++i) {
         events[i]->Report();
     }
-    auto foldAppUsageFactory = std::make_unique<FoldAppUsageEventFactory>();
-    std::vector<std::unique_ptr<LoggerEvent>> foldAppUsageEvents;
-    foldAppUsageFactory->Create(foldAppUsageEvents);
-    HIVIEW_LOGI("report fold app usage event num: %{public}zu", foldAppUsageEvents.size());
-    for (size_t i = 0; i < foldAppUsageEvents.size(); ++i) {
-        foldAppUsageEvents[i]->Report();
-    }
 }
 
 void UsageEventReportService::ReportSysUsage()

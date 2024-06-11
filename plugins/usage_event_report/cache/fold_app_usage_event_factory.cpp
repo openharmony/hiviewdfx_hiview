@@ -36,6 +36,10 @@ const std::string DATE_FORMAT = "%Y-%m-%d";
 
 using namespace FoldAppUsageEventSpace;
 
+FoldAppUsageEventFactory::FoldAppUsageEventFactory(const std::string& workPath)
+{
+    dbHelper_ = std::make_unique<FoldAppUsageDbHelper>(workPath);
+}
 std::unique_ptr<LoggerEvent> FoldAppUsageEventFactory::Create()
 {
     return std::make_unique<FoldAppUsageEvent>(EVENT_NAME, HiSysEvent::STATISTIC);
@@ -50,14 +54,13 @@ void FoldAppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>> 
     clearDataTime_ = today0Time_ > gapTime * DATA_KEEP_DAY ?
         (today0Time_ - gapTime * DATA_KEEP_DAY) : 0;
     std::string dateStr = TimeUtil::TimestampFormatToDate(startTime_ / TimeUtil::SEC_TO_MILLISEC, DATE_FORMAT);
-    dbHelper_ = std::make_unique<FoldAppUsageDbHelper>("/data/log/hiview/fold_app_events/");
     foldStatus_ = dbHelper_->QueryFinalScreenStatus(endTime_);
     std::vector<FoldAppUsageInfo> foldAppUsageInfos;
     GetAppUsageInfo(foldAppUsageInfos);
     for (const auto &info : foldAppUsageInfos) {
         std::unique_ptr<LoggerEvent> event = Create();
         event->Update(KEY_OF_PACKAGE, info.package);
-        event->Update(KEY_OF_VERSION, std::to_string(info.version));
+        event->Update(KEY_OF_VERSION, info.version);
         event->Update(KEY_OF_FOLD_VER_USAGE, static_cast<uint32_t>(info.foldVer));
         event->Update(KEY_OF_FOLD_HOR_USAGE, static_cast<uint32_t>(info.foldHor));
         event->Update(KEY_OF_EXPD_VER_USAGE, static_cast<uint32_t>(info.expdVer));
@@ -82,7 +85,8 @@ void FoldAppUsageEventFactory::GetAppUsageInfo(std::vector<FoldAppUsageInfo> &in
         if (app == SCENEBOARD_BUNDLE_NAME) {
             continue;
         }
-        FoldAppUsageInfo usageInfo = FoldAppUsageInfo(app, 0, 0, 0, 0, 0);
+        FoldAppUsageInfo usageInfo;
+        usageInfo.package = app;
         dbHelper_->QueryForegroundAppsInfo(startTime_, endTime_, foldStatus_, usageInfo);
         totalInfos.emplace_back(usageInfo);
     }

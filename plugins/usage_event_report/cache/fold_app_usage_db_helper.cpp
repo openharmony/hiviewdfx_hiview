@@ -19,46 +19,41 @@
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "rdb_helper.h"
+#include "rdb_predicates.h"
 #include "sql_util.h"
+#include "usage_event_common.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("FoldAppUsage");
 namespace {
-const int APP_FOREGROUND_EVENT = 1101;
-const int SCREEN_STAT_CHANGE_EVENT = 1103;
-const int USAGE_STATISTICS_EVENT = 1104;
-const int SCREEN_EXPAND_HORIZONAL_STAT = 11;
-const int SCREEN_EXPAND_VERTICAL_STAT = 12;
-const int SCREEN_FOLD_HORIZONAL_STAT = 21;
-const int SCREEN_FOLD_VERTICAL_STAT = 22;
-const std::string DB_TABLE_NAME = "app_events";
-const std::string EVENT_RAWID_COL_NAME = "rawid";
-const std::string SEQ_ID_COL_NAME = "_ID";
-const std::string SCREEN_STATUS_COL_NAME = "long1";
-const std::string FORMER_SCREEN_STATUS_COL_NAME = "long2";
-const std::string APP_VERION_COL_NAME = "long3";
-const std::string HAPPEN_TIME_COL_NAME = "long4";
-const std::string FOLD_VER_COL_NAME = "long5";
-const std::string FOLD_HOR_COL_NAME = "long6";
-const std::string EXPD_VER_COL_NAME = "long7";
-const std::string EXPD_HOR_COL_NAME = "long8";
-const std::string APP_NAME_COL_NAME = "str1";
-const std::string BOOT_TIME_COL_NAME = "ts";
+const std::string LOG_DB_PATH = "sys_event_logger/";
+const std::string LOG_DB_NAME = "log.db";
+const std::string LOG_DB_TABLE_NAME = "app_events";
+constexpr int DB_VERSION = 1;
+
+const std::string SQL_TYPE_INTEGER_NOT_NULL = "INTEGER NOT NULL";
+const std::string SQL_TYPE_INTEGER = "INTEGER";
+const std::string SQL_TYPE_REAL = "REAL";
+const std::string SQL_TYPE_TEXT_NOT_NULL = "TEXT NOT NULL";
+const std::string SQL_TYPE_TEXT = "TEXT";
+
+constexpr int DB_SUCC = 0;
+constexpr int DB_FAILED = 0;
 
 void UpdateScreenStatInfo(FoldAppUsageInfo &info, uint32_t time, int screenStatus)
 {
     switch (screenStatus) {
-        case SCREEN_EXPAND_HORIZONAL_STAT:
+        case ScreenFoldStatus::EXPAND_PORTRAIT_STATUS:
             info.expdHor += time;
             break;
-        case SCREEN_EXPAND_VERTICAL_STAT:
+        case ScreenFoldStatus::EXPAND_LANDSCAPE_STATUS:
             info.expdVer += time;
             break;
-        case SCREEN_FOLD_HORIZONAL_STAT:
+        case ScreenFoldStatus::FOLD_PORTRAIT_STATUS:
             info.foldHor += time;
             break;
-        case SCREEN_FOLD_VERTICAL_STAT:
+        case ScreenFoldStatus::FOLD_LANDSCAPE_STATUS:
             info.foldVer += time;
             break;
         default:
@@ -112,36 +107,214 @@ bool GetLongFromResultSet(std::shared_ptr<NativeRdb::AbsSharedResultSet> resultS
 }
 }
 
-FoldAppUsageDbHelper::FoldAppUsageDbHelper(std::string dbPath)
+class FoldDbStoreCallback : public NativeRdb::RdbOpenCallback {
+public:
+    int OnCreate(NativeRdb::RdbStore& rdbStore) override;
+    int OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion) override;
+};
+
+int FoldDbStoreCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 {
-    if (!FileUtil::FileExists(dbPath) && !FileUtil::ForceCreateDirectory(dbPath)) {
-        HIVIEW_LOGE("failed to create db dir");
-        return;
+    HIVIEW_LOGD("create dbStore");
+    return NativeRdb::E_OK;
+}
+
+int FoldDbStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersion, int newVersion)
+{
+    HIVIEW_LOGD("oldVersion = %{public}d, newVersion = %{public}d", oldVersion, newVersion);
+    return NativeRdb::E_OK;
+}
+
+FoldAppUsageDbHelper::FoldAppUsageDbHelper(const std::string& workPath)
+{
+    dbPath_ = workPath;
+    if (workPath.back() != '/') {
+        dbPath_ = workPath + "/";
     }
-    NativeRdb::RdbStoreConfig config(dbPath + "log.db");
-    config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
-    EventDbStoreCallback callback;
-    int ret = NativeRdb::E_OK;
-    rdbStore_ = NativeRdb::RdbHelper::GetRdbStore(config, 1, callback, ret);
-    if (ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("get rdb store failed");
+    dbPath_ += LOG_DB_PATH;
+    CreateDbStore(dbPath_, LOG_DB_NAME);
+    if (int ret = CreateAppEventsTable(LOG_DB_TABLE_NAME); ret != DB_SUCC) {
+        HIVIEW_LOGI("failed to create table");
     }
 }
 
 FoldAppUsageDbHelper::~FoldAppUsageDbHelper()
 {}
 
+void FoldAppUsageDbHelper::CreateDbStore(const std::string& dbPath, const std::string& dbName)
+{
+    std::string dbFile = dbPath + dbName;
+    if (!FileUtil::FileExists(dbPath) && FileUtil::ForceCreateDirectory(dbPath, FileUtil::FILE_PERM_770)) {
+        HIVIEW_LOGI("failed to create db path, use default path");
+        return;
+    }
+    NativeRdb::RdbStoreConfig config(dbFile);
+    config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
+    FoldDbStoreCallback callback;
+    int ret = NativeRdb::E_OK;
+    rdbStore_ = NativeRdb::RdbHelper::GetRdbStore(config, DB_VERSION, callback, ret);
+    if (ret != NativeRdb::E_OK || rdbStore_ == nullptr) {
+        HIVIEW_LOGI("failed to create db store, dbFile = %{public}s, ret = %{public}d", dbFile.c_str(), ret);
+    }
+}
+
+int FoldAppUsageDbHelper::CreateAppEventsTable(const std::string& table)
+{
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    if (rdbStore_ == nullptr) {
+        HIVIEW_LOGI("dbstore is nullptr");
+        return DB_FAILED;
+    }
+    std::vector<std::pair<std::string, std::string>> fields = {
+        {FoldEventTable::FIELD_UID, SQL_TYPE_INTEGER_NOT_NULL},
+        {FoldEventTable::FIELD_EVENT_ID, SQL_TYPE_INTEGER_NOT_NULL},
+        {FoldEventTable::FIELD_TS, SQL_TYPE_INTEGER_NOT_NULL},
+        {FoldEventTable::FIELD_FOLD_STATUS, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_PRE_FOLD_STATUS, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_VERSION_NAME, SQL_TYPE_TEXT},
+        {FoldEventTable::FIELD_HAPPEN_TIME, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION, SQL_TYPE_INTEGER},
+        {FoldEventTable::FIELD_BUNDLE_NAME, SQL_TYPE_TEXT_NOT_NULL}
+    };
+    std::string sql = SqlUtil::GenerateCreateSql(table, fields);
+    if (rdbStore_->ExecuteSql(sql) != NativeRdb::E_OK) {
+        return DB_FAILED;
+    }
+    return DB_SUCC;
+}
+
+int FoldAppUsageDbHelper::AddAppEvent(const AppEventRecord& appEventRecord)
+{
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    if (rdbStore_ == nullptr) {
+        HIVIEW_LOGE("dbStore is nullptr");
+        return DB_FAILED;
+    }
+    NativeRdb::ValuesBucket valuesBucket;
+    valuesBucket.PutInt(FoldEventTable::FIELD_UID, -1);
+    valuesBucket.PutInt(FoldEventTable::FIELD_EVENT_ID, appEventRecord.rawid);
+    valuesBucket.PutLong(FoldEventTable::FIELD_TS, appEventRecord.ts);
+    valuesBucket.PutInt(FoldEventTable::FIELD_FOLD_STATUS, appEventRecord.foldStatus);
+    valuesBucket.PutInt(FoldEventTable::FIELD_PRE_FOLD_STATUS, appEventRecord.preFoldStatus);
+    valuesBucket.PutString(FoldEventTable::FIELD_VERSION_NAME, appEventRecord.versionName);
+    valuesBucket.PutLong(FoldEventTable::FIELD_HAPPEN_TIME, appEventRecord.happenTime);
+    valuesBucket.PutLong(FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION, appEventRecord.foldPortraitTime);
+    valuesBucket.PutLong(FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION, appEventRecord.foldLandscapeTime);
+    valuesBucket.PutLong(FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION, appEventRecord.expandPortraitTime);
+    valuesBucket.PutLong(FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION, appEventRecord.expandLandscapeTime);
+    valuesBucket.PutString(FoldEventTable::FIELD_BUNDLE_NAME, appEventRecord.bundleName);
+    int64_t seq = 0;
+    if (int ret = rdbStore_->Insert(seq, LOG_DB_TABLE_NAME, valuesBucket); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGI("failed to add app event");
+        return DB_FAILED;
+    }
+    return DB_SUCC;
+}
+
+int FoldAppUsageDbHelper::QueryRawEventIndex(const std::string& bundleName, int rawId)
+{
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    if (rdbStore_ == nullptr) {
+        HIVIEW_LOGE("dbStore is nullptr");
+        return 0;
+    }
+    NativeRdb::RdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.EqualTo(FoldEventTable::FIELD_BUNDLE_NAME, bundleName);
+    predicates.EqualTo(FoldEventTable::FIELD_EVENT_ID, rawId);
+    predicates.OrderByDesc(FoldEventTable::FIELD_ID);
+    predicates.Limit(1); // query the nearest one event
+    auto resultSet = rdbStore_->Query(predicates, {FoldEventTable::FIELD_ID});
+    int index = 0;
+    if (resultSet == nullptr) {
+        HIVIEW_LOGI("failed to query raw event index");
+        return index;
+    }
+    if (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        GetIntFromResultSet(resultSet, FoldEventTable::FIELD_ID, index);
+    }
+    resultSet->Close();
+    return index;
+}
+
+void FoldAppUsageDbHelper::QueryAppEventRecords(int startIndex, int64_t dayStartTime, const std::string& bundleName,
+    std::vector<AppEventRecord>& records)
+{
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
+    if (rdbStore_ == nullptr) {
+        HIVIEW_LOGE("dbStore is nullptr");
+        return;
+    }
+    NativeRdb::RdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.EqualTo(FoldEventTable::FIELD_BUNDLE_NAME, bundleName);
+    predicates.GreaterThanOrEqualTo(FoldEventTable::FIELD_ID, startIndex);
+    predicates.GreaterThanOrEqualTo(FoldEventTable::FIELD_HAPPEN_TIME, dayStartTime);
+    predicates.OrderByAsc(FoldEventTable::FIELD_ID);
+
+    std::vector<std::string> columns;
+    columns.emplace_back(FoldEventTable::FIELD_EVENT_ID);
+    columns.emplace_back(FoldEventTable::FIELD_TS);
+    columns.emplace_back(FoldEventTable::FIELD_FOLD_STATUS);
+    columns.emplace_back(FoldEventTable::FIELD_PRE_FOLD_STATUS);
+    columns.emplace_back(FoldEventTable::FIELD_VERSION_NAME);
+    columns.emplace_back(FoldEventTable::FIELD_HAPPEN_TIME);
+    columns.emplace_back(FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION);
+    columns.emplace_back(FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION);
+    columns.emplace_back(FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION);
+    columns.emplace_back(FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION);
+    columns.emplace_back(FoldEventTable::FIELD_BUNDLE_NAME);
+    auto resultSet = rdbStore_->Query(predicates, columns);
+    if (resultSet == nullptr) {
+        HIVIEW_LOGI("failed to query event event");
+        return;
+    }
+    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        NativeRdb::RowEntity entity;
+        if (resultSet->GetRow(entity) != NativeRdb::E_OK) {
+            HIVIEW_LOGI("failed to read row entity from result set");
+            resultSet->Close();
+            return;
+        }
+        AppEventRecord record;
+        ParseEntity(entity, record);
+        if (record.rawid == FoldEventId::EVENT_COUNT_DURATION) {
+            records.clear();
+            continue;
+        }
+        records.emplace_back(record);
+    }
+    resultSet->Close();
+}
+
+void FoldAppUsageDbHelper::ParseEntity(NativeRdb::RowEntity& entity, AppEventRecord& record)
+{
+    entity.Get(FoldEventTable::FIELD_EVENT_ID).GetInt(record.rawid);
+    entity.Get(FoldEventTable::FIELD_TS).GetLong(record.ts);
+    entity.Get(FoldEventTable::FIELD_FOLD_STATUS).GetInt(record.foldStatus);
+    entity.Get(FoldEventTable::FIELD_PRE_FOLD_STATUS).GetInt(record.preFoldStatus);
+    entity.Get(FoldEventTable::FIELD_VERSION_NAME).GetString(record.versionName);
+    entity.Get(FoldEventTable::FIELD_HAPPEN_TIME).GetLong(record.happenTime);
+    entity.Get(FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION).GetLong(record.foldPortraitTime);
+    entity.Get(FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION).GetLong(record.foldLandscapeTime);
+    entity.Get(FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION).GetLong(record.expandPortraitTime);
+    entity.Get(FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION).GetLong(record.expandLandscapeTime);
+    entity.Get(FoldEventTable::FIELD_BUNDLE_NAME).GetString(record.bundleName);
+}
+
 int FoldAppUsageDbHelper::QueryFinalScreenStatus(uint64_t endTime)
 {
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (rdbStore_ == nullptr) {
         HIVIEW_LOGE("db is nullptr");
         return 0;
     }
-    NativeRdb::AbsRdbPredicates predicates(DB_TABLE_NAME);
-    predicates.Between(HAPPEN_TIME_COL_NAME, 0, static_cast<int64_t>(endTime));
-    predicates.OrderByDesc(SEQ_ID_COL_NAME);
+    NativeRdb::AbsRdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.Between(FoldEventTable::FIELD_HAPPEN_TIME, 0, static_cast<int64_t>(endTime));
+    predicates.OrderByDesc(FoldEventTable::FIELD_ID);
     predicates.Limit(1);
-    auto resultSet = rdbStore_->Query(predicates, {SEQ_ID_COL_NAME, SCREEN_STATUS_COL_NAME});
+    auto resultSet = rdbStore_->Query(predicates, {FoldEventTable::FIELD_ID, FoldEventTable::FIELD_FOLD_STATUS});
     if (resultSet == nullptr) {
         HIVIEW_LOGE("resultSet is nullptr");
         return 0;
@@ -149,8 +322,8 @@ int FoldAppUsageDbHelper::QueryFinalScreenStatus(uint64_t endTime)
     int id = 0;
     int status = 0;
     if (resultSet->GoToNextRow() == NativeRdb::E_OK &&
-        GetIntFromResultSet(resultSet, SEQ_ID_COL_NAME, id) &&
-        GetIntFromResultSet(resultSet, SCREEN_STATUS_COL_NAME, status) == NativeRdb::E_OK) {
+        GetIntFromResultSet(resultSet, FoldEventTable::FIELD_ID, id) &&
+        GetIntFromResultSet(resultSet, FoldEventTable::FIELD_FOLD_STATUS, status) == NativeRdb::E_OK) {
         HIVIEW_LOGI("get handle seq: %{public}d, screen stat: %{public}d", id, status);
     } else {
         HIVIEW_LOGE("get handle seq and screen stat failed");
@@ -161,28 +334,32 @@ int FoldAppUsageDbHelper::QueryFinalScreenStatus(uint64_t endTime)
 void FoldAppUsageDbHelper::QueryStatisticEventsInPeriod(uint64_t startTime, uint64_t endTime,
     std::vector<FoldAppUsageInfo> &infos)
 {
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (rdbStore_ == nullptr) {
         HIVIEW_LOGE("db is nullptr");
         return;
     }
-    NativeRdb::AbsRdbPredicates predicates(DB_TABLE_NAME);
-    predicates.EqualTo(EVENT_RAWID_COL_NAME, USAGE_STATISTICS_EVENT);
-    predicates.Between(HAPPEN_TIME_COL_NAME, static_cast<int64_t>(startTime), static_cast<int64_t>(endTime));
-    predicates.OrderByAsc(SEQ_ID_COL_NAME);
-    auto resultSet = rdbStore_->Query(predicates, {APP_NAME_COL_NAME, APP_VERION_COL_NAME, FOLD_VER_COL_NAME,
-        FOLD_HOR_COL_NAME, EXPD_VER_COL_NAME, EXPD_HOR_COL_NAME});
+    NativeRdb::AbsRdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.EqualTo(FoldEventTable::FIELD_EVENT_ID, FoldEventId::EVENT_COUNT_DURATION);
+    predicates.Between(FoldEventTable::FIELD_HAPPEN_TIME, static_cast<int64_t>(startTime),
+        static_cast<int64_t>(endTime));
+    predicates.OrderByAsc(FoldEventTable::FIELD_ID);
+    auto resultSet = rdbStore_->Query(predicates, {FoldEventTable::FIELD_BUNDLE_NAME,
+        FoldEventTable::FIELD_VERSION_NAME, FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION,
+        FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION, FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION,
+        FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION});
     if (resultSet == nullptr) {
         HIVIEW_LOGE("resultSet is nullptr");
         return;
     }
     while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
-        FoldAppUsageInfo usageInfo("", 0, 0, 0, 0, 0);
-        if (GetStringFromResultSet(resultSet, APP_NAME_COL_NAME, usageInfo.package) &&
-            GetLongFromResultSet(resultSet, APP_VERION_COL_NAME, usageInfo.version) &&
-            GetIntFromResultSet(resultSet, FOLD_VER_COL_NAME, usageInfo.foldVer) &&
-            GetIntFromResultSet(resultSet, FOLD_HOR_COL_NAME, usageInfo.foldHor) &&
-            GetIntFromResultSet(resultSet, EXPD_VER_COL_NAME, usageInfo.expdVer) &&
-            GetIntFromResultSet(resultSet, EXPD_HOR_COL_NAME, usageInfo.expdHor)) {
+        FoldAppUsageInfo usageInfo;
+        if (GetStringFromResultSet(resultSet, FoldEventTable::FIELD_BUNDLE_NAME, usageInfo.package) &&
+            GetStringFromResultSet(resultSet, FoldEventTable::FIELD_VERSION_NAME, usageInfo.version) &&
+            GetIntFromResultSet(resultSet, FoldEventTable::FIELD_FOLD_PORTRAIT_DURATION, usageInfo.foldVer) &&
+            GetIntFromResultSet(resultSet, FoldEventTable::FIELD_FOLD_LANDSCAPE_DURATION, usageInfo.foldHor) &&
+            GetIntFromResultSet(resultSet, FoldEventTable::FIELD_EXPAND_PORTRAIT_DURATION, usageInfo.expdVer) &&
+            GetIntFromResultSet(resultSet, FoldEventTable::FIELD_EXPAND_LANDSCAPE_DURATION, usageInfo.expdHor)) {
             infos.emplace_back(usageInfo);
         } else {
             HIVIEW_LOGE("fail to get appusage info!");
@@ -193,17 +370,19 @@ void FoldAppUsageDbHelper::QueryStatisticEventsInPeriod(uint64_t startTime, uint
 void FoldAppUsageDbHelper::QueryForegroundAppsInfo(uint64_t startTime, uint64_t endTime, int screenStatus,
     FoldAppUsageInfo &info)
 {
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (rdbStore_ == nullptr) {
         HIVIEW_LOGE("db is nullptr");
         return;
     }
-    NativeRdb::AbsRdbPredicates predicates(DB_TABLE_NAME);
-    predicates.EqualTo(APP_NAME_COL_NAME, info.package);
-    predicates.Between(HAPPEN_TIME_COL_NAME, static_cast<int64_t>(startTime), static_cast<int64_t>(endTime));
-    predicates.OrderByDesc(SEQ_ID_COL_NAME);
-    auto resultSet = rdbStore_->Query(predicates, {SEQ_ID_COL_NAME, EVENT_RAWID_COL_NAME, APP_NAME_COL_NAME,
-        APP_VERION_COL_NAME, HAPPEN_TIME_COL_NAME, SCREEN_STATUS_COL_NAME, FORMER_SCREEN_STATUS_COL_NAME,
-        BOOT_TIME_COL_NAME});
+    NativeRdb::AbsRdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.EqualTo(FoldEventTable::FIELD_BUNDLE_NAME, info.package);
+    predicates.Between(FoldEventTable::FIELD_HAPPEN_TIME, static_cast<int64_t>(startTime),
+        static_cast<int64_t>(endTime));
+    predicates.OrderByDesc(FoldEventTable::FIELD_ID);
+    auto resultSet = rdbStore_->Query(predicates, {FoldEventTable::FIELD_ID, FoldEventTable::FIELD_EVENT_ID,
+        FoldEventTable::FIELD_BUNDLE_NAME, FoldEventTable::FIELD_VERSION_NAME, FoldEventTable::FIELD_HAPPEN_TIME,
+        FoldEventTable::FIELD_FOLD_STATUS, FoldEventTable::FIELD_PRE_FOLD_STATUS, FoldEventTable::FIELD_TS});
     if (resultSet == nullptr) {
         HIVIEW_LOGE("resultSet is nullptr");
         return;
@@ -211,23 +390,23 @@ void FoldAppUsageDbHelper::QueryForegroundAppsInfo(uint64_t startTime, uint64_t 
     std::vector<FoldAppUsageRawEvent> events;
     while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
         FoldAppUsageRawEvent event;
-        if (!GetLongFromResultSet(resultSet, SEQ_ID_COL_NAME, event.id) ||
-            !GetIntFromResultSet(resultSet, EVENT_RAWID_COL_NAME, event.rawId) ||
-            !GetStringFromResultSet(resultSet, APP_NAME_COL_NAME, event.package) ||
-            !GetLongFromResultSet(resultSet, APP_VERION_COL_NAME, event.version) ||
-            !GetLongFromResultSet(resultSet, HAPPEN_TIME_COL_NAME, event.happenTime) ||
-            !GetIntFromResultSet(resultSet, SCREEN_STATUS_COL_NAME, event.screenStatusAfter) ||
-            !GetIntFromResultSet(resultSet, FORMER_SCREEN_STATUS_COL_NAME, event.screenStatusBefore) ||
-            !GetLongFromResultSet(resultSet, BOOT_TIME_COL_NAME, event.ts)) {
+        if (!GetLongFromResultSet(resultSet, FoldEventTable::FIELD_ID, event.id) ||
+            !GetIntFromResultSet(resultSet, FoldEventTable::FIELD_EVENT_ID, event.rawId) ||
+            !GetStringFromResultSet(resultSet, FoldEventTable::FIELD_BUNDLE_NAME, event.package) ||
+            !GetStringFromResultSet(resultSet, FoldEventTable::FIELD_VERSION_NAME, event.version) ||
+            !GetLongFromResultSet(resultSet, FoldEventTable::FIELD_HAPPEN_TIME, event.happenTime) ||
+            !GetIntFromResultSet(resultSet, FoldEventTable::FIELD_FOLD_STATUS, event.screenStatusAfter) ||
+            !GetIntFromResultSet(resultSet, FoldEventTable::FIELD_PRE_FOLD_STATUS, event.screenStatusBefore) ||
+            !GetLongFromResultSet(resultSet, FoldEventTable::FIELD_TS, event.ts)) {
             HIVIEW_LOGE("fail to get db event!");
             return;
         }
-        if (event.rawId != APP_FOREGROUND_EVENT && event.rawId != SCREEN_STAT_CHANGE_EVENT) {
+        if (event.rawId != FoldEventId::EVENT_APP_START && event.rawId != FoldEventId::EVENT_SCREEN_STATUS_CHANGED) {
             HIVIEW_LOGE("can not find foregroud event, latest raw id: %{public}d", event.rawId);
             return;
         }
         events.emplace_back(event);
-        if (event.rawId == APP_FOREGROUND_EVENT) {
+        if (event.rawId == FoldEventId::EVENT_APP_START) {
             break;
         }
     }
@@ -236,12 +415,13 @@ void FoldAppUsageDbHelper::QueryForegroundAppsInfo(uint64_t startTime, uint64_t 
 
 int FoldAppUsageDbHelper::DeleteEventsByTime(uint64_t clearDataTime)
 {
+    std::lock_guard<std::mutex> lockGuard(dbMutex_);
     if (rdbStore_ == nullptr) {
         HIVIEW_LOGE("db is nullptr");
         return 0;
     }
-    NativeRdb::AbsRdbPredicates predicates(DB_TABLE_NAME);
-    predicates.Between(HAPPEN_TIME_COL_NAME, 0, static_cast<int64_t>(clearDataTime));
+    NativeRdb::AbsRdbPredicates predicates(LOG_DB_TABLE_NAME);
+    predicates.Between(FoldEventTable::FIELD_HAPPEN_TIME, 0, static_cast<int64_t>(clearDataTime));
     int seq = 0;
     int ret = rdbStore_->Delete(seq, predicates);
     HIVIEW_LOGI("rows are deleted: %{public}d, ret: %{public}d", seq, ret);
@@ -251,7 +431,8 @@ int FoldAppUsageDbHelper::DeleteEventsByTime(uint64_t clearDataTime)
 FoldAppUsageInfo FoldAppUsageDbHelper::CaculateForegroundAppUsage(const std::vector<FoldAppUsageRawEvent> &events,
     uint64_t startTime, uint64_t endTime, const std::string &appName, int screenStatus)
 {
-    FoldAppUsageInfo info = FoldAppUsageInfo(appName, 0, 0, 0, 0, 0);
+    FoldAppUsageInfo info;
+    info.package = appName;
     // no event means: app is foregroud for whole day.
     if (events.size() == 0) {
         UpdateScreenStatInfo(info, static_cast<uint32_t>(endTime - startTime), screenStatus);
@@ -259,7 +440,7 @@ FoldAppUsageInfo FoldAppUsageDbHelper::CaculateForegroundAppUsage(const std::vec
     }
     uint32_t size = events.size();
     // first event is screen changed, means app is started befor statistic period.
-    if (events[size - 1].rawId == SCREEN_STAT_CHANGE_EVENT) {
+    if (events[size - 1].rawId == FoldEventId::EVENT_SCREEN_STATUS_CHANGED) {
         UpdateScreenStatInfo(info, static_cast<uint32_t>(events[size - 1].happenTime - startTime),
             events[size - 1].screenStatusBefore);
     }

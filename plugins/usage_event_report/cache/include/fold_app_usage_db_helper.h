@@ -23,12 +23,8 @@
 #include "rdb_store.h"
 
 struct FoldAppUsageInfo {
-    FoldAppUsageInfo(const std::string &package, int64_t version, int32_t foldVer, int32_t foldHor,
-        int32_t expdVer, int32_t expdHor)
-        : package(package), version(version), foldVer(foldVer), foldHor(foldHor), expdVer(expdVer),
-        expdHor(expdHor) {}
     std::string package;
-    int64_t version = 0;
+    std::string version;
     int32_t foldVer = 0; // usage duration when screen in fold-vertiacal status
     int32_t foldHor = 0; // usage duration when screen in fold-horizon status
     int32_t expdVer = 0; // usage duration when screen in expand-vertiacal status
@@ -41,30 +37,55 @@ struct FoldAppUsageRawEvent {
     int64_t id = 0;
     int rawId = 0;
     std::string package;
-    int64_t version = 0;
+    std::string version;
     int64_t ts = 0;
     int64_t happenTime = 0;
     int screenStatusBefore = 0;
     int screenStatusAfter = 0;
 };
 
+struct AppEventRecord {
+    int rawid = 0;
+    int64_t ts = 0;
+    std::string bundleName = "";
+    int preFoldStatus = 0;
+    int foldStatus = 0;
+    std::string versionName = "";
+    int64_t happenTime = 0;
+    int64_t foldPortraitTime = 0;
+    int64_t foldLandscapeTime = 0;
+    int64_t expandPortraitTime = 0;
+    int64_t expandLandscapeTime = 0;
+};
+
 namespace OHOS {
 namespace HiviewDFX {
 class FoldAppUsageDbHelper {
 public:
-    FoldAppUsageDbHelper(std::string dbPath);
+    FoldAppUsageDbHelper(const std::string& workPath);
     ~FoldAppUsageDbHelper();
+
+public:
     void QueryStatisticEventsInPeriod(uint64_t startTime, uint64_t endTime, std::vector<FoldAppUsageInfo> &infos);
     void QueryForegroundAppsInfo(uint64_t startTime, uint64_t endTime, int screenStatus, FoldAppUsageInfo &info);
     int DeleteEventsByTime(uint64_t clearDataTime);
     int QueryFinalScreenStatus(uint64_t endTime);
+    int AddAppEvent(const AppEventRecord& appEventRecord);
+    int QueryRawEventIndex(const std::string& bundleName, int rawId);
+    void QueryAppEventRecords(int startIndex, int64_t dayStartTime, const std::string& bundleName,
+        std::vector<AppEventRecord>& records);
 
 private:
+    void CreateDbStore(const std::string& dbPath, const std::string& dbName);
+    int CreateAppEventsTable(const std::string& table);
     FoldAppUsageInfo CaculateForegroundAppUsage(const std::vector<FoldAppUsageRawEvent> &events, uint64_t startTime,
         uint64_t endTime, const std::string &appName, int screenStatus);
+    void ParseEntity(NativeRdb::RowEntity& entity, AppEventRecord& record);
 
 private:
     std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
+    std::string dbPath_;
+    std::mutex dbMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

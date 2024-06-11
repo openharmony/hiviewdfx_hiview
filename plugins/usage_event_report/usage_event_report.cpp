@@ -22,6 +22,8 @@
 #ifdef POWER_MANAGER_ENABLE
 #include "hiview_shutdown_callback.h"
 #endif
+#include "display_manager.h"
+#include "sys_event.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "securec.h"
@@ -45,6 +47,7 @@ namespace {
 constexpr int TRIGGER_CYCLE = 5 * 60 * 1000 * 1000; // 5 min
 constexpr uint32_t TRIGGER_ONE_HOUR = 12; // 1h = 5min * 12
 }
+using namespace OHOS::Rosen;
 using namespace SysUsageDbSpace;
 using namespace SysUsageEventSpace;
 
@@ -56,6 +59,19 @@ void UsageEventReport::OnLoad()
     HIVIEW_LOGI("start to init the env");
     Init();
     Start();
+}
+
+bool UsageEventReport::OnEvent(std::shared_ptr<Event>& event)
+{
+    if (event == nullptr || event->messageType_ != Event::MessageType::SYS_EVENT) {
+        HIVIEW_LOGI("event is invalid");
+        return false;
+    }
+    if (foldEventCacher_ != nullptr) {
+        auto sysEvent = Event::DownCastTo<SysEvent>(event);
+        foldEventCacher_->ProcessEvent(sysEvent);
+    }
+    return true;
 }
 
 void UsageEventReport::OnUnload()
@@ -104,6 +120,8 @@ void UsageEventReport::Init()
         } else {
             lastSysReportTime_ = nowTime;
         }
+        BindWorkLoop(context->GetSharedWorkLoop());
+        InitFoldEventCacher(workPath_);
     }
     nextReportTime_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs()) + TimeUtil::MILLISECS_PER_DAY;
 
@@ -118,6 +136,16 @@ void UsageEventReport::Init()
         HIVIEW_LOGI("lastSysReportTime=%{public}" PRIu64 ", need to report sys usage event now", lastReportTime_);
         ReportSysUsageEvent();
     }
+}
+
+void UsageEventReport::InitFoldEventCacher(const std::string& workPath)
+{
+    if (!DisplayManager::GetInstance().IsFoldable()) {
+        HIVIEW_LOGI("unFoldable device");
+        return;
+    }
+    foldEventCacher_ = std::make_unique<FoldEventCacher>(workPath);
+    foldAppUsageFactory_ = std::make_unique<FoldAppUsageEventFactory>(workPath);
 }
 
 void UsageEventReport::InitCallback()
@@ -168,6 +196,9 @@ void UsageEventReport::TimeOut()
     }
 
     RunTask();
+    if (foldEventCacher_ != nullptr) {
+        foldEventCacher_->TimeOut();
+    }
 }
 
 void UsageEventReport::ReportDailyEvent()
@@ -186,6 +217,7 @@ void UsageEventReport::ReportDailyEvent()
 
         // report app usage event
         StartServiceByOption("-A");
+        ReportFoldAppUsageEvent();
 
         // update report time
         lastReportTime_ = TimeUtil::GetMilliseconds();
@@ -207,6 +239,20 @@ void UsageEventReport::ReportSysUsageEvent()
 {
     StartServiceByOption("-S");
     lastSysReportTime_ = TimeUtil::GetMilliseconds();
+}
+
+void UsageEventReport::ReportFoldAppUsageEvent()
+{
+    if (foldAppUsageFactory_ == nullptr) {
+        HIVIEW_LOGI("foldAppUsageFactory is nullptr");
+        return;
+    }
+    std::vector<std::unique_ptr<LoggerEvent>> foldAppUsageEvents;
+    foldAppUsageFactory_->Create(foldAppUsageEvents);
+    HIVIEW_LOGI("report fold app usage event num: %{public}zu", foldAppUsageEvents.size());
+    for (size_t i = 0; i < foldAppUsageEvents.size(); ++i) {
+        foldAppUsageEvents[i]->Report();
+    }
 }
 
 void UsageEventReport::SaveEventToDb()
