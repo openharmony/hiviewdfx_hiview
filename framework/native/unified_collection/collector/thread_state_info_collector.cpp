@@ -119,7 +119,7 @@ CollectResult<std::vector<ThreadCpuStatInfo>> ThreadStateInfoCollector::CollectT
         return threadCollectResult;
     }
     CalculateThreadCpuStatInfos(threadCollectResult.data, threadCpuData, isNeedUpdate);
-    HIVIEW_LOGI("collect thread cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
+    HIVIEW_LOGD("collect thread cpu statistics information size=%{public}zu, isNeedUpdate=%{public}d",
                 threadCollectResult.data.size(), isNeedUpdate);
     if (!threadCollectResult.data.empty()) {
         threadCollectResult.retCode = UCollect::UcError::SUCCESS;
@@ -149,7 +149,7 @@ void ThreadStateInfoCollector::CalculateThreadCpuStatInfos(
     bool isNeedUpdate)
 {
     CalculationTimeInfo calcTimeInfo = InitCalculationTimeInfo();
-    HIVIEW_LOGI("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startBootTime=%{public}" PRIu64
+    HIVIEW_LOGD("startTime=%{public}" PRIu64 ", endTime=%{public}" PRIu64 ", startBootTime=%{public}" PRIu64
         ", endBootTime=%{public}" PRIu64 ", period=%{public}" PRIu64, calcTimeInfo.startTime,
         calcTimeInfo.endTime, calcTimeInfo.startBootTime, calcTimeInfo.endBootTime, calcTimeInfo.period);
     auto procCpuItem = threadCpuData->GetNextThread();
@@ -179,7 +179,7 @@ void ThreadStateInfoCollector::TryToDeleteDeadThreadInfo()
             it++;
         }
     }
-    HIVIEW_LOGI("end to delete dead thread, size=%{public}zu", lastThreadCpuTimeInfos_.size());
+    HIVIEW_LOGD("end to delete dead thread, size=%{public}zu", lastThreadCpuTimeInfos_.size());
 }
 
 std::optional<ThreadCpuStatInfo> ThreadStateInfoCollector::CalculateThreadCpuStatInfo(
