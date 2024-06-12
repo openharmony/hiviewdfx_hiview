@@ -178,6 +178,21 @@ public:
         ASSERT_EQ(result, true);
     }
 
+    static void ConstructJsErrorAppEventWithNoValue(std::string summmay, std::shared_ptr<Faultlogger> plugin)
+    {
+        SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
+        sysEventCreator.SetKeyValue("SUMMARY", summmay);
+        sysEventCreator.SetKeyValue("name_", "JS_ERROR");
+        sysEventCreator.SetKeyValue("happenTime_", 1670248360359); // 1670248360359 : Simulate happenTime_ value
+        sysEventCreator.SetKeyValue("TYPE", 3); // 3 : Simulate TYPE value
+        sysEventCreator.SetKeyValue("VERSION", "1.0.0");
+
+        auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+        std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+        bool result = plugin->OnEvent(event);
+        ASSERT_EQ(result, true);
+    }
+
     static void CheckKeyWordsInJsErrorAppEventFile(std::string name)
     {
         std::string keywords[] = {
@@ -993,6 +1008,24 @@ Stacktrace:
     GTEST_LOG_(INFO) << "========summaryHasErrorNameAndErrorMessage========";
     ConstructJsErrorAppEvent(summaryHasErrorNameAndErrorMessage, plugin);
     CheckKeyWordsInJsErrorAppEventFile("summaryHasErrorNameAndErrorMessage");
+}
+
+/**
+ * @tc.name: ReportJsErrorToAppEventTest007
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest008, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    // has Error name、Error message
+    std::string NoKeyValue = R"~(Error name:summaryHasErrorNameAndErrorMessage TypeError
+Error message:Obj is not a Valid object
+Stacktrace:
+)~";
+    GTEST_LOG_(INFO) << "========NoKeyValue========";
+    ConstructJsErrorAppEventWithNoValue(NoKeyValue, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("NoKeyValue");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -536,8 +536,11 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     } else {
         params["foreground"] = false;
     }
-    Json::Value externalLog;
-    externalLog.append(sysEvent->GetEventValue("LOG_PATH"));
+    Json::Value externalLog(Json::arrayValue);
+    std::string logPath = sysEvent->GetEventValue("LOG_PATH");
+    if (!logPath.empty()) {
+        externalLog.append(logPath);
+    }
     params["external_log"] = externalLog;
     params["bundle_version"] = sysEvent->GetEventValue("VERSION");
     params["bundle_name"] = sysEvent->GetEventValue("PACKAGE_NAME");
@@ -548,11 +551,10 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     FillJsErrorParams(summary, params);
     // add hilog
     std::string log;
-    Json::Value hilog;
+    Json::Value hilog(Json::arrayValue);
     GetHilog(sysEvent->GetPid(), log);
     if (log.length() == 0) {
         HIVIEW_LOGE("Get hilog is empty");
-        hilog.append("");
     } else {
         std::stringstream logStream(log);
         std::string oneLine;
@@ -860,15 +862,18 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
 
 void Faultlogger::AddHilogInfo(Json::Value& stackInfoObj, const FaultLogInfo& info) const
 {
-    Json::Value hilog;
-    std::stringstream logStream(info.sectionMap.at("HILOG"));
-    std::string oneLine;
-    int count = 0;
-    while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
-        hilog.append(oneLine);
+    Json::Value hilog(Json::arrayValue);
+    auto hilogStr = info.sectionMap.at("HILOG");
+    if (hilogStr.empty()) {
+        HIVIEW_LOGE("Get hilog is empty");
+        stackInfoObj["hilog"] = hilog;
+        return;
     }
-    if (info.sectionMap.at("HILOG").length() == 0) {
-        hilog.append("");
+
+    std::stringstream logStream(hilogStr);
+    std::string oneLine;
+    for (int count = 0; count < REPORT_HILOG_LINE && getline(logStream, oneLine); count++) {
+        hilog.append(oneLine);
     }
     stackInfoObj["hilog"] = hilog;
 }
