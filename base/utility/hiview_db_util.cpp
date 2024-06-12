@@ -117,7 +117,7 @@ void MoveDbFilesToUploadDir(const std::string& dbPath, const std::string& upload
     }
 }
 
-void MoveDbFileToUploadDir(const std::string dbPath, const std::string& uploadPath)
+void MoveDbFileToUploadDir(const std::string& dbPath, const std::string& uploadPath)
 {
     std::string uploadFilePath = FileUtil::IncludeTrailingPathDelimiter(uploadPath)
         .append(FileUtil::ExtractFileName(dbPath));

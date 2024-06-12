@@ -35,9 +35,6 @@ bool EventDeleteHandler::HandleRequest(RequestPtr req)
 
 bool EventDeleteHandler::Delete(std::vector<std::string>& files, const std::string& moduleName)
 {
-    std::vector<int64_t> beginSeqs;
-    std::vector<int64_t> endSeqs;
-    std::vector<std::string> eventNames;
     for (const auto& file : files) {
         // delete expired event file
         HIVIEW_LOGI("%{private}s has been deleted", file.c_str());

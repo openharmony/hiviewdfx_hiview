@@ -24,7 +24,7 @@ std::string CreateFileNameByDate(const std::string& prefix);
 std::string GetDateFromDbFile(const std::string& dbPath);
 bool InitDbUploadPath(const std::string& dbPath, std::string& uploadPath);
 void MoveDbFilesToUploadDir(const std::string& dbPath, const std::string& uploadPath);
-void MoveDbFileToUploadDir(const std::string dbFilePath, const std::string& uploadPath);
+void MoveDbFileToUploadDir(const std::string& dbFilePath, const std::string& uploadPath);
 void TryToAgeUploadDbFiles(const std::string& uploadPath, uint32_t maxNum = 7); // 7: one week
 } // namespace HiviewDbUtil
 } // namespace HiviewDFX
