@@ -31,7 +31,7 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventExportEngine");
 namespace {
 constexpr char SYS_EVENT_EXPORT_DIR_NAME[] = "sys_event_export";
-constexpr int REGISTER_RETRY_CNT = 6;
+constexpr int REGISTER_RETRY_CNT = 100;
 constexpr int REGISTER_LOOP_DURATION = 6;
 std::string GetExportDir(HiviewContext::DirectoryType type)
 {
