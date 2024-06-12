@@ -28,14 +28,10 @@ namespace {
 constexpr char DEFAULT_DES[] = "unknown";
 bool g_betaVersionToTest = false;
 bool g_developerModeToTest = false;
-std::map<std::string, std::string> mockSystemMap;
 }
 std::string GetString(const std::string& key, const std::string& defaultValue)
 {
-    if (mockSystemMap.find(key) != mockSystemMap.end()) {
-        return mockSystemMap[key];
-    }
-    return defaultValue;
+    return OHOS::system::GetParameter(key, defaultValue);
 }
 
 int64_t GetInteger(const std::string& key, const int64_t defaultValue)
@@ -55,9 +51,7 @@ bool GetBoolean(const std::string& key, const bool defaultValue)
 
 bool SetProperty(const std::string& key, const std::string& defaultValue)
 {
-    mockSystemMap[key] = defaultValue;
-    return 0;
-    // return OHOS::system::SetParameter(key, defaultValue);
+    return OHOS::system::SetParameter(key, defaultValue);
 }
 
 int WaitParamSync(const char *key, const char *value, int timeout)
