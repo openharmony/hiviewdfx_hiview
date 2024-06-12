@@ -182,7 +182,7 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
     return eventsJsonArray;
 }
 
-std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::string version)
+std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::string& version)
 {
     auto& context = HiviewGlobal::GetInstance();
     if (context == nullptr) {

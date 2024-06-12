@@ -315,9 +315,8 @@ int CopyFileFast(const std::string &src, const std::string &des)
     struct stat st;
     uint64_t totalLen = stat(src.c_str(), &st) ? 0 : static_cast<uint64_t>(st.st_size);
     uint64_t copyTotalLen = 0;
-    ssize_t copyLen = 0;
     while (copyTotalLen < totalLen) {
-        copyLen = sendfile(fdOut, fdIn, nullptr, totalLen - copyTotalLen);
+        ssize_t copyLen = sendfile(fdOut, fdIn, nullptr, totalLen - copyTotalLen);
         if (copyLen <= 0) {
             break;
         }

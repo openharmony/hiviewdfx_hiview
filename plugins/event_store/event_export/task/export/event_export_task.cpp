@@ -24,7 +24,7 @@ DEFINE_LOG_TAG("HiView-EventExportTask");
 namespace {
 constexpr int64_t BYTE_TO_MB = 1024 * 1024;
 
-void CopyEventList(ExportEventList& src, ExportEventList& dest)
+void CopyEventList(const ExportEventList& src, ExportEventList& dest)
 {
     for (const auto& item : src) {
         dest[item.first] = std::vector<std::string>(item.second.begin(), item.second.end());

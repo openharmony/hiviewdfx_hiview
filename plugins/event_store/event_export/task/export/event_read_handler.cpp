@@ -51,11 +51,10 @@ bool EventReadHandler::HandleRequest(RequestPtr req)
         exportBeginSeq += EVENT_QUERY_STEP;
     };
     queryRanges.emplace(exportBeginSeq, curEventSeq);
-    bool queryRet = true;
     for (const auto& queryRange : queryRanges) {
         HIVIEW_LOGD("export sysevent from %{public}" PRId64 " to %{public}" PRId64 "", queryRange.first,
             queryRange.second);
-        queryRet = QuerySysEvent(queryRange.first, queryRange.second, readReq->eventList,
+        bool queryRet = QuerySysEvent(queryRange.first, queryRange.second, readReq->eventList,
             [this, &readReq] (bool isQueryCompleted) {
                 auto writeReq = std::make_shared<EventWriteRequest>();
                 writeReq->moduleName = readReq->moduleName;
@@ -121,10 +120,9 @@ bool EventReadHandler::QuerySysEvent(const int64_t beginSeq, const int64_t endSe
     std::shared_ptr<EventStore::SysEventQuery> query = nullptr;
     int32_t queryResult = QUERY_SUCCESS;
     bool isFirstPartialQuery = true;
-    int64_t queryLimit = 0;
     auto iter = eventList.begin();
     while (queryCnt > 0 && iter != eventList.end()) {
-        queryLimit = queryCnt < EACH_QUERY_MAX_LIMIT ? queryCnt : EACH_QUERY_MAX_LIMIT;
+        int64_t queryLimit = queryCnt < EACH_QUERY_MAX_LIMIT ? queryCnt : EACH_QUERY_MAX_LIMIT;
         query = EventStore::SysEventDao::BuildQuery(iter->first, iter->second, 0, endSeq, beginSeq);
         query->Where(whereCond);
         query->Order(EventStore::EventCol::SEQ, true);

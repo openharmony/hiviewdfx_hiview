@@ -76,17 +76,17 @@ int32_t HiviewZipUnit::AddFileInZip(const std::string& srcFile, ZipFileLevel zip
     char buf[BUFFER_SIZE] = { 0 };
     while (!feof(srcFp)) {
         size_t numBytes = fread(buf, 1, sizeof(buf), srcFp);
-        if (numBytes < 0) {
+        if (numBytes == 0) {
             HIVIEW_LOGE("zip file failed, size is invalid.");
             errCode = ERROR_READ_BYTES;
             break;
         }
-        zipWriteInFileInZip(zipFile_, buf, static_cast<unsigned int>(numBytes));
         if (ferror(srcFp)) {
             HIVIEW_LOGE("zip file failed, file: %{public}s, errno: %{public}d", srcFile.c_str(), errno);
             errCode = errno;
             break;
         }
+        zipWriteInFileInZip(zipFile_, buf, static_cast<unsigned int>(numBytes));
     }
     (void)fclose(srcFp);
     zipCloseFileInZip(zipFile_);
