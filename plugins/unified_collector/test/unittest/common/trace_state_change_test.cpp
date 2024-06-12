@@ -46,8 +46,8 @@ constexpr bool DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT][STATE_COUNT] = {
 constexpr bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
-constexpr useconds_t SET_PROPERTY_MICRO_SECONDS_DELAY = 200 * 1000;
-constexpr useconds_t STATE_CHANGE_CALLBACK_MICRO_SECONDS_DELAY = 1500 * 1000;
+constexpr useconds_t SET_PROPERTY_MICRO_SECONDS_DELAY = 100 * 1000;
+constexpr useconds_t STATE_CHANGE_CALLBACK_MICRO_SECONDS_DELAY = 500 * 1000;
 std::shared_ptr g_unifiedCollector = std::make_shared<UnifiedCollector>();
 bool g_originalTestAppTraceOn, g_originalUCollectionSwitchOn, g_originalTraceCollectionSwitchOn;
 } // namespace
@@ -133,11 +133,17 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
     MockHiviewPlatform hiviewContext;
     for (uint64_t constantBinary = 0; constantBinary < constantTestCaseNumber; constantBinary++)
     {
-        bool isBetaVersion = (constantBinary & 1<<0) != 0;
-        bool isDeveloperMode = (constantBinary & 1<<1) != 0;
+        bool isBetaVersion = (constantBinary & 1<<1) == 0; // due to coupling of watch parameter in unified collector
+        bool isDeveloperMode = (constantBinary & 1<<0) != 0;
+        bool isTestAppTraceOn = 0;
+        bool isUCollectionSwitchOn = 0;
+        bool isTraceCollectionSwitchOn = 0;
 
         Parameter::SetBetaVersion(isBetaVersion);
         Parameter::SetDeveloperMode(isDeveloperMode);
+        Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
+        Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
+        Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
 
         hiviewContext = MockHiviewPlatform();
         g_unifiedCollector->SetHiviewContext(&hiviewContext);
@@ -146,14 +152,16 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
         {
             bool isTestAppTraceOn = (variableBinary & 1<<0) != 0;
             bool isUCollectionSwitchOn = (variableBinary & 1<<1) != 0;
-            bool isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;
-            
+            if (isDeveloperMode){
+                bool isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;            
+            }
+
             Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
             usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
             Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
             usleep(SET_PROPERTY_MICRO_SECONDS_DELAY);
             Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
-                        
+
             usleep(STATE_CHANGE_CALLBACK_MICRO_SECONDS_DELAY);
             bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
                 DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
