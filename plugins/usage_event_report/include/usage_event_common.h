@@ -94,10 +94,10 @@ namespace VhModeChangeEventSpace {
 }
 
 namespace ScreenFoldStatus {
-    constexpr int EXPAND_PORTRAIT_STATUS = 11;
-    constexpr int EXPAND_LANDSCAPE_STATUS = 12;
-    constexpr int FOLD_PORTRAIT_STATUS = 21;
-    constexpr int FOLD_LANDSCAPE_STATUS = 22;
+    constexpr int EXPAND_LANDSCAPE_STATUS = 11;
+    constexpr int EXPAND_PORTRAIT_STATUS = 12;
+    constexpr int FOLD_LANDSCAPE_STATUS = 21;
+    constexpr int FOLD_PORTRAIT_STATUS = 22;
 }
 
 namespace FoldEventTable {
