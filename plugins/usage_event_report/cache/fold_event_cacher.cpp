@@ -77,16 +77,16 @@ std::string GetAppVersion(const std::string& bundleName)
 int GetCombineScreenStatus(int foldStatus, int vhMode)
 {
     if (foldStatus == 1 && vhMode == 1) { // foldStatus: 1-expand status
-        return ScreenFoldStatus::EXPAND_PORTRAIT_STATUS;
-    }
-    if (foldStatus == 1 && vhMode == 0) {
         return ScreenFoldStatus::EXPAND_LANDSCAPE_STATUS;
     }
+    if (foldStatus == 1 && vhMode == 0) {
+        return ScreenFoldStatus::EXPAND_PORTRAIT_STATUS;
+    }
     if ((foldStatus == 2 || foldStatus == 3) && vhMode == 1) { // foldStatus: 2-fold status 3- half fold status
-        return ScreenFoldStatus::FOLD_PORTRAIT_STATUS;
+        return ScreenFoldStatus::FOLD_LANDSCAPE_STATUS;
     }
     if ((foldStatus == 2 || foldStatus == 3) && vhMode == 0) { // foldStatus: 2-fold status 3- half fold status
-        return ScreenFoldStatus::FOLD_LANDSCAPE_STATUS;
+        return ScreenFoldStatus::FOLD_PORTRAIT_STATUS;
     }
     return UNKNOWN_FOLD_STATUS;
 }
@@ -154,11 +154,12 @@ void FoldEventCacher::ProcessEvent(std::shared_ptr<SysEvent> event)
         HIVIEW_LOGI("dbHelper is nulptr");
         return;
     }
-    std::string eventName = event->eventName_;
-    if (FoldAppUsageEventSpace::SCENEBOARD_BUNDLE_NAME == eventName) {
+    std::string bundleName = event->GetEventValue(AppEventSpace::KEY_OF_BUNDLE_NAME);
+    if (FoldAppUsageEventSpace::SCENEBOARD_BUNDLE_NAME == bundleName) {
         return;
     }
     AppEventRecord appEventRecord;
+    std::string eventName = event->eventName_;
     if (eventName == AppEventSpace::FOREGROUND_EVENT_NAME) {
         ProcessForegroundEvent(event, appEventRecord);
     } else if (eventName == AppEventSpace::BACKGROUND_EVENT_NAME) {
