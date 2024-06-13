@@ -522,6 +522,19 @@ bool Faultlogger::CanProcessEvent(std::shared_ptr<Event> event)
     return true;
 }
 
+void Faultlogger::FillHilog(const std::string &hilogStr, Json::Value &hilog) const
+{
+    if (hilogStr.empty()) {
+        HIVIEW_LOGE("Get hilog is empty");
+        return;
+    }
+    std::stringstream logStream(hilogStr);
+    std::string oneLine;
+    for (int count = 0; count < REPORT_HILOG_LINE && getline(logStream, oneLine); count++) {
+        hilog.append(oneLine);
+    }
+}
+
 void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
     std::string summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
@@ -549,20 +562,10 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
     params["uuid"] = sysEvent->GetEventValue("FINGERPRINT");
     params["app_running_unique_id"] = sysEvent->GetEventValue("APP_RUNNING_UNIQUE_ID");
     FillJsErrorParams(summary, params);
-    // add hilog
     std::string log;
     Json::Value hilog(Json::arrayValue);
     GetHilog(sysEvent->GetPid(), log);
-    if (log.length() == 0) {
-        HIVIEW_LOGE("Get hilog is empty");
-    } else {
-        std::stringstream logStream(log);
-        std::string oneLine;
-        int count = 0;
-        while (++count <= REPORT_HILOG_LINE && getline(logStream, oneLine)) {
-            hilog.append(oneLine);
-        }
-    }
+    FillHilog(log, hilog);
     params["hilog"] = hilog;
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportAppEvent: uid:%{public}d, json:%{public}s.",
@@ -855,27 +858,12 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
         stackInfoObj["uuid"] = info.sectionMap.at("FINGERPRINT");
     }
     if (info.sectionMap.count("HILOG") == 1) {
-        AddHilogInfo(stackInfoObj, info);
+        Json::Value hilog(Json::arrayValue);
+        auto hilogStr = info.sectionMap.at("HILOG");
+        FillHilog(hilogStr, hilog);
+        stackInfoObj["hilog"] = hilog;
     }
     stackInfo.append(Json::FastWriter().write(stackInfoObj));
-}
-
-void Faultlogger::AddHilogInfo(Json::Value& stackInfoObj, const FaultLogInfo& info) const
-{
-    Json::Value hilog(Json::arrayValue);
-    auto hilogStr = info.sectionMap.at("HILOG");
-    if (hilogStr.empty()) {
-        HIVIEW_LOGE("Get hilog is empty");
-        stackInfoObj["hilog"] = hilog;
-        return;
-    }
-
-    std::stringstream logStream(hilogStr);
-    std::string oneLine;
-    for (int count = 0; count < REPORT_HILOG_LINE && getline(logStream, oneLine); count++) {
-        hilog.append(oneLine);
-    }
-    stackInfoObj["hilog"] = hilog;
 }
 
 int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
