@@ -1019,13 +1019,13 @@ HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest008, testing::ext::Test
 {
     auto plugin = GetFaultloggerInstance();
     // has Error name、Error message
-    std::string NoKeyValue = R"~(Error name:summaryHasErrorNameAndErrorMessage TypeError
+    std::string noKeyValue = R"~(Error name:summaryHasErrorNameAndErrorMessage TypeError
 Error message:Obj is not a Valid object
 Stacktrace:
 )~";
-    GTEST_LOG_(INFO) << "========NoKeyValue========";
-    ConstructJsErrorAppEventWithNoValue(NoKeyValue, plugin);
-    CheckKeyWordsInJsErrorAppEventFile("NoKeyValue");
+    GTEST_LOG_(INFO) << "========noKeyValue========";
+    ConstructJsErrorAppEventWithNoValue(noKeyValue, plugin);
+    CheckKeyWordsInJsErrorAppEventFile("noKeyValue");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
