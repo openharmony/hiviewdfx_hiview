@@ -21,6 +21,10 @@ using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace {
 constexpr char BUNDLE_NAME_FOR_TEST[] = "test";
+constexpr char PSS_MEMORY[] = "pss_memory";
+constexpr char JS_HEAP[] = "js_heap";
+constexpr char FD[] = "fd";
+constexpr char THREAD[] = "thread";
 }
 
 class AppEventHandlerTest : public testing::Test {
@@ -70,6 +74,14 @@ HWTEST_F(AppEventHandlerTest, AppEventHandlerTest003, TestSize.Level1)
     auto handler = std::make_shared<AppEventHandler>();
     ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), -1);
     resourceOverLimitInfo.bundleName = BUNDLE_NAME_FOR_TEST;
+    ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), -1);
+    resourceOverLimitInfo.resourceType = PSS_MEMORY;
+    ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), 0);
+    resourceOverLimitInfo.resourceType = JS_HEAP;
+    ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), 0);
+    resourceOverLimitInfo.resourceType = FD;
+    ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), 0);
+    resourceOverLimitInfo.resourceType = THREAD;
     ASSERT_EQ(handler->PostEvent(resourceOverLimitInfo), 0);
 }
 
