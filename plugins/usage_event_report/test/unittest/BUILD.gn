@@ -76,7 +76,7 @@ ohos_unittest("UsageEventReportCacheTest") {
 
   deps = [
     "$hiview_base/event_report:hiview_event_report",
-    "$hiview_plugin/usage_event_report:usage_event_report",
+    "$hiview_plugin/usage_event_report:usage_event_report_for_test",
     "//third_party/googletest:gtest_main",
   ]
 
