@@ -1101,7 +1101,7 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
 /*
  * return value: 0 means fault log invalid; 1 means fault log valid.
  */
-bool Faultlogger::CheckFaultLog(FaultLogInfo info) const
+bool Faultlogger::CheckFaultLog(FaultLogInfo info)
 {
     int32_t err = 0;
     std::string file;
@@ -1120,7 +1120,10 @@ bool Faultlogger::CheckFaultLog(FaultLogInfo info) const
 
 void Faultlogger::CheckFaultLogAsync(const FaultLogInfo& info)
 {
-    std::async(std::launch::async, &Faultlogger::CheckFaultLog, this, info);
+    if (workLoop_ != nullptr) {
+        auto task = std::bind(&Faultlogger::CheckFaultLog, this, info);
+        workLoop_->AddTimerEvent(nullptr, nullptr, task, 0, false);
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS
