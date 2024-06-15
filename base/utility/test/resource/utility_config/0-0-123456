@@ -1,0 +1,13 @@
+domain = KERNEL_VENDOR
+stringId = SCREEN_ON
+timestamp = 1718354085881
+pid = 0
+uid = 0
+package_name = com.package.name
+process_name = processName
+message = test_message
+peer_binder = test_peer_binder
+event_handler = [Event {event_handler1}]
+event_handler = [Event {event_handler2}]
+stack = test_stack
+appRunningUniqueId = 1
