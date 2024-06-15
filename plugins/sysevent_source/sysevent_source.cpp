@@ -26,7 +26,6 @@
 #include "time_util.h"
 #include "sys_event.h"
 #include "hiview_platform.h"
-#include "dispatch_config.h"
 #include "sys_event_dao.h"
 
 namespace OHOS {

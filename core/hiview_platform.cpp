@@ -30,6 +30,7 @@
 #include "backtrace_local.h"
 #include "common_utils.h"
 #include "defines.h"
+#include "dispatch_rule_parser.h"
 #include "dynamic_module.h"
 #include "file_util.h"
 #include "hiview_event_report.h"
@@ -468,7 +469,7 @@ void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineIn
     }
 
     std::list<std::weak_ptr<Plugin>> pluginList;
-    for (auto& pluginName : pipelineInfo.pluginNameList) {
+    for (const auto& pluginName : pipelineInfo.pluginNameList) {
         if (pluginMap_.find(pluginName) == pluginMap_.end()) {
             HIVIEW_LOGI("could not find plugin(%{public}s), skip adding to pipeline(%{public}s).",
                 pluginName.c_str(), pipelineInfo.name.c_str());
@@ -476,14 +477,22 @@ void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineIn
         }
         pluginList.push_back(pluginMap_[pluginName]);
     }
+
     std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(pipelineInfo.name, pluginList);
-    std::string pipelineConfigPath = PIPELINE_RULE_CONFIG_DIR + pipelineInfo.name;
-    HIVIEW_LOGI("pipelineConfigPath = %{public}s", pipelineConfigPath.c_str());
-    if (FileUtil::FileExists(pipelineConfigPath)) {
-        HiviewRuleParser ruleParser(pipelineConfigPath);
-        pipelineRules_[pipelineInfo.name] = ruleParser.getRule();
-    }
     pipelines_[pipelineInfo.name] = std::move(pipeline);
+
+    std::string configPath = PIPELINE_RULE_CONFIG_DIR + pipelineInfo.name;
+    HIVIEW_LOGI("config file=%{public}s", configPath.c_str());
+    if (!FileUtil::FileExists(configPath)) {
+        HIVIEW_LOGI("file=%{public}s does not exist", configPath.c_str());
+        return;
+    }
+    DispatchRuleParser ruleParser(configPath);
+    if (auto rule = ruleParser.GetRule(); rule != nullptr) {
+        pipelineRules_[pipelineInfo.name] = rule;
+    } else {
+        HIVIEW_LOGE("failed to parse config file=%{public}s", configPath.c_str());
+    }
 }
 
 void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const PluginConfig::PluginInfo& pluginInfo)
@@ -500,20 +509,25 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
 
     uint64_t beginTime = TimeUtil::GenerateTimestamp();
     plugin->OnLoad();
-    std::string dispatchConfigPath = DISPATCH_RULE_CONFIG_DIR + pluginInfo.name;
-    if (FileUtil::FileExists(dispatchConfigPath)) {
-        HiviewRuleParser ruleParser(dispatchConfigPath);
-        auto dispatchConfig = ruleParser.getRule();
-        AddDispatchInfo(std::weak_ptr<Plugin>(plugin), dispatchConfig->typeList, dispatchConfig->eventList,
-            dispatchConfig->tagList, dispatchConfig->domainRuleMap);
+
+    if (std::string configPath = DISPATCH_RULE_CONFIG_DIR + pluginInfo.name; FileUtil::FileExists(configPath)) {
+        HIVIEW_LOGI("config file=%{public}s", configPath.c_str());
+        DispatchRuleParser ruleParser(configPath);
+        if (auto rule = ruleParser.GetRule(); rule != nullptr) {
+            AddDispatchInfo(std::weak_ptr<Plugin>(plugin), rule->typeList,
+                rule->eventList, rule->tagList, rule->domainRuleMap);
+        } else {
+            HIVIEW_LOGE("failed to parse config file=%{public}s", configPath.c_str());
+        }
     }
+
     if (pluginInfo.isEventSource) {
         auto sharedSource = std::static_pointer_cast<EventSource>(plugin);
         if (sharedSource == nullptr) {
             HIVIEW_LOGE("Fail to cast plugin to event source!");
             return;
         }
-        for (auto& pipelineName : pluginInfo.pipelineNameList) {
+        for (const auto& pipelineName : pluginInfo.pipelineNameList) {
             sharedSource->AddPipeline(pipelines_[pipelineName]);
         }
     }

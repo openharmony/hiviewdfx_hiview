@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,10 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "dispatch_config.h"
+#include "dispatch_rule_parser.h"
 
 #include <fstream>
-#include <algorithm>
 #include "hiview_logger.h"
 #include "sys_event.h"
 
@@ -27,9 +26,9 @@ const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"SECURITY", SysEventCreator::SECURITY}, {"BEHAVIOR", SysEventCreator::BEHAVIOR}
 };
 }
-DEFINE_LOG_TAG("HiView-DispatchRule");
+DEFINE_LOG_TAG("DispatchRuleParser");
 
-HiviewRuleParser::HiviewRuleParser(const std::string &filePath)
+DispatchRuleParser::DispatchRuleParser(const std::string& filePath)
 {
     Json::Value root;
     std::ifstream fin(filePath, std::ifstream::binary);
@@ -53,18 +52,18 @@ HiviewRuleParser::HiviewRuleParser(const std::string &filePath)
     ParseDomainRule(root);
 }
 
-std::shared_ptr<DispatchRule> HiviewRuleParser::getRule()
+std::shared_ptr<DispatchRule> DispatchRuleParser::GetRule()
 {
     return dispatchRule_;
 }
 
-void HiviewRuleParser::ParseEventTypes(const Json::Value &root)
+void DispatchRuleParser::ParseEventTypes(const Json::Value& root)
 {
     if (dispatchRule_ == nullptr) {
         return;
     }
     if (root.isNull() || !root.isMember("types") || !root["types"].isArray()) {
-        HIVIEW_LOGE("ParseEventTypes failed");
+        HIVIEW_LOGD("failed to parse the types");
         return;
     }
     auto jsonTypeArray = root["types"];
@@ -80,13 +79,13 @@ void HiviewRuleParser::ParseEventTypes(const Json::Value &root)
     }
 }
 
-void HiviewRuleParser::ParseTagEvents(const Json::Value &root)
+void DispatchRuleParser::ParseTagEvents(const Json::Value& root)
 {
     if (dispatchRule_ == nullptr) {
         return;
     }
     if (root.isNull() || !root.isMember("tags") || !root["tags"].isArray()) {
-        HIVIEW_LOGE("ParseTagEvents failed");
+        HIVIEW_LOGD("failed to parse the tags");
         return;
     }
     auto jsonTagArray = root["tags"];
@@ -99,13 +98,13 @@ void HiviewRuleParser::ParseTagEvents(const Json::Value &root)
     }
 }
 
-void HiviewRuleParser::ParseEvents(const Json::Value &root)
+void DispatchRuleParser::ParseEvents(const Json::Value& root)
 {
     if (dispatchRule_ == nullptr) {
         return;
     }
     if (root.isNull() || !root.isMember("events") || !root["events"].isArray()) {
-        HIVIEW_LOGE("ParseEvents failed");
+        HIVIEW_LOGD("failed to parse the events");
         return;
     }
     auto jsonEventArray = root["events"];
@@ -118,13 +117,13 @@ void HiviewRuleParser::ParseEvents(const Json::Value &root)
     }
 }
 
-void HiviewRuleParser::ParseDomainRule(const Json::Value &root)
+void DispatchRuleParser::ParseDomainRule(const Json::Value& root)
 {
     if (dispatchRule_ == nullptr) {
         return;
     }
     if (root.isNull() || !root.isMember("domains") || !root["domains"].isArray()) {
-        HIVIEW_LOGE("ParseDomainRule failed");
+        HIVIEW_LOGD("failed to parse the domains");
         return;
     }
     auto jsonDomainArray = root["domains"];
@@ -143,7 +142,7 @@ void HiviewRuleParser::ParseDomainRule(const Json::Value &root)
     }
 }
 
-void HiviewRuleParser::ParseDomains(const Json::Value &json, DomainRule &domainRule)
+void DispatchRuleParser::ParseDomains(const Json::Value& json, DomainRule& domainRule)
 {
     Json::Value jsonArray;
     if (json.isMember("include") && json["include"].isArray()) {
@@ -164,7 +163,7 @@ void HiviewRuleParser::ParseDomains(const Json::Value &json, DomainRule &domainR
     }
 }
 
-bool DispatchRule::FindEvent(const std::string &domain, const std::string &eventName)
+bool DispatchRule::FindEvent(const std::string& domain, const std::string& eventName)
 {
     if (eventList.find(eventName) != eventList.end()) {
         return true;
@@ -176,7 +175,7 @@ bool DispatchRule::FindEvent(const std::string &domain, const std::string &event
     return false;
 }
 
-bool DomainRule::FindEvent(const std::string &eventName) const
+bool DomainRule::FindEvent(const std::string& eventName) const
 {
     if (filterType == INCLUDE) {
         return eventlist.find(eventName) != eventlist.end();
