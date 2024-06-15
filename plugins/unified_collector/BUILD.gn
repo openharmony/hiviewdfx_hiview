@@ -96,6 +96,7 @@ group("unittest") {
   deps = [
     "test/unittest/common:CpuStorageTest",
     "test/unittest/common:TraceStateChangeTest",
+    "test/unittest/common:UCStateObserverTest",
   ]
 }
 

@@ -36,7 +36,6 @@ const std::string TABLE_NAME = "trace_flow_control";
 const std::string COLUMN_SYSTEM_TIME = "system_time";
 const std::string COLUMN_CALLER_NAME = "caller_name";
 const std::string COLUMN_USED_SIZE = "used_size";
-const std::string DB_PATH = "/data/log/hiview/unified_collection/trace/";
 
 NativeRdb::ValuesBucket GetBucket(const TraceFlowRecord& traceFlowRecord)
 {
@@ -100,14 +99,13 @@ int TraceDbStoreCallback::OnUpgrade(NativeRdb::RdbStore& rdbStore, int oldVersio
     return OnCreate(rdbStore);
 }
 
-TraceStorage::TraceStorage()
+TraceStorage::TraceStorage(const std::string& dbStorePath) : dbStorePath_(dbStorePath)
 {
     InitDbStore();
 }
 
 void TraceStorage::InitDbStore()
 {
-    dbStorePath_ = DB_PATH;
     dbStorePath_.append(TABLE_NAME).append(".db");   // trace_flow_control.db
     NativeRdb::RdbStoreConfig config(dbStorePath_);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S1);
