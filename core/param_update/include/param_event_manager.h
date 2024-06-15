@@ -28,9 +28,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 class ParamEventManager {
+    DECLARE_SINGLETON(ParamEventManager)
 public:
-    ParamEventManager() = default;
-    ~ParamEventManager();
     void SubscriberEvent();
     void UnSubscriberEvent();
     void OnReceiveEvent(const AAFwk::Want &want);

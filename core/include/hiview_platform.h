@@ -23,7 +23,6 @@
 #include "event_dispatch_queue.h"
 #include "event_loop.h"
 #include "event_source.h"
-#include "param_event_manager.h"
 #include "pipeline.h"
 #include "plugin.h"
 #include "plugin_bundle.h"
@@ -216,7 +215,6 @@ private:
     const time_t DEFAULT_IDLE_TIME = 300; // 300 seconds
     time_t maxIdleTime_ = DEFAULT_IDLE_TIME;
     time_t checkIdlePeriod_ = DEFAULT_IDLE_TIME / 2; // 2 : half idle time
-    ParamEventManager paramEventManager;
     int watchDogTimer_ = 0;
     bool hasDumpStack_ = false;
 };
