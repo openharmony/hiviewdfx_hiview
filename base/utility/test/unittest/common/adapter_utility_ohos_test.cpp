@@ -24,6 +24,7 @@
 #include "cjson_util.h"
 #include "common_utils.h"
 #include "file_util.h"
+#include "freeze_json_util.h"
 #include "securec.h"
 #include "socket_util.h"
 #include "time_util.h"
@@ -35,6 +36,7 @@ namespace HiviewDFX {
 namespace {
 constexpr char LOG_FILE_PATH[] = "/data/test/adapter_utility_test/";
 constexpr char TEST_JSON_FILE_PATH[] = "/data/test/test_data/test.json";
+constexpr char FREEZE_JSON_FILE[] = "/data/test/test_data/0-0-123456";
 constexpr char STRING_VAL[] = "OpenHarmony is a better choice for you.";
 constexpr char STRING_ARR_FIRST_VAL[] = "3.1 release";
 constexpr int64_t INT_VAL = 2024;
@@ -512,7 +514,17 @@ HWTEST_F(AdapterUtilityOhosTest, CJsonUtilTest001, testing::ext::TestSize.Level3
     CJsonUtil::GetStringArray(jsonRoot, "STRING_ARRAY", strArr);
     ASSERT_EQ(strArr.size(), TEST_ARRAY_SIZE);
     ASSERT_EQ(strArr[0], STRING_ARR_FIRST_VAL);
+    std::vector<std::string> strArrNullptr;
+    CJsonUtil::GetStringArray(nullptr, "STRING_ARRAY", strArrNullptr);
+    ASSERT_EQ(strArrNullptr.size(), 0);
+    std::vector<std::string> strArrNotSet;
+    CJsonUtil::GetStringArray(jsonRoot, "STRING_ARRAY_NOT_SET", strArrNotSet);
+    ASSERT_EQ(strArrNotSet.size(), 0);
+    ASSERT_NE(CJsonUtil::GetArrayValue(jsonRoot, "STRING_ARRAY"), nullptr);
+    ASSERT_EQ(CJsonUtil::GetArrayValue(nullptr, "STRING_ARRAY"), nullptr);
+    ASSERT_EQ(CJsonUtil::GetArrayValue(jsonRoot, "STRING_ARRAY_NOT_SET"), nullptr);
     ASSERT_EQ(CJsonUtil::GetStringValue(jsonRoot, "STRING"), STRING_VAL);
+    ASSERT_EQ(CJsonUtil::GetStringValue(jsonRoot, "STRING_NOT_SET"), "");
     ASSERT_EQ(CJsonUtil::GetIntValue(jsonRoot, "INT"), INT_VAL);
     ASSERT_EQ(CJsonUtil::GetDoubleValue(jsonRoot, "DOUBLE"), DOU_VAL);
     ASSERT_EQ(CJsonUtil::GetIntValue(jsonRoot, "INT_NOT_SET", INT_VAL_DEFAULT), INT_VAL_DEFAULT);
@@ -520,6 +532,25 @@ HWTEST_F(AdapterUtilityOhosTest, CJsonUtilTest001, testing::ext::TestSize.Level3
     ASSERT_EQ(CJsonUtil::GetStringValue(nullptr, "STRING"), "");
     ASSERT_EQ(CJsonUtil::GetIntValue(nullptr, "INT", INT_VAL_DEFAULT), INT_VAL_DEFAULT);
     ASSERT_EQ(CJsonUtil::GetDoubleValue(nullptr, "DOUBLE", DOU_VAL_DEFAULT), DOU_VAL_DEFAULT);
+    bool boolValue = false;
+    ASSERT_TRUE(CJsonUtil::GetBoolValue(jsonRoot, "BOOL", boolValue));
+    ASSERT_TRUE(boolValue);
+    ASSERT_FALSE(CJsonUtil::GetBoolValue(nullptr, "BOOL", boolValue));
+    ASSERT_FALSE(CJsonUtil::GetBoolValue(jsonRoot, "BOOL_NOT_SET", boolValue));
+}
+
+/**
+ * @tc.name: FreezeJsonUtilTest001
+ * @tc.desc: Test apifs of FreezeJsonUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI9E8HA
+ */
+HWTEST_F(AdapterUtilityOhosTest, FreezeJsonUtilTest001, testing::ext::TestSize.Level3)
+{
+    FreezeJsonUtil::FreezeJsonCollector jsonCollector;
+    FreezeJsonUtil::LoadCollectorFromFile(FREEZE_JSON_FILE, jsonCollector);
+    ASSERT_EQ(jsonCollector.domain, "KERNEL_VENDOR");
+    ASSERT_EQ(jsonCollector.stringId, "SCREEN_ON");
 }
 }
 }
