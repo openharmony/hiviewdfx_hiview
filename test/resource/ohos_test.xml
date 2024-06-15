@@ -98,6 +98,7 @@
     </target>
     <target name="ParamUpdateTest">
         <preparer>
+            <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
             <option name="shell" value="mkdir /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/anco/"/>
             <option name="push" value="param_update/anco/anco_test.txt -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/anco/" src="res"/>
             <option name="push" value="param_update/CERT.ENC -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/" src="res"/>
@@ -108,6 +109,17 @@
         </preparer>
         <cleaner>
             <option name="shell" value="rm -rf /data/service/el1/public/update/param_service/install/system/etc"/>
+        </cleaner>
+    </target>
+    <target name="EventJsonParserTest">
+        <preparer>
+            <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/plugin_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/adft_plugin_config -> /data/test/test_data/" src="res"/>
+            <option name="push" value="base/bdfr_plugin_config -> /data/test/test_data/" src="res"/>
+        </preparer>
+        <cleaner>
+            <option name="shell" value="rm -rf /data/test/"/>
         </cleaner>
     </target>
 </configuration>

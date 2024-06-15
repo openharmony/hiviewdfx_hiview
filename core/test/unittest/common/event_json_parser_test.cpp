@@ -17,7 +17,6 @@
 #include <iostream>
 
 #include "event_json_parser.h"
-#include "hiview_platform.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -27,8 +26,8 @@ void EventJsonParserTest::TearDownTestCase() {}
 
 void EventJsonParserTest::SetUp()
 {
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment()) {
+    std::string configDir("/data/test/test_data/hiview_platform_config");
+    if (!platform.InitEnvironment(configDir)) {
         std::cout << "fail to init environment" << std::endl;
     } else {
         std::cout << "init environment successful" << std::endl;

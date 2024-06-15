@@ -16,10 +16,15 @@
 #define HIVIEW_PARAM_UPDATE_TEST_H
 #include <gtest/gtest.h>
 
+#include "hiview_platform.h"
+
 class ParamUpdateTest : public testing::Test {
 public:
     void SetUp();
     void TearDown();
+
+private:
+    OHOS::HiviewDFX::HiviewPlatform platform;
 };
 
 #endif // HIVIEW_PARAM_UPDATE_TEST_H

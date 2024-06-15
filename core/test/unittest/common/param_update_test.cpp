@@ -15,7 +15,6 @@
 #include "param_update_test.h"
 
 #include "file_util.h"
-#include "hiview_platform.h"
 #include "param_manager.h"
 
 using namespace testing::ext;
@@ -31,8 +30,8 @@ void ParamUpdateTest::SetUp()
     /**
      * @tc.setup: create an event loop and multiple event handlers
      */
-    HiviewPlatform &platform = HiviewPlatform::GetInstance();
-    if (!platform.InitEnvironment()) {
+    std::string configDir("/data/test/test_data/hiview_platform_config");
+    if (!platform.InitEnvironment(configDir)) {
         std::cout << "fail to init environment" << std::endl;
     } else {
         std::cout << "init environment successful" << std::endl;

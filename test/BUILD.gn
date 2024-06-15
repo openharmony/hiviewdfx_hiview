@@ -56,7 +56,7 @@ ohos_unittest("HolisticPlatformTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core",
+    "$hiview_core:hiview_core_for_test",
     "$hiview_root/test/plugins/examples/dynamic_load_plugin_example:dynamicloadpluginexample",
     "$hiview_root/test/plugins/examples/event_processor_example1:event_processor_example1",
     "$hiview_root/test/plugins/examples/event_processor_example2:event_processor_example2",
