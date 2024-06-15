@@ -33,7 +33,7 @@ struct TraceFlowRecord {
 
 class TraceStorage {
 public:
-    TraceStorage();
+    TraceStorage(const std::string& dbStorePath);
     ~TraceStorage() = default;
     void Store(const TraceFlowRecord& traceFlowRecord);
     void Query(TraceFlowRecord& traceFlowRecord);

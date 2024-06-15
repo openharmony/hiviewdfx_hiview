@@ -118,5 +118,8 @@ ohos_source_set("ucollection_source") {
 
 group("unittest") {
   testonly = true
-  deps = [ "decorator/test:DecoratorUnitTest" ]
+  deps = [
+    "collector/utils/test:TraceStorageUnitTest",
+    "decorator/test:DecoratorUnitTest",
+  ]
 }
