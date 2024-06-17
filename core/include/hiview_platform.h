@@ -28,7 +28,6 @@
 #include "plugin.h"
 #include "plugin_bundle.h"
 #include "plugin_config.h"
-#include "dispatch_config.h"
 #include "event_json_parser.h"
 
 #include "singleton.h"

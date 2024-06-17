@@ -12,13 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_BASE_DISPATCH_CONFIG_TEST_H
-#define HIVIEW_BASE_DISPATCH_CONFIG_TEST_H
+#ifndef HIVIEW_BASE_DISPATCH_RULE_PARSER_TEST_H
+#define HIVIEW_BASE_DISPATCH_RULE_PARSER_TEST_H
 #include <gtest/gtest.h>
 
 namespace OHOS {
 namespace HiviewDFX {
-class DispatchConfigTest : public testing::Test {
+class DispatchRuleParserTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -27,4 +27,4 @@ public:
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
-#endif  // HIVIEW_BASE_DISPATCH_CONFIG_TEST_H
+#endif  // HIVIEW_BASE_DISPATCH_RULE_PARSER_TEST_H

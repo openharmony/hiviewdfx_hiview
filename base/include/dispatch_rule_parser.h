@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,23 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_DISPATCH_CONFIG_H
-#define HIVIEW_DISPATCH_CONFIG_H
+#ifndef HIVIEW_BASE_DISPATCH_RULE_PARSER_H
+#define HIVIEW_BASE_DISPATCH_RULE_PARSER_H
 
 #include <string>
-#include <unordered_set>
-#include <unordered_map>
-#include <vector>
 
 #include "defines.h"
 #include "json/json.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class DllExport HiviewRuleParser {
+class DllExport DispatchRuleParser {
 public:
-    explicit HiviewRuleParser(const std::string & filePath);
-    std::shared_ptr<DispatchRule> getRule();
+    explicit DispatchRuleParser(const std::string& filePath);
+    std::shared_ptr<DispatchRule> GetRule();
 
 private:
     std::shared_ptr<DispatchRule> dispatchRule_ = nullptr;
@@ -38,6 +35,6 @@ private:
     void ParseDomainRule(const Json::Value& root);
     void ParseDomains(const Json::Value& json, DomainRule &domainRule);
 };
-}
-}
-#endif
+} // namespace HiviewDFX
+} // namespace OHOS
+#endif // HIVIEW_BASE_DISPATCH_RULE_PARSER_H

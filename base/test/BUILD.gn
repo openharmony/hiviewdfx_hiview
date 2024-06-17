@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,7 +17,7 @@ group("unittest") {
   testonly = true
   deps = [
     ":AuditLogParserTest",
-    ":DispatchConfigTest",
+    ":DispatchRuleParserTest",
     ":EventBaseTest",
     ":EventLoopTest",
     ":PluginFactoryTest",
@@ -154,11 +154,11 @@ ohos_unittest("EventBaseTest") {
   external_deps = [ "hilog:libhilog" ]
 }
 
-ohos_unittest("DispatchConfigTest") {
+ohos_unittest("DispatchRuleParserTest") {
   module_out_path = module_output_path
   configs = [ ":unittest_config" ]
 
-  sources = [ "unittest/common/dispatch_config_test.cpp" ]
+  sources = [ "unittest/common/dispatch_rule_parser_test.cpp" ]
 
   deps = [
     "$hiview_base:hiview_base",

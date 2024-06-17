@@ -12,15 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "dispatch_config_test.h"
+#include "dispatch_rule_parser_test.h"
 
-#include "dispatch_config.h"
+#include "dispatch_rule_parser.h"
 #include "file_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-    const std::string TEST_FILE_DIR = "/data/test/dispatch_config_test/";
+    const std::string TEST_FILE_DIR = "/data/test/dispatch_rule_parser_test/";
     constexpr size_t TYPE_SIZE = 1;
     constexpr size_t TAG_SIZE = 1;
     constexpr size_t EVENT_SIZE = 2;
@@ -68,15 +68,15 @@ namespace {
 
     const std::string TEST_JSON_NOJSON = "not json";
 }
-void DispatchConfigTest::SetUpTestCase()
+void DispatchRuleParserTest::SetUpTestCase()
 {
 }
 
-void DispatchConfigTest::TearDownTestCase()
+void DispatchRuleParserTest::TearDownTestCase()
 {
 }
 
-void DispatchConfigTest::SetUp()
+void DispatchRuleParserTest::SetUp()
 {
     if (!FileUtil::FileExists(TEST_FILE_DIR)) {
         FileUtil::ForceCreateDirectory(TEST_FILE_DIR, FileUtil::FILE_PERM_770);
@@ -88,20 +88,20 @@ void DispatchConfigTest::SetUp()
     FileUtil::SaveStringToFile(TEST_FILE_DIR + "test_json_error_type_value", TEST_JSON_ERROR_TYPE_VALUE, true);
 }
 
-void DispatchConfigTest::TearDown()
+void DispatchRuleParserTest::TearDown()
 {
 }
 
 /**
- * @tc.name: HiviewRuleParser001
- * @tc.desc: Test the api of HiviewRuleParser.
+ * @tc.name: DispatchRuleParser001
+ * @tc.desc: Test the api of DispatchRuleParser.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DispatchConfigTest, HiviewRuleParser001, testing::ext::TestSize.Level0)
+HWTEST_F(DispatchRuleParserTest, DispatchRuleParser001, testing::ext::TestSize.Level0)
 {
-    HiviewRuleParser ruleParser(TEST_FILE_DIR + "test_json");
-    auto rules = ruleParser.getRule();
+    DispatchRuleParser ruleParser(TEST_FILE_DIR + "test_json");
+    auto rules = ruleParser.GetRule();
     ASSERT_NE(rules, nullptr);
     ASSERT_EQ(rules->typeList.size(), TYPE_SIZE);
     ASSERT_EQ(rules->tagList.size(), TAG_SIZE);
@@ -111,15 +111,15 @@ HWTEST_F(DispatchConfigTest, HiviewRuleParser001, testing::ext::TestSize.Level0)
 }
 
 /**
- * @tc.name: HiviewRuleParser002
- * @tc.desc: Test the api of HiviewRuleParser for empty json.
+ * @tc.name: DispatchRuleParser002
+ * @tc.desc: Test the api of DispatchRuleParser for empty json.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DispatchConfigTest, HiviewRuleParser002, testing::ext::TestSize.Level0)
+HWTEST_F(DispatchRuleParserTest, DispatchRuleParser002, testing::ext::TestSize.Level0)
 {
-    HiviewRuleParser ruleParser(TEST_FILE_DIR + "test_json_non");
-    auto rules = ruleParser.getRule();
+    DispatchRuleParser ruleParser(TEST_FILE_DIR + "test_json_non");
+    auto rules = ruleParser.GetRule();
     ASSERT_NE(rules, nullptr);
     ASSERT_EQ(rules->typeList.size(), 0);
     ASSERT_EQ(rules->tagList.size(), 0);
@@ -128,28 +128,28 @@ HWTEST_F(DispatchConfigTest, HiviewRuleParser002, testing::ext::TestSize.Level0)
 }
 
 /**
- * @tc.name: HiviewRuleParser003
- * @tc.desc: Test the api of HiviewRuleParser for error json.
+ * @tc.name: DispatchRuleParser003
+ * @tc.desc: Test the api of DispatchRuleParser for error json.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DispatchConfigTest, HiviewRuleParser003, testing::ext::TestSize.Level0)
+HWTEST_F(DispatchRuleParserTest, DispatchRuleParser003, testing::ext::TestSize.Level0)
 {
-    HiviewRuleParser ruleParser(TEST_FILE_DIR + "test_json_nojson");
-    auto rules = ruleParser.getRule();
+    DispatchRuleParser ruleParser(TEST_FILE_DIR + "test_json_nojson");
+    auto rules = ruleParser.GetRule();
     ASSERT_EQ(rules, nullptr);
 }
 
 /**
- * @tc.name: HiviewRuleParser004
- * @tc.desc: Test the api of HiviewRuleParser for error type key.
+ * @tc.name: DispatchRuleParser004
+ * @tc.desc: Test the api of DispatchRuleParser for error type key.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DispatchConfigTest, HiviewRuleParser004, testing::ext::TestSize.Level0)
+HWTEST_F(DispatchRuleParserTest, DispatchRuleParser004, testing::ext::TestSize.Level0)
 {
-    HiviewRuleParser ruleParser(TEST_FILE_DIR + "test_json_error_type_key");
-    auto rules = ruleParser.getRule();
+    DispatchRuleParser ruleParser(TEST_FILE_DIR + "test_json_error_type_key");
+    auto rules = ruleParser.GetRule();
     ASSERT_NE(rules, nullptr);
     ASSERT_EQ(rules->typeList.size(), 0);
     ASSERT_EQ(rules->tagList.size(), 0);
@@ -158,15 +158,15 @@ HWTEST_F(DispatchConfigTest, HiviewRuleParser004, testing::ext::TestSize.Level0)
 }
 
 /**
- * @tc.name: HiviewRuleParser005
- * @tc.desc: Test the api of HiviewRuleParser for error type value.
+ * @tc.name: DispatchRuleParser005
+ * @tc.desc: Test the api of DispatchRuleParser for error type value.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DispatchConfigTest, HiviewRuleParser005, testing::ext::TestSize.Level0)
+HWTEST_F(DispatchRuleParserTest, DispatchRuleParser005, testing::ext::TestSize.Level0)
 {
-    HiviewRuleParser ruleParser(TEST_FILE_DIR + "test_json_error_type_value");
-    auto rules = ruleParser.getRule();
+    DispatchRuleParser ruleParser(TEST_FILE_DIR + "test_json_error_type_value");
+    auto rules = ruleParser.GetRule();
     ASSERT_NE(rules, nullptr);
     ASSERT_EQ(rules->typeList.size(), 0);
     ASSERT_EQ(rules->tagList.size(), 0);
