@@ -814,6 +814,137 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
 }
 
 /**
+ * @tc.name: FaultLogQueryResultOhosTest001
+ * @tc.desc: test HasNext and GetNext
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogQueryResultOhosTest001, testing::ext::TestSize.Level3)
+{
+    auto service = GetFaultloggerInstance();
+    FaultloggerServiceOhos serviceOhos;
+    FaultloggerServiceOhos::StartService(service.get());
+    if (FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr) != service.get()) {
+        printf("FaultloggerServiceOhos start service error.\n");
+        return;
+    }
+    auto remoteObject = serviceOhos.QuerySelfFaultLog(FaultLogType::CPP_CRASH, 10); // 10 : maxNum
+    auto result = iface_cast<FaultLogQueryResultOhos>(remoteObject);
+    ASSERT_NE(result, nullptr);
+    if (result != nullptr) {
+        while (result->HasNext()) {
+            result->GetNext();
+        }
+    }
+    result->GetNext();
+}
+
+class TestFaultLogQueryResultStub : public FaultLogQueryResultStub {
+public:
+    TestFaultLogQueryResultStub() {}
+    virtual ~TestFaultLogQueryResultStub() {}
+
+    bool HasNext()
+    {
+        return false;
+    }
+
+    sptr<FaultLogInfoOhos> GetNext()
+    {
+        return nullptr;
+    }
+
+public:
+    enum Code {
+        DEFAULT = -1,
+        HASNEXT = 0,
+        GETNEXT,
+    };
+};
+
+/**
+ * @tc.name: FaultLogQueryResultStubTest001
+ * @tc.desc: test OnRemoteRequest
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLogQueryResultStubTest001, testing::ext::TestSize.Level3)
+{
+    TestFaultLogQueryResultStub faultLogQueryResultStub;
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+    int ret = faultLogQueryResultStub.OnRemoteRequest(TestFaultLogQueryResultStub::Code::HASNEXT, data, reply, option);
+    ASSERT_EQ(ret, -1);
+    data.WriteInterfaceToken(FaultLogQueryResultStub::GetDescriptor());
+    ret = faultLogQueryResultStub.OnRemoteRequest(TestFaultLogQueryResultStub::Code::HASNEXT, data, reply, option);
+    ASSERT_EQ(ret, 0);
+    data.WriteInterfaceToken(FaultLogQueryResultStub::GetDescriptor());
+    ret = faultLogQueryResultStub.OnRemoteRequest(TestFaultLogQueryResultStub::Code::GETNEXT, data, reply, option);
+    ASSERT_EQ(ret, -1);
+    data.WriteInterfaceToken(FaultLogQueryResultStub::GetDescriptor());
+    ret = faultLogQueryResultStub.OnRemoteRequest(TestFaultLogQueryResultStub::Code::DEFAULT, data, reply, option);
+    ASSERT_EQ(ret, 305); // 305 : method not exist
+}
+
+class TestFaultLoggerServiceStub : public FaultLoggerServiceStub {
+public:
+    TestFaultLoggerServiceStub() {}
+    virtual ~TestFaultLoggerServiceStub() {}
+
+    void AddFaultLog(const FaultLogInfoOhos& info)
+    {
+    }
+
+    sptr<IRemoteObject> QuerySelfFaultLog(int32_t faultType, int32_t maxNum)
+    {
+        return nullptr;
+    }
+
+    void Destroy()
+    {
+    }
+
+public:
+    enum Code {
+        DEFAULT = -1,
+        ADD_FAULTLOG = 0,
+        QUERY_SELF_FAULTLOG,
+        DESTROY,
+    };
+};
+
+/**
+ * @tc.name: FaultLoggerServiceStubTest001
+ * @tc.desc: test OnRemoteRequest
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultLoggerServiceStubTest001, testing::ext::TestSize.Level3)
+{
+    TestFaultLoggerServiceStub faultLoggerServiceStub;
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+    int ret = faultLoggerServiceStub.OnRemoteRequest(TestFaultLoggerServiceStub::Code::ADD_FAULTLOG,
+        data, reply, option);
+    ASSERT_EQ(ret, -1);
+    data.WriteInterfaceToken(FaultLoggerServiceStub::GetDescriptor());
+    ret = faultLoggerServiceStub.OnRemoteRequest(TestFaultLoggerServiceStub::Code::ADD_FAULTLOG,
+        data, reply, option);
+    ASSERT_EQ(ret, 3); // 3 : ERR_FLATTEN_OBJECT
+    data.WriteInterfaceToken(FaultLoggerServiceStub::GetDescriptor());
+    ret = faultLoggerServiceStub.OnRemoteRequest(TestFaultLoggerServiceStub::Code::QUERY_SELF_FAULTLOG,
+        data, reply, option);
+    ASSERT_EQ(ret, -1);
+    data.WriteInterfaceToken(FaultLoggerServiceStub::GetDescriptor());
+    ret = faultLoggerServiceStub.OnRemoteRequest(TestFaultLoggerServiceStub::Code::DESTROY,
+        data, reply, option);
+    ASSERT_EQ(ret, 0);
+    data.WriteInterfaceToken(FaultLoggerServiceStub::GetDescriptor());
+    ret = faultLoggerServiceStub.OnRemoteRequest(TestFaultLoggerServiceStub::Code::DEFAULT,
+        data, reply, option);
+    ASSERT_EQ(ret, 305); // 305 : method not exist
+}
+
+/**
  * @tc.name: FaultloggerTest001
  * @tc.desc: Test calling Faultlogger.StartBootScan Func
  * @tc.type: FUNC
