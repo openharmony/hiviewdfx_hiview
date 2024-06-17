@@ -23,14 +23,15 @@ DEFINE_LOG_TAG("HiView-UnifiedCollector");
 using namespace OHOS::HiviewDFX::UCollectUtil;
 using namespace OHOS::AppExecFwk;
 
-void UcAppStateObserver::OnForegroundApplicationChanged(const AppStateData& appStateData)
+void UcAppStateObserver::OnProcessStateChanged(const AppExecFwk::ProcessData& processData)
 {
 #if !(PC_APP_STATE_COLLECT_ENABLE)
-    HIVIEW_LOGD("process=%{public}d, state=%{public}d", appStateData.pid, appStateData.state);
-    if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_FOREGROUND)) {
-        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, FOREGROUND);
-    } else if (appStateData.state == static_cast<int32_t>(ApplicationState::APP_STATE_BACKGROUND)) {
-        ProcessStatus::GetInstance().NotifyProcessState(appStateData.pid, BACKGROUND);
+    HIVIEW_LOGD("name=%{public}s, pid=%{public}d, state=%{public}d",
+        processData.bundleName.c_str(), processData.pid, processData.state);
+    if (processData.state == AppProcessState::APP_STATE_FOREGROUND) {
+        ProcessStatus::GetInstance().NotifyProcessState(processData.pid, FOREGROUND);
+    } else if (processData.state == AppProcessState::APP_STATE_BACKGROUND) {
+        ProcessStatus::GetInstance().NotifyProcessState(processData.pid, BACKGROUND);
     }
 #endif
 }

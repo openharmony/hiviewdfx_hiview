@@ -24,7 +24,7 @@ class UcAppStateObserver : public AppExecFwk::ApplicationStateObserverStub {
 public:
     UcAppStateObserver() = default;
     virtual ~UcAppStateObserver() = default;
-    void OnForegroundApplicationChanged(const AppExecFwk::AppStateData& appStateData) override;
+    void OnProcessStateChanged(const AppExecFwk::ProcessData& processData) override;
     void OnProcessCreated(const AppExecFwk::ProcessData& processData) override;
     void OnProcessDied(const AppExecFwk::ProcessData& processData) override;
 }; // UcAppStateObserver
