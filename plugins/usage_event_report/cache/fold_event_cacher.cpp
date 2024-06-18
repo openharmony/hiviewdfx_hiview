@@ -133,13 +133,13 @@ void FoldEventCacher::TimeOut()
         if (it == foregroundApps_.end()) {
             AppEventRecord appEventRecord;
             appEventRecord.rawid = FoldEventId::EVENT_APP_START;
-            appEventRecord.ts = TimeUtil::GetBootTimeMs();
+            appEventRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
             appEventRecord.bundleName = appData.bundleName;
             int combineScreenStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
             appEventRecord.preFoldStatus = combineScreenStatus;
             appEventRecord.foldStatus = combineScreenStatus;
             appEventRecord.versionName = GetAppVersion(appData.bundleName);
-            appEventRecord.happenTime = TimeUtil::GenerateTimestamp();
+            appEventRecord.happenTime = static_cast<int64_t>(TimeUtil::GenerateTimestamp());
             if (combineScreenStatus != UNKNOWN_FOLD_STATUS) {
                 dbHelper_->AddAppEvent(appEventRecord);
             }
@@ -176,13 +176,13 @@ void FoldEventCacher::ProcessEvent(std::shared_ptr<SysEvent> event)
 void FoldEventCacher::ProcessForegroundEvent(std::shared_ptr<SysEvent> event, AppEventRecord& appEventRecord)
 {
     appEventRecord.rawid = FoldEventId::EVENT_APP_START;
-    appEventRecord.ts = TimeUtil::GetBootTimeMs();
+    appEventRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
     appEventRecord.bundleName = event->GetEventValue(AppEventSpace::KEY_OF_BUNDLE_NAME);
     int combineScreenStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
     appEventRecord.preFoldStatus = combineScreenStatus;
     appEventRecord.foldStatus = combineScreenStatus;
     appEventRecord.versionName = event->GetEventValue(AppEventSpace::KEY_OF_VERSION_NAME);
-    appEventRecord.happenTime = event->happenTime_;
+    appEventRecord.happenTime = static_cast<int64_t>(event->happenTime_);
 
     if (combineScreenStatus != UNKNOWN_FOLD_STATUS) {
         dbHelper_->AddAppEvent(appEventRecord);
@@ -196,13 +196,13 @@ void FoldEventCacher::ProcessForegroundEvent(std::shared_ptr<SysEvent> event, Ap
 void FoldEventCacher::ProcessBackgroundEvent(std::shared_ptr<SysEvent> event, AppEventRecord& appEventRecord)
 {
     appEventRecord.rawid = FoldEventId::EVENT_APP_EXIT;
-    appEventRecord.ts = TimeUtil::GetBootTimeMs();
+    appEventRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
     appEventRecord.bundleName = event->GetEventValue(AppEventSpace::KEY_OF_BUNDLE_NAME);
     int combineScreenStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
     appEventRecord.preFoldStatus = combineScreenStatus;
     appEventRecord.foldStatus = combineScreenStatus;
     appEventRecord.versionName = event->GetEventValue(AppEventSpace::KEY_OF_VERSION_NAME);
-    appEventRecord.happenTime = event->happenTime_;
+    appEventRecord.happenTime = static_cast<int64_t>(event->happenTime_);
 
     if (combineScreenStatus != UNKNOWN_FOLD_STATUS) {
         dbHelper_->AddAppEvent(appEventRecord);
@@ -219,7 +219,7 @@ void FoldEventCacher::ProcessSceenStatusChangedEvent(std::shared_ptr<SysEvent> e
     for (auto it = foregroundApps_.begin(); it != foregroundApps_.end(); it++) {
         AppEventRecord appEventRecord;
         appEventRecord.rawid = FoldEventId::EVENT_SCREEN_STATUS_CHANGED;
-        appEventRecord.ts = TimeUtil::GetBootTimeMs();
+        appEventRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
         appEventRecord.bundleName = it->first;
         appEventRecord.preFoldStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
         std::string eventName = event->eventName_;
@@ -232,7 +232,7 @@ void FoldEventCacher::ProcessSceenStatusChangedEvent(std::shared_ptr<SysEvent> e
         }
         appEventRecord.foldStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
         appEventRecord.versionName = it->second;
-        appEventRecord.happenTime = event->happenTime_;
+        appEventRecord.happenTime = static_cast<int64_t>(event->happenTime_);
         if ((appEventRecord.foldStatus != UNKNOWN_FOLD_STATUS)
             && appEventRecord.preFoldStatus != appEventRecord.foldStatus) {
             dbHelper_->AddAppEvent(appEventRecord);
@@ -240,25 +240,25 @@ void FoldEventCacher::ProcessSceenStatusChangedEvent(std::shared_ptr<SysEvent> e
     }
 }
 
-uint64_t FoldEventCacher::GetFoldStatusDuration(const int foldStatus, std::map<int, uint64_t>& durations)
+int64_t FoldEventCacher::GetFoldStatusDuration(const int foldStatus, std::map<int, uint64_t>& durations)
 {
     auto it = durations.find(foldStatus);
     if (it == durations.end()) {
         return 0;
     }
-    return it->second;
+    return static_cast<int64_t>(it->second);
 }
 
 void FoldEventCacher::ProcessCountDurationEvent(AppEventRecord& appEventRecord, std::map<int, uint64_t>& durations)
 {
     AppEventRecord newRecord;
     newRecord.rawid = FoldEventId::EVENT_COUNT_DURATION;
-    newRecord.ts = TimeUtil::GetBootTimeMs();
+    newRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
     newRecord.bundleName = appEventRecord.bundleName;
     newRecord.preFoldStatus = appEventRecord.preFoldStatus;
     newRecord.foldStatus = appEventRecord.foldStatus;
     newRecord.versionName = appEventRecord.versionName;
-    newRecord.happenTime = TimeUtil::GenerateTimestamp() / MILLISEC_TO_MICROSEC;
+    newRecord.happenTime = static_cast<int64_t>(TimeUtil::GenerateTimestamp()) / MILLISEC_TO_MICROSEC;
     newRecord.foldPortraitTime = GetFoldStatusDuration(ScreenFoldStatus::FOLD_PORTRAIT_STATUS, durations);
     newRecord.foldLandscapeTime = GetFoldStatusDuration(ScreenFoldStatus::FOLD_LANDSCAPE_STATUS, durations);
     newRecord.expandPortraitTime = GetFoldStatusDuration(ScreenFoldStatus::EXPAND_PORTRAIT_STATUS, durations);
@@ -295,7 +295,7 @@ void FoldEventCacher::CalCulateDuration(uint64_t dayStartTime, std::vector<AppEv
     it++;
     for (; it != records.end(); it++) {
         if (CanCalcDuration(preIt->rawid, it->rawid)) {
-            uint64_t duration = (it->ts > preIt->ts) ? (it->ts - preIt->ts) : 0;
+            uint64_t duration = (it->ts > preIt->ts) ? static_cast<int64_t>(it->ts - preIt->ts) : 0;
             Accumulative(preIt->foldStatus, duration, durations);
         }
         preIt = it;

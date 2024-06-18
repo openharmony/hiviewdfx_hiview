@@ -150,6 +150,7 @@ group("unittest") {
 
   if (enable_hiview_usage_event_report_build) {
     deps += [
+      "test/unittest:FoldAppUsageTest",
       "test/unittest:UsageEventReportCacheTest",
       "test/unittest:UsageEventReportTest",
     ]

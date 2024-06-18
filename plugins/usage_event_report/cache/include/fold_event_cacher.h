@@ -45,15 +45,15 @@ private:
         std::map<int, uint64_t>& durations);
     bool CanCalcDuration(uint32_t preId, uint32_t id);
     void Accumulative(int foldStatus, uint64_t duration, std::map<int, uint64_t>& durations);
-    uint64_t GetFoldStatusDuration(const int foldStatus, std::map<int, uint64_t>& durations);
+    int64_t GetFoldStatusDuration(const int foldStatus, std::map<int, uint64_t>& durations);
     void ProcessCountDurationEvent(AppEventRecord& appEventRecord, std::map<int, uint64_t>& durations);
 
 private:
     std::unique_ptr<FoldAppUsageDbHelper> dbHelper_;
     std::map<std::string, std::string> foregroundApps_;
-    int foldStatus_;
-    int vhMode_;
-    uint64_t timelyStart_;
+    int foldStatus_ = 0;
+    int vhMode_ = 0;
+    uint64_t timelyStart_ = 0;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
