@@ -34,10 +34,12 @@
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
+            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"State:", "v_state":"\\bState:(.*)"},
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
-            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
+            {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
     },
     "Rule5":{
@@ -47,7 +49,8 @@
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)", "v_service_block":"Module name:SERVICE_BLOCK"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
-            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
+            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
     },
     "Rule6":{
@@ -130,10 +133,12 @@
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
+            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"State:", "v_state":"\\bState:(.*)"},
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
-            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_pid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
+            {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
     },
     "Rule13":{
