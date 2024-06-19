@@ -20,10 +20,8 @@
 #include <set>
 
 #include "accesstoken_kit.h"
-#include "bundle_mgr_client.h"
 #include "data_publisher.h"
 #include "event_query_wrapper_builder.h"
-#include "event_threshold_manager.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -377,20 +375,6 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
     });
 }
 
-size_t SysEventServiceOhos::GetCallerQueryRuleLimit()
-{
-    using namespace Security::AccessToken;
-    auto callerType = AccessTokenKit::GetTokenType(IPCSkeleton::GetCallingTokenID());
-    if (callerType == TOKEN_HAP) {
-        std::string bundleName;
-        AppExecFwk::BundleMgrClient client;
-        client.GetNameForUid(IPCSkeleton::GetCallingUid(), bundleName);
-        return EventThreshold::EventThresholdManager::GetInstance().GetQueryRuleLimit(bundleName,
-            EventThreshold::ProcessType::HAP);
-    }
-    return EventThreshold::EventThresholdManager::GetInstance().GetDefaultQueryRuleLimit();
-}
-
 int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
     const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>& callback)
 {
@@ -401,7 +385,7 @@ int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const Sys
         callback->OnComplete(ERR_NO_PERMISSION, 0, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return ERR_NO_PERMISSION;
     }
-    auto checkRet = CheckEventQueryingValidity(rules, GetCallerQueryRuleLimit());
+    auto checkRet = CheckEventQueryingValidity(rules, 100); // count of query rule limits to 100 in query.
     if (checkRet != IPC_CALL_SUCCEED) {
         callback->OnComplete(checkRet, 0, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
         return checkRet;
