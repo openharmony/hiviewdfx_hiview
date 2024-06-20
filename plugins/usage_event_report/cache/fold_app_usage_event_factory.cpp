@@ -47,7 +47,7 @@ std::unique_ptr<LoggerEvent> FoldAppUsageEventFactory::Create()
 
 void FoldAppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>> &events)
 {
-    today0Time_ = TimeUtil::Get0ClockStampMs();
+    today0Time_ = static_cast<uint64_t>(TimeUtil::Get0ClockStampMs());
     uint64_t gapTime = TimeUtil::MILLISECS_PER_DAY;
     startTime_ = today0Time_ > gapTime ? (today0Time_ - gapTime) : 0;
     endTime_ = today0Time_ > 1 ? (today0Time_ - 1) : 0; // statistic endTime: 1 ms before 0 Time
@@ -75,12 +75,12 @@ void FoldAppUsageEventFactory::Create(std::vector<std::unique_ptr<LoggerEvent>> 
 
 void FoldAppUsageEventFactory::GetAppUsageInfo(std::vector<FoldAppUsageInfo> &infos)
 {
-    std::vector<FoldAppUsageInfo> totalInfos;
-    std::vector<FoldAppUsageInfo> statisticInfos;
+    std::unordered_map<std::string, FoldAppUsageInfo> statisticInfos;
     dbHelper_->QueryStatisticEventsInPeriod(startTime_, endTime_, statisticInfos);
-    totalInfos.insert(totalInfos.end(), statisticInfos.begin(), statisticInfos.end());
     std::vector<std::string> appNames;
-    GetForegroudAppNames(appNames);
+    GetForegroundAppNames(appNames);
+    GetForegroundAppsAtEndTime(appNames);
+    std::unordered_map<std::string, FoldAppUsageInfo> forgroundInfos;
     for (const auto &app : appNames) {
         if (app == SCENEBOARD_BUNDLE_NAME) {
             continue;
@@ -88,28 +88,25 @@ void FoldAppUsageEventFactory::GetAppUsageInfo(std::vector<FoldAppUsageInfo> &in
         FoldAppUsageInfo usageInfo;
         usageInfo.package = app;
         dbHelper_->QueryForegroundAppsInfo(startTime_, endTime_, foldStatus_, usageInfo);
-        totalInfos.emplace_back(usageInfo);
+        forgroundInfos[usageInfo.package + usageInfo.version] = usageInfo;
     }
-    for (const auto &totalInfo : totalInfos) {
-        bool isDuplicateApp = false;
-        for (auto &info : infos) {
-            if (info.package == totalInfo.package && info.version == totalInfo.version) {
-                info.foldVer += totalInfo.foldVer;
-                info.foldHor += totalInfo.foldHor;
-                info.expdVer += totalInfo.expdVer;
-                info.expdHor += totalInfo.expdHor;
-                info.startNum += 1; // every useinfo means start 1 time
-                isDuplicateApp = true;
-                break;
-            }
+    for (const auto &forgroundInfo : forgroundInfos) {
+        if (statisticInfos.count(forgroundInfo.first) == 0) {
+            statisticInfos[forgroundInfo.first] = forgroundInfo.second;
+            continue;
         }
-        if (!isDuplicateApp) {
-            infos.emplace_back(totalInfo);
-        }
+        statisticInfos[forgroundInfo.first].foldVer += forgroundInfo.second.foldVer;
+        statisticInfos[forgroundInfo.first].foldHor += forgroundInfo.second.foldHor;
+        statisticInfos[forgroundInfo.first].expdVer += forgroundInfo.second.expdVer;
+        statisticInfos[forgroundInfo.first].expdHor += forgroundInfo.second.expdHor;
+        statisticInfos[forgroundInfo.first].startNum += forgroundInfo.second.startNum;
+    }
+    for (const auto &statisticInfo : statisticInfos) {
+        infos.emplace_back(statisticInfo.second);
     }
 }
 
-void FoldAppUsageEventFactory::GetForegroudAppNames(std::vector<std::string> &appNames)
+void FoldAppUsageEventFactory::GetForegroundAppNames(std::vector<std::string> &appNames)
 {
     sptr<ISystemAbilityManager> abilityMgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (abilityMgr == nullptr) {
@@ -132,7 +129,21 @@ void FoldAppUsageEventFactory::GetForegroudAppNames(std::vector<std::string> &ap
     HIVIEW_LOGI("GetForegroundApplications ret: %{public}d", ret);
     for (const auto &appData : appList) {
         appNames.emplace_back(appData.bundleName);
-        HIVIEW_LOGI("app is foreground: %{public}s", appData.bundleName.c_str());
+    }
+}
+
+void FoldAppUsageEventFactory::GetForegroundAppsAtEndTime(std::vector<std::string> &appNames)
+{
+    std::vector<std::pair<int, std::string>> switchEvents = dbHelper_->QueryEventAfterEndTime(
+        endTime_, TimeUtil::GetMilliseconds());
+    for (const auto &event : switchEvents) {
+        auto iter = std::find(appNames.begin(), appNames.end(), event.second);
+        if (iter == appNames.end() && event.first == FoldEventId::EVENT_APP_EXIT) {
+            appNames.emplace_back(event.second);
+        }
+        if (iter != appNames.end() && event.first == FoldEventId::EVENT_APP_START) {
+            appNames.erase(iter);
+        }
     }
 }
 } // namespace HiviewDFX

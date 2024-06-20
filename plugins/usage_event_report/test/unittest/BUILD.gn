@@ -87,3 +87,22 @@ ohos_unittest("UsageEventReportCacheTest") {
     "relational_store:native_rdb",
   ]
 }
+
+ohos_unittest("FoldAppUsageTest") {
+  module_out_path = module_output_path
+  configs = [ ":usage_event_report_test_config" ]
+
+  sources = [ "fold_app_usage_test.cpp" ]
+
+  deps = [
+    "$hiview_plugin/usage_event_report:usage_event_report_for_test",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "relational_store:native_rdb",
+  ]
+}

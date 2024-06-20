@@ -31,7 +31,8 @@ public:
     void Create(std::vector<std::unique_ptr<LoggerEvent>> &events) override;
 
 private:
-    void GetForegroudAppNames(std::vector<std::string> &appNames);
+    void GetForegroundAppNames(std::vector<std::string> &appNames);
+    void GetForegroundAppsAtEndTime(std::vector<std::string> &appNames);
     void GetAppUsageInfo(std::vector<FoldAppUsageInfo> &infos);
 
 private:
