@@ -26,6 +26,7 @@
 struct epoll_event;
 namespace OHOS {
 namespace HiviewDFX {
+constexpr int UN_INIT_INT_TYPE_VAL = -1;
 class SocketDevice : public DeviceNode {
 public:
     SocketDevice() {};
@@ -36,9 +37,14 @@ public:
     std::string GetName() override;
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
     bool IsValidMsg(char* msg, int32_t len) override;
+
 private:
     void InitSocket(int &socketId);
-    int socketId_ = -1;
+    void SetUCredPid(const pid_t pid);
+
+private:
+    int socketId_ = UN_INIT_INT_TYPE_VAL;
+    pid_t uCredPid_ = UN_INIT_INT_TYPE_VAL;
 };
 
 class BBoxDevice : public DeviceNode {
@@ -51,8 +57,9 @@ public:
     std::string GetName() override;
     int ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers) override;
     bool IsValidMsg(char* msg, int32_t len) override;
+
 private:
-    int fd_ = -1;
+    int fd_ = UN_INIT_INT_TYPE_VAL;
     bool hasBbox_ = false;
 };
 
