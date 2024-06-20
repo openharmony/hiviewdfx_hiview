@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 #include <unistd.h>
-#include <time.h>
+#include <ctime>
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -76,8 +76,8 @@ int generateUid()
     struct tm *t;
     time_t tt;
     time(&tt);
-    t=localtime(&tt);
-    int uid=t->tm_hour*10000+t->tm_min*100+t->tm_sec; //generate non-repetitive uid during one day
+    t = localtime(&tt);
+    int uid = t->tm_hour * 10000 + t->tm_min * 100 + t->tm_sec; //generate non-repetitive uid during one day
     return uid;
 }
 }
@@ -213,7 +213,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
@@ -264,7 +264,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_DUMP_TRACE;
@@ -281,9 +281,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_FALSE(result1.retCode == 0);
         sleep(10);
-
     }
-
 }
 
 
@@ -302,7 +300,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_DUMP_TRACE;
@@ -336,7 +334,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
         ASSERT_FALSE(result2.retCode == 0);
         sleep(10);
     }
-
 }
 
 
@@ -354,7 +351,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
@@ -403,7 +400,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         sleep(10);
     }
-
 }
 
 
@@ -421,7 +417,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId1 = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
@@ -488,7 +484,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         ASSERT_TRUE(result4.retCode == 0);
         sleep(10);
     }
-
 }
 
 
@@ -506,7 +501,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
@@ -555,7 +550,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         sleep(10);
     }
-
 }
 
 /**
@@ -572,7 +566,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
-    if(!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
+    if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
         int tempId = generateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
@@ -622,5 +616,4 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
         ASSERT_FALSE(result3.retCode == 0);
         sleep(10);
     }
-
 }
