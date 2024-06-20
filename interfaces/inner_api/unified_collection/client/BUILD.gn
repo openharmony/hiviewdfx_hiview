@@ -38,7 +38,10 @@ ohos_shared_library("libucollection_client") {
 
   version_script = "libucollectionclient.map"
 
-  innerapi_tags = [ "platformsdk" ]
+  innerapi_tags = [
+    "chipsetsdk_indirect",
+    "platformsdk",
+  ]
 
   part_name = "hiview"
 
