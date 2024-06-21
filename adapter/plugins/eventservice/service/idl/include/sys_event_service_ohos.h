@@ -93,7 +93,6 @@ private:
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     void MergeEventList(const std::vector<SysEventQueryRule>& rules, std::vector<std::string>& events) const;
-    size_t GetCallerQueryRuleLimit();
 
 private:
     std::mutex mutex_;
