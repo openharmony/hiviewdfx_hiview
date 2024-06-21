@@ -156,7 +156,7 @@ static bool GetSmapsFromProcPath(const std::string& procPath, ProcessMemory& pro
 
 static bool ReadMemFromAILib(AIProcessMem memInfos[], int len, int& realSize)
 {
-    std::string libName = "libai_infra.so";
+    std::string libName = "libai_mnt_client.so";
     std::string interface = "HIAI_Memory_QueryAllUserAllocatedMemInfo";
     void* handle = dlopen(libName.c_str(), RTLD_LAZY);
     if (!handle) {
