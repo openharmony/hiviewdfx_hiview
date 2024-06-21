@@ -118,9 +118,11 @@ void CpuCollectionTask::CollectCpuData()
         cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);
 #endif
     }
-    auto threadCpuCollectResult = threadCpuCollector_ ->CollectThreadStatInfos(true);
-    if (Parameter::IsBetaVersion() && threadCpuCollectResult.retCode == UCollect::UcError::SUCCESS) {
-        cpuStorage_->StoreThreadDatas(threadCpuCollectResult.data);
+    if (threadCpuCollector_ != nullptr) {
+        auto threadCpuCollectResult = threadCpuCollector_ ->CollectThreadStatInfos(true);
+        if (Parameter::IsBetaVersion() && threadCpuCollectResult.retCode == UCollect::UcError::SUCCESS) {
+            cpuStorage_->StoreThreadDatas(threadCpuCollectResult.data);
+        }
     }
     // collect the system cpu usage periodically for hidumper
     cpuCollector_->CollectSysCpuUsage(true);
