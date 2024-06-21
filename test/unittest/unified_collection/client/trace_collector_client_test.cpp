@@ -71,7 +71,7 @@ void Sleep()
     sleep(SLEEP_DURATION);
 }
 
-int generateUid()
+int GenerateUid()
 {
     struct tm *t;
     time_t tt;
@@ -214,7 +214,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -224,8 +224,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_TRUE(result1.retCode == 0);
@@ -240,8 +240,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
         appCaller2.uid = tempId;
         appCaller2.pid = tempId;
         appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
+        appCaller2.beginTime = appCaller2.happenTime - 100;
+        appCaller2.endTime = appCaller2.happenTime + 100;
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_TRUE(result2.retCode == 0);
@@ -264,7 +264,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_DUMP_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -274,8 +274,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_FALSE(result1.retCode == 0);
@@ -298,7 +298,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_DUMP_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -308,8 +308,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_FALSE(result1.retCode == 0);
@@ -324,8 +324,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
         appCaller2.uid = tempId;
         appCaller2.pid = tempId;
         appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
+        appCaller2.beginTime = appCaller2.happenTime - 100;
+        appCaller2.endTime = appCaller2.happenTime + 100;
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_FALSE(result2.retCode == 0);
@@ -348,7 +348,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -358,8 +358,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_TRUE(result1.retCode == 0);
@@ -380,8 +380,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
         appCaller3.uid = tempId;
         appCaller3.pid = tempId;
         appCaller3.happenTime = GetMilliseconds();
-        appCaller3.beginTime = appCaller3.happenTime - 100; // 100: ms
-        appCaller3.endTime = appCaller3.happenTime + 100; // 100: ms
+        appCaller3.beginTime = appCaller3.happenTime - 100;
+        appCaller3.endTime = appCaller3.happenTime + 100;
         auto result3 = traceCollector->CaptureDurationTrace(appCaller3);
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         sleep(10);
@@ -403,7 +403,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId1 = generateUid();
+        int tempId1 = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -413,8 +413,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         appCaller1.uid = tempId1;
         appCaller1.pid = tempId1;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_TRUE(result1.retCode == 0);
@@ -427,7 +427,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         ASSERT_TRUE(result2.retCode == 0);
         sleep(10);
 
-        int tempId2 = generateUid();
+        int tempId2 = GenerateUid();
         AppCaller appCaller3 = appCaller1;
         appCaller3.uid = tempId2;
         appCaller3.pid = tempId2;
@@ -460,7 +460,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -470,8 +470,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_TRUE(result1.retCode == 0);
@@ -486,8 +486,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
         appCaller2.uid = tempId;
         appCaller2.pid = tempId+1;
         appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
+        appCaller2.beginTime = appCaller2.happenTime - 100;
+        appCaller2.endTime = appCaller2.happenTime + 100;
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_FALSE(result2.retCode == 0);
@@ -516,7 +516,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
     bool isTraceCollectionSwitchOn = Parameter::IsTraceCollectionSwitchOn();
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     if (!isBetaVersion && isDevelopMode && !isUCollectionSwitchOn && !isTraceCollectionSwitchOn && isTestAppTraceOn) {
-        int tempId = generateUid();
+        int tempId = GenerateUid();
         AppCaller appCaller1;
         appCaller1.actionId = ACTION_ID_START_TRACE;
         appCaller1.bundleName = "com.example.helloworld";
@@ -526,8 +526,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
         appCaller1.uid = tempId;
         appCaller1.pid = tempId;
         appCaller1.happenTime = GetMilliseconds();
-        appCaller1.beginTime = appCaller1.happenTime - 100; // 100: ms
-        appCaller1.endTime = appCaller1.happenTime + 100; // 100: ms
+        appCaller1.beginTime = appCaller1.happenTime - 100;
+        appCaller1.endTime = appCaller1.happenTime + 100;
         auto result1 = traceCollector->CaptureDurationTrace(appCaller1);
         std::cout << "retCode=" << result1.retCode << ", data=" << result1.data << std::endl;
         ASSERT_TRUE(result1.retCode == 0);
@@ -542,8 +542,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
         appCaller2.uid = tempId;
         appCaller2.pid = tempId;
         appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
+        appCaller2.beginTime = appCaller2.happenTime - 100;
+        appCaller2.endTime = appCaller2.happenTime + 100;
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_TRUE(result2.retCode == 0);
