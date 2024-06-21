@@ -190,9 +190,11 @@ enum EncodeType: int8_t {
     INVALID = 4,
 };
 
-constexpr uint32_t POS_OF_ID_IN_HEADER = sizeof(HiSysEventHeader::domain) + sizeof(HiSysEventHeader::name)
-    + sizeof(HiSysEventHeader::timestamp) + sizeof(HiSysEventHeader::timeZone) + sizeof(HiSysEventHeader::uid)
-    + sizeof(HiSysEventHeader::pid) + sizeof(HiSysEventHeader::tid);
+constexpr uint32_t POS_OF_PID_IN_HEADER = sizeof(HiSysEventHeader::domain) + sizeof(HiSysEventHeader::name)
+    + sizeof(HiSysEventHeader::timestamp) + sizeof(HiSysEventHeader::timeZone) + sizeof(HiSysEventHeader::uid);
+
+constexpr uint32_t POS_OF_ID_IN_HEADER = POS_OF_PID_IN_HEADER + sizeof(HiSysEventHeader::pid)
+    + sizeof(HiSysEventHeader::tid);
 
 int ParseTimeZone(const std::string& tzStr);
 std::string ParseTimeZone(const uint8_t tzVal);

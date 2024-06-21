@@ -113,6 +113,35 @@ std::shared_ptr<EventRaw::RawData> ConverRawData(char* source)
     free(des);
     return rawData;
 }
+
+void InitMsgh(char* buffer, int bufferLen, std::array<char, CMSG_SPACE(sizeof(struct ucred))>& control,
+    struct msghdr& msgh, struct iovec& iov)
+{
+    iov.iov_base = buffer;
+    iov.iov_len = bufferLen;
+    msgh.msg_iov = &iov;
+    msgh.msg_iovlen = 1; // 1 is length of io vector
+
+    msgh.msg_control = control.data();
+    msgh.msg_controllen = control.size();
+
+    msgh.msg_name = nullptr;
+    msgh.msg_namelen = 0;
+    msgh.msg_flags = 0;
+}
+
+pid_t ReadPidFromMsgh(struct msghdr& msgh)
+{
+    struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msgh);
+    if (cmsg == nullptr) {
+        return UN_INIT_INT_TYPE_VAL;
+    }
+    struct ucred* uCredRecv = reinterpret_cast<struct ucred*>(CMSG_DATA(cmsg));
+    if (uCredRecv == nullptr) {
+        return UN_INIT_INT_TYPE_VAL;
+    }
+    return uCredRecv->pid;
+}
 }
 
 void SocketDevice::InitSocket(int &socketId)
@@ -188,18 +217,39 @@ bool SocketDevice::IsValidMsg(char* msg, int32_t len)
         HIVIEW_LOGW("the data lengths=%{public}d are not equal", len);
         return false;
     }
+    int32_t pid = *(reinterpret_cast<int32_t*>(msg + sizeof(int32_t) + EventRaw::POS_OF_PID_IN_HEADER));
+    if (uCredPid_ > 0 && pid != uCredPid_) {
+        HIVIEW_LOGW("failed to verify the consistensy of process id: [%{public}" PRId32
+            ", %{public}" PRId32 "]", pid, uCredPid_);
+        return false;
+    }
     msg[len] = '\0';
     return true;
+}
+
+void SocketDevice::SetUCredPid(const pid_t pid)
+{
+    uCredPid_ = pid;
 }
 
 int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receivers)
 {
     char* buffer = new char[BUFFER_SIZE + 1]();
+    std::array<char, CMSG_SPACE(sizeof(struct ucred))> control = {0};
+    struct msghdr msgh = {0};
+    struct iovec iov = {
+        .iov_base = nullptr,
+        .iov_len = 0
+    };
+    InitMsgh(buffer, BUFFER_SIZE, control, msgh, iov);
     while (true) {
-        struct sockaddr_un clientAddr;
-        socklen_t clientLen = static_cast<socklen_t>(sizeof(clientAddr));
-        int ret = recvfrom(socketId_, buffer, sizeof(char) * BUFFER_SIZE, 0,
-            reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
+        int ret = recvmsg(socketId_, &msgh, 0);
+        if (ret <= 0) {
+            HIVIEW_LOGW("failed to recv msg from socket");
+            break;
+        }
+        pid_t uCredPid = ReadPidFromMsgh(msgh);
+        SetUCredPid(uCredPid);
         if (!IsValidMsg(buffer, ret)) {
             break;
         }
