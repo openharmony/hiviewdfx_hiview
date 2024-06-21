@@ -27,9 +27,6 @@ config("usage_report_config") {
 ohos_executable("usage_report") {
   branch_protector_ret = "pac_ret"
   sanitize = {
-    integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
     cfi_vcall_icall_only = true

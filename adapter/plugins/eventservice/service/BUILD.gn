@@ -26,9 +26,6 @@ config("sys_event_service_adapter_config") {
 ohos_shared_library("sys_event_service_adapter") {
   branch_protector_ret = "pac_ret"
   sanitize = {
-    integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
     cfi_vcall_icall_only = true
