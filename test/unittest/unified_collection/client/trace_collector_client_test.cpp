@@ -249,7 +249,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     }
 }
 
-
 /**
  * @tc.name: TraceCollectorTest006
  * @tc.desc: App trace dump without start.
@@ -283,8 +282,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
         sleep(10);
     }
 }
-
-
 
 /**
  * @tc.name: TraceCollectorTest007
@@ -335,7 +332,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
         sleep(10);
     }
 }
-
 
 /**
  * @tc.name: TraceCollectorTest008
@@ -401,7 +397,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
         sleep(10);
     }
 }
-
 
 /**
  * @tc.name: TraceCollectorTest009
@@ -485,7 +480,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         sleep(10);
     }
 }
-
 
 /**
  * @tc.name: TraceCollectorTest010
