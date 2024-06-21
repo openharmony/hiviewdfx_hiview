@@ -75,7 +75,7 @@ int generateUid()
 {
     struct tm *t;
     time_t tt;
-    time(&tt);
+    (void)time(&tt);
     t = localtime(&tt);
     int uid = t->tm_hour * 10000 + t->tm_min * 100 + t->tm_sec; //generate non-repetitive uid during one day
     return uid;
@@ -428,17 +428,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         sleep(10);
 
         int tempId2 = generateUid();
-        AppCaller appCaller3;
-        appCaller3.actionId = ACTION_ID_START_TRACE;
-        appCaller3.bundleName = "com.example.helloworld";
-        appCaller3.bundleVersion = "2.0.1";
-        appCaller3.foreground = 1;
-        appCaller3.threadName = "mainThread";
+        AppCaller appCaller3 = appCaller1;
         appCaller3.uid = tempId2;
         appCaller3.pid = tempId2;
-        appCaller3.happenTime = GetMilliseconds();
-        appCaller3.beginTime = appCaller3.happenTime - 100; // 100: ms
-        appCaller3.endTime = appCaller3.happenTime + 100; // 100: ms
         auto result3 = traceCollector->CaptureDurationTrace(appCaller3);
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         ASSERT_TRUE(result3.retCode == 0);
