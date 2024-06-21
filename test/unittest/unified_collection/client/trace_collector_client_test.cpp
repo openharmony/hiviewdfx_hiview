@@ -365,17 +365,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
         ASSERT_TRUE(result1.retCode == 0);
         sleep(5);
 
-        AppCaller appCaller2;
-        appCaller2.actionId = ACTION_ID_START_TRACE;
-        appCaller2.bundleName = "com.example.helloworld";
-        appCaller2.bundleVersion = "2.0.1";
-        appCaller2.foreground = 1;
-        appCaller2.threadName = "mainThread";
-        appCaller2.uid = tempId;
-        appCaller2.pid = tempId;
-        appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
+        AppCaller appCaller2 = appCaller1;
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_FALSE(result2.retCode == 0);
@@ -430,17 +420,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         ASSERT_TRUE(result1.retCode == 0);
         sleep(5);
 
-        AppCaller appCaller2;
+        AppCaller appCaller2 = appCaller1;
         appCaller2.actionId = ACTION_ID_DUMP_TRACE;
-        appCaller2.bundleName = "com.example.helloworld";
-        appCaller2.bundleVersion = "2.0.1";
-        appCaller2.foreground = 1;
-        appCaller2.threadName = "mainThread";
-        appCaller2.uid = tempId1;
-        appCaller2.pid = tempId1;
-        appCaller2.happenTime = GetMilliseconds();
-        appCaller2.beginTime = appCaller2.happenTime - 100; // 100: ms
-        appCaller2.endTime = appCaller2.happenTime + 100; // 100: ms
         auto result2 = traceCollector->CaptureDurationTrace(appCaller2);
         std::cout << "retCode=" << result2.retCode << ", data=" << result2.data << std::endl;
         ASSERT_TRUE(result2.retCode == 0);
@@ -463,17 +444,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest009, TestSize.Level1)
         ASSERT_TRUE(result3.retCode == 0);
         sleep(5);
 
-        AppCaller appCaller4;
+        AppCaller appCaller4 = appCaller3;
         appCaller4.actionId = ACTION_ID_DUMP_TRACE;
-        appCaller4.bundleName = "com.example.helloworld";
-        appCaller4.bundleVersion = "2.0.1";
-        appCaller4.foreground = 1;
-        appCaller4.threadName = "mainThread";
-        appCaller4.uid = tempId2;
-        appCaller4.pid = tempId2;
-        appCaller4.happenTime = GetMilliseconds();
-        appCaller4.beginTime = appCaller4.happenTime - 100; // 100: ms
-        appCaller4.endTime = appCaller4.happenTime + 100; // 100: ms
         auto result4 = traceCollector->CaptureDurationTrace(appCaller4);
         std::cout << "retCode=" << result4.retCode << ", data=" << result4.data << std::endl;
         ASSERT_TRUE(result4.retCode == 0);
@@ -529,17 +501,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
         ASSERT_FALSE(result2.retCode == 0);
         sleep(10);
 
-        AppCaller appCaller3;
-        appCaller3.actionId = ACTION_ID_DUMP_TRACE;
-        appCaller3.bundleName = "com.example.helloworld";
-        appCaller3.bundleVersion = "2.0.1";
-        appCaller3.foreground = 1;
-        appCaller3.threadName = "mainThread";
-        appCaller3.uid = tempId;
+        AppCaller appCaller3 = appCaller2;
         appCaller3.pid = tempId;
-        appCaller3.happenTime = GetMilliseconds();
-        appCaller3.beginTime = appCaller3.happenTime - 100; // 100: ms
-        appCaller3.endTime = appCaller3.happenTime + 100; // 100: ms
         auto result3 = traceCollector->CaptureDurationTrace(appCaller3);
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         sleep(10);
@@ -594,17 +557,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
         ASSERT_TRUE(result2.retCode == 0);
         sleep(10);
 
-        AppCaller appCaller3;
-        appCaller3.actionId = ACTION_ID_START_TRACE;
-        appCaller3.bundleName = "com.example.helloworld";
-        appCaller3.bundleVersion = "2.0.1";
-        appCaller3.foreground = 1;
-        appCaller3.threadName = "mainThread";
-        appCaller3.uid = tempId;
-        appCaller3.pid = tempId;
-        appCaller3.happenTime = GetMilliseconds();
-        appCaller3.beginTime = appCaller3.happenTime - 100; // 100: ms
-        appCaller3.endTime = appCaller3.happenTime + 100; // 100: ms
+        AppCaller appCaller3 = appCaller1;
         auto result3 = traceCollector->CaptureDurationTrace(appCaller3);
         std::cout << "retCode=" << result3.retCode << ", data=" << result3.data << std::endl;
         ASSERT_FALSE(result3.retCode == 0);
