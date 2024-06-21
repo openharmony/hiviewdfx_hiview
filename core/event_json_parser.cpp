@@ -15,12 +15,10 @@
 
 #include "event_json_parser.h"
 
-#include <algorithm>
 #include <cctype>
 #include <cinttypes>
 #include <fstream>
 #include <map>
-#include <cstdlib>
 
 #include "hiview_logger.h"
 #include "parameter.h"
@@ -37,7 +35,7 @@ constexpr char TAG[] = "tag";
 constexpr char TYPE[] = "type";
 constexpr char PRIVACY[] = "privacy";
 constexpr char PRESERVE[] = "preserve";
-constexpr char TEST_TYPE_PARAM_KEY[] = "persist.sys.hiview.testtype";
+constexpr char TEST_TYPE_PARAM_KEY[] = "hiviewdfx.hiview.testtype";
 constexpr char TEST_TYPE_KEY[] = "test_type_";
 const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
@@ -59,19 +57,6 @@ uint64_t GenerateHash(std::shared_ptr<SysEvent> event)
     return ret;
 }
 
-std::string GetConfiguredTestType(const std::string& configuredType)
-{
-    std::string defaultType {""};
-    size_t maxLen = 12;
-    if (configuredType.empty() || configuredType.length() > maxLen ||
-        any_of(configuredType.cbegin(), configuredType.cend(), [] (char c) {
-            return !isalnum(c);
-        })) {
-        return defaultType;
-    }
-    return configuredType;
-}
-
 void ParameterWatchCallback(const char* key, const char* value, void* context)
 {
     if (context == nullptr) {
@@ -83,9 +68,14 @@ void ParameterWatchCallback(const char* key, const char* value, void* context)
         HIVIEW_LOGE("parser is null");
         return;
     }
-    std::string testType = GetConfiguredTestType(value);
-    HIVIEW_LOGI("test_type is set to be \"%{public}s\"", testType.c_str());
-    parser->UpdateTestType(testType);
+    size_t testTypeStrMaxLen = 256;
+    std::string testTypeStr(value);
+    if (testTypeStr.size() > testTypeStrMaxLen) {
+        HIVIEW_LOGE("length of the test type string set exceeds the limit");
+        return;
+    }
+    HIVIEW_LOGI("test_type is set to be \"%{public}s\"", testTypeStr.c_str());
+    parser->UpdateTestType(testTypeStr);
 }
 
 bool ReadSysEventDefFromFile(const std::string& path, Json::Value& hiSysEventDef)
