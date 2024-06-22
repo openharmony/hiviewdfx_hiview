@@ -118,7 +118,7 @@ void InitMsgh(char* buffer, int bufferLen, std::array<char, CMSG_SPACE(sizeof(st
     struct msghdr& msgh, struct iovec& iov)
 {
     iov.iov_base = buffer;
-    iov.iov_len = bufferLen;
+    iov.iov_len = static_cast<uint32_t>(bufferLen);
     msgh.msg_iov = &iov;
     msgh.msg_iovlen = 1; // 1 is length of io vector
 
