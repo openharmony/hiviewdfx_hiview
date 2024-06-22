@@ -19,27 +19,55 @@
 
 #include "faultlogger_client.h"
 #include "faultlogger_client_fuzzer.h"
+#include "faultlogger_fuzzertest_common.h"
 
 namespace OHOS {
 void FuzzInterfaceAddFaultLog(const uint8_t* data, size_t size)
 {
     FaultLogInfoInner inner;
-    inner.time = static_cast<int64_t>(*data);
-    inner.id = static_cast<int32_t>(*data);
-    inner.pid = static_cast<int32_t>(*data);
-    inner.faultLogType = static_cast<HiviewDFX::FaultLogType>(*data);
-    inner.module = std::string(reinterpret_cast<const char*>(data), size);
-    inner.summary = std::string(reinterpret_cast<const char*>(data), size);
-    inner.module = std::string(reinterpret_cast<const char*>(data), size);
-    inner.logPath = std::string(reinterpret_cast<const char*>(data), size);
+    int32_t faultLogType {0};
+    int offsetTotalLength = sizeof(inner.time) + sizeof(inner.id) + sizeof(inner.pid) + sizeof(faultLogType) +
+                            (4 * HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH); // 4 : Offset by 4 string length
+    if (offsetTotalLength > size) {
+        return;
+    }
+
+    STREAM_TO_VALUEINFO(data, inner.time);
+    STREAM_TO_VALUEINFO(data, inner.id);
+    STREAM_TO_VALUEINFO(data, inner.pid);
+    STREAM_TO_VALUEINFO(data, faultLogType);
+    inner.faultLogType = abs(faultLogType % 10); // 10 : get the absolute value of the last digit of the number
+
+    std::string module((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    inner.module = module;
+    std::string reason((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    inner.reason = reason;
+    std::string summary((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    inner.summary = summary;
+    std::string logPath((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    inner.logPath = logPath;
     HiviewDFX::AddFaultLog(inner);
     HiviewDFX::AddFaultLog(inner.time, inner.faultLogType, inner.module, inner.summary);
 }
 
 void FuzzInterfaceQuerySelfFaultLog(const uint8_t* data, size_t size)
 {
-    auto type = static_cast<HiviewDFX::FaultLogType>(*data);
-    auto count = static_cast<int32_t>(*data);
+    int32_t faultLogType;
+    int32_t count;
+    int offsetTotalLength = sizeof(faultLogType) + sizeof(count);
+    if (offsetTotalLength > size) {
+        return;
+    }
+
+    STREAM_TO_VALUEINFO(data, faultLogType);
+    faultLogType = abs(faultLogType % 10); // 10 : get the absolute value of the last digit of the number
+    STREAM_TO_VALUEINFO(data, count);
+
+    HiviewDFX::FaultLogType type = static_cast<HiviewDFX::FaultLogType>(faultLogType);
     auto result = HiviewDFX::QuerySelfFaultLog(type, count);
     if (result != nullptr) {
         while (result->HasNext()) {
@@ -58,6 +86,9 @@ void FuzzFaultloggerClientInterface(const uint8_t* data, size_t size)
 // Fuzzer entry point.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
+    if (data == nullptr || size == 0) {
+        return 0;
+    }
     OHOS::FuzzFaultloggerClientInterface(data, size);
     return 0;
 }

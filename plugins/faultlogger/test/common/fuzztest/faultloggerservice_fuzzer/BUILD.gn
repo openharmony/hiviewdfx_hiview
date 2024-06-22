@@ -21,6 +21,7 @@ ohos_fuzztest("FaultloggerServiceFuzzTest") {
       "$hiview_faultlogger/test/common/fuzztest/faultloggerservice_fuzzer"
   include_dirs = [
     ".",
+    "../common/include",
     "$hiview_core",
     "$hiview_faultlogger/service/",
     "$hiview_faultlogger/service/sanitizer_collector/",
