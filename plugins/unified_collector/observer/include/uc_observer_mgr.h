@@ -16,7 +16,6 @@
 #ifndef HIVIEW_PLUGINS_UNIFIED_COLLECTOR_OBSERVER_INCLUDE_UC_OBSERVER_MANAGER_H
 #define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_OBSERVER_INCLUDE_UC_OBSERVER_MANAGER_H
 
-#include "parameter_ex.h"
 #include "singleton.h"
 #include "uc_app_state_observer.h"
 #include "uc_render_state_observer.h"
@@ -36,8 +35,6 @@ private:
     void UnregisterAppObserver();
     void RegisterRenderObserver();
     void UnregisterRenderObserver();
-    void RegisterNativeProcessObserver();
-    void UnregisterNativeProcessObserver();
 
     friend class UcSystemAbilityListener;
 
@@ -45,7 +42,6 @@ private:
     sptr<ISystemAbilityStatusChange> sysAbilityListener_ = nullptr;
     sptr<UcAppStateObserver> appStateObserver_ = nullptr;
     sptr<UcRenderStateObserver> renderStateObserver_ = nullptr;
-    Parameter::ParameterChgPtr nativeProcessObserver_ = nullptr;
 }; // UcObserverManager
 } // namespace HiviewDFX
 } // namespace OHOS

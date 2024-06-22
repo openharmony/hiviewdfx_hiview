@@ -42,7 +42,6 @@ ohos_source_set("unified_collector") {
   sources = [
     "app_trace/app_trace_context.cpp",
     "observer/uc_app_state_observer.cpp",
-    "observer/uc_native_process_observer.cpp",
     "observer/uc_observer_mgr.cpp",
     "observer/uc_render_state_observer.cpp",
     "observer/uc_system_ability_listener.cpp",
@@ -64,8 +63,6 @@ ohos_source_set("unified_collector") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_dump",
-    "init:libbeget_proxy",
-    "init:libbegetutil",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",

@@ -25,7 +25,7 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-DEFINE_LOG_TAG("UCollectUtil-ProcessStatus");
+DEFINE_LOG_TAG("ProcessStatus");
 namespace {
 constexpr uint64_t INVALID_LAST_FOREGROUND_TIME = 0;
 }
@@ -122,7 +122,7 @@ void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState, cons
 
 void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, const std::string& name)
 {
-    HIVIEW_LOGD("update process=%{public}d state=%{public}d", pid, procState);
+    HIVIEW_LOGD("pid=%{public}d state=%{public}d", pid, procState);
     switch (procState) {
         case FOREGROUND:
             UpdateProcessForegroundState(pid);
@@ -131,7 +131,7 @@ void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, cons
             UpdateProcessBackgroundState(pid);
             break;
         case CREATED:
-            UpdateProcessCreatedState(pid, name);
+            ClearProcessInfo(pid);
             break;
         case DIED:
             ClearProcessInfo(pid);
@@ -143,7 +143,7 @@ void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, cons
 
 void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
 {
-    HIVIEW_LOGI("update process=%{public}d state=FOREGROUND", pid);
+    HIVIEW_LOGI("pid=%{public}d state=FOREGROUND", pid);
     uint64_t nowTime = TimeUtil::GetMilliseconds();
     if (processInfos_.find(pid) != processInfos_.end()) {
         processInfos_[pid].state = FOREGROUND;
@@ -159,7 +159,7 @@ void ProcessStatus::UpdateProcessForegroundState(int32_t pid)
 
 void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
 {
-    HIVIEW_LOGI("update process=%{public}d state=BACKGROUND", pid);
+    HIVIEW_LOGI("pid=%{public}d state=BACKGROUND", pid);
     if (processInfos_.find(pid) != processInfos_.end()) {
         // last foreground time needs to be updated when the foreground status is switched to the background
         if (processInfos_[pid].state == FOREGROUND) {
@@ -170,16 +170,6 @@ void ProcessStatus::UpdateProcessBackgroundState(int32_t pid)
     }
     processInfos_[pid] = {
         .name = CommonUtils::GetProcFullNameByPid(pid),
-        .state = BACKGROUND,
-        .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
-    };
-}
-
-void ProcessStatus::UpdateProcessCreatedState(int32_t pid, const std::string& name)
-{
-    std::string procName = name.empty() ? CommonUtils::GetProcFullNameByPid(pid) : name;
-    processInfos_[pid] = {
-        .name = procName,
         .state = BACKGROUND,
         .lastForegroundTime = INVALID_LAST_FOREGROUND_TIME,
     };

@@ -149,7 +149,6 @@ ohos_unittest("TraceStateChangeTest") {
     "$hiview_base/utility/time_util.cpp",
     "$hiview_plugin/unified_collector/app_trace/app_trace_context.cpp",
     "$hiview_plugin/unified_collector/observer/uc_app_state_observer.cpp",
-    "$hiview_plugin/unified_collector/observer/uc_native_process_observer.cpp",
     "$hiview_plugin/unified_collector/observer/uc_observer_mgr.cpp",
     "$hiview_plugin/unified_collector/observer/uc_render_state_observer.cpp",
     "$hiview_plugin/unified_collector/observer/uc_system_ability_listener.cpp",
