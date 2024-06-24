@@ -430,6 +430,11 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     long uid = event->GetEventIntValue("UID");
     uid = uid ? uid : event->GetUid();
     headerStream << "UID = " << uid << std::endl;
+    if (event->GetEventIntValue("TID")) {
+        headerStream << "TID = " << event->GetEventIntValue("TID") << std::endl;
+    } else {
+        headerStream << "TID = " << pid << std::endl;
+    }
     if (event->GetEventValue("MODULE_NAME") != "") {
         headerStream << "MODULE_NAME = " << event->GetEventValue("MODULE_NAME") << std::endl;
     } else {
