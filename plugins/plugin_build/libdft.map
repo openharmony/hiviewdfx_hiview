@@ -2,6 +2,7 @@
   global:
     extern "C++" {
       "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::UCollectUtil::ProcessStatus>::instance_";
+      "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::HiviewEventCacher>::instance_";
     };
   local:
     *;
