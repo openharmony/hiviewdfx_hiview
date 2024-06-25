@@ -90,10 +90,6 @@ void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
     HIVIEW_LOGI("CombinationKeyInit");
     logStore_ = logStore;
 
-    std::set<int32_t> preDownKeys;
-    preDownKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_UP);
-    auto initSubscribeDown = std::bind(&ActiveKeyEvent::InitSubscribe, this,
-        preDownKeys, MMI::KeyEvent::KEYCODE_VOLUME_DOWN, 0, 500);
     std::set<int32_t> prePowerKeys;
     prePowerKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
     auto initSubscribePower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
@@ -101,7 +97,6 @@ void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
     std::set<int32_t> preOnlyPowerKeys;
     auto initSubscribeOnlyPower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
         preOnlyPowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 3000);
-    ffrt::submit(initSubscribeDown, {}, {}, ffrt::task_attr().name("initSubscribeDown").qos(ffrt::qos_default));
     ffrt::submit(initSubscribePower, {}, {}, ffrt::task_attr().name("initSubscribePower").qos(ffrt::qos_default));
     ffrt::submit(initSubscribeOnlyPower, {}, {},
         ffrt::task_attr().name("initSubscribeOnlyPower").qos(ffrt::qos_default));
