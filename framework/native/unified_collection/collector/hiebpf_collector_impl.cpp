@@ -46,7 +46,7 @@ CollectResult<bool> HiebpfCollectorImpl::StartHiebpf(int duration,
         return result;
     } else if (childPid == 0) {
         std::string timestr = std::to_string(duration);
-        execl("/system/bin/hiebpf", "hiebpf", "--events", "thread", "--duration", timestr.c_str(),
+        execl("/system/bin/hmpsf", "hmpsf", "--events", "thread", "--duration", timestr.c_str(),
             "--target_proc_name", processName.c_str(), "--start", "true", "--outprase_file", outFile.c_str(), NULL);
     } else {
         result.retCode = UCollect::UcError::SUCCESS;
@@ -68,7 +68,7 @@ CollectResult<bool> HiebpfCollectorImpl::StopHiebpf()
         result.retCode = UCollect::UcError::UNSUPPORT;
         return result;
     } else if (childPid == 0) {
-        execl("/system/bin/hiebpf", "hiebpf", "--stop", "true", NULL);
+        execl("/system/bin/hmpsf", "hmpsf", "--stop", "true", NULL);
     } else {
         result.retCode = UCollect::UcError::SUCCESS;
         if (waitpid(childPid, nullptr, 0) != childPid) {
