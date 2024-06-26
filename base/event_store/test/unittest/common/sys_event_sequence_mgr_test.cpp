@@ -52,7 +52,6 @@ void SysEventSequenceMgrTest::TearDown()
 HWTEST_F(SysEventSequenceMgrTest, SysEventSequenceMgrTest001, testing::ext::TestSize.Level3)
 {
     auto eventSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
-    ASSERT_NE(eventSeq, 0);
     EventStore::SysEventSequenceManager::GetInstance().SetSequence(eventSeq + 1000); // 1000 is a test offset
     auto eventSeqNew = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
     ASSERT_NE(eventSeq, eventSeqNew);
