@@ -72,7 +72,7 @@ const std::regex RAW_SLAB_INFO2(RAW_SLAB_STR3 + RAW_SLAB_STR4);
 
 bool HasValidAILibrary()
 {
-    const std::string libName = "libai_infra.so";
+    const std::string libName = "libai_mnt_client.so";
     void* handle = dlopen(libName.c_str(), RTLD_LAZY);
     return handle != nullptr;
 }
