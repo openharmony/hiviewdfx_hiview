@@ -44,7 +44,6 @@ ohos_unittest("UsageEventReportTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_report:hiview_event_report",
     "$hiview_plugin/usage_event_report:usage_event_report",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -54,6 +53,7 @@ ohos_unittest("UsageEventReportTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "relational_store:native_rdb",
@@ -77,11 +77,11 @@ ohos_unittest("UsageEventReportCacheTest") {
   deps = [
     "$hiview_base/event_report:hiview_event_report",
     "$hiview_plugin/usage_event_report:usage_event_report_for_test",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "relational_store:native_rdb",
@@ -94,13 +94,11 @@ ohos_unittest("FoldAppUsageTest") {
 
   sources = [ "fold_app_usage_test.cpp" ]
 
-  deps = [
-    "$hiview_plugin/usage_event_report:usage_event_report_for_test",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_plugin/usage_event_report:usage_event_report_for_test" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "relational_store:native_rdb",

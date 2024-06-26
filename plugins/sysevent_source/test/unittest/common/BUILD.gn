@@ -40,11 +40,11 @@ ohos_unittest("SysEventStatTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -60,11 +60,11 @@ ohos_unittest("EventServerTest") {
     "$hiview_base/utility:hiview_utility",
     "$hiview_core:hiview_core",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -80,12 +80,12 @@ ohos_unittest("DailyControllerTest") {
     "$hiview_base/utility:hiview_utility",
     "$hiview_core:hiview_core",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "cJSON:cjson",
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]

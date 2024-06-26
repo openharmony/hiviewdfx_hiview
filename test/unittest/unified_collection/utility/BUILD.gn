@@ -56,7 +56,6 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "$hiview_base/event_report:hiview_event_report",
     "$hiview_base/utility:hiview_utility",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -64,6 +63,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hitrace:hitrace_dump",
     "init:libbegetutil",

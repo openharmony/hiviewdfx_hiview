@@ -36,11 +36,11 @@ ohos_unittest("PrivacyControllerTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_plugin/privacy_controller:privacy_controller",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "cJSON:cjson",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 

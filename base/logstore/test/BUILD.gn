@@ -43,12 +43,12 @@ ohos_unittest("LogStoreUnitTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/logstore:log_store",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }

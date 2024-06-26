@@ -62,7 +62,6 @@ ohos_unittest("FaultloggerUnittest") {
     "$hiview_plugin/faultlogger/common:log_analyzer",
     "$hiview_plugin/faultlogger/service:faultlogger_service_ability",
     "$hiview_plugin/faultlogger/service/idl:faultlogger_service_ohos_common",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -72,6 +71,7 @@ ohos_unittest("FaultloggerUnittest") {
     "bundle_framework:appexecfwk_core",
     "faultloggerd:crash_exception",
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hisysevent:libhisyseventmanager",
@@ -95,10 +95,12 @@ ohos_unittest("FaultloggerClientUnittest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_faultlogger:libfaultlogger",
-    "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 }
 
 ohos_unittest("AsanUnittest") {
@@ -111,8 +113,9 @@ ohos_unittest("AsanUnittest") {
   deps = [
     "$hiview_faultlogger:libfaultlogger",
     "$hiview_faultlogger/service/sanitizer_collector/gwp_asan:libasan_logger",
-    "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "googletest:gtest_main" ]
 }
 
 ohos_unittest("FreezeJsonGeneratorUnittest") {
@@ -126,7 +129,9 @@ ohos_unittest("FreezeJsonGeneratorUnittest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_faultlogger:libfaultlogger",
     "$hiview_faultlogger/service:faultlogger_service",
-    "//third_party/googletest:gtest_main",
   ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 }

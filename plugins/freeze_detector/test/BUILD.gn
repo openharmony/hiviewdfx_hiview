@@ -39,11 +39,11 @@ ohos_unittest("FreezeDetectorTest") {
     "$hiview_core:hiview_core_for_test",
     "$hiview_eventlogger:eventlogger",
     "$hiview_plugin/freeze_detector:freeze_detector",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "libxml2:libxml2",
   ]
@@ -68,6 +68,7 @@ ohos_unittest("FreezeDetectorUnittest") {
 
   external_deps = [
     "display_manager:displaymgr",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hiview:libfaultlogger",
     "libxml2:libxml2",
@@ -78,6 +79,5 @@ ohos_unittest("FreezeDetectorUnittest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_plugin/freeze_detector:freeze_detector",
     "$hiview_root/utility/smart_parser:smart_parser",
-    "//third_party/googletest:gtest_main",
   ]
 }

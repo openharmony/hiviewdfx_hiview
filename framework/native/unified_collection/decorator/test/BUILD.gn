@@ -36,10 +36,12 @@ ohos_unittest("DecoratorUnitTest") {
   deps = [
     "$hiview_base/utility:hiview_utility",
     "$hiview_framework/native/unified_collection:ucollection_source",
-    "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 
   cflags = []
   if (has_hiprofiler) {

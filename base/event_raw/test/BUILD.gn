@@ -45,12 +45,12 @@ ohos_unittest("EventRawBaseTest") {
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_core:hiview_core",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -76,12 +76,12 @@ ohos_unittest("EventRawEncodedAndDecodedTest") {
     "$hiview_base/event_raw:hiview_event_raw_decode",
     "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_core:hiview_core",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
