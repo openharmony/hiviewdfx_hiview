@@ -15,6 +15,7 @@
 
 #include "adapter_loglibrary_ability_test.h"
 
+#include <fcntl.h>
 #include <string>
 #include <vector>
 
@@ -56,6 +57,11 @@ void AdapterLoglibraryAbilityTest::TearDown()
     }
 }
 
+/**
+ * @tc.name: LoglibraryAbilityListTest001
+ * @tc.desc: Check Func List
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityListTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityList.txt";
@@ -66,6 +72,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityListTest001, testing::ex
     ASSERT_EQ(result, 0);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityListTest002
+ * @tc.desc: Check Func List
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityListTest002, testing::ext::TestSize.Level1)
 {
     std::vector<HiviewFileInfo> fileInfos;
@@ -74,6 +85,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityListTest002, testing::ex
     ASSERT_EQ(result, HiviewNapiErrCode::ERR_INNER_INVALID_LOGTYPE);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityCopyTest001
+ * @tc.desc: Check Func Copy
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityCopyTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityCopy.txt";
@@ -83,6 +99,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityCopyTest001, testing::ex
     ASSERT_EQ(result, -1);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityCopyTest002
+ * @tc.desc: Check Func Copy
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityCopyTest002, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityCopy.txt";
@@ -91,6 +112,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityCopyTest002, testing::ex
     ASSERT_EQ(result, HiviewNapiErrCode::ERR_INNER_INVALID_LOGTYPE);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityMoveTest001
+ * @tc.desc: Check Func Move
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityMoveTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityMove.txt";
@@ -100,6 +126,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityMoveTest001, testing::ex
     ASSERT_EQ(result, -1);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityMoveTest002
+ * @tc.desc: Check Func Move
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityMoveTest002, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityMove.txt";
@@ -108,6 +139,11 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityMoveTest002, testing::ex
     ASSERT_EQ(result, HiviewNapiErrCode::ERR_INNER_INVALID_LOGTYPE);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityRemoveTest001
+ * @tc.desc: Check Func Remove
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityRemoveTest001, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityRemove.txt";
@@ -117,12 +153,33 @@ HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityRemoveTest001, testing::
     ASSERT_EQ(result, 0);
 }
 
+/**
+ * @tc.name: LoglibraryAbilityRemoveTest002
+ * @tc.desc: Check Func Remove
+ * @tc.type: FUNC
+ */
 HWTEST_F(AdapterLoglibraryAbilityTest, LoglibraryAbilityRemoveTest002, testing::ext::TestSize.Level1)
 {
     std::string fileName = "AbilityRemove.txt";
     HiviewServiceAbility ability;
     int32_t result = ability.Remove(NON_LOG_TYPE, fileName);
     ASSERT_EQ(result, HiviewNapiErrCode::ERR_INNER_INVALID_LOGTYPE);
+}
+
+/**
+ * @tc.name: DumpTest001
+ * @tc.desc: Check Func Remove
+ * @tc.type: FUNC
+ */
+HWTEST_F(AdapterLoglibraryAbilityTest, DumpTest001, testing::ext::TestSize.Level1)
+{
+    int fd = open("/dev/null", O_RDWR | O_CREAT | O_TRUNC, 0600); // 0600 for file mode
+    ASSERT_TRUE(fd > 0);
+    HiviewServiceAbility ability;
+    ASSERT_EQ(ability.Dump(fd, {}), 0);
+    ASSERT_EQ(ability.Dump(fd, {u"-d"}), 0);
+    ASSERT_EQ(ability.Dump(fd, {u"-p"}), 0);
+    (void)close(fd);
 }
 }
 }
