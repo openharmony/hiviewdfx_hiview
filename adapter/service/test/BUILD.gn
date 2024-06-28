@@ -48,10 +48,10 @@ ohos_unittest("HiviewSATest") {
   deps = [
     "$hiview_adapter/service/client:hiview_service_impl_for_js",
     "$hiview_base:hiview_base",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -74,7 +74,6 @@ ohos_unittest("AdapterLoglibraryAbilityTest") {
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
     "$hiview_service:hiview_service",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -82,6 +81,7 @@ ohos_unittest("AdapterLoglibraryAbilityTest") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

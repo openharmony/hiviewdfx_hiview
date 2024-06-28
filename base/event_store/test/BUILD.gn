@@ -42,12 +42,12 @@ ohos_unittest("SysEventDaoTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core_for_test",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -73,12 +73,12 @@ ohos_unittest("SysEventStoreUtilityTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/event_store/utility:event_store_utility_source",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -92,14 +92,12 @@ ohos_unittest("SysEventSequenceMgrTest") {
 
   sources = [ "unittest/common/sys_event_sequence_mgr_test.cpp" ]
 
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -123,12 +121,12 @@ ohos_unittest("SysEventBackupTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
     "$hiview_core:hiview_core_for_test",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 

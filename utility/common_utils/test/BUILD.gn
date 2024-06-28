@@ -47,10 +47,10 @@ ohos_unittest("UtilityCommonUtilsTest") {
     "$hiview_base:logger",
     "$hiview_base/utility:hiview_utility",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",

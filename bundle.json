@@ -49,6 +49,7 @@
                 "ets_runtime",
                 "faultloggerd",
                 "ffrt",
+                "googletest",
                 "hicollie",
                 "hidumper",
                 "hilog",

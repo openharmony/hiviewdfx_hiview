@@ -25,12 +25,12 @@ ohos_unittest("HiviewPlatformModuleTest") {
 
   sources = [ "moduletest/common/hiview_plugin_platform_module_test.cpp" ]
 
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 }
 
 config("HolisticPlatformTest_config") {
@@ -65,11 +65,11 @@ ohos_unittest("HolisticPlatformTest") {
     "$hiview_root/test/plugins/examples/event_processor_example5:event_processor_example5",
     "$hiview_root/test/plugins/examples/event_source_example:event_source_example",
     "$hiview_test/plugins/examples_bundle:bundleplugintest",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -82,12 +82,10 @@ ohos_unittest("ReportXPowerEventTest") {
 
   sources = [ "unittest/xpower_event/xpower_event_test.cpp" ]
 
-  deps = [
-    "$hiview_root/interfaces/innerkits/xpower_event:libxpower_event",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_root/interfaces/innerkits/xpower_event:libxpower_event" ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
   ]

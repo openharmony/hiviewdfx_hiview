@@ -35,10 +35,10 @@ ohos_unittest("TraceStorageUnitTest") {
   deps = [
     "$hiview_base/utility:hiview_utility",
     "$hiview_framework/native/unified_collection:ucollection_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]

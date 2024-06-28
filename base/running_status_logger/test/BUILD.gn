@@ -39,11 +39,13 @@ ohos_unittest("RunningStatusLoggerTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "//base/hiviewdfx/hiview/base/running_status_logger:running_status_logger_source",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gmock",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 
   resource_config_file = "//base/hiviewdfx/hiview/base/running_status_logger/test/resource/ohos_test.xml"
 }

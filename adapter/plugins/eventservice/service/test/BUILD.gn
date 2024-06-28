@@ -51,10 +51,10 @@ ohos_unittest("SysEventServiceOhosUnitTest") {
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
     "$hiview_plugin/sys_dispatcher:sys_dispatcher",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",

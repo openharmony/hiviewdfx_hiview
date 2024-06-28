@@ -40,12 +40,10 @@ ohos_moduletest("SmartParserModuleTest") {
 
   configs = [ ":smart_parser_test_config" ]
 
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
   ]

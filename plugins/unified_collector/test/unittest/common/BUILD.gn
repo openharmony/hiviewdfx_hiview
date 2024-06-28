@@ -83,12 +83,12 @@ ohos_unittest("CpuStorageTest") {
     "$hiview_core:hiview_core",
     "$hiview_framework/native/unified_collection:ucollection_source",
     "$hiview_plugin/unified_collector:unified_collector",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "relational_store:native_rdb",
   ]
@@ -112,12 +112,12 @@ ohos_unittest("UCStateObserverTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_plugin/unified_collector:unified_collector",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ability_base:want",
     "ability_runtime:app_manager",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

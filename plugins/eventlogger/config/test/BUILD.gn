@@ -32,12 +32,12 @@ ohos_unittest("EventloggerConfigTest") {
 
   sources = [ "unittest/common/event_logger_config_test.cpp" ]
 
-  deps = [
-    "$hiview_eventlogger/config:eventlogger_config",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_eventlogger/config:eventlogger_config" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 
   resource_config_file = "$hiview_test/resource/ohos_test.xml"
 }

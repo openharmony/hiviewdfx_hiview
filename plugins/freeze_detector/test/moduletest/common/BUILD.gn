@@ -42,8 +42,9 @@ ohos_moduletest("FreezeDetectorPluginModuleTest") {
     "$hiview_base_root/plugins/reliability/common/common_utils:hiview_reliability_common_utils",
     "$hiview_root/plugin_management:hiview_plugin_management",
     "../..:freezedetectors_test_source",
-    "//third_party/googletest:gtest_main",
   ]
+
+  external_deps = [ "googletest:gtest_main" ]
 }
 
 group("moduletest") {

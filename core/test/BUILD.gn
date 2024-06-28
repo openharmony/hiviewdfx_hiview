@@ -48,11 +48,11 @@ ohos_unittest("PlatformConfigTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -80,11 +80,11 @@ ohos_unittest("PluginPlatformTest") {
     "$hiview_root/test/plugins/examples/event_processor_example3:event_processor_example3",
     "$hiview_root/test/plugins/examples/event_processor_example4:event_processor_example4",
     "$hiview_root/test/plugins/examples/event_source_example:event_source_example",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -103,11 +103,11 @@ ohos_unittest("PluginBundleTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core_for_test",
     "$hiview_root/test/plugins/examples:bundletest",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -123,11 +123,11 @@ ohos_unittest("EventDispatchQueueTest") {
   deps = [
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 
@@ -144,11 +144,11 @@ ohos_unittest("HiviewPlatformConfigTest") {
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
     "../platform_config:hiviewplatform_config",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -162,11 +162,11 @@ ohos_unittest("EventJsonParserTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core_for_test",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -181,11 +181,11 @@ ohos_unittest("ParamUpdateTest") {
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core_for_test",
     "$hiview_core/param_update:hiview_param_update",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 

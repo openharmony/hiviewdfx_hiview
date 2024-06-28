@@ -43,11 +43,11 @@ ohos_unittest("EventloggerPluginTest") {
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
   ]
@@ -68,11 +68,11 @@ ohos_unittest("ActiveKeyEventTest") {
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
@@ -91,11 +91,11 @@ ohos_unittest("EventLoggerTest") {
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
     "$hiview_plugin/sysevent_source:sysevent_source",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
   ]

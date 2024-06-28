@@ -43,13 +43,13 @@ ohos_unittest("BaseUtilityUnitTest") {
 
   sources = [ "unittest/common/base_utility_unit_test.cpp" ]
 
-  deps = [
-    "$hiview_base/utility:hiview_utility",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base/utility:hiview_utility" ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "googletest:gmock",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
 }
 
 ohos_unittest("SystemServiceOhosUnitTest") {
@@ -61,12 +61,10 @@ ohos_unittest("SystemServiceOhosUnitTest") {
 
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
-  deps = [
-    "$hiview_base/utility:hiview_utility",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base/utility:hiview_utility" ]
 
   external_deps = [
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
@@ -82,14 +80,12 @@ ohos_unittest("AdapterUtilityOhosTest") {
 
   cflags_cc = [ "-DTEST_LOCAL_SRC" ]
 
-  deps = [
-    "$hiview_base/utility:hiview_utility",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$hiview_base/utility:hiview_utility" ]
 
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "cJSON:cjson",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
