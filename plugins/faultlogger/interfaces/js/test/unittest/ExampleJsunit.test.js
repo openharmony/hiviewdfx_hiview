@@ -18,41 +18,66 @@ import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '
 import faultloggerTestNapi from "libfaultlogger_test_napi.so"
 
 describe("FaultlogJsTest", function () {
-    beforeAll(function() {
-        /*
-         * @tc.setup: setup invoked before all testcases
-         */
-         console.info('FaultlogJsTest beforeAll called')
+    const moduleName = "com.ohos.hiviewtest.faultlogjs";
+    const freezeFaultCount = 6;
+
+    beforeAll(async function() {
+        try {
+            await addAppFreezeFaultLog();
+            await addJsCrashFaultLog();
+            await addCppCrashFaultLog();
+            console.log("add FaultLog success");
+        } catch (err) {
+            console.info(err);
+        }
+        await msleep(7000);
     })
 
-    afterAll(function() {
-        /*
-         * @tc.teardown: teardown invoked after all testcases
-         */
-         console.info('FaultlogJsTest afterAll called')
-    })
-
-    beforeEach(function() {
-        /*
-         * @tc.setup: setup invoked before each testcases
-         */
-         console.info('FaultlogJsTest beforeEach called')
-    })
-
-    afterEach(function() {
-        /*
-         * @tc.teardown: teardown invoked after each testcases
-         */
-         console.info('FaultlogJsTest afterEach called')
-    })
-
-    async function msleep(time) {
-        let promise = new Promise((resolve, reject) => {
-            setTimeout(() => resolve("done!"), time)
-        });
-        let result = await promise;
+    async function addAppFreezeFaultLog() {
+        for (let i = 0; i < freezeFaultCount; i++) {
+            console.info("--------addAppFreezeFaultLog + " + i + "----------");
+            faultlogger.addFaultLog(i - 7, faultlogger.FaultType.APP_FREEZE, moduleName, `APP_FREEZE ${i}`);
+            await msleep(300);
+        }
     }
 
+    async function addJsCrashFaultLog() {
+        return hiSysEvent.write({
+            domain: "ACE",
+            name: "JS_ERROR",
+            eventType: hiSysEvent.EventType.FAULT,
+            params: {
+                PACKAGE_NAME: moduleName,
+                PROCESS_NAME: moduleName,
+                MSG: "faultlogger testcase test.",
+                REASON: "faultlogger testcase test."
+            }
+        })
+    }
+
+    async function addCppCrashFaultLog() {
+        if (!faultloggerTestNapi.triggerCppCrash()) {
+            throw "failed to add CPP_CRASH faultLog";
+        }
+    }
+
+    function msleep(time) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => resolve("done!"), time)
+        });
+    }
+
+    function testCallbackQuery(faultType) {
+        return new Promise((resolve, reject) => {
+            faultlogger.query(faultType, (error, ret) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(ret);
+                }
+            })
+        })
+    }
     /**
      * test
      *
@@ -189,12 +214,21 @@ describe("FaultlogJsTest", function () {
         }
     })
 
+    async function checkCppCrashFaultLogInfo(faultLogInfo) {
+        if (faultLogInfo.reason.indexOf("Signal:SIGABRT") === -1) {
+            throw "Can not find \"Signal:SIGABRT\"";
+        }
+        if (faultLogInfo.fullLog.indexOf("Fault thread info") === -1) {
+            throw "Can not find \"Fault thread info\"";
+        }
+    }
+
     /**
      * test
      *
      * @tc.number: FaultlogJsTest_005
      * @tc.name: FaultlogJsTest_005
-     * @tc.desc: API9 检验promise同步方式获取faultlog日志
+     * @tc.desc: API9 检验查询CPP_CRASH类型的数据及内容
      * @tc.require: issueI5VRCC
      * @tc.author:
      * @tc.type: Function
@@ -204,36 +238,35 @@ describe("FaultlogJsTest", function () {
      it('FaultlogJsTest_005', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_005----------------------------------");
         try {
-            const res = faultloggerTestNapi.triggerCppCrash();
-            console.info("FaultlogJsTest_005 res:" + res);
-            let now = Date.now();
-            console.info("FaultlogJsTest_005 now:" + now);
-            await msleep(3000); // 3000: sleep 3000ms
-
-            console.info("--------FaultlogJsTest_005 start query ----------");
-            let ret = await faultlogger.query(faultlogger.FaultType.CPP_CRASH);
-            console.info("FaultlogJsTest_005 query ret length:" + ret.length);
-            expect(ret.length).assertLarger(0);
-            console.info("FaultlogJsTest_005 check reason, index:" + (ret[0].reason.indexOf("Signal:SIGABRT")));
-            expect(ret[0].reason.indexOf("Signal:SIGABRT") != -1).assertTrue();
-            console.info("FaultlogJsTest_005 check fullLog, index:" + ret[0].fullLog.indexOf("Fault thread info"));
-            expect(ret[0].fullLog.indexOf("Fault thread info") != -1).assertTrue();
-            done();
-            return;
+            let retPromise = await faultlogger.query(faultlogger.FaultType.CPP_CRASH);
+            console.info("FaultlogJsTest_005 query retPromise length:" + retPromise.length);
+            expect(retPromise.length).assertLarger(0);
+            await checkCppCrashFaultLogInfo(retPromise[0]);
+            let retCallback = await testCallbackQuery(faultlogger.FaultType.CPP_CRASH);
+            console.info("FaultlogJsTest_005 query retCallback length:" + retPromise.length);
+            expect(retCallback.length).assertLarger(0);
+            await checkCppCrashFaultLogInfo(retCallback[0]);
         } catch (err) {
-            console.info("catch (err) == " + err);
+            console.info(`FaultlogJsTest_005 error: ${err}`);
+            expect(false).assertTrue();
         }
-        console.info("FaultlogJsTest_005 error");
-        expect(false).assertTrue();
         done();
     })
+
+    async function checkFreezeFaultLogList(faultLogInfos) {
+        for (let i = 0; i < freezeFaultCount; i++) {
+            if (faultLogInfos[i].fullLog.indexOf(`APP_FREEZE ${freezeFaultCount - 1 - i}`) === -1) {
+                throw `failed to checkFreezeFaultLog for ${i}`;
+            }
+        }
+    }
 
     /**
      * test
      *
      * @tc.number: FaultlogJsTest_006
      * @tc.name: FaultlogJsTest_006
-     * @tc.desc: API9 检验通过回调方式获取faultlog日志
+     * @tc.desc: API9 校验查询APP_FREEZE类型数据的返回结果的数据内容，及顺序
      * @tc.require: issueI5VRCC
      * @tc.author:
      * @tc.type: Function
@@ -243,54 +276,35 @@ describe("FaultlogJsTest", function () {
     it('FaultlogJsTest_006', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_006----------------------------------");
         try {
-            let now = Date.now();
-            console.info("FaultlogJsTest_006 start + " + now);
-            let module = "com.ohos.hiviewtest.faultlogjs";
-            const loopTimes = 10;
-            for (let i = 0; i < loopTimes; i++) {
-                console.info("--------FaultlogJsTest_006 + " + i + "----------");
-                faultlogger.addFaultLog(i - 100,
-                    faultlogger.FaultType.APP_FREEZE, module, "faultloggertestsummary06 " + i);
-                await msleep(300);
-            }
-            await msleep(1000);
-
-            console.info("--------FaultlogJsTest_006 4----------");
-            function queryFaultLogCallback(error, ret) {
-                if (error) {
-                    console.info('FaultlogJsTest_006  once error is ' + error);
-                } else {
-                    console.info("FaultlogJsTest_006 ret == " + ret.length);
-                    expect(ret.length).assertEqual(loopTimes);
-                    for (let i = 0; i < loopTimes; i++) {
-                        console.info("faultloggertestsummary06 " + i + " fullLog.length " + ret[i].fullLog.length);
-                        console.info(ret[i].fullLog);
-                        if (ret[i].fullLog.indexOf("faultloggertestsummary06 " + (loopTimes - 1 - i)) != -1) {
-                            console.info("FaultlogJsTest_006 " + ret[i].fullLog.length);
-                            expect(true).assertTrue();
-                        } else {
-                            expect(false).assertTrue();
-                        }
-                    }
-                }
-                done();
-            }
-            faultlogger.query(faultlogger.FaultType.APP_FREEZE, queryFaultLogCallback);
-            return;
+            let retPromise = await faultlogger.query(faultlogger.FaultType.APP_FREEZE);
+            console.info("FaultlogJsTest_006 query retPromise length:" + retPromise.length);
+            expect(retPromise.length).assertLarger(freezeFaultCount - 1);
+            await checkFreezeFaultLogList(retPromise);
+            let retCallBack = await testCallbackQuery(faultlogger.FaultType.APP_FREEZE);
+            console.info("FaultlogJsTest_006 query retCallBack length:" + retCallBack.length);
+            expect(retPromise.length).assertLarger(freezeFaultCount - 1);
+            await checkFreezeFaultLogList(retCallBack);
         } catch (err) {
-            console.info(err);
+            console.info(`FaultlogJsTest_006 error: ${err}`);
+            expect(false).assertTrue();
         }
-        console.info("FaultlogJsTest_006 error");
-        expect(false).assertTrue();
         done();
     })
+
+    function checkNoSpecificFaultLogList(faultLogInfos) {
+        expect(faultLogInfos[0].type).assertEqual(faultlogger.FaultType.CPP_CRASH);
+        expect(faultLogInfos[1].type).assertEqual(faultlogger.FaultType.JS_CRASH);
+        expect(faultLogInfos[1].timestamp).assertLess(faultLogInfos[0].timestamp);
+        expect(faultLogInfos[2].type).assertEqual(faultlogger.FaultType.APP_FREEZE);
+        expect(faultLogInfos[2].timestamp).assertLess(faultLogInfos[1].timestamp);
+    }
 
     /**
      * test
      *
      * @tc.number: FaultlogJsTest_007
      * @tc.name: FaultlogJsTest_007
-     * @tc.desc: API9 检验通过回调方式获取faultlog日志的顺序
+     * @tc.desc: API9 校验查询NO_SPECIFIC类型数据，及查询数据的顺序
      * @tc.require: issueI5VRCC
      * @tc.author:
      * @tc.type: Function
@@ -300,51 +314,19 @@ describe("FaultlogJsTest", function () {
     it('FaultlogJsTest_007', 0, async function (done) {
         console.info("---------------------------FaultlogJsTest_007----------------------------------");
         try {
-            let now = Date.now();
-            console.info("FaultlogJsTest_007 start + " + now);
-            let module = "com.ohos.hiviewtest.faultlogjs";
-            faultlogger.addFaultLog(0,
-                faultlogger.FaultType.APP_FREEZE, module, "faultloggertestsummary07");
-            await msleep(1000);
-            hiSysEvent.write({
-                domain: "ACE",
-                name: "JS_ERROR",
-                eventType: hiSysEvent.EventType.FAULT,
-                params: {
-                    PACKAGE_NAME: "com.ohos.faultlogger.test",
-                    PROCESS_NAME: "com.ohos.faultlogger.test",
-                    MSG: "faultlogger testcase test.",
-                    REASON: "faultlogger testcase test."
-                }
-            }).then(
-                (value) => {
-                    console.log(`HiSysEvent json-callback-success value=${value}`);
-                })
-            await msleep(1000);
-            faultlogger.addFaultLog(0,
-                    faultlogger.FaultType.CPP_CRASH, module, "faultloggertestsummary07");
-            await msleep(1000);
-            console.info("--------FaultlogJsTest_007");
-            function queryFaultLogCallback(error, ret) {
-                if (error) {
-                    console.info('FaultlogJsTest_007  once error is ' + error);
-                } else {
-                    console.info("FaultlogJsTest_007 ret == " + ret.length);
-                    expect(ret[0].type).assertEqual(faultlogger.FaultType.CPP_CRASH);
-                    expect(ret[1].type).assertEqual(faultlogger.FaultType.JS_CRASH);
-                    expect(ret[1].timestamp).assertLess(ret[0].timestamp);
-                    expect(ret[2].type).assertEqual(faultlogger.FaultType.APP_FREEZE);
-                    expect(ret[2].timestamp).assertLess(ret[1].timestamp);
-                }
-                done();
-            }
-            faultlogger.query(faultlogger.FaultType.NO_SPECIFIC, queryFaultLogCallback);
-            return;
+            let retPromise = await faultlogger.query(faultlogger.FaultType.NO_SPECIFIC);
+            console.info("FaultlogJsTest_007 query retPromise length:" + retPromise.length);
+            expect(retPromise.length).assertLarger(freezeFaultCount + 2 - 1);
+            checkNoSpecificFaultLogList(retPromise);
+
+            let retCallback = await testCallbackQuery(faultlogger.FaultType.NO_SPECIFIC);
+            console.info("FaultlogJsTest_007 query retCallback length:" + retCallback.length);
+            expect(retCallback.length).assertLarger(freezeFaultCount + 2 - 1);
+            checkNoSpecificFaultLogList(retCallback);
         } catch (err) {
-            console.info(err);
+            console.info(`FaultlogJsTest_007 error: ${err}`);
+            expect(false).assertTrue();
         }
-        console.info("FaultlogJsTest_007 error");
-        expect(false).assertTrue();
         done();
     })
 })

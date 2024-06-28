@@ -28,7 +28,6 @@ static napi_value TriggerCppCrash(napi_env env, napi_callback_info info)
     } else if (pid == 0) {
         raise(SIGABRT);
     }
-    sleep(3); // 3 : wait 3s to generate cpp crash file
     napi_get_boolean(env, true, &res);
     return res;
 }
