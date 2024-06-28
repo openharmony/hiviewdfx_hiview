@@ -94,6 +94,7 @@ ohos_unittest("AdapterUtilityOhosTest") {
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "zlib:shared_libz",
   ]
 
   resource_config_file = "$hiview_base/utility/test/resource/ohos_test.xml"

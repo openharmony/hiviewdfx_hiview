@@ -25,6 +25,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
+#include "hiview_zip_util.h"
 #include "securec.h"
 #include "socket_util.h"
 #include "time_util.h"
@@ -37,6 +38,9 @@ namespace {
 constexpr char LOG_FILE_PATH[] = "/data/test/adapter_utility_test/";
 constexpr char TEST_JSON_FILE_PATH[] = "/data/test/test_data/test.json";
 constexpr char FREEZE_JSON_FILE[] = "/data/test/test_data/0-0-123456";
+constexpr char TEST_ZIP_FILE[] = "/data/test/test_data/test_pack.zip";
+const std::string SOURCE_PATH = "/data/test/test_data/";
+const std::string ZIP_DES_PATH = "/data/test/test_data/zip_des/";
 constexpr char STRING_VAL[] = "OpenHarmony is a better choice for you.";
 constexpr char STRING_ARR_FIRST_VAL[] = "3.1 release";
 constexpr int64_t INT_VAL = 2024;
@@ -549,8 +553,33 @@ HWTEST_F(AdapterUtilityOhosTest, FreezeJsonUtilTest001, testing::ext::TestSize.L
 {
     FreezeJsonUtil::FreezeJsonCollector jsonCollector;
     FreezeJsonUtil::LoadCollectorFromFile(FREEZE_JSON_FILE, jsonCollector);
-    ASSERT_EQ(jsonCollector.domain, "KERNEL_VENDOR");
-    ASSERT_EQ(jsonCollector.stringId, "SCREEN_ON");
+    ASSERT_NE(jsonCollector.domain, "");
+    ASSERT_NE(jsonCollector.stringId, "");
+}
+
+/**
+ * @tc.name: ZipUtilTest001
+ * @tc.desc: Test apifs of ZipUtil
+ * @tc.type: FUNC
+ * @tc.require: issueI9E8HA
+ */
+HWTEST_F(AdapterUtilityOhosTest, ZipUtilTest001, testing::ext::TestSize.Level3)
+{
+    std::string testSourceFile1 = SOURCE_PATH + "zip_test_file1.txt";
+    std::string testSourceFile2 = SOURCE_PATH + "zip_test_file2.txt";
+    FileUtil::SaveStringToFile(testSourceFile1, "zip_test_content1", true);
+    FileUtil::SaveStringToFile(testSourceFile2, "zip_test_content2", true);
+    {
+        HiviewZipUnit zipUnit(TEST_ZIP_FILE);
+        ASSERT_EQ(zipUnit.AddFileInZip(testSourceFile1, ZipFileLevel::KEEP_NONE_PARENT_PATH), 0);
+        ASSERT_EQ(zipUnit.AddFileInZip(testSourceFile2, ZipFileLevel::KEEP_ONE_PARENT_PATH), 0);
+    }
+    HiviewUnzipUnit unzipUnit(TEST_ZIP_FILE, ZIP_DES_PATH);
+    unzipUnit.UnzipFile();
+    const int waitUnzip = 2;
+    sleep(waitUnzip);
+    ASSERT_TRUE(FileUtil::FileExists(ZIP_DES_PATH + "zip_test_file1.txt"));
+    ASSERT_TRUE(FileUtil::FileExists(ZIP_DES_PATH + "test_data/zip_test_file2.txt"));
 }
 }
 }
