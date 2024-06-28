@@ -36,7 +36,7 @@ describe("FaultlogJsTest", function () {
     async function addAppFreezeFaultLog() {
         for (let i = 0; i < freezeFaultCount; i++) {
             console.info("--------addAppFreezeFaultLog + " + i + "----------");
-            faultlogger.addFaultLog(i - 100, faultlogger.FaultType.APP_FREEZE, moduleName, `APP_FREEZE ${i}`);
+            faultlogger.addFaultLog(i - 7, faultlogger.FaultType.APP_FREEZE, moduleName, `APP_FREEZE ${i}`);
             await msleep(300);
         }
     }
