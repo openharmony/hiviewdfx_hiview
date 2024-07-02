@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,12 +23,12 @@ StatInfoWrapper GpuDecorator::statInfoWrapper_;
 
 CollectResult<GpuFreq> GpuDecorator::CollectGpuFrequency()
 {
-    auto task = std::bind(&GpuCollector::CollectGpuFrequency, gpuCollector_.get());
+    auto task = [this] { return gpuCollector_->CollectGpuFrequency(); };
     return Invoke(task, statInfoWrapper_, GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 CollectResult<SysGpuLoad> GpuDecorator::CollectSysGpuLoad()
 {
-    auto task = std::bind(&GpuCollector::CollectSysGpuLoad, gpuCollector_.get());
+    auto task = [this] { return gpuCollector_->CollectSysGpuLoad(); };
     return Invoke(task, statInfoWrapper_, GPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

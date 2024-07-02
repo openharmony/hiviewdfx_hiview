@@ -22,7 +22,7 @@ StatInfoWrapper HilogDecorator::statInfoWrapper_;
 
 CollectResult<std::string> HilogDecorator::CollectLastLog(uint32_t pid, uint32_t num)
 {
-    auto task = std::bind(&HilogCollector::CollectLastLog, hilogCollector_.get(), pid, num);
+    auto task = [this, &pid, &num] { return hilogCollector_->CollectLastLog(pid, num); };
     return Invoke(task, statInfoWrapper_, HILOG_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

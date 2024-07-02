@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,59 +23,54 @@ StatInfoWrapper MemProfilerDecorator::statInfoWrapper_;
 
 int MemProfilerDecorator::Prepare()
 {
-    auto task = std::bind(&MemProfilerCollector::Prepare, memProfilerCollector_.get());
+    auto task = [this] { return memProfilerCollector_->Prepare(); };
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 int MemProfilerDecorator::Start(ProfilerType type, int pid, int duration, int sampleInterval)
 {
-    auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(ProfilerType, int, int, int)>(&MemProfilerCollector::Start),
-        memProfilerCollector_.get(), type, pid, duration, sampleInterval);
+    auto task = [this, &type, &pid, &duration, &sampleInterval] {
+        return memProfilerCollector_->Start(type, pid, duration, sampleInterval);
+    };
     // has same func name, rename it with num "-1"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1");
 }
 
 int MemProfilerDecorator::Stop(int pid)
 {
-    auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(int)>(&MemProfilerCollector::Stop),
-        memProfilerCollector_.get(), pid);
+    auto task = [this, &pid] { return memProfilerCollector_->Stop(pid); };
     // has same func name, rename it with num "-1"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-1");
 }
 
 int MemProfilerDecorator::Stop(const std::string& processName)
 {
-    auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(const std::string&)>(&MemProfilerCollector::Stop),
-        memProfilerCollector_.get(), processName);
+    auto task = [this, &processName] { return memProfilerCollector_->Stop(processName); };
     // has same func name, rename it with num "-1"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
 int MemProfilerDecorator::Start(int fd, ProfilerType type, int pid, int duration, int sampleInterval)
 {
-    auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(int, ProfilerType, int, int, int)>(&MemProfilerCollector::Start),
-        memProfilerCollector_.get(), fd, type, pid, duration, sampleInterval);
+    auto task = [this, &fd, &type, &pid, &duration, &sampleInterval] {
+        return memProfilerCollector_->Start(fd, type, pid, duration, sampleInterval);
+    };
     // has same func name, rename it with num "-2"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-2");
 }
 
 int MemProfilerDecorator::StartPrintNmd(int fd, int pid, int type)
 {
-    auto task = std::bind(&MemProfilerCollector::StartPrintNmd, memProfilerCollector_.get(), fd, pid, type);
+    auto task = [this, &fd, &pid, &type] { return memProfilerCollector_->StartPrintNmd(fd, pid, type); };
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 int MemProfilerDecorator::Start(int fd, ProfilerType type, std::string processName, int duration,
                                 int sampleInterval, bool startup)
 {
-    auto task = std::bind(
-        static_cast<int(MemProfilerCollector::*)(int, ProfilerType,
-                                                 std::string, int, int, bool)>(&MemProfilerCollector::Start),
-        memProfilerCollector_.get(), fd, type, processName, duration, sampleInterval, startup);
+    auto task = [this, &fd, &type, &processName, &duration, &sampleInterval, &startup] {
+        return memProfilerCollector_->Start(fd, type, processName, duration, sampleInterval, startup);
+    };
     // has same func name, rename it with num "-2"
     return Invoke(task, statInfoWrapper_, MEM_PROFILER_COLLECTOR_NAME + UC_SEPARATOR + __func__ + "-3");
 }

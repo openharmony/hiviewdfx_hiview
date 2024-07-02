@@ -24,13 +24,15 @@ CollectResult<bool> HiebpfDecorator::StartHiebpf(int duration,
     const std::string processName,
     const std::string outFile)
 {
-    auto task = std::bind(&HiebpfCollector::StartHiebpf, hiebpfCollector_.get(), duration, processName, outFile);
+    auto task = [this, &duration, &processName, &outFile] {
+        return hiebpfCollector_->StartHiebpf(duration, processName, outFile);
+    };
     return Invoke(task, statInfoWrapper_, HIEBPF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> HiebpfDecorator::StopHiebpf()
 {
-    auto task = std::bind(&HiebpfCollector::StopHiebpf, hiebpfCollector_.get());
+    auto task = [this] { return hiebpfCollector_->StopHiebpf(); };
     return Invoke(task, statInfoWrapper_, HIEBPF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

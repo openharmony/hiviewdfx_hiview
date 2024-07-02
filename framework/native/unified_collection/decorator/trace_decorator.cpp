@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,26 +34,26 @@ TraceStatWrapper TraceDecorator::traceStatWrapper_;
 
 CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(UCollect::TraceCaller &caller)
 {
-    auto task = std::bind(&TraceCollector::DumpTrace, traceCollector_.get(), caller);
+    auto task = [this, &caller] { return traceCollector_->DumpTrace(caller); };
     return Invoke(task, traceStatWrapper_, caller);
 }
 
 CollectResult<std::vector<std::string>> TraceDecorator::DumpTraceWithDuration(UCollect::TraceCaller &caller,
     uint32_t timeLimit)
 {
-    auto task = std::bind(&TraceCollector::DumpTraceWithDuration, traceCollector_.get(), caller, timeLimit);
+    auto task = [this, &caller, &timeLimit] { return traceCollector_->DumpTraceWithDuration(caller, timeLimit); };
     return Invoke(task, traceStatWrapper_, caller);
 }
 
 CollectResult<int32_t> TraceDecorator::TraceOn()
 {
-    auto task = std::bind(&TraceCollector::TraceOn, traceCollector_.get());
+    auto task = [this] { return traceCollector_->TraceOn(); };
     return UCDecorator::Invoke(task, statInfoWrapper_, TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<std::string>> TraceDecorator::TraceOff()
 {
-    auto task = std::bind(&TraceCollector::TraceOff, traceCollector_.get());
+    auto task = [this] { return traceCollector_->TraceOff(); };
     return UCDecorator::Invoke(task, statInfoWrapper_, TRACE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

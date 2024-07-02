@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,62 +23,62 @@ StatInfoWrapper IoDecorator::statInfoWrapper_;
 
 CollectResult<ProcessIo> IoDecorator::CollectProcessIo(int32_t pid)
 {
-    auto task = std::bind(&IoCollector::CollectProcessIo, ioCollector_.get(), pid);
+    auto task = [this, &pid] { return ioCollector_->CollectProcessIo(pid); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::CollectRawDiskStats()
 {
-    auto task = std::bind(&IoCollector::CollectRawDiskStats, ioCollector_.get());
+    auto task = [this] { return ioCollector_->CollectRawDiskStats(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<DiskStats>> IoDecorator::CollectDiskStats(
     DiskStatsFilter filter, bool isUpdate)
 {
-    auto task = std::bind(&IoCollector::CollectDiskStats, ioCollector_.get(), filter, isUpdate);
+    auto task = [this, &filter, &isUpdate] { return ioCollector_->CollectDiskStats(filter, isUpdate); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportDiskStats(DiskStatsFilter filter)
 {
-    auto task = std::bind(&IoCollector::ExportDiskStats, ioCollector_.get(), filter);
+    auto task = [this, &filter] { return ioCollector_->ExportDiskStats(filter); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<EMMCInfo>> IoDecorator::CollectEMMCInfo()
 {
-    auto task = std::bind(&IoCollector::CollectEMMCInfo, ioCollector_.get());
+    auto task = [this] { return ioCollector_->CollectEMMCInfo(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportEMMCInfo()
 {
-    auto task = std::bind(&IoCollector::ExportEMMCInfo, ioCollector_.get());
+    auto task = [this] { return ioCollector_->ExportEMMCInfo(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<ProcessIoStats>> IoDecorator::CollectAllProcIoStats(bool isUpdate)
 {
-    auto task = std::bind(&IoCollector::CollectAllProcIoStats, ioCollector_.get(), isUpdate);
+    auto task = [this, &isUpdate] { return ioCollector_->CollectAllProcIoStats(isUpdate); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportAllProcIoStats()
 {
-    auto task = std::bind(&IoCollector::ExportAllProcIoStats, ioCollector_.get());
+    auto task = [this] { return ioCollector_->ExportAllProcIoStats(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<SysIoStats> IoDecorator::CollectSysIoStats()
 {
-    auto task = std::bind(&IoCollector::CollectSysIoStats, ioCollector_.get());
+    auto task = [this] { return ioCollector_->CollectSysIoStats(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> IoDecorator::ExportSysIoStats()
 {
-    auto task = std::bind(&IoCollector::ExportSysIoStats, ioCollector_.get());
+    auto task = [this] { return ioCollector_->ExportSysIoStats(); };
     return Invoke(task, statInfoWrapper_, IO_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
