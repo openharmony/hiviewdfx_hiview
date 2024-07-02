@@ -446,7 +446,7 @@ void UnifiedCollector::RunCpuCollectionTask()
         return;
     }
     isCpuTaskRunning_ = true;
-    auto task = std::bind(&UnifiedCollector::CpuCollectionFfrtTask, this);
+    auto task = [this] { this->CpuCollectionFfrtTask(); };
     ffrt::submit(task, {}, {}, ffrt::task_attr().name("dft_uc_cpu").qos(ffrt::qos_default));
 }
 
@@ -469,7 +469,7 @@ void UnifiedCollector::RunIoCollectionTask()
         HIVIEW_LOGE("workLoop is null");
         return;
     }
-    auto ioCollectionTask = std::bind(&UnifiedCollector::IoCollectionTask, this);
+    auto ioCollectionTask = [this] { this->IoCollectionTask(); };
     const uint64_t taskInterval = 30; // 30s
     auto ioSeqId = workLoop_->AddTimerEvent(nullptr, nullptr, ioCollectionTask, taskInterval, true);
     taskList_.push_back(ioSeqId);
@@ -488,7 +488,7 @@ void UnifiedCollector::RunUCollectionStatTask()
         HIVIEW_LOGE("workLoop is null");
         return;
     }
-    auto statTask = std::bind(&UnifiedCollector::UCollectionStatTask, this);
+    auto statTask = [this] { this->UCollectionStatTask(); };
     const uint64_t taskInterval = 600; // 600s
     auto statSeqId = workLoop_->AddTimerEvent(nullptr, nullptr, statTask, taskInterval, true);
     taskList_.push_back(statSeqId);

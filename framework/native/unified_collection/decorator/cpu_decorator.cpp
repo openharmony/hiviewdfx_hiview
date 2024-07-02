@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ CollectResult<SysCpuLoad> CpuDecorator::CollectSysCpuLoad()
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::CollectSysCpuLoad, cpuCollector_.get());
+    auto task = [this] { return cpuCollector_->CollectSysCpuLoad(); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -38,7 +38,7 @@ CollectResult<SysCpuUsage> CpuDecorator::CollectSysCpuUsage(bool isNeedUpdate)
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::CollectSysCpuUsage, cpuCollector_.get(), isNeedUpdate);
+    auto task = [this, &isNeedUpdate] { return cpuCollector_->CollectSysCpuUsage(isNeedUpdate); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -48,7 +48,7 @@ CollectResult<double> CpuDecorator::GetSysCpuUsage()
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::GetSysCpuUsage, cpuCollector_.get());
+    auto task = [this] { return cpuCollector_->GetSysCpuUsage(); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -58,7 +58,7 @@ CollectResult<ProcessCpuStatInfo> CpuDecorator::CollectProcessCpuStatInfo(int32_
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfo, cpuCollector_.get(), pid, isNeedUpdate);
+    auto task = [this, &pid, &isNeedUpdate] { return cpuCollector_->CollectProcessCpuStatInfo(pid, isNeedUpdate); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -68,7 +68,7 @@ CollectResult<std::vector<CpuFreq>> CpuDecorator::CollectCpuFrequency()
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::CollectCpuFrequency, cpuCollector_.get());
+    auto task = [this] { return cpuCollector_->CollectCpuFrequency(); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -78,7 +78,7 @@ CollectResult<std::vector<ProcessCpuStatInfo>> CpuDecorator::CollectProcessCpuSt
     if (cpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&CpuCollector::CollectProcessCpuStatInfos, cpuCollector_.get(), isNeedUpdate);
+    auto task = [this, &isNeedUpdate] { return cpuCollector_->CollectProcessCpuStatInfos(isNeedUpdate); };
     return Invoke(task, statInfoWrapper_, CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -93,7 +93,7 @@ CollectResult<std::vector<ThreadCpuStatInfo>> CpuDecorator::CollectThreadStatInf
     if (threadCpuCollector_ == nullptr) {
         return result;
     }
-    auto task = std::bind(&ThreadCpuCollector::CollectThreadStatInfos, threadCpuCollector_.get(), isNeedUpdate);
+    auto task = [this, &isNeedUpdate] { return threadCpuCollector_->CollectThreadStatInfos(isNeedUpdate); };
     return Invoke(task, statInfoWrapper_, THREAD_CPU_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

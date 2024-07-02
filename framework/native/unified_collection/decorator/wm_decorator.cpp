@@ -23,13 +23,13 @@ StatInfoWrapper WmDecorator::statInfoWrapper_;
 
 CollectResult<std::string> WmDecorator::ExportWindowsInfo()
 {
-    auto task = std::bind(&WmCollector::ExportWindowsInfo, wmCollector_.get());
+    auto task = [this] { return wmCollector_->ExportWindowsInfo(); };
     return Invoke(task, statInfoWrapper_, WM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> WmDecorator::ExportWindowsMemory()
 {
-    auto task = std::bind(&WmCollector::ExportWindowsMemory, wmCollector_.get());
+    auto task = [this] { return wmCollector_->ExportWindowsMemory(); };
     return Invoke(task, statInfoWrapper_, WM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

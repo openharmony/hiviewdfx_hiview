@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,90 +23,90 @@ StatInfoWrapper MemoryDecorator::statInfoWrapper_;
 
 CollectResult<ProcessMemory> MemoryDecorator::CollectProcessMemory(int32_t pid)
 {
-    auto task = std::bind(&MemoryCollector::CollectProcessMemory, memoryCollector_.get(), pid);
+    auto task = [this, &pid] { return memoryCollector_->CollectProcessMemory(pid); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<SysMemory> MemoryDecorator::CollectSysMemory()
 {
-    auto task = std::bind(&MemoryCollector::CollectSysMemory, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectSysMemory(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectRawMemInfo()
 {
-    auto task = std::bind(&MemoryCollector::CollectRawMemInfo, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectRawMemInfo(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::ExportMemView()
 {
-    auto task = std::bind(&MemoryCollector::ExportMemView, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->ExportMemView(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<ProcessMemory>> MemoryDecorator::CollectAllProcessMemory()
 {
-    auto task = std::bind(&MemoryCollector::CollectAllProcessMemory, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectAllProcessMemory(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 CollectResult<std::string> MemoryDecorator::ExportAllProcessMemory()
 {
-    auto task = std::bind(&MemoryCollector::ExportAllProcessMemory, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->ExportAllProcessMemory(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectRawSlabInfo()
 {
-    auto task = std::bind(&MemoryCollector::CollectRawSlabInfo, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectRawSlabInfo(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectRawPageTypeInfo()
 {
-    auto task = std::bind(&MemoryCollector::CollectRawPageTypeInfo, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectRawPageTypeInfo(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectRawDMA()
 {
-    auto task = std::bind(&MemoryCollector::CollectRawDMA, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectRawDMA(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::vector<AIProcessMem>> MemoryDecorator::CollectAllAIProcess()
 {
-    auto task = std::bind(&MemoryCollector::CollectAllAIProcess, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectAllAIProcess(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::ExportAllAIProcess()
 {
-    auto task = std::bind(&MemoryCollector::ExportAllAIProcess, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->ExportAllAIProcess(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectRawSmaps(int32_t pid)
 {
-    auto task = std::bind(&MemoryCollector::CollectRawSmaps, memoryCollector_.get(), pid);
+    auto task = [this, &pid] { return memoryCollector_->CollectRawSmaps(pid); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<std::string> MemoryDecorator::CollectHprof(int32_t pid)
 {
-    auto task = std::bind(&MemoryCollector::CollectHprof, memoryCollector_.get(), pid);
+    auto task = [this, &pid] { return memoryCollector_->CollectHprof(pid); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<uint64_t> MemoryDecorator::CollectProcessVss(int32_t pid)
 {
-    auto task = std::bind(&MemoryCollector::CollectProcessVss, memoryCollector_.get(), pid);
+    auto task = [this, &pid] { return memoryCollector_->CollectProcessVss(pid); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<MemoryLimit> MemoryDecorator::CollectMemoryLimit()
 {
-    auto task = std::bind(&MemoryCollector::CollectMemoryLimit, memoryCollector_.get());
+    auto task = [this] { return memoryCollector_->CollectMemoryLimit(); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,7 @@ StatInfoWrapper PerfDecorator::statInfoWrapper_;
 
 CollectResult<bool> PerfDecorator::StartPerf(const std::string &logDir)
 {
-    auto task = std::bind(&PerfCollector::StartPerf, perfCollector_.get(), logDir);
+    auto task = [this, &logDir] { return perfCollector_->StartPerf(logDir); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
@@ -94,31 +94,31 @@ void PerfDecorator::ResetStatInfo()
 
 CollectResult<bool> PerfDecorator::Prepare(const std::string &logDir)
 {
-    auto task = std::bind(&PerfCollector::Prepare, perfCollector_.get(), logDir);
+    auto task = [this, &logDir] { return perfCollector_->Prepare(logDir); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> PerfDecorator::StartRun()
 {
-    auto task = std::bind(&PerfCollector::StartRun, perfCollector_.get());
+    auto task = [this] { return perfCollector_->StartRun(); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> PerfDecorator::Pause()
 {
-    auto task = std::bind(&PerfCollector::Pause, perfCollector_.get());
+    auto task = [this] { return perfCollector_->Pause(); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> PerfDecorator::Resume()
 {
-    auto task = std::bind(&PerfCollector::Resume, perfCollector_.get());
+    auto task = [this] { return perfCollector_->Resume(); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> PerfDecorator::Stop()
 {
-    auto task = std::bind(&PerfCollector::Stop, perfCollector_.get());
+    auto task = [this] { return perfCollector_->Stop(); };
     return Invoke(task, statInfoWrapper_, PERF_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 } // namespace UCollectUtil
