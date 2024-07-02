@@ -283,10 +283,9 @@ int32_t HiviewService::Move(const std::string& srcFilePath, const std::string& d
         return copyResult;
     }
     bool result = FileUtil::RemoveFile(srcFilePath);
-    HIVIEW_LOGI("move file, delete src result: %{public}d", result);
     if (!result) {
         bool destResult = FileUtil::RemoveFile(destFilePath);
-        HIVIEW_LOGI("move file, delete dest result: %{public}d", destResult);
+        HIVIEW_LOGI("fail to remove src file, delete dest result: %{public}d", destResult);
         return ERR_DEFAULT;
     }
     return 0;
