@@ -92,7 +92,11 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
         APPFREEZE : SYSFREEZE;
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
-    FormatProcessName(stringId, processName);
+    if (stringId == "SCREEN_ON") {
+        processName = stringId;
+    } else {
+        FormatProcessName(processName);
+    }
 
     FaultLogInfoInner info;
     info.time = watchPoint.GetTimestamp();
@@ -171,18 +175,14 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
-void Vendor::FormatProcessName(const std::string& stringId, std::string& processName) const
+void Vendor::FormatProcessName(std::string& processName) const
 {
     std::regex regExpress("[\\/:*?\"<>|]");
-    bool isValid = !std::regex_search(processName, regExpress);
-    if (!isValid) {
+    bool isLegal = !std::regex_search(processName, regExpress);
+    if (isLegal) {
         return;
     }
-    if (stringId == "SCREEN_ON") {
-        processName = stringId;
-    } else {
-        processName = std::regex_replace(processName, regExpress, "_");
-    }
+    processName = std::regex_replace(processName, regExpress, "_");
     HIVIEW_LOGD("FormatProcessName processName=%{public}s", processName.c_str());
 }
 
@@ -197,7 +197,11 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
         ? APPFREEZE : SYSFREEZE;
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
-    FormatProcessName(stringId, processName);
+    if (stringId == "SCREEN_ON") {
+        processName = stringId;
+    } else {
+        FormatProcessName(processName);
+    }
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName +
             HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
