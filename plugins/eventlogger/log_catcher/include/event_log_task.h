@@ -93,6 +93,7 @@ private:
     void SCBWMSCapture();
     void SCBWMSEVTCapture();
     void DumpAppMapCapture();
+    void InputHilogCapture();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

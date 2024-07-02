@@ -79,6 +79,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
         std::bind(&EventLogTask::SCBWMSEVTCapture, this)));
     captureList_.insert(std::pair<std::string, capture>("cmd:dam",
         std::bind(&EventLogTask::DumpAppMapCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("t:input",
+        std::bind(&EventLogTask::InputHilogCapture, this)));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -415,6 +417,21 @@ void EventLogTask::DumpAppMapCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hidumper -s 1910 -a DumpAppMap", ShellCatcher::CATCHER_DAM, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::InputHilogCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    int32_t eventId = event_->GetEventIntValue("INPUT_ID");
+    if (eventId > 0) {
+        std::string cmd = "hilog -T InputKeyFlow -e " +
+            std::to_string(eventId) + " -z 1000";
+        capture->Initialize(cmd, ShellCatcher::CATCHER_INPUT_EVENT_HILOG, eventId);
+    } else {
+        capture->Initialize("hilog -T InputKeyFlow -z 1000", ShellCatcher::CATCHER_INPUT_HILOG,
+            pid_);
+    }
     tasks_.push_back(capture);
 }
 } // namespace HiviewDFX

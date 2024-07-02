@@ -42,6 +42,23 @@ void ShellCatcher::SetEvent(std::shared_ptr<SysEvent> event)
     event_ = event;
 }
 
+int ShellCatcher::InInputProcesscatcher(int writeFd)
+{
+    int ret = -1;
+    switch (catcherType_) {
+        case CATCHER_INPUT_EVENT_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-e",
+                std::to_string(pid_).c_str(), "-z", "1000", nullptr);
+            break;
+        case CATCHER_INPUT_HILOG:
+            ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-z", "1000", nullptr);
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
 int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
 {
     int ret = -1;
@@ -86,6 +103,7 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
             break;
         default:
+            ret = InInputProcesscatcher(writeFd);
             break;
     }
     return ret;

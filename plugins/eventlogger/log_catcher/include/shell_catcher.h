@@ -48,6 +48,8 @@ public:
         CATCHER_SCBWMS,
         CATCHER_SCBWMSEVT,
         CATCHER_DAM,
+        CATCHER_INPUT_EVENT_HILOG,
+        CATCHER_INPUT_HILOG,
     };
 private:
     static const inline int32_t DEFAULT_WINDOW_ID = 14;
@@ -56,6 +58,7 @@ private:
     CATCHER_TYPE catcherType_;
     std::shared_ptr<SysEvent> event_ = nullptr;
 
+    int InInputProcesscatcher(int writeFd);
     int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
