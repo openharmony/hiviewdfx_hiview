@@ -25,6 +25,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
+#include "hiview_db_util.h"
 #include "hiview_zip_util.h"
 #include "securec.h"
 #include "socket_util.h"
@@ -41,6 +42,8 @@ constexpr char FREEZE_JSON_FILE[] = "/data/test/test_data/0-0-123456";
 constexpr char TEST_ZIP_FILE[] = "/data/test/test_data/test_pack.zip";
 const std::string SOURCE_PATH = "/data/test/test_data/";
 const std::string ZIP_DES_PATH = "/data/test/test_data/zip_des/";
+const std::string DB_PATH = "/data/test/test_data/db/";
+const std::string UPLOAD_PATH = "/data/test/test_data/upload/";
 constexpr char STRING_VAL[] = "OpenHarmony is a better choice for you.";
 constexpr char STRING_ARR_FIRST_VAL[] = "3.1 release";
 constexpr int64_t INT_VAL = 2024;
@@ -580,6 +583,31 @@ HWTEST_F(AdapterUtilityOhosTest, ZipUtilTest001, testing::ext::TestSize.Level3)
     sleep(waitUnzip);
     ASSERT_TRUE(FileUtil::FileExists(ZIP_DES_PATH + "zip_test_file1.txt"));
     ASSERT_TRUE(FileUtil::FileExists(ZIP_DES_PATH + "test_data/zip_test_file2.txt"));
+}
+
+/**
+ * @tc.name: DbUtilTest001
+ * @tc.desc: Test apifs of DbUtil
+ * @tc.type: FUNC
+ */
+HWTEST_F(AdapterUtilityOhosTest, DbUtilTest001, testing::ext::TestSize.Level3)
+{
+    std::string uploadPath = UPLOAD_PATH;
+    ASSERT_TRUE(HiviewDbUtil::InitDbUploadPath("", uploadPath));
+    uploadPath = "";
+    ASSERT_FALSE(HiviewDbUtil::InitDbUploadPath("", uploadPath));
+    ASSERT_TRUE(HiviewDbUtil::InitDbUploadPath(DB_PATH, uploadPath));
+    std::string dbFile = HiviewDbUtil::CreateFileNameByDate("test");
+    std::string otherFile = DB_PATH + "testOhter.db-shm";
+    FileUtil::SaveStringToFile(DB_PATH + dbFile, "test db file", true);
+    FileUtil::SaveStringToFile(otherFile, "test other file", true);
+    HiviewDbUtil::MoveDbFilesToUploadDir(DB_PATH, uploadPath);
+    ASSERT_FALSE(FileUtil::FileExists(otherFile));
+    ASSERT_TRUE(FileUtil::FileExists(uploadPath + "/" + dbFile));
+    HiviewDbUtil::TryToAgeUploadDbFiles(uploadPath, 1); // 1 is the max file number
+    ASSERT_TRUE(FileUtil::FileExists(uploadPath + "/" + dbFile));
+    HiviewDbUtil::TryToAgeUploadDbFiles(uploadPath, 0); // 0 is the max file number
+    ASSERT_FALSE(FileUtil::FileExists(uploadPath + "/" + dbFile));
 }
 }
 }
