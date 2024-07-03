@@ -597,7 +597,9 @@ void Faultlogger::OnLoad()
 
     // some crash happened before hiview start, ensure every crash event is added into eventdb
     if (workLoop_ != nullptr) {
-        auto task = std::bind(&Faultlogger::StartBootScan, this);
+        auto task = [this] {
+            StartBootScan();
+        };
         workLoop_->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
     }
 #endif
@@ -613,7 +615,9 @@ void Faultlogger::HandleNotify(int32_t type, const std::string& fname)
 {
     HIVIEW_LOGE("HandleNotify file:[%{public}s]\n", fname.c_str());
     // start sanitizerd work thread if log ready
-    std::thread collector(&AsanCollector::Collect, &g_collector, fname);
+    std::thread collector([fname] {
+        g_collector.Collect(fname);
+    });
     collector.detach();
     // Work done.
 }
@@ -1110,7 +1114,9 @@ bool Faultlogger::CheckFaultLog(FaultLogInfo info)
 void Faultlogger::CheckFaultLogAsync(const FaultLogInfo& info)
 {
     if (workLoop_ != nullptr) {
-        auto task = std::bind(&Faultlogger::CheckFaultLog, this, info);
+        auto task = [this, info] {
+            CheckFaultLog(info);
+        };
         workLoop_->AddTimerEvent(nullptr, nullptr, task, 0, false);
     }
 }
