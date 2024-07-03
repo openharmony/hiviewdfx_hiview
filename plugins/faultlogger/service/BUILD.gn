@@ -49,6 +49,7 @@ ohos_source_set("faultlogger_service") {
     ".",
     "$hiview_plugin/faultlogger/common",
     "$hiview_plugin/faultlogger/service/sanitizer_collector",
+    "$hiview_framework/native/unified_collection/process/include",
   ]
 
   sources = [
@@ -67,7 +68,7 @@ ohos_source_set("faultlogger_service") {
   deps = [
     ":faultlogger_service_ability",
     "$hiview_base:hiviewbase",
-    "$hiview_framework/native/unified_collection:ucollection_source",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
   ]
@@ -97,6 +98,7 @@ ohos_source_set("faultlogger_service_fuzz_src") {
     ".",
     "$hiview_plugin/faultlogger/common",
     "$hiview_plugin/faultlogger/service/sanitizer_collector",
+    "$hiview_framework/native/unified_collection/process/include",
   ]
   defines = [ "UNIT_TEST" ]
 
@@ -112,7 +114,7 @@ ohos_source_set("faultlogger_service_fuzz_src") {
   deps = [
     ":faultlogger_service_ability",
     "$hiview_base:hiviewbase",
-    "$hiview_framework/native/unified_collection:ucollection_source",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "$hiview_plugin/faultlogger/common:faultlogger_common",
     "$hiview_plugin/faultlogger/common:log_analyzer",
   ]
