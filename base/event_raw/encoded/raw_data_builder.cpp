@@ -311,34 +311,34 @@ void RawDataBuilder::InitValueParams(const std::vector<std::shared_ptr<DecodedPa
 {
     std::unordered_map<EventRaw::DataCodedType,
         std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
-        {EventRaw::DataCodedType::UNSIGNED_VARINT, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT, [this] (std::shared_ptr<DecodedParam> param) {
                 if (uint64_t val = 0; param->AsUint64(val)) {
                     this->AppendValue(std::make_shared<UnsignedVarintEncodedParam<uint64_t>>(param->GetKey(),
                         val));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::SIGNED_VARINT, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::SIGNED_VARINT, [this] (std::shared_ptr<DecodedParam> param) {
                 if (int64_t val = 0; param->AsInt64(val)) {
                     this->AppendValue(std::make_shared<SignedVarintEncodedParam<int64_t>>(param->GetKey(),
                         val));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::FLOATING, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::FLOATING, [this] (std::shared_ptr<DecodedParam> param) {
                 if (double val = 0.0; param->AsDouble(val)) {
                     this->AppendValue(std::make_shared<FloatingNumberEncodedParam<double>>(param->GetKey(),
                         val));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::DSTRING, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::DSTRING, [this] (std::shared_ptr<DecodedParam> param) {
                 if (std::string val; param->AsString(val)) {
                     this->AppendValue(std::make_shared<StringEncodedParam>(param->GetKey(),
                         val));
                 }
-            }, std::placeholders::_1)},
+            }
+        }
     };
     auto iter = paramFuncs.begin();
     for (const auto& param : params) {
@@ -358,34 +358,34 @@ void RawDataBuilder::InitArrayValueParams(const std::vector<std::shared_ptr<Deco
 {
     std::unordered_map<EventRaw::DataCodedType,
         std::function<void(std::shared_ptr<DecodedParam>)>> paramFuncs = {
-        {EventRaw::DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+        {EventRaw::DataCodedType::UNSIGNED_VARINT_ARRAY, [this] (std::shared_ptr<DecodedParam> param) {
                 if (std::vector<uint64_t> vals; param->AsUint64Vec(vals)) {
                     this->AppendValue(std::make_shared<UnsignedVarintEncodedArrayParam<uint64_t>>(param->GetKey(),
                         vals));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::SIGNED_VARINT_ARRAY, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::SIGNED_VARINT_ARRAY, [this] (std::shared_ptr<DecodedParam> param) {
                 if (std::vector<int64_t> vals; param->AsInt64Vec(vals)) {
                     this->AppendValue(std::make_shared<SignedVarintEncodedArrayParam<int64_t>>(param->GetKey(),
                         vals));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::FLOATING_ARRAY, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::FLOATING_ARRAY, [this] (std::shared_ptr<DecodedParam> param) {
                 if (std::vector<double> vals; param->AsDoubleVec(vals)) {
                     this->AppendValue(std::make_shared<FloatingNumberEncodedArrayParam<double>>(param->GetKey(),
                         vals));
                 }
-            }, std::placeholders::_1)},
-        {EventRaw::DataCodedType::DSTRING_ARRAY, std::bind(
-            [this] (std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {EventRaw::DataCodedType::DSTRING_ARRAY, [this] (std::shared_ptr<DecodedParam> param) {
                 if (std::vector<std::string> vals; param->AsStringVec(vals)) {
                     this->AppendValue(std::make_shared<StringEncodedArrayParam>(param->GetKey(),
                         vals));
                 }
-            }, std::placeholders::_1)},
+            }
+        }
     };
     auto iter = paramFuncs.begin();
     for (const auto& param : params) {

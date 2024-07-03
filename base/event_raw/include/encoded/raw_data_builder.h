@@ -253,46 +253,77 @@ private:
     }
 
     template<typename T>
+    void InitBaseAppendHandlers(std::unordered_map<std::string, std::function<RawDataBuilder&(T)>>& handlers)
+    {
+        handlers.emplace(BASE_INFO_KEY_DOMAIN, [this] (T val) -> decltype(auto) {
+            if constexpr (isString<T>) {
+                return this->AppendDomain(val);
+            }
+            return *this;
+        });
+        handlers.emplace(BASE_INFO_KEY_NAME, [this] (T val) -> decltype(auto) {
+            if constexpr (isString<T>) {
+                return this->AppendName(val);
+            }
+            return *this;
+        });
+        handlers.emplace(BASE_INFO_KEY_TYPE, [this] (T val) -> decltype(auto) {
+            return this->UpdateType(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_TIME_STAMP, [this] (T val) -> decltype(auto) {
+            if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
+                return this->AppendTimeStamp(val);
+            }
+            return *this;
+        });
+        handlers.emplace(BASE_INFO_KEY_TIME_ZONE, [this] (T val) -> decltype(auto) {
+            if constexpr (isString<T>) {
+                return this->AppendTimeZone(val);
+            }
+            return *this;
+        });
+    }
+
+    template<typename T>
+    void InitIdInfoAppendHandlers(std::unordered_map<std::string, std::function<RawDataBuilder&(T)>>& handlers)
+    {
+        handlers.emplace(BASE_INFO_KEY_ID, [this] (T val) -> decltype(auto) {
+            return this->UpdateId(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_PID, [this] (T val) -> decltype(auto) {
+            return this->UpdatePid(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_TID, [this] (T val) -> decltype(auto) {
+            return this->UpdateTid(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_UID, [this] (T val) -> decltype(auto) {
+            return this->UpdateUid(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_LOG, [this] (T val) -> decltype(auto) {
+            return this->UpdateLog(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_TRACE_ID, [this] (T val) -> decltype(auto) {
+            return this->UpdateTraceId(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_SPAN_ID, [this] (T val) -> decltype(auto) {
+            return this->UpdateSpanId(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_PARENT_SPAN_ID, [this] (T val) -> decltype(auto) {
+            return this->UpdatePSpanId(val);
+        });
+        handlers.emplace(BASE_INFO_KEY_TRACE_FLAG, [this] (T val) -> decltype(auto) {
+            return this->UpdateTraceFlag(val);
+        });
+    }
+
+    template<typename T>
     RawDataBuilder& AppendBaseInfoValue(const std::string& key, T val)
     {
-        std::unordered_map<std::string, std::function<RawDataBuilder&(T)>> appendFuncs = {
-            {BASE_INFO_KEY_DOMAIN, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (isString<T>) {
-                        return this->AppendDomain(val);
-                    }
-                    return *this;
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_NAME, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (isString<T>) {
-                        return this->AppendName(val);
-                    }
-                    return *this;
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TYPE, std::bind(&RawDataBuilder::UpdateType<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_TIME_STAMP, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
-                        return this->AppendTimeStamp(val);
-                    }
-                    return *this;
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TIME_ZONE, std::bind([this] (T val) -> decltype(auto) {
-                    if constexpr (isString<T>) {
-                        return this->AppendTimeZone(val);
-                    }
-                    return *this;
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_ID, std::bind(&RawDataBuilder::UpdateId<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_PID, std::bind(&RawDataBuilder::UpdatePid<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_TID, std::bind(&RawDataBuilder::UpdateTid<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_UID, std::bind(&RawDataBuilder::UpdateUid<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_LOG, std::bind(&RawDataBuilder::UpdateLog<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_TRACE_ID, std::bind(&RawDataBuilder::UpdateTraceId<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_SPAN_ID, std::bind(&RawDataBuilder::UpdateSpanId<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_PARENT_SPAN_ID, std::bind(&RawDataBuilder::UpdatePSpanId<T>, this, std::placeholders::_1)},
-            {BASE_INFO_KEY_TRACE_FLAG, std::bind(&RawDataBuilder::UpdateTraceFlag<T>, this, std::placeholders::_1)},
-        };
-        auto iter = appendFuncs.find(key);
-        return (iter == appendFuncs.end()) ? *this : iter->second(val);
+        std::unordered_map<std::string, std::function<RawDataBuilder&(T)>> appendHandlers;
+        InitBaseAppendHandlers(appendHandlers);
+        InitIdInfoAppendHandlers(appendHandlers);
+        auto iter = appendHandlers.find(key);
+        return (iter == appendHandlers.end()) ? *this : iter->second(val);
     }
 
     template<typename T>
@@ -300,34 +331,38 @@ private:
     {
         std::unordered_map<DataCodedType,
             std::function<bool(std::shared_ptr<EncodedParam>, T&)>> getFuncs = {
-            {DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+            {DataCodedType::UNSIGNED_VARINT_ARRAY, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, std::vector<uint64_t>>) {
                         param->AsUint64Vec(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::SIGNED_VARINT_ARRAY, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::SIGNED_VARINT_ARRAY, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, std::vector<int64_t>>) {
                         param->AsInt64Vec(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::FLOATING_ARRAY, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::FLOATING_ARRAY, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, std::vector<double>>) {
                         param->AsDoubleVec(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::DSTRING_ARRAY, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::DSTRING_ARRAY, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, std::vector<std::string>>) {
                         param->AsStringVec(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
+                }
+            }
         };
         auto iter = getFuncs.find(encodedParam->GetDataCodedType());
         return (iter == getFuncs.end()) ? false : iter->second(encodedParam, val);
@@ -341,34 +376,38 @@ private:
             return false;
         }
         std::unordered_map<DataCodedType, std::function<bool(std::shared_ptr<EncodedParam>, T&)>> getFuncs = {
-            {DataCodedType::UNSIGNED_VARINT, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+            {DataCodedType::UNSIGNED_VARINT, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, uint64_t>) {
                         param->AsUint64(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::SIGNED_VARINT, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::SIGNED_VARINT, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, int64_t>) {
                         param->AsInt64(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::FLOATING, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::FLOATING, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (std::is_same_v<std::decay_t<T>, double>) {
                         param->AsDouble(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
-            {DataCodedType::DSTRING, std::bind([] (std::shared_ptr<EncodedParam> param, T& val) {
+                }
+            },
+            {DataCodedType::DSTRING, [] (std::shared_ptr<EncodedParam> param, T& val) {
                     if constexpr (isString<T>) {
                         param->AsString(val);
                         return true;
                     }
                     return false;
-                }, std::placeholders::_1, std::placeholders::_2)},
+                }
+            }
         };
         auto iter = getFuncs.find(encodedParam->GetDataCodedType());
         return (iter == getFuncs.end()) ? GetArrayValueByKey(encodedParam, val) : iter->second(encodedParam, val);\
@@ -387,49 +426,50 @@ private:
     template<typename T>
     bool GetBaseInfoValueByKey(const std::string& key, T& val)
     {
-        std::unordered_map<std::string, std::function<bool(T&)>> parseFuncs = {
-            {BASE_INFO_KEY_DOMAIN, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, std::string(header_.domain));
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_NAME, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, std::string(header_.name));
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TYPE, std::bind([this] (T& val) -> bool {
-                    int type = static_cast<int>(header_.type) + 1;
-                    return this->ParseValue(val, type);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TIME_STAMP, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.timestamp);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TIME_ZONE, std::bind(&RawDataBuilder::ParseTimeZoneFromHeader<T>, this,
-                std::placeholders::_1)},
-            {BASE_INFO_KEY_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.id);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_PID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.pid);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.tid);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_UID, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.uid);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_LOG, std::bind([this] (T& val) -> bool {
-                    return this->ParseValue(val, header_.log);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TRACE_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseAndSetTraceInfo(val, traceInfo_.traceId);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_SPAN_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseAndSetTraceInfo(val, traceInfo_.spanId);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_PARENT_SPAN_ID, std::bind([this] (T& val) -> bool {
-                    return this->ParseAndSetTraceInfo(val, traceInfo_.pSpanId);
-                }, std::placeholders::_1)},
-            {BASE_INFO_KEY_TRACE_FLAG, std::bind(&RawDataBuilder::PareTraceFlagFromHeader<T>, this,
-                std::placeholders::_1)},
-        };
+        std::unordered_map<std::string, std::function<bool(T&)>> parseFuncs;
+        parseFuncs.emplace(BASE_INFO_KEY_DOMAIN, [this] (T& val) -> bool {
+            return this->ParseValue(val, std::string(header_.domain));
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_NAME, [this] (T& val) -> bool {
+            return this->ParseValue(val, std::string(header_.name));
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TYPE, [this] (T& val) -> bool {
+            int type = static_cast<int>(header_.type) + 1;
+            return this->ParseValue(val, type);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TIME_STAMP, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.timestamp);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TIME_ZONE, [this] (T& val) -> bool {
+            return this->ParseTimeZoneFromHeader(val);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_ID, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.id);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_PID, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.pid);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TID, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.tid);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_UID, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.uid);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_LOG, [this] (T& val) -> bool {
+            return this->ParseValue(val, header_.log);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TRACE_ID, [this] (T& val) -> bool {
+            return this->ParseAndSetTraceInfo(val, traceInfo_.traceId);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_SPAN_ID, [this] (T& val) -> bool {
+            return this->ParseAndSetTraceInfo(val, traceInfo_.spanId);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_PARENT_SPAN_ID, [this] (T& val) -> bool {
+            return this->ParseAndSetTraceInfo(val, traceInfo_.pSpanId);
+        });
+        parseFuncs.emplace(BASE_INFO_KEY_TRACE_FLAG, [this] (T& val) -> bool {
+            return this->PareTraceFlagFromHeader(val);
+        });
         auto iter = parseFuncs.find(key);
         return (iter == parseFuncs.end()) ? false : iter->second(val);
     }

@@ -143,17 +143,25 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetReques
 {
     static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
-            std::bind(&HiviewServiceAbilityStub::HandleListRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleListRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY),
-            std::bind(&HiviewServiceAbilityStub::HandleCopyRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleCopyRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_MOVE),
-            std::bind(&HiviewServiceAbilityStub::HandleMoveRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleMoveRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_REMOVE),
-            std::bind(&HiviewServiceAbilityStub::HandleRemoveRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleRemoveRequest(data, reply, option);
+            }
+        }
     };
     return requestHandlers;
 }
@@ -162,29 +170,45 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceR
 {
     static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleOpenSnapshotTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleOpenSnapshotTraceRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleDumpSnapshotTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleDumpSnapshotTraceRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_RECORDING_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleOpenRecordingTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleOpenRecordingTraceRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_ON),
-            std::bind(&HiviewServiceAbilityStub::HandleRecordingTraceOnRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleRecordingTraceOnRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECORDING_TRACE_OFF),
-            std::bind(&HiviewServiceAbilityStub::HandleRecordingTraceOffRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleRecordingTraceOffRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_CLOSE_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleCloseTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleCloseTraceRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_RECOVER_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleRecoverTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleRecoverTraceRequest(data, reply, option);
+            }
+        },
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE),
-            std::bind(&HiviewServiceAbilityStub::HandleCaptureDurationTraceRequest, this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return this->HandleCaptureDurationTraceRequest(data, reply, option);
+            }
+        }
     };
     return requestHandlers;
 }
