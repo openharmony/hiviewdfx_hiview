@@ -213,6 +213,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->MMIUsageCapture();
     logTask->HitraceCapture();
     logTask->SCBWMSEVTCapture();
+    logTask->InputHilogCapture();
     logTask->AddLog("Test");
     logTask->AddLog("cmd:w");
     logTask->status_ = EventLogTask::Status::TASK_RUNNING;
@@ -641,6 +642,10 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     shellCatcher->SetEvent(event);
     shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
     printf("CATCHER_SCBWMS result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
+
+    shellCatcher->Initialize("hilog -T InputKeyFlow -z 1000", ShellCatcher::CATCHER_INPUT_HILOG, 0);
+    shellCatcher->Initialize("hilog -T InputKeyFlow -e eventId -z 1000",
+        ShellCatcher::CATCHER_INPUT_EVENT_HILOG, 0);
 
     shellCatcher->Initialize("default", -1, 0);
     EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
