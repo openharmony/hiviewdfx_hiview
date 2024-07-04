@@ -235,8 +235,9 @@ void EventPublish::StartOverLimitThread(int32_t uid, const std::string& eventNam
         return;
     }
     HIVIEW_LOGI("start send overlimit thread.");
-    sendingOverlimitThread_ = std::make_unique<std::thread>(&EventPublish::SendOverLimitEventToSandBox,
-                                                            this, uid, eventName, bundleName, eventJson);
+    sendingOverlimitThread_ = std::make_unique<std::thread>([this, uid, eventName, bundleName, eventJson] {
+        this->SendOverLimitEventToSandBox(uid, eventName, bundleName, eventJson);
+    });
     sendingOverlimitThread_->detach();
 }
 
@@ -258,7 +259,7 @@ void EventPublish::StartSendingThread()
 {
     if (sendingThread_ == nullptr) {
         HIVIEW_LOGI("start send thread.");
-        sendingThread_ = std::make_unique<std::thread>(&EventPublish::SendEventToSandBox, this);
+        sendingThread_ = std::make_unique<std::thread>([this] { this->SendEventToSandBox(); });
         sendingThread_->detach();
     }
 }
