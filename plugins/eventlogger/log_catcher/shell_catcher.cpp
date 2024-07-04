@@ -97,10 +97,16 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             }
             break;
         case CATCHER_SCBSESSION:
-            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getContainerSession", nullptr);
+            {
+                std::string cmd = "-b SCBScenePanel getContainerSession";
+                ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
+            }
             break;
         case CATCHER_SCBVIEWPARAM:
-            ret = execl("/system/bin/scb_debug", "scb_debug", "SCBScenePanel", "getViewParam", nullptr);
+            {
+                std::string cmd = "-b SCBScenePanel getViewParam";
+                ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
+            }
             break;
         default:
             ret = InInputProcesscatcher(writeFd);
