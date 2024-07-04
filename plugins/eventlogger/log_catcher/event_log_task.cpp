@@ -77,7 +77,7 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
         [this] { this->SCBWMSCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbWMSEVT",
         [this] { this->SCBWMSEVTCapture(); }));
-     captureList_.insert(std::pair<std::string, capture>("cmd:dam",
+    captureList_.insert(std::pair<std::string, capture>("cmd:dam",
         [this] { this->DumpAppMapCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("t:input",
         [this] { this->InputHilogCapture(); }));
