@@ -48,39 +48,39 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
 {
     int pid = event_->GetEventIntValue("PID");
     pid_ = pid ? pid : event_->GetPid();
-    captureList_.insert(std::pair<std::string, capture>("s", std::bind(&EventLogTask::AppStackCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("S", std::bind(&EventLogTask::SystemStackCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("b", std::bind(&EventLogTask::BinderLogCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:m", std::bind(&EventLogTask::MemoryUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:c", std::bind(&EventLogTask::CpuUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:w", std::bind(&EventLogTask::WMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:a", std::bind(&EventLogTask::AMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:p", std::bind(&EventLogTask::PMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:d", std::bind(&EventLogTask::DPMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:rs", std::bind(&EventLogTask::RSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:mmi", std::bind(&EventLogTask::MMIUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:dms", std::bind(&EventLogTask::DMSUsageCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:ss", std::bind(&EventLogTask::Screenshot, this)));
-    captureList_.insert(std::pair<std::string, capture>("T", std::bind(&EventLogTask::HilogCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("t", std::bind(&EventLogTask::LightHilogCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("e", std::bind(&EventLogTask::DmesgCapture, this)));
+    captureList_.insert(std::pair<std::string, capture>("s", [this] { this->AppStackCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("S", [this] { this->SystemStackCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("b", [this] { this->BinderLogCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:m", [this] { this->MemoryUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:c", [this] { this->CpuUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:w", [this] { this->WMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:a", [this] { this->AMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:p", [this] { this->PMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:d", [this] { this->DPMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:rs", [this] { this->RSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:mmi", [this] { this->MMIUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:dms", [this] { this->DMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:ss", [this] { this->Screenshot(); }));
+    captureList_.insert(std::pair<std::string, capture>("T", [this] { this->HilogCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("t", [this] { this->LightHilogCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("e", [this] { this->DmesgCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("k:SysRq",
-        std::bind(&EventLogTask::SysrqCapture, this, false)));
+        [this] { this->SysrqCapture(false); }));
     captureList_.insert(std::pair<std::string, capture>("k:SysRqFile",
-        std::bind(&EventLogTask::SysrqCapture, this, true)));
-    captureList_.insert(std::pair<std::string, capture>("tr", std::bind(&EventLogTask::HitraceCapture, this)));
+        [this] { this->SysrqCapture(true); }));
+    captureList_.insert(std::pair<std::string, capture>("tr", [this] { this->HitraceCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbCS",
-        std::bind(&EventLogTask::SCBSessionCapture, this)));
+        [this] { this->SCBSessionCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbVP",
-        std::bind(&EventLogTask::SCBViewParamCapture, this)));
+        [this] { this->SCBViewParamCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbWMS",
-        std::bind(&EventLogTask::SCBWMSCapture, this)));
+        [this] { this->SCBWMSCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:scbWMSEVT",
-        std::bind(&EventLogTask::SCBWMSEVTCapture, this)));
-    captureList_.insert(std::pair<std::string, capture>("cmd:dam",
-        std::bind(&EventLogTask::DumpAppMapCapture, this)));
+        [this] { this->SCBWMSEVTCapture(); }));
+     captureList_.insert(std::pair<std::string, capture>("cmd:dam",
+        [this] { this->DumpAppMapCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("t:input",
-        std::bind(&EventLogTask::InputHilogCapture, this)));
+        [this] { this->InputHilogCapture(); }));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)

@@ -307,7 +307,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     UpdateDB(event, logFile);
 
     constexpr int waitTime = 1;
-    auto CheckFinishFun = std::bind(&EventLogger::CheckEventOnContinue, this, event);
+    auto CheckFinishFun = [this, event] { this->CheckEventOnContinue(event); };
     threadLoop_->AddTimerEvent(nullptr, nullptr, CheckFinishFun, waitTime, false);
     HIVIEW_LOGI("Collect on finish, name: %{public}s", logFile.c_str());
 }
@@ -722,7 +722,7 @@ std::string EventLogger::GetListenerName()
 void EventLogger::OnUnorderedEvent(const Event& msg)
 {
     if (CanProcessRebootEvent(msg)) {
-        auto task = std::bind(&EventLogger::ProcessRebootEvent, this);
+        auto task = [this] { this->ProcessRebootEvent(); };
         threadLoop_->AddEvent(nullptr, nullptr, task);
     }
 }
