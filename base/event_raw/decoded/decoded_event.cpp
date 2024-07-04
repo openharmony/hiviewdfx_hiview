@@ -123,30 +123,34 @@ void DecodedEvent::AppendBaseInfo(std::stringstream& ss)
 void DecodedEvent::AppendCustomizedArrayParam(std::stringstream& ss, std::shared_ptr<DecodedParam> param)
 {
     std::unordered_map<DataCodedType, std::function<void(std::shared_ptr<DecodedParam>)>> allFuncs = {
-        {DataCodedType::UNSIGNED_VARINT_ARRAY, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+        {DataCodedType::UNSIGNED_VARINT_ARRAY, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 std::vector<uint64_t> u64Vec;
                 if (param->AsUint64Vec(u64Vec)) {
                     this->AppendValue(ss, param->GetKey(), u64Vec);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::SIGNED_VARINT_ARRAY, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::SIGNED_VARINT_ARRAY, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 std::vector<int64_t> i64Vec;
                 if (param->AsInt64Vec(i64Vec)) {
                     this->AppendValue(ss, param->GetKey(), i64Vec);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::FLOATING_ARRAY, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::FLOATING_ARRAY, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 std::vector<double> dVec;
                 if (param->AsDoubleVec(dVec)) {
                     this->AppendValue(ss, param->GetKey(), dVec);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::DSTRING_ARRAY, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::DSTRING_ARRAY, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 std::vector<std::string> strVec;
                 if (param->AsStringVec(strVec)) {
                     this->AppendValue(ss, param->GetKey(), strVec);
                 }
-            }, std::placeholders::_1)},
+            }
+        }
     };
     auto iter = allFuncs.find(param->GetDataCodedType());
     if (iter == allFuncs.end()) {
@@ -158,30 +162,34 @@ void DecodedEvent::AppendCustomizedArrayParam(std::stringstream& ss, std::shared
 void DecodedEvent::AppendCustomizedParam(std::stringstream& ss, std::shared_ptr<DecodedParam> param)
 {
     std::unordered_map<DataCodedType, std::function<void(std::shared_ptr<DecodedParam>)>> allFuncs = {
-        {DataCodedType::UNSIGNED_VARINT, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+        {DataCodedType::UNSIGNED_VARINT, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 uint64_t uint64DecodedVal;
                 if (param->AsUint64(uint64DecodedVal)) {
                     this->AppendValue(ss, param->GetKey(), uint64DecodedVal);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::SIGNED_VARINT, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::SIGNED_VARINT, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 int64_t int64DecodedVal;
                 if (param->AsInt64(int64DecodedVal)) {
                     this->AppendValue(ss, param->GetKey(), int64DecodedVal);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::FLOATING, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::FLOATING, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 double dDecodedVal;
                 if (param->AsDouble(dDecodedVal)) {
                     this->AppendValue(ss, param->GetKey(), dDecodedVal);
                 }
-            }, std::placeholders::_1)},
-        {DataCodedType::DSTRING, std::bind([this, &ss](std::shared_ptr<DecodedParam> param) {
+            }
+        },
+        {DataCodedType::DSTRING, [this, &ss](std::shared_ptr<DecodedParam> param) {
                 std::string strDecodedVal;
                 if (param->AsString(strDecodedVal)) {
                     this->AppendValue(ss, param->GetKey(), strDecodedVal);
                 }
-            }, std::placeholders::_1)},
+            }
+        }
     };
     auto iter = allFuncs.find(param->GetDataCodedType());
     if (iter == allFuncs.end()) {

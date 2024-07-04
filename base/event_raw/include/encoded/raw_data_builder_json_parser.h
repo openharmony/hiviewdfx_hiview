@@ -84,6 +84,7 @@ private:
     void InitIntItemParseStatus();
     void InitEscapeCharParseStatus();
     void InitEscapeCharItemParseStatus();
+    void InitParamHandlers(std::unordered_map<int, std::function<void()>>& handlers);
 
 private:
     std::string jsonStr_;

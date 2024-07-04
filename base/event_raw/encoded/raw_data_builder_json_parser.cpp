@@ -397,12 +397,18 @@ void RawDataBuilderJsonParser::AppendValueToBuilder()
         return;
     }
     std::unordered_map<int, std::function<void(const std::string&, const std::string&)>> valueAppendFuncs = {
-        {STATUS_STRING_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendStringValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
-        {STATUS_INT_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendIntValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
-        {STATUS_DOUBLE_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendFloatingValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
+        {STATUS_STRING_PARSE, [this] (const std::string& key, const std::string& value) {
+                return this->BuilderAppendStringValue(key, value);
+            }
+        },
+        {STATUS_INT_PARSE, [this] (const std::string& key, const std::string& value) {
+                return this->BuilderAppendIntValue(key, value);
+            }
+        },
+        {STATUS_DOUBLE_PARSE, [this] (const std::string& key, const std::string& value) {
+                return this->BuilderAppendFloatingValue(key, value);
+            }
+        }
     };
     auto valueIter = valueAppendFuncs.find(lastValueParseStatus_);
     if (valueIter != valueAppendFuncs.end()) {
@@ -411,12 +417,18 @@ void RawDataBuilderJsonParser::AppendValueToBuilder()
     }
     std::unordered_map<int,
         std::function<void(const std::string&, const std::vector<std::string>&)>> arrayValueAppendFuncs = {
-        {STATUS_STRING_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendStringArrayValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
-        {STATUS_INT_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendIntArrayValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
-        {STATUS_DOUBLE_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::BuilderAppendFloatingArrayValue, this,
-            std::placeholders::_1, std::placeholders::_2)},
+        {STATUS_STRING_ITEM_PARSE, [this] (const std::string& key, const std::vector<std::string>& values) {
+                return this->BuilderAppendStringArrayValue(key, values);
+            }
+        },
+        {STATUS_INT_ITEM_PARSE, [this] (const std::string& key, const std::vector<std::string>& values) {
+                return this->BuilderAppendIntArrayValue(key, values);
+            }
+        },
+        {STATUS_DOUBLE_ITEM_PARSE, [this] (const std::string& key, const std::vector<std::string>& values) {
+                return this->BuilderAppendFloatingArrayValue(key, values);
+            }
+        }
     };
     auto arrayValueIter = arrayValueAppendFuncs.find(lastValueParseStatus_);
     if (arrayValueIter != arrayValueAppendFuncs.end()) {
@@ -424,31 +436,53 @@ void RawDataBuilderJsonParser::AppendValueToBuilder()
     }
 }
 
+void RawDataBuilderJsonParser::InitParamHandlers(std::unordered_map<int, std::function<void()>>& handlers)
+{
+    handlers.emplace(STATUS_NONE, [this] () {
+        this->HandleStatusNone();
+    });
+    handlers.emplace(STATUS_KEY_PARSE, [this] () {
+        this->HandleStatusKeyParse();
+    });
+    handlers.emplace(STATUS_RUN, [this] () {
+        this->HandleStatusRun();
+    });
+    handlers.emplace(STATUS_VALUE_PARSE, [this] () {
+        this->HandleStatusValueParse();
+    });
+    handlers.emplace(STATUS_ARRAY_PARSE, [this] () {
+        this->HandleStatusArrayParse();
+    });
+    handlers.emplace(STATUS_STRING_PARSE, [this] () {
+        this->HandleStatusStringParse();
+    });
+    handlers.emplace(STATUS_STRING_ITEM_PARSE, [this] () {
+            this->HandleStatusStringItemParse();
+        });
+
+    auto statusValueAppendHandler = [this] () {
+        this->HandleStatusValueAppend();
+    };
+    handlers.emplace(STATUS_DOUBLE_PARSE, statusValueAppendHandler);
+    handlers.emplace(STATUS_INT_PARSE, statusValueAppendHandler);
+    handlers.emplace(STATUS_DOUBLE_ITEM_PARSE, statusValueAppendHandler);
+    handlers.emplace(STATUS_INT_ITEM_PARSE, statusValueAppendHandler);
+    handlers.emplace(STATUS_ESCAPE_CHAR_PARSE, statusValueAppendHandler);
+    handlers.emplace(STATUS_ESCAPE_CHAR_ITEM_PARSE, statusValueAppendHandler);
+}
+
 std::shared_ptr<RawDataBuilder> RawDataBuilderJsonParser::Parse()
 {
     if (jsonStr_.empty()) {
         return builder_;
     }
-    std::unordered_map<int, std::function<void()>> handleFuncs = {
-        {STATUS_NONE, std::bind(&RawDataBuilderJsonParser::HandleStatusNone, this)},
-        {STATUS_KEY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusKeyParse, this)},
-        {STATUS_RUN, std::bind(&RawDataBuilderJsonParser::HandleStatusRun, this)},
-        {STATUS_VALUE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueParse, this)},
-        {STATUS_ARRAY_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusArrayParse, this)},
-        {STATUS_STRING_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringParse, this)},
-        {STATUS_DOUBLE_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-        {STATUS_INT_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-        {STATUS_STRING_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusStringItemParse, this)},
-        {STATUS_DOUBLE_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-        {STATUS_INT_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-        {STATUS_ESCAPE_CHAR_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-        {STATUS_ESCAPE_CHAR_ITEM_PARSE, std::bind(&RawDataBuilderJsonParser::HandleStatusValueAppend, this)},
-    };
+    std::unordered_map<int, std::function<void()>> handlers;
+    InitParamHandlers(handlers);
     for (auto c : jsonStr_) {
         charactor_ = static_cast<int>(c);
         status_ = statusTabs_[status_][charactor_];
-        auto iter = handleFuncs.find(status_);
-        if (iter != handleFuncs.end()) {
+        auto iter = handlers.find(status_);
+        if (iter != handlers.end()) {
             iter->second();
         }
         lastStatus_ = status_;
