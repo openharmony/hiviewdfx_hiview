@@ -193,7 +193,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
             delayTime = 10; // delay: 10s
         }
     }
-    ffrt::submit(std::bind(&FreezeDetectorPlugin::ProcessEvent, this, watchPoint), {}, {},
+    ffrt::submit([this, watchPoint] { this->ProcessEvent(watchPoint); }, {}, {},
         ffrt::task_attr().name("dfr_fre_detec").qos(ffrt::qos_default)
         .delay(static_cast<unsigned long long>(delayTime) * TO_NANOSECOND_MULTPLE));
 }

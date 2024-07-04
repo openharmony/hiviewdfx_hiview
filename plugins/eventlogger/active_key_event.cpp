@@ -68,7 +68,9 @@ void ActiveKeyEvent::InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, 
     keyOption->SetFinalKey(finalKey);
     keyOption->SetFinalKeyDown(true);
     keyOption->SetFinalKeyDownDuration(holdTime);
-    auto keyEventCallBack = std::bind(&ActiveKeyEvent::CombinationKeyCallback, this, std::placeholders::_1);
+    auto keyEventCallBack = [this] (std::shared_ptr<MMI::KeyEvent> keyEvent) {
+        this->CombinationKeyCallback(keyEvent);
+    };
     int32_t subscribeId = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption, keyEventCallBack);
     if (subscribeId < 0) {
         HIVIEW_LOGE("SubscribeKeyEvent failed, finalKey: %{public}d,"
@@ -92,11 +94,13 @@ void ActiveKeyEvent::Init(std::shared_ptr<LogStoreEx> logStore)
 
     std::set<int32_t> prePowerKeys;
     prePowerKeys.insert(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
-    auto initSubscribePower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
-        prePowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 500);
+    auto initSubscribePower = [this, prePowerKeys] {
+        this->InitSubscribe(prePowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 500);
+    };
     std::set<int32_t> preOnlyPowerKeys;
-    auto initSubscribeOnlyPower = std::bind(&ActiveKeyEvent::InitSubscribe, this,
-        preOnlyPowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 3000);
+    auto initSubscribeOnlyPower = [this, preOnlyPowerKeys] {
+        this->InitSubscribe(preOnlyPowerKeys, MMI::KeyEvent::KEYCODE_POWER, 0, 3000);
+    };
     ffrt::submit(initSubscribePower, {}, {}, ffrt::task_attr().name("initSubscribePower").qos(ffrt::qos_default));
     ffrt::submit(initSubscribeOnlyPower, {}, {},
         ffrt::task_attr().name("initSubscribeOnlyPower").qos(ffrt::qos_default));
@@ -169,7 +173,7 @@ void ActiveKeyEvent::CombinationKeyHandle(std::shared_ptr<MMI::KeyEvent> keyEven
     }
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
 
-    auto hitraceCapture = std::bind(&ActiveKeyEvent::HitraceCapture, this);
+    auto hitraceCapture = [this] { this->HitraceCapture(); };
     ffrt::submit(hitraceCapture, {}, {}, ffrt::task_attr().name("HitraceCapture").qos(ffrt::qos_user_initiated));
 
     DumpCapture(fd);
@@ -188,7 +192,7 @@ void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEv
         return;
     }
     triggeringTime_ = now;
-    auto combinationKeyHandle = std::bind(&ActiveKeyEvent::CombinationKeyHandle, this, keyEvent);
+    auto combinationKeyHandle = [this, keyEvent] { this->CombinationKeyHandle(keyEvent); };
     ffrt::submit(combinationKeyHandle, {}, {},
         ffrt::task_attr().name("ActiveKeyEvent").qos(ffrt::qos_user_initiated));
 }
