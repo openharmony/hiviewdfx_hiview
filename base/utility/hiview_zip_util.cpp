@@ -27,7 +27,6 @@ constexpr int MAX_UNZIP_SIZE = 300 * 1024 * 1024;
 constexpr uint32_t BUFFER_SIZE = 100 * 1024;
 constexpr size_t BLOCK_COUNT = 1;
 constexpr int32_t ERROR_GET_HANDLE = 1001;
-constexpr int32_t ERROR_READ_BYTES = 1002;
 constexpr int32_t ERROR_INVALID_FILE = 1003;
 constexpr int32_t ERROR_OPEN_NEW_FILE = 1004;
 constexpr int32_t ERROR_CREATE_ZIP = 1005;
@@ -77,9 +76,7 @@ int32_t HiviewZipUnit::AddFileInZip(const std::string& srcFile, ZipFileLevel zip
     while (!feof(srcFp)) {
         size_t numBytes = fread(buf, 1, sizeof(buf), srcFp);
         if (numBytes == 0) {
-            HIVIEW_LOGE("zip file failed, size is invalid.");
-            errCode = ERROR_READ_BYTES;
-            break;
+            HIVIEW_LOGI("read an empty file.");
         }
         if (ferror(srcFp)) {
             HIVIEW_LOGE("zip file failed, file: %{public}s, errno: %{public}d", srcFile.c_str(), errno);
