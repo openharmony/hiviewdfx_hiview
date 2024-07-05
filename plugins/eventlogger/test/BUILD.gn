@@ -50,6 +50,7 @@ ohos_unittest("EventloggerPluginTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
+    "window_manager:libwm",
   ]
 
   resource_config_file =
@@ -98,5 +99,6 @@ ohos_unittest("EventLoggerTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
+    "window_manager:libwm",
   ]
 }

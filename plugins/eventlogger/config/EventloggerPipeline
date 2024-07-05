@@ -17,7 +17,7 @@
         },{
             "domain": "FRAMEWORK",
             "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "IPC_FULL", "HIT_EMPTY_WARNING",
-                        "APP_HICOLLIE"]
+                        "APP_HICOLLIE", "FREQUENT_CLICK_WARNING", "USER_PANIC_WARNING"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "HUNGTASK", "COM_LONG_PRESS", "DMD_TP_I2C", "DMD_TP_HP", "DMD_LCD_DDR",
@@ -31,6 +31,9 @@
         },{
             "domain":"FORM_MANAGER",
             "include":["FORM_BLOCK_CALLSTACK"]
+        },{
+           "domain":"SYSTEM_NAV_UE",
+           "include":["GESTURE_NAVIGATION_BACK"]
         }
     ]
 }

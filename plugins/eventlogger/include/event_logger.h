@@ -32,6 +32,7 @@
 
 #include "active_key_event.h"
 #include "db_helper.h"
+#include "event_focus_listener.h"
 #include "event_logger_config.h"
 #include "freeze_common.h"
 
@@ -80,6 +81,9 @@ private:
         "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN"
     };
 
+    static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
+    static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
+    static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
     static constexpr int DUMP_TIME_RATIO = 2;
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
@@ -89,10 +93,13 @@ private:
     static constexpr int TOP_WINDOW_NUM = 3;
     static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
     static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
+    static constexpr uint8_t LONGPRESS_PRIVACY = 1;
+    static constexpr uint8_t USER_PANIC_WARNING_PRIVACY = 2;
 
     std::unique_ptr<DBHelper> dbHelper_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::shared_ptr<LogStoreEx> logStore_;
+    bool isRegisterFocusListener = false;
     long lastPid_ = 0;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
@@ -106,6 +113,8 @@ private:
     std::string cmdlineContent_ = "";
     std::string lastEventName_ = "";
     std::vector<std::string> rebootReasons_;
+    std::vector<uint64_t> backTimes_;
+    sptr<EventFocusListener> eventFocusListener_;
 
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
     void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
@@ -117,10 +126,13 @@ private:
     bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
+    void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
+    bool CheckProcessRepeatFreeze(const std::string& eventName, long pid);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
     void CheckEventOnContinue(std::shared_ptr<SysEvent> event);
     bool CanProcessRebootEvent(const Event& event);
     void ProcessRebootEvent();
+    void RegisterFocusListener();
     std::string GetRebootReason() const;
     void GetCmdlineContent();
     void GetRebootReasonConfig();
