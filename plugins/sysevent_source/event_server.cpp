@@ -245,7 +245,7 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
     while (true) {
         int ret = recvmsg(socketId_, &msgh, 0);
         if (ret <= 0) {
-            HIVIEW_LOGW("failed to recv msg from socket");
+            HIVIEW_LOGD("failed to recv msg from socket");
             break;
         }
         pid_t uCredPid = ReadPidFromMsgh(msgh);
