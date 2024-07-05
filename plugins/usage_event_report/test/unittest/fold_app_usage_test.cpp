@@ -17,10 +17,13 @@
 
 #include "file_util.h"
 #include "fold_app_usage_db_helper.h"
+#include "fold_app_usage_event_factory.h"
+#include "fold_event_cacher.h"
 #include "rdb_errno.h"
 #include "rdb_helper.h"
 #include "rdb_store.h"
 #include "sql_util.h"
+#include "sys_event.h"
 #include "time_util.h"
 #include "usage_event_common.h"
 
@@ -161,6 +164,118 @@ HWTEST_F(FoldAppUsageTest, FoldAppUsageTest003, TestSize.Level1)
     EXPECT_EQ(deleteEventNum, 1);
 
     FileUtil::ForceRemoveDirectory("/data/test/sys_event_logger/", true);
+}
+
+/**
+ * @tc.name: FoldAppUsageTest004
+ * @tc.desc: add app start and screen status change events to db.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FoldAppUsageTest, FoldAppUsageTest004, TestSize.Level1)
+{
+    SysEventCreator sysEventCreator("WINDOWMANAGER", "NOTIFY_FOLD_STATE_CHANGE", SysEventCreator::BEHAVIOR);
+    sysEventCreator.SetKeyValue("CURRENT_FOLD_STATUS", 0);
+    sysEventCreator.SetKeyValue("NEXT_FOLD_STATUS", 1);
+    sysEventCreator.SetKeyValue("time_", 111);
+
+    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    FoldEventCacher cacher("/data/test/");
+    cacher.ProcessEvent(sysEvent);
+
+    SysEventCreator sysEventCreator1("AAFWK", "APP_FOREGROUND", SysEventCreator::BEHAVIOR);
+    sysEventCreator1.SetKeyValue("BUNDLE_NAME", "test_bundle");
+    sysEventCreator1.SetKeyValue("VERSION_NAME", "1");
+    sysEventCreator1.SetKeyValue("time_", 123);
+
+    auto sysEvent1 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator1);
+    cacher.ProcessEvent(sysEvent1);
+
+    sysEventCreator1.SetKeyValue("BUNDLE_NAME", FoldAppUsageEventSpace::SCENEBOARD_BUNDLE_NAME);
+    auto sysEvent2 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator1);
+    cacher.ProcessEvent(sysEvent2);
+
+    FoldAppUsageDbHelper dbHelper("/data/test/");
+    int index1 = dbHelper.QueryRawEventIndex("test_bundle", FoldEventId::EVENT_APP_START);
+    ASSERT_TRUE(index1 != 0);
+
+    SysEventCreator sysEventCreator2("WINDOWMANAGER", "NOTIFY_FOLD_STATE_CHANGE", SysEventCreator::BEHAVIOR);
+    sysEventCreator2.SetKeyValue("CURRENT_FOLD_STATUS", 1);
+    sysEventCreator2.SetKeyValue("NEXT_FOLD_STATUS", 2);
+    sysEventCreator2.SetKeyValue("time_", 333);
+    auto sysEvent3 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator2);
+    cacher.ProcessEvent(sysEvent3);
+    int index2 = dbHelper.QueryRawEventIndex("test_bundle", FoldEventId::EVENT_SCREEN_STATUS_CHANGED);
+    ASSERT_TRUE(index2 != 0);
+
+    SysEventCreator sysEventCreator3("WINDOWMANAGER", "VH_MODE", SysEventCreator::BEHAVIOR);
+    sysEventCreator3.SetKeyValue("MODE", 1);
+    sysEventCreator3.SetKeyValue("time_", 444);
+    auto sysEvent4 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator3);
+    cacher.ProcessEvent(sysEvent4);
+    int index3 = dbHelper.QueryRawEventIndex("test_bundle", FoldEventId::EVENT_SCREEN_STATUS_CHANGED);
+    ASSERT_TRUE(index3 != 0);
+
+    ASSERT_TRUE(index3 != index2);
+}
+
+/**
+ * @tc.name: FoldAppUsageTest005
+ * @tc.desc: add app exit event to db.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FoldAppUsageTest, FoldAppUsageTest005, TestSize.Level1)
+{
+    SysEventCreator sysEventCreator("WINDOWMANAGER", "NOTIFY_FOLD_STATE_CHANGE", SysEventCreator::BEHAVIOR);
+    sysEventCreator.SetKeyValue("CURRENT_FOLD_STATUS", 0);
+    sysEventCreator.SetKeyValue("NEXT_FOLD_STATUS", 1);
+    sysEventCreator.SetKeyValue("time_", 111);
+
+    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    FoldEventCacher cacher("/data/test/");
+    cacher.ProcessEvent(sysEvent);
+
+    SysEventCreator sysEventCreator1("AAFWK", "APP_BACKGROUND", SysEventCreator::BEHAVIOR);
+    sysEventCreator1.SetKeyValue("BUNDLE_NAME", "test_bundle");
+    sysEventCreator1.SetKeyValue("VERSION_NAME", "1");
+    sysEventCreator1.SetKeyValue("time_", 456);
+
+    auto sysEvent1 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator1);
+    cacher.ProcessEvent(sysEvent1);
+
+    sysEventCreator1.SetKeyValue("BUNDLE_NAME", FoldAppUsageEventSpace::SCENEBOARD_BUNDLE_NAME);
+    auto sysEvent2 = std::make_shared<SysEvent>("test", nullptr, sysEventCreator1);
+    cacher.ProcessEvent(sysEvent2);
+
+    FoldAppUsageDbHelper dbHelper("/data/test/");
+    int index = dbHelper.QueryRawEventIndex("test_bundle", FoldEventId::EVENT_APP_EXIT);
+    ASSERT_TRUE(index != 0);
+
+    cacher.TimeOut();
+    index = dbHelper.QueryRawEventIndex("test_bundle", FoldEventId::EVENT_COUNT_DURATION);
+    ASSERT_TRUE(index != 0);
+}
+
+/**
+ * @tc.name: FoldAppUsageTest006
+ * @tc.desc: report fold app usage events.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FoldAppUsageTest, FoldAppUsageTest006, TestSize.Level1)
+{
+    AppEventRecord record{1104, 1000, "test_bundle", 11, 11, "1", g_endTime, 1, 2, 3, 4};
+    FoldAppUsageDbHelper dbHelper("/data/test/");
+    ASSERT_TRUE(dbHelper.AddAppEvent(record) == 0);
+
+    std::vector<std::unique_ptr<LoggerEvent>> foldAppUsageEvents;
+    FoldAppUsageEventFactory factory("/data/test/");
+    factory.Create(foldAppUsageEvents);
+    ASSERT_TRUE(foldAppUsageEvents.size() != 0);
+
+    for (size_t i = 0; i < foldAppUsageEvents.size(); ++i) {
+        foldAppUsageEvents[i]->Report();
+    }
+    FileUtil::ForceRemoveDirectory("/data/test/sys_event_logger/", true);
+    ASSERT_TRUE(!FileUtil::FileExists("/data/test/sys_event_logger/"));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
