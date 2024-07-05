@@ -382,14 +382,16 @@ void EventLogTask::HitraceCapture()
 void EventLogTask::SCBSessionCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s 4606 -a '-b SCBScenePanel getContainerSession'", ShellCatcher::CATCHER_SCBSESSION, pid_);
+    capture->Initialize("hidumper -s 4606 -a '-b SCBScenePanel getContainerSession'",
+        ShellCatcher::CATCHER_SCBSESSION, pid_);
     tasks_.push_back(capture);
 }
 
 void EventLogTask::SCBViewParamCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hidumper -s 4606 -a '-b SCBScenePanel getViewParam'", ShellCatcher::CATCHER_SCBVIEWPARAM, pid_);
+    capture->Initialize("hidumper -s 4606 -a '-b SCBScenePanel getViewParam'",
+        ShellCatcher::CATCHER_SCBVIEWPARAM, pid_);
     tasks_.push_back(capture);
 }
 
