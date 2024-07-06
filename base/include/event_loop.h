@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,12 +14,10 @@
  */
 #ifndef HIVIEW_BASE_EVENT_LOOP_H
 #define HIVIEW_BASE_EVENT_LOOP_H
-#include <algorithm>
 #include <atomic>
 #include <future>
 #include <map>
 #include <memory>
-#include <utility>
 
 #include <sys/types.h>
 
@@ -43,11 +41,7 @@ constexpr int LOOP_WAKEUP_HANDLE_INDEX = 0;
 constexpr int MAX_EVENT_SIZE = 16;
 constexpr int MAX_HANDLE_ARRAY_SIZE = 1;
 constexpr int MAX_WATCHED_FDS = 64;
-constexpr uint64_t SECOND_TO_MICROSECOND = 1000000;
-constexpr uint64_t SECOND_TO_NANOSECOND = 1000000000;
-constexpr uint64_t NANOSECOND_TO_MILLSECOND = 1000000;
-constexpr uint64_t MICROSECOND_TO_MILLSECOND = 1000;
-constexpr uint64_t MICROSECOND_TO_NANOSECOND = 1000;
+
 enum LoopEventType {
     LOOP_EVENT_TASK,
     LOOP_PACKAGED_TASK,
@@ -120,6 +114,8 @@ public:
         uint64_t interval, bool repeat);
     bool RemoveEvent(uint64_t seq);
 
+    std::string GetRawName() const;
+
     const std::string &GetName() const
     {
         return name_;
@@ -138,6 +134,7 @@ private:
     };
 
     bool InitEventQueueNotifier();
+    void InitThreadName();
     void Run();
     void WakeUp();
     uint64_t ProcessQueuedEvent();

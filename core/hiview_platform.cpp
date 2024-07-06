@@ -504,7 +504,7 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
     auto& plugin = pluginMap_[pluginInfo.name];
 
     if (pluginInfo.workHandlerType == "thread") {
-        auto workLoop = GetAvaliableWorkLoop(pluginInfo.workHandlerName);
+        auto workLoop = GetAvailableWorkLoop(pluginInfo.workHandlerName);
         plugin->BindWorkLoop(workLoop);
     }
 
@@ -568,7 +568,7 @@ void HiviewPlatform::StartEventSource(std::shared_ptr<EventSource> source)
 }
 
 // only call from main thread
-std::shared_ptr<EventLoop> HiviewPlatform::GetAvaliableWorkLoop(const std::string& name)
+std::shared_ptr<EventLoop> HiviewPlatform::GetAvailableWorkLoop(const std::string& name)
 {
     auto it = privateWorkLoopMap_.find(name);
     if (it != privateWorkLoopMap_.end()) {
@@ -605,7 +605,7 @@ void HiviewPlatform::ScheduleCreateAndInitPlugin(const PluginConfig::PluginInfo&
     auto& plugin = pluginMap_[pluginInfo.name];
 
     if (pluginInfo.workHandlerType == "thread") {
-        auto workLoop = GetAvaliableWorkLoop(pluginInfo.workHandlerName);
+        auto workLoop = GetAvailableWorkLoop(pluginInfo.workHandlerName);
         plugin->BindWorkLoop(workLoop);
     }
     plugin->OnLoad();
@@ -783,13 +783,13 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
         return;
     }
 
-    auto looperName = looper->GetName();
     // three counts for 1.current ref 2.plugin ref 3.map holder ref
     if (looper.use_count() <= 3) {
-        HIVIEW_LOGI("%s has refs(%ld).", looperName.c_str(), looper.use_count());
+        auto looperName = looper->GetRawName();
+        HIVIEW_LOGI("%{public}s has refs(%{public}ld).", looperName.c_str(), looper.use_count());
         looper->StopLoop();
         privateWorkLoopMap_.erase(looperName);
-        HIVIEW_LOGI("Stop %s done.", looperName.c_str());
+        HIVIEW_LOGI("Stop %{public}s done.", looperName.c_str());
     }
 
     if (target->GetType() == Plugin::PluginType::DYNAMIC) {

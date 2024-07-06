@@ -168,7 +168,7 @@ private:
     void ScheduleCreateAndInitPlugin(const PluginConfig::PluginInfo& pluginInfo);
     DynamicModule LoadDynamicPlugin(const std::string& name) const;
     std::string GetDynamicLibName(const std::string& name, bool hasOhosSuffix) const;
-    std::shared_ptr<EventLoop> GetAvaliableWorkLoop(const std::string& name);
+    std::shared_ptr<EventLoop> GetAvailableWorkLoop(const std::string& name);
     void CleanupUnusedResources();
     void UnloadPlugin(const std::string& name);
     void StartEventSource(std::shared_ptr<EventSource> source);
