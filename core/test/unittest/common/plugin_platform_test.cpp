@@ -21,7 +21,6 @@
 
 #include "event.h"
 #include "file_util.h"
-#include "hiview_platform.h"
 
 #include "platform_test_result_listener.h"
 using namespace testing::ext;
@@ -34,6 +33,7 @@ void PluginPlatformTest::SetUp()
      */
     printf("SetUp.\n");
     FileUtil::ForceCreateDirectory("/data/test/faultlog");
+    platform.GetPluginMap();
 }
 
 /**
@@ -84,7 +84,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformServiceStartTest001, TestSize.Level3)
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();;
+    OHOS::HiviewDFX::HiviewPlatform platform;
     printf("PluginPlatformServiceStartTest001. called\n");
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
@@ -107,7 +107,7 @@ HWTEST_F(PluginPlatformTest, PluginPlatformDynamicPluginUnloadTest001, TestSize.
      * @tc.steps: step1. init plugin platform
      */
     printf("PluginPlatformTest2.\n");
-    OHOS::HiviewDFX::HiviewPlatform& platform = HiviewPlatform::GetInstance();;
+    OHOS::HiviewDFX::HiviewPlatform platform;
     if (!platform.InitEnvironment("/data/test/test_data/hiview_platform_config")) {
         printf("Fail to init environment. \n");
     }
