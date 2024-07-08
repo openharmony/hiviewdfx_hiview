@@ -329,8 +329,8 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
 bool IsFaultLogLimit()
 {
     std::string isDev = OHOS::system::GetParameter("const.security.developermode.state", "");
-    std::string isBeta = OHOS::system::GetParameter("const.logsystemverison.type", "");
-    if ((isDev == "true") || (isBeta == "user")) {
+    std::string isBeta = OHOS::system::GetParameter("const.logsystem.versiontype", "");
+    if ((isDev == "true") || (isBeta == "beta")) {
         return false;
     }
     return true;
