@@ -1096,15 +1096,9 @@ void Faultlogger::ReportAppFreezeToAppEvent(const FaultLogInfo& info) const
  */
 bool Faultlogger::CheckFaultLog(FaultLogInfo info)
 {
-    int32_t err = 0;
-    std::string file;
-
-    auto fileName = GetFaultLogName(info);
-    if (!mgr_->GetFaultLogContent(fileName, file)) {
-        err = CrashExceptionCode::CRASH_UNKNOWN;
-        HIVIEW_LOGE("read log %{public}s fail.", fileName.c_str());
-    } else {
-        err = CheckCrashLogValid(file);
+    int32_t err = CrashExceptionCode::CRASH_ESUCCESS;
+    if (!CheckFaultSummaryValid(info.summary)) {
+        err = CrashExceptionCode::CRASH_LOG_ESUMMARYLOS;
     }
     ReportCrashException(info.module, info.pid, info.id, err);
 
