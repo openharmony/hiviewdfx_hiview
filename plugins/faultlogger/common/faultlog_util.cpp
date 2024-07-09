@@ -80,11 +80,11 @@ std::string GetFaultLogName(const FaultLogInfo& info)
 
     std::string ret = "";
     if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
-        if (info.reason == "TSAN") {
+        if (info.reason.compare("TSAN") == 0) {
             ret.append("tsan");
-        } else if (info.reason == "UBSAN") {
+        } else if (info.reason.compare("UBSAN") == 0) {
             ret.append("ubsan");
-        } else if (info.reason == "GWP-ASAN") {
+        } else if (info.reason.compare("GWP-ASAN") == 0) {
             ret.append("gwpasan");
         } else {
             ret.append("sanitizer");

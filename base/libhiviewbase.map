@@ -467,6 +467,7 @@
         "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::SetSequence(long)";
         "OHOS::HiviewDFX::EventStore::SysEventSequenceManager::GetSequenceFile() const";
         "OHOS::HiviewDFX::Parameter::IsTestAppTraceOn()";
+        "OHOS::HiviewDFX::EventLoop::GetRawName() const";
     };
   local:
     *;

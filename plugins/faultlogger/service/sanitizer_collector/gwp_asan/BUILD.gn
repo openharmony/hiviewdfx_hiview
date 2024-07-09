@@ -20,6 +20,8 @@ ohos_shared_library("libasan_logger") {
 
   innerapi_tags = [ "platformsdk_indirect" ]
 
+  version_script = "asan.map"
+
   external_deps = [
     "ability_base:want",
     "bounds_checking_function:libsec_shared",

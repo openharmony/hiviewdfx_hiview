@@ -831,6 +831,8 @@ void EventLogger::ProcessRebootEvent()
     event->SetEventValue("PACKAGE_NAME", STRINGID_LONGPRESS);
     event->SetEventValue("PROCESS_NAME", STRINGID_LONGPRESS);
     event->SetEventValue("MSG", STRINGID_LONGPRESS);
+    event->SetPrivacy(LONGPRESS_PRIVACY);
+    event->SetLevel(LONGPRESS_LEVEL);
 
     auto context = GetHiviewContext();
     if (context != nullptr) {

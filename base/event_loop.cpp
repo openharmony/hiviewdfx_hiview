@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,7 @@
 #include "hiview_logger.h"
 #include "memory_util.h"
 #include "thread_util.h"
+#include "time_util.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -219,7 +220,7 @@ uint64_t EventLoop::AddTimerEvent(std::shared_ptr<EventHandler> handler, std::sh
     }
 
     uint64_t now = NanoSecondSinceSystemStart();
-    uint64_t intervalMicro = interval * SECOND_TO_NANOSECOND;
+    uint64_t intervalMicro = interval * static_cast<uint64_t>(TimeUtil::SEC_TO_NANOSEC);
     if (now + intervalMicro < now) {
         HIVIEW_LOGW("Add Timer Event fail. The interval is too large. please check.");
         return -1;
@@ -257,6 +258,12 @@ bool EventLoop::RemoveEvent(uint64_t seq)
         return false;
     }
     return pendingEvents_.remove(seq);
+}
+
+std::string EventLoop::GetRawName() const
+{
+    auto pos = name_.find('@');
+    return pos == std::string::npos ? name_ : name_.substr(0, pos);
 }
 
 void EventLoop::ResetTimerIfNeedLocked()
@@ -400,6 +407,23 @@ void EventLoop::Run()
         HIVIEW_LOGW("Failed to optimize memory for current thread");
     }
 
+    InitThreadName();
+
+    while (true) {
+        uint64_t leftTimeNanosecond = ProcessQueuedEvent();
+        uint64_t leftTimeMill = INT_MAX;
+        if (leftTimeNanosecond != INT_MAX) {
+            leftTimeMill = (leftTimeNanosecond / static_cast<uint64_t>(TimeUtil::MILLISEC_TO_NANOSEC));
+        }
+        WaitNextEvent(leftTimeMill);
+        if (needQuit_) {
+            break;
+        }
+    }
+}
+
+void EventLoop::InitThreadName()
+{
     // set thread name
     const int maxLength = 16;
     std::string restrictedName = name_;
@@ -410,18 +434,6 @@ void EventLoop::Run()
     Thread::SetThreadDescription(restrictedName);
 
     name_ = name_ + "@" + std::to_string(Thread::GetTid());
-
-    while (true) {
-        uint64_t leftTimeNanosecond = ProcessQueuedEvent();
-        uint64_t leftTimeMill = INT_MAX;
-        if (leftTimeNanosecond != INT_MAX) {
-            leftTimeMill = (leftTimeNanosecond / NANOSECOND_TO_MILLSECOND);
-        }
-        WaitNextEvent(leftTimeMill);
-        if (needQuit_) {
-            break;
-        }
-    }
 }
 
 uint64_t EventLoop::ProcessQueuedEvent()

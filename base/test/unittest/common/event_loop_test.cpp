@@ -495,14 +495,18 @@ HWTEST_F(EventLoopTest, EventLoopEventAuditTest001, TestSize.Level3)
     sleep(3);
     EXPECT_EQ(0, res1);
 
-    currentLooper_ = std::make_shared<EventLoop>("restart_loop");
+    const std::string loopName = "restart_loop";
+    currentLooper_ = std::make_shared<EventLoop>(loopName);
     EXPECT_TRUE(currentLooper_ != nullptr);
-    EXPECT_EQ(currentLooper_->GetName(), "restart_loop");
+    EXPECT_EQ(currentLooper_->GetName(), loopName);
     currentLooper_->StartLoop();
     res1 = currentLooper_->AddEvent(eventhandler, pipelineEvent, nullptr);
     sleep(2);
     EXPECT_NE(0, res1);
     EXPECT_EQ(4, eventhandler->processedEventCount_);
+
+    EXPECT_NE(currentLooper_->GetName(), loopName); // name: loopName@xxx
+    EXPECT_EQ(currentLooper_->GetRawName(), loopName);
 }
 }
 }
