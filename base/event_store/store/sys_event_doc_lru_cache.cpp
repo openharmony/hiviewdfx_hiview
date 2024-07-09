@@ -68,6 +68,7 @@ bool SysEventDocLruCache::Remove(const LruCacheKey& key)
 
 void SysEventDocLruCache::Clear()
 {
+    lruList_.clear();
     lruCache_.clear();
 }
 } // EventStore
