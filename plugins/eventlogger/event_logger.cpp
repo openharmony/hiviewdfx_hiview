@@ -85,39 +85,38 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         HIVIEW_LOGE("event == nullptr");
         return false;
     }
-
+    RegisterFocusListener();
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
 
+    long pid = sysEvent->GetEventIntValue("PID");
+    pid = pid ? pid : sysEvent->GetPid();
+    std::string eventName = sysEvent->eventName_;
+    if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
+        if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+            ReportUserPanicWarning(sysEvent, pid);
+        }
+        return true;
+    }
     if (!IsHandleAppfreeze(sysEvent)) {
         return true;
     }
 
-    long pid = sysEvent->GetEventIntValue("PID");
-    pid = pid ? pid : sysEvent->GetPid();
-    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", sysEvent->domain_.c_str(),
-        sysEvent->eventName_.c_str(), pid);
+    std::string domain = sysEvent->domain_;
+    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", domain.c_str(),
+        eventName.c_str(), pid);
 
-    if (sysEvent->eventName_ == "THREAD_BLOCK_6S" || sysEvent->eventName_ == "APP_INPUT_BLOCK") {
-        long lastPid = lastPid_;
-        std::string lastEventName = lastEventName_;
-        lastPid_ = pid;
-        lastEventName_ = sysEvent->eventName_;
-        if (lastPid == pid) {
-            HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld has happened", lastEventName.c_str(), pid);
-            return true;
-        }
+    if (CheckProcessRepeatFreeze(eventName, pid)) {
+        return true;
     }
-
     if (sysEvent->GetValue("eventLog_action").empty()) {
-        HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld, eventLog_action is empty.",
-            sysEvent->eventName_.c_str(), pid);
+        HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld, eventLog_action is empty.", eventName.c_str(), pid);
         UpdateDB(sysEvent, "nolog");
         return true;
     }
 
     sysEvent->OnPending();
 
-    bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), sysEvent->eventName_) != FFRT_VECTOR.end();
+    bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
     auto task = [this, sysEvent, isFfrt]() {
         HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
@@ -129,11 +128,9 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         }
         this->StartLogCollect(sysEvent);
     };
-    HIVIEW_LOGI("before submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
-        sysEvent->eventName_.c_str(), pid);
+    HIVIEW_LOGI("before submit event task to ffrt, eventName=%{public}s, pid=%{public}ld", eventName.c_str(), pid);
     ffrt::submit(task, {}, {}, ffrt::task_attr().name("eventlogger"));
-    HIVIEW_LOGD("after submit event task to ffrt, eventName=%{public}s, pid=%{public}ld",
-        sysEvent->eventName_.c_str(), pid);
+    HIVIEW_LOGD("after submit event task to ffrt, eventName=%{public}s, pid=%{public}ld", eventName.c_str(), pid);
     return true;
 }
 
@@ -653,6 +650,76 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
     return true;
 }
 
+void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid)
+{
+    if (event->eventName_ == "FREQUENT_CLICK_WARNING") {
+        if (event->happenTime_ - eventFocusListener_->lastChangedTime_ <= CLICK_FREEZE_TIME_LIMIT) {
+            return;
+        }
+    } else {
+        backTimes_.push_back(event->happenTime_);
+        if (backTimes_.size() < BACK_FREEZE_COUNT_LIMIT) {
+            return;
+        }
+        if ((event->happenTime_ - backTimes_[0] <= BACK_FREEZE_TIME_LIMIT) &&
+            (event->happenTime_ - eventFocusListener_->lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
+            backTimes_.clear();
+        } else {
+            backTimes_.erase(backTimes_.begin(), backTimes_.end() - (BACK_FREEZE_COUNT_LIMIT - 1));
+            return;
+        }
+    }
+
+    auto userPanicEvent = std::make_shared<SysEvent>("EventLogger", nullptr, "");
+    if (userPanicEvent == nullptr) {
+        return;
+    }
+
+    std::string processName = (event->eventName_ == "FREQUENT_CLICK_WARNING") ? event->GetEventValue("PROCESS_NAME") :
+        event->GetEventValue("PNAMEID");
+    std::string msg = (event->eventName_ == "FREQUENT_CLICK_WARNING") ? "frequent click" : "gesture navigation back";
+
+    userPanicEvent->domain_ = "FRAMEWORK";
+    userPanicEvent->eventName_ = "USER_PANIC_WARNING";
+    userPanicEvent->happenTime_ = TimeUtil::GetMilliseconds();
+    userPanicEvent->messageType_ = Event::MessageType::SYS_EVENT;
+    userPanicEvent->SetEventValue(EventStore::EventCol::DOMAIN, "FRAMEWORK");
+    userPanicEvent->SetEventValue(EventStore::EventCol::NAME, "USER_PANIC_WARNING");
+    userPanicEvent->SetEventValue(EventStore::EventCol::TYPE, 1);
+    userPanicEvent->SetEventValue(EventStore::EventCol::TS, TimeUtil::GetMilliseconds());
+    userPanicEvent->SetEventValue(EventStore::EventCol::TZ, TimeUtil::GetTimeZone());
+    userPanicEvent->SetEventValue("PID", pid);
+    userPanicEvent->SetEventValue("UID", 0);
+    userPanicEvent->SetEventValue("PACKAGE_NAME", processName);
+    userPanicEvent->SetEventValue("PROCESS_NAME", processName);
+    userPanicEvent->SetEventValue("MSG", msg);
+    userPanicEvent->SetPrivacy(USER_PANIC_WARNING_PRIVACY);
+    userPanicEvent->SetLevel("CRITICAL");
+    userPanicEvent->SetTag("STABILITY");
+
+    auto context = GetHiviewContext();
+    if (context != nullptr) {
+        auto seq = context->GetPipelineSequenceByName("EventloggerPipeline");
+        userPanicEvent->SetPipelineInfo("EventloggerPipeline", seq);
+        userPanicEvent->OnContinue();
+    }
+}
+
+bool EventLogger::CheckProcessRepeatFreeze(const std::string& eventName, long pid)
+{
+    if (eventName == "THREAD_BLOCK_6S" || eventName == "APP_INPUT_BLOCK") {
+        long lastPid = lastPid_;
+        std::string lastEventName = lastEventName_;
+        lastPid_ = pid;
+        lastEventName_ = eventName;
+        if (lastPid == pid) {
+            HIVIEW_LOGI("eventName=%{public}s, pid=%{public}ld has happened", lastEventName.c_str(), pid);
+            return true;
+        }
+    }
+    return false;
+}
+
 void EventLogger::CheckEventOnContinue(std::shared_ptr<SysEvent> event)
 {
     event->ResetPendingStatus();
@@ -707,11 +774,15 @@ void EventLogger::OnLoad()
     if (freezeCommon_->Init() && freezeCommon_ != nullptr && freezeCommon_->GetFreezeRuleCluster() != nullptr) {
         dbHelper_ = std::make_unique<DBHelper>(freezeCommon_);
     }
+    RegisterFocusListener();
 }
 
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
+    if (eventFocusListener_ != nullptr) {
+        Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
+    }
 }
 
 std::string EventLogger::GetListenerName()
@@ -768,6 +839,21 @@ void EventLogger::ProcessRebootEvent()
         auto seq = context->GetPipelineSequenceByName("EventloggerPipeline");
         event->SetPipelineInfo("EventloggerPipeline", seq);
         event->OnContinue();
+    }
+}
+
+void EventLogger::RegisterFocusListener()
+{
+    if (isRegisterFocusListener) {
+        return;
+    }
+    eventFocusListener_ = EventFocusListener::GetInstance();
+    if (eventFocusListener_ != nullptr) {
+        Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
+        if (ret == Rosen::WMError::WM_OK) {
+            HIVIEW_LOGI("register eventFocusListener succeed.");
+            isRegisterFocusListener = true;
+        }
     }
 }
 

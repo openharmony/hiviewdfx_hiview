@@ -50,6 +50,7 @@ ohos_unittest("EventloggerCatcherTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
+    "window_manager:libwm",
   ]
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
