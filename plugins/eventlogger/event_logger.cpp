@@ -665,7 +665,7 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
             (event->happenTime_ - eventFocusListener_->lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
             backTimes_.clear();
         } else {
-            backTimes_.erase(backTimes_.begin());
+            backTimes_.erase(backTimes_.begin(), backTimes_.end() - (BACK_COUNT_LIMIT - 1));
             return;
         }
     }
