@@ -15,9 +15,14 @@
 #ifndef HIVIEW_PLUGIN_PLATFORM_TEST_H
 #define HIVIEW_PLUGIN_PLATFORM_TEST_H
 #include <gtest/gtest.h>
+
+#include "hiview_platform.h"
 class PluginPlatformTest : public testing::Test {
 public:
     void SetUp();
     void TearDown() {};
+
+private:
+    OHOS::HiviewDFX::HiviewPlatform platform;
 };
 #endif // HIVIEW_PLUGIN_PLATFORM_TEST_H
