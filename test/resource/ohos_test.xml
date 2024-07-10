@@ -101,7 +101,7 @@
             <option name="push" value="base/hiview_platform_config -> /data/test/test_data/" src="res"/>
             <option name="shell" value="mkdir /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/anco/"/>
             <option name="push" value="param_update/anco/anco_test.txt -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/anco/" src="res"/>
-            <option name="push" value="param_update/CERT.ENC -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/" src="res"/>
+            <option name="push" value="param_update/CERT_PRE.config -> /data/test/test_data/" src="res"/>
             <option name="push" value="param_update/CERT.SF -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/" src="res"/>
             <option name="push" value="param_update/MANIFEST.MF -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/" src="res"/>
             <option name="push" value="param_update/test.txt -> /data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/" src="res"/>
