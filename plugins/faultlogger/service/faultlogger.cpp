@@ -332,6 +332,10 @@ bool Faultlogger::VerifiedDumpPermission()
 
 void Faultlogger::Dump(int fd, const std::vector<std::string> &cmds)
 {
+    if (!VerifiedDumpPermission()) {
+        dprintf(fd, "dump operation is not permitted.\n");
+        return;
+    }
     auto request = InitDumpRequest();
     int32_t status = DUMP_PARSE_CMD;
     for (auto it = cmds.begin(); it != cmds.end(); it++) {

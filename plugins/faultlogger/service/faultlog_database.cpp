@@ -55,11 +55,11 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
         info.time = sysEvent->GetEventIntValue("HAPPEN_TIME") != DEFAULT_INT_VALUE?
                     sysEvent->GetEventIntValue("HAPPEN_TIME") : sysEvent->GetEventIntValue("time_");
     }
-    info.pid = sysEvent->GetEventIntValue("PID") != DEFAULT_INT_VALUE?
+    info.pid = sysEvent->GetEventIntValue("PID") != DEFAULT_INT_VALUE ?
                sysEvent->GetEventIntValue("PID") : sysEvent->GetEventIntValue("pid_");
 
-    info.id = sysEvent->GetEventIntValue("UID") != DEFAULT_INT_VALUE?
-               sysEvent->GetEventIntValue("UID") : sysEvent->GetEventIntValue("uid_");
+    info.id = sysEvent->GetEventIntValue("UID") != DEFAULT_INT_VALUE ?
+              sysEvent->GetEventIntValue("UID") : sysEvent->GetEventIntValue("uid_");
     info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
