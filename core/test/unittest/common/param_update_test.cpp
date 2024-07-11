@@ -23,6 +23,42 @@ using namespace OHOS::HiviewDFX;
 namespace {
     const std::string TEST_CONFIG_FILE = "/data/system/hiview/test.txt";
     const std::string TEST_ANCO_CONFIG_PATH = "/data/system/hiview/anco/";
+    const std::string CERT_CONFIG_FILE_FULL_NAME = "/data/test/test_data/CERT_PRE.config";
+    const std::string CERT_ENC_FILE_FULL_NAME =
+        "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/CERT.ENC";
+    constexpr int CHAR_0 = 48; // '0'
+    constexpr int CHAR_9 = 57; // '9'
+    constexpr int CHAR_A = 65; // 'A'
+    constexpr int CHAR_F = 70; // 'F'
+    constexpr int HEX_BASE = 10;
+
+int ToNum(char a)
+{
+    if (a >= CHAR_0 && a <= CHAR_9) {
+        return static_cast<int>(a - '0');
+    }
+
+    if (a >= CHAR_A && a <= CHAR_F) {
+        return (static_cast<int>(a - 'A') + HEX_BASE);
+    }
+    return 0;
+}
+
+void CreateEncFile()
+{
+    std::string content;
+    FileUtil::LoadStringFromFile(CERT_CONFIG_FILE_FULL_NAME, content);
+    std::vector<char> saveContent;
+    const int hightBit = 4;
+    const int hexLen = 2;
+    const int secondHex = 1;
+    for (int i = 0; i < content.length();) {
+        saveContent.push_back(static_cast<char>(ToNum(content[i]) << hightBit) + (ToNum(content[i + secondHex])));
+        i += hexLen;
+    }
+
+    FileUtil::SaveBufferToFile(CERT_ENC_FILE_FULL_NAME, saveContent, true);
+}
 }
 
 void ParamUpdateTest::SetUp()
@@ -36,6 +72,7 @@ void ParamUpdateTest::SetUp()
     } else {
         std::cout << "init environment successful" << std::endl;
     }
+    CreateEncFile();
 }
 
 void ParamUpdateTest::TearDown()
