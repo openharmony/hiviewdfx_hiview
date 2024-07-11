@@ -39,6 +39,7 @@ namespace {
 constexpr char LOG_FILE_PATH[] = "/data/test/adapter_utility_test/";
 constexpr char TEST_JSON_FILE_PATH[] = "/data/test/test_data/test.json";
 constexpr char FREEZE_JSON_FILE[] = "/data/test/test_data/0-0-123456";
+constexpr char FREEZE_JSON_FILE_EMPTY[] = "/data/test/test_data/0-1-123456";
 constexpr char TEST_ZIP_FILE[] = "/data/test/test_data/test_pack.zip";
 const std::string SOURCE_PATH = "/data/test/test_data/";
 const std::string ZIP_DES_PATH = "/data/test/test_data/zip_des/";
@@ -509,7 +510,7 @@ HWTEST_F(AdapterUtilityOhosTest, AshMemoryUtilsOhosTest001, testing::ext::TestSi
 
 /**
  * @tc.name: CJsonUtilTest001
- * @tc.desc: Test apifs of CJsonUtil
+ * @tc.desc: Test api of CJsonUtil
  * @tc.type: FUNC
  * @tc.require: issueI9E8HA
  */
@@ -548,7 +549,7 @@ HWTEST_F(AdapterUtilityOhosTest, CJsonUtilTest001, testing::ext::TestSize.Level3
 
 /**
  * @tc.name: FreezeJsonUtilTest001
- * @tc.desc: Test apifs of FreezeJsonUtil
+ * @tc.desc: Test api of FreezeJsonUtil
  * @tc.type: FUNC
  * @tc.require: issueI9E8HA
  */
@@ -561,8 +562,21 @@ HWTEST_F(AdapterUtilityOhosTest, FreezeJsonUtilTest001, testing::ext::TestSize.L
 }
 
 /**
+ * @tc.name: FreezeJsonUtilTest002
+ * @tc.desc: Test api of FreezeJsonUtil
+ * @tc.type: FUNC
+ */
+HWTEST_F(AdapterUtilityOhosTest, FreezeJsonUtilTest002, testing::ext::TestSize.Level3)
+{
+    FreezeJsonUtil::FreezeJsonCollector jsonCollector;
+    FreezeJsonUtil::LoadCollectorFromFile(FREEZE_JSON_FILE_EMPTY, jsonCollector);
+    ASSERT_EQ(jsonCollector.domain, "");
+    ASSERT_EQ(jsonCollector.stringId, "");
+}
+
+/**
  * @tc.name: ZipUtilTest001
- * @tc.desc: Test apifs of ZipUtil
+ * @tc.desc: Test api of ZipUtil
  * @tc.type: FUNC
  * @tc.require: issueI9E8HA
  */
@@ -587,7 +601,7 @@ HWTEST_F(AdapterUtilityOhosTest, ZipUtilTest001, testing::ext::TestSize.Level3)
 
 /**
  * @tc.name: DbUtilTest001
- * @tc.desc: Test apifs of DbUtil
+ * @tc.desc: Test api of DbUtil
  * @tc.type: FUNC
  */
 HWTEST_F(AdapterUtilityOhosTest, DbUtilTest001, testing::ext::TestSize.Level3)
