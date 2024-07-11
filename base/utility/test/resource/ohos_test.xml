@@ -17,6 +17,7 @@
         <preparer>
             <option name="push" value="utility_config/test.json -> /data/test/test_data/" src="res"/>
             <option name="push" value="utility_config/0-0-123456 -> /data/test/test_data/" src="res"/>
+            <option name="push" value="utility_config/0-1-123456 -> /data/test/test_data/" src="res"/>
         </preparer>
     </target>
 </configuration>
