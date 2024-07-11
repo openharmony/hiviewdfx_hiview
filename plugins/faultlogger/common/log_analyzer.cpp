@@ -74,7 +74,7 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
     }
     if (eventInfos.empty()) {
         eventInfos.insert(std::make_pair("fingerPrint", Tbox::CalcFingerPrint(info.module + info.reason +
-                                                                            info.summary, 0, FP_BUFFER)));
+            info.summary, 0, FP_BUFFER)));
         return false;
     }
     Tbox::FilterTrace(eventInfos, eventType);
