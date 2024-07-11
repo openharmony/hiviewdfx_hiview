@@ -96,15 +96,15 @@ HWTEST_F(FreezeJsonGeneratorTest, FreezeJsonGeneratorTest_003, TestSize.Level3)
     std::string stringId = "";
     bool foreground = false;
     std::string version = "unknown";
-    std::string package_name = "";
-    std::string process_name = "";
+    std::string packageName = "";
+    std::string processName = "";
     std::string message = "";
     std::string exception = "{}";
     std::string hilog = "[]";
     std::string testValue = "[]";
-    std::string event_handler = "[]";
-    std::string event_handler_3s_size = "";
-    std::string event_handler_6s_size = "";
+    std::string eventHandler = "[]";
+    std::string eventHandlerSize1 = "";
+    std::string eventHandlerSize2 = "";
     std::string stack = "[]";
     std::string memory = "{}";
     std::string externalLog = "FreezeJsonGeneratorTest_003";
@@ -114,17 +114,17 @@ HWTEST_F(FreezeJsonGeneratorTest, FreezeJsonGeneratorTest_003, TestSize.Level3)
         .InitFreezeType("AppFreeze")
         .InitForeground(foreground)
         .InitBundleVersion(version)
-        .InitBundleName(package_name)
-        .InitProcessName(process_name)
+        .InitBundleName(packageName)
+        .InitProcessName(processName)
         .InitExternalLog(externalLog)
         .InitPid(pid)
         .InitUid(uid)
         .InitAppRunningUniqueId(appRunningUniqueId)
         .InitException(exception)
         .InitHilog(hilog)
-        .InitEventHandler(event_handler)
-        .InitEventHandlerSize3s(event_handler_3s_size)
-        .InitEventHandlerSize6s(event_handler_6s_size)
+        .InitEventHandler(eventHandler)
+        .InitEventHandlerSize3s(eventHandlerSize1)
+        .InitEventHandlerSize6s(eventHandlerSize2)
         .InitPeerBinder(testValue)
         .InitThreads(stack)
         .InitMemory(memory)
