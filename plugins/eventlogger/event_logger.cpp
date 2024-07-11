@@ -780,8 +780,13 @@ void EventLogger::OnLoad()
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-    if (eventFocusListener_ != nullptr) {
-        Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
+    if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+        Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
+        if (ret == Rosen::WMError::WM_OK) {
+            HIVIEW_LOGI("unRegister eventFocusListener succeed.");
+            eventFocusListener_ = nullptr;
+            isRegisterFocusListener = false;
+        }
     }
 }
 
