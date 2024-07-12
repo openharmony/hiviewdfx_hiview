@@ -15,10 +15,12 @@
 
 #include "fold_app_usage_test.h"
 
+#include "event_db_helper.h"
 #include "file_util.h"
 #include "fold_app_usage_db_helper.h"
 #include "fold_app_usage_event_factory.h"
 #include "fold_event_cacher.h"
+#include "json_parser.h"
 #include "rdb_errno.h"
 #include "rdb_helper.h"
 #include "rdb_store.h"
@@ -276,6 +278,43 @@ HWTEST_F(FoldAppUsageTest, FoldAppUsageTest006, TestSize.Level1)
     }
     FileUtil::ForceRemoveDirectory("/data/test/sys_event_logger/", true);
     ASSERT_TRUE(!FileUtil::FileExists("/data/test/sys_event_logger/"));
+}
+
+/**
+ * @tc.name: FoldAppUsageTest007
+ * @tc.desc: report fold app usage events.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FoldAppUsageTest, FoldAppUsageTest007, TestSize.Level1)
+{
+    EventDbHelper dbHelper("/data/test/sys_event_logger");
+    ASSERT_TRUE(FileUtil::FileExists("/data/test/sys_event_logger/"));
+
+    std::shared_ptr<LoggerEvent> event = nullptr;
+    ASSERT_EQ(dbHelper.InsertPluginStatsEvent(event), -1);
+    ASSERT_EQ(dbHelper.InsertSysUsageEvent(event, SysUsageDbSpace::LAST_SYS_USAGE_TABLE), -1);
+    ASSERT_EQ(dbHelper.QuerySysUsageEvent(event, SysUsageDbSpace::LAST_SYS_USAGE_TABLE), -1);
+}
+
+/**
+ * @tc.name: FoldAppUsageTest008
+ * @tc.desc: check json strings.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FoldAppUsageTest, FoldAppUsageTest008, TestSize.Level1)
+{
+    Json::Value object;
+    std::string jsonStr = R"~({"param":"str1"})~";
+    JsonParser::ParseJsonString(object, jsonStr);
+    std::vector<std::string> fields;
+    fields.emplace_back("key");
+    ASSERT_FALSE(JsonParser::CheckJsonValue(object, fields));
+    JsonParser::ParseStringVec(object, fields);
+    std::vector<uint32_t> vec;
+    JsonParser::ParseUInt32Vec(object, vec);
+    std::shared_ptr<LoggerEvent> event = nullptr;
+    ASSERT_FALSE(JsonParser::ParsePluginStatsEvent(event, jsonStr));
+    ASSERT_FALSE(JsonParser::ParseSysUsageEvent(event, jsonStr));
 }
 } // namespace HiviewDFX
 } // namespace OHOS
