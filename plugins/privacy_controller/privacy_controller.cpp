@@ -25,19 +25,7 @@ DEFINE_LOG_TAG("PrivacyController");
 
 void PrivacyController::OnLoad()
 {
-    InitWorkLoop();
     InitAreaPolicy();
-}
-
-void PrivacyController::InitWorkLoop()
-{
-    auto context = GetHiviewContext();
-    if (context == nullptr) {
-        HIVIEW_LOGW("context is null");
-        return;
-    }
-
-    workLoop_ = GetHiviewContext()->GetSharedWorkLoop();
 }
 
 void PrivacyController::InitAreaPolicy()
