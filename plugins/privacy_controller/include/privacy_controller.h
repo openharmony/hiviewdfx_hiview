@@ -27,7 +27,6 @@ public:
     void OnLoad() override;
 
 private:
-    void InitWorkLoop();
     void InitAreaPolicy();
 
 private:
