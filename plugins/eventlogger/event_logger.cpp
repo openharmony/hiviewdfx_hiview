@@ -774,13 +774,12 @@ void EventLogger::OnLoad()
     if (freezeCommon_->Init() && freezeCommon_ != nullptr && freezeCommon_->GetFreezeRuleCluster() != nullptr) {
         dbHelper_ = std::make_unique<DBHelper>(freezeCommon_);
     }
-    RegisterFocusListener();
 }
 
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-    if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+    if (isRegisterFocusListener) {
         Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
         if (ret == Rosen::WMError::WM_OK) {
             HIVIEW_LOGI("unRegister eventFocusListener succeed.");
@@ -853,12 +852,10 @@ void EventLogger::RegisterFocusListener()
         return;
     }
     eventFocusListener_ = EventFocusListener::GetInstance();
-    if (eventFocusListener_ != nullptr) {
-        Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
-        if (ret == Rosen::WMError::WM_OK) {
-            HIVIEW_LOGI("register eventFocusListener succeed.");
-            isRegisterFocusListener = true;
-        }
+    Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
+    if (ret == Rosen::WMError::WM_OK) {
+        HIVIEW_LOGI("register eventFocusListener succeed.");
+        isRegisterFocusListener = true;
     }
 }
 
