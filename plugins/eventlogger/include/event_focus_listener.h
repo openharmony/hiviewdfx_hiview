@@ -24,7 +24,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class EventFocusListener : public Rosen::IFocusChangedListener {
 public:
-    uint64_t lastChangedTime_;
+    uint64_t lastChangedTime_ = 0;
 
     explicit EventFocusListener(){};
     ~EventFocusListener() = default;
