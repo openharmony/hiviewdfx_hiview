@@ -139,7 +139,7 @@ void FoldEventCacher::TimeOut()
             appEventRecord.preFoldStatus = combineScreenStatus;
             appEventRecord.foldStatus = combineScreenStatus;
             appEventRecord.versionName = GetAppVersion(appData.bundleName);
-            appEventRecord.happenTime = static_cast<int64_t>(TimeUtil::GenerateTimestamp());
+            appEventRecord.happenTime = static_cast<int64_t>(TimeUtil::GenerateTimestamp()) / MILLISEC_TO_MICROSEC;
             if (combineScreenStatus != UNKNOWN_FOLD_STATUS) {
                 dbHelper_->AddAppEvent(appEventRecord);
             }
