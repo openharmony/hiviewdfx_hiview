@@ -14,6 +14,7 @@
  */
 #include <gtest/gtest.h>
 
+#include "hiview_shutdown_callback.h"
 #include "usage_event_report.h"
 
 using namespace testing::ext;
@@ -45,6 +46,33 @@ HWTEST_F(UsageEventReportTest, UsageEventReportTest001, TestSize.Level1)
     plugin.TimeOut();
     EXPECT_TRUE(plugin.IsRunning());
 
+    // unload plugin
+    plugin.OnUnload();
+    EXPECT_FALSE(plugin.IsRunning());
+}
+
+/**
+ * @tc.name: UsageEventReportTest002
+ * @tc.desc: check functions to process events.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(UsageEventReportTest, UsageEventReportTest002, TestSize.Level1)
+{
+    UsageEventReport plugin;
+    // load plugin
+    plugin.OnLoad();
+    EXPECT_TRUE(plugin.IsRunning());
+
+    std::shared_ptr<Event> event = nullptr;
+    plugin.OnEvent(event);
+    event = plugin.GetEvent(Event::SYS_EVENT);
+    ASSERT_NE(event, nullptr);
+    ASSERT_TRUE(plugin.OnEvent(event));
+
+    plugin.SaveEventToDb();
+    auto callback = new (std::nothrow) HiViewShutdownCallback();
+    callback->OnAsyncShutdown();
     // unload plugin
     plugin.OnUnload();
     EXPECT_FALSE(plugin.IsRunning());

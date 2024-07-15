@@ -32,6 +32,7 @@ public:
     void SetEvent(std::shared_ptr<SysEvent> event);
 
     enum CATCHER_TYPE {
+        CATCHER_UNKNOWN = -1,
         CATCHER_CPU,
         CATCHER_WMS,
         CATCHER_AMS,
@@ -53,9 +54,9 @@ public:
     };
 private:
     static const inline int32_t DEFAULT_WINDOW_ID = 14;
-    std::string catcherCmd_;
-    int pid_;
-    CATCHER_TYPE catcherType_;
+    std::string catcherCmd_ = "";
+    int pid_ = -1;
+    CATCHER_TYPE catcherType_ = CATCHER_TYPE::CATCHER_UNKNOWN;
     std::shared_ptr<SysEvent> event_ = nullptr;
 
     int InInputProcesscatcher(int writeFd);
