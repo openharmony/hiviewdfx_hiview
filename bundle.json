@@ -67,6 +67,7 @@
                 "safwk",
                 "samgr",
                 "storage_service",
+                "thermal_manager",
                 "time_service",
                 "napi",
                 "hiperf",
@@ -148,6 +149,7 @@
                             "utility/io_collector.h",
                             "utility/mem_profiler_collector.h",
                             "utility/memory_collector.h",
+                            "utility/temperature_collector.h",
                             "utility/trace_collector.h",
                             "utility/wm_collector.h"
                         ]
