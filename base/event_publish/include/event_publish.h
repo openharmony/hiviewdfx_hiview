@@ -26,6 +26,19 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace HiAppEvent {
+const std::string DOMAIN_OS = "OS";
+const std::string APP_CRASH = "APP_CRASH";
+const std::string APP_FREEZE = "APP_FREEZE";
+const std::string APP_LAUNCH = "APP_LAUNCH";
+const std::string SCROLL_JANK = "SCROLL_JANK";
+const std::string CPU_USAGE_HIGH = "CPU_USAGE_HIGH";
+const std::string BATTERY_USAGE = "BATTERY_USAGE";
+const std::string RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
+const std::string ADDRESS_SANITIZER = "ADDRESS_SANITIZER";
+const std::string MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+const std::string APP_START = "APP_START";
+} // namespace HiAppEvent
 class EventPublish : public OHOS::DelayedRefSingleton<EventPublish> {
 public:
     EventPublish() {};
