@@ -14,8 +14,6 @@
  */
 #include "event_focus_listener.h"
 
-#include "time_util.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 sptr<EventFocusListener> EventFocusListener::instance_ = nullptr;

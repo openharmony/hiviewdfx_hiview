@@ -18,13 +18,14 @@
 #include <mutex>
 
 #include "focus_change_info.h"
+#include "time_util.h"
 #include "window_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class EventFocusListener : public Rosen::IFocusChangedListener {
 public:
-    uint64_t lastChangedTime_ = 0;
+    uint64_t lastChangedTime_ = TimeUtil::GetMilliseconds();
 
     explicit EventFocusListener(){};
     ~EventFocusListener() = default;
