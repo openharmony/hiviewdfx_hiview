@@ -90,6 +90,14 @@ static std::shared_ptr<Faultlogger> GetFaultloggerInstance()
     return faultloggerInstance;
 }
 
+namespace {
+auto g_fdDeleter = [] (int32_t *ptr) {
+    if (*ptr > 0) {
+        close(*ptr);
+    }
+    delete ptr;
+};
+}
 
 class FaultloggerUnittest : public testing::Test {
 public:
@@ -296,7 +304,7 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    info.pipeFd = pipeFd[0];
+    info.pipeFd.reset(new int32_t(pipeFd[0]), g_fdDeleter);
     std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
         [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"},
         {"buildId":"12345abcde", "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278,
@@ -316,7 +324,6 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     } while (nwrite == -1 && errno == EINTR);
     close(pipeFd[1]);
     plugin->AddFaultLog(info);
-    close(info.pipeFd);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
     ASSERT_EQ(FileUtil::FileExists(fileName), true);

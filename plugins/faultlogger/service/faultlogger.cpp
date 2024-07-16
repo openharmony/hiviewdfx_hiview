@@ -830,16 +830,15 @@ void Faultlogger::ReportCppCrashToAppEvent(const FaultLogInfo& info) const
 
 void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const
 {
-    if (info.pipeFd == -1) {
+    if (info.pipeFd == nullptr || *(info.pipeFd) == -1) {
         HIVIEW_LOGE("invalid fd");
         return;
     }
     ssize_t nread = -1;
     char *buffer = new char[MAX_PIPE_SIZE];
     do {
-        nread = read(info.pipeFd, buffer, MAX_PIPE_SIZE);
+        nread = read(*(info.pipeFd), buffer, MAX_PIPE_SIZE);
     } while (nread == -1 && errno == EINTR);
-    close(info.pipeFd);
     if (nread <= 0) {
         HIVIEW_LOGE("read pipe failed");
         delete []buffer;
