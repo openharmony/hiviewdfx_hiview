@@ -152,7 +152,7 @@ bool EventLogTask::ShouldStopLogTask(int fd, uint32_t curTaskIndex, int curLogSi
     bool encounterErr = (curLogSize < 0);
     bool hasFinished = (curTaskIndex == tasks_.size());
     if (!encounterErr) {
-        taskLogSize_ += curLogSize;
+        taskLogSize_ += static_cast<uint32_t>(curLogSize);
     }
 
     if (taskLogSize_ > maxLogSize_ && !hasFinished) {

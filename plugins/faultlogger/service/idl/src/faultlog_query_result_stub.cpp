@@ -51,12 +51,21 @@ int FaultLogQueryResultStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
 
             if (!result->Marshalling(reply)) {
                 HIVIEW_LOGE("failed to write query result.");
+                if (result->fd > 0) {
+                    close(result->fd);
+                }
                 return ERR_FLATTEN_OBJECT;
             }
 
             if (!reply.WriteFileDescriptor(result->fd)) {
                 HIVIEW_LOGE("failed to write file descriptor.");
+                if (result->fd > 0) {
+                    close(result->fd);
+                }
                 return ERR_FLATTEN_OBJECT;
+            }
+            if (result->fd > 0) {
+                close(result->fd);
             }
             return 0;
         }

@@ -238,10 +238,14 @@ void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream
         }
 
         HIVIEW_LOGI("merging file:%{public}s.", filePath.c_str());
-
-        std::ifstream ifs(filePath, std::ios::in);
+        std::string realPath;
+        if (!FileUtil::PathToRealPath(filePath, realPath)) {
+            HIVIEW_LOGE("PathToRealPath Failed:%{public}s.", filePath.c_str());
+            continue;
+        }
+        std::ifstream ifs(realPath, std::ios::in);
         if (!ifs.is_open()) {
-            HIVIEW_LOGE("cannot open log file for reading:%{public}s.", filePath.c_str());
+            HIVIEW_LOGE("cannot open log file for reading:%{public}s.", realPath.c_str());
             DumpEventInfo(body, HEADER, node);
             continue;
         }
@@ -256,15 +260,19 @@ void Vendor::InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt)
 {
     std::string ffrtPath = "/data/log/eventlog/ffrt_" + std::to_string(watchPoint.GetPid()) + "_" +
         TimeUtil::TimestampFormatToDate(watchPoint.GetTimestamp() / TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
-
-    std::ifstream ifs(ffrtPath, std::ios::in);
+    std::string realPath;
+    if (!FileUtil::PathToRealPath(ffrtPath, realPath)) {
+        HIVIEW_LOGE("PathToRealPath Failed:%{public}s.", ffrtPath.c_str());
+        return;
+    }
+    std::ifstream ifs(realPath, std::ios::in);
     if (!ifs.is_open()) {
-        HIVIEW_LOGE("cannot open ffrt file for reading:%{public}s", ffrtPath.c_str());
+        HIVIEW_LOGE("cannot open ffrt file for reading:%{public}s", realPath.c_str());
         return;
     }
     ffrt << ifs.rdbuf();
     ifs.close();
-    FreezeJsonUtil::DelFile(ffrtPath);
+    FreezeJsonUtil::DelFile(realPath);
 }
 
 std::string Vendor::MergeEventLog(
