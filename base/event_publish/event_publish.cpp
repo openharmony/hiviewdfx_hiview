@@ -23,7 +23,6 @@
 #include "string_util.h"
 #include "time_util.h"
 
-using namespace OHOS::HiviewDFX::HiAppEvent;
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -38,26 +37,15 @@ const std::string DOMAIN_PROPERTY = "domain";
 const std::string NAME_PROPERTY = "name";
 const std::string EVENT_TYPE_PROPERTY = "eventType";
 const std::string PARAM_PROPERTY = "params";
+const std::string DOMAIN_OS = "OS";
 const std::string LOG_OVER_LIMIT = "log_over_limit";
 const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
+const std::string MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+const std::string RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 300 * 1024 * 1024; // 300M
-const std::string XATTR_NAME = "user.appevent";
-constexpr uint64_t BIT_MASK = 1;
-const std::unordered_map<std::string, uint8_t> OS_EVENT_POS_INFOS = {
-    { APP_CRASH, 0 },
-    { APP_FREEZE, 1 },
-    { APP_LAUNCH, 2 },
-    { SCROLL_JANK, 3 },
-    { CPU_USAGE_HIGH, 4 },
-    { BATTERY_USAGE, 5 },
-    { RESOURCE_OVERLIMIT, 6 },
-    { ADDRESS_SANITIZER, 7 },
-    { MAIN_THREAD_JANK, 8 },
-    { APP_START, 9 },
-};
 
 struct ExternalLogInfo {
     std::string extensionType_;
@@ -238,33 +226,6 @@ void SaveEventToTempFile(int32_t uid, Json::Value& eventJson)
     std::string tempPath = GetTempFilePath(uid);
     WriteEventJson(eventJson, tempPath);
 }
-
-bool CheckAppListenedEvents(const std::string& path, const std::string& eventName)
-{
-    if (OS_EVENT_POS_INFOS.find(eventName) == OS_EVENT_POS_INFOS.end()) {
-        HIVIEW_LOGE("undefined event path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
-        return false;
-    }
-
-    std::string value;
-    if (!FileUtil::GetDirXattr(path, XATTR_NAME, value)) {
-        HIVIEW_LOGE("failed to get xattr path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
-        return false;
-    }
-    if (value.empty()) {
-        HIVIEW_LOGE("getxattr value empty path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
-        return false;
-    }
-    HIVIEW_LOGD("getxattr success path=%{public}s, eventName=%{public}s, value=%{public}s.",
-        path.c_str(), eventName.c_str(), value.c_str());
-    uint64_t eventsMask = static_cast<uint64_t>(std::strtoull(value.c_str(), nullptr, 0));
-    if (!(eventsMask & (BIT_MASK << OS_EVENT_POS_INFOS.at(eventName)))) {
-        HIVIEW_LOGI("unlistened event path=%{public}s, eventName=%{public}s, eventsMask=%{public}" PRIu64,
-            path.c_str(), eventName.c_str(), eventsMask);
-        return false;
-    }
-    return true;
-}
 }
 
 void EventPublish::StartOverLimitThread(int32_t uid, const std::string& eventName, const std::string& bundleName,
@@ -362,9 +323,6 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     if (!FileUtil::FileExists(desPath)) {
         HIVIEW_LOGE("desPath=%{public}s not exit.", desPath.c_str());
         (void)FileUtil::RemoveFile(srcPath);
-        return;
-    }
-    if (!CheckAppListenedEvents(desPath, eventName)) {
         return;
     }
 

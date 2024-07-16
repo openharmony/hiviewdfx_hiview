@@ -101,7 +101,6 @@ std::string GetFirstLine(const std::string& path);
 std::string GetParentDir(const std::string &path);
 bool IsLegalPath(const std::string& path);
 bool RenameFile(const std::string& src, const std::string& dest);
-bool GetDirXattr(const std::string& dir, const std::string& name, std::string& value);
 } // namespace FileUtil
 } // namespace HiviewDFX
 } // namespace OHOS

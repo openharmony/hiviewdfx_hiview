@@ -24,11 +24,9 @@
 #include <istream>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
-#include <sys/xattr.h>
 #include <unistd.h>
 #include <vector>
 
-#include "common_utils.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 
@@ -410,16 +408,6 @@ bool RenameFile(const std::string& src, const std::string& dest)
         return true;
     }
     return false;
-}
-
-bool GetDirXattr(const std::string& dir, const std::string& name, std::string& value)
-{
-    char buf[BUF_SIZE_256] = {0};
-    if (getxattr(dir.c_str(), name.c_str(), buf, BUF_SIZE_256) == -1) {
-        return false;
-    }
-    value = buf;
-    return true;
 }
 } // namespace FileUtil
 } // namespace HiviewDFX
