@@ -47,16 +47,16 @@ constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 300 * 1024 * 1024; // 300M
 const std::string XATTR_NAME = "user.appevent";
 constexpr uint64_t BIT_MASK = 1;
 const std::unordered_map<std::string, uint8_t> OS_EVENT_POS_INFOS = {
-    { APP_CRASH, 0 },
-    { APP_FREEZE, 1 },
-    { APP_LAUNCH, 2 },
-    { SCROLL_JANK, 3 },
-    { CPU_USAGE_HIGH, 4 },
-    { BATTERY_USAGE, 5 },
-    { RESOURCE_OVERLIMIT, 6 },
-    { ADDRESS_SANITIZER, 7 },
-    { MAIN_THREAD_JANK, 8 },
-    { APP_START, 9 },
+    { EVENT_APP_CRASH, 0 },
+    { EVENT_APP_FREEZE, 1 },
+    { EVENT_APP_LAUNCH, 2 },
+    { EVENT_SCROLL_JANK, 3 },
+    { EVENT_CPU_USAGE_HIGH, 4 },
+    { EVENT_BATTERY_USAGE, 5 },
+    { EVENT_RESOURCE_OVERLIMIT, 6 },
+    { EVENT_ADDRESS_SANITIZER, 7 },
+    { EVENT_MAIN_THREAD_JANK, 8 },
+    { EVENT_APP_START, 9 },
 };
 
 struct ExternalLogInfo {
@@ -67,11 +67,11 @@ struct ExternalLogInfo {
 
 void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalLogInfo)
 {
-    if (eventName == MAIN_THREAD_JANK) {
+    if (eventName == EVENT_MAIN_THREAD_JANK) {
         externalLogInfo.extensionType_ = ".trace";
         externalLogInfo.subPath_ = "watchdog";
         externalLogInfo.maxFileSize_ = WATCHDOG_MAX_FILE_SIZE;
-    } else if (eventName == RESOURCE_OVERLIMIT) {
+    } else if (eventName == EVENT_RESOURCE_OVERLIMIT) {
         externalLogInfo.extensionType_ = ".log";
         externalLogInfo.subPath_ = "resourcelimit";
         externalLogInfo.maxFileSize_ = RESOURCE_OVERLIMIT_MAX_FILE_SIZE;
@@ -381,10 +381,10 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     }
     eventJson[PARAM_PROPERTY] = params;
     const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER",
-        "APP_LAUNCH", "CPU_USAGE_HIGH", MAIN_THREAD_JANK};
+        "APP_LAUNCH", "CPU_USAGE_HIGH", EVENT_MAIN_THREAD_JANK};
     if (immediateEvents.find(eventName) != immediateEvents.end()) {
         SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
-    } else if (eventName == RESOURCE_OVERLIMIT) {
+    } else if (eventName == EVENT_RESOURCE_OVERLIMIT) {
         StartOverLimitThread(uid, eventName, bundleName, std::ref(eventJson));
     } else {
         SaveEventToTempFile(uid, eventJson);
