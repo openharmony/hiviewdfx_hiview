@@ -19,7 +19,10 @@ ohos_fuzztest("FaultloggerClientFuzzTest") {
 
   fuzz_config_file = "//base/hiviewdfx/hiview/plugins/faultlogger/test/common/fuzztest/faultloggerclient_fuzzer"
 
-  include_dirs = [ "./" ]
+  include_dirs = [
+    "./",
+    "../common/include",
+  ]
 
   cflags = [
     "-g",
@@ -30,7 +33,10 @@ ohos_fuzztest("FaultloggerClientFuzzTest") {
 
   sources = [ "faultlogger_client_fuzzer.cpp" ]
 
-  external_deps = [ "hiview:libfaultlogger" ]
+  external_deps = [
+    "c_utils:utils",
+    "hiview:libfaultlogger",
+  ]
 }
 
 group("fuzztest") {
