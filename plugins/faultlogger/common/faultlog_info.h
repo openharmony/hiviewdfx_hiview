@@ -25,7 +25,7 @@ struct FaultLogInfo {
     int64_t time {0};
     int32_t id {0};
     int32_t pid {0};
-    int32_t pipeFd {-1};
+    std::shared_ptr<int32_t> pipeFd;
     int32_t faultLogType {0};
     int32_t fd = {-1};
     std::string module;

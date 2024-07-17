@@ -118,7 +118,13 @@ void FaultloggerServiceOhos::AddFaultLog(const FaultLogInfoOhos& info)
     outInfo.time = info.time;
     outInfo.id = info.uid;
     outInfo.pid = info.pid;
-    outInfo.pipeFd = info.pipeFd;
+    auto fdDeleter = [] (int32_t *ptr) {
+        if (*ptr > 0) {
+            close(*ptr);
+        }
+        delete ptr;
+    };
+    outInfo.pipeFd.reset(new int32_t(info.pipeFd), fdDeleter);
     outInfo.faultLogType = info.faultLogType;
     outInfo.fd = (info.fd > 0) ? dup(info.fd) : -1;
     outInfo.module = info.module;
