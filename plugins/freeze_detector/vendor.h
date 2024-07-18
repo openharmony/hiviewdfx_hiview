@@ -68,11 +68,11 @@ private:
     static const inline std::string FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
     static const inline std::string SMART_PARSER_PATH = "/system/etc/hiview/";
 
-    void FormatProcessName(std::string& processName) const;
+    static void FormatProcessName(std::string& processName);
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
         const std::string& logName) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
-    void InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt) const;
+    static void InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt);
     static std::string GetDisPlayPowerInfo();
     static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
 
