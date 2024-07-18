@@ -266,9 +266,7 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
         OnMainThreadJank(sysEvent);
         return;
     }
-
 #if PC_APP_STATE_COLLECT_ENABLE
-
     int32_t procId = sysEvent.GetEventIntValue("APP_PID");
     if (procId <= 0) {
         HIVIEW_LOGW("invalid process id=%{public}d", procId);
@@ -326,10 +324,9 @@ void UnifiedCollector::Init()
         int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
         HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
     }
+    UcObserverManager::GetInstance().RegisterObservers();
 
     InitDynamicTrace();
-
-    UcObserverManager::GetInstance().RegisterObservers();
 
     if (Parameter::IsDeveloperMode()) {
         RunRecordTraceTask();

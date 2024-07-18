@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -395,12 +395,12 @@ CollectResult<std::string> MemoryCollectorImpl::CollectRawMemInfo()
 
 CollectResult<std::string> MemoryCollectorImpl::ExportMemView()
 {
-    if (!FileUtil::FileExists("/proc/memview")) {
-        HIVIEW_LOGW("path not exist");
-        CollectResult<std::string> result;
-        return result;
+    if (FileUtil::FileExists("/proc/memview")) {
+        return CollectRawInfo("/proc/memview", "proc_memview_");
     }
-    return CollectRawInfo("/proc/memview", "proc_memview_");
+    HIVIEW_LOGW("path not exist");
+    CollectResult<std::string> result;
+    return result;
 }
 
 CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcessMemory()

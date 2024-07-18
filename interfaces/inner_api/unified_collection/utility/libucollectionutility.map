@@ -21,7 +21,6 @@
       "OHOS::HiviewDFX::UCollectUtil::ProcessStatus::GetProcessLastForegroundTime(int)";
       "OHOS::HiviewDFX::UCollectUtil::ProcessStatus::GetProcessState(int)";
       "OHOS::HiviewDFX::UCollectUtil::ProcessStatus::NotifyProcessState(int, OHOS::HiviewDFX::UCollectUtil::ProcessState)";
-      "OHOS::HiviewDFX::UCollectUtil::ProcessStatus::NotifyProcessState(int, OHOS::HiviewDFX::UCollectUtil::ProcessState, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
       "OHOS::HiviewDFX::UCollectUtil::TraceCollector::RecoverTmpTrace()";
       "OHOS::HiviewDFX::UCollectUtil::UnifiedCollectionStat::Report()";
       "OHOS::DelayedRefSingleton<OHOS::HiviewDFX::UCollectUtil::ProcessStatus>::instance_";
