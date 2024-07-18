@@ -243,7 +243,7 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
      * @tc.expected: check the content size of the dump function
      */
     auto plugin = GetFaultloggerInstance();
-    auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770);
+    int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
     if (fd < 0) {
         printf("Fail to create test result file.\n");
         return;
@@ -318,10 +318,7 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
         "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
         "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
         "time":1701863741296, "uid":20010043, "uuid":""})~";
-    ssize_t nwrite = -1;
-    do {
-        nwrite = write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size());
-    } while (nwrite == -1 && errno == EINTR);
+    TEMP_FAILURE_RETRY(write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size()));
     close(pipeFd[1]);
     plugin->AddFaultLog(info);
     std::string timeStr = GetFormatedTime(info.time);
@@ -537,7 +534,7 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
     int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
     ASSERT_GT(fd, 0);
     std::string content = "testContent";
-    write(fd, content.data(), content.length());
+    TEMP_FAILURE_RETRY(write(fd, content.data(), content.length()));
     close(fd);
 }
 
@@ -794,7 +791,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
-    auto fd = open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770);
+    auto fd = TEMP_FAILURE_RETRY(open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770));
     if (fd < 0) {
         printf("Fail to create test result file.\n");
         return;

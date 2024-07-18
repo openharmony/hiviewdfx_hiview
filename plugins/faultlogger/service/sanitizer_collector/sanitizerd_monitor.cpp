@@ -48,7 +48,7 @@ int SanitizerdMonitor::ReadNotify(std::string *sfilename, int nfd)
     std::string strSanLogPath;
     SanitizerdType type;
 
-    res = read(nfd, eventBuf, sizeof(eventBuf));
+    res = TEMP_FAILURE_RETRY(read(nfd, eventBuf, sizeof(eventBuf)));
     if (res < sizeof(*event)) {
         HILOG_INFO(LOG_CORE, "could not get notify events, %s\n", strerror(errno));
         return ret;
@@ -145,7 +145,7 @@ int SanitizerdMonitor::RunMonitor(std::string *filename, int timeout)
     int pollres;
 
     while (true) {
-        pollres = poll(gUfds, gNfds, timeout);
+        pollres = TEMP_FAILURE_RETRY(poll(gUfds, gNfds, timeout));
         if (pollres == 0) {
             return 1;
         }

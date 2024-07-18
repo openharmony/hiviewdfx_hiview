@@ -201,9 +201,9 @@ int32_t CreateLogFile(const std::string& name)
     int32_t fd = -1;
 
     if (access(name.c_str(), F_OK) == 0) {
-        fd = open(name.c_str(), O_WRONLY | O_APPEND);
+        fd = TEMP_FAILURE_RETRY(open(name.c_str(), O_WRONLY | O_APPEND));
     } else {
-        fd = open(name.c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR);
+        fd = TEMP_FAILURE_RETRY(open(name.c_str(), O_CREAT | O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR));
     }
     if (fd < 0) {
         HILOG_ERROR(LOG_CORE, "Fail to create %{public}s,  err: %{public}s.",

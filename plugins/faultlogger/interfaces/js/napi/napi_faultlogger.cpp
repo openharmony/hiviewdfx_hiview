@@ -57,14 +57,14 @@ static FaultLogNapiInfo ConversionInform(std::unique_ptr<FaultLogInfo> faultLogI
     }
     while (true) {
         char buf[BUF_SIZE_512] = {0};
-        int rn = read((fd), buf, BUF_SIZE_512 - 1);
-        if (rn == -1) {
+        int nread = TEMP_FAILURE_RETRY(read((fd), buf, BUF_SIZE_512 - 1));
+        if (nread == -1) {
             if (errno == EAGAIN) {
                 continue;
             } else {
                 break;
             }
-        } else if (rn == 0) {
+        } else if (nread == 0) {
             break;
         }
         ret.fullLog += buf;
