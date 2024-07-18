@@ -318,11 +318,11 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest015, TestSize.Level1)
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     CollectResult<std::string> data = collector->ExportMemView();
     std::cout << "collect raw memory view info result" << data.retCode << std::endl;
-    if (!FileUtil::FileExists("/proc/memview")) {
-        ASSERT_TRUE(data.retCode == UcError::UNSUPPORT);
-    } else {
-        ASSERT_TRUE(data.retCode == UcError::SUCCESS);
+    if (FileUtil::FileExists("/proc/memview")) {
+        ASSERT_EQ(data.retCode, UcError::SUCCESS);
         bool flag = CheckFormat(data.data, RAW_MEM_VIEW_INFO1, RAW_MEM_VIEW_INFO2, 0); // 0: don't skip the first line
         ASSERT_TRUE(flag);
+    } else {
+        ASSERT_EQ(data.retCode, UcError::UNSUPPORT);
     }
 }

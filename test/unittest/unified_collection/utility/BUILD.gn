@@ -24,6 +24,9 @@ config("ucollection_utility_test_config") {
   ]
 
   cflags = [ "-D__UNITTEST__" ]
+  if (has_hiperf) {
+    cflags += [ "-DHAS_HIPERF" ]
+  }
 }
 
 ohos_unittest("UCollectionUtilityUnitTest") {
