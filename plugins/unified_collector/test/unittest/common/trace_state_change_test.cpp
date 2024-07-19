@@ -115,10 +115,10 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
         g_unifiedCollector->OnLoad();
         for (uint64_t variableBinary = 0; variableBinary < variableTestCaseNumber; variableBinary++)
         {
-            bool isTestAppTraceOn = (variableBinary & 1<<0) != 0;
-            bool isUCollectionSwitchOn = (variableBinary & 1<<1) != 0;
+            isTestAppTraceOn = (variableBinary & 1<<0) != 0;
+            isUCollectionSwitchOn = (variableBinary & 1<<1) != 0;
             if (isDeveloperMode) {
-                bool isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;
+                isTraceCollectionSwitchOn = (variableBinary & 1<<2) != 0;
             }
 
             Parameter::SetProperty(HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE, ConvertBoolToString(isTestAppTraceOn));
