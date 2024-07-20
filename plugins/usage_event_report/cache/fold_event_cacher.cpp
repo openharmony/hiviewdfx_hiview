@@ -215,21 +215,21 @@ void FoldEventCacher::ProcessBackgroundEvent(std::shared_ptr<SysEvent> event, Ap
 
 void FoldEventCacher::ProcessSceenStatusChangedEvent(std::shared_ptr<SysEvent> event)
 {
-    std::vector<AppEventRecord> appEventRecords;
+    int preFoldStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
+    std::string eventName = event->eventName_;
+    if (eventName == FoldStateChangeEventSpace::EVENT_NAME) {
+        int nextFoldStatus = event->GetEventIntValue(FoldStateChangeEventSpace::KEY_OF_NEXT_STATUS);
+        UpdateFoldStatus(nextFoldStatus);
+    } else {
+        int nextMode = event->GetEventIntValue(VhModeChangeEventSpace::KEY_OF_MODE);
+        UpdateVhMode(nextMode);
+    }
     for (auto it = foregroundApps_.begin(); it != foregroundApps_.end(); it++) {
         AppEventRecord appEventRecord;
         appEventRecord.rawid = FoldEventId::EVENT_SCREEN_STATUS_CHANGED;
         appEventRecord.ts = static_cast<int64_t>(TimeUtil::GetBootTimeMs());
         appEventRecord.bundleName = it->first;
-        appEventRecord.preFoldStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
-        std::string eventName = event->eventName_;
-        if (eventName == FoldStateChangeEventSpace::EVENT_NAME) {
-            int nextFoldStatus = event->GetEventIntValue(FoldStateChangeEventSpace::KEY_OF_NEXT_STATUS);
-            UpdateFoldStatus(nextFoldStatus);
-        } else {
-            int nextMode = event->GetEventIntValue(VhModeChangeEventSpace::KEY_OF_MODE);
-            UpdateVhMode(nextMode);
-        }
+        appEventRecord.preFoldStatus = preFoldStatus;
         appEventRecord.foldStatus = GetCombineScreenStatus(foldStatus_, vhMode_);
         appEventRecord.versionName = it->second;
         appEventRecord.happenTime = static_cast<int64_t>(event->happenTime_);
