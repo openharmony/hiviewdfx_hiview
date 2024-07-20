@@ -24,8 +24,9 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("Hiview-ParamUpdate");
 
 namespace {
-    const int32_t BASE64_ENCODE_LEN_OF_EACH_GROUP_DATA = 4;
-    const int32_t BASE64_ENCODE_PACKET_LEN = 3;
+    constexpr int32_t BASE64_ENCODE_LEN_OF_EACH_GROUP_DATA = 4;
+    constexpr int32_t BASE64_ENCODE_PACKET_LEN = 3;
+    constexpr int BUFFER_SIZE = 4096;
 }
 
 bool LogSignTools::VerifyFileSign(const std::string &pubKeyPath, const std::string &signPath,
@@ -68,10 +69,47 @@ bool LogSignTools::VerifyFileSign(const std::string &pubKeyPath, const std::stri
     return verify;
 }
 
+int LogSignTools::CalcFileSha(const std::string& path, unsigned char *hash, size_t outLen)
+{
+    if (path.empty() || hash == nullptr || !FileUtil::IsLegalPath(path)) {
+        HIVIEW_LOGE("file is invalid.");
+        return EINVAL;
+    }
+
+    if (outLen < SHA256_DIGEST_LENGTH) {
+        HIVIEW_LOGE("hash buf len error.");
+        return ENOMEM;
+    }
+
+    FILE *fp = nullptr;
+    fp = fopen(path.c_str(), "rb");
+    if (fp == nullptr) {
+        HIVIEW_LOGE("open file failed.");
+        return errno; // if file not exist, errno will be ENOENT
+    }
+
+    size_t readSize;
+    char fbuffer[BUFFER_SIZE] = {0};
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    while ((readSize = fread(fbuffer, 1, sizeof(fbuffer), fp))) {
+        SHA256_Update(&ctx, (unsigned char *)fbuffer, readSize);
+    }
+    if (fclose(fp)) {
+        HIVIEW_LOGE("fclose is failed");
+    }
+    fp = nullptr;
+    SHA256_Final(hash, &ctx);
+    return 0;
+}
+
 std::string LogSignTools::CalcFileSha256Digest(const std::string &fpath)
 {
     unsigned char res[SHA256_DIGEST_LENGTH] = {0};
-    CalcFingerprint::CalcFileShaOriginal(fpath, res, SHA256_DIGEST_LENGTH);
+    if (CalcFileSha(fpath, res, SHA256_DIGEST_LENGTH) != 0) {
+        HIVIEW_LOGE("CalcFileSha failed");
+        return "";
+    }
     std::string dist;
     CalcBase64(res, SHA256_DIGEST_LENGTH, dist);
     return dist;
