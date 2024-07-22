@@ -58,7 +58,7 @@ void SysEventSource::OnLoad()
     HIVIEW_LOGI("SysEventSource load ");
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
-    auto context = GetHiviewContext();
+    
     sysEventStat_ = std::make_unique<SysEventStat>();
     InitController();
 
@@ -71,12 +71,20 @@ void SysEventSource::OnLoad()
 
     sysEventParser_ = std::make_shared<EventJsonParser>(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
 
-    auto getTagFunc = std::bind(&EventJsonParser::GetTagByDomainAndName, *(sysEventParser_.get()),
-        std::placeholders::_1, std::placeholders::_2);
-    SysEventServiceAdapter::BindGetTagFunc(getTagFunc);
-    auto getTypeFunc = std::bind(&EventJsonParser::GetTypeByDomainAndName, *(sysEventParser_.get()),
-        std::placeholders::_1, std::placeholders::_2);
-    SysEventServiceAdapter::BindGetTypeFunc(getTypeFunc);
+    SysEventServiceAdapter::BindGetTagFunc(
+        [this] (const std::string& domain, const std::string& name) -> std::string {
+            if (this->sysEventParser_ == nullptr) {
+                return "";
+            }
+            return this->sysEventParser_->GetTagByDomainAndName(domain, name);
+        });
+    SysEventServiceAdapter::BindGetTypeFunc(
+        [this] (const std::string& domain, const std::string& name) -> int {
+            if (this->sysEventParser_ == nullptr) {
+                return INVALID_EVENT_TYPE;
+            }
+            return this->sysEventParser_->GetTypeByDomainAndName(domain, name);
+        });
 }
 
 void SysEventSource::InitController()

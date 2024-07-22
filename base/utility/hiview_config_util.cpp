@@ -25,16 +25,15 @@ constexpr char CFG_VERSION_FILE_NAME[] = "hiview_config_version";
 constexpr char LOCAL_CFG_PATH[] = "/system/etc/hiview/";
 constexpr char CLOUD_CFG_PATH[] = "/data/system/hiview/";
 
-std::string GetConfigFilePath(const std::string& fileName, bool isCloud)
+inline std::string GetConfigFilePath(const std::string& fileName, bool isCloud)
 {
-    std::string dir = FileUtil::IncludeTrailingPathDelimiter(LOCAL_CFG_PATH);
     if (isCloud) {
-        dir = FileUtil::IncludeTrailingPathDelimiter(CLOUD_CFG_PATH);
+        return CLOUD_CFG_PATH + fileName;
     }
-    return dir + fileName;
+    return LOCAL_CFG_PATH + fileName;
 }
 
-std::string GetConfigVersion(bool isCloud)
+inline std::string GetConfigVersion(bool isCloud)
 {
     std::string versionFile = GetConfigFilePath(CFG_VERSION_FILE_NAME, isCloud);
     std::string version;

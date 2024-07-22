@@ -305,7 +305,7 @@ BaseInfo EventJsonParser::ParseBaseConfig(const Json::Value& eventNameJson) cons
     return baseInfo;
 }
 
-void EventJsonParser::ParseHiSysEventDef(const Json::Value& hiSysEventDef, DOMAIN_INFO_MAP sysDefMap)
+void EventJsonParser::ParseHiSysEventDef(const Json::Value& hiSysEventDef, std::shared_ptr<DOMAIN_INFO_MAP> sysDefMap)
 {
     InitEventInfoMapRef(hiSysEventDef, [this, sysDefMap] (const std::string& key, const Json::Value& value) {
        sysDefMap->insert(std::make_pair(key, this->ParseNameConfig(value)));
@@ -331,7 +331,7 @@ void EventJsonParser::ReadDefFile(const std::string& defFilePath)
         HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", defFilePath.c_str());
         return;
     }
-    DOMAIN_INFO_MAP tmpMap = std::make_shared<std::unordered_map<std::string, NAME_INFO_MAP>>();
+    auto tmpMap = std::make_shared<DOMAIN_INFO_MAP>();
     ParseHiSysEventDef(hiSysEventDef, tmpMap);
     hiSysEventDefMap_ = tmpMap;
 }

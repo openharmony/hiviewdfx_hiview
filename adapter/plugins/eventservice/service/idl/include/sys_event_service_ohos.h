@@ -45,8 +45,8 @@ using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysE
 namespace OHOS {
 namespace HiviewDFX {
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
-using GetTagByDomainNameFunc = std::function<std::string(std::string, std::string)>;
-using GetTypeByDomainNameFunc = std::function<int(std::string, std::string)>;
+using GetTagByDomainNameFunc = std::function<std::string(const std::string&, const std::string&)>;
+using GetTypeByDomainNameFunc = std::function<int(const std::string&, const std::string&)>;
 
 class SysEventServiceBase {
 };

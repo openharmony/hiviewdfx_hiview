@@ -70,11 +70,13 @@ void EventExportEngine::Start()
         return;
     }
     isTaskRunning_ = true;
-    auto initTask = std::bind(&EventExportEngine::Init, this);
-    auto initTaskHandle = ffrt::submit_h(initTask, {}, {},
+    auto initTaskHandle = ffrt::submit_h([this] () {
+            this->Init();
+        }, {}, {},
         ffrt::task_attr().name("dft_export_init").qos(ffrt::qos_default));
-    auto exportTask = std::bind(&EventExportEngine::InitAndRunTasks, this);
-    ffrt::submit(exportTask, { initTaskHandle }, {},
+    ffrt::submit([this] () {
+            this->InitAndRunTasks();
+        }, { initTaskHandle }, {},
         ffrt::task_attr().name("dft_export_start").qos(ffrt::qos_default));
 }
 

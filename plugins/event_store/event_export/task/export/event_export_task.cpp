@@ -47,6 +47,18 @@ void EventExportTask::OnTaskRun()
         HIVIEW_LOGE("event export directory is full");
         return;
     }
+
+    // init handler request
+    auto readReq = std::make_shared<EventReadRequest>();
+    readReq->moduleName = config_->moduleName;
+    readReq->beginSeq = dbMgr_->GetExportBeginningSeq(config_->moduleName);
+    readReq->maxSize = config_->maxSize;
+    readReq->exportDir = config_->exportDir;
+    if (!ParseExportEventList(readReq->eventList)) {
+        HIVIEW_LOGE("failed to parse event list to export");
+        return;
+    }
+
     // init write handler
     auto writeHandler = std::make_shared<EventWriteHandler>();
     writeHandler->SetExportDoneListener([this] (const std::string& moduleName, int64_t seq) {
@@ -59,15 +71,6 @@ void EventExportTask::OnTaskRun()
     // init handler chain
     readHandler->SetNextHandler(writeHandler);
     // start handler chain, read event from origin db file
-    auto readReq = std::make_shared<EventReadRequest>();
-    readReq->moduleName = config_->moduleName;
-    readReq->beginSeq = dbMgr_->GetExportBeginningSeq(config_->moduleName);
-    readReq->maxSize = config_->maxSize;
-    readReq->exportDir = config_->exportDir;
-    if (!ParseExportEventList(readReq->eventList)) {
-        HIVIEW_LOGE("failed to parse event list to export");
-        return;
-    }
     if (!readHandler->HandleRequest(readReq)) {
         HIVIEW_LOGE("some error occured during event exporting");
         return;
