@@ -24,6 +24,9 @@ config("ucollection_utility_test_config") {
   ]
 
   cflags = [ "-D__UNITTEST__" ]
+  if (thermal_manager_enable) {
+    cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
+  }
 }
 
 ohos_unittest("UCollectionUtilityUnitTest") {
@@ -41,6 +44,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "io_collector_test.cpp",
     "memory_collector_test.cpp",
     "perf_collector_test.cpp",
+    "temperature_collector_test.cpp",
     "trace_collector_test.cpp",
     "wm_collector_test.cpp",
   ]

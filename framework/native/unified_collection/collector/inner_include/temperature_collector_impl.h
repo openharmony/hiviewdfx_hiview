@@ -26,7 +26,7 @@ public:
     virtual ~TemperatureCollectorImpl() = default;
 
 public:
-    virtual CollectResult<DeviceThermal> CollectDevThermal() override;
+    virtual CollectResult<uint32_t> CollectDevThermal(DeviceZone deviceZone) override;
     virtual CollectResult<uint32_t> CollectThermaLevel() override;
 };
 } // UCollectUtil

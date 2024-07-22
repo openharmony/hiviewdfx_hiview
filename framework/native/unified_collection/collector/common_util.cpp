@@ -129,6 +129,18 @@ std::string CommonUtil::CreateExportFile(const std::string& path, int32_t maxFil
     HIVIEW_LOGI("create file=%{public}s", fileName.c_str());
     return fileName;
 }
+
+uint32_t CommonUtil::ReadNodeWithOnlyNumber(const std::string& fileName)
+{
+    std::string content;
+    FileUtil::LoadStringFromFile(fileName, content);
+    uint32_t parsedVal = 0;
+    // this string content might be empty or consist of some special charactors
+    // so "std::stoi" and "StringUtil::StrToInt" aren't applicable here.
+    std::stringstream ss(content);
+    ss >> parsedVal;
+    return parsedVal;
+}
 } // UCollectUtil
 } // HiViewDFX
 } // OHOS

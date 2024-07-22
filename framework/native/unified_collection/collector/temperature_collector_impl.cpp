@@ -16,13 +16,15 @@
 #include "temperature_collector_impl.h"
 
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 
+#include "common_util.h"
 #include "file_util.h"
 #include "hiview_logger.h"
-#include "string_util.h"
 #include "temperature_decorator.h"
+#ifdef THERMAL_MANAGER_ENABLE
 #include "thermal_mgr_client.h"
+#endif
 
 using namespace OHOS::HiviewDFX::UCollect;
 
@@ -42,43 +44,44 @@ std::string GetThermalType(const std::string& thermalZone)
 
 uint32_t GetThermalValue(const std::string& thermalZone)
 {
-    std::string value;
-    FileUtil::LoadStringFromFile(thermalZone + "/temp", value);
-    return StringUtil::StringToUl(value);
+    std::string path = thermalZone + "/temp";
+    return CommonUtil::ReadNodeWithOnlyNumber(path);
 }
 
-void UpdateThermalValue(DeviceThermal& deviceThermal, const std::string& thermalZone)
+std::string GetZonePathByType(const std::vector<std::string>& thermalZones, DeviceZone deviceZone)
 {
-    std::string type = GetThermalType(thermalZone);
-    if (strcmp(type.c_str(), "shell_front") == 0) {
-        deviceThermal.shellFront = GetThermalValue(thermalZone);
-    } else if (strcmp(type.c_str(), "shell_frame") == 0) {
-        deviceThermal.shellFrame = GetThermalValue(thermalZone);
-    } else if (strcmp(type.c_str(), "shell_back") == 0) {
-        deviceThermal.shellBack = GetThermalValue(thermalZone);
-    } else if (strcmp(type.c_str(), "soc_thermal") == 0) {
-        deviceThermal.socThermal = GetThermalValue(thermalZone);
-    } else if (strcmp(type.c_str(), "system_h") == 0) {
-        deviceThermal.system = GetThermalValue(thermalZone);
+    const std::unordered_map<DeviceZone, std::string> deviceZoneMap = {
+        {SHELL_FRONT, "shell_front"},
+        {SHELL_FRAME, "shell_frame"},
+        {SHELL_BACK, "shell_back"},
+        {SOC_THERMAL, "soc_thermal"},
+        {SYSTEM, "system_h"}
+    };
+    std::string typeStr = deviceZoneMap.at(deviceZone);
+    for (const auto& zone : thermalZones) {
+        if (typeStr == GetThermalType(zone)) {
+            return zone;
+        }
     }
+    return "";
 }
 }
-
 
 std::shared_ptr<TemperatureCollector> TemperatureCollector::Create()
 {
     return std::make_shared<TemperatureDecorator>(std::make_shared<TemperatureCollectorImpl>());
 }
 
-CollectResult<DeviceThermal> TemperatureCollectorImpl::CollectDevThermal()
+CollectResult<uint32_t> TemperatureCollectorImpl::CollectDevThermal(DeviceZone deviceZone)
 {
-    CollectResult<DeviceThermal> result;
-    DeviceThermal& deviceThermal = result.data;
+    CollectResult<uint32_t> result;
     std::vector<std::string> thermalZones;
     FileUtil::GetDirDirs(THERMAL_PATH, thermalZones);
-    for (const auto& zone : thermalZones) {
-        UpdateThermalValue(deviceThermal, zone);
+    std::string zonePath = GetZonePathByType(thermalZones, deviceZone);
+    if (zonePath.empty()) {
+        return result;
     }
+    result.data = GetThermalValue(zonePath);
     result.retCode = UcError::SUCCESS;
     return result;
 }
@@ -86,10 +89,12 @@ CollectResult<DeviceThermal> TemperatureCollectorImpl::CollectDevThermal()
 CollectResult<uint32_t> TemperatureCollectorImpl::CollectThermaLevel()
 {
     CollectResult<uint32_t> result;
+#ifdef THERMAL_MANAGER_ENABLE
     auto& thermalMgrClient = PowerMgr::ThermalMgrClient::GetInstance();
     PowerMgr::ThermalLevel thermalLevel = thermalMgrClient.GetThermalLevel();
     result.retCode = UcError::SUCCESS;
     result.data = static_cast<uint32_t>(thermalLevel);
+#endif
     return result;
 }
 } // namespace UCollectUtil

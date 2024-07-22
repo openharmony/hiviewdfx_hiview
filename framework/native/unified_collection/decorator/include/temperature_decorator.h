@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_TEMPERATURE_DECORATOR_H
 #define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_TEMPERATURE_DECORATOR_H
 
@@ -28,7 +27,7 @@ public:
     virtual ~TemperatureDecorator() = default;
 
 public:
-    virtual CollectResult<DeviceThermal> CollectDevThermal() override;
+    virtual CollectResult<uint32_t> CollectDevThermal(DeviceZone deviceZone) override;
     virtual CollectResult<uint32_t> CollectThermaLevel() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();

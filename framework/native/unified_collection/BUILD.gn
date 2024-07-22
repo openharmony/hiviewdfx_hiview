@@ -92,7 +92,6 @@ ohos_source_set("ucollection_source") {
     "hitrace:hitrace_dump",
     "init:libbegetutil",
     "relational_store:native_rdb",
-    "thermal_manager:thermalsrv_client",
     "zlib:libz",
   ]
 
@@ -105,6 +104,12 @@ ohos_source_set("ucollection_source") {
   if (has_hiperf) {
     cflags += [ "-DHAS_HIPERF" ]
     external_deps += [ "hiperf:hiperf_client" ]
+  }
+
+  defines = []
+  if (thermal_manager_enable) {
+    cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
+    external_deps += [ "thermal_manager:thermalsrv_client" ]
   }
 
   part_name = "hiview"

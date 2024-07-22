@@ -22,12 +22,12 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-struct DeviceThermal {
-    uint32_t shellFront;
-    uint32_t shellFrame;
-    uint32_t shellBack;
-    uint32_t socThermal;
-    uint32_t system;
+enum DeviceZone {
+    SHELL_FRONT,
+    SHELL_FRAME,
+    SHELL_BACK,
+    SOC_THERMAL,
+    SYSTEM
 };
 
 class TemperatureCollector {
@@ -36,7 +36,7 @@ public:
     virtual ~TemperatureCollector() = default;
 
 public:
-    virtual CollectResult<DeviceThermal> CollectDevThermal() = 0;
+    virtual CollectResult<uint32_t> CollectDevThermal(DeviceZone deviceZone) = 0;
     virtual CollectResult<uint32_t> CollectThermaLevel() = 0;
     static std::shared_ptr<TemperatureCollector> Create();
 };

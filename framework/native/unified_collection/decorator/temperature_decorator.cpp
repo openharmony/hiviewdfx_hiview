@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "temperature_decorator.h"
 
 namespace OHOS {
@@ -21,9 +20,9 @@ namespace UCollectUtil {
 const std::string TEMPERATURE_COLLECTOR_NAME = "TemperatureCollector";
 StatInfoWrapper TemperatureDecorator::statInfoWrapper_;
 
-CollectResult<DeviceThermal> TemperatureDecorator::CollectDevThermal()
+CollectResult<uint32_t> TemperatureDecorator::CollectDevThermal(DeviceZone deviceZone)
 {
-    auto task = [this] { return temperatureCollector_->CollectDevThermal(); };
+    auto task = [this, deviceZone] { return temperatureCollector_->CollectDevThermal(deviceZone); };
     return Invoke(task, statInfoWrapper_, TEMPERATURE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
