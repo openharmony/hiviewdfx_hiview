@@ -192,7 +192,7 @@ static int32_t CreateLogFile(const std::string& name)
     if (!FileUtil::FileExists(name)) {
         HILOG_WARN(LOG_CORE, "file %{public}s is creating now.", name.c_str());
     }
-    fd = open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
+    fd = TEMP_FAILURE_RETRY(open(name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE));
     return fd;
 }
 

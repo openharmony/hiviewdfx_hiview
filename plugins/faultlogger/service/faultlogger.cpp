@@ -577,7 +577,10 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
 #ifdef UNITTEST
     std::string outputFilePath = "/data/test_jsError_info";
     if (!FileUtil::FileExists(outputFilePath)) {
-        open(outputFilePath.c_str(), O_CREAT | O_RDWR | O_APPEND, DEFAULT_LOG_FILE_MODE);
+        int fd = TEMP_FAILURE_RETRY(open(outputFilePath.c_str(), O_CREAT | O_RDWR | O_APPEND, DEFAULT_LOG_FILE_MODE));
+        if (fd != -1) {
+            close(fd);
+        }
     }
     FileUtil::SaveStringToFile(outputFilePath, paramsStr, false);
 #else
@@ -836,9 +839,7 @@ void Faultlogger::GetStackInfo(const FaultLogInfo& info, std::string& stackInfo)
     }
     ssize_t nread = -1;
     char *buffer = new char[MAX_PIPE_SIZE];
-    do {
-        nread = read(*(info.pipeFd), buffer, MAX_PIPE_SIZE);
-    } while (nread == -1 && errno == EINTR);
+    nread = TEMP_FAILURE_RETRY(read(*info.pipeFd, buffer, MAX_PIPE_SIZE));
     if (nread <= 0) {
         HIVIEW_LOGE("read pipe failed");
         delete []buffer;
@@ -915,7 +916,7 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         char buffer[READ_HILOG_BUFFER_SIZE] = {0};
         while (true) {
             (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
-            ssize_t nread = read(fds[0], buffer, sizeof(buffer) - 1);
+            ssize_t nread = TEMP_FAILURE_RETRY(read(fds[0], buffer, sizeof(buffer) - 1));
             if (nread <= 0) {
                 HIVIEW_LOGI("read hilog finished");
                 break;
@@ -924,7 +925,7 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         }
         syscall(SYS_close, fds[0]);
 
-        if (waitpid(childPid, nullptr, 0) != childPid) {
+        if (TEMP_FAILURE_RETRY(waitpid(childPid, nullptr, 0)) != childPid) {
             HIVIEW_LOGE("waitpid fail, pid: %{public}d, errno: %{public}d", childPid, errno);
             return false;
         }
