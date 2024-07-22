@@ -37,6 +37,7 @@ ohos_fuzztest("EventServerSocketFuzzTest") {
   sources = [ "eventserversocket_fuzzer.cpp" ]
 
   deps = [
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
     "$hiview_plugin/sysevent_source:sysevent_source",

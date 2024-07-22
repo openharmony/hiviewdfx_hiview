@@ -18,10 +18,8 @@
 #include <memory>
 
 #include "event.h"
-#include "sys_event_service_adapter.h"
 #include "plugin.h"
 #include "sys_event_db_mgr.h"
-#include "event_json_parser.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -38,7 +36,6 @@ private:
     bool IsNeedBackup(const std::string& dateStr);
 
 private:
-    std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::unique_ptr<SysEventDbMgr> sysEventDbMgr_ = nullptr;
     std::atomic<bool> hasLoaded_ { false };
     std::string lastBackupTime_;

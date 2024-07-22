@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "export_config_manager.h"
+#include "export_event_list_parser.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -33,8 +34,14 @@ constexpr int64_t TEST_CAPACITY = 100;
 constexpr int64_t TEST_SIZE = 2;
 constexpr int64_t TEST_CYCLE = 3600;
 constexpr int64_t TEST_FILE_STORE_DAY_CNT = 7;
-constexpr size_t TEST_EXPORT_DOMAIN_CNT = 2;
 constexpr size_t TEST_EXPORT_NAME_CNT = 3;
+constexpr size_t TEST_EXPORT_CFG_FILE_CNT = 2;
+constexpr int64_t TEST_EXPORT_CFG_VERSION = 202404061011;
+constexpr char TEST_EXPORT_CFG_FILE[] = "/data/test/test_data/test_events_v2.json";
+constexpr char INVALID_TEST_EXPORT_CFG_FILE1[] = "/data/test/test_data/invalid_test_events1.json";
+constexpr char INVALID_TEST_EXPORT_CFG_FILE2[] = "/data/test/test_data/invalid_test_events2.json";
+constexpr char INVALID_TEST_EXPORT_CFG_FILE3[] = "/data/test/test_data/invalid_test_events3.json";
+constexpr int64_t DEFAULT_VERSION = 0;
 }
 void EventExportConfigParseTest::SetUpTestCase()
 {
@@ -103,13 +110,7 @@ HWTEST_F(EventExportConfigParseTest, EventExportConfigParseTest003, testing::ext
     ExportConfigParser parser(TEST_CONFIG_FILE);
     auto exportConfig = parser.Parse();
     ASSERT_NE(exportConfig, nullptr);
-    ASSERT_EQ(exportConfig->eventList.size(), TEST_EXPORT_DOMAIN_CNT);
-    auto iter = exportConfig->eventList.find("DOMAIN1");
-    ASSERT_NE(iter, exportConfig->eventList.end());
-    ASSERT_EQ(iter->second.size(), TEST_EXPORT_NAME_CNT);
-    iter = exportConfig->eventList.find("DOMAIN2");
-    ASSERT_NE(iter, exportConfig->eventList.end());
-    ASSERT_EQ(iter->second.size(), TEST_EXPORT_NAME_CNT);
+    ASSERT_EQ(exportConfig->eventsConfigFiles.size(), TEST_EXPORT_CFG_FILE_CNT);
 }
 
 /**
@@ -127,6 +128,48 @@ HWTEST_F(EventExportConfigParseTest, EventExportConfigParseTest004, testing::ext
     ASSERT_EQ(exportConfig->exportSwitchParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
     ASSERT_EQ(exportConfig->sysUpgradeParam.name, TEST_SETTING_DB_PARAM_NAME);
     ASSERT_EQ(exportConfig->sysUpgradeParam.enabledVal, TEST_SETTING_DB_PARAM_ENABLED_VAL);
+}
+
+/**
+ * @tc.name: ExportEventListParserTest005
+ * @tc.desc: ExportEventListParser test
+ * @tc.type: FUNC
+ * @tc.require: issueIAC4BC
+ */
+HWTEST_F(EventExportConfigParseTest, ExportEventListParserTest005, testing::ext::TestSize.Level3)
+{
+    ExportEventListParser parser(TEST_EXPORT_CFG_FILE);
+    ExportEventList list;
+    parser.GetExportEventList(list);
+    ASSERT_GT(list.size(), 0);
+    auto iter = list.find("DOMAIN1");
+    ASSERT_NE(iter, list.end());
+    iter = list.find("DOMAIN2");
+    ASSERT_NE(iter, list.end());
+    ASSERT_EQ(iter->second.size(), TEST_EXPORT_NAME_CNT);
+    ASSERT_EQ(parser.GetConfigurationVersion(), TEST_EXPORT_CFG_VERSION);
+}
+
+/**
+ * @tc.name: ExportEventListParserTest006
+ * @tc.desc: ExportEventListParser test
+ * @tc.type: FUNC
+ * @tc.require: issueIAC4BC
+ */
+HWTEST_F(EventExportConfigParseTest, ExportEventListParserTest006, testing::ext::TestSize.Level3)
+{
+    ExportEventListParser parser1(INVALID_TEST_EXPORT_CFG_FILE1);
+    ExportEventList list;
+    parser1.GetExportEventList(list);
+    ASSERT_EQ(list.size(), 0);
+    ASSERT_EQ(parser1.GetConfigurationVersion(), DEFAULT_VERSION);
+    ExportEventListParser parser2(INVALID_TEST_EXPORT_CFG_FILE2);
+    parser2.GetExportEventList(list);
+    ASSERT_EQ(list.size(), 0);
+    ASSERT_EQ(parser2.GetConfigurationVersion(), TEST_EXPORT_CFG_VERSION);
+    ExportEventListParser parser3(INVALID_TEST_EXPORT_CFG_FILE3);
+    parser3.GetExportEventList(list);
+    ASSERT_EQ(list.size(), 0);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

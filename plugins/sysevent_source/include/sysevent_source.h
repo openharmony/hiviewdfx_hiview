@@ -16,6 +16,7 @@
 #ifndef SYS_EVENT_SOURCE_H
 #define SYS_EVENT_SOURCE_H
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "pipeline.h"
 #include "platform_monitor.h"
 #include "base/raw_data.h"
+#include "sys_event_service_adapter.h"
 #include "sys_event_stat.h"
 
 namespace OHOS {
@@ -42,7 +44,7 @@ private:
     SysEventSource& eventSource;
 };
 
-class SysEventSource : public EventSource {
+class SysEventSource : public EventSource, public SysEventServiceBase {
 public:
     SysEventSource() {};
     ~SysEventSource() {};
@@ -54,6 +56,7 @@ public:
     bool CheckEvent(std::shared_ptr<Event> event);
     bool PublishPipelineEvent(std::shared_ptr<PipelineEvent> event);
     void Dump(int fd, const std::vector<std::string>& cmds) override;
+    void OnConfigUpdate(const std::string& localCfgPath, const std::string& cloudCfgPath) override;
 
 private:
     void InitController();
@@ -65,6 +68,7 @@ private:
     std::unique_ptr<SysEventStat> sysEventStat_ = nullptr;
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::shared_ptr<IController> controller_;
+    std::atomic<bool> isConfigUpdated_ { false };
 };
 } // namespace HiviewDFX
 } // namespace OHOS

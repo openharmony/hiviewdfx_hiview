@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,6 +15,7 @@ import("//build/ohos.gni")
 
 config("sysevent_source_config") {
   include_dirs = [
+    "$hiview_core/param_update/include",
     "control/config/include",
     "control/db/include",
     "control/include",
@@ -52,6 +53,7 @@ ohos_source_set("sysevent_source") {
     "control/config/daily_config.cpp",
     "control/daily_controller.cpp",
     "control/db/daily_db_helper.cpp",
+    "event_json_parser.cpp",
     "event_server.cpp",
     "monitor_config.cpp",
     "platform_monitor.cpp",
@@ -62,6 +64,7 @@ ohos_source_set("sysevent_source") {
   deps = [
     ":hiview.para.dac",
     ":monitor_config",
+    "$hiview_adapter/plugins/eventservice/service:sys_event_service_adapter",
     "$hiview_base:hiviewbase",
     "$hiview_core:hiview_core",
   ]
@@ -83,6 +86,7 @@ group("unittest") {
   testonly = true
   deps = [
     "test/unittest/common:DailyControllerTest",
+    "test/unittest/common:EventJsonParserTest",
     "test/unittest/common:EventServerTest",
     "test/unittest/common:SysEventStatTest",
   ]

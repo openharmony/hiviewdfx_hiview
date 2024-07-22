@@ -13,30 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef HIVIEW_BASE_EVENT_EXPORT_EVENT_EXPORT_TASK_H
-#define HIVIEW_BASE_EVENT_EXPORT_EVENT_EXPORT_TASK_H
+#ifndef UTILITY_HIVIEW_CFG_UTIL_H
+#define UTILITY_HIVIEW_CFG_UTIL_H
 
-#include <memory>
-
-#include "event_read_handler.h"
-#include "event_write_handler.h"
-#include "export_base_task.h"
-#include "export_event_list_parser.h"
+#include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
-class EventExportTask : public ExportBaseTask {
-public:
-    EventExportTask(std::shared_ptr<ExportConfig> config, std::shared_ptr<ExportDbManager> dbMgr)
-        : ExportBaseTask(config, dbMgr) {}
-
-protected:
-    void OnTaskRun() override;
-
-private:
-    bool ParseExportEventList(ExportEventList& list);
+namespace ConfigUtil {
+std::string GetConfigFilePath(const std::string& fileName);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
-
-#endif // HIVIEW_BASE_EVENT_EXPORT_EVENT_EXPORT_TASK_H
+#endif // UTILITY_HIVIEW_CFG_UTIL_H

@@ -27,9 +27,8 @@
 #include "plugin.h"
 #include "plugin_bundle.h"
 #include "plugin_config.h"
-#include "event_json_parser.h"
-
 #include "singleton.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 using PipelineConfigMap = std::map<std::string, std::shared_ptr<DispatchRule>>;
@@ -71,11 +70,6 @@ public:
     void AddListenerInfo(uint32_t type, const std::string& name) override;
     std::vector<std::weak_ptr<EventListener>> GetListenerInfo(uint32_t type,
         const std::string& eventName, const std::string& domain) override;
-
-    std::shared_ptr<EventJsonParser> GetEventJsonParser()
-    {
-        return sysEventParser_;
-    }
 
     PipelineConfigMap& GetPipelineConfigMap()
     {
@@ -159,7 +153,6 @@ private:
     };
 
     void CreateWorkingDirectories(const std::string& platformConfigDir);
-    void InitSysEventParser();
     void StartPlatformDispatchQueue();
     void CreatePlugin(const PluginConfig::PluginInfo& pluginInfo);
     void CreatePipeline(const PluginConfig::PipelineInfo& pipelineInfo);
@@ -197,7 +190,6 @@ private:
     std::vector<std::string> dynamicLibSearchDir_;
     std::shared_ptr<EventDispatchQueue> unorderQueue_;
     std::shared_ptr<EventLoop> sharedWorkLoop_;
-    std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::map<std::string, std::shared_ptr<Plugin>> pluginMap_;
     std::map<std::string, std::shared_ptr<Pipeline>> pipelines_;
     std::map<std::string, std::shared_ptr<EventLoop>> privateWorkLoopMap_;

@@ -21,17 +21,24 @@
 #include "daily_controller.h"
 #include "decoded/decoded_event.h"
 #include "defines.h"
+#include "file_util.h"
+#include "hiview_config_util.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
 #include "time_util.h"
 #include "sys_event.h"
 #include "hiview_platform.h"
+#include "param_const_common.h"
 #include "sys_event_dao.h"
+#include "sys_event_service_adapter.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 REGISTER(SysEventSource);
+namespace {
 DEFINE_LOG_TAG("HiView-SysEventSource");
+const std::string DEF_FILE_NAME = "hisysevent.def";
+}
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
 {
@@ -52,14 +59,24 @@ void SysEventSource::OnLoad()
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
     auto context = GetHiviewContext();
-    HiviewPlatform* hiviewPlatform = static_cast<HiviewPlatform*>(context);
-    if (hiviewPlatform == nullptr) {
-        HIVIEW_LOGW("hiviewPlatform is null");
-        return;
-    }
-    sysEventParser_ = hiviewPlatform->GetEventJsonParser();
     sysEventStat_ = std::make_unique<SysEventStat>();
     InitController();
+
+    // start sys event service
+    auto notifyFunc = [&] (std::shared_ptr<Event> event) -> void {
+        this->GetHiviewContext()->PostUnorderedEvent(shared_from_this(), event);
+    };
+    SysEventServiceAdapter::StartService(this, notifyFunc);
+    SysEventServiceAdapter::SetWorkLoop(looper);
+
+    sysEventParser_ = std::make_shared<EventJsonParser>(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+
+    auto getTagFunc = std::bind(&EventJsonParser::GetTagByDomainAndName, *(sysEventParser_.get()),
+        std::placeholders::_1, std::placeholders::_2);
+    SysEventServiceAdapter::BindGetTagFunc(getTagFunc);
+    auto getTypeFunc = std::bind(&EventJsonParser::GetTypeByDomainAndName, *(sysEventParser_.get()),
+        std::placeholders::_1, std::placeholders::_2);
+    SysEventServiceAdapter::BindGetTypeFunc(getTypeFunc);
 }
 
 void SysEventSource::InitController()
@@ -129,8 +146,12 @@ bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
 
 bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
 {
+    if (isConfigUpdated_) {
+        sysEventParser_->ReadDefFile(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+        isConfigUpdated_.store(false);
+    }
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
-    if (sysEvent == nullptr || sysEventParser_ == nullptr) {
+    if (sysEvent == nullptr) {
         HIVIEW_LOGE("event or event parser is null.");
         sysEventStat_->AccumulateEvent(false);
         return false;
@@ -191,6 +212,11 @@ void SysEventSource::Dump(int fd, const std::vector<std::string>& cmds)
     } else {
         sysEventStat_->StatSummary(fd);
     }
+}
+
+void SysEventSource::OnConfigUpdate(const std::string& localCfgPath, const std::string& cloudCfgPath)
+{
+    this->isConfigUpdated_.store(true);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

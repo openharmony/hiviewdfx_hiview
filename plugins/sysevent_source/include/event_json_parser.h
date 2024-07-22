@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <functional>
 #include <list>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -39,7 +40,7 @@ struct BaseInfo {
     bool preserve = true;
 };
 using NAME_INFO_MAP = std::unordered_map<std::string, BaseInfo>;
-using DOMAIN_INFO_MAP = std::unordered_map<std::string, NAME_INFO_MAP>;
+using DOMAIN_INFO_MAP = std::shared_ptr<std::unordered_map<std::string, NAME_INFO_MAP>>;
 using JSON_VALUE_LOOP_HANDLER = std::function<void(const std::string&, const Json::Value&)>;
 using FILTER_SIZE_TYPE = std::list<std::string>::size_type;
 
@@ -53,7 +54,7 @@ private:
 
 class EventJsonParser {
 public:
-    EventJsonParser(std::vector<std::string>& paths);
+    EventJsonParser(const std::string& defFilePath);
     ~EventJsonParser() {};
 
 public:
@@ -62,6 +63,7 @@ public:
     bool GetPreserveByDomainAndName(const std::string& domain, const std::string& name) const;
     bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
     void UpdateTestType(const std::string& testType);
+    void ReadDefFile(const std::string& defFilePath);
 
 private:
     void AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const;
@@ -74,12 +76,12 @@ private:
     bool HasBoolMember(const Json::Value& jsonObj, const std::string& name) const;
     void InitEventInfoMapRef(const Json::Value& jsonObj, JSON_VALUE_LOOP_HANDLER handler) const;
     BaseInfo ParseBaseConfig(const Json::Value& eventNameJson) const;
-    void ParseHiSysEventDef(const Json::Value& hiSysEventDef);
+    void ParseHiSysEventDef(const Json::Value& hiSysEventDef, DOMAIN_INFO_MAP sysDefMap);
     NAME_INFO_MAP ParseNameConfig(const Json::Value& domainJson) const;
     void WatchTestTypeParameter();
 
 private:
-    DOMAIN_INFO_MAP hiSysEventDef_;
+    DOMAIN_INFO_MAP hiSysEventDefMap_ = nullptr;
     DuplicateIdFilter filter_;
     std::string testType_;
 }; // EventJsonParser

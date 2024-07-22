@@ -18,9 +18,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "cJSON.h"
-#include "export_event_list_parser.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -54,8 +54,8 @@ struct ExportConfig {
     // the executing cycle for exporting&expiring task, unit: hour
     int64_t taskCycle = 0;
 
-    // the list consists of events configured to export
-    ExportEventList eventList;
+    // the config files for events configured to export
+    std::vector<std::string> eventsConfigFiles;
 
     // the maximum count of day for event files to store. unit: day
     int64_t dayCnt = 0;
@@ -70,7 +70,6 @@ public:
     std::shared_ptr<ExportConfig> Parse();
 
 private:
-    bool ParseExportEventList(ExportEventList& list);
     bool ParseSettingDbParam(SettingDbParam& settingDbParam, const std::string& paramKey);
     bool ParseResidualContent(std::shared_ptr<ExportConfig> config);
 

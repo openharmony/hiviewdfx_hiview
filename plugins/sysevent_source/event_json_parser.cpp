@@ -103,17 +103,11 @@ bool DuplicateIdFilter::IsDuplicateEvent(const uint64_t sysEventId)
     return false;
 }
 
-EventJsonParser::EventJsonParser(std::vector<std::string>& paths)
+EventJsonParser::EventJsonParser(const std::string& defFilePath)
 {
-    Json::Value hiSysEventDef;
-    for (auto path : paths) {
-        if (!ReadSysEventDefFromFile(path, hiSysEventDef)) {
-            HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", path.c_str());
-            continue;
-        }
-        ParseHiSysEventDef(hiSysEventDef);
-    }
     WatchTestTypeParameter();
+    // read json file
+    ReadDefFile(defFilePath);
 }
 
 void EventJsonParser::WatchTestTypeParameter()
@@ -198,12 +192,12 @@ bool EventJsonParser::CheckBaseInfo(std::shared_ptr<SysEvent> event) const
 BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& domain,
     const std::string& name) const
 {
-    auto domainIter = hiSysEventDef_.find(domain);
-    if (domainIter == hiSysEventDef_.end()) {
+    auto domainIter = hiSysEventDefMap_->find(domain);
+    if (domainIter == hiSysEventDefMap_->end()) {
         HIVIEW_LOGD("domain %{public}s is not defined.", domain.c_str());
         return BaseInfo();
     }
-    auto domainNames = hiSysEventDef_.at(domain);
+    auto domainNames = hiSysEventDefMap_->at(domain);
     auto nameIter = domainNames.find(name);
     if (nameIter == domainNames.end()) {
         HIVIEW_LOGD("%{public}s is not defined in domain %{public}s.", name.c_str(), domain.c_str());
@@ -311,10 +305,10 @@ BaseInfo EventJsonParser::ParseBaseConfig(const Json::Value& eventNameJson) cons
     return baseInfo;
 }
 
-void EventJsonParser::ParseHiSysEventDef(const Json::Value& hiSysEventDef)
+void EventJsonParser::ParseHiSysEventDef(const Json::Value& hiSysEventDef, DOMAIN_INFO_MAP sysDefMap)
 {
-    InitEventInfoMapRef(hiSysEventDef, [this] (const std::string& key, const Json::Value& value) {
-       hiSysEventDef_[key] = ParseNameConfig(value);
+    InitEventInfoMapRef(hiSysEventDef, [this, sysDefMap] (const std::string& key, const Json::Value& value) {
+       sysDefMap->insert(std::make_pair(key, this->ParseNameConfig(value)));
     });
 }
 
@@ -328,6 +322,18 @@ NAME_INFO_MAP EventJsonParser::ParseNameConfig(const Json::Value& domainJson) co
         allNames[key] = ParseBaseConfig(value);
     });
     return allNames;
+}
+
+void EventJsonParser::ReadDefFile(const std::string& defFilePath)
+{
+    Json::Value hiSysEventDef;
+    if (!ReadSysEventDefFromFile(defFilePath, hiSysEventDef)) {
+        HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s", defFilePath.c_str());
+        return;
+    }
+    DOMAIN_INFO_MAP tmpMap = std::make_shared<std::unordered_map<std::string, NAME_INFO_MAP>>();
+    ParseHiSysEventDef(hiSysEventDef, tmpMap);
+    hiSysEventDefMap_ = tmpMap;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

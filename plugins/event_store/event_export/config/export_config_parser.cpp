@@ -18,13 +18,11 @@
 #include <fstream>
 
 #include "cjson_util.h"
-#include "export_event_list_parser.h"
 #include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-EventConfigParser");
-using  ExportEventListParsers = std::map<std::string, std::shared_ptr<ExportEventListParser>>;
 namespace {
 constexpr char EXPORT_SWITCH_PARAM_KEY[] = "exportSwitchParam";
 constexpr char SYS_UPGRADE_PARAM_KEY[] = "sysUpgradeParam";
@@ -38,17 +36,6 @@ constexpr char EXPORT_EVENT_LIST_CONFIG_PATHS[] = "exportEventListConfigPaths";
 constexpr char FILE_STORED_MAX_DAY_CNT[] = "fileStoredMaxDayCnt";
 constexpr int32_t INVALID_INT_VAL = -1;
 constexpr double INVALID_DOUBLE_VAL = -1.0;
-
-std::shared_ptr<ExportEventListParser> GetParser(ExportEventListParsers& parsers,
-    const std::string& path)
-{
-    auto iter = parsers.find(path);
-    if (iter == parsers.end()) {
-        parsers.emplace(path, std::make_shared<ExportEventListParser>(path));
-        return parsers[path];
-    }
-    return iter->second;
-}
 }
 
 ExportConfigParser::ExportConfigParser(const std::string& configFile)
@@ -71,11 +58,8 @@ std::shared_ptr<ExportConfig> ExportConfigParser::Parse()
         HIVIEW_LOGE("the file format of export config file is not json.");
         return nullptr;
     }
-    // read export event list
-    if (!ParseExportEventList(exportConfig->eventList)) {
-        HIVIEW_LOGE("failed to parse export event list.");
-        return nullptr;
-    }
+    // read event export config files
+    CJsonUtil::GetStringArray(jsonRoot_, EXPORT_EVENT_LIST_CONFIG_PATHS, exportConfig->eventsConfigFiles);
     // parse export switch setting parameter
     if (!ParseSettingDbParam(exportConfig->exportSwitchParam, EXPORT_SWITCH_PARAM_KEY)) {
         HIVIEW_LOGE("failed to parse export switch parameter.");
@@ -91,27 +75,6 @@ std::shared_ptr<ExportConfig> ExportConfigParser::Parse()
         return nullptr;
     }
     return exportConfig;
-}
-
-bool ExportConfigParser::ParseExportEventList(ExportEventList& list)
-{
-    std::vector<std::string> eventListFilePaths;
-    CJsonUtil::GetStringArray(jsonRoot_, EXPORT_EVENT_LIST_CONFIG_PATHS, eventListFilePaths);
-    ExportEventListParsers parsers;
-    auto iter = std::max_element(eventListFilePaths.begin(), eventListFilePaths.end(),
-        [&parsers] (const std::string& path1, const std::string& path2) {
-            auto p1 = GetParser(parsers, path1);
-            auto p2 = GetParser(parsers, path2);
-            return p1->GetConfigurationVersion() < p2->GetConfigurationVersion();
-        });
-    if (iter == eventListFilePaths.end()) {
-        HIVIEW_LOGE("no event list file path is configured.");
-        return false;
-    }
-    HIVIEW_LOGD("event list file path is %{public}s", (*iter).c_str());
-    auto parser = GetParser(parsers, *iter);
-    parser->GetExportEventList(list);
-    return true;
 }
 
 bool ExportConfigParser::ParseSettingDbParam(SettingDbParam& settingDbParam, const std::string& paramKey)

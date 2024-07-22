@@ -20,6 +20,7 @@
 #include "event.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
+#include "sys_event_service_adapter.h"
 #include "sys_event.h"
 
 namespace OHOS {
@@ -29,11 +30,6 @@ DEFINE_LOG_TAG("SysEventDispatcher");
 
 void SysEventDispatcher::OnLoad()
 {
-    auto notifyFunc = [&] (std::shared_ptr<Event> event) -> void {
-        this->GetHiviewContext()->PostUnorderedEvent(shared_from_this(), event);
-    };
-    SysEventServiceAdapter::StartService(this, notifyFunc);
-    SysEventServiceAdapter::SetWorkLoop(this->GetHiviewContext()->GetSharedWorkLoop());
     HIVIEW_LOGI("OnLoad.");
 }
 
