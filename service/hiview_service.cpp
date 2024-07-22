@@ -28,6 +28,7 @@
 #include "hiview_logger.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
+#include "sys_event.h"
 #include "time_util.h"
 #include "trace_manager.h"
 

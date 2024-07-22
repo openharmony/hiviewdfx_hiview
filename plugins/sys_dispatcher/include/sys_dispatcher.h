@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,16 +17,17 @@
 #define HIVIEW_TEST_PLUGIN_H
 
 #include "plugin.h"
-#include "sys_event_service_adapter.h"
+#include "sys_event.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-class SysEventDispatcher : public Plugin, public SysEventServiceBase {
+class SysEventDispatcher : public Plugin {
 public:
     bool OnEvent(std::shared_ptr<Event> &event) override;
     void OnLoad() override;
     void OnUnload() override;
     void DispatchEvent(std::shared_ptr<SysEvent>& sysEvent);
+
 private:
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
 };

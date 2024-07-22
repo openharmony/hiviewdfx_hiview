@@ -24,15 +24,7 @@ void EventJsonParserTest::SetUpTestCase() {}
 
 void EventJsonParserTest::TearDownTestCase() {}
 
-void EventJsonParserTest::SetUp()
-{
-    std::string configDir("/data/test/test_data/hiview_platform_config");
-    if (!platform.InitEnvironment(configDir)) {
-        std::cout << "fail to init environment" << std::endl;
-    } else {
-        std::cout << "init environment successful" << std::endl;
-    }
-}
+void EventJsonParserTest::SetUp() {}
 
 void EventJsonParserTest::TearDown() {}
 
@@ -45,10 +37,8 @@ void EventJsonParserTest::TearDown() {}
 HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Level0)
 {
     printf("start EventJsonParserTest001\n");
-    std::string defFile = "/system/etc/hiview/hisysevent.def";
-    std::vector<std::string> defFiles;
-    defFiles.emplace_back(defFile);
-    auto sysEventParser = std::make_unique<EventJsonParser>(defFiles);
+    std::string defFilePath = "/system/etc/hiview/hisysevent.def";
+    auto sysEventParser = std::make_unique<EventJsonParser>(defFilePath);
 
     std::shared_ptr<SysEvent> sysEvent = nullptr;
     ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));

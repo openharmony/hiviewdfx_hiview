@@ -1,0 +1,19 @@
+{
+    "configurationInfo": {
+        "configurationVersion": 202404061011
+    },
+    "events": [
+        {
+            "domain": "DOMAIN2",
+            "names": []
+        },
+        {
+            "domain1": "DOMAIN3",
+            "names": ["NAME1", "NAME2", "NAME3"]
+        },
+        {
+            "domain": "DOMAIN4",
+            "namess": ["NAME1", "NAME2", "NAME3"]
+        }
+    ]
+}

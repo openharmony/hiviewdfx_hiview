@@ -497,6 +497,7 @@
         "OHOS::HiviewDFX::HiviewZipUnit::~HiviewZipUnit()";
         "OHOS::HiviewDFX::Parameter::GetSysVersionStr()";
         "OHOS::HiviewDFX::TimeUtil::GetFormattedTimestampEndWithMilli()";
+        "OHOS::HiviewDFX::ConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;

@@ -27,6 +27,7 @@
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "sys_event.h"
+#include "sys_event_dao.h"
 #include "sys_event_db_mgr.h"
 #include "sys_event_sequence_mgr.h"
 #include "time_util.h"
@@ -50,23 +51,6 @@ void SysEventStore::OnLoad()
 {
     HIVIEW_LOGI("sys event service load");
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
-    auto context = GetHiviewContext();
-    HiviewPlatform* hiviewPlatform = static_cast<HiviewPlatform*>(context);
-    if (hiviewPlatform == nullptr) {
-        HIVIEW_LOGW("hiviewPlatform is null");
-        return;
-    }
-    sysEventParser_ = hiviewPlatform->GetEventJsonParser();
-    if (sysEventParser_ == nullptr) {
-        hasLoaded_ = false;
-        return;
-    }
-    auto getTagFunc = std::bind(&EventJsonParser::GetTagByDomainAndName, *(sysEventParser_.get()),
-        std::placeholders::_1, std::placeholders::_2);
-    SysEventServiceAdapter::BindGetTagFunc(getTagFunc);
-    auto getTypeFunc = std::bind(&EventJsonParser::GetTypeByDomainAndName, *(sysEventParser_.get()),
-        std::placeholders::_1, std::placeholders::_2);
-    SysEventServiceAdapter::BindGetTypeFunc(getTypeFunc);
 
     if (!FileUtil::FileExists(EventStore::SysEventSequenceManager::GetInstance().GetSequenceFile())) {
         EventStore::SysEventDao::Restore();
