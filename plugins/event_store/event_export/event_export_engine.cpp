@@ -72,12 +72,10 @@ void EventExportEngine::Start()
     isTaskRunning_ = true;
     auto initTaskHandle = ffrt::submit_h([this] () {
             this->Init();
-        }, {}, {},
-        ffrt::task_attr().name("dft_export_init").qos(ffrt::qos_default));
+        }, {}, {}, ffrt::task_attr().name("dft_export_init").qos(ffrt::qos_default));
     ffrt::submit([this] () {
             this->InitAndRunTasks();
-        }, { initTaskHandle }, {},
-        ffrt::task_attr().name("dft_export_start").qos(ffrt::qos_default));
+        }, { initTaskHandle }, {}, ffrt::task_attr().name("dft_export_start").qos(ffrt::qos_default));
 }
 
 void EventExportEngine::Stop()

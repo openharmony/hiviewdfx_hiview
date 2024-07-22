@@ -72,17 +72,11 @@ void SysEventSource::OnLoad()
     sysEventParser_ = std::make_shared<EventJsonParser>(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
 
     SysEventServiceAdapter::BindGetTagFunc(
-        [this] (const std::string& domain, const std::string& name) -> std::string {
-            if (this->sysEventParser_ == nullptr) {
-                return "";
-            }
+        [this] (const std::string& domain, const std::string& name) {
             return this->sysEventParser_->GetTagByDomainAndName(domain, name);
         });
     SysEventServiceAdapter::BindGetTypeFunc(
-        [this] (const std::string& domain, const std::string& name) -> int {
-            if (this->sysEventParser_ == nullptr) {
-                return INVALID_EVENT_TYPE;
-            }
+        [this] (const std::string& domain, const std::string& name) {
             return this->sysEventParser_->GetTypeByDomainAndName(domain, name);
         });
 }

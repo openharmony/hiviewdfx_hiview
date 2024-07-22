@@ -44,9 +44,17 @@ inline std::string GetConfigVersion(bool isCloud)
 
 std::string GetConfigFilePath(const std::string& fileName)
 {
-    std::string localVer = GetConfigVersion(false);
     std::string cloudVer = GetConfigVersion(true);
-    return GetConfigFilePath(fileName, cloudVer > localVer);
+    std::string localVer = GetConfigVersion(false);
+    std::string localConfigFilePath = GetConfigFilePath(fileName, false);
+    if (localVer >= cloudVer) {
+        return localConfigFilePath;
+    }
+    std::string cloudConfigFilePath = GetConfigFilePath(fileName, true);
+    if (!FileUtil::FileExists(cloudConfigFilePath)) {
+        return localConfigFilePath;
+    }
+    return cloudConfigFilePath;
 }
 } // namespace ConfigUtil
 } // namespace HiviewDFX
