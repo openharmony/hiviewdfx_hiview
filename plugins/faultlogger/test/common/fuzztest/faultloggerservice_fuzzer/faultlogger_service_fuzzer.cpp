@@ -22,10 +22,19 @@
 #include "faultlogger_service_ohos.h"
 #include "faultlogger_service_fuzzer.h"
 #include "faultlogger_fuzzertest_common.h"
+#include "hiview_global.h"
 #include "hiview_platform.h"
 
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
+class HiviewTestContext : public HiviewContext {
+public:
+    std::string GetHiViewDirectory(DirectoryType type __UNUSED)
+    {
+        return "/data/log/hiview/sys_event_test";
+    }
+};
+
 const int32_t FAULTLOGTYPE_SIZE = 6;
 
 std::shared_ptr<Faultlogger> CreateFaultloggerInstance()
@@ -70,6 +79,9 @@ void FuzzServiceInterfaceDump(const uint8_t* data, size_t size)
 
 void FuzzServiceInterfaceQuerySelfFaultLog(const uint8_t* data, size_t size)
 {
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
+
     auto service = CreateFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
