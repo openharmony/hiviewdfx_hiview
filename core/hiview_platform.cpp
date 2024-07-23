@@ -520,10 +520,12 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         }
     }
 
-    std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
-    if (plugin->GetType() == Plugin::PluginType::PROXY && registInfo->needStartupLoading) {
-        std::shared_ptr<PluginProxy> pluginProxy = std::static_pointer_cast<PluginProxy>(plugin);
-        pluginProxy->LoadPluginIfNeed();
+    if (plugin->GetType() == Plugin::PluginType::PROXY) {
+        std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
+        if (registInfo != nullptr && registInfo->needStartupLoading) {
+            std::shared_ptr<PluginProxy> pluginProxy = std::static_pointer_cast<PluginProxy>(plugin);
+            pluginProxy->LoadPluginIfNeed();
+        }
     }
 
     uint64_t endTime = TimeUtil::GenerateTimestamp();
