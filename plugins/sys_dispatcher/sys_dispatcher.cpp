@@ -70,6 +70,9 @@ std::shared_ptr<SysEvent> SysEventDispatcher::Convert2SysEvent(std::shared_ptr<E
 bool SysEventDispatcher::OnEvent(std::shared_ptr<Event> &event)
 {
     auto sysEvent = Convert2SysEvent(event);
+    if (sysEvent == nullptr) {
+        return false;
+    }
     DispatchEvent(sysEvent);
     SysEventServiceAdapter::OnSysEvent(sysEvent);
     return true;
