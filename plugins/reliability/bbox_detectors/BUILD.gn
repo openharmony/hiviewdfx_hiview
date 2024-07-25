@@ -26,7 +26,10 @@ config("bbox_detector_config") {
 ohos_source_set("bbox_detector") {
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
-  sources = [ "bbox_detector_plugin.cpp" ]
+  sources = [
+    "bbox_detector_plugin.cpp",
+    "panic_report_recovery.cpp",
+  ]
 
   configs = [ ":bbox_detector_config" ]
 
@@ -34,7 +37,9 @@ ohos_source_set("bbox_detector") {
     "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "init:libbegetutil",
     "libxml2:libxml2",
+    "zlib:shared_libz",
   ]
 
   deps = [
