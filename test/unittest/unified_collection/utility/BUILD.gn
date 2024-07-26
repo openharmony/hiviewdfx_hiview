@@ -43,6 +43,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "hilog_collector_test.cpp",
     "io_collector_test.cpp",
     "memory_collector_test.cpp",
+    "network_collector_test.cpp",
     "perf_collector_test.cpp",
     "trace_collector_test.cpp",
     "wm_collector_test.cpp",
@@ -78,5 +79,11 @@ ohos_unittest("UCollectionUtilityUnitTest") {
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
+  }
+
+  defines = []
+  if (is_wifi_enable) {
+    external_deps += [ "wifi:wifi_sdk" ]
+    defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
 }
