@@ -36,6 +36,7 @@ WatchPoint::WatchPoint(const WatchPoint::Builder& builder)
     packageName_(builder.packageName_),
     processName_(builder.processName_),
     moduleName_(builder.moduleName_),
+    foreGround_(builder.foreGround_),
     logPath_(builder.logPath_),
     hitraceTime_(builder.hitraceTime_),
     sysrqTime_(builder.sysrqTime_)
@@ -112,6 +113,12 @@ WatchPoint::Builder& WatchPoint::Builder::InitPackageName(const std::string& pac
 WatchPoint::Builder& WatchPoint::Builder::InitModuleName(const std::string& moduleName)
 {
     moduleName_ = moduleName;
+    return *this;
+}
+
+WatchPoint::Builder& WatchPoint::Builder::InitForeGround(const std::string& foreGround)
+{
+    foreGround_ = foreGround;
     return *this;
 }
 
@@ -192,6 +199,11 @@ std::string WatchPoint::GetProcessName() const
 std::string WatchPoint::GetModuleName() const
 {
     return moduleName_;
+}
+
+std::string WatchPoint::GetForeGround() const
+{
+    return foreGround_;
 }
 
 std::string WatchPoint::GetLogPath() const

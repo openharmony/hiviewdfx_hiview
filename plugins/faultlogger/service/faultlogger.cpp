@@ -274,7 +274,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
         }
     }
 
-    if (info.id >= MIN_APP_USERID) {
+    if (info.sectionMap["FOREGROUND"].empty() && info.id >= MIN_APP_USERID) {
         if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
             UCollectUtil::FOREGROUND) {
             info.sectionMap["FOREGROUND"] = "Yes";
