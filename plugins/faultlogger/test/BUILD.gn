@@ -50,7 +50,10 @@ ohos_unittest("FaultloggerUnittest") {
     "$hiview_faultlogger/service/sanitizer_collector/sanitizerd_monitor.cpp",
     "$hiview_faultlogger/service/sanitizer_collector/zip_helper.cpp",
     "common/faultevent_listener.cpp",
+    "common/unittest/faultlog_formatter_unittest.cpp",
     "common/unittest/faultlogger_unittest.cpp",
+    "common/unittest/reporter_unittest.cpp",
+    "common/unittest/zip_helper_unittest.cpp",
   ]
 
   deps = [

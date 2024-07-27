@@ -22,12 +22,14 @@
 #include "faultlogger_fuzzertest_common.h"
 
 namespace OHOS {
+const int FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH = 50;
+
 void FuzzInterfaceAddFaultLog(const uint8_t* data, size_t size)
 {
     FaultLogInfoInner inner;
     int32_t faultLogType {0};
     int offsetTotalLength = sizeof(inner.time) + sizeof(inner.id) + sizeof(inner.pid) + sizeof(faultLogType) +
-                            (4 * HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH); // 4 : Offset by 4 string length
+                            (4 * FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH); // 4 : Offset by 4 string length
     if (offsetTotalLength > size) {
         return;
     }
@@ -38,17 +40,17 @@ void FuzzInterfaceAddFaultLog(const uint8_t* data, size_t size)
     STREAM_TO_VALUEINFO(data, faultLogType);
     inner.faultLogType = abs(faultLogType % 10); // 10 : get the absolute value of the last digit of the number
 
-    std::string module((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
-    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    std::string module(reinterpret_cast<const char*>(data), FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     inner.module = module;
-    std::string reason((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
-    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    std::string reason(reinterpret_cast<const char*>(data), FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     inner.reason = reason;
-    std::string summary((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
-    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    std::string summary(reinterpret_cast<const char*>(data), FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     inner.summary = summary;
-    std::string logPath((const char*)data, HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
-    data += HiviewDFX::FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
+    std::string logPath(reinterpret_cast<const char*>(data), FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     inner.logPath = logPath;
     HiviewDFX::AddFaultLog(inner);
     HiviewDFX::AddFaultLog(inner.time, inner.faultLogType, inner.module, inner.summary);
