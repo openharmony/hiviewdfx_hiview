@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef PANIC_REPORT_AFTER_RECOVERY_H_
-#define PANIC_REPORT_AFTER_RECOVERY_H_
+#ifndef PANIC_REPORT_RECOVERY_H_
+#define PANIC_REPORT_RECOVERY_H_
 
 #include <memory>
 #include <string>
@@ -73,7 +73,7 @@ std::string GetLastRecoveryTime();
  * @param timeStr timeStr.
  * @return the absolute path of bakeFile.
  */
-std::string GetAbsoluteBakeUpFilePathByTimeStr(const std::string& timeStr);
+std::string GetBackupFilePath(const std::string& timeStr);
 
 /**
  * The function to get a value from the content given by param name.
@@ -118,9 +118,8 @@ bool SetParamValueToFile(const std::string& filePath, const std::string& param, 
  *
  * @param srcPath filePath.
  * @param timeStr time in string format.
- * @return whether the execution is successful.
  */
-bool CompressAndCopyLogFiles(const std::string& srcPath, const std::string& timeStr);
+void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& timeStr);
 
 /**
  * The function to report panic system event after recovery.
@@ -137,11 +136,11 @@ void ReportPanicEventAfterRecovery(const std::string& content);
 bool TryToReportRecoveryPanicEvent();
 
 /**
- * Notify that report is finished.
+ * Confirm the result of recovery report.
  */
-void NotifyReportFinished();
+void ConfirmReportResult();
 }
 }
 }
 
-#endif //PANIC_REPORT_AFTER_RECOVERY_H_
+#endif // PANIC_REPORT_RECOVERY_H_

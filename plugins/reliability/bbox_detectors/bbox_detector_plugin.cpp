@@ -25,7 +25,7 @@
 #include "hiview_logger.h"
 #include "panic_report_recovery.h"
 #include "plugin_factory.h"
-#include "sys_event_dao.h"
+#include "hisysevent_util.h"
 #include "smart_parser.h"
 #include "string_util.h"
 #include "tbox.h"
@@ -100,7 +100,7 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
                                   LOG_PATH : LOG_PATH + '/') + timeStr;
 #ifndef UNITTEST
-    if (IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+    if (HisysEventUtil::IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
         HIVIEW_LOGE("HandleBBoxEvent is processed event path is %{public}s", dynamicPaths.c_str());
         return;
     }
@@ -159,7 +159,7 @@ void BBoxDetectorPlugin::StartBootScan()
                 static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time[", "-"),
                 "%Y%m%d%H%M%S")) * MILLSECONDS;
             if (abs(time_now - abs(time_event)) > ONE_DAY  ||
-                IsEventProcessed(name, "LOG_PATH", historyMap["dynamicPaths"])) {
+                HisysEventUtil::IsEventProcessed(name, "LOG_PATH", historyMap["dynamicPaths"])) {
                 continue;
             }
             auto happenTime_ = GetHappenTime(line, hisiHistoryPath);
@@ -167,19 +167,6 @@ void BBoxDetectorPlugin::StartBootScan()
             HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
         }
     }
-}
-
-bool BBoxDetectorPlugin::IsEventProcessed(const std::string& name, const std::string& key, const std::string& value)
-{
-    auto sysEventQuery = EventStore::SysEventDao::BuildQuery("KERNEL_VENDOR", {name});
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet resultSet = sysEventQuery->Select(selections).
-        Where(key, EventStore::Op::EQ, value).Execute();
-    if (resultSet.HasNext()) {
-        return true;
-    }
-
-    return false;
 }
 
 uint64_t BBoxDetectorPlugin::GetHappenTime(std::string& line, bool hisiHistoryPath)
@@ -261,8 +248,8 @@ void BBoxDetectorPlugin::NotifyBootStable()
 {
     if (PanicReport::TryToReportRecoveryPanicEvent()) {
         constexpr int timeout = 10; // 10s
-        eventLoop_->AddTimerEvent(nullptr, nullptr, [] {
-            PanicReport::NotifyReportFinished();
+        eventLoop_->AddTimerEvent(nullptr, nullptr, [this] {
+            PanicReport::ConfirmReportResult();
         }, timeout, false);
     }
 }
