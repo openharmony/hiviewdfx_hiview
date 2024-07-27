@@ -35,9 +35,9 @@ private:
     void StartBootScan();
     void WaitForLogs(const std::string& logDir);
     void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
-    static uint64_t GetHappenTime(std::string& line, bool hisiHistoryPath);
+    uint64_t GetHappenTime(std::string& line);
     int CheckAndHiSysEventWrite(std::string& name, std::map<std::string, std::string>& historyMap,
-        uint64_t& happenTime_);
+        uint64_t& happenTime);
     std::map<std::string, std::string> GetValueFromHistory(std::string& line);
     void AddDetectBootCompletedTask();
     void RemoveDetectBootCompletedTask();
@@ -48,8 +48,7 @@ private:
     static constexpr int READ_LINE_NUM = 5;
     static constexpr int MILLSECONDS = 1000;
     static constexpr int ONE_DAY = 86400 * MILLSECONDS;
-    static constexpr char DOMAIN[] = "KERNEL_VENDOR";
-    bool hisiHistoryPath = false;
+    bool hisiHistoryPath_ = false;
     std::shared_ptr<EventLoop> eventLoop_;
     uint64_t timeEventId_ = 0;
     std::mutex lock_;

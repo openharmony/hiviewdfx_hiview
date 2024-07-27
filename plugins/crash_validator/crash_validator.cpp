@@ -189,8 +189,9 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     int32_t pid = sysEvent->GetEventIntValue("PID");
     AddEventToMap(pid, sysEvent);
     if (sysEvent->eventName_ == "PROCESS_EXIT") {
-        auto task = std::bind(&CrashValidator::MatchEvent, this, pid);
-        workLoop_->AddTimerEvent(nullptr, nullptr, task, CHECK_TIME, false);
+        workLoop_->AddTimerEvent(nullptr, nullptr, [this, pid] {
+            MatchEvent(pid);
+        }, CHECK_TIME, false);
         HIVIEW_LOGI("Add MatchEvent task, process pid = %{public}d, name = %{public}s", pid,
                     sysEvent->GetEventValue("PROCESS_NAME").c_str());
     }
