@@ -3,6 +3,8 @@ event id="" name="UI_BLOCK_6S" action="s,tr,k:SysRqFile,cmd:c,cmd:m,t" interval=
 event id="" name="UI_BLOCK_3S" action="s,pb:1:r,t" interval="10"
 event id="" name="THREAD_BLOCK_6S" action="tr,k:SysRqFile,cmd:c,cmd:m,t,cmd:dam" interval="10"
 event id="" name="THREAD_BLOCK_3S" action="pb:1:r,t" interval="10"
+event id="" name="BUSSINESS_THREAD_BLOCK_6S" action="t,cmd:c,cmd:m,cmd:dam,tr,k:SysRqFile" interval="10"
+event id="" name="BUSSINESS_THREAD_BLOCK_3S" action="pb:1:r,t" interval="10"
 event id="" name="LIFECYCLE_TIMEOUT" action="tr,k:SysRqFile,cmd:c,cmd:m,t,cmd:dam" interval="10"
 event id="" name="LIFECYCLE_HALF_TIMEOUT" action="pb:1:r,t" interval="10"
 event id="" name="APP_INPUT_BLOCK" action="tr,k:SysRqFile,cmd:c,cmd:m,t,cmd:dam,t:input" interval="10"

@@ -79,7 +79,8 @@ private:
     static const inline std::vector<std::string> FFRT_VECTOR = {
         "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
         "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
-        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN"
+        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
+        "BUSSINESS_THREAD_BLOCK_6S"
     };
 
     static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
