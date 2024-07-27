@@ -23,13 +23,13 @@
 #include "file_util.h"
 #include "hisysevent.h"
 #include "hiview_logger.h"
+#include "panic_report_recovery.h"
 #include "plugin_factory.h"
-#include "sys_event_dao.h"
+#include "hisysevent_util.h"
 #include "smart_parser.h"
 #include "string_util.h"
 #include "tbox.h"
 #include "time_util.h"
-
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -52,18 +52,20 @@ void BBoxDetectorPlugin::OnLoad()
     SetName("BBoxDetectorPlugin");
     SetVersion("BBoxDetector1.0");
 #ifndef UNITTEST
-    auto eventloop = GetHiviewContext()->GetSharedWorkLoop();
-    if (eventloop != nullptr) {
-        eventloop->AddTimerEvent(nullptr, nullptr, [&]() {
+    eventLoop_ = GetHiviewContext()->GetSharedWorkLoop();
+    if (eventLoop_ != nullptr) {
+        eventLoop_->AddTimerEvent(nullptr, nullptr, [&]() {
             StartBootScan();
         }, SECONDS, false); // delay 60s
     }
+    InitPanicReporter();
 #endif
 }
 
 void BBoxDetectorPlugin::OnUnload()
 {
     HIVIEW_LOGI("BBoxDetectorPlugin OnUnload");
+    RemoveDetectBootCompletedTask();
 }
 
 bool BBoxDetectorPlugin::OnEvent(std::shared_ptr<Event> &event)
@@ -86,6 +88,9 @@ void BBoxDetectorPlugin::WaitForLogs(const std::string& logDir)
 
 void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
 {
+    if (PanicReport::IsRecoveryPanicEvent(sysEvent)) {
+        return;
+    }
     std::string event = sysEvent->GetEventValue("REASON");
     std::string module = sysEvent->GetEventValue("MODULE");
     std::string timeStr = sysEvent->GetEventValue("SUB_LOG_PATH");
@@ -95,12 +100,15 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
     std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
                                   LOG_PATH : LOG_PATH + '/') + timeStr;
 #ifndef UNITTEST
-    if (IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
+    if (HisysEventUtil::IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
         HIVIEW_LOGE("HandleBBoxEvent is processed event path is %{public}s", dynamicPaths.c_str());
         return;
     }
 #endif
-    if  ((module == "AP") && (event == "BFM_S_NATIVE_DATA_FAIL")) {
+    if (name == "PANIC" && PanicReport::IsLastShortStartUp()) {
+        PanicReport::CompressAndCopyLogFiles(dynamicPaths, timeStr);
+    }
+    if ((module == "AP") && (event == "BFM_S_NATIVE_DATA_FAIL")) {
         sysEvent->OnFinish();
     }
     auto happenTime_ = static_cast<uint64_t>(Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
@@ -151,7 +159,7 @@ void BBoxDetectorPlugin::StartBootScan()
                 static_cast<int64_t>(TimeUtil::StrToTimeStamp(StringUtil::GetMidSubstr(line, "time[", "-"),
                 "%Y%m%d%H%M%S")) * MILLSECONDS;
             if (abs(time_now - abs(time_event)) > ONE_DAY  ||
-                IsEventProcessed(name, "LOG_PATH", historyMap["dynamicPaths"])) {
+                HisysEventUtil::IsEventProcessed(name, "LOG_PATH", historyMap["dynamicPaths"])) {
                 continue;
             }
             auto happenTime_ = GetHappenTime(line, hisiHistoryPath);
@@ -159,19 +167,6 @@ void BBoxDetectorPlugin::StartBootScan()
             HIVIEW_LOGI("BBox write history line is %{public}s write result =  %{public}d", line.c_str(), res);
         }
     }
-}
-
-bool BBoxDetectorPlugin::IsEventProcessed(const std::string& name, const std::string& key, const std::string& value)
-{
-    auto sysEventQuery = EventStore::SysEventDao::BuildQuery("KERNEL_VENDOR", {name});
-    std::vector<std::string> selections { EventStore::EventCol::TS };
-    EventStore::ResultSet resultSet = sysEventQuery->Select(selections).
-        Where(key, EventStore::Op::EQ, value).Execute();
-    if (resultSet.HasNext()) {
-        return true;
-    }
-
-    return false;
 }
 
 uint64_t BBoxDetectorPlugin::GetHappenTime(std::string& line, bool hisiHistoryPath)
@@ -224,6 +219,58 @@ std::map<std::string, std::string> BBoxDetectorPlugin::GetValueFromHistory(std::
     };
 
     return historyMap;
+}
+
+void BBoxDetectorPlugin::AddDetectBootCompletedTask()
+{
+    std::lock_guard<std::mutex> lock(lock_);
+    if (eventLoop_ && !timeEventAdded_) {
+        timeEventId_ = eventLoop_->AddTimerEvent(nullptr, nullptr, [this] {
+            if (PanicReport::IsBootCompleted()) {
+                NotifyBootCompleted();
+            }
+        }, 1, true);
+        timeEventAdded_ = true;
+    }
+}
+
+void BBoxDetectorPlugin::RemoveDetectBootCompletedTask()
+{
+    std::lock_guard<std::mutex> lock(lock_);
+    if (eventLoop_ && timeEventAdded_) {
+        eventLoop_->RemoveEvent(timeEventId_);
+        timeEventId_ = 0;
+        timeEventAdded_ = false;
+    }
+}
+
+void BBoxDetectorPlugin::NotifyBootStable()
+{
+    if (PanicReport::TryToReportRecoveryPanicEvent()) {
+        constexpr int timeout = 10; // 10s
+        eventLoop_->AddTimerEvent(nullptr, nullptr, [this] {
+            PanicReport::ConfirmReportResult();
+        }, timeout, false);
+    }
+}
+
+void BBoxDetectorPlugin::NotifyBootCompleted()
+{
+    HIVIEW_LOGI("System boot completed, remove the task");
+    RemoveDetectBootCompletedTask();
+    constexpr int timeout = 60 * 10; // 10min
+    eventLoop_->AddTimerEvent(nullptr, nullptr, [this] {
+        NotifyBootStable();
+    }, timeout, false);
+}
+
+void BBoxDetectorPlugin::InitPanicReporter()
+{
+    if (!PanicReport::InitPanicReport()) {
+        HIVIEW_LOGE("Failed to init panic reporter");
+        return;
+    }
+    AddDetectBootCompletedTask();
 }
 }
 }
