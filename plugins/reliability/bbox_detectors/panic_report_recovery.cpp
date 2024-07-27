@@ -46,12 +46,13 @@ constexpr const char* HAPPEN_TIME = "happentime";
 constexpr const char* FACTORY_RECOVERY_TIME = "factoryRecoveryTime";
 constexpr const char* IS_PANIC_UN_UPLOADED = "isPanicUnUploaded";
 constexpr const char* IS_STARTUP_SHORT = "isStartUpShort";
-constexpr const char* IS_LAST_STARTUP_SHORT = "isLastStartUpShort";
 
 constexpr const char* REGEX_FORMAT = R"(=((".*?")|(\S*)))";
 
 constexpr int COMPRESSION_RATION = 9;
 constexpr int ZIP_FILE_SIZE_LIMIT = 5 * 1024 * 1024; //5MB
+
+static bool iSLastStartUpShort = false;
 
 bool InitPanicConfigFile()
 {
@@ -61,8 +62,8 @@ bool InitPanicConfigFile()
     std::string paramsContent;
     FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, paramsContent);
     std::string lastStartUpShort = GetParamValueFromString(paramsContent, IS_STARTUP_SHORT);
+    iSLastStartUpShort = lastStartUpShort == "true";
     paramsContent = SetParamValueToString(paramsContent, IS_STARTUP_SHORT, "true");
-    paramsContent = SetParamValueToString(paramsContent, IS_LAST_STARTUP_SHORT, lastStartUpShort);
     return FileUtil::SaveStringToFile(BBOX_PARAM_PATH, paramsContent);
 }
 
@@ -83,7 +84,7 @@ bool IsBootCompleted()
 
 bool IsLastShortStartUp()
 {
-    if (GetParamValueFromFile(BBOX_PARAM_PATH, IS_LAST_STARTUP_SHORT) == "true") {
+    if (iSLastStartUpShort) {
         return true;
     }
     std::string lastBootUpKeyPoint = GetParamValueFromFile(CMD_LINE, LAST_BOOTUP_KEYPOINT);
