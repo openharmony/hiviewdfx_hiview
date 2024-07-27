@@ -27,6 +27,9 @@ config("freeze_detector_config") {
 
 ohos_source_set("freeze_detector") {
   part_name = "hiview"
+  include_dirs =
+      [ "$hiview_framework/native/unified_collection/process/include" ]
+
   sources = [
     "db_helper.cpp",
     "freeze_common.cpp",
@@ -50,6 +53,7 @@ ohos_source_set("freeze_detector") {
 
   deps = [
     "$hiview_base:hiviewbase",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
     "$hiview_plugin/faultlogger:libfaultlogger",
     "config:config",
   ]

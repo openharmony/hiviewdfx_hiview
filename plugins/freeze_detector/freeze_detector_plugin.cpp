@@ -20,6 +20,7 @@
 #include "ffrt.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
+#include "process_status.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
 
@@ -120,6 +121,8 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
     } else if (info == "nolog") {
         logPath = info;
     }
+    std::string foreGround = "";
+    CheckForeGround(uid, pid, event.happenTime_, foreGround);
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitSeq(seq)
         .InitDomain(event.domain_)
@@ -131,6 +134,7 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
         .InitPackageName(packageName)
         .InitProcessName(processName)
         .InitModuleName(moduleName)
+        .InitForeGround(foreGround)
         .InitMsg("")
         .InitLogPath(logPath)
         .InitHitraceTime(hiteaceTime)
@@ -142,6 +146,23 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
         seq, packageName.c_str(), processName.c_str(), moduleName.c_str(), logPath.c_str());
 
     return watchPoint;
+}
+
+void FreezeDetectorPlugin::CheckForeGround(long uid, long pid, unsigned long long eventTime, std::string& foreGround)
+{
+    if (uid < minAppUid) {
+        return;
+    }
+
+    UCollectUtil::ProcessState state = UCollectUtil::ProcessStatus::GetInstance().GetProcessState(pid);
+    if (state == UCollectUtil::FOREGROUND) {
+        foreGround = "Yes";
+    }
+    if (state == UCollectUtil::BACKGROUND) {
+        uint64_t lastFgTime = static_cast<uint64_t>(UCollectUtil::ProcessStatus::GetInstance()
+            .GetProcessLastForegroundTime(pid));
+        foreGround = (lastFgTime > eventTime) ? "Yes" : "No";
+    }
 }
 
 void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
@@ -195,7 +216,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     }
     ffrt::submit([this, watchPoint] { this->ProcessEvent(watchPoint); }, {}, {},
         ffrt::task_attr().name("dfr_fre_detec").qos(ffrt::qos_default)
-        .delay(static_cast<unsigned long long>(delayTime) * TO_NANOSECOND_MULTPLE));
+        .delay(static_cast<unsigned long long>(delayTime) * toNanoSecondMultple));
 }
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)

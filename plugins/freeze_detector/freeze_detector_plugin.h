@@ -39,10 +39,12 @@ public:
     void OnEventListeningCallback(const Event& msg) override;
 
 private:
-    const static uint64_t TO_NANOSECOND_MULTPLE = 1000000;
+    const static uint64_t toNanoSecondMultple = 1000000;
+    const static int minAppUid = 10000;
 
     std::string RemoveRedundantNewline(const std::string& content) const;
     WatchPoint MakeWatchPoint(const Event& event);
+    void CheckForeGround(long uid, long pid, unsigned long long eventTime, std::string& foreGround);
     void ProcessEvent(WatchPoint watchPoint);
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::unique_ptr<FreezeResolver> freezeResolver_ = nullptr;
