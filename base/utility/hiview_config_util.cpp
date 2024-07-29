@@ -15,6 +15,8 @@
 
 #include "hiview_config_util.h"
 
+#include <algorithm>
+
 #include "file_util.h"
 
 namespace OHOS {
@@ -24,37 +26,87 @@ namespace {
 constexpr char CFG_VERSION_FILE_NAME[] = "hiview_config_version";
 constexpr char LOCAL_CFG_PATH[] = "/system/etc/hiview/";
 constexpr char CLOUD_CFG_PATH[] = "/data/system/hiview/";
+constexpr char LOCAL_CFG_UNZIP_DIR[] = "unzip_configs/";
 
-inline std::string GetConfigFilePath(const std::string& fileName, bool isCloud)
+inline std::string GetConfigFilePath(const std::string& fileName, bool isLocal)
 {
-    if (isCloud) {
-        return CLOUD_CFG_PATH + fileName;
+    if (isLocal) {
+        return LOCAL_CFG_PATH + fileName;
     }
-    return LOCAL_CFG_PATH + fileName;
+    return CLOUD_CFG_PATH + fileName;
 }
 
-inline std::string GetConfigVersion(bool isCloud)
+inline std::string GetConfigFilePath(const std::string& localVer, const std::string& cloudVer,
+    const std::string& fileName)
 {
-    std::string versionFile = GetConfigFilePath(CFG_VERSION_FILE_NAME, isCloud);
+    std::string cloudConfigFilePath = GetConfigFilePath(fileName, false);
+    if ((cloudVer > localVer) && FileUtil::FileExists(cloudConfigFilePath)) {
+        return cloudConfigFilePath;
+    }
+    return GetConfigFilePath(fileName, true);
+}
+
+inline std::string GetConfigVersion(bool isLocal)
+{
+    std::string versionFile = GetConfigFilePath(CFG_VERSION_FILE_NAME, isLocal);
     std::string version;
     (void)FileUtil::LoadStringFromFile(versionFile, version);
     return version;
 }
+
+bool CopyConfigVersionFile(bool isLocal, const std::string& destConfigDir)
+{
+    if (!FileUtil::FileExists(destConfigDir) && !FileUtil::ForceCreateDirectory(destConfigDir)) {
+        return false;
+    }
+    std::string originVersionFile = GetConfigFilePath(CFG_VERSION_FILE_NAME, isLocal);
+    if (FileUtil::CopyFile(originVersionFile, destConfigDir + CFG_VERSION_FILE_NAME) != 0) {
+        return false;
+    }
+    return true;
+}
+}
+
+std::string GetUnZipConfigDir()
+{
+    return std::string(CLOUD_CFG_PATH) + LOCAL_CFG_UNZIP_DIR;
 }
 
 std::string GetConfigFilePath(const std::string& fileName)
 {
-    std::string cloudVer = GetConfigVersion(true);
-    std::string localVer = GetConfigVersion(false);
-    std::string localConfigFilePath = GetConfigFilePath(fileName, false);
-    if (localVer >= cloudVer) {
-        return localConfigFilePath;
+    std::string localVer = GetConfigVersion(true);
+    std::string cloudVer = GetConfigVersion(false);
+    return GetConfigFilePath(localVer, cloudVer, fileName);
+}
+
+std::string GetConfigFilePathWithHandler(const std::string destFileName, const std::string& destConfigDir,
+    ConfigFileHandler configHandler)
+{
+    std::string destVer;
+    (void)FileUtil::LoadStringFromFile(destConfigDir + CFG_VERSION_FILE_NAME, destVer);
+
+    std::string cloudVer = GetConfigVersion(false);
+    std::string localVer = GetConfigVersion(true);
+    std::string destConfigFilePath = destConfigDir + destFileName;
+    if (!destVer.empty() && destVer >= std::max(cloudVer, localVer) && FileUtil::FileExists(destConfigFilePath)) {
+        return destConfigFilePath;
     }
-    std::string cloudConfigFilePath = GetConfigFilePath(fileName, true);
-    if (!FileUtil::FileExists(cloudConfigFilePath)) {
-        return localConfigFilePath;
+
+    if (configHandler == nullptr) {
+        return GetConfigFilePath(localVer, cloudVer, destFileName);
     }
-    return cloudConfigFilePath;
+
+    // do cloud update if cloud version is newer than local version
+    if ((cloudVer > localVer) && configHandler(CLOUD_CFG_PATH, destConfigDir, destFileName) &&
+        CopyConfigVersionFile(false, destConfigDir)) {
+        return destConfigFilePath;
+    }
+    // do local update if local version is newer than cloud version or cloud update is failed
+    if (configHandler(LOCAL_CFG_PATH, destConfigDir, destFileName) &&
+        CopyConfigVersionFile(true, destConfigDir)) {
+        return destConfigFilePath;
+    }
+    return GetConfigFilePath(localVer, cloudVer, destFileName);
 }
 } // namespace ConfigUtil
 } // namespace HiviewDFX

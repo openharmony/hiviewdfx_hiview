@@ -16,12 +16,19 @@
 #ifndef UTILITY_HIVIEW_CFG_UTIL_H
 #define UTILITY_HIVIEW_CFG_UTIL_H
 
+#include <functional>
 #include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace ConfigUtil {
+// fileHandleRet(srcConfigDir, destConfigDir, configFileName)
+using ConfigFileHandler = std::function<bool(const std::string&, const std::string&, const std::string&)>;
+
+std::string GetUnZipConfigDir();
 std::string GetConfigFilePath(const std::string& fileName);
+std::string GetConfigFilePathWithHandler(const std::string destFileName, const std::string& destConfigDir,
+    ConfigFileHandler configHandler);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

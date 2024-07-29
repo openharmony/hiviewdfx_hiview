@@ -76,6 +76,7 @@ ohos_source_set("sysevent_source") {
     "hilog:libhilog",
     "init:libbegetutil",
     "relational_store:native_rdb",
+    "zlib:shared_libz",
   ]
 
   part_name = "hiview"

@@ -24,6 +24,7 @@
 #include "file_util.h"
 #include "hiview_config_util.h"
 #include "hiview_logger.h"
+#include "hiview_zip_util.h"
 #include "plugin_factory.h"
 #include "time_util.h"
 #include "sys_event.h"
@@ -37,7 +38,32 @@ namespace HiviewDFX {
 REGISTER(SysEventSource);
 namespace {
 DEFINE_LOG_TAG("HiView-SysEventSource");
-const std::string DEF_FILE_NAME = "hisysevent.def";
+
+bool UnZipDefFileToDestDir(const std::string& srcDir, const std::string& destDir, const std::string& fileName)
+{
+    std::string zippedDefPath = srcDir + "hisysevent.zip";
+    if (!FileUtil::FileExists(destDir) && !FileUtil::ForceCreateDirectory(destDir)) {
+        HIVIEW_LOGE("%{public}s isn't exist and then failed to create it", destDir.c_str());
+        return false;
+    }
+    bool isZipFileExist = FileUtil::FileExists(zippedDefPath);
+    if (!isZipFileExist) {
+        HIVIEW_LOGW("%{public}s isn't exist", zippedDefPath.c_str());
+        std::string srcFile = srcDir + fileName;
+        std::string destFile = destDir + fileName;
+        if (FileUtil::CopyFile(srcFile, destFile) != 0) {
+            HIVIEW_LOGE("failed to copy %{public}s to %{public}s", srcFile.c_str(), destFile.c_str());
+            return false;
+        }
+        return true;
+    }
+    HiviewUnzipUnit unzipUnit(zippedDefPath, destDir);
+    if (!unzipUnit.UnzipFile()) {
+        HIVIEW_LOGE("failed to unzip %{public}s to %{public}s", zippedDefPath.c_str(), destDir.c_str());
+        return false;
+    }
+    return true;
+}
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
@@ -58,7 +84,7 @@ void SysEventSource::OnLoad()
     HIVIEW_LOGI("SysEventSource load ");
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
-    
+
     sysEventStat_ = std::make_unique<SysEventStat>();
     InitController();
 
@@ -69,7 +95,7 @@ void SysEventSource::OnLoad()
     SysEventServiceAdapter::StartService(this, notifyFunc);
     SysEventServiceAdapter::SetWorkLoop(looper);
 
-    sysEventParser_ = std::make_shared<EventJsonParser>(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+    sysEventParser_ = std::make_shared<EventJsonParser>(GetSysDefFilePath());
 
     SysEventServiceAdapter::BindGetTagFunc(
         [this] (const std::string& domain, const std::string& name) {
@@ -149,7 +175,7 @@ bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
 bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
 {
     if (isConfigUpdated_) {
-        sysEventParser_->ReadDefFile(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+        sysEventParser_->ReadDefFile(GetSysDefFilePath());
         isConfigUpdated_.store(false);
     }
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);
@@ -219,6 +245,12 @@ void SysEventSource::Dump(int fd, const std::vector<std::string>& cmds)
 void SysEventSource::OnConfigUpdate(const std::string& localCfgPath, const std::string& cloudCfgPath)
 {
     this->isConfigUpdated_.store(true);
+}
+
+std::string SysEventSource::GetSysDefFilePath() const
+{
+    return ConfigUtil::GetConfigFilePathWithHandler("hisysevent.def", ConfigUtil::GetUnZipConfigDir() + "sys_def/",
+        UnZipDefFileToDestDir);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

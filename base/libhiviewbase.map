@@ -498,6 +498,11 @@
         "OHOS::HiviewDFX::Parameter::GetSysVersionStr()";
         "OHOS::HiviewDFX::TimeUtil::GetFormattedTimestampEndWithMilli()";
         "OHOS::HiviewDFX::ConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::ConfigUtil::GetUnZipConfigDir()";
+        "OHOS::HiviewDFX::ConfigUtil::GetConfigFilePathWithHandler(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::function<bool (std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)>)";
+        "OHOS::HiviewDFX::HiviewUnzipUnit::HiviewUnzipUnit(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::HiviewUnzipUnit::UnzipFile() const";
+        "OHOS::HiviewDFX::HiviewUnzipUnit::~HiviewUnzipUnit()";
     };
   local:
     *;
