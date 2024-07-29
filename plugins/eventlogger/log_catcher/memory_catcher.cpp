@@ -47,11 +47,14 @@ int MemoryCatcher::Catch(int fd, int jsonFd)
         FileUtil::SaveStringToFd(fd, "swapCached " + std::to_string(result.data.swapCached) + "\n");
         FileUtil::SaveStringToFd(fd, "cached " + std::to_string(result.data.cached) + "\n");
     }
-
     logSize_ = GetFdSize(fd) - originSize;
     if (logSize_ <= 0) {
         FileUtil::SaveStringToFd(fd, "sysMemory content is empty!");
     }
+
+    collector->CollectRawMemInfo();
+    collector->ExportMemView();
+
     return logSize_;
 };
 } // namespace HiviewDFX
