@@ -49,7 +49,6 @@
                 "ets_runtime",
                 "faultloggerd",
                 "ffrt",
-                "googletest",
                 "hicollie",
                 "hidumper",
                 "hilog",
@@ -71,6 +70,7 @@
                 "napi",
                 "hiperf",
                 "hitrace",
+                "wifi",
                 "window_manager",
                 "zlib"
             ]
@@ -148,6 +148,7 @@
                             "utility/io_collector.h",
                             "utility/mem_profiler_collector.h",
                             "utility/memory_collector.h",
+                            "utility/network_collector.h",
                             "utility/trace_collector.h",
                             "utility/wm_collector.h"
                         ]

@@ -25,6 +25,7 @@
 #include "hilog_decorator.h"
 #include "io_decorator.h"
 #include "memory_decorator.h"
+#include "network_decorator.h"
 #include "trace_decorator.h"
 #include "trace_manager.h"
 #include "wm_decorator.h"
@@ -67,7 +68,7 @@ const std::vector<std::regex> REGEXS = {
 
 std::unordered_set<std::string> COLLECTOR_NAMES = {
     "CpuCollector", "GpuCollector", "HiebpfCollector", "HilogCollector",
-    "IoCollector", "MemoryCollector", "TraceCollector", "WmCollector",
+    "IoCollector", "MemoryCollector", "NetworkCollector", "TraceCollector", "WmCollector",
 };
 
 void CallCollectorFuncs()
@@ -89,6 +90,8 @@ void CallCollectorFuncs()
 #endif
     auto memCollector = MemoryCollector::Create();
     (void)memCollector->CollectSysMemory();
+    auto networkCollector = NetworkCollector::Create();
+    (void)networkCollector->CollectRate();
 #ifdef HAS_HIPERF
     auto perfCollector = PerfCollector::Create();
     (void)perfCollector->StartPerf("/data/local/tmp/");
@@ -112,6 +115,7 @@ void CallStatFuncs()
     HilogDecorator::SaveStatCommonInfo();
     IoDecorator::SaveStatCommonInfo();
     MemoryDecorator::SaveStatCommonInfo();
+    NetworkDecorator::SaveStatCommonInfo();
     TraceDecorator::SaveStatCommonInfo();
 #ifdef HAS_HIPROFILER
     MemProfilerDecorator::SaveStatCommonInfo();
