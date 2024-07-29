@@ -104,10 +104,8 @@ HWTEST_F(WmCollectorTest, WmCollectorTest002, TestSize.Level1)
 */
 HWTEST_F(WmCollectorTest, WmCollectorTest003, TestSize.Level1)
 {
-    EnablePermissionAccess();
     std::shared_ptr<WmCollector> collector = WmCollector::Create();
     auto result = collector->ExportGpuMemory();
     std::cout << "export Gpu memory result " << result.retCode << std::endl;
     ASSERT_TRUE(result.retCode == UcError::SUCCESS || result.retCode == UcError::UNSUPPORT);
-    DisablePermissionAccess();
 }
