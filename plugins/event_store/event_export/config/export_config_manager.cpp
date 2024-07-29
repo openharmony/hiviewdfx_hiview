@@ -45,7 +45,7 @@ std::shared_ptr<ExportConfig> ExportConfigManager::GetExportConfig(const std::st
 {
     auto iter = exportConfigs_.find(moduleName);
     if (iter == exportConfigs_.end()) {
-        HIVIEW_LOGW("no export config found.");
+        HIVIEW_LOGW("no export config found for module:%{public}s.", moduleName.c_str());
         return nullptr;
     }
     return iter->second;

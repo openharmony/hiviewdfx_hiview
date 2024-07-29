@@ -71,10 +71,10 @@ void EventExportEngine::Start()
     }
     isTaskRunning_ = true;
     auto initTaskHandle = ffrt::submit_h([this] () {
-            this->Init();
+            Init();
         }, {}, {}, ffrt::task_attr().name("dft_export_init").qos(ffrt::qos_default));
     ffrt::submit([this] () {
-            this->InitAndRunTasks();
+            InitAndRunTasks();
         }, { initTaskHandle }, {}, ffrt::task_attr().name("dft_export_start").qos(ffrt::qos_default));
 }
 
@@ -122,9 +122,9 @@ bool EventExportEngine::RegistSettingObserver(std::shared_ptr<ExportConfig> conf
             std::string val = SettingObserverManager::GetInstance()->GetStringValue(paramKey);
             HIVIEW_LOGI("value of param key[%{public}s] is %{public}s", paramKey.c_str(), val.c_str());
             if (val == config->exportSwitchParam.enabledVal) {
-                this->HandleExportSwitchOn(config->moduleName);
+                HandleExportSwitchOn(config->moduleName);
             } else {
-                this->HandleExportSwitchOff(config->moduleName);
+                HandleExportSwitchOff(config->moduleName);
             }
         };
     bool regRet = false;
@@ -193,7 +193,7 @@ void EventExportEngine::InitAndRunTask(std::shared_ptr<ExportConfig> config)
         expireTask->Run();
         exportTask->Run();
         // sleep for a task cycle
-        std::this_thread::sleep_for(exportTask->GetExecutingCycle());
+        ffrt::this_task::sleep_for(exportTask->GetExecutingCycle());
     }
 }
 

@@ -42,7 +42,7 @@ public:
         nextHandler_ = nextHandler;
     }
 
-public:
+protected:
     std::shared_ptr<ExportBaseHandler> nextHandler_;
 };
 } // namespace HiviewDFX

@@ -48,7 +48,7 @@ int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
         HIVIEW_LOGI("export switch of %{public}s is off, no need to export event", moduleName.c_str());
         return INVALID_SEQ_VAL;
     }
-    return std::max(record.exportEnabledSeq, record.exportedMaxSeq + 1); // next sequence
+    return std::max(record.exportEnabledSeq, record.exportedMaxSeq);
 }
 
 void ExportDbManager::HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq)

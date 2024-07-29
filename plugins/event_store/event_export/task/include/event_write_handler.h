@@ -34,45 +34,49 @@ struct CachedEventItem {
     // event domain
     std::string domain;
 
-    // event sequence
-    int64_t seq = INVALID_SEQ_VAL;
-
     // event name
     std::string name;
 
     // event json string
     std::string eventStr;
+
+    CachedEventItem(std::string version, std::string domain, std::string name, std::string eventStr)
+        : version(version), domain(domain), name(name), eventStr(eventStr) {}
 };
 
 struct EventWriteRequest : public BaseRequest {
     // name of export module
-    std::string moduleName;
+    std::string& moduleName;
+
+    // item: <system version, domain, sequecen, sysevent content>
+    std::list<std::shared_ptr<CachedEventItem>>& sysEvents;
+
+    // directory configured for export event file to store
+    std::string& exportDir;
+    
+    // tag whether the query is completed
+    bool isQueryCompleted;
 
     // max size of a single event file
     int64_t maxSingleFileSize = 0;
 
-    // item: <system version, domain, sequecen, sysevent content>
-    std::list<CachedEventItem> sysEvents;
-
-    // directory configured for export event file to store
-    std::string exportDir;
-    
-    // tag whether the query is completed
-    bool isQueryCompleted;
+    EventWriteRequest(std::string& moduleName, std::list<std::shared_ptr<CachedEventItem>>& sysEvents,
+        std::string& exportDir, bool isQueryCompleted, int64_t maxSingleFileSize = 0)
+        : moduleName(moduleName), sysEvents(sysEvents), exportDir(exportDir), isQueryCompleted(isQueryCompleted),
+        maxSingleFileSize(maxSingleFileSize) {}
 };
 
 class EventWriteHandler : public ExportBaseHandler {
 public:
-    using ExportDoneListener = std::function<void(const std::string&, int64_t)>;
-    void SetExportDoneListener(ExportDoneListener listener);
+    using ExportFilePackgedListener = std::function<void(const std::string&, const std::string&)>;
+    void SetExportFilePackgedListener(ExportFilePackgedListener listener);
 
-public:
     bool HandleRequest(RequestPtr req) override;
     std::shared_ptr<ExportJsonFileWriter> GetEventWriter(const std::string& sysVersion,
         std::shared_ptr<EventWriteRequest> writeReq);
 
 private:
-    ExportDoneListener exportDoneListener_;
+    ExportFilePackgedListener exportFilePackgedListener_;
     // <key: <module name, system version>, value: writer>
     std::map<std::pair<std::string, std::string>, std::shared_ptr<ExportJsonFileWriter>> allJsonFileWriters_;
 };
