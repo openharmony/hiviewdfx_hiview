@@ -48,10 +48,10 @@ int ShellCatcher::InInputProcesscatcher(int writeFd)
     switch (catcherType_) {
         case CATCHER_INPUT_EVENT_HILOG:
             ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-e",
-                std::to_string(pid_).c_str(), "-z", "1000", nullptr);
+                std::to_string(pid_).c_str(), "-x", nullptr);
             break;
         case CATCHER_INPUT_HILOG:
-            ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-z", "1000", nullptr);
+            ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-x", nullptr);
             break;
         default:
             break;
