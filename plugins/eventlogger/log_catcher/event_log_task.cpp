@@ -399,8 +399,12 @@ void EventLogTask::SCBWMSCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->SetEvent(event_);
-    std::string cmd = "hidumper -s WindowManagerService -a " +
-        std::to_string(event_->GetEventIntValue("FOCUS_WINDOW")) + " -default";
+    std::string focusWindowId = capture->GetFocusWindowId();
+    if (focusWindowId.empty()) {
+        HIVIEW_LOGE("dump simplify get focus window error");
+        return;
+    }
+    std::string cmd = "hidumper -s WindowManagerService -a -w " + focusWindowId + " -simplify";
     capture->Initialize(cmd, ShellCatcher::CATCHER_SCBWMS, pid_);
     tasks_.push_back(capture);
 }
@@ -409,8 +413,12 @@ void EventLogTask::SCBWMSEVTCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->SetEvent(event_);
-    std::string cmd = "hidumper -s WindowManagerService -a " +
-        std::to_string(event_->GetEventIntValue("FOCUS_WINDOW")) + " -event";
+    std::string focusWindowId = capture->GetFocusWindowId();
+    if (focusWindowId.empty()) {
+        HIVIEW_LOGE("dump event get focus window error");
+        return;
+    }
+    std::string cmd = "hidumper -s WindowManagerService -a -w " + focusWindowId + " -event";
     capture->Initialize(cmd, ShellCatcher::CATCHER_SCBWMSEVT, pid_);
     tasks_.push_back(capture);
 }

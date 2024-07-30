@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "shell_catcher.h"
+#include <regex>
 #include <unistd.h>
 #include <sys/wait.h>
 #include "hiview_logger.h"
@@ -76,13 +77,12 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
         case CATCHER_SCBWMS:
         case CATCHER_SCBWMSEVT:
             {
-                if (event_ == nullptr) {
-                    HIVIEW_LOGI("event is null");
+                if (event_ == nullptr || focusWindowId_.empty()) {
+                    HIVIEW_LOGI("check param error %{public}d", focusWindowId_.empty());
                     break;
                 }
-                int32_t windowId = event_->GetEventIntValue("FOCUS_WINDOW");
-                std::string cmdSuffix = (catcherType_ == CATCHER_SCBWMS) ? " -default" : " -event";
-                std::string cmd = "-w " + std::to_string(windowId > 0 ? windowId : DEFAULT_WINDOW_ID) + cmdSuffix;
+                std::string cmdSuffix = (catcherType_ == CATCHER_SCBWMS) ? " -simplify" : " -event";
+                std::string cmd = "-w " + focusWindowId_ + cmdSuffix;
                 ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a",
                     cmd.c_str(), nullptr);
             }
@@ -113,6 +113,9 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
 
 void ShellCatcher::DoChildProcess(int writeFd)
 {
+    if (focusWindowId_.empty() && (catcherType_ == CATCHER_SCBWMS || catcherType_ == CATCHER_SCBWMSEVT)) {
+        GetFocusWindowId();
+    }
     if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
         dup2(writeFd, STDIN_FILENO) == -1 || dup2(writeFd, STDERR_FILENO) == -1) {
         HIVIEW_LOGE("dup2 writeFd fail");
@@ -153,6 +156,41 @@ void ShellCatcher::DoChildProcess(int writeFd)
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         _exit(-1);
     }
+}
+
+std::string ShellCatcher::GetFocusWindowId()
+{
+    if (focusWindowId_.empty()) {
+        ParseFocusWindowId();
+    }
+    return focusWindowId_;
+}
+
+void ShellCatcher::ParseFocusWindowId()
+{
+    FILE *file = popen("/system/bin/hidumper -s WindowManagerService -a -a", "r");
+    if (file == nullptr) {
+        HIVIEW_LOGE("parse focus window id error");
+        return;
+    }
+    std::smatch result;
+    std::string line = "";
+    auto windowIdRegex = std::regex("Focus window: ([0-9]+)");
+    char *buffer = nullptr;
+    size_t length = 0;
+    while (getline(&buffer, &length, file) != -1) {
+        line = buffer;
+        if (regex_search(line, result, windowIdRegex)) {
+            focusWindowId_ = result[1];
+            break;
+        }
+    }
+    if (buffer != nullptr) {
+        free(buffer);
+        buffer = nullptr;
+    }
+    pclose(file);
+    file = nullptr;
 }
 
 bool ShellCatcher::ReadShellToFile(int writeFd, const std::string& cmd)

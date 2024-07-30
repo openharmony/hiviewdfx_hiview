@@ -30,6 +30,7 @@ public:
     bool Initialize(const std::string& cmd, int type, int intParam2) override;
     int Catch(int fd, int jsonFd) override;
     void SetEvent(std::shared_ptr<SysEvent> event);
+    std::string GetFocusWindowId();
 
     enum CATCHER_TYPE {
         CATCHER_UNKNOWN = -1,
@@ -55,6 +56,7 @@ public:
 private:
     static const inline int32_t DEFAULT_WINDOW_ID = 14;
     std::string catcherCmd_ = "";
+    std::string focusWindowId_ = "";
     int pid_ = -1;
     CATCHER_TYPE catcherType_ = CATCHER_TYPE::CATCHER_UNKNOWN;
     std::shared_ptr<SysEvent> event_ = nullptr;
@@ -63,6 +65,7 @@ private:
     int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
+    void ParseFocusWindowId();
 };
 } // namespace HiviewDFX
 } // namespace OHOS
