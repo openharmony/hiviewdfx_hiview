@@ -40,7 +40,7 @@ struct CachedEvent {
     // event json string
     std::string eventStr;
 
-    CachedEvent(std::string version, std::string domain, std::string name, std::string eventStr)
+    CachedEvent(std::string& version, std::string& domain, std::string& name, std::string& eventStr)
         : version(version), domain(domain), name(name), eventStr(eventStr) {}
 };
 
@@ -55,13 +55,13 @@ struct EventWriteRequest : public BaseRequest {
     std::string exportDir;
     
     // tag whether the query is completed
-    bool isQueryCompleted;
+    bool isQueryCompleted = false;
 
     // max size of a single event file
     int64_t maxSingleFileSize = 0;
 
     EventWriteRequest(std::string& moduleName, std::list<std::shared_ptr<CachedEvent>>& sysEvents,
-        std::string& exportDir, bool isQueryCompleted, int64_t maxSingleFileSize = 0)
+        std::string& exportDir, bool isQueryCompleted, int64_t maxSingleFileSize)
         : moduleName(moduleName), sysEvents(sysEvents), exportDir(exportDir), isQueryCompleted(isQueryCompleted),
         maxSingleFileSize(maxSingleFileSize) {}
 };

@@ -132,7 +132,8 @@ bool EventReadHandler::HandleQueryResult(EventStore::ResultSet& resultSet, Query
             HIVIEW_LOGE("failed to do query callback when handle query result");
             return false;
         }
-        auto item = std::make_shared<CachedEvent>(iter->GetSysVersion(), iter->domain_, iter->eventName_,
+        auto eventVersion = iter->GetSysVersion();
+        auto item = std::make_shared<CachedEvent>(eventVersion, iter->domain_, iter->eventName_,
             currentEventStr);
         cachedSysEvents_.emplace_back(item);
         totalQueryCnt--;
