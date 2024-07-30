@@ -28,9 +28,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 class ExportJsonFileWriter {
-// <domain, <name, eventContentString>>
-using EventsDividedInDomainGroupType =
-    std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>>;
 public:
     ExportJsonFileWriter(const std::string& moduleName, const std::string& eventVersion, const std::string& exportDir,
         int64_t maxFileSize);
@@ -38,6 +35,8 @@ public:
 public:
     using ExportJsonFileZippedListener = std::function<void(const std::string&, const std::string&)>;
     void SetExportJsonFileZippedListener(ExportJsonFileZippedListener listener);
+
+    void ClearEventCache();
 
 public:
     bool Write();
@@ -50,7 +49,8 @@ private:
     int64_t maxFileSize_ = 0;
     int64_t totalJsonStrSize_ = 0;
     ExportJsonFileZippedListener exportJsonFileZippedListener_;
-    EventsDividedInDomainGroupType eventInDomains_;
+    // <domain, <name, eventContentString>>
+    std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> sysEventMap_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

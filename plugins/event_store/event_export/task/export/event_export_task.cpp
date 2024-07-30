@@ -67,7 +67,7 @@ void EventExportTask::OnTaskRun()
     readHandler->SetNextHandler(writeHandler);
     // start handler chain
     if (!readHandler->HandleRequest(readReq)) {
-        HIVIEW_LOGE("failed to export event in range [%{public}" PRId64 ",%{public}" PRId64 ")",
+        HIVIEW_LOGE("failed to export events in range [%{public}" PRId64 ",%{public}" PRId64 ")",
             curBeginSeqInQuery_, curEndSeqInQuery_);
         // record export progress
         dbMgr_->HandleExportTaskFinished(config_->moduleName, curEndSeqInQuery_);
@@ -103,7 +103,7 @@ bool EventExportTask::InitReadRequest(std::shared_ptr<EventReadRequest> readReq)
     if (readReq == nullptr) {
         return false;
     }
-    readReq->beginSeq = dbMgr_->GetExportBeginningSeq(config_->moduleName);
+    readReq->beginSeq = dbMgr_->GetExportBeginSeq(config_->moduleName);
     if (readReq->beginSeq == INVALID_SEQ_VAL) {
         HIVIEW_LOGE("invalid export: begin sequence:%{public}" PRId64 "", readReq->beginSeq);
         return false;
@@ -115,7 +115,7 @@ bool EventExportTask::InitReadRequest(std::shared_ptr<EventReadRequest> readReq)
         return false;
     }
     if (!ParseExportEventList(readReq->eventList) || readReq->eventList.empty()) {
-        HIVIEW_LOGE("failed to get a valid event exporting list");
+        HIVIEW_LOGE("failed to get a valid event export list");
         return false;
     }
     readReq->moduleName = config_->moduleName;

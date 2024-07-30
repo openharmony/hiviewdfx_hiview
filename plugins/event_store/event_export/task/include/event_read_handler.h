@@ -57,20 +57,16 @@ public:
 
 private:
     using QueryCallback = std::function<bool(bool)>;
+    bool QuerySysEventInRange(const std::pair<int64_t, int64_t>& queryRange, const ExportEventList& eventList,
+        QueryCallback queryCallback);
     bool QuerySysEvent(const int64_t beginSeq, const int64_t endSeq, const ExportEventList& eventList,
         QueryCallback queryCallback);
     bool HandleQueryResult(EventStore::ResultSet& result, QueryCallback queryCallback, const int64_t queryLimit,
         int64_t& totalQueryCnt);
-    void RegistExportFilePackagedListener();
-    void CopyTmpZipFilesToDest();
-    void Rollback();
 
 private:
-    std::list<std::shared_ptr<CachedEventItem>> cachedSysEvents_;
-    std::string curSysEventVersion_;
-    // <tmpZipFilePath, destZipFilePath>
-    std::unordered_map<std::string, std::string> zippedEventFileMap_;
     EventExportedListener eventExportedListener_;
+    std::list<std::shared_ptr<CachedEvent>> cachedSysEvents_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -293,7 +293,7 @@ bool ExportJsonFileWriter::Write()
         cJSON_Delete(root);
         return false;
     }
-    for (const auto& eventInDomain : eventInDomains_) {
+    for (const auto& sysEvent : sysEventMap_) {
         cJSON* domainJsonObj = cJSON_CreateObject();
         if (domainJsonObj == nullptr) {
             continue;
@@ -304,9 +304,9 @@ bool ExportJsonFileWriter::Write()
             HIVIEW_LOGE("failed to create domain info json object");
             continue;
         }
-        cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, eventInDomain.first.c_str());
+        cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, sysEvent.first.c_str());
         cJSON_AddItemToObject(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
-        cJSON* eventsJsonObj = CreateEventsJsonArray(eventInDomain.first, eventInDomain.second);
+        cJSON* eventsJsonObj = CreateEventsJsonArray(sysEvent.first, sysEvent.second);
         if (eventsJsonObj == nullptr) {
             continue;
         }
@@ -332,7 +332,7 @@ bool ExportJsonFileWriter::Write()
         exportJsonFileZippedListener_(tmpZipFile, zipFile);
     }
     totalJsonStrSize_ = 0;
-    eventInDomains_.clear(); // clear cache;
+    sysEventMap_.clear(); // clear cache;
     return true;
 }
 
@@ -358,9 +358,9 @@ bool ExportJsonFileWriter::AppendEvent(const std::string& domain, const std::str
         HIVIEW_LOGE("failed to write export events");
         return false;
     }
-    auto iter = eventInDomains_.find(domain);
-    if (iter == eventInDomains_.end()) {
-        eventInDomains_.emplace(domain, std::vector<std::pair<std::string, std::string>> {
+    auto iter = sysEventMap_.find(domain);
+    if (iter == sysEventMap_.end()) {
+        sysEventMap_.emplace(domain, std::vector<std::pair<std::string, std::string>> {
             std::make_pair(name, eventStr),
         });
         totalJsonStrSize_ += eventSize;
@@ -369,6 +369,11 @@ bool ExportJsonFileWriter::AppendEvent(const std::string& domain, const std::str
     iter->second.emplace_back(name, eventStr);
     totalJsonStrSize_ += eventSize;
     return true;
+}
+
+void ExportJsonFileWriter::ClearEventCache()
+{
+    sysEventMap_.clear();
 }
 } // HiviewDFX
 } // OHOS

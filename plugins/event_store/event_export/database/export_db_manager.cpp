@@ -40,7 +40,7 @@ int64_t ExportDbManager::GetExportEnabledSeq(const std::string& moduleName)
     return record.exportEnabledSeq;
 }
 
-int64_t ExportDbManager::GetExportBeginningSeq(const std::string& moduleName)
+int64_t ExportDbManager::GetExportBeginSeq(const std::string& moduleName)
 {
     HIVIEW_LOGD("get beginning sequence of event for module %{public}s to export", moduleName.c_str());
     ExportDetailRecord record = GetExportDetailRecord(moduleName);
