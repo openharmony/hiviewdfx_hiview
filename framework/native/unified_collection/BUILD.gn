@@ -47,6 +47,7 @@ ohos_source_set("ucollection_source") {
     "collector/hilog_collector_impl.cpp",
     "collector/io_collector_impl.cpp",
     "collector/memory_collector_impl.cpp",
+    "collector/network_collector_impl.cpp",
     "collector/perf_collector_impl.cpp",
     "collector/process_state_info_collector.cpp",
     "collector/sys_cpu_usage_collector.cpp",
@@ -67,6 +68,7 @@ ohos_source_set("ucollection_source") {
     "decorator/hilog_decorator.cpp",
     "decorator/io_decorator.cpp",
     "decorator/memory_decorator.cpp",
+    "decorator/network_decorator.cpp",
     "decorator/perf_decorator.cpp",
     "decorator/temperature_decorator.cpp",
     "decorator/trace_decorator.cpp",
@@ -106,10 +108,14 @@ ohos_source_set("ucollection_source") {
     external_deps += [ "hiperf:hiperf_client" ]
   }
 
-  defines = []
   if (thermal_manager_enable) {
     cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
     external_deps += [ "thermal_manager:thermalsrv_client" ]
+  }
+
+  if (is_wifi_enable) {
+    external_deps += [ "wifi:wifi_sdk" ]
+    defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
 
   part_name = "hiview"

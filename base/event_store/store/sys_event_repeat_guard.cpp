@@ -28,6 +28,7 @@ DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Guard");
 namespace {
 constexpr time_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
 constexpr time_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
+const std::string KEY_FINGERPRINT = "FINGERPRINT";
 
 inline bool GetShaStr(uint8_t* eventData, std::string& hashStr)
 {
@@ -66,16 +67,33 @@ void SysEventRepeatGuard::Check(std::shared_ptr<SysEvent> event)
     return;
 }
 
-bool SysEventRepeatGuard::IsEventRepeat(std::shared_ptr<SysEvent> event)
+bool SysEventRepeatGuard::GetEventUniqueId(std::shared_ptr<SysEvent> event, std::string& uniqueId)
 {
+    if (event == nullptr) {
+        return false;
+    }
+    uniqueId = event->GetEventValue(KEY_FINGERPRINT);
+    if (!uniqueId.empty()) {
+        return true;
+    }
+    
     uint8_t* eventData = event->AsRawData();
     if (eventData == nullptr) {
         HIVIEW_LOGE("invalid eventData.");
         return false;
     }
+    
+    if (!GetShaStr(eventData, uniqueId) || uniqueId.empty()) {
+        HIVIEW_LOGE("GetShaStr failed.");
+        return false;
+    }
+    return true;
+}
 
+bool SysEventRepeatGuard::IsEventRepeat(std::shared_ptr<SysEvent> event)
+{
     SysEventHashRecord sysEventHashRecord(event->domain_, event->eventName_);
-    if (!GetShaStr(eventData, sysEventHashRecord.eventHash) || sysEventHashRecord.eventHash.empty()) {
+    if (!GetEventUniqueId(event, sysEventHashRecord.eventHash)) {
         HIVIEW_LOGE("GetShaStr failed.");
         return false;
     }

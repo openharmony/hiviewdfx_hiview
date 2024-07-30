@@ -428,10 +428,10 @@ void EventLogTask::InputHilogCapture()
     int32_t eventId = event_->GetEventIntValue("INPUT_ID");
     if (eventId > 0) {
         std::string cmd = "hilog -T InputKeyFlow -e " +
-            std::to_string(eventId) + " -z 1000";
+            std::to_string(eventId) + " -x";
         capture->Initialize(cmd, ShellCatcher::CATCHER_INPUT_EVENT_HILOG, eventId);
     } else {
-        capture->Initialize("hilog -T InputKeyFlow -z 1000", ShellCatcher::CATCHER_INPUT_HILOG,
+        capture->Initialize("hilog -T InputKeyFlow -x", ShellCatcher::CATCHER_INPUT_HILOG,
             pid_);
     }
     tasks_.push_back(capture);

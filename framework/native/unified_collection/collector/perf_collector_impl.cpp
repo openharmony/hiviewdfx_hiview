@@ -19,6 +19,7 @@
 #include <ctime>
 #include <fstream>
 
+#include "hiperf_client.h"
 #include "hiview_logger.h"
 #include "perf_decorator.h"
 

@@ -25,7 +25,7 @@
 #include "hilog_decorator.h"
 #include "io_decorator.h"
 #include "memory_decorator.h"
-#include "time_util.h"
+#include "network_decorator.h"
 #include "trace_decorator.h"
 #include "trace_manager.h"
 #include "wm_decorator.h"
@@ -36,7 +36,6 @@
 #ifdef HAS_HIPERF
 #include "perf_decorator.h"
 #endif
-#include "unified_collection_stat.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -69,7 +68,7 @@ const std::vector<std::regex> REGEXS = {
 
 std::unordered_set<std::string> COLLECTOR_NAMES = {
     "CpuCollector", "GpuCollector", "HiebpfCollector", "HilogCollector",
-    "IoCollector", "MemoryCollector", "TraceCollector", "WmCollector",
+    "IoCollector", "MemoryCollector", "NetworkCollector", "TraceCollector", "WmCollector",
 };
 
 void CallCollectorFuncs()
@@ -91,6 +90,8 @@ void CallCollectorFuncs()
 #endif
     auto memCollector = MemoryCollector::Create();
     (void)memCollector->CollectSysMemory();
+    auto networkCollector = NetworkCollector::Create();
+    (void)networkCollector->CollectRate();
 #ifdef HAS_HIPERF
     auto perfCollector = PerfCollector::Create();
     (void)perfCollector->StartPerf("/data/local/tmp/");
@@ -104,6 +105,26 @@ void CallCollectorFuncs()
     (void)traceCollector->TraceOff();
     auto wmCollector = WmCollector::Create();
     (void)wmCollector->ExportWindowsInfo();
+}
+
+void CallStatFuncs()
+{
+    CpuDecorator::SaveStatCommonInfo();
+    GpuDecorator::SaveStatCommonInfo();
+    HiebpfDecorator::SaveStatCommonInfo();
+    HilogDecorator::SaveStatCommonInfo();
+    IoDecorator::SaveStatCommonInfo();
+    MemoryDecorator::SaveStatCommonInfo();
+    NetworkDecorator::SaveStatCommonInfo();
+    TraceDecorator::SaveStatCommonInfo();
+#ifdef HAS_HIPROFILER
+    MemProfilerDecorator::SaveStatCommonInfo();
+#endif
+#ifdef HAS_HIPERF
+    PerfDecorator::SaveStatCommonInfo();
+#endif
+    WmDecorator::SaveStatCommonInfo();
+    TraceDecorator::SaveStatSpecialInfo();
 }
 
 bool IsMatchAnyRegex(const std::string& line, const std::vector<std::regex>& regs)
@@ -147,19 +168,6 @@ bool CheckContent(const std::string& fileName, const std::vector<std::regex>& re
     file.close();
     return collectorNames.empty() ? true : false;
 }
-
-void ChangeTime(int64_t seconds, bool isAddOneDay)
-{
-    if (isAddOneDay) {
-        seconds += 3600 * 24; // 3600 * 24 : plus seconds of one day
-    }
-    std::string dateStr = TimeUtil::TimestampFormatToDate(seconds, "%m%d%H%M%Y");
-    std::string cmd = "date " + dateStr + " set";
-    FILE* fp = popen(cmd.c_str(), "r");
-    if (fp != nullptr) {
-        pclose(fp);
-    }
-}
 }
 
 class DecoratorTest : public testing::Test {
@@ -186,11 +194,7 @@ public:
 HWTEST_F(DecoratorTest, DecoratorTest001, TestSize.Level1)
 {
     CallCollectorFuncs();
-    int64_t timeNow = TimeUtil::GetSeconds();
-    ChangeTime(timeNow, true);
-    UnifiedCollectionStat stat;
-    stat.Report();
-    ChangeTime(timeNow, false);
+    CallStatFuncs();
     bool res = CheckContent(UC_STAT_LOG_PATH, REGEXS, COLLECTOR_NAMES);
     ASSERT_TRUE(res);
     if (FileUtil::FileExists(UC_STAT_LOG_PATH)) {

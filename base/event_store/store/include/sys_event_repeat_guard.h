@@ -60,6 +60,7 @@ public:
 private:
     static bool IsEventRepeat(std::shared_ptr<SysEvent> event);
     static int64_t GetMinValidTime();
+    static bool GetEventUniqueId(std::shared_ptr<SysEvent> event, std::string& uniqueId);
 };
 } // HiviewDFX
 } // OHOS

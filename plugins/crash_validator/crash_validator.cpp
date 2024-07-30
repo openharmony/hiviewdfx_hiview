@@ -27,7 +27,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-static const int CHECK_TIME = 10;
+static const int CHECK_TIME = 15;
 
 REGISTER(CrashValidator);
 DEFINE_LOG_LABEL(0xD002D11, "HiView-CrashValidator");

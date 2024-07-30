@@ -30,6 +30,13 @@ ohos_prebuilt_etc("hiviewparam_update") {
 }
 
 ohos_source_set("hiview_param_update") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
   part_name = "hiview"
   public_configs = [ ":hiview_param_update_config" ]
   subsystem_name = "hiviewdfx"
@@ -41,10 +48,7 @@ ohos_source_set("hiview_param_update") {
     "src/param_reader.cpp",
   ]
 
-  deps = [
-    "$hiview_base:hiviewbase",
-    "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
-  ]
+  deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
     "ability_base:base",

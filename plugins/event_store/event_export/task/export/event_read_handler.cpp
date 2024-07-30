@@ -52,8 +52,6 @@ bool EventReadHandler::HandleRequest(RequestPtr req)
     };
     queryRanges.emplace(exportBeginSeq, curEventSeq);
     for (const auto& queryRange : queryRanges) {
-        HIVIEW_LOGD("export sysevent from %{public}" PRId64 " to %{public}" PRId64 "", queryRange.first,
-            queryRange.second);
         bool queryRet = QuerySysEvent(queryRange.first, queryRange.second, readReq->eventList,
             [this, &readReq] (bool isQueryCompleted) {
                 auto writeReq = std::make_shared<EventWriteRequest>();
@@ -138,6 +136,7 @@ bool EventReadHandler::QuerySysEvent(const int64_t beginSeq, const int64_t endSe
                 queryResult = statusToCode[status];
             });
         if (queryResult != QUERY_SUCCESS) {
+            HIVIEW_LOGE("failed to query sysevent because of querying limit");
             (void)callback(true);
             return false;
         }

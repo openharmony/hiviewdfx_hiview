@@ -43,6 +43,11 @@
 #include "hiview_platform.h"
 #include "json/json.h"
 #include "log_analyzer.h"
+#define protected public
+#include "asan_collector.h"
+#include "sanitizerd_collector.h"
+#undef protected
+#include "sanitizerd_monitor.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
 
@@ -51,6 +56,15 @@ using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
 static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
+static std::unordered_map<std::string, std::string> g_stacks;
+static AsanCollector g_collector(g_stacks);
+void HandleNotify(int32_t type, const std::string& fname)
+{
+    std::thread collector([fname] {
+        g_collector.Collect(fname);
+    });
+    collector.detach();
+}
 
 static HiviewContext& InitHiviewContext()
 {
@@ -90,6 +104,14 @@ static std::shared_ptr<Faultlogger> GetFaultloggerInstance()
     return faultloggerInstance;
 }
 
+namespace {
+auto g_fdDeleter = [] (int32_t *ptr) {
+    if (*ptr > 0) {
+        close(*ptr);
+    }
+    delete ptr;
+};
+}
 
 class FaultloggerUnittest : public testing::Test {
 public:
@@ -235,7 +257,7 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
      * @tc.expected: check the content size of the dump function
      */
     auto plugin = GetFaultloggerInstance();
-    auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770);
+    int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
     if (fd < 0) {
         printf("Fail to create test result file.\n");
         return;
@@ -296,7 +318,7 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    info.pipeFd = pipeFd[0];
+    info.pipeFd.reset(new int32_t(pipeFd[0]), g_fdDeleter);
     std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
         [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"},
         {"buildId":"12345abcde", "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278,
@@ -310,13 +332,9 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
         "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
         "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
         "time":1701863741296, "uid":20010043, "uuid":""})~";
-    ssize_t nwrite = -1;
-    do {
-        nwrite = write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size());
-    } while (nwrite == -1 && errno == EINTR);
+    TEMP_FAILURE_RETRY(write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size()));
     close(pipeFd[1]);
     plugin->AddFaultLog(info);
-    close(info.pipeFd);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
@@ -530,7 +548,7 @@ HWTEST_F(FaultloggerUnittest, FaultlogManager001, testing::ext::TestSize.Level3)
     int fd = faultLogManager->CreateTempFaultLogFile(1607161345, 0, 2, "FaultloggerUnittest");
     ASSERT_GT(fd, 0);
     std::string content = "testContent";
-    write(fd, content.data(), content.length());
+    TEMP_FAILURE_RETRY(write(fd, content.data(), content.length()));
     close(fd);
 }
 
@@ -787,7 +805,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
-    auto fd = open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770);
+    auto fd = TEMP_FAILURE_RETRY(open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770));
     if (fd < 0) {
         printf("Fail to create test result file.\n");
         return;
@@ -1080,6 +1098,19 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: FaultloggerTest005
+ * @tc.desc: Test calling Faultlogger.RunSanitizerd Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerTest005, testing::ext::TestSize.Level3)
+{
+    SanitizerdMonitor sanMonitor;
+    int ret = sanMonitor.Init(&HandleNotify);
+    ASSERT_EQ(ret, 0);
+    sanMonitor.Uninit();
+}
+
+/**
  * @tc.name: ReportJsErrorToAppEventTest001
  * @tc.desc: create JS ERROR event and send it to hiappevent
  * @tc.type: FUNC
@@ -1245,6 +1276,49 @@ Stacktrace:
     GTEST_LOG_(INFO) << "========noKeyValue========";
     ConstructJsErrorAppEventWithNoValue(noKeyValue, plugin);
     CheckKeyWordsInJsErrorAppEventFile("noKeyValue");
+}
+
+/**
+ * @tc.name: SanitizerdCollectorTest001
+ * @tc.desc: Test calling SanitizerdCollector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, SanitizerdCollectorTest001, testing::ext::TestSize.Level3)
+{
+    std::unordered_map<std::string, std::string> map;
+    map["123"] = "321";
+    string str = "123";
+    SanitizerdCollector sanitizerd(map);
+    sanitizerd.Collect(str);
+    bool ret = sanitizerd.IsDuplicate(str);
+    ASSERT_TRUE(ret);
+    ret = sanitizerd.ComputeStackSignature("1", "1", false);
+    ASSERT_TRUE(!ret);
+}
+
+/**
+ * @tc.name: AsanCollectorTest001
+ * @tc.desc: Test calling AsanCollector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, AsanCollectorTest001, testing::ext::TestSize.Level3)
+{
+    std::unordered_map<std::string, std::string> map;
+    map["123"] = "321";
+    string str = "123";
+    AsanCollector asancollector(map);
+    bool ret = asancollector.IsDuplicate(str);
+    ASSERT_TRUE(ret);
+    std::string asanDump = "#0 0x7215208f97  (/vendor/lib64/hwcam/hwcam.hi3660.m.DUKE.so+0x289f97)";
+    bool printDiagnostics = true;
+    unsigned hash = 0;
+    asancollector.ProcessStackTrace(asanDump, printDiagnostics, &hash);
+    std::string asanSignature;
+    asancollector.Collect(asanDump);
+    asancollector.CalibrateErrTypeProcName();
+    asancollector.SetHappenTime();
+    ret = asancollector.ComputeStackSignature(asanDump, asanSignature, printDiagnostics);
+    ASSERT_TRUE(!ret);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

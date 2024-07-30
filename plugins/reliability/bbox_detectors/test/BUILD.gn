@@ -30,10 +30,7 @@ config("bbox_detector_test_config") {
 }
 
 ohos_unittest("BBoxDetectorUnitTest") {
-  sources = [
-    "../bbox_detector_plugin.cpp",
-    "unittest/bbox_detector_unit_test.cpp",
-  ]
+  sources = [ "unittest/bbox_detector_unit_test.cpp" ]
 
   configs = [ ":bbox_detector_test_config" ]
 
@@ -48,6 +45,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_root/plugins/reliability/bbox_detectors:bbox_detector",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
@@ -56,10 +54,7 @@ ohos_unittest("BBoxDetectorUnitTest") {
 }
 
 ohos_moduletest("BBoxDetectorModuleTest") {
-  sources = [
-    "../bbox_detector_plugin.cpp",
-    "moduletest/bbox_detector_module_test.cpp",
-  ]
+  sources = [ "moduletest/bbox_detector_module_test.cpp" ]
 
   configs = [ ":bbox_detector_test_config" ]
 
@@ -74,6 +69,7 @@ ohos_moduletest("BBoxDetectorModuleTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
+    "$hiview_root/plugins/reliability/bbox_detectors:bbox_detector",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]

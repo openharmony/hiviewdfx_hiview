@@ -14,6 +14,8 @@
  */
 #ifndef BBOX_DETECTOR_PLUGIN_H
 #define BBOX_DETECTOR_PLUGIN_H
+
+#include <mutex>
 #include <string>
 
 #include "event_source.h"
@@ -33,18 +35,25 @@ private:
     void StartBootScan();
     void WaitForLogs(const std::string& logDir);
     void HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent);
-    bool IsEventProcessed(const std::string& name, const std::string& key, const std::string& value);
     static uint64_t GetHappenTime(std::string& line, bool hisiHistoryPath);
     int CheckAndHiSysEventWrite(std::string& name, std::map<std::string, std::string>& historyMap,
         uint64_t& happenTime_);
     std::map<std::string, std::string> GetValueFromHistory(std::string& line);
-
+    void AddDetectBootCompletedTask();
+    void RemoveDetectBootCompletedTask();
+    void NotifyBootStable();
+    void NotifyBootCompleted();
+    void InitPanicReporter();
     static constexpr int SECONDS = 60;
     static constexpr int READ_LINE_NUM = 5;
     static constexpr int MILLSECONDS = 1000;
     static constexpr int ONE_DAY = 86400 * MILLSECONDS;
     static constexpr char DOMAIN[] = "KERNEL_VENDOR";
     bool hisiHistoryPath = false;
+    std::shared_ptr<EventLoop> eventLoop_;
+    uint64_t timeEventId_ = 0;
+    std::mutex lock_;
+    bool timeEventAdded_ = false;
 };
 }
 }

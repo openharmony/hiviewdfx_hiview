@@ -22,7 +22,7 @@
 
 #include "event_write_handler.h"
 #include "export_base_handler.h"
-#include "export_config_parser.h"
+#include "export_event_list_parser.h"
 #include "sys_event_query.h"
 
 namespace OHOS {

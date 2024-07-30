@@ -43,6 +43,7 @@ public:
     virtual CollectResult<std::string> CollectHprof(int32_t pid) override;
     virtual CollectResult<uint64_t> CollectProcessVss(int32_t pid) override;
     virtual CollectResult<MemoryLimit> CollectMemoryLimit() override;
+    virtual CollectResult<uint32_t> CollectDdrFreq() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 

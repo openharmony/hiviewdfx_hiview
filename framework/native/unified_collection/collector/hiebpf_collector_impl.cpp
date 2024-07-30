@@ -19,9 +19,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "hiview_logger.h"
 #include "hiebpf_collector_impl.h"
 #include "hiebpf_decorator.h"
+#include "hiview_logger.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 namespace OHOS {

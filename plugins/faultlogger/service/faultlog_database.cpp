@@ -107,7 +107,7 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
             "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
         );
     };
-    constexpr int delayTime = 5;
+    constexpr int delayTime = 2;
     eventLoop_->AddTimerEvent(nullptr, nullptr, task, delayTime, false);
 }
 

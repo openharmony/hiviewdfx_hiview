@@ -48,7 +48,9 @@ const std::list<std::string> APPFREEZE_TYPE_LIST{
     "THREAD_BLOCK_6S",
     "THREAD_BLOCK_3S",
     "APP_INPUT_BLOCK",
-    "NO_DRAW"
+    "NO_DRAW",
+    "BUSSINESS_THREAD_BLOCK_3S",
+    "BUSSINESS_THREAD_BLOCK_6S"
 };
 
 const std::list<std::string> KEY_IN_LOGFILE{

@@ -38,8 +38,8 @@ void UcAppStateObserver::OnProcessStateChanged(const AppExecFwk::ProcessData& pr
 
 void UcAppStateObserver::OnProcessCreated(const ProcessData& processData)
 {
-    HIVIEW_LOGD("process name=%{public}s, pid=%{public}d created", processData.processName.c_str(), processData.pid);
-    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED, processData.processName);
+    HIVIEW_LOGD("process=%{public}d created", processData.pid);
+    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, CREATED);
 }
 
 void UcAppStateObserver::OnProcessDied(const ProcessData& processData)

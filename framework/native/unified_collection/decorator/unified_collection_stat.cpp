@@ -29,6 +29,7 @@
 #include "mem_profiler_decorator.h"
 #endif
 #include "memory_decorator.h"
+#include "network_decorator.h"
 #ifdef HAS_HIPERF
 #include "perf_decorator.h"
 #endif
@@ -74,6 +75,7 @@ void UnifiedCollectionStat::SaveAllStatInfo()
     HilogDecorator::SaveStatCommonInfo();
     IoDecorator::SaveStatCommonInfo();
     MemoryDecorator::SaveStatCommonInfo();
+    NetworkDecorator::SaveStatCommonInfo();
     TraceDecorator::SaveStatCommonInfo();
 #ifdef HAS_HIPROFILER
     MemProfilerDecorator::SaveStatCommonInfo();
@@ -103,6 +105,7 @@ void UnifiedCollectionStat::ResetAllStatInfo()
     HilogDecorator::ResetStatInfo();
     IoDecorator::ResetStatInfo();
     MemoryDecorator::ResetStatInfo();
+    NetworkDecorator::ResetStatInfo();
     TraceDecorator::ResetStatInfo();
     WmDecorator::ResetStatInfo();
 #ifdef HAS_HIPROFILER

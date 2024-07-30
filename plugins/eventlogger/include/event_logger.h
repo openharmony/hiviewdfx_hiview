@@ -79,7 +79,8 @@ private:
     static const inline std::vector<std::string> FFRT_VECTOR = {
         "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
         "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
-        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN"
+        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
+        "BUSSINESS_THREAD_BLOCK_6S"
     };
 
     static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
@@ -119,7 +120,7 @@ private:
 
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
     void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
-    void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd, int& count) const;
+    void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const;
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     int GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);

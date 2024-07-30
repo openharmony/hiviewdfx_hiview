@@ -114,6 +114,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
     info.sectionMaps[FreezeCommon::EVENT_MODULE_NAME] = watchPoint.GetModuleName();
+    info.sectionMaps[FreezeCommon::FORE_GROUND] = watchPoint.GetForeGround();
     AddFaultLog(info);
     return logPath;
 }
@@ -175,7 +176,7 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
-void Vendor::FormatProcessName(std::string& processName) const
+void Vendor::FormatProcessName(std::string& processName)
 {
     std::regex regExpress("[\\/:*?\"<>|]");
     bool isLegal = !std::regex_search(processName, regExpress);
@@ -256,7 +257,7 @@ void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream
     }
 }
 
-void Vendor::InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt) const
+void Vendor::InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt)
 {
     std::string ffrtPath = "/data/log/eventlog/ffrt_" + std::to_string(watchPoint.GetPid()) + "_" +
         TimeUtil::TimestampFormatToDate(watchPoint.GetTimestamp() / TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");

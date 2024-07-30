@@ -18,6 +18,9 @@
             <option name="push" value="export_config/test_event_export_config.json -> /data/test/test_data/" src="res"/>
             <option name="push" value="export_config/test_events.json -> /data/test/test_data/" src="res"/>
             <option name="push" value="export_config/test_events_v2.json -> /data/test/test_data/" src="res"/>
+            <option name="push" value="export_config/invalid_test_events1.json -> /data/test/test_data/" src="res"/>
+            <option name="push" value="export_config/invalid_test_events2.json -> /data/test/test_data/" src="res"/>
+            <option name="push" value="export_config/invalid_test_events3.json -> /data/test/test_data/" src="res"/>
         </preparer>
     </target>
 </configuration>

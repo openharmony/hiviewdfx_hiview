@@ -24,8 +24,6 @@ config("ucollection_utility_test_config") {
   ]
 
   cflags = [ "-D__UNITTEST__" ]
-  if (thermal_manager_enable) {
-    cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
   }
 }
 
@@ -43,6 +41,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "hilog_collector_test.cpp",
     "io_collector_test.cpp",
     "memory_collector_test.cpp",
+    "network_collector_test.cpp",
     "perf_collector_test.cpp",
     "temperature_collector_test.cpp",
     "trace_collector_test.cpp",
@@ -79,5 +78,15 @@ ohos_unittest("UCollectionUtilityUnitTest") {
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
+  }
+
+  if (thermal_manager_enable) {
+    cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
+  }
+
+  defines = []
+  if (is_wifi_enable) {
+    external_deps += [ "wifi:wifi_sdk" ]
+    defines += [ "COMMUNICATION_WIFI_ENABLE" ]
   }
 }

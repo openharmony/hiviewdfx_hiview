@@ -14,8 +14,6 @@
  */
 #include "event_focus_listener.h"
 
-#include "time_util.h"
-
 namespace OHOS {
 namespace HiviewDFX {
 sptr<EventFocusListener> EventFocusListener::instance_ = nullptr;
@@ -40,4 +38,4 @@ void EventFocusListener::OnUnfocused(const sptr<Rosen::FocusChangeInfo>& focusCh
     lastChangedTime_ = TimeUtil::GetMilliseconds();
 }
 } // namesapce HiviewDFX
-} // namespace OHOSs
+} // namespace OHOS

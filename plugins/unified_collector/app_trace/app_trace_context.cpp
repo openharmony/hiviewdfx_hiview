@@ -317,7 +317,7 @@ int32_t DumpTraceState::DoCaptureTrace()
         return -1;
     }
 
-    int64_t delay = appCallerEvent_->taskBeginTime_ - appCallerEvent_->happenTime_;
+    int64_t delay = appCallerEvent_->taskBeginTime_ - static_cast<int64_t>(appCallerEvent_->happenTime_);
     appCallerEvent_->taskBeginTime_ = appTraceContext_->traceBegin_;
     InnerDumpAppTrace(appCallerEvent_, appTraceContext_->isDumpTrace_, appTraceContext_->isTraceOn_);
 
@@ -330,7 +330,7 @@ int32_t DumpTraceState::DoCaptureTrace()
 
     InnerReportMainThreadJankForTrace(appCallerEvent_);
 
-    int64_t cost = appCallerEvent_->taskEndTime_ - appCallerEvent_->happenTime_;
+    int64_t cost = appCallerEvent_->taskEndTime_ - static_cast<int64_t>(appCallerEvent_->happenTime_);
     HIVIEW_LOGI("dump trace for uid=%{public}d pid=%{public}d  delay=%{public}" PRId64 ", cost=%{public}" PRId64 "",
         appCallerEvent_->uid_, appCallerEvent_->pid_, delay, cost);
     return 0;

@@ -165,7 +165,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 
     if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
         Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
-        if (windowInfos.size() <= 0) {
+        if (windowInfos.size() == 0) {
             return;
         }
         type = TOP;
@@ -173,11 +173,11 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         std::list<SystemProcessInfo> systemProcessInfos;
         sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         sam->GetRunningSystemProcess(systemProcessInfos);
-        for (const auto& systemProcessInfo : systemProcessInfos) {
-            if (pid == systemProcessInfo.pid) {
-                type = SYS;
-                break;
-            }
+        if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
+            [pid, type](auto& systemProcessInfo) {
+            return pid == systemProcessInfo.pid;
+        })) {
+            type = SYS;
         }
     }
 
@@ -218,7 +218,7 @@ void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const 
     if (childPid < 0) {
         HIVIEW_LOGE("fork falied");
     } else if (childPid == 0) {
-        FfrtChildProcess(fd, serviceName, cmd, count);
+        FfrtChildProcess(fd, serviceName, cmd);
     } else {
         int ret = waitpid(childPid, nullptr, WNOHANG);
         while (count > 0 && (ret == 0)) {
@@ -246,7 +246,7 @@ void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const 
     }
 }
 
-void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd, int& count) const
+void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const
 {
     if (fd < 0 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1) {
         HIVIEW_LOGE("dup2 fd failed");
@@ -671,9 +671,6 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
     }
 
     auto userPanicEvent = std::make_shared<SysEvent>("EventLogger", nullptr, "");
-    if (userPanicEvent == nullptr) {
-        return;
-    }
 
     std::string processName = (event->eventName_ == "FREQUENT_CLICK_WARNING") ? event->GetEventValue("PROCESS_NAME") :
         event->GetEventValue("PNAMEID");
@@ -774,13 +771,12 @@ void EventLogger::OnLoad()
     if (freezeCommon_->Init() && freezeCommon_ != nullptr && freezeCommon_->GetFreezeRuleCluster() != nullptr) {
         dbHelper_ = std::make_unique<DBHelper>(freezeCommon_);
     }
-    RegisterFocusListener();
 }
 
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-    if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+    if (isRegisterFocusListener) {
         Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
         if (ret == Rosen::WMError::WM_OK) {
             HIVIEW_LOGI("unRegister eventFocusListener succeed.");
@@ -853,12 +849,10 @@ void EventLogger::RegisterFocusListener()
         return;
     }
     eventFocusListener_ = EventFocusListener::GetInstance();
-    if (eventFocusListener_ != nullptr) {
-        Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
-        if (ret == Rosen::WMError::WM_OK) {
-            HIVIEW_LOGI("register eventFocusListener succeed.");
-            isRegisterFocusListener = true;
-        }
+    Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
+    if (ret == Rosen::WMError::WM_OK) {
+        HIVIEW_LOGI("register eventFocusListener succeed.");
+        isRegisterFocusListener = true;
     }
 }
 

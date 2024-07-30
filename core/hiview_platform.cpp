@@ -125,7 +125,6 @@ bool HiviewPlatform::InitEnvironment(const std::string& platformConfigDir)
 
     // init global context helper, remove in the future
     HiviewGlobal::CreateInstance(static_cast<HiviewContext&>(*this));
-    InitSysEventParser();
     LoadBusinessPlugin(config);
 
     // start load plugin bundles
@@ -214,18 +213,6 @@ void HiviewPlatform::CreateWorkingDirectories(const std::string& platformConfigD
         ValidateAndCreateDirectories(platformConfigInfo.pluginConfigFileDir,
                                      platformConfigInfo.workDir,
                                      platformConfigInfo.persistDir);
-    }
-}
-
-void HiviewPlatform::InitSysEventParser()
-{
-    if (sysEventParser_ == nullptr) {
-        std::string systemDefineFile = (defaultConfigDir_.back() != '/') ? (defaultConfigDir_ + "/hisysevent.def") :
-            (defaultConfigDir_ + "hisysevent.def");
-        HIVIEW_LOGI("path of hisysevent.def is %{public}s", systemDefineFile.c_str());
-        std::vector<std::string> allDefineFiles;
-        allDefineFiles.emplace_back(systemDefineFile);
-        sysEventParser_ = std::make_shared<EventJsonParser>(allDefineFiles);
     }
 }
 
@@ -533,10 +520,12 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
         }
     }
 
-    std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
-    if (plugin->GetType() == Plugin::PluginType::PROXY && registInfo->needStartupLoading) {
-        std::shared_ptr<PluginProxy> pluginProxy = std::static_pointer_cast<PluginProxy>(plugin);
-        pluginProxy->LoadPluginIfNeed();
+    if (plugin->GetType() == Plugin::PluginType::PROXY) {
+        std::shared_ptr<PluginRegistInfo> registInfo = PluginFactory::GetGlobalPluginInfo(pluginInfo.name);
+        if (registInfo != nullptr && registInfo->needStartupLoading) {
+            std::shared_ptr<PluginProxy> pluginProxy = std::static_pointer_cast<PluginProxy>(plugin);
+            pluginProxy->LoadPluginIfNeed();
+        }
     }
 
     uint64_t endTime = TimeUtil::GenerateTimestamp();

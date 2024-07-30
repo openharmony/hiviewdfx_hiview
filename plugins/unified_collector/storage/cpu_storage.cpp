@@ -250,7 +250,7 @@ CpuStorage::CpuStorage(const std::string& workPath) : workPath_(workPath)
 {
     InitDbStorePath();
     InitDbStore();
-    if (GetStoredSysVersion() != Parameter::GetDisplayVersionStr()) {
+    if (dbStore_!= nullptr && GetStoredSysVersion() != Parameter::GetDisplayVersionStr()) {
         HIVIEW_LOGI("system has been upgaded, report directly");
         ReportDbRecords();
     }

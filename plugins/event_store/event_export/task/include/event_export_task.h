@@ -21,6 +21,7 @@
 #include "event_read_handler.h"
 #include "event_write_handler.h"
 #include "export_base_task.h"
+#include "export_event_list_parser.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -31,6 +32,9 @@ public:
 
 protected:
     void OnTaskRun() override;
+
+private:
+    bool ParseExportEventList(ExportEventList& list);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

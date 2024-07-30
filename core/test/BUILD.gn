@@ -18,7 +18,6 @@ group("unittest") {
   testonly = true
   deps = [
     ":EventDispatchQueueTest",
-    ":EventJsonParserTest",
     ":HiviewPlatformConfigTest",
     ":ParamUpdateTest",
     ":PlatformConfigTest",
@@ -144,24 +143,6 @@ ohos_unittest("HiviewPlatformConfigTest") {
     "$hiview_base:hiview_base",
     "$hiview_core:hiview_core",
     "../platform_config:hiviewplatform_config",
-  ]
-
-  external_deps = [
-    "ffrt:libffrt",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-  ]
-}
-
-ohos_unittest("EventJsonParserTest") {
-  module_out_path = module_output_path
-  configs = [ ":unittest_config" ]
-
-  sources = [ "unittest/common/event_json_parser_test.cpp" ]
-
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core_for_test",
   ]
 
   external_deps = [

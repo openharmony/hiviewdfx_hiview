@@ -114,13 +114,13 @@ uint64_t ProcessStatus::GetProcessLastForegroundTime(int32_t pid)
         : INVALID_LAST_FOREGROUND_TIME;
 }
 
-void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState, const std::string& name)
+void ProcessStatus::NotifyProcessState(int32_t pid, ProcessState procState)
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    UpdateProcessState(pid, procState, name);
+    UpdateProcessState(pid, procState);
 }
 
-void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState, const std::string& name)
+void ProcessStatus::UpdateProcessState(int32_t pid, ProcessState procState)
 {
     HIVIEW_LOGD("pid=%{public}d state=%{public}d", pid, procState);
     switch (procState) {
