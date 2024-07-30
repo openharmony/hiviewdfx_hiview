@@ -29,6 +29,7 @@ public:
 public:
     virtual CollectResult<std::string> ExportWindowsInfo() override;
     virtual CollectResult<std::string> ExportWindowsMemory() override;
+    virtual CollectResult<std::string> ExportGpuMemory() override;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

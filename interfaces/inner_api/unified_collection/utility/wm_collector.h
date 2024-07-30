@@ -30,6 +30,7 @@ public:
 public:
     virtual CollectResult<std::string> ExportWindowsInfo() = 0;
     virtual CollectResult<std::string> ExportWindowsMemory() = 0;
+    virtual CollectResult<std::string> ExportGpuMemory() = 0;
     static std::shared_ptr<WmCollector> Create();
 }; // WmCollector
 } // UCollectUtil

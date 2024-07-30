@@ -33,6 +33,12 @@ CollectResult<std::string> WmDecorator::ExportWindowsMemory()
     return Invoke(task, statInfoWrapper_, WM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+CollectResult<std::string> WmDecorator::ExportGpuMemory()
+{
+    auto task = [this] { return wmCollector_->ExportGpuMemory(); };
+    return Invoke(task, statInfoWrapper_, WM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 void WmDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

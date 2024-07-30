@@ -96,3 +96,16 @@ HWTEST_F(WmCollectorTest, WmCollectorTest002, TestSize.Level1)
     ASSERT_TRUE(result.retCode == UcError::SUCCESS);
     DisablePermissionAccess();
 }
+
+/**
+ * @tc.name: WmCollectorTest003
+ * @tc.desc: used to test WmCollector.ExportGpuMemory
+ * @tc.type: FUNC
+*/
+HWTEST_F(WmCollectorTest, WmCollectorTest003, TestSize.Level1)
+{
+    std::shared_ptr<WmCollector> collector = WmCollector::Create();
+    auto result = collector->ExportGpuMemory();
+    std::cout << "export Gpu memory result " << result.retCode << std::endl;
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS || result.retCode == UcError::UNSUPPORT);
+}

@@ -35,6 +35,7 @@ namespace {
 DEFINE_LOG_TAG("UCollectUtil-WmCollector");
 constexpr int32_t MAX_FILE_NUM = 10;
 const std::string COLLECTION_WM_PATH = "/data/log/hiview/unified_collection/wm/";
+const std::string GPU_MEMORY_PATH = "/proc/gpu_memory";
 std::mutex g_memMutex;
 
 std::string CreateExportFileName(const std::string& filePrefix, const std::string& ext)
@@ -104,6 +105,33 @@ CollectResult<std::string> WmCollectorImpl::ExportWindowsMemory()
         return result;
     }
     close(fd);
+    result.retCode = UcError::SUCCESS;
+    result.data = fileName;
+    return result;
+}
+
+CollectResult<std::string> WmCollectorImpl::ExportGpuMemory()
+{
+    CollectResult<std::string> result;
+    std::string content;
+    bool ret = FileUtil::LoadStringFromFile(GPU_MEMORY_PATH, content);
+    if (!ret) {
+        return result;
+    }
+    if (content.empty()) {
+        result.retCode = READ_FAILED;
+        return result;
+    }
+    std::string fileName = CreateExportFileName("gpu_memory_", ".txt");
+    if (fileName.empty()) {
+        result.retCode = SYSTEM_ERROR;
+        return result;
+    }
+    bool isSuccess = FileUtil::SaveStringToFile(fileName, content, true);
+    if (!isSuccess) {
+        result.retCode = WRITE_FAILED;
+        return result;
+    }
     result.retCode = UcError::SUCCESS;
     result.data = fileName;
     return result;
