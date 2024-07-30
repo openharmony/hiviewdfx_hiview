@@ -17,6 +17,7 @@
 
 #include "file_util.h"
 #include "hiview_logger.h"
+#include "sys_event_sequence_mgr.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -47,45 +48,45 @@ void EventExportTask::OnTaskRun()
         HIVIEW_LOGE("event export directory is full");
         return;
     }
-
     // init handler request
     auto readReq = std::make_shared<EventReadRequest>();
-    readReq->moduleName = config_->moduleName;
-    readReq->beginSeq = dbMgr_->GetExportBeginningSeq(config_->moduleName);
-    readReq->maxSize = config_->maxSize;
-    readReq->exportDir = config_->exportDir;
-    if (!ParseExportEventList(readReq->eventList)) {
-        HIVIEW_LOGE("failed to parse event list to export");
+    if (!InitReadRequest(readReq)) {
+        HIVIEW_LOGE("failed to init read request");
         return;
     }
-
     // init write handler
     auto writeHandler = std::make_shared<EventWriteHandler>();
-    writeHandler->SetExportDoneListener([this] (const std::string& moduleName, int64_t seq) {
-        HIVIEW_LOGI("update maximum seqeuence of exported event: %{public}" PRId64 " for module %{public}s",
-            seq, moduleName.c_str());
-            this->dbMgr_->HandleExportTaskFinished(moduleName, seq);
-    });
     // init read handler
     auto readHandler = std::make_shared<EventReadHandler>();
+    readHandler->SetEventExportedListener([this] (int64_t beginSeq, int64_t endSeq) {
+        HIVIEW_LOGW("export end sequence is updated with %{public}" PRId64 "", endSeq);
+        curBeginSeqInQuery_ = beginSeq;
+        curEndSeqInQuery_ = endSeq;
+    });
     // init handler chain
     readHandler->SetNextHandler(writeHandler);
-    // start handler chain, read event from origin db file
+    // start handler chain
     if (!readHandler->HandleRequest(readReq)) {
-        HIVIEW_LOGE("some error occured during event exporting");
+        HIVIEW_LOGE("failed to export events in range [%{public}" PRId64 ",%{public}" PRId64 ")",
+            curBeginSeqInQuery_, curEndSeqInQuery_);
+        // record export progress
+        dbMgr_->HandleExportTaskFinished(config_->moduleName, curEndSeqInQuery_);
         return;
     }
-    HIVIEW_LOGI("task of exporting events finished");
+    // record export progress
+    dbMgr_->HandleExportTaskFinished(config_->moduleName, readReq->endSeq);
+    HIVIEW_LOGI("succeed to export events in range [%{public}" PRId64 ",%{public}" PRId64 ")", readReq->beginSeq,
+        readReq->endSeq);
 }
 
-bool EventExportTask::ParseExportEventList(ExportEventList& list)
+bool EventExportTask::ParseExportEventList(ExportEventList& list) const
 {
     ExportEventListParsers parsers;
     auto iter = std::max_element(config_->eventsConfigFiles.begin(), config_->eventsConfigFiles.end(),
         [&parsers] (const std::string& path1, const std::string& path2) {
-            auto p1 = GetParser(parsers, path1);
-            auto p2 = GetParser(parsers, path2);
-            return p1->GetConfigurationVersion() < p2->GetConfigurationVersion();
+            auto parser1 = GetParser(parsers, path1);
+            auto parser2 = GetParser(parsers, path2);
+            return parser1->GetConfigurationVersion() < parser2->GetConfigurationVersion();
         });
     if (iter == config_->eventsConfigFiles.end()) {
         HIVIEW_LOGE("no event list file path is configured.");
@@ -94,6 +95,32 @@ bool EventExportTask::ParseExportEventList(ExportEventList& list)
     HIVIEW_LOGD("event list file path is %{public}s", (*iter).c_str());
     auto parser = GetParser(parsers, *iter);
     parser->GetExportEventList(list);
+    return true;
+}
+
+bool EventExportTask::InitReadRequest(std::shared_ptr<EventReadRequest> readReq) const
+{
+    if (readReq == nullptr) {
+        return false;
+    }
+    readReq->beginSeq = dbMgr_->GetExportBeginSeq(config_->moduleName);
+    if (readReq->beginSeq == INVALID_SEQ_VAL) {
+        HIVIEW_LOGE("invalid export: begin sequence:%{public}" PRId64 "", readReq->beginSeq);
+        return false;
+    }
+    readReq->endSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
+    if (readReq->beginSeq >= readReq->endSeq) {
+        HIVIEW_LOGE("invalid export range: [%{public}" PRId64 ",%{public}" PRId64 ")",
+            readReq->beginSeq, readReq->endSeq);
+        return false;
+    }
+    if (!ParseExportEventList(readReq->eventList) || readReq->eventList.empty()) {
+        HIVIEW_LOGE("failed to get a valid event export list");
+        return false;
+    }
+    readReq->moduleName = config_->moduleName;
+    readReq->maxSize = config_->maxSize;
+    readReq->exportDir = config_->exportDir;
     return true;
 }
 } // HiviewDFX

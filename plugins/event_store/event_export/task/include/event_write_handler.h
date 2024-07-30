@@ -27,54 +27,60 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-struct CachedEventItem {
+struct CachedEvent {
     // event version
     std::string version;
 
     // event domain
     std::string domain;
 
-    // event sequence
-    int64_t seq = INVALID_SEQ_VAL;
-
     // event name
     std::string name;
 
     // event json string
     std::string eventStr;
+
+    CachedEvent(std::string& version, std::string& domain, std::string& name, std::string& eventStr)
+        : version(version), domain(domain), name(name), eventStr(eventStr) {}
 };
 
 struct EventWriteRequest : public BaseRequest {
     // name of export module
     std::string moduleName;
 
-    // max size of a single event file
-    int64_t maxSingleFileSize = 0;
-
     // item: <system version, domain, sequecen, sysevent content>
-    std::list<CachedEventItem> sysEvents;
+    std::list<std::shared_ptr<CachedEvent>> sysEvents;
 
     // directory configured for export event file to store
     std::string exportDir;
     
     // tag whether the query is completed
-    bool isQueryCompleted;
+    bool isQueryCompleted = false;
+
+    // max size of a single event file
+    int64_t maxSingleFileSize = 0;
+
+    EventWriteRequest(std::string& moduleName, std::list<std::shared_ptr<CachedEvent>>& sysEvents,
+        std::string& exportDir, bool isQueryCompleted, int64_t maxSingleFileSize)
+        : moduleName(moduleName), sysEvents(sysEvents), exportDir(exportDir), isQueryCompleted(isQueryCompleted),
+        maxSingleFileSize(maxSingleFileSize) {}
 };
 
 class EventWriteHandler : public ExportBaseHandler {
 public:
-    using ExportDoneListener = std::function<void(const std::string&, int64_t)>;
-    void SetExportDoneListener(ExportDoneListener listener);
-
-public:
     bool HandleRequest(RequestPtr req) override;
-    std::shared_ptr<ExportJsonFileWriter> GetEventWriter(const std::string& sysVersion,
-        std::shared_ptr<EventWriteRequest> writeReq);
 
 private:
-    ExportDoneListener exportDoneListener_;
+    std::shared_ptr<ExportJsonFileWriter> GetEventWriter(const std::string& sysVersion,
+        std::shared_ptr<EventWriteRequest> writeReq);
+    void CopyTmpZipFilesToDest();
+    void Rollback();
+
+private:
     // <key: <module name, system version>, value: writer>
     std::map<std::pair<std::string, std::string>, std::shared_ptr<ExportJsonFileWriter>> allJsonFileWriters_;
+    // <tmpZipFilePath, destZipFilePath>
+    std::unordered_map<std::string, std::string> zippedExportFileMap_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

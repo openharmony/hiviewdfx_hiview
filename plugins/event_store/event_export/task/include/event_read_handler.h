@@ -19,6 +19,7 @@
 #include <fstream>
 #include <functional>
 #include <tuple>
+#include <unordered_map>
 
 #include "event_write_handler.h"
 #include "export_base_handler.h"
@@ -28,8 +29,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 struct EventReadRequest : public BaseRequest {
-    // the event sequence from which to export
+    // the event sequence start to export
     int64_t beginSeq = 0;
+
+    // the event sequence end to sexport
+    int64_t endSeq = 0;
 
     // name of export module
     std::string moduleName;
@@ -46,18 +50,23 @@ struct EventReadRequest : public BaseRequest {
 
 class EventReadHandler : public ExportBaseHandler {
 public:
+    using EventExportedListener = std::function<void(int64_t, int64_t)>;
+    void SetEventExportedListener(EventExportedListener listener);
+
     bool HandleRequest(RequestPtr request) override;
 
 private:
     using QueryCallback = std::function<bool(bool)>;
+    bool QuerySysEventInRange(const std::pair<int64_t, int64_t>& queryRange, const ExportEventList& eventList,
+        QueryCallback queryCallback);
     bool QuerySysEvent(const int64_t beginSeq, const int64_t endSeq, const ExportEventList& eventList,
-        QueryCallback callback);
-    bool NeedSwitchToNextQuery(EventStore::ResultSet& result, QueryCallback callback,
-        const int64_t queryLimit, int64_t& totalQueryCnt);
+        QueryCallback queryCallback);
+    bool HandleQueryResult(EventStore::ResultSet& result, QueryCallback queryCallback, const int64_t queryLimit,
+        int64_t& totalQueryCnt);
 
 private:
-    std::list<CachedEventItem> cachedSysEvents_;
-    std::string curSysEventVersion_;
+    EventExportedListener eventExportedListener_;
+    std::list<std::shared_ptr<CachedEvent>> cachedSysEvents_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

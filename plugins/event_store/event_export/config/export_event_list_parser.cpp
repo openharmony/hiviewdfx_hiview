@@ -51,19 +51,16 @@ void AddDomainNames(const std::string& domain, const std::vector<std::string>& n
 void ParseExportEventList(cJSON* eventItem, ExportEventList& eventList)
 {
     auto domain = CJsonUtil::GetStringValue(eventItem, DOMAIN);
-    HIVIEW_LOGD("domain of current item is %{public}s.", domain.c_str());
     if (domain.empty()) {
         return;
     }
     std::vector<std::string> allEventNames;
     CJsonUtil::GetStringArray(eventItem, NAMES, allEventNames);
     if (allEventNames.size() > 0) {
-        HIVIEW_LOGD("length of names configured is %{public}zu.", allEventNames.size());
         AddDomainNames(domain, allEventNames, eventList);
         return;   // names configured in events has a higher priority than name to parse
     }
     auto eventName = CJsonUtil::GetStringValue(eventItem, NAME);
-    HIVIEW_LOGD("name configured is %{public}s.", eventName.c_str());
     if (eventName.empty()) {
         return;
     }

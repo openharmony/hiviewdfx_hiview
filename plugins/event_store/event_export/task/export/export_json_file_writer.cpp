@@ -155,7 +155,7 @@ cJSON* CreateJsonObjectByVersion(const std::string& sysVersion)
 }
 
 cJSON* CreateEventsJsonArray(const std::string& domain,
-    const std::unordered_map<int64_t, std::pair<std::string, std::string>>& events)
+    const std::vector<std::pair<std::string, std::string>>& events)
 {
     // events
     cJSON* eventsJsonArray = cJSON_CreateArray();
@@ -169,7 +169,7 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
         return nullptr;
     }
     for (const auto& event : events) {
-        cJSON* eventItem = cJSON_Parse(event.second.second.c_str());
+        cJSON* eventItem = cJSON_Parse(event.second.c_str());
         cJSON_AddItemToArray(dataJsonArray, eventItem);
     }
     cJSON* anonymousJsonObj = cJSON_CreateObject();
@@ -281,7 +281,7 @@ void PersistJsonStrToLocalFile(cJSON* root, const std::string& localFile)
 }
 }
 
-bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents)
+bool ExportJsonFileWriter::Write()
 {
     cJSON* root = CreateJsonObjectByVersion(eventVersion_);
     if (root == nullptr) {
@@ -289,9 +289,11 @@ bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cac
     }
     cJSON* domainsJsonArray = cJSON_CreateArray();
     if (domainsJsonArray == nullptr) {
+        HIVIEW_LOGE("failed to create json array");
+        cJSON_Delete(root);
         return false;
     }
-    for (const auto& cachedToPackEvent : cachedToPackEvents) {
+    for (const auto& sysEvent : sysEventMap_) {
         cJSON* domainJsonObj = cJSON_CreateObject();
         if (domainJsonObj == nullptr) {
             continue;
@@ -302,9 +304,9 @@ bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cac
             HIVIEW_LOGE("failed to create domain info json object");
             continue;
         }
-        cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, cachedToPackEvent.first.c_str());
+        cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, sysEvent.first.c_str());
         cJSON_AddItemToObject(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
-        cJSON* eventsJsonObj = CreateEventsJsonArray(cachedToPackEvent.first, cachedToPackEvent.second);
+        cJSON* eventsJsonObj = CreateEventsJsonArray(sysEvent.first, sysEvent.second);
         if (eventsJsonObj == nullptr) {
             continue;
         }
@@ -317,22 +319,20 @@ bool ExportJsonFileWriter::PackJsonStrToFile(EventsDividedInDomainGroupType& cac
     auto packagedFile = GetHiSysEventJsonTempDir(moduleName_, eventVersion_).append(EXPORT_JSON_FILE_NAME);
     HIVIEW_LOGD("packagedFile: %{public}s", packagedFile.c_str());
     PersistJsonStrToLocalFile(root, packagedFile);
+    cJSON_Delete(root);
     // zip json file into a temporary zip file
     auto tmpZipFile = GetTmpZipFile(exportDir_, moduleName_, eventVersion_);
     if (!ZipDbFile(packagedFile, tmpZipFile)) {
         HIVIEW_LOGE("failed to zip %{public}s to %{private}s", packagedFile.c_str(), tmpZipFile.c_str());
         return false;
     }
-    // move tmp zip file to output directory
     auto zipFile = GetZipFile(exportDir_);
     HIVIEW_LOGD("zipFile: %{private}s", zipFile.c_str());
-    if (!FileUtil::RenameFile(tmpZipFile, zipFile)) {
-        HIVIEW_LOGE("failed to rename %{private}s to %{private}s", tmpZipFile.c_str(), zipFile.c_str());
-        return false;
+    if (exportJsonFileZippedListener_ != nullptr) {
+        exportJsonFileZippedListener_(tmpZipFile, zipFile);
     }
-    cJSON_Delete(root);
     totalJsonStrSize_ = 0;
-    cachedToPackEvents.clear(); // clear cache;
+    sysEventMap_.clear(); // clear cache;
     return true;
 }
 
@@ -345,40 +345,35 @@ ExportJsonFileWriter::ExportJsonFileWriter(const std::string& moduleName, const 
     maxFileSize_ = maxFileSize * MB_TO_BYTE;
 }
 
-void ExportJsonFileWriter::SetMaxSequenceWriteListener(MaxSequenceWriteListener listener)
+void ExportJsonFileWriter::SetExportJsonFileZippedListener(ExportJsonFileZippedListener listener)
 {
-    maxSequenceWriteListener_ = listener;
+    exportJsonFileZippedListener_ = listener;
 }
 
-bool ExportJsonFileWriter::AppendEvent(const std::string& domain, int64_t seq, const std::string& name,
+bool ExportJsonFileWriter::AppendEvent(const std::string& domain, const std::string& name,
     const std::string& eventStr)
 {
     int64_t eventSize = static_cast<int64_t>(eventStr.size());
-    maxEventSeq_ = std::max(maxEventSeq_, seq);
     if (totalJsonStrSize_ + eventSize > maxFileSize_ && !Write()) {
         HIVIEW_LOGE("failed to write export events");
         return false;
     }
-    auto iter = eventInDomains_.find(domain);
-    if (iter == eventInDomains_.end()) {
-        eventInDomains_.emplace(domain, std::unordered_map<int64_t, std::pair<std::string, std::string>> {
-            {seq, std::make_pair(name, eventStr)},
+    auto iter = sysEventMap_.find(domain);
+    if (iter == sysEventMap_.end()) {
+        sysEventMap_.emplace(domain, std::vector<std::pair<std::string, std::string>> {
+            std::make_pair(name, eventStr),
         });
         totalJsonStrSize_ += eventSize;
         return true;
     }
-    iter->second.emplace(seq, std::make_pair(name, eventStr));
+    iter->second.emplace_back(name, eventStr);
     totalJsonStrSize_ += eventSize;
     return true;
 }
 
-bool ExportJsonFileWriter::Write(bool isLastPartialQuery)
+void ExportJsonFileWriter::ClearEventCache()
 {
-    bool ret = PackJsonStrToFile(eventInDomains_);
-    if (ret && isLastPartialQuery && maxSequenceWriteListener_ != nullptr && maxEventSeq_ != INVALID_SEQ_VAL) {
-        maxSequenceWriteListener_(maxEventSeq_);
-    }
-    return ret;
+    sysEventMap_.clear();
 }
 } // HiviewDFX
 } // OHOS

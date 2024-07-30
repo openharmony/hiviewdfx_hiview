@@ -32,7 +32,7 @@ public:
 
 public:
     int64_t GetExportEnabledSeq(const std::string& moduleName);
-    int64_t GetExportBeginningSeq(const std::string& moduleName);
+    int64_t GetExportBeginSeq(const std::string& moduleName);
     void HandleExportSwitchChanged(const std::string& moduleName, int64_t curSeq);
     void HandleExportTaskFinished(const std::string& moduleName, int64_t eventSeq);
     bool IsUnrecordedModule(const std::string& moduleName);

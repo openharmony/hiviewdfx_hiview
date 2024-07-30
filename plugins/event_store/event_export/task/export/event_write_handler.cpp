@@ -25,9 +25,10 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
 {
     auto writeReq = BaseRequest::DownCastTo<EventWriteRequest>(req);
     for (const auto& sysEvent : writeReq->sysEvents) {
-        auto writer = GetEventWriter(sysEvent.version, writeReq);
-        if (!writer->AppendEvent(sysEvent.domain, sysEvent.seq, sysEvent.name, sysEvent.eventStr)) {
+        auto writer = GetEventWriter(sysEvent->version, writeReq);
+        if (!writer->AppendEvent(sysEvent->domain, sysEvent->name, sysEvent->eventStr)) {
             HIVIEW_LOGE("failed to append event to event writer");
+            Rollback();
             return false;
         }
     }
@@ -38,17 +39,14 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
         if (writer.second == nullptr) {
             continue;
         }
-        if (!writer.second->Write(true)) {
+        if (!writer.second->Write()) {
             HIVIEW_LOGE("failed to write export event");
+            Rollback();
             return false;
         }
     }
+    CopyTmpZipFilesToDest();
     return true;
-}
-
-void EventWriteHandler::SetExportDoneListener(ExportDoneListener listener)
-{
-    exportDoneListener_ = listener;
 }
 
 std::shared_ptr<ExportJsonFileWriter> EventWriteHandler::GetEventWriter(const std::string& sysVersion,
@@ -60,16 +58,42 @@ std::shared_ptr<ExportJsonFileWriter> EventWriteHandler::GetEventWriter(const st
         HIVIEW_LOGI("create json file writer with version %{public}s", sysVersion.c_str());
         auto jsonFileWriter = std::make_shared<ExportJsonFileWriter>(writeReq->moduleName, sysVersion,
             writeReq->exportDir, writeReq->maxSingleFileSize);
-        auto moduleName = writeReq->moduleName;
-        jsonFileWriter->SetMaxSequenceWriteListener([this, moduleName] (int64_t maxEventSeq) {
-            if (this->exportDoneListener_ != nullptr) {
-                this->exportDoneListener_(moduleName, maxEventSeq);
-            }
+        jsonFileWriter->SetExportJsonFileZippedListener([this] (const std::string& srcPath,
+            const std::string& destPath) {
+            zippedExportFileMap_[srcPath] = destPath;
         });
         allJsonFileWriters_.emplace(writerKey, jsonFileWriter);
         return jsonFileWriter;
     }
     return iter->second;
+}
+
+void EventWriteHandler::CopyTmpZipFilesToDest()
+{
+    // move all tmp zipped event export file to dest dir
+    std::for_each(zippedExportFileMap_.begin(), zippedExportFileMap_.end(), [] (const auto& item) {
+        if (!FileUtil::RenameFile(item.first, item.second)) {
+            HIVIEW_LOGE("failed to move %{private}s to %{private}s", item.first.c_str(), item.second.c_str());
+        }
+    });
+    zippedExportFileMap_.clear();
+}
+
+void EventWriteHandler::Rollback()
+{
+    for (const auto& writer : allJsonFileWriters_) {
+        if (writer.second == nullptr) {
+            continue;
+        }
+        writer.second->ClearEventCache();
+    }
+    // delete all tmp zipped export file
+    std::for_each(zippedExportFileMap_.begin(), zippedExportFileMap_.end(), [] (const auto& item) {
+        if (!FileUtil::RemoveFile(item.first)) {
+            HIVIEW_LOGE("failed to delete %{private}s", item.first.c_str());
+        }
+    });
+    zippedExportFileMap_.clear();
 }
 } // HiviewDFX
 } // OHOS

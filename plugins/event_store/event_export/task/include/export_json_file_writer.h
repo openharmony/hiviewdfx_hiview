@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "cJSON.h"
 #include "export_db_storage.h"
@@ -27,23 +28,19 @@
 namespace OHOS {
 namespace HiviewDFX {
 class ExportJsonFileWriter {
-// <domain, <seq, <name, event string>>
-using EventsDividedInDomainGroupType =
-    std::unordered_map<std::string, std::unordered_map<int64_t, std::pair<std::string, std::string>>>;
 public:
     ExportJsonFileWriter(const std::string& moduleName, const std::string& eventVersion, const std::string& exportDir,
         int64_t maxFileSize);
 
 public:
-    using MaxSequenceWriteListener = std::function<void(int64_t)>;
-    void SetMaxSequenceWriteListener(MaxSequenceWriteListener listener);
+    using ExportJsonFileZippedListener = std::function<void(const std::string&, const std::string&)>;
+    void SetExportJsonFileZippedListener(ExportJsonFileZippedListener listener);
+
+    void ClearEventCache();
 
 public:
-    bool AppendEvent(const std::string& domain, int64_t seq, const std::string& name, const std::string& eventStr);
-    bool Write(bool isLastPartialQuery = false);
-
-private:
-    bool PackJsonStrToFile(EventsDividedInDomainGroupType& cachedToPackEvents);
+    bool Write();
+    bool AppendEvent(const std::string& domain, const std::string& name, const std::string& eventStr);
 
 private:
     std::string moduleName_;
@@ -51,9 +48,9 @@ private:
     std::string exportDir_;
     int64_t maxFileSize_ = 0;
     int64_t totalJsonStrSize_ = 0;
-    int64_t maxEventSeq_ = INVALID_SEQ_VAL;
-    MaxSequenceWriteListener maxSequenceWriteListener_;
-    EventsDividedInDomainGroupType eventInDomains_;
+    ExportJsonFileZippedListener exportJsonFileZippedListener_;
+    // <domain, <name, eventContentString>>
+    std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> sysEventMap_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
