@@ -33,7 +33,6 @@ namespace PanicReport {
 DEFINE_LOG_LABEL(0xD002D11, "PanicReport");
 
 constexpr const char* BBOX_PARAM_PATH = "/log/bbox/bbox.save.log.flags";
-constexpr const char* FACTORY_RECOVERY_TIME_PATH = "/log/bbox/factory.recovery.time";
 constexpr const char* CMD_LINE = "/proc/cmdline";
 constexpr const char* PANIC_LOG_PATH = "/log/bbox/panic_log/";
 constexpr const char* LAST_FASTBOOT_LOG = "/ap_log/last_fastboot_log";
@@ -44,21 +43,21 @@ constexpr const char* BOOTEVENT_BOOT_COMPLETED = "bootevent.boot.completed";
 constexpr const char* LAST_BOOTUP_KEYPOINT = "last_bootup_keypoint";
 
 constexpr const char* HAPPEN_TIME = "happentime";
-constexpr const char* FACTORY_RECOVERY_TIME = "factoryRecoveryTime";
 constexpr const char* IS_PANIC_UN_UPLOADED = "isPanicUnUploaded";
 constexpr const char* IS_STARTUP_SHORT = "isStartUpShort";
 
-constexpr const char* REGEX_FORMAT = R"(=((".*?")|(\S*)))";
+constexpr const char* REGEX_FORMAT = R"(=(\S*))";
 
 constexpr int COMPRESSION_RATION = 9;
-constexpr int ZIP_FILE_SIZE_LIMIT = 5 * 1024 * 1024; //5MB
+constexpr int ZIP_FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
 
 static bool g_isLastStartUpShort = false;
 
 bool InitPanicConfigFile()
 {
     if (!FileUtil::FileExists(BBOX_PARAM_PATH)) {
-        return FileUtil::CreateFile(BBOX_PARAM_PATH) && SetParamValueToFile(BBOX_PARAM_PATH, IS_STARTUP_SHORT, "true");
+        return FileUtil::CreateFile(BBOX_PARAM_PATH, FileUtil::FILE_PERM_640) &&
+            SetParamValueToFile(BBOX_PARAM_PATH, IS_STARTUP_SHORT, "true");
     }
     std::string paramsContent;
     FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, paramsContent);
@@ -100,13 +99,6 @@ bool IsRecoveryPanicEvent(const std::shared_ptr<SysEvent>& sysEvent)
 {
     std::string logPath = sysEvent->GetEventValue("LOG_PATH");
     return logPath.find(PANIC_LOG_PATH) == 0;
-}
-
-std::string GetLastRecoveryTime()
-{
-    std::string factoryRecoveryTime;
-    FileUtil::LoadStringFromFile(FACTORY_RECOVERY_TIME_PATH, factoryRecoveryTime);
-    return std::string("\"") + factoryRecoveryTime + "\"";
 }
 
 std::string GetBackupFilePath(const std::string& timeStr)
@@ -194,7 +186,6 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
         return;
     }
     content = SetParamValueToString(content, HAPPEN_TIME, timeStr);
-    content = SetParamValueToString(content, FACTORY_RECOVERY_TIME, GetLastRecoveryTime());
     content = SetParamValueToString(content, IS_PANIC_UN_UPLOADED, "true");
     if (!FileUtil::SaveStringToFile(BBOX_PARAM_PATH, content)) {
         HIVIEW_LOGE("Failed to save content to file: %{public}s.", BBOX_PARAM_PATH);
@@ -204,11 +195,10 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
 void ReportPanicEventAfterRecovery(const std::string& content)
 {
     std::string timeStr = GetParamValueFromString(content, HAPPEN_TIME);
-    static constexpr char kernelVendor[] = "KERNEL_VENDOR";
     auto happenTime = Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
                                           "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
     HiSysEventWrite(
-        kernelVendor,
+        HisysEventUtil::KERNEL_VENDOR,
         "PANIC",
         HiSysEvent::EventType::FAULT,
         "MODULE", "AP",
@@ -229,8 +219,7 @@ bool TryToReportRecoveryPanicEvent()
         return false;
     }
     bool ret = false;
-    if (GetParamValueFromString(content, IS_PANIC_UN_UPLOADED) == "true" &&
-        GetParamValueFromString(content, FACTORY_RECOVERY_TIME) != GetLastRecoveryTime()) {
+    if (GetParamValueFromString(content, IS_PANIC_UN_UPLOADED) == "true") {
         std::string filePath = GetBackupFilePath(GetParamValueFromString(content, HAPPEN_TIME));
         if (FileUtil::FileExists(filePath)) {
             ReportPanicEventAfterRecovery(content);
@@ -244,17 +233,19 @@ bool TryToReportRecoveryPanicEvent()
     return ret;
 }
 
-void ConfirmReportResult()
+bool ConfirmReportResult()
 {
     std::string content;
     if (!FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, content)) {
         HIVIEW_LOGE("Failed to load file: %{public}s.", BBOX_PARAM_PATH);
-        return;
+        return true;
     }
     std::string timeStr = GetParamValueFromString(content, HAPPEN_TIME);
     if (HisysEventUtil::IsEventProcessed("PANIC", "LOG_PATH", GetBackupFilePath(timeStr))) {
         FileUtil::SaveStringToFile(BBOX_PARAM_PATH, SetParamValueToString(content, IS_PANIC_UN_UPLOADED, "false"));
+        return false;
     }
+    return true;
 }
 }
 }

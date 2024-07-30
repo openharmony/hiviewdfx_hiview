@@ -61,13 +61,6 @@ bool IsLastShortStartUp();
 bool IsRecoveryPanicEvent(const std::shared_ptr<SysEvent>& sysEvent);
 
 /**
- * The function to get the last recovery time.
- *
- * @return the time of last recovery.
- */
-std::string GetLastRecoveryTime();
-
-/**
  * The function to get the absolute file path by the timeStr given.
  *
  * @param timeStr timeStr.
@@ -137,8 +130,10 @@ bool TryToReportRecoveryPanicEvent();
 
 /**
  * Confirm the result of recovery report.
+ *
+ * @return whether the panic event is reported.
  */
-void ConfirmReportResult();
+bool ConfirmReportResult();
 }
 }
 }

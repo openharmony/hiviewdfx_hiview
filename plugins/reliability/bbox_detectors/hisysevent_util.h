@@ -30,6 +30,8 @@ namespace HisysEventUtil {
  * @return whether the event is stored in the database.
  */
 bool IsEventProcessed(const std::string& name, const std::string& key, const std::string& value);
+
+constexpr char KERNEL_VENDOR[] = "KERNEL_VENDOR";
 }
 }
 }
