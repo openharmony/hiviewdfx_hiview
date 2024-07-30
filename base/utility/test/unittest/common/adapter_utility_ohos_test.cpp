@@ -633,22 +633,17 @@ HWTEST_F(AdapterUtilityOhosTest, DbUtilTest001, testing::ext::TestSize.Level3)
  */
 HWTEST_F(AdapterUtilityOhosTest, HiViewConfigUtilTest001, testing::ext::TestSize.Level3)
 {
-    auto tmpDir = ConfigUtil::GetUnZipConfigDir();
-    ASSERT_EQ(tmpDir, "/data/system/hiview/unzip_configs/");
-    auto configPath = ConfigUtil::GetConfigFilePath("test_file_name");
     std::string localVer;
     FileUtil::LoadStringFromFile("/etc/hiview/hiview_config_version", localVer);
     std::string cloudVer;
     FileUtil::LoadStringFromFile("/data/system/hiview/hiview_config_version", cloudVer);
+    auto configPath = HiViewConfigUtil::GetConfigFilePath("test_file_name");
     if (localVer >= cloudVer) {
         ASSERT_EQ(configPath, "/system/etc/hiview/test_file_name");
     } else {
         ASSERT_EQ(configPath, "/data/system/hiview/test_file_name");
     }
-    auto ret = ConfigUtil::GetConfigFilePathWithHandler("test_file_name", "/data/test/",
-        [] (const std::string& srcConfigDir, const std::string& destConfigDir, const std::string& configfileName) {
-            return false;
-        });
+    auto ret = HiViewConfigUtil::GetConfigFilePath("test_file_name", "/data/test/", "test_file_name");
     if (localVer >= cloudVer) {
         ASSERT_EQ(ret, "/system/etc/hiview/test_file_name");
     } else {

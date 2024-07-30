@@ -21,14 +21,13 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace ConfigUtil {
+namespace HiViewConfigUtil {
 // fileHandleRet(srcConfigDir, destConfigDir, configFileName)
 using ConfigFileHandler = std::function<bool(const std::string&, const std::string&, const std::string&)>;
 
-std::string GetUnZipConfigDir();
-std::string GetConfigFilePath(const std::string& fileName);
-std::string GetConfigFilePathWithHandler(const std::string destFileName, const std::string& destConfigDir,
-    ConfigFileHandler configHandler);
+std::string GetConfigFilePath(const std::string& configFileName);
+std::string GetConfigFilePath(const std::string& configZipFileName, const std::string& configDir,
+    const std::string configFileName);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

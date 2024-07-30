@@ -61,7 +61,6 @@ public:
 private:
     void InitController();
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
-    std::string GetSysDefFilePath() const;
 
 private:
     EventServer eventServer_;
