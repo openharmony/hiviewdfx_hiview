@@ -25,6 +25,29 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace PanicReport {
 
+struct BboxSaveLogFlags {
+    std::string happenTime;
+    std::string factoryRecoveryTime;
+    std::string softwareVersion;
+    bool isPanicUploaded = true;
+    bool isStartUpShort = true;
+};
+
+/**
+ * load bboxSaveLogFlags from file.
+ *
+ * @return bboxSaveLogFlags
+ */
+BboxSaveLogFlags LoadBboxSaveFlagFromFile();
+
+/**
+ * save bboxSaveLogFlags to file.
+ *
+ * @param bboxSaveLogFlags bboxSaveLogFlags
+ * @return whether save completed.
+ */
+bool SaveBboxLogFlagsToFile(const BboxSaveLogFlags& bboxSaveLogFlags);
+
 /**
  * Initialize the configuration file.
  *
@@ -61,6 +84,13 @@ bool IsLastShortStartUp();
 bool IsRecoveryPanicEvent(const std::shared_ptr<SysEvent>& sysEvent);
 
 /**
+ * The function to get the last recovery time.
+ *
+ * @return the time of last recovery.
+ */
+std::string GetLastRecoveryTime();
+
+/**
  * The function to get the absolute file path by the timeStr given.
  *
  * @param timeStr timeStr.
@@ -87,26 +117,6 @@ std::string GetParamValueFromString(const std::string& content, const std::strin
 std::string GetParamValueFromFile(const std::string& filePath, const std::string& param);
 
 /**
- * The function to save a value to the content given.
- *
- * @param content content.
- * @param param the param.
- * @param value the value.
- * @return newly generated strings with added information.
- */
-std::string SetParamValueToString(const std::string& content, const std::string& param, const std::string& value);
-
-/**
- * The function to save a value to the file given.
- *
- * @param filePath the path of the file given.
- * @param param the param.
- * @param value the value.
- * @return
- */
-bool SetParamValueToFile(const std::string& filePath, const std::string& param, const std::string& value);
-
-/**
  * The function to compress log files.
  *
  * @param srcPath filePath.
@@ -119,7 +129,7 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
  *
  * @param content content.
  */
-void ReportPanicEventAfterRecovery(const std::string& content);
+void ReportPanicEventAfterRecovery(const BboxSaveLogFlags& bboxSaveLogFlags);
 
 /**
  * Try to report recovery panic event.
@@ -130,10 +140,8 @@ bool TryToReportRecoveryPanicEvent();
 
 /**
  * Confirm the result of recovery report.
- *
- * @return whether the panic event is reported.
  */
-bool ConfirmReportResult();
+void ConfirmReportResult();
 }
 }
 }
