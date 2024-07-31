@@ -17,6 +17,7 @@
 
 #include <fcntl.h>
 #include <fstream>
+#include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -25,6 +26,7 @@
 #include "common_utils.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
+#include "hiview_config_util.h"
 #include "hiview_db_util.h"
 #include "hiview_zip_util.h"
 #include "securec.h"
@@ -623,5 +625,30 @@ HWTEST_F(AdapterUtilityOhosTest, DbUtilTest001, testing::ext::TestSize.Level3)
     HiviewDbUtil::TryToAgeUploadDbFiles(uploadPath, 0); // 0 is the max file number
     ASSERT_FALSE(FileUtil::FileExists(uploadPath + "/" + dbFile));
 }
+
+/**
+ * @tc.name: HiViewConfigUtilTest001
+ * @tc.desc: Test api of HiViewConfigUtil
+ * @tc.type: FUNC
+ */
+HWTEST_F(AdapterUtilityOhosTest, HiViewConfigUtilTest001, testing::ext::TestSize.Level3)
+{
+    std::string localVer;
+    FileUtil::LoadStringFromFile("/system/etc/hiview/hiview_config_version", localVer);
+    std::string cloudVer;
+    FileUtil::LoadStringFromFile("/data/system/hiview/hiview_config_version", cloudVer);
+    auto configPath = HiViewConfigUtil::GetConfigFilePath("test_file_name");
+    if (localVer >= cloudVer) {
+        ASSERT_EQ(configPath, "/system/etc/hiview/test_file_name");
+    } else {
+        ASSERT_EQ(configPath, "/data/system/hiview/test_file_name");
+    }
+    auto ret = HiViewConfigUtil::GetConfigFilePath("test_file_name", "/data/test/", "test_file_name");
+    if (localVer >= cloudVer) {
+        ASSERT_EQ(ret, "/system/etc/hiview/test_file_name");
+    } else {
+        ASSERT_EQ(ret, "/data/system/hiview/test_file_name");
+    }
 }
-}
+} // namespace HiviewDFX
+} // namespace OHOS

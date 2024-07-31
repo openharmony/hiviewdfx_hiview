@@ -37,7 +37,9 @@ namespace HiviewDFX {
 REGISTER(SysEventSource);
 namespace {
 DEFINE_LOG_TAG("HiView-SysEventSource");
-const std::string DEF_FILE_NAME = "hisysevent.def";
+constexpr char DEF_FILE_NAME[] = "hisysevent.def";
+constexpr char DEF_ZIP_NAME[] = "hisysevent.zip";
+constexpr char DEF_CFG_DIR[] = "sys_event_def";
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
@@ -58,7 +60,7 @@ void SysEventSource::OnLoad()
     HIVIEW_LOGI("SysEventSource load ");
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
-    
+
     sysEventStat_ = std::make_unique<SysEventStat>();
     InitController();
 
@@ -69,7 +71,9 @@ void SysEventSource::OnLoad()
     SysEventServiceAdapter::StartService(this, notifyFunc);
     SysEventServiceAdapter::SetWorkLoop(looper);
 
-    sysEventParser_ = std::make_shared<EventJsonParser>(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+    auto defFilePath = HiViewConfigUtil::GetConfigFilePath(DEF_ZIP_NAME, DEF_CFG_DIR, DEF_FILE_NAME);
+    HIVIEW_LOGI("init json parser with %{public}s", defFilePath.c_str());
+    sysEventParser_ = std::make_shared<EventJsonParser>(defFilePath);
 
     SysEventServiceAdapter::BindGetTagFunc(
         [this] (const std::string& domain, const std::string& name) {
@@ -149,7 +153,9 @@ bool SysEventSource::PublishPipelineEvent(std::shared_ptr<PipelineEvent> event)
 bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
 {
     if (isConfigUpdated_) {
-        sysEventParser_->ReadDefFile(ConfigUtil::GetConfigFilePath(DEF_FILE_NAME));
+        auto defFilePath = HiViewConfigUtil::GetConfigFilePath(DEF_ZIP_NAME, DEF_CFG_DIR, DEF_FILE_NAME);
+        HIVIEW_LOGI("update json parser with %{public}s", defFilePath.c_str());
+        sysEventParser_->ReadDefFile(defFilePath);
         isConfigUpdated_.store(false);
     }
     std::shared_ptr<SysEvent> sysEvent = Convert2SysEvent(event);

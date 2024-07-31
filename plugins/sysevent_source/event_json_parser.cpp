@@ -192,6 +192,10 @@ bool EventJsonParser::CheckBaseInfo(std::shared_ptr<SysEvent> event) const
 BaseInfo EventJsonParser::GetDefinedBaseInfoByDomainName(const std::string& domain,
     const std::string& name) const
 {
+    if (hiSysEventDefMap_ == nullptr) {
+        HIVIEW_LOGD("sys def map is null");
+        return BaseInfo();
+    }
     auto domainIter = hiSysEventDefMap_->find(domain);
     if (domainIter == hiSysEventDefMap_->end()) {
         HIVIEW_LOGD("domain %{public}s is not defined.", domain.c_str());
