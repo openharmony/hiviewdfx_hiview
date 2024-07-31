@@ -160,7 +160,7 @@ ohos_unittest("ParamUpdateTest") {
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_core:hiview_core_for_test",
+    "$hiview_core:hiview_core",
     "$hiview_core/param_update:hiview_param_update",
   ]
 

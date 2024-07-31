@@ -86,9 +86,8 @@ int CalcFingerprint::CalcFileShaOriginal(const string& filePath, unsigned char *
     FILE *fp = nullptr;
     fp = fopen(filePath.c_str(), "rb");
     if (fp == nullptr) {
-        int rtnErrno = errno;
         HIVIEW_LOGE("open file failed.");
-        return rtnErrno; // if file not exist, errno will be ENOENT
+        return errno; // if file not exist, errno will be ENOENT
     }
 
     size_t n;
