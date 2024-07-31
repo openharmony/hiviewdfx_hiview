@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -284,9 +284,10 @@ int32_t HiviewService::Move(const std::string& srcFilePath, const std::string& d
         return copyResult;
     }
     bool result = FileUtil::RemoveFile(srcFilePath);
+    HIVIEW_LOGI("move file, delete src result: %{public}d", result);
     if (!result) {
         bool destResult = FileUtil::RemoveFile(destFilePath);
-        HIVIEW_LOGI("fail to remove src file, delete dest result: %{public}d", destResult);
+        HIVIEW_LOGI("move file, delete dest result: %{public}d", destResult);
         return ERR_DEFAULT;
     }
     return 0;
@@ -392,10 +393,10 @@ static std::shared_ptr<AppCallerEvent> InnerCreateAppCallerEvent(UCollectClient:
     appCallerEvent->bundleVersion_ = appCaller.bundleVersion;
     appCallerEvent->uid_ = appCaller.uid;
     appCallerEvent->pid_ = appCaller.pid;
-    appCallerEvent->happenTime_ = appCaller.happenTime;
+    appCallerEvent->happenTime_ = static_cast<uint64_t>(appCaller.happenTime);
     appCallerEvent->beginTime_ = appCaller.beginTime;
     appCallerEvent->endTime_ = appCaller.endTime;
-    appCallerEvent->taskBeginTime_ = TimeUtil::GetMilliseconds();
+    appCallerEvent->taskBeginTime_ = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     appCallerEvent->taskEndTime_ = appCallerEvent->taskBeginTime_;
     appCallerEvent->resultCode_ = UCollect::UcError::SUCCESS;
     appCallerEvent->foreground_ = appCaller.foreground;

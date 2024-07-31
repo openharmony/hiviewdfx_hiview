@@ -58,7 +58,7 @@ void SysEventSource::OnLoad()
     HIVIEW_LOGI("SysEventSource load ");
     std::shared_ptr<EventLoop> looper = GetHiviewContext()->GetSharedWorkLoop();
     platformMonitor_.StartMonitor(looper);
-    
+
     sysEventStat_ = std::make_unique<SysEventStat>();
     InitController();
 
@@ -198,7 +198,7 @@ static void ShowUsage(int fd, const std::vector<std::string>& cmds)
 
 void SysEventSource::Dump(int fd, const std::vector<std::string>& cmds)
 {
-    if (cmds.size() >= 2) { // 2：args from the second item
+    if (cmds.size() >= 2) { // 2: args from the second item
         std::string arg1 = cmds[1];
         if (arg1 == "sum") {
             sysEventStat_->StatSummary(fd);
