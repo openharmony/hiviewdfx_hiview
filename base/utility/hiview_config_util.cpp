@@ -72,7 +72,7 @@ bool CopyConfigVersionFile(const std::string& destConfigDir, bool isLocal)
     return true;
 }
 
-std::string GetUnZipConfigDir()
+inline std::string GetUnZipConfigDir()
 {
     return std::string(CLOUD_CFG_PATH) + LOCAL_CFG_UNZIP_DIR;
 }
@@ -84,9 +84,9 @@ bool UnZipConfigFile(const std::string& srcDir, const std::string& zipFileName, 
         HIVIEW_LOGE("%{public}s isn't exist and failed to create it", destDir.c_str());
         return false;
     }
-    std::string zippedDefPath = srcDir + zipFileName;
-    if (!FileUtil::FileExists(zippedDefPath)) {
-        HIVIEW_LOGW("%{public}s isn't exist", zippedDefPath.c_str());
+    std::string zipConfigFile = srcDir + zipFileName;
+    if (!FileUtil::FileExists(zipConfigFile)) {
+        HIVIEW_LOGW("%{public}s isn't exist", zipConfigFile.c_str());
         std::string srcFile = srcDir + configFileName;
         std::string destFile = destDir + configFileName;
         if (FileUtil::CopyFile(srcFile, destFile) != 0) {
@@ -95,9 +95,9 @@ bool UnZipConfigFile(const std::string& srcDir, const std::string& zipFileName, 
         }
         return true;
     }
-    HiviewUnzipUnit unzipUnit(zippedDefPath, destDir);
+    HiviewUnzipUnit unzipUnit(zipConfigFile, destDir);
     if (!unzipUnit.UnzipFile()) {
-        HIVIEW_LOGE("failed to unzip %{public}s to %{public}s", zippedDefPath.c_str(), destDir.c_str());
+        HIVIEW_LOGE("failed to unzip %{public}s to %{public}s", zipConfigFile.c_str(), destDir.c_str());
         return false;
     }
     return true;
@@ -122,7 +122,7 @@ std::string GetConfigFilePath(const std::string& configZipFileName, const std::s
     std::string cloudVer = GetConfigVersion(false);
     std::string destConfigFilePath = destConfigDir + configFileName;
     HIVIEW_LOGI("versions:[%{public}s|%{public}s|%{public}s]", localVer.c_str(), cloudVer.c_str(), destVer.c_str());
-    // if dest version is newest, return dest config file path directry
+    // if dest version is newest, return dest config file path directly
     if (!destVer.empty() && destVer >= std::max(cloudVer, localVer) && FileUtil::FileExists(destConfigFilePath)) {
         return destConfigFilePath;
     }

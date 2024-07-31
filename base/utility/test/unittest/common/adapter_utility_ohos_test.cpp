@@ -634,7 +634,7 @@ HWTEST_F(AdapterUtilityOhosTest, DbUtilTest001, testing::ext::TestSize.Level3)
 HWTEST_F(AdapterUtilityOhosTest, HiViewConfigUtilTest001, testing::ext::TestSize.Level3)
 {
     std::string localVer;
-    FileUtil::LoadStringFromFile("/etc/hiview/hiview_config_version", localVer);
+    FileUtil::LoadStringFromFile("/system/etc/hiview/hiview_config_version", localVer);
     std::string cloudVer;
     FileUtil::LoadStringFromFile("/data/system/hiview/hiview_config_version", cloudVer);
     auto configPath = HiViewConfigUtil::GetConfigFilePath("test_file_name");

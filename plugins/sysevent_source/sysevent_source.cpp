@@ -39,7 +39,7 @@ namespace {
 DEFINE_LOG_TAG("HiView-SysEventSource");
 constexpr char DEF_FILE_NAME[] = "hisysevent.def";
 constexpr char DEF_ZIP_NAME[] = "hisysevent.zip";
-constexpr char DEF_CFG_DIR[] = "sys_def";
+constexpr char DEF_CFG_DIR[] = "sys_event_def";
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
