@@ -98,7 +98,7 @@ bool IsTraceCollectionSwitchOn()
 bool IsLaboratoryMode()
 {
     std::string laboratoryState = GetString(KEY_LABORATORY_MODE_STATE, "");
-    return (laboratoryState.find("reliability") != std::string::npos);
+    return laboratoryState == "reliability";
 }
 
 std::string GetDeviceTypeStr()

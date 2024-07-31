@@ -291,9 +291,9 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest006, testing::ext::TestSize.Level3)
 {
     std::string timeStr = "197001060319";
 
-    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+    auto happenTime = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
 
-    ASSERT_TRUE(!happenTime_);
+    ASSERT_TRUE(!happenTime);
 }
 
 /* @tc.name: TboxTest007
@@ -305,9 +305,9 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest007, testing::ext::TestSize.Level3)
 {
     std::string timeStr = "19700106031950";
 
-    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+    auto happenTime = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
 
-    ASSERT_EQ(happenTime_, 415190);
+    ASSERT_EQ(happenTime, 415190);
 }
 
 /* @tc.name: TboxTest008
@@ -320,12 +320,12 @@ HWTEST_F(UtilityCommonUtilsTest, TboxTest008, testing::ext::TestSize.Level3)
     std::string timeStr = "20240217034255";
     int64_t timeStrtoTm = 1708112575;
     int64_t offset = 28800;
-    auto happenTime_ = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+    auto happenTime = Tbox::GetHappenTime(timeStr, "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
 
-    if (happenTime_ - timeStrtoTm > offset) {
-        ASSERT_EQ(happenTime_ - timeStrtoTm, offset);
+    if (happenTime - timeStrtoTm > offset) {
+        ASSERT_EQ(happenTime - timeStrtoTm, offset);
     } else {
-        ASSERT_TRUE(happenTime_);
+        ASSERT_TRUE(happenTime);
     }
 }
 }
