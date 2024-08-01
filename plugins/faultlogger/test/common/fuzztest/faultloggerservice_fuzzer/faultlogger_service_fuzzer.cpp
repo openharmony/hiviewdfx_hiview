@@ -51,6 +51,12 @@ std::shared_ptr<Faultlogger> CreateFaultloggerInstance()
 
 void FuzzServiceInterfaceDump(const uint8_t* data, size_t size)
 {
+    constexpr int maxLen = 20;
+    int32_t fd;
+    if (size <= (sizeof(fd) + maxLen)) {
+        return;
+    }
+
     auto service = CreateFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
@@ -59,16 +65,10 @@ void FuzzServiceInterfaceDump(const uint8_t* data, size_t size)
         return;
     }
 
-    int32_t fd;
-    if (sizeof(fd) > size) {
-        return;
-    }
-
     STREAM_TO_VALUEINFO(data, fd);
     std::vector<std::u16string> args;
-    constexpr int maxLen = 20;
     char16_t arg[maxLen] = {0};
-    errno_t err = strncpy_s(reinterpret_cast<char*>(arg), sizeof(arg), reinterpret_cast<const char*>(data), size);
+    errno_t err = strncpy_s(reinterpret_cast<char*>(arg), sizeof(arg), reinterpret_cast<const char*>(data), maxLen);
     if (err != EOK) {
         std::cout << "strncpy_s arg failed" << std::endl;
         return;
@@ -241,7 +241,7 @@ void FuzzFaultloggerServiceInterface(const uint8_t* data, size_t size)
     FuzzServiceInterfaceAddFaultLog(data, size);
     FuzzServiceInterfaceGetFaultLogInfo(data, size);
     FuzzServiceInterfaceOnEvent(data, size);
-    sleep(1);
+    usleep(10000); // 10000 : pause for 10000 microseconds to avoid resource depletion
 }
 }
 
