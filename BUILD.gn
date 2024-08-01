@@ -123,7 +123,7 @@ group("hiview_package") {
     "$hiview_plugin/crash_validator:libcrashvalidator",
     "$hiview_plugin/eventlogger:eventloggerso",
     "$hiview_plugin/faultlogger:libfaultlogger",
-    "$hiview_plugin/performance:xperf",
+    "$hiview_plugin/performance:xperformance",
     "$hiview_plugin/plugin_build:adft",
     "$hiview_plugin/plugin_build:bdfr",
   ]
