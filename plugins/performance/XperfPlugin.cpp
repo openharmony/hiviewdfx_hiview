@@ -100,8 +100,8 @@ namespace OHOS {
         void XperfPlugin::OnLoad()
         {
             HIVIEW_LOGI("XperfPlugin::OnLoad");
-            SetName(pluginName);
-            SetVersion(pluginVersion);
+            SetName(PLUGIN_NAME);
+            SetVersion(PLUGIN_VERSION);
             NormalInit();
             HIVIEW_LOGI("Xperf Plugin Load Finish");
         }
