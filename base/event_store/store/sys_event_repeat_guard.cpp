@@ -28,11 +28,14 @@ DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Guard");
 namespace {
 constexpr time_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
 constexpr time_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
-const std::string KEY_FINGERPRINT = "FINGERPRINT";
 
-inline bool GetShaStr(uint8_t* eventData, std::string& hashStr)
+bool GetShaStr(uint8_t* eventData, std::string& hashStr)
 {
     EventRawDataInfo<EventRaw::HiSysEventHeader> eventInfo(eventData);
+    if (eventInfo.dataSize <= eventInfo.dataPos) {
+        HIVIEW_LOGE("invalid event.");
+        return false;
+    }
     constexpr int buffLen = SHA256_DIGEST_LENGTH * 2 + 1;
     char buff[buffLen] = {0};
     if (CalcFingerprint::CalcBufferSha(
@@ -72,7 +75,7 @@ bool SysEventRepeatGuard::GetEventUniqueId(std::shared_ptr<SysEvent> event, std:
     if (event == nullptr) {
         return false;
     }
-    uniqueId = event->GetEventValue(KEY_FINGERPRINT);
+    uniqueId = event->GetEventValue("FINGERPRINT");
     if (!uniqueId.empty()) {
         return true;
     }
