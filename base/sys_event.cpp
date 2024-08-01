@@ -259,6 +259,9 @@ void SysEvent::SetId(uint64_t id)
         rawData_->Update(reinterpret_cast<uint8_t*>(&id), sizeof(uint64_t),
             BLOCK_SIZE_OFFSET + EventRaw::POS_OF_ID_IN_HEADER);
     }
+    if (builder_ != nullptr) {
+        builder_->AppendId(id);
+    }
 }
 
 void SysEvent::SetLog(uint8_t log)
@@ -267,6 +270,9 @@ void SysEvent::SetLog(uint8_t log)
     if (rawData_ != nullptr && rawData_->GetData() != nullptr) {
         reinterpret_cast<struct HiSysEventHeader*>(
             rawData_->GetData() + BLOCK_SIZE_OFFSET)->log = log;
+    }
+    if (builder_ != nullptr) {
+        builder_->AppendLog(log);
     }
 }
 
