@@ -46,6 +46,7 @@ ohos_unittest("SysEventStatTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }
 
@@ -66,6 +67,7 @@ ohos_unittest("EventServerTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }
 
@@ -109,5 +111,6 @@ ohos_unittest("EventJsonParserTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }

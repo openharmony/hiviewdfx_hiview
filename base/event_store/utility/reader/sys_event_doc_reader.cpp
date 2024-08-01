@@ -208,7 +208,7 @@ bool SysEventDocReader::HasReadPageEnd()
     if (curPos <= docHeaderSize_) {
         return false;
     }
-    return ((curPos - docHeaderSize_) % pageSize_ + BLOCK_SIZE) >= pageSize_;
+    return ((curPos - docHeaderSize_) % pageSize_ + HIVIEW_BLOCK_SIZE) >= pageSize_;
 }
 
 int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
@@ -218,7 +218,7 @@ int SysEventDocReader::ReadContent(uint8_t** content, uint32_t& contentSize)
         return DOC_STORE_READ_EMPTY;
     }
     ReadValueAndReset(in_, contentSize);
-    constexpr uint32_t minContentSize = BLOCK_SIZE + sizeof(ContentHeader) + CRC_SIZE;
+    constexpr uint32_t minContentSize = HIVIEW_BLOCK_SIZE + sizeof(ContentHeader) + CRC_SIZE;
     if (contentSize < minContentSize) {
         HIVIEW_LOGD("invalid content size=%{public}u, file=%{public}s", contentSize, docPath_.c_str());
         return DOC_STORE_READ_EMPTY;
@@ -322,14 +322,14 @@ bool SysEventDocReader::CheckEventInfo(uint8_t* content)
         return false;
     }
 
-    int64_t seq = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE));
+    int64_t seq = *(reinterpret_cast<int64_t*>(content + HIVIEW_BLOCK_SIZE));
     if (seq < 0) {
         HIVIEW_LOGE("event seq is invalid, seq=%{public}" PRId64, seq);
         return false;
     }
     info_.seq = seq;
 
-    int64_t timestamp = *(reinterpret_cast<int64_t*>(content + BLOCK_SIZE + SEQ_SIZE));
+    int64_t timestamp = *(reinterpret_cast<int64_t*>(content + HIVIEW_BLOCK_SIZE + SEQ_SIZE));
     if (timestamp < 0) {
         HIVIEW_LOGE("event seq is invalid, timestamp=%{public}" PRId64, timestamp);
         return false;

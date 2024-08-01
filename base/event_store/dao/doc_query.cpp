@@ -97,7 +97,7 @@ bool DocQuery::IsContainInnerConds(uint8_t* content) const
     if (innerConds_.empty()) {
         return true;
     }
-    InnerFieldStruct innerField = *(reinterpret_cast<InnerFieldStruct*>(content + BLOCK_SIZE));
+    InnerFieldStruct innerField = *(reinterpret_cast<InnerFieldStruct*>(content + HIVIEW_BLOCK_SIZE));
     return std::all_of(innerConds_.begin(), innerConds_.end(), [this, &innerField] (auto& cond) {
         return IsContainInnerCond(innerField, cond);
     });

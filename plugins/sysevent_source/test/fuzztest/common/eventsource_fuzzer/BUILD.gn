@@ -44,5 +44,6 @@ ohos_fuzztest("EventSourceFuzzTest") {
   external_deps = [
     "ffrt:libffrt",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }

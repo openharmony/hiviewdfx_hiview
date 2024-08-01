@@ -32,8 +32,8 @@ constexpr uint32_t DATA_FORMAT_VERSION_OFFSET =
 
 bool UpdateParamCnt(std::shared_ptr<RawData> rawData, int32_t addParamCnt)
 {
-    uint32_t pos = BLOCK_SIZE + sizeof(struct EventRaw::HiSysEventHeader);
-    auto header = *(reinterpret_cast<struct EventRaw::HiSysEventHeader*>(rawData->GetData() + BLOCK_SIZE));
+    uint32_t pos = HIVIEW_BLOCK_SIZE + sizeof(struct EventRaw::HiSysEventHeader);
+    auto header = *(reinterpret_cast<struct EventRaw::HiSysEventHeader*>(rawData->GetData() + HIVIEW_BLOCK_SIZE));
     if (header.isTraceOpened == 1) { // 1: include trace info, 0: exclude trace info
         pos += sizeof(struct EventRaw::TraceInfo);
     }
@@ -44,7 +44,7 @@ bool UpdateParamCnt(std::shared_ptr<RawData> rawData, int32_t addParamCnt)
 bool UpdateRealSize(std::shared_ptr<RawData> rawData)
 {
     uint32_t realSize = rawData->GetDataLength();
-    return rawData->Update(reinterpret_cast<uint8_t*>(&realSize), BLOCK_SIZE, 0);
+    return rawData->Update(reinterpret_cast<uint8_t*>(&realSize), HIVIEW_BLOCK_SIZE, 0);
 }
 }
 
@@ -72,7 +72,7 @@ std::shared_ptr<RawData> ContentReader::ReadRawData(const EventInfo& eventInfo, 
         return nullptr;
     }
     auto rawData = std::make_shared<RawData>(eventSize);
-    if (!rawData->Append(reinterpret_cast<uint8_t*>(&eventSize), BLOCK_SIZE)) {
+    if (!rawData->Append(reinterpret_cast<uint8_t*>(&eventSize), HIVIEW_BLOCK_SIZE)) {
         HIVIEW_LOGE("failed to copy event size to raw event");
         return nullptr;
     }
@@ -113,7 +113,7 @@ int ContentReader::AppendContentData(std::shared_ptr<RawData> rawData, uint8_t* 
         HIVIEW_LOGE("failed to copy content header to raw event");
         return DOC_STORE_ERROR_MEMORY;
     }
-    size_t contentPos = BLOCK_SIZE + GetContentHeaderSize();
+    size_t contentPos = HIVIEW_BLOCK_SIZE + GetContentHeaderSize();
     if (!rawData->Append(content + contentPos, contentSize - contentPos - CRC_SIZE)) {
         HIVIEW_LOGE("failed to copy content data to raw event");
         return DOC_STORE_ERROR_MEMORY;

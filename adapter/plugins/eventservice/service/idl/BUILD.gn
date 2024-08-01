@@ -63,6 +63,7 @@ ohos_source_set("sys_event_service_ohos") {
   deps = [ "$hiview_base:hiviewbase" ]
 
   external_deps = [
+    "ability_base:base",
     "ability_base:want",
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_base",

@@ -51,6 +51,7 @@ ohos_unittest("EventloggerPluginTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
+    "jsoncpp:jsoncpp",
     "window_manager:libwm",
   ]
 
@@ -79,6 +80,7 @@ ohos_unittest("ActiveKeyEventTest") {
     "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
+    "jsoncpp:jsoncpp",
   ]
 }
 
@@ -102,6 +104,7 @@ ohos_unittest("EventLoggerTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "input:libmmi-client",
+    "jsoncpp:jsoncpp",
     "window_manager:libwm",
   ]
 }

@@ -32,7 +32,7 @@ namespace EventStore {
 #define NUM_OF_BYTES_IN_KB 1024
 #define NUM_OF_BYTES_IN_MB (1024 * 1024)
 #define CRC_SIZE sizeof(uint32_t)
-#define BLOCK_SIZE sizeof(uint32_t)
+#define HIVIEW_BLOCK_SIZE sizeof(uint32_t)
 #define SEQ_SIZE sizeof(int64_t)
 
 #define MAX_DOMAIN_LEN 17

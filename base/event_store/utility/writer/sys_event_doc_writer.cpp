@@ -25,7 +25,7 @@ namespace HiviewDFX {
 namespace EventStore {
 DEFINE_LOG_TAG("HiView-SysEventDocWriter");
 namespace {
-constexpr uint32_t RAW_DATA_OFFSET = BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
+constexpr uint32_t RAW_DATA_OFFSET = HIVIEW_BLOCK_SIZE + MAX_DOMAIN_LEN + MAX_EVENT_NAME_LEN;
 }
 SysEventDocWriter::SysEventDocWriter(const std::string& path): EventDocWriter(path)
 {
@@ -135,7 +135,7 @@ int SysEventDocWriter::GetContentSize(const std::shared_ptr<SysEvent>& sysEvent,
         HIVIEW_LOGE("The length=%{public}u of raw data is invalid", dataSize);
         return DOC_STORE_ERROR_INVALID;
     }
-    contentSize = dataSize - RAW_DATA_OFFSET + BLOCK_SIZE + SEQ_SIZE + CRC_SIZE;
+    contentSize = dataSize - RAW_DATA_OFFSET + HIVIEW_BLOCK_SIZE + SEQ_SIZE + CRC_SIZE;
     return DOC_STORE_SUCCESS;
 }
 
