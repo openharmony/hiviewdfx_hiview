@@ -30,10 +30,14 @@ public:
     virtual CollectResult<std::vector<std::string>> DumpTrace(UCollect::TraceCaller &caller) override;
     virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(
         UCollect::TraceCaller &caller, uint32_t timeLimit) override;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(
+        UCollect::TraceCaller &caller, uint64_t happenTime, uint32_t timeLimit) override;
     virtual CollectResult<int32_t> TraceOn() override;
     virtual CollectResult<std::vector<std::string>> TraceOff() override;
 private:
     CollectResult<std::vector<std::string>> StartDumpTrace(UCollect::TraceCaller &caller, int32_t timeLimit);
+    CollectResult<std::vector<std::string>> StartDumpTrace(UCollect::TraceCaller &caller,
+        uint64_t happenTime, int32_t timeLimit);
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

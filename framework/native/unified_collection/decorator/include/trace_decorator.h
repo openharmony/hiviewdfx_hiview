@@ -111,6 +111,8 @@ public:
     virtual CollectResult<std::vector<std::string>> DumpTrace(UCollect::TraceCaller &caller) override;
     virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(UCollect::TraceCaller &caller,
         uint32_t timeLimit) override;
+    virtual CollectResult<std::vector<std::string>> DumpTraceWithDuration(UCollect::TraceCaller &caller,
+        uint64_t happenTime, uint32_t timeLimit) override;
     virtual CollectResult<int32_t> TraceOn() override;
     virtual CollectResult<std::vector<std::string>> TraceOff() override;
     static void SaveStatSpecialInfo();
