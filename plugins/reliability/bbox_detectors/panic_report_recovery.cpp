@@ -79,7 +79,7 @@ BboxSaveLogFlags LoadBboxSaveFlagFromFile()
         .factoryRecoveryTime = GetParamValueFromString(content, FACTORY_RECOVERY_TIME),
         .softwareVersion = GetParamValueFromString(content, SOFTWARE_VERSION),
         .isPanicUploaded = GetParamValueFromString(content, IS_PANIC_UPLOADED) != "false",
-        .isStartUpShort = GetParamValueFromString(content, IS_STARTUP_SHORT) != "false"
+        .isStartUpShort = GetParamValueFromString(content, IS_STARTUP_SHORT) == "true"
     };
 }
 

@@ -30,7 +30,7 @@ struct BboxSaveLogFlags {
     std::string factoryRecoveryTime;
     std::string softwareVersion;
     bool isPanicUploaded = true;
-    bool isStartUpShort = true;
+    bool isStartUpShort = false;
 };
 
 /**
@@ -82,6 +82,13 @@ bool IsLastShortStartUp();
  * @return whether the event is recovery panic event.
  */
 bool IsRecoveryPanicEvent(const std::shared_ptr<SysEvent>& sysEvent);
+
+/**
+ * The function to get current software version.
+ *
+ * @return currentVersion.
+ */
+std::string GetCurrentVersion();
 
 /**
  * The function to get the last recovery time.
