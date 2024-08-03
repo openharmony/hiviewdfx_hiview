@@ -52,9 +52,6 @@ void SysEventStore::OnLoad()
     HIVIEW_LOGI("sys event service load");
     sysEventDbMgr_->StartCheckStoreTask(this->workLoop_);
 
-    if (!FileUtil::FileExists(EventStore::SysEventSequenceManager::GetInstance().GetSequenceFile())) {
-        EventStore::SysEventDao::Restore();
-    }
     lastBackupTime_ = Parameter::GetString(PROP_LAST_BACKUP, "");
     EventExportEngine::GetInstance().Start();
     hasLoaded_ = true;
