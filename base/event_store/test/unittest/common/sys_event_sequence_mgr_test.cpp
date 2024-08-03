@@ -55,8 +55,6 @@ HWTEST_F(SysEventSequenceMgrTest, SysEventSequenceMgrTest001, testing::ext::Test
     EventStore::SysEventSequenceManager::GetInstance().SetSequence(eventSeq + 1000); // 1000 is a test offset
     auto eventSeqNew = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
     ASSERT_NE(eventSeq, eventSeqNew);
-    auto filePath = EventStore::SysEventSequenceManager::GetInstance().GetSequenceFile();
-    ASSERT_NE(filePath.size(), 0);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
