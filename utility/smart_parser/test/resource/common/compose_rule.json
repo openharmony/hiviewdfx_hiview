@@ -67,7 +67,7 @@
     },
     "SENSORHUBCRASH": {
         "03_SENSORHUBCRASH_00":{
-            "FIRST_FRAME": "BasicParam.v_first"
+            "LAST_FRAME": "BasicParam.v_last"
         }
     },
     "MODEMCRASH": {
