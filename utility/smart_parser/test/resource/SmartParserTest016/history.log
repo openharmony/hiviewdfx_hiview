@@ -1,4 +1,4 @@
-reason [SH_FAULT_USER_DUMP], [00], time [20240805135131-00422104],33ed6, 34549, 0, 0, 0, 0, 0, 0, dump_info[0x0]
-boot_step [15], boot_stat [0]
-reason [SH_FAULT_USER_DUMP], [01], time [20240805135228-00422161],33f06, 31b59, 0, 0, 0, 0, 0, 0, dump_info[0x0]
-boot_step [15], boot_stat [0]
+reason [CUSTOMIZED_ASYN_EXCEPTION], [04], time [20240802220940-00028358],5341a5c0, 5341a5c0, 47200000, 0, b0b0b0b, 80049f18, 2, 0, dump_info[0x0]
+boot_step [15], boot_stat [4]
+reason [CUSTOMIZED_ASYN_EXCEPTION], [05], time [20240805060442-00042111],5341a5c0, 5341a5c0, 47600000, 0, b0b0b0b, 80049f18, 2, 0, dump_info[0x0]
+boot_step [15], boot_stat [4]
