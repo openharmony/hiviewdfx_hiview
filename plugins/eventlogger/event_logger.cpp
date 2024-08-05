@@ -31,6 +31,7 @@
 #include <vector>
 #include <iostream>
 #include <filesystem>
+#include <string_ex.h>
 
 #include "parameter.h"
 
@@ -256,6 +257,19 @@ void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const
     execl("/system/bin/hidumper", "hidumper", "-s", serviceName.c_str(), "-a", cmd.c_str(), nullptr);
 }
 
+void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
+{
+    std::string content = event->GetEventValue("FREEZE_MEMORY");
+    if (!content.empty()) {
+        std::vector<std::string> vec;
+        OHOS::SplitStr(content, "\\n", vec);
+        FileUtil::SaveStringToFd(fd, "\nMemoryCatcher --\n");
+        for (const std::string& mem : vec) {
+            FileUtil::SaveStringToFd(fd, mem + "\n");
+        }
+    }
+}
+
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
     std::string logFile;
@@ -290,6 +304,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
     WriteCommonHead(fd, event);
     WriteFreezeJsonInfo(fd, jsonFd, event);
+    CollectMemInfo(fd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
