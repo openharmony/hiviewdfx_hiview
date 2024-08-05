@@ -112,7 +112,7 @@ std::string GetConfigFilePath(const std::string& configFileName)
 }
 
 std::string GetConfigFilePath(const std::string& configZipFileName, const std::string& configDir,
-    const std::string configFileName)
+    const std::string& configFileName)
 {
     std::string destConfigDir = FileUtil::IncludeTrailingPathDelimiter(GetUnZipConfigDir() + configDir);
     std::string destVer;
