@@ -1,4 +1,4 @@
-iiireason [SH_FAULT_RESUME], [00], time [20240126003148-00188858],2aa64, 2c109, 0, 0, 7ff6c33e, 7ff6c33e, 0, 0, dump_info[0x0]
-boot_stop [15], boot_stat [308]
-reason [SH_FAULT_RESUME], [01], time [20240226051254-00188858],2aa64, 2c109, 0, 0, 7ff6c33e, 7ff6c33e, 0, 0, dump_info[0x0]
-boot_stop [15], boot_stat [308]
+reason [SH_FAULT_USER_DUMP], [00], time [20240805135131-00422104],33ed6, 34549, 0, 0, 0, 0, 0, 0, dump_info[0x0]
+boot_step [15], boot_stat [0]
+reason [SH_FAULT_USER_DUMP], [01], time [20240805135228-00422161],33f06, 31b59, 0, 0, 0, 0, 0, 0, dump_info[0x0]
+boot_step [15], boot_stat [0]
