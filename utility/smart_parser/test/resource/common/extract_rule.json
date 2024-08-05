@@ -119,7 +119,7 @@
         "Subcatalog":"history.log",
         "featureId":"03_SENSORHUBCRASH_00",
         "rules":[
-            {"namespace":"BasicParam", "matchKey":"time", "v_first":"@L@time \\[\\d{14}-\\d{8}\\],([0-9a-zA-Z]+, [0-9a-zA-Z]+), "}
+            {"namespace":"BasicParam", "matchKey":"time", "v_last":"@L@time (.*)"}
         ]
     },
     "Rule11":{
