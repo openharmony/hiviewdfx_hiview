@@ -195,6 +195,7 @@ std::optional<ThreadCpuStatInfo> ThreadStateInfoCollector::CalculateThreadCpuSta
     threadCpuStatInfo.startTime = calcTimeInfo.startTime;
     threadCpuStatInfo.endTime = calcTimeInfo.endTime;
     threadCpuStatInfo.tid = threadCpuItem->tid;
+    threadCpuStatInfo.threadName = threadCpuItem->name;
     threadCpuStatInfo.cpuLoad = cpuCalculator_->CalculateCpuLoad(threadCpuItem->cpu_load_time,
         lastThreadCpuTimeInfos_[threadCpuItem->tid].loadTime, calcTimeInfo.period);
     threadCpuStatInfo.uCpuUsage = cpuCalculator_->CalculateCpuUsage(threadCpuItem->cpu_usage_utime,
