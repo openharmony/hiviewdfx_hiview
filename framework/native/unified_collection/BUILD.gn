@@ -86,6 +86,7 @@ ohos_source_set("ucollection_source") {
   deps = [ "collector/device_client:collect_device_client" ]
 
   external_deps = [
+    "ability_base:want",
     "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",

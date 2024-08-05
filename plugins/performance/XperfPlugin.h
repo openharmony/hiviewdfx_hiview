@@ -36,8 +36,8 @@ namespace OHOS {
 
         private:
             std::shared_ptr<IXperfContext> perfContext{nullptr};
-            static constexpr const char* const pluginName = "Xperf";
-            static constexpr const char* const pluginVersion = "Xperf 1.0";
+            static constexpr const char* const PLUGIN_NAME = "Xperf";
+            static constexpr const char* const PLUGIN_VERSION = "Xperf 1.0";
             std::shared_ptr<AppEventHandler> appEventHandler{nullptr};
 
             void XperfDispatch(const SysEvent &sysEvent);

@@ -66,13 +66,13 @@ ohos_prebuilt_etc("hiviewxperf_event_file") {
 }
 
 ohos_prebuilt_etc("xperfplugins_config") {
-  source = "config/xperf_plugin_config"
+  source = "config/xperformance_plugin_config"
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
   relative_install_dir = "hiview"
 }
 
-ohos_shared_library("xperf") {
+ohos_shared_library("xperformance") {
   if (hiview_enable_performance_monitor) {
     part_name = "hiview"
     subsystem_name = "hiviewdfx"

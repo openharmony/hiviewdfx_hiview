@@ -623,5 +623,27 @@ HWTEST_F(SysEventTest, TestSysEventTranslation02, testing::ext::TestSize.Level3)
     int32_t dataLengthAfterValueAppendNew = *(reinterpret_cast<int32_t*>(rawDataAfterValueAppendNew));
     ASSERT_NE(dataLengthAfterValueAppend, dataLengthAfterValueAppendNew);
 }
+
+/**
+ * @tc.name: TestSetIdAndSetLog001
+ * @tc.desc: Test SetId & SetLog apis of SysEvent
+ * @tc.type: FUNC
+ * @tc.require: issueIAH9IC
+ */
+HWTEST_F(SysEventTest, TestSetIdAndSetLog001, testing::ext::TestSize.Level3)
+{
+    auto sysEvent = std::make_shared<SysEvent>("SysEventSource", nullptr, GetOriginTestString());
+    ASSERT_TRUE(sysEvent != nullptr);
+    uint64_t id = 1; // 1 is a test id value
+    sysEvent->SetId(id);
+    uint8_t log = 0; // 0 is a test log value
+    sysEvent->SetLog(log);
+    auto eventStr = sysEvent->AsJsonStr();
+    ASSERT_NE(eventStr, "");
+    std::string matchedIdContent = std::string("\"id_\":\"00000000000000000001\"");
+    ASSERT_NE(eventStr.find(matchedIdContent), std::string::npos);
+    std::string matchedLogContent = std::string("\"log_\":") + std::to_string(log);
+    ASSERT_NE(eventStr.find(matchedLogContent), std::string::npos);
+}
 } // HiviewDFX
 } // OHOS

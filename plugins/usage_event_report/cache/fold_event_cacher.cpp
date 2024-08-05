@@ -295,7 +295,7 @@ void FoldEventCacher::CalCulateDuration(uint64_t dayStartTime, std::vector<AppEv
     it++;
     for (; it != records.end(); it++) {
         if (CanCalcDuration(preIt->rawid, it->rawid)) {
-            uint64_t duration = (it->ts > preIt->ts) ? static_cast<int64_t>(it->ts - preIt->ts) : 0;
+            uint64_t duration = (it->ts > preIt->ts) ? static_cast<uint64_t>(it->ts - preIt->ts) : 0;
             Accumulative(preIt->foldStatus, duration, durations);
         }
         preIt = it;

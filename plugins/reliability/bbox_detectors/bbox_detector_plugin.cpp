@@ -45,8 +45,6 @@ namespace {
         "/data/hisi_logs/history.log",
         "/data/log/bbox/history.log"
     };
-    constexpr const char* FACTORY_RECOVERY_FLAG_FILE = "/data/log/reliability/factory_recovery_flag";
-    constexpr const char* FACTORY_RECOVERY_FLAG_FILE_PATH = "/data/log/reliability";
 }
 
 void BBoxDetectorPlugin::OnLoad()
@@ -248,18 +246,11 @@ void BBoxDetectorPlugin::RemoveDetectBootCompletedTask()
 
 void BBoxDetectorPlugin::NotifyBootStable()
 {
-    if (FileUtil::FileExists(FACTORY_RECOVERY_FLAG_FILE)) {
-        return;
-    }
     if (PanicReport::TryToReportRecoveryPanicEvent()) {
         constexpr int timeout = 10; // 10s
         eventLoop_->AddTimerEvent(nullptr, nullptr, [] {
-            if (PanicReport::ConfirmReportResult()) {
-                FileUtil::CreateFile(FACTORY_RECOVERY_FLAG_FILE, FileUtil::FILE_PERM_640);
-            };
+            PanicReport::ConfirmReportResult();
         }, timeout, false);
-    } else {
-        FileUtil::CreateFile(FACTORY_RECOVERY_FLAG_FILE, FileUtil::FILE_PERM_640);
     }
 }
 
@@ -275,7 +266,7 @@ void BBoxDetectorPlugin::NotifyBootCompleted()
 
 void BBoxDetectorPlugin::InitPanicReporter()
 {
-    if (!FileUtil::FileExists(FACTORY_RECOVERY_FLAG_FILE_PATH) || !PanicReport::InitPanicReport()) {
+    if (!PanicReport::InitPanicReport()) {
         HIVIEW_LOGE("Failed to init panic reporter");
         return;
     }
