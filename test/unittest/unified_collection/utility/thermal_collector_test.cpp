@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <gtest/gtest.h>
+#include <iostream>
+
+#include "thermal_collector.h"
+
+using namespace testing::ext;
+using namespace OHOS::HiviewDFX;
+using namespace OHOS::HiviewDFX::UCollectUtil;
+
+class ThermalCollectorTest : public testing::Test {
+public:
+    void SetUp() {};
+    void TearDown() {};
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
+};
+
+void TestResult(const CollectResult<int32_t>& result)
+{
+    if (result.retCode == UCollect::UcError::SUCCESS) {
+        ASSERT_NE(result.data, 0);
+    } else {
+        ASSERT_EQ(result.retCode, UCollect::UcError::UNSUPPORT);
+    }
+}
+
+/**
+ * @tc.name: ThermalCollectorTest001
+ * @tc.desc: used to test ThermalCollector.CollectDevThermal
+ * @tc.type: FUNC
+*/
+HWTEST_F(ThermalCollectorTest, ThermalCollectorTest001, TestSize.Level1)
+{
+    std::shared_ptr<ThermalCollector> collector = ThermalCollector::Create();
+    CollectResult<int32_t> result;
+    result = collector->CollectDevThermal(ThermalZone::SHELL_FRONT);
+    TestResult(result);
+    result = collector->CollectDevThermal(ThermalZone::SHELL_FRAME);
+    TestResult(result);
+    result = collector->CollectDevThermal(ThermalZone::SHELL_BACK);
+    TestResult(result);
+    result = collector->CollectDevThermal(ThermalZone::SOC_THERMAL);
+    TestResult(result);
+    result = collector->CollectDevThermal(ThermalZone::SYSTEM);
+    TestResult(result);
+}
+
+/**
+ * @tc.name: ThermalCollectorTest002
+ * @tc.desc: used to test ThermalCollector.CollectThermaLevel
+ * @tc.type: FUNC
+*/
+HWTEST_F(ThermalCollectorTest, ThermalCollectorTest002, TestSize.Level1)
+{
+    std::shared_ptr<ThermalCollector> collector = ThermalCollector::Create();
+    CollectResult<uint32_t> result = collector->CollectThermaLevel();
+#ifdef THERMAL_MANAGER_ENABLE
+    ASSERT_EQ(result.retCode, UCollect::UcError::SUCCESS);
+#else
+    ASSERT_EQ(result.retCode, UCollect::UcError::UNSUPPORT);
+#endif
+}

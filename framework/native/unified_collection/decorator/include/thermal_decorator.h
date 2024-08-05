@@ -12,31 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_TEMPERATURE_DECORATOR_H
-#define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_TEMPERATURE_DECORATOR_H
+#ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_THERMAL_DECORATOR_H
+#define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_THERMAL_DECORATOR_H
 
 #include "decorator.h"
-#include "temperature_collector.h"
+#include "thermal_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class TemperatureDecorator : public TemperatureCollector, public UCDecorator {
+class ThermalDecorator : public ThermalCollector, public UCDecorator {
 public:
-    TemperatureDecorator(std::shared_ptr<TemperatureCollector> collector) : temperatureCollector_(collector) {};
-    virtual ~TemperatureDecorator() = default;
+    ThermalDecorator(std::shared_ptr<ThermalCollector> collector) : thermalCollector_(collector) {};
+    virtual ~ThermalDecorator() = default;
 
 public:
-    virtual CollectResult<uint32_t> CollectDevThermal(DeviceZone deviceZone) override;
+    virtual CollectResult<int32_t> CollectDevThermal(ThermalZone thermalZone) override;
     virtual CollectResult<uint32_t> CollectThermaLevel() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 
 private:
-    std::shared_ptr<TemperatureCollector> temperatureCollector_;
+    std::shared_ptr<ThermalCollector> thermalCollector_;
     static StatInfoWrapper statInfoWrapper_;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_TEMPERATURE_DECORATOR_H
+#endif // HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_THERMAL_DECORATOR_H

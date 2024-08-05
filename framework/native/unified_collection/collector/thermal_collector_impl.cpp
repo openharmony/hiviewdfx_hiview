@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "temperature_collector_impl.h"
+#include "thermal_collector_impl.h"
 
 #include <string>
 #include <unordered_map>
@@ -21,7 +21,7 @@
 #include "common_util.h"
 #include "file_util.h"
 #include "hiview_logger.h"
-#include "temperature_decorator.h"
+#include "thermal_decorator.h"
 #ifdef THERMAL_MANAGER_ENABLE
 #include "thermal_mgr_client.h"
 #endif
@@ -32,34 +32,44 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 namespace {
-DEFINE_LOG_TAG("TemperatureCollector");
+DEFINE_LOG_TAG("ThermalCollector");
 const std::string THERMAL_PATH = "/sys/class/thermal/";
 
 std::string GetThermalType(const std::string& thermalZone)
 {
+    std::string tmp;
+    if (!FileUtil::LoadStringFromFile(thermalZone + "/type", tmp)) {
+        HIVIEW_LOGW("read node failed");
+        return "";
+    }
+    std::stringstream ss(tmp); // tmp str load from node may have a newline character at the end
     std::string type;
-    FileUtil::LoadStringFromFile(thermalZone + "/type", type);
+    ss >> type; // type str without newline character
     return type;
 }
 
-uint32_t GetThermalValue(const std::string& thermalZone)
+int32_t GetThermalValue(const std::string& thermalZone)
 {
-    std::string path = thermalZone + "/temp";
-    return CommonUtil::ReadNodeWithOnlyNumber(path);
+    return CommonUtil::ReadNodeWithOnlyNumber(thermalZone + "/temp");
 }
 
-std::string GetZonePathByType(const std::vector<std::string>& thermalZones, DeviceZone deviceZone)
+std::string GetZoneTypeStr(ThermalZone thermalZone)
 {
-    const std::unordered_map<DeviceZone, std::string> deviceZoneMap = {
+    const std::unordered_map<ThermalZone, std::string> thermalZoneMap = {
         {SHELL_FRONT, "shell_front"},
         {SHELL_FRAME, "shell_frame"},
         {SHELL_BACK, "shell_back"},
         {SOC_THERMAL, "soc_thermal"},
         {SYSTEM, "system_h"}
     };
-    std::string typeStr = deviceZoneMap.at(deviceZone);
+    auto it = thermalZoneMap.find(thermalZone);
+    return it != thermalZoneMap.end() ? it->second : "";
+}
+
+std::string GetZonePathByType(const std::vector<std::string>& thermalZones, const std::string& zoneTypeStr)
+{
     for (const auto& zone : thermalZones) {
-        if (typeStr == GetThermalType(zone)) {
+        if (zoneTypeStr == GetThermalType(zone)) {
             return zone;
         }
     }
@@ -67,17 +77,21 @@ std::string GetZonePathByType(const std::vector<std::string>& thermalZones, Devi
 }
 }
 
-std::shared_ptr<TemperatureCollector> TemperatureCollector::Create()
+std::shared_ptr<ThermalCollector> ThermalCollector::Create()
 {
-    return std::make_shared<TemperatureDecorator>(std::make_shared<TemperatureCollectorImpl>());
+    return std::make_shared<ThermalDecorator>(std::make_shared<ThermalCollectorImpl>());
 }
 
-CollectResult<uint32_t> TemperatureCollectorImpl::CollectDevThermal(DeviceZone deviceZone)
+CollectResult<int32_t> ThermalCollectorImpl::CollectDevThermal(ThermalZone thermalZone)
 {
-    CollectResult<uint32_t> result;
+    CollectResult<int32_t> result;
+    std::string zoneTypeStr = GetZoneTypeStr(thermalZone);
+    if (zoneTypeStr.empty()) {
+        return result;
+    }
     std::vector<std::string> thermalZones;
-    FileUtil::GetDirDirs(THERMAL_PATH, thermalZones);
-    std::string zonePath = GetZonePathByType(thermalZones, deviceZone);
+    FileUtil::GetDirFiles(THERMAL_PATH, thermalZones);
+    std::string zonePath = GetZonePathByType(thermalZones, zoneTypeStr);
     if (zonePath.empty()) {
         return result;
     }
@@ -86,7 +100,7 @@ CollectResult<uint32_t> TemperatureCollectorImpl::CollectDevThermal(DeviceZone d
     return result;
 }
 
-CollectResult<uint32_t> TemperatureCollectorImpl::CollectThermaLevel()
+CollectResult<uint32_t> ThermalCollectorImpl::CollectThermaLevel()
 {
     CollectResult<uint32_t> result;
 #ifdef THERMAL_MANAGER_ENABLE

@@ -46,7 +46,7 @@ public:
     static int GetFileNameNum(const std::string& fileName, const std::string& ext);
     static std::string CreateExportFile(const std::string& path, int32_t maxFileNum, const std::string& prefix,
         const std::string& ext);
-    static uint32_t ReadNodeWithOnlyNumber(const std::string& fileName);
+    static int32_t ReadNodeWithOnlyNumber(const std::string& fileName);
 }; // CommonUtil
 } // UCollectUtil
 } // HiviewDFX

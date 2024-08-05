@@ -12,27 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "temperature_decorator.h"
+#include "thermal_decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-const std::string TEMPERATURE_COLLECTOR_NAME = "TemperatureCollector";
-StatInfoWrapper TemperatureDecorator::statInfoWrapper_;
+const std::string THERMAL_COLLECTOR_NAME = "ThermalCollector";
+StatInfoWrapper ThermalDecorator::statInfoWrapper_;
 
-CollectResult<uint32_t> TemperatureDecorator::CollectDevThermal(DeviceZone deviceZone)
+CollectResult<int32_t> ThermalDecorator::CollectDevThermal(ThermalZone thermalZone)
 {
-    auto task = [this, deviceZone] { return temperatureCollector_->CollectDevThermal(deviceZone); };
-    return Invoke(task, statInfoWrapper_, TEMPERATURE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+    auto task = [this, thermalZone] { return thermalCollector_->CollectDevThermal(thermalZone); };
+    return Invoke(task, statInfoWrapper_, THERMAL_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
-CollectResult<uint32_t> TemperatureDecorator::CollectThermaLevel()
+CollectResult<uint32_t> ThermalDecorator::CollectThermaLevel()
 {
-    auto task = [this] { return temperatureCollector_->CollectThermaLevel(); };
-    return Invoke(task, statInfoWrapper_, TEMPERATURE_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+    auto task = [this] { return thermalCollector_->CollectThermaLevel(); };
+    return Invoke(task, statInfoWrapper_, THERMAL_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
-void TemperatureDecorator::SaveStatCommonInfo()
+void ThermalDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
     std::vector<std::string> formattedStatInfo;
@@ -42,7 +42,7 @@ void TemperatureDecorator::SaveStatCommonInfo()
     WriteLinesToFile(formattedStatInfo, false);
 }
 
-void TemperatureDecorator::ResetStatInfo()
+void ThermalDecorator::ResetStatInfo()
 {
     statInfoWrapper_.ResetStatInfo();
 }

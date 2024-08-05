@@ -130,11 +130,14 @@ std::string CommonUtil::CreateExportFile(const std::string& path, int32_t maxFil
     return fileName;
 }
 
-uint32_t CommonUtil::ReadNodeWithOnlyNumber(const std::string& fileName)
+int32_t CommonUtil::ReadNodeWithOnlyNumber(const std::string& fileName)
 {
     std::string content;
-    FileUtil::LoadStringFromFile(fileName, content);
-    uint32_t parsedVal = 0;
+    if (!FileUtil::LoadStringFromFile(fileName, content)) {
+        HIVIEW_LOGW("read node failed");
+        return 0;
+    }
+    int32_t parsedVal = 0;
     // this string content might be empty or consist of some special charactors
     // so "std::stoi" and "StringUtil::StrToInt" aren't applicable here.
     std::stringstream ss(content);

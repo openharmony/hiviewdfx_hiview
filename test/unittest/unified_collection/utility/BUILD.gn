@@ -24,6 +24,8 @@ config("ucollection_utility_test_config") {
   ]
 
   cflags = [ "-D__UNITTEST__" ]
+  if (has_hiperf) {
+    cflags += [ "-DHAS_HIPERF" ]
   }
 }
 
@@ -43,7 +45,7 @@ ohos_unittest("UCollectionUtilityUnitTest") {
     "memory_collector_test.cpp",
     "network_collector_test.cpp",
     "perf_collector_test.cpp",
-    "temperature_collector_test.cpp",
+    "thermal_collector_test.cpp",
     "trace_collector_test.cpp",
     "wm_collector_test.cpp",
   ]

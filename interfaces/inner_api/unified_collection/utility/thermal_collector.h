@@ -12,24 +12,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_TEMPERATURE_COLLECTOR_IMPL_H
-#define INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_TEMPERATURE_COLLECTOR_IMPL_H
+#ifndef INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_THERMAL_COLLECTOR_H
+#define INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_THERMAL_COLLECTOR_H
+#include <memory>
+#include <vector>
 
-#include "temperature_collector.h"
+#include "collect_result.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-class TemperatureCollectorImpl : public TemperatureCollector {
+enum ThermalZone {
+    SHELL_FRONT,
+    SHELL_FRAME,
+    SHELL_BACK,
+    SOC_THERMAL,
+    SYSTEM
+};
+
+class ThermalCollector {
 public:
-    TemperatureCollectorImpl() = default;
-    virtual ~TemperatureCollectorImpl() = default;
+    ThermalCollector() = default;
+    virtual ~ThermalCollector() = default;
 
 public:
-    virtual CollectResult<uint32_t> CollectDevThermal(DeviceZone deviceZone) override;
-    virtual CollectResult<uint32_t> CollectThermaLevel() override;
+    virtual CollectResult<int32_t> CollectDevThermal(ThermalZone thermalZone) = 0;
+    virtual CollectResult<uint32_t> CollectThermaLevel() = 0;
+    static std::shared_ptr<ThermalCollector> Create();
 };
 } // UCollectUtil
 } // HiviewDFX
 } // OHOS
-#endif // INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_TEMPERATURE_COLLECTOR_IMPL_H
+#endif // INTERFACES_INNER_API_UNIFIED_COLLECTION_UTILITY_THERMAL_COLLECTOR_H
