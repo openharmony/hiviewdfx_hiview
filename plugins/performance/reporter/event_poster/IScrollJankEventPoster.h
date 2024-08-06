@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IScrollJankEventPoster {
 public:
     struct ScrollJankEventInfo {
@@ -52,4 +54,6 @@ public:
     virtual ~IScrollJankEventPoster() = default;
     virtual void PostScrollJankEvent(const ScrollJankEventInfo& evt) = 0;
 };
+} // HiviewDFX
+} // OHOS
 #endif

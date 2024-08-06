@@ -22,6 +22,8 @@
 #include "IAppStartReporter.h"
 #include "IMonitorRegistry.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppStartMetrics = IAppLaunchSceneDataProcessor::AppStartMetrics;
 
 class AppLaunchMonitor :
@@ -44,4 +46,6 @@ private:
     AppStartReportEvent ConstructReportEvent(const AppStartMetrics& metrics);
     void ReportNormal(const AppStartMetrics& metrics);
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IAppLaunchSceneDataProcessor {
 public:
     struct AppStartCheckPointData {
@@ -91,4 +93,6 @@ public:
     virtual void ProcessSceneData(const AppStartCheckPointData& data) = 0;
     virtual ~IAppLaunchSceneDataProcessor() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

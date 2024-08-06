@@ -20,6 +20,8 @@
 #include "JankAnimatorMonitorConverter.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 using ActionId::JANK_ANIMATOR_FRAME;
@@ -107,3 +109,5 @@ void JankAnimatorMonitor::ReportCritical(const AnimatorMetrics& metrics, const s
         HIVIEW_LOGE("JankAnimatorMonitor ReportCritical reporter is null.");
     }
 }
+} // HiviewDFX
+} // OHOS

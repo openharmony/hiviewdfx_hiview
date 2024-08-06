@@ -18,6 +18,8 @@
 #include "XperfEvt.h"
 #include "IAppThrExecutor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppEvtData = IAppThrExecutor::AppEvtData;
 
 class AppMonitorDataConverter {
@@ -63,4 +65,6 @@ public:
         return appEvtData;
     }
 };
+} // HiviewDFX
+} // OHOS
 #endif

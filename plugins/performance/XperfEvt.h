@@ -18,6 +18,8 @@
 #include <string>
 #include <map>
 
+namespace OHOS {
+namespace HiviewDFX {
 using JlogArgMap = std::map<std::string, std::string>;
 
 // Animator info struct
@@ -227,4 +229,6 @@ struct XperfEvt {
     float hitchTimeRatio{0};
     bool isFoldDisp{false};
 };
+} // HiviewDFX
+} // OHOS
 #endif

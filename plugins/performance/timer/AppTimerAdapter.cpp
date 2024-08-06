@@ -15,6 +15,8 @@
 
 #include "AppTimerAdapter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 AppTimerAdapter::AppTimerAdapter(int userId, ISceneTimerInfrastructure* infra) : userId(userId)
 {
     this->impl = infra;
@@ -119,3 +121,5 @@ void AppTimerAdapter::ValidateExistKey(const std::string& key)
         throw std::invalid_argument("bundleToId key exist duplicated this record");
     }
 }
+} // HiviewDFX
+} // OHOS

@@ -20,6 +20,8 @@
 #include "IXperfContext.h"
 #include "IMonitor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class BaseContext : public IXperfContext {
 public:
     BaseContext();
@@ -36,5 +38,6 @@ protected:
 private:
     MonitorMap monitors;
 };
-
+} // HiviewDFX
+} // OHOS
 #endif // BASE_CONTEXT_H

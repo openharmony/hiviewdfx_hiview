@@ -17,9 +17,13 @@
 
 #include "IEventObserver.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IEventObservable {
 public:
     virtual ~IEventObservable() = default;
     virtual void RegObserver(IEventObserver* observer) = 0;
 };
+} // HiviewDFX
+} // OHOS
 #endif

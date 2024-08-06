@@ -15,6 +15,8 @@
 
 #include "AppLaunchSceneDbAdapter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 void AppLaunchSceneDbAdapter::CreateRecord(const std::string& bundleName, const AppStartRecord& record)
 {
     appStartRecords.insert(std::make_pair(bundleName, record));
@@ -49,3 +51,5 @@ void AppLaunchSceneDbAdapter::UpdateRecord(const AppStartRecord& record)
 {
     appStartRecords[record.bundleName] = record;
 }
+} // HiviewDFX
+} // OHOS

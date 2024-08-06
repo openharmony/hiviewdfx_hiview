@@ -21,6 +21,8 @@
 #include "XperfEvt.h"
 #include "IAnimatorSceneDataProcessor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AnimatorRecord = IAnimatorSceneDataProcessor::AnimatorRecord;
 using AnimatorMetrics = IAnimatorSceneDataProcessor::AnimatorMetrics;
 
@@ -46,4 +48,6 @@ private:
     void HandleTimeOutPoints();
     void CacheFocusWindowPid(std::shared_ptr<XperfEvt> evt);
 };
+} // HiviewDFX
+} // OHOS
 #endif

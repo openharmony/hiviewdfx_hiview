@@ -17,9 +17,13 @@
 
 #include "IMonitor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class DefaultMonitor : public IMonitor {
 public:
     void ListenEvents() override;
     void HandleEvt(std::shared_ptr<XperfEvt> evt) override;
 };
+} // HiviewDFX
+} // OHOS
 #endif

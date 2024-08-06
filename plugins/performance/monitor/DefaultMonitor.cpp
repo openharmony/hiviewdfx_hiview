@@ -14,6 +14,8 @@
  */
 #include "DefaultMonitor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 void DefaultMonitor::ListenEvents()
 {
 }
@@ -21,3 +23,5 @@ void DefaultMonitor::ListenEvents()
 void DefaultMonitor::HandleEvt(std::shared_ptr<XperfEvt> evt)
 {
 }
+} // HiviewDFX
+} // OHOS

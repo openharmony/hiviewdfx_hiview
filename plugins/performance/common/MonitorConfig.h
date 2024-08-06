@@ -18,6 +18,8 @@
 #include <map>
 #include "FaultHandlerConfig.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 enum ParseType {
     ACTION_TYPE = 0, // Parsed by aciton
     SCENE_TYPE //Parsed by scene id
@@ -34,4 +36,6 @@ struct SceneConfig {
     unsigned int dumpBitmap{0};
     std::map<unsigned int, FaultLevelThreshold> faultLevelThresholds;
 };
+} // HiviewDFX
+} // OHOS
 #endif

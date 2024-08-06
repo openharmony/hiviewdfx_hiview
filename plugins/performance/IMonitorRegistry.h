@@ -17,6 +17,8 @@
 
 #include "IMonitor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IMonitorRegistry {
 public:
     virtual ~IMonitorRegistry() = default;
@@ -24,5 +26,6 @@ public:
     virtual void RegisterMonitorByLogID(int logId, IMonitor* monitor) = 0;
     virtual std::vector<IMonitor*> GetMonitorsByLogID(int logId) = 0;
 };
-
+} // HiviewDFX
+} // OHOS
 #endif

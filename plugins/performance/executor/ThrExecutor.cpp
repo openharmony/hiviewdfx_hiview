@@ -17,6 +17,8 @@
 #include "ThrExecutor.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 const static std::string MAIN_THREAD_NAME = "XperfMainThr";
@@ -159,3 +161,5 @@ void ThrExecutor::ExecuteMonitorInMainThr(IHandleMonitorEvt* task, std::shared_p
         HIVIEW_LOGE("ThrExecutor::ExecuteMonitorInMainThr main thread task container is null");
     }
 }
+} // HiviewDFX
+} // OHOS

@@ -18,6 +18,8 @@
 #include "IEventObserver.h"
 #include "app_event_handler.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppLaunchInfo = OHOS::HiviewDFX::AppEventHandler::AppLaunchInfo;
 using AppStartInfo = IEventObserver::AppStartInfo;
 using ScrollJankEvtInfo = OHOS::HiviewDFX::AppEventHandler::ScrollJankInfo;
@@ -58,4 +60,6 @@ public:
         return info;
     }
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -18,10 +18,13 @@
 
 #include "IJankAnimatorReportInfrastructure.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class JankAnimatorReporter : public IJankAnimatorReportInfrastructure {
 public:
     void ReportNormal(const JankAnimatorReportData& data) override;
     void ReportCritical(const JankAnimatorReportData& data) override;
 };
-
+} // HiviewDFX
+} // OHOS
 #endif // JANK_ANIMATOR_REPORTER_H

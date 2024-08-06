@@ -19,6 +19,8 @@
 #include "IEventObservable.h"
 #include "IScrollJankEventPoster.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppStartInfo = IEventObserver::AppStartInfo;
 using ScrollJankInfo = IEventObserver::ScrollJankInfo;
 
@@ -34,4 +36,6 @@ private:
     AppStartInfo ConvertToAppStartInfo(const AppStartEventInfo& event);
     ScrollJankInfo ConvertToScrollJankInfo(const ScrollJankEventInfo& event);
 };
+} // HiviewDFX
+} // OHOS
 #endif

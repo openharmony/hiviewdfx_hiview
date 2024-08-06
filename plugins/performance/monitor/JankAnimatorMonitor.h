@@ -24,6 +24,8 @@
 #include "DefaultMonitor.h"
 #include "IJankAnimatorReporter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AnimatorMetrics = IAnimatorSceneDataProcessor::AnimatorMetrics;
 
 class JankAnimatorMonitor : public DefaultMonitor, public IAnimatorSceneDataProcessor::MetricReporter,
@@ -48,5 +50,6 @@ private:
     void ReportCritical(const AnimatorMetrics& metrics, const std::string& traceFileName,
                         const std::string& infoFileName);
 };
-
+} // HiviewDFX
+} // OHOS
 #endif

@@ -17,6 +17,8 @@
 
 #include "XperfEvt.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IMonitor {
 public:
     virtual ~IMonitor() = default;
@@ -24,5 +26,6 @@ public:
     virtual void ListenEvents() = 0;
     virtual void HandleEvt(std::shared_ptr <XperfEvt> evt) = 0;
 };
-
+} // HiviewDFX
+} // OHOS
 #endif

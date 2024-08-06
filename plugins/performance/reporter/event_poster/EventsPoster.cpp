@@ -15,6 +15,8 @@
 #include "EventsPoster.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 void EventsPoster::RegObserver(IEventObserver* observer)
@@ -100,3 +102,5 @@ ScrollJankInfo EventsPoster::ConvertToScrollJankInfo(const ScrollJankEventInfo& 
     info.happenTime = event.happenTime;
     return info;
 }
+} // HiviewDFX
+} // OHOS

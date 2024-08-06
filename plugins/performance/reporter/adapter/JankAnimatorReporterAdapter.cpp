@@ -16,6 +16,8 @@
 #include "JankAnimatorReporterAdapter.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");;
 
 JankAnimatorReporterAdapter::JankAnimatorReporterAdapter(
@@ -135,3 +137,5 @@ bool JankAnimatorReporterAdapter::IsScrollJankEvent(const JankAnimatorReportEven
     const std::string sceneId = event.sceneId;
     return ((sceneId == "APP_LIST_FLING") || (sceneId == "APP_SWIPER_SCROLL") || (sceneId == "APP_SWIPER_FLING"));
 }
+} // HiviewDFX
+} // OHOS

@@ -19,6 +19,8 @@
 #include "JlogId.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 using AppStartCheckPointData = IAppLaunchSceneDataProcessor::AppStartCheckPointData;
@@ -86,3 +88,5 @@ AppStartReportEvent AppLaunchMonitor::ConstructReportEvent(const AppStartMetrics
     AppStartReportEvent re = AppLaunchMonitorConverter::ConvertMetricToReportEvent(metrics);
     return re;
 }
+} // HiviewDFX
+} // OHOS

@@ -18,6 +18,8 @@
 #include <string>
 #include "XperfEvt.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IMonitorThrExecutor {
 public:
     class IHandleMonitorEvt {
@@ -28,4 +30,6 @@ public:
     virtual void ExecuteMonitorInMainThr(IHandleMonitorEvt* task, std::shared_ptr <XperfEvt> evt) = 0;
     virtual ~IMonitorThrExecutor() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

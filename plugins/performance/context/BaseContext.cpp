@@ -15,6 +15,8 @@
 
 #include "BaseContext.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 BaseContext::BaseContext() : monitors()
 {
 }
@@ -43,3 +45,5 @@ IEventObservable* BaseContext::GetEventObservable()
 {
     return eventObservable;
 }
+} // HiviewDFX
+} // OHOS

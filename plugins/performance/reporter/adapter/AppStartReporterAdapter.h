@@ -18,6 +18,8 @@
 #include "SimpleAppStartReporterAdapter.h"
 #include "IAppStartEventPoster.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppStartEventInfo = IAppStartEventPoster::AppStartEventInfo;
 
 class AppStartReporterAdapter : public SimpleAppStartReporterAdapter {
@@ -30,4 +32,6 @@ private:
 
     AppStartEventInfo ConvertReportEventToEventInfo(const AppStartReportEvent& event);
 };
+} // HiviewDFX
+} // OHOS
 #endif

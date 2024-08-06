@@ -20,6 +20,8 @@
 #include <condition_variable>
 #include "ITask.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class ThrTaskContainer {
 public:
     void StartLoop(const std::string& threadName);
@@ -35,4 +37,6 @@ private:
     std::mutex mut;
     std::condition_variable cv;
 };
+} // HiviewDFX
+} // OHOS
 #endif

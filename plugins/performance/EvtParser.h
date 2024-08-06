@@ -19,6 +19,8 @@
 #include "plugin.h"
 #include "sys_event.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 const std::string KEY_PNAME = "PROCESS_NAME";
 const std::string KEY_MESSAGE = "MSG";
 const std::string KEY_PID = "PID";
@@ -327,5 +329,6 @@ private:
         // what follows cannot be understood
     }
 };
-
+} // HiviewDFX
+} // OHOS
 #endif

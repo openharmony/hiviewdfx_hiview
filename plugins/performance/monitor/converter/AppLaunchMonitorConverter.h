@@ -19,6 +19,8 @@
 #include "IAppStartReporter.h"
 #include "AppMonitorDataConverter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 const std::string COMMENT_APP_START = "APP_START";
 const std::string COMMENT_APP_START_SLOW = "APP_START_SLOW";
 
@@ -103,4 +105,6 @@ public:
         return reportEvent;
     }
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -16,6 +16,8 @@
 #include "hisysevent.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 static constexpr char EXEC_DOMAIN[] = "PERFORMANCE";
@@ -81,3 +83,5 @@ void AppStartReporter::ReportFault(const AppStartReportData& data)
                     "TRACE_NAME", data.traceFileName,
                     "INFO_FILE", data.infoFileName);
 }
+} // HiviewDFX
+} // OHOS

@@ -18,6 +18,8 @@
 #include "IAppStartReporter.h"
 #include "IAppStartReportInfrastructure.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class SimpleAppStartReporterAdapter : public IAppStartReporter {
 public:
     explicit SimpleAppStartReporterAdapter(IAppStartReportInfrastructure* impl);
@@ -29,4 +31,6 @@ protected:
 
     AppStartReportData ConvertReportEventToData(const AppStartReportEvent& event);
 };
+} // HiviewDFX
+} // OHOS
 #endif
