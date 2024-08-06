@@ -74,13 +74,16 @@ FaultLogDatabase::FaultLogDatabase(const std::shared_ptr<EventLoop>& eventLoop) 
 void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    std::map<std::string, std::string> eventInfos;
-    AnalysisFaultlog(info, eventInfos);
+    if (info.faultLogType == FaultLogType::SYS_FREEZE) {
+        AnalysisFaultlog(info, info.parsedLogInfo);
+        info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+        info.parsedLogInfo.clear();
+    }
     if (!eventLoop_) {
         HIVIEW_LOGE("eventLoop_ is not inited.");
         return;
     }
-    auto task = [info, eventInfos(std::move(eventInfos))] () mutable {
+    auto task = [info] () mutable {
         HiSysEventWrite(
             HiSysEvent::Domain::RELIABILITY,
             GetFaultNameByType(info.faultLogType, false),
@@ -100,11 +103,11 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
                             info.sectionMap.at("HITRACE_TIME") : "",
             "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end() ?
                           info.sectionMap.at("SYSRQ_TIME") : "",
-            "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
-            "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
-            "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
-            "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
-            "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"]
+            "PNAME", info.module.empty() ? "/" : info.module,
+            "FIRST_FRAME", info.sectionMap["FIRST_FRAME"].empty() ? "/" : info.sectionMap["FIRST_FRAME"],
+            "SECOND_FRAME", info.sectionMap["SECOND_FRAME"].empty() ? "/" : info.sectionMap["SECOND_FRAME"],
+            "LAST_FRAME", info.sectionMap["LAST_FRAME"].empty() ? "/" : info.sectionMap["LAST_FRAME"],
+            "FINGERPRINT", info.sectionMap["fingerPrint"].empty() ? "/" : info.sectionMap["fingerPrint"]
         );
     };
     constexpr int delayTime = 2;

@@ -305,6 +305,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     // parse fingerprint by summary or temp log for native crash
     AnalysisFaultlog(info, info.parsedLogInfo);
     info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+    info.parsedLogInfo.clear();
 }
 
 void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
@@ -506,7 +507,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     sysEvent->SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
     std::map<std::string, std::string> eventInfos;
     if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+        sysEvent->SetEventValue("PNAME", info.module.empty() ? "/" : info.module);
         sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
                                 StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
         sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
