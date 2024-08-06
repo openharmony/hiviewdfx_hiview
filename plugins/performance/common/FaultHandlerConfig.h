@@ -18,6 +18,8 @@
 #include <string>
 #include <climits>
 
+namespace OHOS {
+namespace HiviewDFX {
 const int DEFAULT_LEVEL_A = UINT_MAX;
 const int DEFAULT_LEVEL_B = UINT_MAX;
 const int DEFAULT_LEVEL_C = UINT_MAX;
@@ -56,4 +58,6 @@ struct FaultLevelThreshold {
         return *this;
     }
 };
+} // HiviewDFX
+} // OHOS
 #endif

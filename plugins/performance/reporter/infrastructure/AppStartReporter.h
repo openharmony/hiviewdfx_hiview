@@ -17,9 +17,13 @@
 
 #include "IAppStartReportInfrastructure.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class AppStartReporter : public IAppStartReportInfrastructure {
 public:
     void ReportNormal(const AppStartReportData& data) override;
     void ReportFault(const AppStartReportData& data) override;
 };
+} // HiviewDFX
+} // OHOS
 #endif

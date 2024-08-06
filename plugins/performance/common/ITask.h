@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class ITask {
 public:
     virtual ~ITask() = default;
@@ -24,5 +26,7 @@ public:
     virtual void Run() = 0;
     virtual std::string GetTaskInfo();
 };
+} // HiviewDFX
+} // OHOS
 #endif
 

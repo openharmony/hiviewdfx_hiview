@@ -18,6 +18,8 @@
 #include <string>
 #include <map>
 
+namespace OHOS {
+namespace HiviewDFX {
 class SceneDataMapDbAdapter {
 protected:
     std::map<int32_t, std::string> pidBundleMap;
@@ -25,4 +27,6 @@ protected:
     void ClearMapByBundleName(const std::string& bundleName);
     void SaveAppIdIntoMap(const int32_t& appId, const std::string& bundleName);
 };
+} // HiviewDFX
+} // OHOS
 #endif

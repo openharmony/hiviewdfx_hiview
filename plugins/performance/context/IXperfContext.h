@@ -21,10 +21,13 @@
 #include "IEventObservable.h"
 #include "IMonitorRegistry.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IXperfContext : public IMonitorRegistry {
 public:
     virtual void CreateContext() = 0;
     virtual IEventObservable* GetEventObservable() = 0;
 };
-
+} // HiviewDFX
+} // OHOS
 #endif // I_XPERF_CONTEXT_H

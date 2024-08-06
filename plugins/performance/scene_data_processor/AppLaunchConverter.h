@@ -18,6 +18,8 @@
 #include "IAppLaunchSceneDataProcessor.h"
 #include "IAppLaunchSceneDb.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppStartCheckPointData = IAppLaunchSceneDataProcessor::AppStartCheckPointData;
 
 class AppLaunchConverter {
@@ -196,4 +198,6 @@ public:
         return point;
     }
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -20,6 +20,8 @@
 #include "IJankAnimatorReporter.h"
 #include "IJankAnimatorReportInfrastructure.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using ScrollJankEventInfo = IScrollJankEventPoster::ScrollJankEventInfo;
 
 class JankAnimatorReporterAdapter : public IJankAnimatorReporter {
@@ -38,5 +40,6 @@ private:
     ScrollJankEventInfo ConvertReportEventToEventInfo(const JankAnimatorReportEvent& event);
     bool IsScrollJankEvent(const JankAnimatorReportEvent& event);
 };
-
+} // HiviewDFX
+} // OHOS
 #endif // JANK_ANIMATOR_REPORTER_ADAPTER_H

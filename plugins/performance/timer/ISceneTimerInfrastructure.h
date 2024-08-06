@@ -15,6 +15,8 @@
 #ifndef I_SCENE_TIMER_INFRASTRUCTURE_H
 #define I_SCENE_TIMER_INFRASTRUCTURE_H
 
+namespace OHOS {
+namespace HiviewDFX {
 class ISceneTimerInfrastructure {
 public:
     class ICb {
@@ -28,4 +30,6 @@ public:
     virtual void Stop(int user, int id) = 0;
     virtual ~ISceneTimerInfrastructure() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

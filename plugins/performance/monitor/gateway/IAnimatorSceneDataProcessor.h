@@ -18,6 +18,8 @@
 #include <string>
 #include "XperfEvt.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 const int32_t ANIMATOR_MAX_POINTS = 2;
 
 class IAnimatorSceneDataProcessor {
@@ -53,4 +55,6 @@ public:
     virtual void DeleteRecord(const int32_t uniqueId) = 0;
     virtual ~IAnimatorSceneDataProcessor() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

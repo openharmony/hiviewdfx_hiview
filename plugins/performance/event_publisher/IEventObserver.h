@@ -15,6 +15,8 @@
 #ifndef I_EVENT_OBSERVER_H
 #define I_EVENT_OBSERVER_H
 
+namespace OHOS {
+namespace HiviewDFX {
 class IEventObserver {
 public:
     struct AppStartInfo {
@@ -82,4 +84,6 @@ public:
     virtual void PostAppStartEvent(const AppStartInfo& appStartInfo) = 0;
     virtual void PostScrollJankEvent(const ScrollJankInfo& scrollJankInfo) = 0;
 };
+} // HiviewDFX
+} // OHOS
 #endif

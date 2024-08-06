@@ -16,6 +16,8 @@
 #include "AppLaunchSceneDataProcessor.h"
 #include "AppLaunchConverter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 static const std::string EVENT_INTERACTION_RESPONSE_LATENCY = "INTERACTION_RESPONSE_LATENCY";
 static const std::string EVENT_START_ABILITY = "START_ABILITY";
 static const std::string EVENT_APP_STARTUP_TYPE = "APP_STARTUP_TYPE";
@@ -422,3 +424,5 @@ void AppLaunchSceneDataProcessor::CheckOutExistStartPoint(const AppStartCheckPoi
         ClearMapByBundleName(data.bundleName);
     }
 }
+} // HiviewDFX
+} // OHOS

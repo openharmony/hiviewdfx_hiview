@@ -20,6 +20,8 @@
 #include <mutex>
 #include <condition_variable>
 
+namespace OHOS {
+namespace HiviewDFX {
 /* this design is difficult to UT, that's a problem */
 class SceneTimerOhImpl : public ISceneTimerInfrastructure {
 public:
@@ -53,4 +55,6 @@ private:
     static int ExtractIdFromRecordKey(int key);
     void RemoveRecordAndNotify(int key);
 };
+} // HiviewDFX
+} // OHOS
 #endif

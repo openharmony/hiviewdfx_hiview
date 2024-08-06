@@ -15,8 +15,13 @@
 
 #ifndef XPERF_SERVICE_ACTION_ID_H
 #define XPERF_SERVICE_ACTION_ID_H
+
+namespace OHOS {
+namespace HiviewDFX {
 enum ActionId {
     APP_START = 11,
     JANK_ANIMATOR_FRAME = 12,
 };
+} // HiviewDFX
+} // OHOS
 #endif

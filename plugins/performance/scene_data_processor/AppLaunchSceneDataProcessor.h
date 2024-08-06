@@ -23,6 +23,8 @@
 #include "ITimeoutExecutor.h"
 #include "IAppTimer.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AppStartRecord = IAppLaunchSceneDb::AppStartRecord;
 using InteractionResponse = IAppLaunchSceneDb::InteractionResponse;
 using StartAbility = IAppLaunchSceneDb::StartAbility;
@@ -83,4 +85,6 @@ private:
     void CheckOutExistStartPoint(const AppStartCheckPointData& data);
     void CalcLatency(AppStartMetrics& appStartMetrics, const AppStartRecord& record, const uint64_t inputTime);
 };
+} // HiviewDFX
+} // OHOS
 #endif

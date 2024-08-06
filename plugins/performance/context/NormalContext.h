@@ -22,6 +22,8 @@
 #include "EventsPoster.h"
 #include "ThrExecutor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class NormalContext : public BaseContext {
 public:
     NormalContext() = default;
@@ -47,4 +49,6 @@ private:
     void InitJankAnimatorMonitor(const CommonParts& common);
     IMonitor* MakeJankAnimatorMonitor(const CommonParts& common);
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -18,6 +18,8 @@
 #include "IJankAnimatorReporter.h"
 #include "IAnimatorSceneDataProcessor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using AnimatorMetrics = IAnimatorSceneDataProcessor::AnimatorMetrics;
 
 class JankAnimatorMonitorConverter {
@@ -60,5 +62,6 @@ public:
         return event;
     }
 };
-
+} // HiviewDFX
+} // OHOS
 #endif

@@ -21,6 +21,8 @@
 #include "IAppThrExecutor.h"
 #include "IMonitorThrExecutor.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 using IProcessAppEvtTask = IAppThrExecutor::IProcessAppEvtTask;
 using AppEvtData = IAppThrExecutor::AppEvtData;
 
@@ -43,4 +45,6 @@ protected:
 
     static void ValidateNonNull(void* task);
 };
+} // HiviewDFX
+} // OHOS
 #endif

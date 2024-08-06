@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IAppThrExecutor {
 public:
 
@@ -68,4 +70,6 @@ public:
 
     virtual ~IAppThrExecutor() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

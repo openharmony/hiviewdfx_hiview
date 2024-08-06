@@ -17,6 +17,8 @@
 #include "JlogId.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");
 
 namespace {
@@ -212,3 +214,5 @@ void AnimatorSceneDataProcessor::HandleTimeOutPoints()
     }
     HIVIEW_LOGD("[AnimatorSceneDataProcessor::HandleTimeOutPoints] end");
 }
+} // HiviewDFX
+} // OHOS

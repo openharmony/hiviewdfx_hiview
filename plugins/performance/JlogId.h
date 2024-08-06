@@ -15,6 +15,8 @@
 #ifndef JLOG_ID_H
 #define JLOG_ID_H
 
+namespace OHOS {
+namespace HiviewDFX {
 enum JlogId {
     JLID_JANK_FRAME_SKIP = 0,
     JLID_START_ABILITY = 1,
@@ -81,4 +83,6 @@ enum JlogId {
     JLID_WEBVIEW_VIDEO_FRAME_DROP = 77,
     JLID_GRAPHIC_INTERACTION_HITCH_TIME_RATIO = 78
 };
+} // HiviewDFX
+} // OHOS
 #endif

@@ -28,6 +28,8 @@
 #include "JlogId.h"
 #include "ActionId.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 namespace {
     enum TimerUser {
         APP_START,
@@ -102,3 +104,5 @@ IMonitor* NormalContext::MakeJankAnimatorMonitor(const NormalContext::CommonPart
     dataProcessor->SetCb(animatorMonitor);
     return animatorMonitor;
 }
+} // HiviewDFX
+} // OHOS

@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 struct AppStartReportData {
     int32_t appPid{0};
     int32_t versionCode{0};
@@ -53,4 +55,6 @@ public:
     virtual void ReportNormal(const AppStartReportData& data) = 0;
     virtual void ReportFault(const AppStartReportData& data) = 0;
 };
+} // HiviewDFX
+} // OHOS
 #endif

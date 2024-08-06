@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IStrKeyTimer {
 public:
     class ICb {
@@ -28,4 +30,6 @@ public:
     virtual void Stop(std::string key) = 0;
     virtual ~IStrKeyTimer() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

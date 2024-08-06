@@ -18,8 +18,12 @@
 #include <string>
 #include "IStrKeyTimer.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class IAppTimer : public IStrKeyTimer {
 public:
     virtual ~IAppTimer() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

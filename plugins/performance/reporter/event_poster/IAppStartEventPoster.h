@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IAppStartEventPoster {
 public:
     struct AppStartEventInfo {
@@ -53,4 +55,6 @@ public:
     virtual ~IAppStartEventPoster() = default;
     virtual void PostAppStartEvent(const AppStartEventInfo& evt) = 0;
 };
+} // HiviewDFX
+} // OHOS
 #endif

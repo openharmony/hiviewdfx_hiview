@@ -22,6 +22,8 @@
 #include "IAppTimer.h"
 #include "ISceneTimerInfrastructure.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 class AppTimerAdapter : public IAppTimer, public ISceneTimerInfrastructure::ICb {
 public:
     const static unsigned int timeoutPeriod = 5 * 1000; // 5s
@@ -55,4 +57,6 @@ private:
     void RecycleId(const int id);
     void ValidateExistKey(const std::string& key);
 };
+} // HiviewDFX
+} // OHOS
 #endif

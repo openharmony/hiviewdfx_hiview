@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class ITimeoutExecutor {
 public:
     class ITimeoutHandler {
@@ -29,4 +31,6 @@ public:
     virtual void ExecuteTimeoutInMainThr(ITimeoutHandler* task, std::string name) = 0;
     virtual ~ITimeoutExecutor() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

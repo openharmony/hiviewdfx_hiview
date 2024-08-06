@@ -15,6 +15,8 @@
 #include "SimpleAppStartReporterAdapter.h"
 #include "hiview_logger.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D66, "Hiview-XPerformance");;
 
 SimpleAppStartReporterAdapter::SimpleAppStartReporterAdapter(IAppStartReportInfrastructure* impl)
@@ -75,3 +77,5 @@ AppStartReportData SimpleAppStartReporterAdapter::ConvertReportEventToData(const
     data.happenTime = event.happenTime;
     return data;
 }
+} // HiviewDFX
+} // OHOS

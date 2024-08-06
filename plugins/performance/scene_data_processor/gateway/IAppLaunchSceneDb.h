@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace OHOS {
+namespace HiviewDFX {
 class IAppLaunchSceneDb {
 public:
     const static int INVALID = -1;
@@ -194,4 +196,6 @@ public:
     virtual void UpdateRecord(const AppStartRecord& record) = 0;
     virtual ~IAppLaunchSceneDb() = default;
 };
+} // HiviewDFX
+} // OHOS
 #endif

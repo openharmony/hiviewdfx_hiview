@@ -18,6 +18,8 @@
 #include "IAppLaunchSceneDb.h"
 #include <map>
 
+namespace OHOS {
+namespace HiviewDFX {
 class AppLaunchSceneDbAdapter : public IAppLaunchSceneDb {
 public:
     void CreateRecord(const std::string& bundleName, const AppStartRecord& record) override;
@@ -30,4 +32,6 @@ public:
 private:
     std::map<std::string, AppStartRecord> appStartRecords;
 };
+} // HiviewDFX
+} // OHOS
 #endif

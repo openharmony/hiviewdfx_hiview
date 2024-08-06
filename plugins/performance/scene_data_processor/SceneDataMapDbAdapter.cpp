@@ -14,6 +14,8 @@
  */
 #include "SceneDataMapDbAdapter.h"
 
+namespace OHOS {
+namespace HiviewDFX {
 void SceneDataMapDbAdapter::ClearMapByBundleName(const std::string& bundleName)
 {
     for (std::map<int32_t, std::string>::iterator it = pidBundleMap.begin(); it != pidBundleMap.end();) {
@@ -35,3 +37,5 @@ void SceneDataMapDbAdapter::SaveAppIdIntoMap(const int32_t& appId, const std::st
         }
     }
 }
+} // HiviewDFX
+} // OHOS
