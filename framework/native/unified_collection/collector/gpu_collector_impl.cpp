@@ -33,25 +33,13 @@ std::shared_ptr<GpuCollector> GpuCollector::Create()
     return std::make_shared<GpuDecorator>(std::make_shared<GpuCollectorImpl>());
 }
 
-inline int32_t GetValue(const std::string& fileName)
-{
-    std::string content;
-    FileUtil::LoadStringFromFile(fileName, content);
-    int32_t parsedVal = 0;
-    // this string content might be empty or consist of some special charactors
-    // so "std::stoi" and "StringUtil::StrToInt" aren't applicable here.
-    std::stringstream ss(content);
-    ss >> parsedVal;
-    return parsedVal;
-}
-
 CollectResult<GpuFreq> GpuCollectorImpl::CollectGpuFrequency()
 {
     CollectResult<GpuFreq> result;
     GpuFreq& gpuFreq = result.data;
-    gpuFreq.curFeq = GetValue(GPU_CUR_FREQ);
-    gpuFreq.maxFeq = GetValue(GPU_MAX_FREQ);
-    gpuFreq.minFeq = GetValue(GPU_MIN_FREQ);
+    gpuFreq.curFeq = CommonUtil::ReadNodeWithOnlyNumber(GPU_CUR_FREQ);
+    gpuFreq.maxFeq = CommonUtil::ReadNodeWithOnlyNumber(GPU_MAX_FREQ);
+    gpuFreq.minFeq = CommonUtil::ReadNodeWithOnlyNumber(GPU_MIN_FREQ);
     HIVIEW_LOGD("curFeq=%{public}d,maxFeq=%{public}d,minFeq=%{public}d",
         gpuFreq.curFeq, gpuFreq.maxFeq, gpuFreq.minFeq);
     result.retCode = UcError::SUCCESS;
@@ -62,7 +50,7 @@ CollectResult<SysGpuLoad> GpuCollectorImpl::CollectSysGpuLoad()
 {
     CollectResult<SysGpuLoad> result;
     SysGpuLoad& sysGpuLoad = result.data;
-    sysGpuLoad.gpuLoad = GetValue(GPU_LOAD);
+    sysGpuLoad.gpuLoad = CommonUtil::ReadNodeWithOnlyNumber(GPU_LOAD);
     HIVIEW_LOGD("gpuLoad=%{public}f", sysGpuLoad.gpuLoad);
     result.retCode = UcError::SUCCESS;
     return result;

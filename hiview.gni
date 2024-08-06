@@ -52,6 +52,12 @@ declare_args() {
     power_manager_enable = false
   }
 
+  thermal_manager_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.powermgr_thermal_manager)) {
+    thermal_manager_enable = false
+  }
+
   enable_hiview_usage_event_report_build = true
 
   has_hiperf = true

@@ -51,6 +51,7 @@ ohos_source_set("ucollection_source") {
     "collector/perf_collector_impl.cpp",
     "collector/process_state_info_collector.cpp",
     "collector/sys_cpu_usage_collector.cpp",
+    "collector/thermal_collector_impl.cpp",
     "collector/thread_state_info_collector.cpp",
     "collector/trace_collector_impl.cpp",
     "collector/utils/app_event_task_storage.cpp",
@@ -69,6 +70,7 @@ ohos_source_set("ucollection_source") {
     "decorator/memory_decorator.cpp",
     "decorator/network_decorator.cpp",
     "decorator/perf_decorator.cpp",
+    "decorator/thermal_decorator.cpp",
     "decorator/trace_decorator.cpp",
     "decorator/unified_collection_stat.cpp",
     "decorator/wm_decorator.cpp",
@@ -104,6 +106,11 @@ ohos_source_set("ucollection_source") {
   if (has_hiperf) {
     cflags += [ "-DHAS_HIPERF" ]
     external_deps += [ "hiperf:hiperf_client" ]
+  }
+
+  if (thermal_manager_enable) {
+    cflags += [ "-DTHERMAL_MANAGER_ENABLE" ]
+    external_deps += [ "thermal_manager:thermalsrv_client" ]
   }
 
   defines = []
