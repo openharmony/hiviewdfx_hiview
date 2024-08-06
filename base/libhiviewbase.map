@@ -496,7 +496,7 @@
         "OHOS::HiviewDFX::Parameter::GetSysVersionStr()";
         "OHOS::HiviewDFX::TimeUtil::GetFormattedTimestampEndWithMilli()";
         "OHOS::HiviewDFX::HiViewConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
-        "OHOS::HiviewDFX::HiViewConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>)";
+        "OHOS::HiviewDFX::HiViewConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::HiviewUnzipUnit::UnzipFile() const";
         "OHOS::HiviewDFX::HiviewUnzipUnit::~HiviewUnzipUnit()";
     };
