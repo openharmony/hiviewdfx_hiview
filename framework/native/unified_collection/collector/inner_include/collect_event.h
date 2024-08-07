@@ -38,6 +38,7 @@ constexpr char APP_EVENT_PARAM_BUNDLE_NAME[] = "bundle_name";
 constexpr char APP_EVENT_PARAM_BUNDLE_VERSION[] = "bundle_version";
 constexpr char APP_EVENT_PARAM_BEGIN_TIME[] = "begin_time";
 constexpr char APP_EVENT_PARAM_END_TIME[] = "end_time";
+constexpr char APP_EVENT_PARAM_ISBUSINESSJANK[] = "is_business_jank";
 constexpr char APP_EVENT_PARAM_EXTERNAL_LOG[] = "external_log";
 
 constexpr char SYS_EVENT_PARAM_BUNDLE_NAME[] = "BUNDLE_NAME";

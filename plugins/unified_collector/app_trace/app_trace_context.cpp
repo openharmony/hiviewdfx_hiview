@@ -54,15 +54,8 @@ std::string InnerMakeTraceFileName(std::shared_ptr<AppCallerEvent> appCallerEven
     std::string d2 = TimeUtil::TimestampFormatToDate(endTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
 
     std::string name;
-    if (appCallerEvent->isBusinessJank) {
-        const char * BUSI_PREFIX = "BUSINESS_THREAD_JANK_";
-        name.append(UNIFIED_SHARE_PATH).append(BUSI_PREFIX).append(bundleName).append("_").append(std::to_string(pid));
-        name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append(".sys");
-        return name;
-    } else {
-        name.append(UNIFIED_SHARE_PATH).append("APP_").append(bundleName).append("_").append(std::to_string(pid));
-        name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append(".sys");
-    }
+    name.append(UNIFIED_SHARE_PATH).append("APP_").append(bundleName).append("_").append(std::to_string(pid));
+    name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append(".sys");
     return name;
 }
 
@@ -126,6 +119,7 @@ void InnerShareAppEvent(std::shared_ptr<AppCallerEvent> appCallerEvent)
     eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_VERSION] = appCallerEvent->bundleVersion_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_BEGIN_TIME] = appCallerEvent->beginTime_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = appCallerEvent->endTime_;
+    eventJson[UCollectUtil::APP_EVENT_PARAM_ISBUSINESSJANK] = appCallerEvent->isBusinessJank_;
     Json::Value externalLog;
     externalLog.append(appCallerEvent->externalLog_);
     eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = externalLog;

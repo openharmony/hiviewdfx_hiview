@@ -36,7 +36,7 @@ public:
     int64_t taskBeginTime_;     // task start time
     int64_t taskEndTime_;       // task finish time
     int32_t foreground_;        // app foreground
-    bool isBusinessJank;        // is business jank or not, control output file name
+    bool isBusinessJank_;        // is business jank or not, control output file name
     std::string threadName_;    // app thread name
     std::string externalLog_;   // trace file
 

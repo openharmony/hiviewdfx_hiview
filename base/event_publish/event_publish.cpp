@@ -41,6 +41,7 @@ const std::string PARAM_PROPERTY = "params";
 const std::string LOG_OVER_LIMIT = "log_over_limit";
 const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
+const std::string IS_BUSINESS_JANK = "is_business_jank";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 300 * 1024 * 1024; // 300M
@@ -187,8 +188,16 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
             if (params.isMember(PID) && params[PID].isInt()) {
                 pid = params[PID].asInt();
             }
-            std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+            std::string desFileName;
+            const std::string BUSINESS_JANK_PREFIX = "BUSINESS_THREAD_JANK";
+            if (params.isMember(IS_BUSINESS_JANK) && params[IS_BUSINESS_JANK].isBool() &&
+                params[IS_BUSINESS_JANK].asBool()) {
+                desFileName = BUSINESS_JANK_PREFIX + "_" + timeStr + "_" + std::to_string(pid)
                 + externalLogInfo.extensionType_;
+            } else {
+                desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+                + externalLogInfo.extensionType_;
+            }
             std::string destPath;
             destPath.append(sandBoxLogPath).append("/").append(desFileName);
             if (CopyExternalLog(uid, externalLog, destPath)) {
