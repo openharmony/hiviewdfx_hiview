@@ -158,6 +158,29 @@ bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBo
     return false;
 }
 
+std::string GetDesFileName(const Json::Value& params, const std::string& eventName,
+    const ExternalLogInfo& externalLogInfo)
+{
+    std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+    int pid = 0;
+    if (params.isMember(PID) && params[PID].isInt()) {
+        pid = params[PID].asInt();
+    }
+
+    std::string desFileName;
+    const std::string BUSINESS_JANK_PREFIX = "BUSINESS_THREAD_JANK";
+    if (params.isMember(IS_BUSINESS_JANK) && params[IS_BUSINESS_JANK].isBool() &&
+        params[IS_BUSINESS_JANK].asBool()) {
+        desFileName = BUSINESS_JANK_PREFIX + "_" + timeStr + "_" + std::to_string(pid)
+        + externalLogInfo.extensionType_;
+    } else {
+        desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+        + externalLogInfo.extensionType_;
+    }
+
+    return desFileName;
+}
+
 void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
     const ExternalLogInfo &externalLogInfo)
 {
@@ -183,21 +206,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         }
         uint64_t fileSize = FileUtil::GetFileSize(externalLog);
         if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
-            std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
-            int pid = 0;
-            if (params.isMember(PID) && params[PID].isInt()) {
-                pid = params[PID].asInt();
-            }
-            std::string desFileName;
-            const std::string BUSINESS_JANK_PREFIX = "BUSINESS_THREAD_JANK";
-            if (params.isMember(IS_BUSINESS_JANK) && params[IS_BUSINESS_JANK].isBool() &&
-                params[IS_BUSINESS_JANK].asBool()) {
-                desFileName = BUSINESS_JANK_PREFIX + "_" + timeStr + "_" + std::to_string(pid)
-                + externalLogInfo.extensionType_;
-            } else {
-                desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
-                + externalLogInfo.extensionType_;
-            }
+            std::string desFileName = GetDesFileName(params, eventName, externalLogInfo);
             std::string destPath;
             destPath.append(sandBoxLogPath).append("/").append(desFileName);
             if (CopyExternalLog(uid, externalLog, destPath)) {
