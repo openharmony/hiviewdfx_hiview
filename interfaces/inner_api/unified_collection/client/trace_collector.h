@@ -39,8 +39,7 @@ struct AppCaller {
     int64_t happenTime;  // jank happend time, millisecond unit
     int64_t beginTime;   // message handle begin time, millisecond unit
     int64_t endTime;     // message handle end time, millisecond unit
-    bool isBusinessJank;       // is business jank or not, control output file name
-
+    bool isBusinessJank = false;       // is business jank or not, control output file name
 };
 
 class TraceCollector {

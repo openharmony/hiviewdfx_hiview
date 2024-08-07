@@ -42,16 +42,22 @@ constexpr int32_t TRACE_STATE_STOP_APP_TRACE = 3;
 constexpr int32_t DURATION_TRACE = 10; // unit second
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 
-std::string InnerMakeTraceFileName(const std::string &bundleName, int32_t pid,
-    int64_t beginTime, int64_t endTime, int32_t costTime, bool isBusinessJank = false)
+std::string InnerMakeTraceFileName(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
+    std::string &bundleName = appCallerEvent->bundleName_;
+    int32_t pid = appCallerEvent->pid_;
+    int64_t beginTime = appCallerEvent->taskBeginTime_;
+    int64_t endTime = appCallerEvent->taskEndTime_;
+    int32_t costTime = (appCallerEvent->taskEndTime_ - appCallerEvent->taskBeginTime_);
+
     std::string d1 = TimeUtil::TimestampFormatToDate(beginTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
     std::string d2 = TimeUtil::TimestampFormatToDate(endTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
 
     std::string name;
-    if (isBusinessJank) {
-        name.append(UNIFIED_SHARE_PATH).append("BUSINESS_THREAD_JANK_").append(bundleName).append("_").append(std::to_string(pid));
-        name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append("_jank.sys");
+    if (appCallerEvent->isBusinessJank) {
+        const char * BUSI_PREFIX = "BUSINESS_THREAD_JANK_";
+        name.append(UNIFIED_SHARE_PATH).append(BUSI_PREFIX).append(bundleName).append("_").append(std::to_string(pid));
+        name.append("_").append(d1).append("_").append(d2).append("_").append(std::to_string(costTime)).append(".sys");
         return name;
     } else {
         name.append(UNIFIED_SHARE_PATH).append("APP_").append(bundleName).append("_").append(std::to_string(pid));
@@ -104,9 +110,7 @@ void InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isD
             appCallerEvent->uid_, appCallerEvent->pid_);
     } else {
         isDumpTrace = true;
-        std::string traceFileName = InnerMakeTraceFileName(appCallerEvent->bundleName_,
-            appCallerEvent->pid_, appCallerEvent->taskBeginTime_, appCallerEvent->taskEndTime_,
-            (appCallerEvent->taskEndTime_ - appCallerEvent->taskBeginTime_), appCallerEvent->isBusinessJank);
+        std::string traceFileName = InnerMakeTraceFileName(appCallerEvent);
         FileUtil::RenameFile(result.data[0], traceFileName);
         appCallerEvent->externalLog_ = traceFileName;
     }
