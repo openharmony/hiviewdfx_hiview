@@ -63,6 +63,7 @@ ohos_source_set("unified_collector") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_dump",
+    "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
