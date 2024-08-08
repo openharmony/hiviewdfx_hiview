@@ -20,10 +20,13 @@
 
 #define private public
 #include "event_logger.h"
+#include "event_focus_listener.h"
 #undef private
 #include "event.h"
 #include "hiview_platform.h"
 #include "sysevent_source.h"
+#include "focus_change_info.h"
+#include "time_util.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
@@ -71,6 +74,17 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
     sysEvent->SetEventValue("eventLog_action", "");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     EXPECT_EQ(eventLogger->OnEvent(event), true);
+    sptr<Rosen::FocusChangeInfo> focusChangeInfo;
+    sptr<EventFocusListener> eventFocusListener_ = EventFocusListener::GetInstance();
+    eventFocusListener_->OnFocused(focusChangeInfo);
+    eventFocusListener_->OnUnfocused(focusChangeInfo);
+    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
+        nullptr, jsonStr);
+    sysEvent1->eventName_ = "GESTURE_NAVIGATION_BACK";
+    sysEvent->SetEventValue("PID", getpid());
+    std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent);
+    eventLogger->isRegisterFocusListener = true;
+    EXPECT_EQ(eventLogger->OnEvent(event1), true);
 }
 
 /**
@@ -103,6 +117,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
         ":1\\n1:1\\n1:1\\n1:1\\n1:1";
     sysEvent->SetEventValue("BINDER_INFO", binderInfo);
     EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent), true);
+    eventLogger->IsInterestedPipelineEvent(sysEvent);
 }
 
 /**
@@ -123,6 +138,15 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
     eventLogger->eventTagTime_["EventLoggerTest_003"] = 100;
     bool ret = eventLogger->JudgmentRateLimiting(sysEvent);
     EXPECT_EQ(ret, true);
+    sysEvent->eventName_ = "GET_DISPLAY_SNAPSHOT";
+    sysEvent->happenTime_ = TimeUtil::GetMilliseconds();
+    sysEvent->SetEventValue("UID", getuid());
+    sysEvent->SetEventValue("eventLog_action", "pb:1");
+    std::shared_ptr<EventLoop> loop = std::make_shared<EventLoop>("eventLoop");
+    loop->StartLoop();
+    eventLogger->BindWorkLoop(loop);
+    eventLogger->threadLoop_ = loop;
+    eventLogger->StartLogCollect(sysEvent);
     ret = eventLogger->UpdateDB(sysEvent, "nolog");
     EXPECT_EQ(ret, true);
 }
@@ -203,6 +227,85 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_006, TestSize.Level3)
         EXPECT_TRUE(size < folderSize);
     }
     eventLogger->OnUnload();
+}
+
+/**
+ * @tc.name: EventLoggerTest_007
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_007, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "GET_DISPLAY_SNAPSHOT";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->SetEventValue("PID", getpid());
+    sysEvent->eventName_ = "GET_DISPLAY_SNAPSHOT";
+    sysEvent->happenTime_ = TimeUtil::GetMilliseconds();
+    sysEvent->eventId_ = 1;
+    std::string logFile = "";
+    eventLogger->StartFfrtDump(sysEvent);
+    int result = eventLogger->GetFile(sysEvent, logFile, true);
+    printf("GetFile result=%d\n", result);
+    EXPECT_TRUE(logFile.size() > 0);
+    result = eventLogger->GetFile(sysEvent, logFile, false);
+    EXPECT_TRUE(result > 0);
+    EXPECT_TRUE(logFile.size() > 0);
+    sysEvent->eventName_ = "TEST";
+    eventLogger->StartFfrtDump(sysEvent);
+    result = eventLogger->GetFile(sysEvent, logFile, false);
+    EXPECT_TRUE(result > 0);
+    EXPECT_TRUE(logFile.size() > 0);
+    result = eventLogger->GetFile(sysEvent, logFile, true);
+    printf("GetFile result=%d\n", result);
+    EXPECT_TRUE(logFile.size() > 0);
+    int count = 2;
+    eventLogger->ReadShellToFile(0, "GET_DISPLAY_SNAPSHOT", "testCmd", count);
+    EXPECT_TRUE(count < 2);
+    eventLogger->ReadShellToFile(-1, "GET_DISPLAY_SNAPSHOT", "testCmd", count);
+    printf("ReadShellToFile count=%d\n", count);
+    sysEvent->SetEventValue("FREEZE_MEMORY", "test\\ntest");
+    eventLogger->CollectMemInfo(0, sysEvent);
+}
+
+/**
+ * @tc.name: EventLoggerTest_008
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_008, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
+    long pid = getpid();
+    eventLogger->RegisterFocusListener();
+    eventLogger->isRegisterFocusListener = true;
+    std::string testName = "FREQUENT_CLICK_WARNING";
+    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent1->SetEventValue("PID", pid);
+    eventLogger->ReportUserPanicWarning(sysEvent1, pid);
+    std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent2->SetEventValue("PID", pid);
+    sysEvent2->happenTime_ = TimeUtil::GetMilliseconds();
+    eventLogger->eventFocusListener_->lastChangedTime_ = TimeUtil::GetMilliseconds();
+    eventLogger->ReportUserPanicWarning(sysEvent2, pid);
+    sysEvent2->happenTime_ += 3001; // test value
+    eventLogger->ReportUserPanicWarning(sysEvent2, pid);
+    testName = "TEST";
+    std::shared_ptr<SysEvent> sysEvent3 = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent3->SetEventValue("PID", pid);
+    while (eventLogger->backTimes_.size() < 5) {
+        eventLogger->backTimes_.push_back(sysEvent3->happenTime_ + 1);
+    }
+    eventLogger->ReportUserPanicWarning(sysEvent3, pid);
+    sysEvent3->eventName_ = "FORM_BLOCK_CALLSTACK";
+    sysEvent3->domain_ = "FORM_MANAGER";
+    eventLogger->WriteCallStack(sysEvent3, 0);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
