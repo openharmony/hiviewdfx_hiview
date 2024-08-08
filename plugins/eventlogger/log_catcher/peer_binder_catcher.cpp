@@ -94,7 +94,7 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
 #endif
     std::string pidStr = "";
     for (auto pidTemp : pids) {
-        if (pidTemp != pid_ && (catchedPids_.count(pidTemp) == 0)) {
+        if (pidTemp != pid_ && (catchedPids_.count(pidTemp) == 0) && !IsAncoProc(pidTemp)) {
             CatcherStacktrace(fd, pidTemp);
             pidStr += "," + std::to_string(pidTemp);
         } else {
@@ -275,6 +275,13 @@ void PeerBinderCatcher::ParseBinderCallChain(std::map<int, std::list<PeerBinderC
         pids.insert(each.server);
         ParseBinderCallChain(manager, pids, each.server);
     }
+}
+
+bool PeerBinderCatcher::IsAncoProc(int pid) const
+{
+    std::string cgroupPath = "/proc/" + std::to_string(pid) + "/cgroup";
+    std::string firstLine = FileUtil::GetFirstLine(cgroupPath);
+    return firstLine.find("isulad") != std::string::npos;
 }
 
 void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
