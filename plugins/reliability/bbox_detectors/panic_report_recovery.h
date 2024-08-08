@@ -49,6 +49,14 @@ BboxSaveLogFlags LoadBboxSaveFlagFromFile();
 bool SaveBboxLogFlagsToFile(const BboxSaveLogFlags& bboxSaveLogFlags);
 
 /**
+ * clearAllFiles in the path given.
+ *
+ * @param dirPath the path
+ * @return whether clear completed.
+ */
+bool ClearFilesInDir(const std::string &dirPath);
+
+/**
  * Initialize the configuration file.
  *
  * @return whether init completed.

@@ -51,7 +51,6 @@ void BBoxDetectorPlugin::OnLoad()
 {
     SetName("BBoxDetectorPlugin");
     SetVersion("BBoxDetector1.0");
-#ifndef UNITTEST
     eventLoop_ = GetHiviewContext()->GetSharedWorkLoop();
     if (eventLoop_ != nullptr) {
         eventLoop_->AddTimerEvent(nullptr, nullptr, [&]() {
@@ -59,7 +58,6 @@ void BBoxDetectorPlugin::OnLoad()
         }, SECONDS, false); // delay 60s
     }
     InitPanicReporter();
-#endif
 }
 
 void BBoxDetectorPlugin::OnUnload()
@@ -99,12 +97,10 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
 
     std::string dynamicPaths = ((!LOG_PATH.empty() && LOG_PATH[LOG_PATH.size() - 1] == '/') ?
                                   LOG_PATH : LOG_PATH + '/') + timeStr;
-#ifndef UNITTEST
     if (HisysEventUtil::IsEventProcessed(name, "LOG_PATH", dynamicPaths)) {
         HIVIEW_LOGE("HandleBBoxEvent is processed event path is %{public}s", dynamicPaths.c_str());
         return;
     }
-#endif
     if (name == "PANIC" && PanicReport::IsLastShortStartUp()) {
         PanicReport::CompressAndCopyLogFiles(dynamicPaths, timeStr);
     }
