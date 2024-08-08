@@ -60,6 +60,8 @@ ohos_source_set("hiview_service") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
     "bundle_framework:appexecfwk_core",
     "ffrt:libffrt",
     "hilog:libhilog",

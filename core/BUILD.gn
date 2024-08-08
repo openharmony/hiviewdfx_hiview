@@ -47,6 +47,8 @@ ohos_source_set("hiview_core") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
     "faultloggerd:libbacktrace_local",
     "ffrt:libffrt",
     "hicollie:libhicollie",
@@ -75,6 +77,8 @@ ohos_source_set("hiview_core_for_test") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
     "faultloggerd:libbacktrace_local",
     "ffrt:libffrt",
     "hicollie:libhicollie",
@@ -83,6 +87,7 @@ ohos_source_set("hiview_core_for_test") {
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "jsoncpp:jsoncpp",
   ]
 }
 

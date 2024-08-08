@@ -112,7 +112,7 @@ int ContentReaderVersion1::GetContentHeader(uint8_t* content, EventStore::Conten
         return DOC_STORE_ERROR_NULL;
     }
 
-    ContentHeaderVersion1 contentHeaderV1 = *(reinterpret_cast<ContentHeaderVersion1*>(content + BLOCK_SIZE));
+    ContentHeaderVersion1 contentHeaderV1 = *(reinterpret_cast<ContentHeaderVersion1*>(content + HIVIEW_BLOCK_SIZE));
     header.timestamp = contentHeaderV1.timestamp;
     header.timeZone = contentHeaderV1.timeZone;
     header.uid = contentHeaderV1.uid;

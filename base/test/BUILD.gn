@@ -166,5 +166,6 @@ ohos_unittest("DispatchRuleParserTest") {
   external_deps = [
     "googletest:gtest_main",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }

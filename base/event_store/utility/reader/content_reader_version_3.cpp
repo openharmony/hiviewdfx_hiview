@@ -58,7 +58,7 @@ int ContentReaderVersion3::GetContentHeader(uint8_t* content, EventStore::Conten
         return DOC_STORE_ERROR_NULL;
     }
 
-    header = *(reinterpret_cast<EventStore::ContentHeader*>(content + BLOCK_SIZE));
+    header = *(reinterpret_cast<EventStore::ContentHeader*>(content + HIVIEW_BLOCK_SIZE));
     return DOC_STORE_SUCCESS;
 }
 

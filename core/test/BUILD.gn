@@ -149,6 +149,7 @@ ohos_unittest("HiviewPlatformConfigTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
   ]
 }
 
