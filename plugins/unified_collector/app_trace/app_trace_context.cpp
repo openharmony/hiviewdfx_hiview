@@ -42,9 +42,14 @@ constexpr int32_t TRACE_STATE_STOP_APP_TRACE = 3;
 constexpr int32_t DURATION_TRACE = 10; // unit second
 const std::string UNIFIED_SHARE_PATH = "/data/log/hiview/unified_collection/trace/share/";
 
-std::string InnerMakeTraceFileName(const std::string &bundleName, int32_t pid,
-    int64_t beginTime, int64_t endTime, int32_t costTime)
+std::string InnerMakeTraceFileName(std::shared_ptr<AppCallerEvent> appCallerEvent)
 {
+    std::string &bundleName = appCallerEvent->bundleName_;
+    int32_t pid = appCallerEvent->pid_;
+    int64_t beginTime = appCallerEvent->taskBeginTime_;
+    int64_t endTime = appCallerEvent->taskEndTime_;
+    int32_t costTime = (appCallerEvent->taskEndTime_ - appCallerEvent->taskBeginTime_);
+
     std::string d1 = TimeUtil::TimestampFormatToDate(beginTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
     std::string d2 = TimeUtil::TimestampFormatToDate(endTime/ TimeUtil::SEC_TO_MILLISEC, "%Y%m%d%H%M%S");
 
@@ -98,9 +103,7 @@ void InnerDumpAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent, bool &isD
             appCallerEvent->uid_, appCallerEvent->pid_);
     } else {
         isDumpTrace = true;
-        std::string traceFileName = InnerMakeTraceFileName(appCallerEvent->bundleName_,
-            appCallerEvent->pid_, appCallerEvent->taskBeginTime_, appCallerEvent->taskEndTime_,
-            (appCallerEvent->taskEndTime_ - appCallerEvent->taskBeginTime_));
+        std::string traceFileName = InnerMakeTraceFileName(appCallerEvent);
         FileUtil::RenameFile(result.data[0], traceFileName);
         appCallerEvent->externalLog_ = traceFileName;
     }
@@ -116,6 +119,7 @@ void InnerShareAppEvent(std::shared_ptr<AppCallerEvent> appCallerEvent)
     eventJson[UCollectUtil::APP_EVENT_PARAM_BUNDLE_VERSION] = appCallerEvent->bundleVersion_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_BEGIN_TIME] = appCallerEvent->beginTime_;
     eventJson[UCollectUtil::APP_EVENT_PARAM_END_TIME] = appCallerEvent->endTime_;
+    eventJson[UCollectUtil::APP_EVENT_PARAM_ISBUSINESSJANK] = appCallerEvent->isBusinessJank_;
     Json::Value externalLog;
     externalLog.append(appCallerEvent->externalLog_);
     eventJson[UCollectUtil::APP_EVENT_PARAM_EXTERNAL_LOG] = externalLog;

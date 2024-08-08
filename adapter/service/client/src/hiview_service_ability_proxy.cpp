@@ -260,6 +260,11 @@ static bool WriteAppCallerExternal(MessageParcel& data, UCollectClient::AppCalle
         errField = "endTime";
         return false;
     }
+
+    if (!data.WriteBool(appCaller.isBusinessJank)) {
+        errField = "isBusinessJank";
+        return false;
+    }
     return true;
 }
 
