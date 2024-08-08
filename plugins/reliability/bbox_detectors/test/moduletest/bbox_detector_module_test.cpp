@@ -15,8 +15,10 @@
 #include "bbox_detector_module_test.h"
 
 #include "bbox_detector_plugin.h"
+#include "bbox_detectors_mock.h"
 #include "common_defines.h"
 #include "event.h"
+#include "hisysevent_util_mock.h"
 #include "log_util.h"
 #include "sys_event.h"
 #include "string_util.h"
@@ -25,12 +27,16 @@
 using namespace std;
 namespace OHOS {
 namespace HiviewDFX {
+using namespace testing;
 using namespace testing::ext;
 void BBoxDetectorModuleTest::SetUpTestCase(void) {}
 
 void BBoxDetectorModuleTest::TearDownTestCase(void) {}
 
-void BBoxDetectorModuleTest::SetUp(void) {}
+void BBoxDetectorModuleTest::SetUp(void)
+{
+    EXPECT_CALL(MockHisyseventUtil::GetInstance(), IsEventProcessed).WillRepeatedly(Return(false));
+}
 
 void BBoxDetectorModuleTest::TearDown(void) {}
 
@@ -61,6 +67,11 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest001, TestSize.Level1)
     sysEventCreator.SetKeyValue("REASON", "AP_S_PANIC");
     auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    MockHiviewContext hiviewContext;
+    auto eventLoop = std::make_shared<MockEventLoop>();
+    EXPECT_CALL(*(eventLoop.get()), GetMockInterval()).WillRepeatedly(Return(1));
+    EXPECT_CALL(hiviewContext, GetSharedWorkLoop()).WillRepeatedly(Return(eventLoop));
+    testPlugin->SetHiviewContext(&hiviewContext);
     shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
     testPlugin->OnLoad();
     testPlugin->OnEvent(event);
@@ -96,6 +107,11 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest002, TestSize.Level1)
     sysEventCreator.SetKeyValue("REASON", "AP_S_HWWATCHDOG");
     auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    MockHiviewContext hiviewContext;
+    auto eventLoop = std::make_shared<MockEventLoop>();
+    EXPECT_CALL(*(eventLoop.get()), GetMockInterval()).WillRepeatedly(Return(1));
+    EXPECT_CALL(hiviewContext, GetSharedWorkLoop()).WillRepeatedly(Return(eventLoop));
+    testPlugin->SetHiviewContext(&hiviewContext);
     shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
     testPlugin->OnLoad();
     testPlugin->OnEvent(event);
@@ -131,6 +147,11 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest003, TestSize.Level1)
     sysEventCreator.SetKeyValue("REASON", "MODEMCRASH");
     auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    MockHiviewContext hiviewContext;
+    auto eventLoop = std::make_shared<MockEventLoop>();
+    EXPECT_CALL(*(eventLoop.get()), GetMockInterval()).WillRepeatedly(Return(1));
+    EXPECT_CALL(hiviewContext, GetSharedWorkLoop()).WillRepeatedly(Return(eventLoop));
+    testPlugin->SetHiviewContext(&hiviewContext);
     shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
     testPlugin->OnLoad();
     testPlugin->OnEvent(event);
@@ -165,6 +186,11 @@ HWTEST_F(BBoxDetectorModuleTest, BBoxDetectorModuleTest004, TestSize.Level1)
     sysEventCreator.SetKeyValue("REASON", "MODEMCRASH");
     auto sysEvent = make_shared<SysEvent>("test", nullptr, sysEventCreator);
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
+    MockHiviewContext hiviewContext;
+    auto eventLoop = std::make_shared<MockEventLoop>();
+    EXPECT_CALL(*(eventLoop.get()), GetMockInterval()).WillRepeatedly(Return(1));
+    EXPECT_CALL(hiviewContext, GetSharedWorkLoop()).WillRepeatedly(Return(eventLoop));
+    testPlugin->SetHiviewContext(&hiviewContext);
     shared_ptr<Event> event = dynamic_pointer_cast<Event>(sysEvent);
     testPlugin->OnLoad();
     ASSERT_EQ(testPlugin->OnEvent(event), true);

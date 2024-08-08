@@ -22,6 +22,7 @@ config("bbox_detector_test_config") {
     "../",
     "../include",
     "moduletest",
+    "mock",
     "unittest",
     "$hiview_root/utility/common_utils/include",
     "$hiview_root/utility/smart_parser",
@@ -29,15 +30,28 @@ config("bbox_detector_test_config") {
   ]
 }
 
+bbox_detector_test_source = [
+  "../bbox_detector_plugin.cpp",
+  "../panic_report_recovery.cpp",
+  "mock/bbox_detectors_mock.cpp",
+  "mock/hisysevent_util_mock.cpp",
+]
+
 ohos_unittest("BBoxDetectorUnitTest") {
   sources = [ "unittest/bbox_detector_unit_test.cpp" ]
+
+  sources += bbox_detector_test_source
 
   configs = [ ":bbox_detector_test_config" ]
 
   external_deps = [
     "bounds_checking_function:libsec_shared",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "zlib:shared_libz",
   ]
 
   cflags = [ "-DUNITTEST" ]
@@ -45,7 +59,6 @@ ohos_unittest("BBoxDetectorUnitTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
-    "$hiview_root/plugins/reliability/bbox_detectors:bbox_detector",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
@@ -56,20 +69,25 @@ ohos_unittest("BBoxDetectorUnitTest") {
 ohos_moduletest("BBoxDetectorModuleTest") {
   sources = [ "moduletest/bbox_detector_module_test.cpp" ]
 
+  sources += bbox_detector_test_source
+
   configs = [ ":bbox_detector_test_config" ]
 
   cflags = [ "-DUNITTEST" ]
 
   external_deps = [
     "bounds_checking_function:libsec_shared",
+    "googletest:gmock",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "zlib:shared_libz",
   ]
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_base/event_store:event_store_source",
-    "$hiview_root/plugins/reliability/bbox_detectors:bbox_detector",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
