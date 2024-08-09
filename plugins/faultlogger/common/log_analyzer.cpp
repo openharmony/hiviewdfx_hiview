@@ -29,31 +29,15 @@ namespace HiviewDFX {
 static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo& info,
                                std::map<std::string, std::string>& eventInfos)
 {
-    if (info.reason.compare("SERVICE_BLOCK") == 0) {
-        static uint64_t serviceBlockNum = 0;
-        fingerRawString = std::to_string(++serviceBlockNum);
-        return;
-    }
-
-    if (info.reason.compare("SERVICE_TIMEOUT") == 0) {
-        auto it = info.sectionMap.find("MODULE_NAME");
-        if (it != info.sectionMap.end()) {
-            fingerRawString = it->second;
-            return;
-        }
-    }
-
-    if (info.reason.compare("APP_HICOLLIE") == 0) {
-        if (!eventInfos["TIME_OUT"].empty()) {
-            fingerRawString = eventInfos["TIME_OUT"];
-            return;
-        }
+    std::string lastFrame = "";
+    if ((info.reason.compare("SERVICE_TIMEOUT") == 0 || info.reason.compare("APP_HICOLLIE") == 0) &&
+        !eventInfos["TIME_OUT"].empty()) {
+        lastFrame = eventInfos["TIME_OUT"];
     }
 
     auto eventType = GetFaultNameByType(info.faultLogType, false);
-    fingerRawString = info.module + StringUtil::GetLeftSubstr(info.reason, "@") +
-        eventInfos["FIRST_FRAME"] + eventInfos["SECOND_FRAME"] + eventInfos["LAST_FRAME"] +
-        ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : "");
+    fingerRawString = info.module + StringUtil::GetLeftSubstr(info.reason, "@") + eventInfos["FIRST_FRAME"] +
+        eventInfos["SECOND_FRAME"] + lastFrame + ((eventType == "JS_ERROR") ? eventInfos["SUBREASON"] : "");
 }
 
 bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::string>& eventInfos)
