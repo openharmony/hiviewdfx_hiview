@@ -77,6 +77,12 @@ declare_args() {
     is_wifi_enable = false
   }
 
+  window_manager_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.window_window_manager)) {
+    window_manager_enable = false
+  }
+
   hiview_enable_leak_detector = false
 
   hiview_unified_collector_PC_app_state_collect_enable = false

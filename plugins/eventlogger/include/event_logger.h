@@ -32,7 +32,9 @@
 
 #include "active_key_event.h"
 #include "db_helper.h"
+#ifdef WINDOW_MANAGER_ENABLE
 #include "event_focus_listener.h"
+#endif
 #include "event_logger_config.h"
 #include "freeze_common.h"
 
@@ -83,25 +85,31 @@ private:
         "BUSSINESS_THREAD_BLOCK_6S"
     };
 
-    static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
+#ifdef WINDOW_MANAGER_ENABLE
     static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
     static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
+    static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
+    static constexpr int TOP_WINDOW_NUM = 3;
+    static constexpr uint8_t USER_PANIC_WARNING_PRIVACY = 2;
+#endif
     static constexpr int DUMP_TIME_RATIO = 2;
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
     static constexpr int MAX_RETRY_COUNT = 20;
     static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
-    static constexpr int TOP_WINDOW_NUM = 3;
     static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
     static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
-    static constexpr uint8_t USER_PANIC_WARNING_PRIVACY = 2;
 
+#ifdef WINDOW_MANAGER_ENABLE
+    bool isRegisterFocusListener = false;
+    std::vector<uint64_t> backTimes_;
+    sptr<EventFocusListener> eventFocusListener_;
+#endif
     std::unique_ptr<DBHelper> dbHelper_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::shared_ptr<LogStoreEx> logStore_;
-    bool isRegisterFocusListener = false;
     long lastPid_ = 0;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
@@ -115,10 +123,13 @@ private:
     std::string cmdlineContent_ = "";
     std::string lastEventName_ = "";
     std::vector<std::string> rebootReasons_;
-    std::vector<uint64_t> backTimes_;
-    sptr<EventFocusListener> eventFocusListener_;
 
+#ifdef WINDOW_MANAGER_ENABLE
+    void RegisterFocusListener();
+    void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
+#endif
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
+    void UpdateFfrtDumpType(int pid, int& type);
     void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
     void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const;
     void CollectMemInfo(int fd, std::shared_ptr<SysEvent> event);
@@ -129,13 +140,11 @@ private:
     bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
-    void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
     bool CheckProcessRepeatFreeze(const std::string& eventName, long pid);
     bool IsHandleAppfreeze(std::shared_ptr<SysEvent> event);
     void CheckEventOnContinue(std::shared_ptr<SysEvent> event);
     bool CanProcessRebootEvent(const Event& event);
     void ProcessRebootEvent();
-    void RegisterFocusListener();
     std::string GetRebootReason() const;
     void GetCmdlineContent();
     void GetRebootReasonConfig();
