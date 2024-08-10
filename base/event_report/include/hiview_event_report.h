@@ -24,7 +24,7 @@ namespace OHOS {
 namespace HiviewDFX {
 class HiviewEventReport {
 public:
-    static void ReportPluginLoad(const std::string &name, uint32_t result);
+    static void ReportPluginLoad(const std::string &name, uint32_t result, uint32_t duration = 0);
     static void ReportPluginUnload(const std::string &name, uint32_t result);
     static void ReportPluginFault(const std::string &name, const std::string &reason);
     static void ReportPluginStats();

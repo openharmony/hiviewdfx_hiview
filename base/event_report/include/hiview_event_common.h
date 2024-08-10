@@ -34,6 +34,7 @@ const std::string LOAD_EVENT_NAME = "PLUGIN_LOAD";
 const std::string UNLOAD_EVENT_NAME = "PLUGIN_UNLOAD";
 const std::string KEY_OF_PLUGIN_NAME = "NAME";
 const std::string KEY_OF_RESULT = "RESULT";
+const std::string KEY_OF_DURATION = "DURATION";
 constexpr uint32_t LOAD_SUCCESS = 0;
 constexpr uint32_t LOAD_DUPLICATE_NAME = 1;
 constexpr uint32_t LOAD_UNREGISTERED = 2;
