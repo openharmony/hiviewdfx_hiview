@@ -102,6 +102,7 @@ ohos_unittest("FoldAppUsageTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
   ]
 }
