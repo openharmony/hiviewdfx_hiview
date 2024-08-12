@@ -47,8 +47,10 @@
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
-#include "wm_common.h"
+#ifdef WINDOW_MANAGER_ENABLE
 #include "window_manager_lite.h"
+#include "wm_common.h"
+#endif
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
@@ -86,16 +88,19 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         HIVIEW_LOGE("event == nullptr");
         return false;
     }
+#ifdef WINDOW_MANAGER_ENABLE
     RegisterFocusListener();
+#endif
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
 
-    long pid = sysEvent->GetEventIntValue("PID");
-    pid = pid ? pid : sysEvent->GetPid();
+    long pid = sysEvent->GetEventIntValue("PID") ? sysEvent->GetEventIntValue("PID") : sysEvent->GetPid();
     std::string eventName = sysEvent->eventName_;
     if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
+#ifdef WINDOW_MANAGER_ENABLE
         if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
             ReportUserPanicWarning(sysEvent, pid);
         }
+#endif
         return true;
     }
     if (!IsHandleAppfreeze(sysEvent)) {
@@ -103,8 +108,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     std::string domain = sysEvent->domain_;
-    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", domain.c_str(),
-        eventName.c_str(), pid);
+    HIVIEW_LOGI("domain=%{public}s, eventName=%{public}s, pid=%{public}ld", domain.c_str(), eventName.c_str(), pid);
 
     if (CheckProcessRepeatFreeze(eventName, pid)) {
         return true;
@@ -119,7 +123,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
     auto task = [this, sysEvent, isFfrt]() {
-        HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
@@ -162,24 +166,21 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 {
     int type = APP;
     long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+#ifdef WINDOW_MANAGER_ENABLE
     std::vector<Rosen::MainWindowInfo> windowInfos;
-
+#endif
     if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
+#ifdef WINDOW_MANAGER_ENABLE
         Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
         if (windowInfos.size() == 0) {
             return;
         }
         type = TOP;
+#else
+        return;
+#endif
     } else {
-        std::list<SystemProcessInfo> systemProcessInfos;
-        sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        sam->GetRunningSystemProcess(systemProcessInfos);
-        if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
-            [pid, type](auto& systemProcessInfo) {
-            return pid == systemProcessInfo.pid;
-        })) {
-            type = SYS;
-        }
+        UpdateFfrtDumpType(pid, type);
     }
 
     std::string ffrtFile;
@@ -191,6 +192,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 
     int count = (type == TOP) ? WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO : WAIT_CHILD_PROCESS_COUNT;
     if (type == TOP) {
+#ifdef WINDOW_MANAGER_ENABLE
         int size = static_cast<int>(windowInfos.size());
         std::string cmdAms = "--ffrt ";
         std::string cmdSam = "--ffrt ";
@@ -205,12 +207,26 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         if (count > WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
             ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
         }
+#endif
     } else {
         std::string cmd = "--ffrt " + std::to_string(pid);
         std::string serviceName = (type == APP) ? "ApplicationManagerService" : "SystemAbilityManager";
         ReadShellToFile(ffrtFd, serviceName, cmd, count);
     }
     close(ffrtFd);
+}
+
+void EventLogger::UpdateFfrtDumpType(int pid, int& type)
+{
+    std::list<SystemProcessInfo> systemProcessInfos;
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sam->GetRunningSystemProcess(systemProcessInfos);
+    if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
+        [pid](auto& systemProcessInfo) {
+        return pid == systemProcessInfo.pid;
+    })) {
+        type = SYS;
+    }
 }
 
 void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)
@@ -665,6 +681,7 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
     return true;
 }
 
+#ifdef WINDOW_MANAGER_ENABLE
 void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid)
 {
     if (event->eventName_ == "FREQUENT_CLICK_WARNING") {
@@ -716,6 +733,7 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
         userPanicEvent->OnContinue();
     }
 }
+#endif
 
 bool EventLogger::CheckProcessRepeatFreeze(const std::string& eventName, long pid)
 {
@@ -791,6 +809,7 @@ void EventLogger::OnLoad()
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
+#ifdef WINDOW_MANAGER_ENABLE
     if (isRegisterFocusListener) {
         Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
         if (ret == Rosen::WMError::WM_OK) {
@@ -799,6 +818,7 @@ void EventLogger::OnUnload()
             isRegisterFocusListener = false;
         }
     }
+#endif
 }
 
 std::string EventLogger::GetListenerName()
@@ -858,6 +878,7 @@ void EventLogger::ProcessRebootEvent()
     }
 }
 
+#ifdef WINDOW_MANAGER_ENABLE
 void EventLogger::RegisterFocusListener()
 {
     if (isRegisterFocusListener) {
@@ -870,6 +891,7 @@ void EventLogger::RegisterFocusListener()
         isRegisterFocusListener = true;
     }
 }
+#endif
 
 std::string EventLogger::GetRebootReason() const
 {

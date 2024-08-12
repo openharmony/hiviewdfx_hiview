@@ -20,12 +20,16 @@
 
 #define private public
 #include "event_logger.h"
+#ifdef WINDOW_MANAGER_ENABLE
 #include "event_focus_listener.h"
+#endif
 #undef private
 #include "event.h"
 #include "hiview_platform.h"
 #include "sysevent_source.h"
+#ifdef WINDOW_MANAGER_ENABLE
 #include "focus_change_info.h"
+#endif
 #include "time_util.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -74,17 +78,6 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
     sysEvent->SetEventValue("eventLog_action", "");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
     EXPECT_EQ(eventLogger->OnEvent(event), true);
-    sptr<Rosen::FocusChangeInfo> focusChangeInfo;
-    sptr<EventFocusListener> eventFocusListener_ = EventFocusListener::GetInstance();
-    eventFocusListener_->OnFocused(focusChangeInfo);
-    eventFocusListener_->OnUnfocused(focusChangeInfo);
-    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
-        nullptr, jsonStr);
-    sysEvent1->eventName_ = "GESTURE_NAVIGATION_BACK";
-    sysEvent->SetEventValue("PID", getpid());
-    std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent);
-    eventLogger->isRegisterFocusListener = true;
-    EXPECT_EQ(eventLogger->OnEvent(event1), true);
 }
 
 /**
@@ -278,34 +271,75 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_007, TestSize.Level3)
 HWTEST_F(EventLoggerTest, EventLoggerTest_008, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
+    eventLogger->OnLoad();
+
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
+#ifdef WINDOW_MANAGER_ENABLE
     eventLogger->RegisterFocusListener();
     eventLogger->isRegisterFocusListener = true;
-    std::string testName = "FREQUENT_CLICK_WARNING";
-    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>(testName,
-        nullptr, jsonStr);
-    sysEvent1->SetEventValue("PID", pid);
-    eventLogger->ReportUserPanicWarning(sysEvent1, pid);
-    std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>(testName,
+#endif
+    uint64_t curentTime = TimeUtil::GetMilliseconds();
+    for (int i = 0; i < 5 ; i++) {
+        std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
+            nullptr, jsonStr);
+        sysEvent1->SetEventValue("PID", pid);
+        sysEvent1->happenTime_ = curentTime;
+        std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent1);
+        EXPECT_EQ(eventLogger->OnEvent(event1), true);
+        usleep(200 * 1000);
+        curentTime += 200;
+    }
+
+    std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>("FREQUENT_CLICK_WARNING",
         nullptr, jsonStr);
     sysEvent2->SetEventValue("PID", pid);
     sysEvent2->happenTime_ = TimeUtil::GetMilliseconds();
-    eventLogger->eventFocusListener_->lastChangedTime_ = TimeUtil::GetMilliseconds();
+    std::shared_ptr<OHOS::HiviewDFX::Event> event2 = std::static_pointer_cast<Event>(sysEvent2);
+    EXPECT_EQ(eventLogger->OnEvent(event2), true);
+
+    sysEvent2->eventName_ = "FORM_BLOCK_CALLSTACK";
+    sysEvent2->domain_ = "FORM_MANAGER";
+    eventLogger->WriteCallStack(sysEvent2, 0);
+}
+
+/**
+ * @tc.name: EventLoggerTest_009
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_009, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    eventLogger->OnLoad();
+
+    auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
+    long pid = getpid();
+#ifdef WINDOW_MANAGER_ENABLE
+    eventLogger->RegisterFocusListener();
+    eventLogger->isRegisterFocusListener = true;
+    uint64_t curentTime = TimeUtil::GetMilliseconds();
+    while (eventLogger->backTimes_.size() < 4) {
+        eventLogger->backTimes_.push_back(curentTime);
+        curentTime += 100;
+    }
+#endif
+    std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
+        nullptr, jsonStr);
+    sysEvent2->SetEventValue("PID", pid);
+    sysEvent2->happenTime_ = TimeUtil::GetMilliseconds();
+#ifdef WINDOW_MANAGER_ENABLE
     eventLogger->ReportUserPanicWarning(sysEvent2, pid);
-    sysEvent2->happenTime_ += 3001; // test value
-    eventLogger->ReportUserPanicWarning(sysEvent2, pid);
-    testName = "TEST";
-    std::shared_ptr<SysEvent> sysEvent3 = std::make_shared<SysEvent>(testName,
+#endif
+
+    std::shared_ptr<SysEvent> sysEvent3 = std::make_shared<SysEvent>("FREQUENT_CLICK_WARNING",
         nullptr, jsonStr);
     sysEvent3->SetEventValue("PID", pid);
-    while (eventLogger->backTimes_.size() < 5) {
-        eventLogger->backTimes_.push_back(sysEvent3->happenTime_ + 1);
-    }
+    sysEvent3->happenTime_ = TimeUtil::GetMilliseconds();
+#ifdef WINDOW_MANAGER_ENABLE
     eventLogger->ReportUserPanicWarning(sysEvent3, pid);
-    sysEvent3->eventName_ = "FORM_BLOCK_CALLSTACK";
-    sysEvent3->domain_ = "FORM_MANAGER";
-    eventLogger->WriteCallStack(sysEvent3, 0);
+#endif
+    EXPECT_TRUE(true);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

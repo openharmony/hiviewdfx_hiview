@@ -14,6 +14,7 @@
  */
 #ifndef HIVIEW_EVENT_FOCUS_LISTENER_H
 #define HIVIEW_EVENT_FOCUS_LISTENER_H
+#ifdef WINDOW_MANAGER_ENABLE
 
 #include <mutex>
 
@@ -39,4 +40,5 @@ private:
 };
 } // namespace HiviewDFX
 } // namespace OHOS
+#endif // WINDOW_MANAGER_ENABLE
 #endif // HIVIEW_EVENT_FOCUS_LISTENER_H

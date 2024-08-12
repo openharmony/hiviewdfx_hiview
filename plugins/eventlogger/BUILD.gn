@@ -27,7 +27,6 @@ ohos_source_set("eventlogger") {
 
   sources = [
     "active_key_event.cpp",
-    "event_focus_listener.cpp",
     "event_logger.cpp",
   ]
 
@@ -46,9 +45,17 @@ ohos_source_set("eventlogger") {
     "init:libbegetutil",
     "input:libmmi-client",
     "samgr:samgr_proxy",
-    "window_manager:libwm",
-    "window_manager:libwm_lite",
   ]
+
+  defines = []
+  if (window_manager_enable) {
+    sources += [ "event_focus_listener.cpp" ]
+    external_deps += [
+      "window_manager:libwm",
+      "window_manager:libwm_lite",
+    ]
+    defines += [ "WINDOW_MANAGER_ENABLE" ]
+  }
 }
 
 ohos_shared_library("eventloggerso") {
