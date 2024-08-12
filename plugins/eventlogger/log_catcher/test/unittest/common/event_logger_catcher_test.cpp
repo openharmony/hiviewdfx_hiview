@@ -39,46 +39,20 @@
 #include "event_log_catcher.h"
 #include "sys_event.h"
 #include "hisysevent.h"
-
+#include "eventlogger_util_test.h"
+#include "log_catcher_utils.h"
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace HiviewDFX {
-constexpr mode_t DEFAULT_MODE = 0644;
 void EventloggerCatcherTest::SetUp()
 {
     /**
      * @tc.setup: create an event loop and multiple event handlers
      */
     printf("SetUp.\n");
-    printf("path_ is %s\n", path_.c_str());
-
-    sleep(1);
-    isSelinuxEnabled_ = false;
-    char buffer[BUF_SIZE_64] = {'\0'};
-    FILE* fp = popen("getenforce", "r");
-    if (fp != nullptr) {
-        fgets(buffer, sizeof(buffer), fp);
-        std::string str = buffer;
-        printf("buffer is %s\n", str.c_str());
-        if (str.find("Enforcing") != str.npos) {
-            printf("Enforcing %s\n", str.c_str());
-            isSelinuxEnabled_ = true;
-        } else {
-            printf("This isn't Enforcing %s\n", str.c_str());
-        }
-        pclose(fp);
-    } else {
-        printf("fp == nullptr\n");
-    }
-    system("setenforce 0");
-
-    constexpr mode_t defaultLogDirMode = 0770;
-    if (!FileUtil::FileExists(path_)) {
-        FileUtil::ForceCreateDirectory(path_);
-        FileUtil::ChangeModeDirectory(path_, defaultLogDirMode);
-    }
+    InitSeLinuxEnabled();
 }
 
 void EventloggerCatcherTest::TearDown()
@@ -86,11 +60,7 @@ void EventloggerCatcherTest::TearDown()
     /**
      * @tc.teardown: destroy the event loop we have created
      */
-    if (isSelinuxEnabled_) {
-        system("setenforce 1");
-        isSelinuxEnabled_ = false;
-    }
-
+    CancelSeLinuxEnabled();
     printf("TearDown.\n");
 }
 
@@ -262,6 +232,9 @@ HWTEST_F(EventloggerCatcherTest, MemoryCatcherTest_001, TestSize.Level1)
     }
     int res = memoryCatcher->Catch(fd, 1);
     EXPECT_TRUE(res > 0);
+    res = memoryCatcher->Catch(0, 1);
+    EXPECT_EQ(res, 0);
+    printf("memoryCatcher result: %d\n", res);
     close(fd);
 }
 
@@ -670,6 +643,20 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
     EXPECT_TRUE(shellCatcher->Catch(fd, 1) >= 0);
     printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
     close(fd);
+}
+
+/**
+ * @tc.name: LogCatcherUtilsTest_001
+ * @tc.desc: add test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, LogCatcherUtilsTest_001, TestSize.Level1)
+{
+    int pid = getpid();
+    int ret = LogCatcherUtils::DumpStacktrace(-1, pid);
+    EXPECT_EQ(ret, -1);
+    LogCatcherUtils::DumpStacktrace(1, pid);
+    LogCatcherUtils::DumpStacktrace(2, pid);
 }
 } // namesapce HiviewDFX
 } // namespace OHOS
