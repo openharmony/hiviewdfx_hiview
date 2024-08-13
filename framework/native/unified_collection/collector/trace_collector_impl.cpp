@@ -47,36 +47,21 @@ std::shared_ptr<TraceCollector> TraceCollector::Create()
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuration(
-    UCollect::TraceCaller &caller, uint32_t timeLimit)
+    UCollect::TraceCaller &caller, uint32_t timeLimit, uint64_t happenTime)
 {
     if (timeLimit > INT32_MAX) {
-        return StartDumpTrace(caller, static_cast<uint64_t>(0), INT32_MAX);
+        return StartDumpTrace(caller, INT32_MAX, happenTime);
     }
-    return StartDumpTrace(caller, static_cast<uint64_t>(0), static_cast<int32_t>(timeLimit));
-}
-
-CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuration(
-    UCollect::TraceCaller &caller, uint64_t happenTime, uint32_t timeLimit)
-{
-    if (timeLimit > INT32_MAX) {
-        return StartDumpTrace(caller, happenTime, INT32_MAX);
-    }
-    return StartDumpTrace(caller, happenTime, static_cast<int32_t>(timeLimit));
+    return StartDumpTrace(caller, static_cast<int32_t>(timeLimit), happenTime);
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(UCollect::TraceCaller &caller)
 {
-    return StartDumpTrace(caller, static_cast<uint64_t>(0), FULL_TRACE_DURATION);
+    return StartDumpTrace(caller, FULL_TRACE_DURATION, static_cast<uint64_t>(0));
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(UCollect::TraceCaller &caller,
-    int32_t timeLimit)
-{
-    return StartDumpTrace(caller, static_cast<uint64_t>(0), static_cast<int32_t>(timeLimit));
-}
-
-CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(UCollect::TraceCaller &caller,
-    uint64_t happenTime, int32_t timeLimit)
+    int32_t timeLimit, uint64_t happenTime)
 {
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
     CollectResult<std::vector<std::string>> result;
