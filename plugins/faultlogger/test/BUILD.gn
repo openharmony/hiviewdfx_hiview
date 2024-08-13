@@ -38,6 +38,7 @@ ohos_unittest("FaultloggerUnittest") {
 
   configs = [ ":hiview_faultlogger_test_config" ]
 
+  cflags = [ "-Dprivate=public" ]
   sources = [
     "$hiview_faultlogger/service/faultlog_database.cpp",
     "$hiview_faultlogger/service/faultlog_formatter.cpp",
