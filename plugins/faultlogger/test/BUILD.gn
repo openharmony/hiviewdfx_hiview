@@ -55,6 +55,10 @@ ohos_unittest("FaultloggerUnittest") {
     "common/unittest/reporter_unittest.cpp",
     "common/unittest/zip_helper_unittest.cpp",
   ]
+  cflags_cc = [
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
 
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
