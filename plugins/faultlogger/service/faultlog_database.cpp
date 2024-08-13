@@ -107,7 +107,8 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
             "FIRST_FRAME", info.sectionMap["FIRST_FRAME"].empty() ? "/" : info.sectionMap["FIRST_FRAME"],
             "SECOND_FRAME", info.sectionMap["SECOND_FRAME"].empty() ? "/" : info.sectionMap["SECOND_FRAME"],
             "LAST_FRAME", info.sectionMap["LAST_FRAME"].empty() ? "/" : info.sectionMap["LAST_FRAME"],
-            "FINGERPRINT", info.sectionMap["fingerPrint"].empty() ? "/" : info.sectionMap["fingerPrint"]
+            "FINGERPRINT", info.sectionMap["fingerPrint"].empty() ? "/" : info.sectionMap["fingerPrint"],
+            "STACK", info.sectionMap["STACK"].empty() ? "" : info.sectionMap["STACK"]
         );
     };
     constexpr int delayTime = 2;
