@@ -243,7 +243,7 @@ int SocketDevice::ReceiveMsg(std::vector<std::shared_ptr<EventReceiver>> &receiv
     };
     InitMsgh(buffer, BUFFER_SIZE, control, msgh, iov);
     while (true) {
-        int ret = recvmsg(socketId_, &msgh, MSG_DONTWAIT);
+        int ret = recvmsg(socketId_, &msgh, 0);
         if (ret <= 0) {
             HIVIEW_LOGD("failed to recv msg from socket");
             break;
