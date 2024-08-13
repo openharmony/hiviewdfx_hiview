@@ -19,6 +19,7 @@ module_output_path = "hiview/hiview/eventlogger/logCatcher"
 config("unittest_config") {
   include_dirs = [
     "../include",
+    "../../test/util",
     "unittest/common",
   ]
 
@@ -37,9 +38,13 @@ ohos_unittest("EventloggerCatcherTest") {
     "$hiview_eventlogger/include",
   ]
 
-  sources = [ "unittest/common/event_logger_catcher_test.cpp" ]
+  sources = [
+    "../../test/util/eventlogger_util_test.cpp",
+    "unittest/common/event_logger_catcher_test.cpp",
+  ]
 
   deps = [
+    "$hiview_adapter/plugins/eventlogger/log_catcher:eventlogger_adapter_logcatcher",
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_eventlogger:eventlogger",
     "$hiview_eventlogger/config:eventlogger_config",
