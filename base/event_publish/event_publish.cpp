@@ -208,8 +208,17 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
     params[EXTERNAL_LOG] = externalLogJson;
 }
 
+void RemoveEventInternalField(Json::Value& eventJson)
+{
+    if (eventJson[PARAM_PROPERTY].isMember(IS_BUSINESS_JANK)) {
+        eventJson[PARAM_PROPERTY].removeMember(IS_BUSINESS_JANK);
+    }
+    return;
+}
+
 void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
 {
+    RemoveEventInternalField(eventJson);
     std::string eventStr = Json::FastWriter().write(eventJson);
     if (!FileUtil::SaveStringToFile(filePath, eventStr, false)) {
         HIVIEW_LOGE("failed to save event, eventName=%{public}s, file=%{public}s",
