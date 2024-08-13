@@ -76,7 +76,9 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
     std::lock_guard<std::mutex> lock(mutex_);
     if (info.faultLogType == FaultLogType::SYS_FREEZE) {
         AnalysisFaultlog(info, info.parsedLogInfo);
-        info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+        for (const auto& logInfo : info.parsedLogInfo) {
+            info.sectionMap[logInfo.first] = logInfo.second;
+        }
         info.parsedLogInfo.clear();
     }
     if (!eventLoop_) {
