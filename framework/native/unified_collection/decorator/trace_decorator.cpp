@@ -49,7 +49,8 @@ CollectResult<std::vector<std::string>> TraceDecorator::DumpTraceWithDuration(UC
     uint64_t happenTime, uint32_t timeLimit)
 {
     auto task = [this, &caller, &happenTime, &timeLimit] {
-        return traceCollector_->DumpTraceWithDuration(caller, happenTime, timeLimit); };
+        return traceCollector_->DumpTraceWithDuration(caller, happenTime, timeLimit);
+    };
     return Invoke(task, traceStatWrapper_, caller);
 }
 
