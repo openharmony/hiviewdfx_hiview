@@ -17,11 +17,19 @@ import("//build/ohos.gni")
 config("libgraphic_memory_config") {
     visibility = [ "*:*" ]
     include_dirs = [
-        "$hiview_root/graph_mem/include",
+        "$hiview_root/graphic_memory/include",
     ]
 }
 
 ohos_shared_library("libgraphic_memory") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+        cfi = true
+        cfi_cross_dso = true
+        cfi_vcall_icall_only = true
+        debug = false
+    }
+
     public_configs = [ ":libgraphic_memory_config" ]
 
     sources = [ "graphic_memory.cpp" ]
