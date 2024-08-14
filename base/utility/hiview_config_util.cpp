@@ -139,6 +139,10 @@ std::string GetConfigFilePath(const std::string& configZipFileName, const std::s
         HIVIEW_LOGI("succeed to do local update for %{public}s", configFileName.c_str());
         return destConfigFilePath;
     }
+    // return file path directly if dest config file exist
+    if (FileUtil::FileExists(destConfigFilePath)) {
+        return destConfigFilePath;
+    }
     return GetConfigFilePathByVersion(localVer, cloudVer, configFileName);
 }
 } // namespace ConfigUtil
