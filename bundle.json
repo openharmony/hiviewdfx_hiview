@@ -83,7 +83,7 @@
                 "//base/hiviewdfx/hiview/interfaces/js/napi:loglibrary_napi",
                 "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection/client:libucollection_client",
                 "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection/utility:libucollection_utility",
-                "//base/hiviewdfx/hiview/graphic_memory:libgraphic_memory"
+                "//base/hiviewdfx/hiview/framework/native/unified_collection/graphic_memory:libgraphic_memory"
             ],
             "inner_kits": [
                 {

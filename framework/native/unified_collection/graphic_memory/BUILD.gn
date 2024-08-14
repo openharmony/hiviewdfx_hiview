@@ -17,7 +17,7 @@ import("//build/ohos.gni")
 config("libgraphic_memory_config") {
     visibility = [ "*:*" ]
     include_dirs = [
-        "$hiview_root/graphic_memory/include",
+        "include",
     ]
 }
 
