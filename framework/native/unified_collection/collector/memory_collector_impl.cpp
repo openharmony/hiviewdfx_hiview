@@ -37,6 +37,7 @@
 #include "string_util.h"
 #include "time_util.h"
 #include "process_status.h"
+#include "graphic_memory.h"
 
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
@@ -671,6 +672,38 @@ CollectResult<uint32_t> MemoryCollectorImpl::CollectDdrFreq()
     std::stringstream ss(content);
     ss >> result.data;
     result.retCode = UcError::SUCCESS;
+    return result;
+}
+
+CollectResult<int32_t> MemoryCollectorImpl::GetGraphicUsage(int32_t pid)
+{
+    CollectResult<int32_t> result;
+    Graphic::CollectResult data = Graphic::GetGraphicUsage(pid);
+    if (data.retCode == Graphic::ResultCode::SUCCESS) {
+        result.retCode = SUCCESS;
+        result.data = data.data;
+    }
+    return result;
+}
+
+CollectResult<int32_t> MemoryCollectorImpl::GetGraphicUsage(GraphicType type, int32_t pid)
+{
+    Graphic::CollectResult data;
+    switch (type) {
+        case GraphicType::GL:
+            data = Graphic::GetGraphicUsage(Graphic::Type::GL, pid);
+            break;
+        case GraphicType::GRAPH:
+            data = Graphic::GetGraphicUsage(Graphic::Type::GRAPH, pid);
+            break;
+        default:
+            break;
+    }
+    CollectResult<int32_t> result;
+    if (data.retCode == Graphic::ResultCode::SUCCESS) {
+        result.retCode = SUCCESS;
+        result.data = data.data;
+    }
     return result;
 }
 } // UCollectUtil

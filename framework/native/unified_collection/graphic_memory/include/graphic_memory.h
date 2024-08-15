@@ -41,10 +41,8 @@ public:
     int32_t data = 0;
 };
 
-class GrahphicMemory {
-    CollectResult GetGraphicUsage(int32_t pid);
-    CollectResult GetGraphicUsage(Type type, int32_t pid);
-};
+CollectResult GetGraphicUsage(int32_t pid);
+CollectResult GetGraphicUsage(Type type, int32_t pid);
 }
 }
 }

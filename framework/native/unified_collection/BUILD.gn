@@ -22,6 +22,7 @@ config("ucolletciton_source_config") {
     "process/include",
     "decorator/include",
     "utils/include",
+    "graphic_memory/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
@@ -85,7 +86,10 @@ ohos_source_set("ucollection_source") {
     ]
   }
 
-  deps = [ "collector/device_client:collect_device_client" ]
+  deps = [
+    "collector/device_client:collect_device_client",
+    "graphic_memory:libgraphic_memory",
+  ]
 
   external_deps = [
     "ability_base:want",

@@ -18,16 +18,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace Graphic{
-CollectResult GrahphicMemory::GetGraphicUsage(int32_t pid)
+CollectResult GetGraphicUsage(int32_t pid)
 {
     CollectResult result;
+    result.retCode = ResultCode::SUCCESS;
     result.data = 1000;
     return result;
 }
 
-CollectResult GrahphicMemory::GetGraphicUsage(Type type, int32_t pid)
+CollectResult GetGraphicUsage(Type type, int32_t pid)
 {
     CollectResult result;
+    result.retCode = ResultCode::SUCCESS;
     result.data = 1001;
     return result;
 }

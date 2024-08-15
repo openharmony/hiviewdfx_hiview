@@ -48,6 +48,11 @@ struct MemoryLimit {
     uint64_t vssLimit = 0;
 };
 
+enum class GraphicType {
+    GL,
+    GRAPH,
+};
+
 extern "C" {
 const int HIAI_MAX_QUERIED_USER_MEMINFO_LIMIT = 256;
 
