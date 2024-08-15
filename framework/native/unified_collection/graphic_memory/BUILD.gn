@@ -15,29 +15,27 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 config("libgraphic_memory_config") {
-    visibility = [ "*:*" ]
-    include_dirs = [
-        "include",
-    ]
+  visibility = [ "*:*" ]
+  include_dirs = [ "include" ]
 }
 
 ohos_shared_library("libgraphic_memory") {
-    branch_protector_ret = "pac_ret"
-    sanitize = {
-        cfi = true
-        cfi_cross_dso = true
-        cfi_vcall_icall_only = true
-        debug = false
-    }
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
 
-    public_configs = [ ":libgraphic_memory_config" ]
+  public_configs = [ ":libgraphic_memory_config" ]
 
-    sources = [ "graphic_memory.cpp" ]
+  sources = [ "graphic_memory.cpp" ]
 
-    deps = []
+  deps = []
 
-    external_deps = [ "hilog:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 
-    part_name = "hiview"
-    subsystem_name = "hiviewdfx"
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
 }

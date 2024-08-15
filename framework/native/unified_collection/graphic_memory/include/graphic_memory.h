@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace Graphic{
+namespace Graphic {
 enum class Type {
     GL,
     GRAPH,

@@ -17,12 +17,14 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace Graphic{
+namespace Graphic {
+constexpr int VALUE = 1000;
+
 CollectResult GetGraphicUsage(int32_t pid)
 {
     CollectResult result;
     result.retCode = ResultCode::SUCCESS;
-    result.data = 1000;
+    result.data = VALUE;
     return result;
 }
 
@@ -30,7 +32,7 @@ CollectResult GetGraphicUsage(Type type, int32_t pid)
 {
     CollectResult result;
     result.retCode = ResultCode::SUCCESS;
-    result.data = 1001;
+    result.data = VALUE;
     return result;
 }
 }
