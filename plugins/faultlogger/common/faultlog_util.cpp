@@ -182,5 +182,41 @@ std::string GetCppCrashTempLogName(const FaultLogInfo& info)
         "-" +
         std::to_string(info.time);
 }
+
+std::string GetThreadStack(const std::string& path, int32_t threadId)
+{
+    std::string stack;
+    if (path.empty()) {
+        return stack;
+    }
+
+    std::ifstream logFile(path);
+    if (!logFile.is_open()) {
+        return stack;
+    }
+    std::string regTidString = "^Tid:" + std::to_string(threadId) + ", Name:(.{0,32})$";
+    std::regex regTid(regTidString);
+    std::regex regStack(R"(^#\d{2,3} (pc|at) .{0,1024}$)");
+    std::string line;
+    while (std::getline(logFile, line)) {
+        if (!logFile.good()) {
+            break;
+        }
+
+        if (!std::regex_match(line, regTid)) {
+            continue;
+        }
+
+        do {
+            stack.append(line + "\n");
+            if (!logFile.good()) {
+                break;
+            }
+        } while (std::getline(logFile, line) && std::regex_match(line, regStack));
+        break;
+    }
+
+    return stack;
+}
 } // namespace HiviewDFX
 } // namespace OHOS
