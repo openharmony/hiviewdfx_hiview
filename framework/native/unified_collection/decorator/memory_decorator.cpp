@@ -116,15 +116,9 @@ CollectResult<uint32_t> MemoryDecorator::CollectDdrFreq()
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
-CollectResult<int32_t> MemoryDecorator::GetGraphicUsage(int32_t pid)
+CollectResult<int32_t> MemoryDecorator::GetGraphicUsage(int32_t pid, GraphicType type)
 {
-    auto task = [this, &pid] { return memoryCollector_->GetGraphicUsage(pid); };
-    return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
-}
-
-CollectResult<int32_t> MemoryDecorator::GetGraphicUsage(GraphicType type, int32_t pid)
-{
-    auto task = [this, &type, &pid] { return memoryCollector_->GetGraphicUsage(type, pid); };
+    auto task = [this, &type, &pid] { return memoryCollector_->GetGraphicUsage(pid, type); };
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

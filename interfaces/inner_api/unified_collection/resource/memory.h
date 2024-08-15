@@ -49,6 +49,7 @@ struct MemoryLimit {
 };
 
 enum class GraphicType {
+    TOATL,
     GL,
     GRAPH,
 };

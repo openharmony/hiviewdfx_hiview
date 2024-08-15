@@ -22,29 +22,24 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace Graphic {
 enum class Type {
+    TOTAL,
     GL,
     GRAPH,
 };
 
 enum class ResultCode {
-    SUCCESS = 0,
-    UNSUPPORT = 1,
-    READ_FAILED = 2,
-    WRITE_FAILED = 3,
-    PERMISSION_CHECK_FAILED = 4,
-    SYSTEM_ERROR = 5,
+    SUCCESS,
+    FAILD,
 };
 
 struct CollectResult {
-public:
-    ResultCode retCode = ResultCode::UNSUPPORT;
-    int32_t data = 0;
+    ResultCode retCode = ResultCode::FAILD;
+    int32_t graphicData = 0;
 };
 
-CollectResult GetGraphicUsage(int32_t pid);
-CollectResult GetGraphicUsage(Type type, int32_t pid);
+CollectResult GetGraphicUsage(int32_t pid, Type type = Type::TOTAL);
 }
 }
 }
 
-#endif //HIVIEWDFX_HIVIEW_GRAPHIC_MEMORY_H
+#endif // HIVIEWDFX_HIVIEW_GRAPHIC_MEMORY_H

@@ -19,9 +19,9 @@
 #include <regex>
 #include <string>
 
+#include "common_utils.h"
 #include "file_util.h"
 #include "string_util.h"
-#include "common_utils.h"
 #include "memory_collector.h"
 
 #include <gtest/gtest.h>
@@ -391,11 +391,11 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
     ASSERT_EQ(data.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage result:" << data.data << std::endl;
     ASSERT_GT(data.data, 0);
-    CollectResult<int32_t> glData = collector->GetGraphicUsage(GraphicType::GL, pid);
+    CollectResult<int32_t> glData = collector->GetGraphicUsage(pid, GraphicType::GL);
     ASSERT_EQ(glData.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage gl result:" << glData.data << std::endl;
     ASSERT_GT(glData.data, 0);
-    CollectResult<int32_t> graphicData = collector->GetGraphicUsage(GraphicType::GRAPH, pid);
+    CollectResult<int32_t> graphicData = collector->GetGraphicUsage(pid, GraphicType::GRAPH);
     ASSERT_EQ(graphicData.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage graphic result:" << graphicData.data << std::endl;
     ASSERT_GT(graphicData.data, 0);

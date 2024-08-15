@@ -675,34 +675,26 @@ CollectResult<uint32_t> MemoryCollectorImpl::CollectDdrFreq()
     return result;
 }
 
-CollectResult<int32_t> MemoryCollectorImpl::GetGraphicUsage(int32_t pid)
+CollectResult<int32_t> MemoryCollectorImpl::GetGraphicUsage(int32_t pid, GraphicType type)
 {
     CollectResult<int32_t> result;
-    Graphic::CollectResult data = Graphic::GetGraphicUsage(pid);
-    if (data.retCode == Graphic::ResultCode::SUCCESS) {
-        result.retCode = SUCCESS;
-        result.data = data.data;
-    }
-    return result;
-}
-
-CollectResult<int32_t> MemoryCollectorImpl::GetGraphicUsage(GraphicType type, int32_t pid)
-{
     Graphic::CollectResult data;
     switch (type) {
+        case GraphicType::TOATL:
+            data = Graphic::GetGraphicUsage(pid);
+            break;
         case GraphicType::GL:
-            data = Graphic::GetGraphicUsage(Graphic::Type::GL, pid);
+            data = Graphic::GetGraphicUsage(pid, Graphic::Type::GL);
             break;
         case GraphicType::GRAPH:
-            data = Graphic::GetGraphicUsage(Graphic::Type::GRAPH, pid);
+            data = Graphic::GetGraphicUsage(pid, Graphic::Type::GRAPH);
             break;
         default:
-            break;
+            return result;
     }
-    CollectResult<int32_t> result;
     if (data.retCode == Graphic::ResultCode::SUCCESS) {
         result.retCode = SUCCESS;
-        result.data = data.data;
+        result.data = data.graphicData;
     }
     return result;
 }

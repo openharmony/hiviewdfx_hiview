@@ -20,19 +20,11 @@ namespace HiviewDFX {
 namespace Graphic {
 constexpr int VALUE = 1000;
 
-CollectResult GetGraphicUsage(int32_t pid)
+CollectResult GetGraphicUsage(int32_t pid, Type type)
 {
     CollectResult result;
     result.retCode = ResultCode::SUCCESS;
-    result.data = VALUE;
-    return result;
-}
-
-CollectResult GetGraphicUsage(Type type, int32_t pid)
-{
-    CollectResult result;
-    result.retCode = ResultCode::SUCCESS;
-    result.data = VALUE;
+    result.graphicData = VALUE;
     return result;
 }
 }
