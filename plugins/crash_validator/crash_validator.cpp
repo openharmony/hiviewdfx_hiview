@@ -192,8 +192,10 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
         workLoop_->AddTimerEvent(nullptr, nullptr, [this, pid] {
             MatchEvent(pid);
         }, CHECK_TIME, false);
-        HIVIEW_LOGI("Add MatchEvent task, process pid = %{public}d, name = %{public}s", pid,
-                    sysEvent->GetEventValue("PROCESS_NAME").c_str());
+        int32_t status = sysEvent->GetEventIntValue("STATUS");
+        int32_t exitSigno = WTERMSIG(status);
+        HIVIEW_LOGI("Add MatchEvent task, process pid = %{public}d, name = %{public}s, exitSigno = %{public}d",
+            pid, sysEvent->GetEventValue("PROCESS_NAME").c_str(), exitSigno);
     }
 
     return true;

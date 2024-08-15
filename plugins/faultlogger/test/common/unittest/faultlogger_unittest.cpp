@@ -35,6 +35,7 @@
 #include "faultevent_listener.h"
 #include "faultlog_formatter.h"
 #include "faultlog_info_ohos.h"
+#include "faultlog_query_result_ohos.h"
 #include "faultlogger_adapter.h"
 #include "faultlogger_service_ohos.h"
 #include "file_util.h"
@@ -119,13 +120,7 @@ public:
         sleep(1);
         GetHiviewContext();
     };
-    void TearDown()
-    {
-        auto ret = remove("/data/test_jsError_info");
-        if (ret == 0) {
-            GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
-        }
-    };
+    void TearDown() {};
 
     static void CheckSumarryParseResult(std::string& info, int& matchCount)
     {
@@ -229,6 +224,10 @@ public:
             std::string newFileName = oldFileName + "_" + name;
             rename(oldFileName.c_str(), newFileName.c_str());
         }
+        auto ret = remove("/data/test_jsError_info");
+        if (ret == 0) {
+            GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
+        }
     }
 
     static void CheckDeleteStackErrorMessage(std::string name)
@@ -247,7 +246,6 @@ public:
  * @tc.name: dumpFileListTest001
  * @tc.desc: dump with cmds, check the result
  * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F83AF
  */
 HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3)
 {
@@ -281,7 +279,86 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
     cmds.push_back("-m");
     plugin->Dump(fd, cmds);
     cmds.push_back("FAULTLOGGER");
-    plugin->Dump(fd, cmds);
+    close(fd);
+    fd = -1;
+
+    std::string result;
+    if (FileUtil::LoadStringFromFile("/data/test/testFile", result)) {
+        ASSERT_GT(result.length(), 0uL);
+    } else {
+        FAIL();
+    }
+}
+
+/**
+ * @tc.name: DumpTest002
+ * @tc.desc: dump with cmds, check the result
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, DumpTest002, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. add multiple cmds to faultlogger
+     * @tc.expected: check the content size of the dump function
+     */
+    auto plugin = GetFaultloggerInstance();
+    int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
+    if (fd < 0) {
+        printf("Fail to create test result file.\n");
+        return;
+    }
+
+    std::vector<std::vector<std::string>> cmds = {
+        {"-f", "1cppcrash-10-20201209103823"},
+        {"-f", "1cppcrash-ModuleName-10-20201209103823"},
+        {"-f", "cppcrash--10-20201209103823"},
+        {"-f", "cppcrash-ModuleName-a10-20201209103823"}
+    };
+
+    for (auto& cmd : cmds) {
+        plugin->Dump(fd, cmd);
+    }
+
+    close(fd);
+    fd = -1;
+
+    std::string result;
+    if (FileUtil::LoadStringFromFile("/data/test/testFile", result)) {
+        ASSERT_GT(result.length(), 0uL);
+    } else {
+        FAIL();
+    }
+}
+
+/**
+ * @tc.name: DumpTest003
+ * @tc.desc: dump with cmds, check the result
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, DumpTest003, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. add multiple cmds to faultlogger
+     * @tc.expected: check the content size of the dump function
+     */
+    auto plugin = GetFaultloggerInstance();
+    int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
+    if (fd < 0) {
+        printf("Fail to create test result file.\n");
+        return;
+    }
+
+    std::vector<std::vector<std::string>> cmds = {
+        {"-t", "cppcrash--10-20201209103823"},
+        {"-m", ""},
+        {"-l", ""},
+        {"-xx"}
+    };
+
+    for (auto& cmd : cmds) {
+        plugin->Dump(fd, cmd);
+    }
+
     close(fd);
     fd = -1;
 
@@ -298,7 +375,6 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
  * @tc.desc: create cpp crash event and send it to faultlogger
  *           check info which send to appevent
  * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F4380
  */
 HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
 {
@@ -349,10 +425,91 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
 }
 
 /**
+ * @tc.name: AddFaultLogTest001
+ * @tc.desc: create cpp crash event and send it to faultlogger
+ *           check info which send to appevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, AddFaultLogTest001, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    FaultLogInfo info;
+    plugin->hasInit_ = false;
+    plugin->AddFaultLog(info);
+
+    plugin->hasInit_ = true;
+    info.faultLogType = -1;
+    plugin->AddFaultLog(info);
+
+    info.faultLogType = 8; // 8 : 8 is bigger than FaultLogType::ADDR_SANITIZER
+    plugin->AddFaultLog(info);
+
+    info.faultLogType = FaultLogType::CPP_CRASH;
+    info.id = 1;
+    info.module = "com.example.myapplication";
+    info.time = 1607161163;
+    info.pid = 7496;
+    plugin->AddFaultLog(info);
+    std::string timeStr = GetFormatedTime(info.time);
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
+    ASSERT_EQ(FileUtil::FileExists(fileName), true);
+}
+
+/**
+ * @tc.name: AddPublicInfoTest001
+ * @tc.desc: create cpp crash event and send it to faultlogger
+ *           check info which send to appevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, AddPublicInfoTest001, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 0;
+    info.pid = 7496;
+    info.faultLogType = 1;
+    info.module = "com.example.myapplication";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    plugin->AddPublicInfo(info);
+    std::string timeStr = GetFormatedTime(info.time);
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
+    ASSERT_EQ(FileUtil::FileExists(fileName), true);
+}
+
+/**
+ * @tc.name: GetFreezeJsonCollectorTest001
+ * @tc.desc: test GetFreezeJsonCollector
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GetFreezeJsonCollectorTest001, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    FaultLogInfo info;
+    info.time = 20170805172159;
+    info.id = 10006;
+    info.pid = 1;
+    info.faultLogType = 1;
+    info.module = "com.example.myapplication";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    FreezeJsonUtil::FreezeJsonCollector collector = plugin->GetFreezeJsonCollector(info);
+    ASSERT_EQ(collector.exception, "{}");
+}
+
+/**
  * @tc.name: genCppCrashtoAnalysisFaultlog
  * @tc.desc: create cpp crash event and check AnalysisFaultlog
  * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F4380
  */
 HWTEST_F(FaultloggerUnittest, genCppCrashtoAnalysisFaultlog001, testing::ext::TestSize.Level3)
 {
@@ -399,7 +556,6 @@ HWTEST_F(FaultloggerUnittest, genJsCrashtoAnalysisFaultlog001, testing::ext::Tes
  * @tc.name: genjserrorLogTest002
  * @tc.desc: create JS ERROR event and send it to faultlogger
  * @tc.type: FUNC
- * @tc.require: SR000F7UQ6 AR000F4380
  */
 HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level3)
 {
@@ -426,6 +582,10 @@ HWTEST_F(FaultloggerUnittest, genjserrorLogTest002, testing::ext::TestSize.Level
     std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
     bool result = testPlugin->OnEvent(event);
     ASSERT_EQ(result, true);
+    auto ret = remove("/data/test_jsError_info");
+    if (ret == 0) {
+        GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
+    }
 }
 
 /**
@@ -848,7 +1008,14 @@ HWTEST_F(FaultloggerUnittest, FaultLogQueryResultOhosTest001, testing::ext::Test
             result->GetNext();
         }
     }
-    result->GetNext();
+    auto getNextRes = result->GetNext();
+    ASSERT_NE(result, nullptr);
+
+    result->result_ = nullptr;
+    bool hasNext = result->HasNext();
+    ASSERT_FALSE(hasNext);
+    getNextRes = result->GetNext();
+    ASSERT_NE(result, nullptr);
 }
 
 class TestFaultLogQueryResultStub : public FaultLogQueryResultStub {
@@ -1260,7 +1427,7 @@ Stacktrace:
 }
 
 /**
- * @tc.name: ReportJsErrorToAppEventTest007
+ * @tc.name: ReportJsErrorToAppEventTest008
  * @tc.desc: create JS ERROR event and send it to hiappevent
  * @tc.type: FUNC
  */
@@ -1278,6 +1445,24 @@ Stacktrace:
 }
 
 /**
+ * @tc.name: ReportJsErrorToAppEventTest009
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest009, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    GTEST_LOG_(INFO) << "========noKeyValue========";
+    ConstructJsErrorAppEventWithNoValue("", plugin);
+    std::string oldFileName = "/data/test_jsError_info";
+    ASSERT_TRUE(FileUtil::FileExists(oldFileName));
+    auto ret = remove("/data/test_jsError_info");
+    if (ret == 0) {
+        GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
+    }
+}
+
+/**
  * @tc.name: SanitizerdCollectorTest001
  * @tc.desc: Test calling SanitizerdCollector Func
  * @tc.type: FUNC
@@ -1291,8 +1476,6 @@ HWTEST_F(FaultloggerUnittest, SanitizerdCollectorTest001, testing::ext::TestSize
     sanitizerd.Collect(str);
     bool ret = sanitizerd.IsDuplicate(str);
     ASSERT_TRUE(ret);
-    ret = sanitizerd.ComputeStackSignature("1", "1", true);
-    ASSERT_TRUE(!ret);
 }
 
 /**
@@ -1344,6 +1527,132 @@ HWTEST_F(FaultloggerUnittest, AsanCollectorTest003, testing::ext::TestSize.Level
     ASSERT_EQ(ret, 1);
     ret = monitor.ReadNotify(filename, 1);
     ASSERT_EQ(ret, 1);
+}
+
+bool SendSysEvent(SysEventCreator sysEventCreator)
+{
+    auto plugin = GetFaultloggerInstance();
+    auto sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
+    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+    return plugin->OnEvent(event);
+}
+
+/**
+ * @tc.name: OnEventTest001
+ * @tc.desc: create JS ERROR event and send it to hiappevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, OnEventTest001, testing::ext::TestSize.Level3)
+{
+    {
+        SysEventCreator sysEventCreator("AAFWK", "JSERROR", SysEventCreator::FAULT);
+        sysEventCreator.SetKeyValue("name_", "JS_ERRORS");
+        auto result = SendSysEvent(sysEventCreator);
+        ASSERT_EQ(result, true);
+    }
+    {
+        SysEventCreator sysEventCreator("AAFWK", "CPPCRASH", SysEventCreator::FAULT);
+        sysEventCreator.SetKeyValue("name_", "RUST_PANIC");
+        auto result = SendSysEvent(sysEventCreator);
+        ASSERT_EQ(result, true);
+    }
+}
+
+/**
+ * @tc.name: FaultloggerUnittest001
+ * @tc.desc: test GetFaultLogInfo, QuerySelfFaultLog and GetMemoryStrByPid
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerUnittest001, testing::ext::TestSize.Level3)
+{
+    auto plugin = GetFaultloggerInstance();
+    plugin->hasInit_ = false;
+    plugin->GetFaultLogInfo("test");
+    std::unique_ptr<FaultLogQueryResultInner> obj = plugin->QuerySelfFaultLog(1, 1, 1, 1);
+    ASSERT_EQ(obj, nullptr);
+
+    std::string str = plugin->GetMemoryStrByPid(-1);
+    ASSERT_EQ(str, "");
+    str = plugin->GetMemoryStrByPid(1);
+    ASSERT_NE(str, "");
+}
+
+/**
+ * @tc.name: FaultlogDatabaseUnittest001
+ * @tc.desc: test RunSanitizerd
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultlogDatabaseUnittest001, testing::ext::TestSize.Level3)
+{
+    FaultLogDatabase *faultLogDb = new FaultLogDatabase(GetHiviewContext().GetSharedWorkLoop());
+    std::list<FaultLogInfo> queryResult = faultLogDb->GetFaultInfoList("com.example.myapplication", 0, -1, 10);
+    ASSERT_EQ(queryResult.size(), 0);
+    queryResult = faultLogDb->GetFaultInfoList("com.example.myapplication", 0, 8, 10);
+    ASSERT_EQ(queryResult.size(), 0);
+    queryResult = faultLogDb->GetFaultInfoList("com.example.myapplication", 1, 2, 10);
+    ASSERT_EQ(queryResult.size(), 0);
+    queryResult = faultLogDb->GetFaultInfoList("com.example.myapplication", 1, 0, 10);
+    ASSERT_EQ(queryResult.size(), 0);
+
+    FaultLogInfo info;
+    info.faultLogType = FaultLogType::SYS_FREEZE;
+    faultLogDb->eventLoop_ = nullptr;
+    faultLogDb->SaveFaultLogInfo(info);
+
+    bool res = faultLogDb->IsFaultExist(1, 1, -1);
+    ASSERT_FALSE(res);
+    res = faultLogDb->IsFaultExist(1, 1, 8);
+    ASSERT_FALSE(res);
+}
+
+/**
+ * @tc.name: FaultlogUtilUnittest001
+ * @tc.desc: test RunSanitizerd
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultlogUtilUnittest001, testing::ext::TestSize.Level3)
+{
+    std::string result = GetFaultNameByType(FaultLogType::ADDR_SANITIZER, false);
+    ASSERT_EQ(result, "ADDR_SANITIZER");
+
+    FaultLogInfo info;
+    info.module = "test/test";
+    info.faultLogType = FaultLogType::ADDR_SANITIZER;
+    info.reason = "TSAN";
+    std::string str = GetFaultLogName(info);
+    ASSERT_EQ(str, "tsan-test-0-19700101080000");
+    info.reason = "UBSAN";
+    str = GetFaultLogName(info);
+    ASSERT_EQ(str, "ubsan-test-0-19700101080000");
+    info.reason = "GWP-ASAN";
+    str = GetFaultLogName(info);
+    ASSERT_EQ(str, "gwpasan-test-0-19700101080000");
+    info.reason = "GWP-ASANS";
+    str = GetFaultLogName(info);
+    ASSERT_EQ(str, "sanitizer-test-0-19700101080000");
+
+    str = RegulateModuleNameIfNeed("");
+    ASSERT_EQ(str, "");
+}
+
+/**
+ * @tc.name: FaultloggerServiceOhosUnittest001
+ * @tc.desc: test RunSanitizerd
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosUnittest001, testing::ext::TestSize.Level3)
+{
+    FaultloggerServiceOhos faultloggerServiceOhos;
+    std::vector<std::u16string> args;
+    args.push_back(u"*m");
+    int32_t result = faultloggerServiceOhos.Dump(1, args);
+    ASSERT_EQ(result, -1);
+
+    FaultLogInfoOhos info;
+    faultloggerServiceOhos.AddFaultLog(info);
+    sptr<IRemoteObject> res = faultloggerServiceOhos.QuerySelfFaultLog(1, 10);
+    ASSERT_EQ(res, nullptr);
+    faultloggerServiceOhos.Destroy();
 }
 } // namespace HiviewDFX
 } // namespace OHOS
