@@ -32,24 +32,6 @@ SanitizerdCollector::~SanitizerdCollector()
 {
 }
 
-// Compute the stacktrace signature
-bool SanitizerdCollector::ComputeStackSignature(
-    const std::string& sanDump,
-    const std::string& sanSignature,
-    bool printDiagnostics) const
-{
-    unsigned stackHash = 0;
-
-    if (stackHash == 0) {
-        if (printDiagnostics) {
-            HILOG_ERROR(LOG_CORE, "Found not a stack, failing.\n");
-        }
-        return false;
-    }
-
-    return true;
-}
-
 bool SanitizerdCollector::IsDuplicate(const std::string hash) const
 {
     auto backIter = stacks_.find(hash);
