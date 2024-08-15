@@ -121,35 +121,6 @@ bool GetDfxBundleInfo(const std::string& bundleName, DfxBundleInfo& bundleInfo)
     return true;
 }
 
-int32_t CreateMultiTierDirectory(const std::string &directoryPath, const std::string &rootDirPath,
-                                 const uid_t dirOwner, const gid_t dirGroup)
-{
-    int32_t ret = -1;
-    uint32_t dirPathLen = directoryPath.length();
-    if (dirPathLen > PATH_MAX) {
-        return ret;
-    }
-    char tmpDirPath[PATH_MAX] = { 0 };
-    for (uint32_t i = 0; i < dirPathLen; ++i) {
-        tmpDirPath[i] = directoryPath[i];
-        if (i < rootDirPath.length() && directoryPath[i] != rootDirPath[i]) {
-            return ret;
-        } else if (i < rootDirPath.length() || tmpDirPath[i] != '/') {
-            continue;
-        }
-        if (access(tmpDirPath, 0) != 0) {
-            ret = mkdir(tmpDirPath, DEFAULT_LOG_DIR_MODE);
-            ret += chown(tmpDirPath, dirOwner, dirGroup);
-            if (ret != 0) {
-                HILOG_ERROR(LOG_CORE, "Fail to create dir %{public}s,  err: %{public}s.",
-                    tmpDirPath, strerror(errno));
-                return ret;
-            }
-        }
-    }
-    return 0;
-}
-
 static std::string GetCollectedDataSavePath(const T_SANITIZERD_PARAMS *params)
 {
     std::string faultLogPath = std::string(ROOT_FAULTLOG_LOG_PATH);
