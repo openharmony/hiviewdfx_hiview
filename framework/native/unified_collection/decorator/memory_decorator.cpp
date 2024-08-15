@@ -116,6 +116,12 @@ CollectResult<uint32_t> MemoryDecorator::CollectDdrFreq()
     return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
+CollectResult<int32_t> MemoryDecorator::GetGraphicUsage(int32_t pid, GraphicType type)
+{
+    auto task = [this, &type, &pid] { return memoryCollector_->GetGraphicUsage(pid, type); };
+    return Invoke(task, statInfoWrapper_, MEM_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
 void MemoryDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();

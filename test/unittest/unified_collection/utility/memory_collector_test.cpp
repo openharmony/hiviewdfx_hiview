@@ -19,7 +19,9 @@
 #include <regex>
 #include <string>
 
+#include "common_utils.h"
 #include "file_util.h"
+#include "string_util.h"
 #include "memory_collector.h"
 
 #include <gtest/gtest.h>
@@ -343,4 +345,58 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest016, TestSize.Level1)
         ASSERT_EQ(data.retCode, UcError::SUCCESS);
         ASSERT_GT(data.data, 0);
     }
+}
+
+int32_t GetGraphicPid()
+{
+    const std::string targetName = "m.ohos.systemui";
+
+    DIR *dir = opendir("/proc/");
+    if (dir == nullptr) {
+        return -1;
+    }
+    struct dirent *de = nullptr;
+    int32_t pid = -1;
+    while ((de = readdir(dir)) != nullptr) {
+        if (de->d_type != DT_DIR) {
+            continue;
+        }
+        pid = StringUtil::StrToInt(std::string(de->d_name));
+        if (pid <= 0) {
+            continue;
+        }
+        std::string processName = CommonUtils::GetProcNameByPid(pid);
+        if (processName == targetName) {
+            break;
+        }
+    }
+    closedir(dir);
+    return pid;
+}
+
+/**
+ * @tc.name: MemoryCollectorTest017
+ * @tc.desc: used to test MemoryCollector.GetGraphicUsage
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
+{
+    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+    int32_t pid = GetGraphicPid();
+    if (pid < 0) {
+        std::cout << "Get pid failed" << std::endl;
+        return;
+    }
+    CollectResult<int32_t> data = collector->GetGraphicUsage(pid);
+    ASSERT_EQ(data.retCode, UcError::SUCCESS);
+    std::cout << "GetGraphicUsage result:" << data.data << std::endl;
+    ASSERT_GT(data.data, 0);
+    CollectResult<int32_t> glData = collector->GetGraphicUsage(pid, GraphicType::GL);
+    ASSERT_EQ(glData.retCode, UcError::SUCCESS);
+    std::cout << "GetGraphicUsage gl result:" << glData.data << std::endl;
+    ASSERT_GT(glData.data, 0);
+    CollectResult<int32_t> graphicData = collector->GetGraphicUsage(pid, GraphicType::GRAPH);
+    ASSERT_EQ(graphicData.retCode, UcError::SUCCESS);
+    std::cout << "GetGraphicUsage graphic result:" << graphicData.data << std::endl;
+    ASSERT_GT(graphicData.data, 0);
 }
