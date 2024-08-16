@@ -18,12 +18,15 @@
 #include <common.h>
 #include <memory>
 #include <thread>
-
+#include <fstream>
+#include <sstream>
 #include "hiview_logger.h"
 #include "mem_profiler_decorator.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"
 #include "parameters.h"
+#include "app_mgr_client.h"
+#include "singleton.h"
 
 using namespace OHOS::Developtools::NativeDaemon;
 
@@ -37,6 +40,39 @@ constexpr int WAIT_EXIT_MILLS = 100;
 constexpr int FINAL_TIME = 3000;
 constexpr int PREPARE_TIME = 10;
 constexpr int PREPARE_THRESH = 2000;
+constexpr int APP_THRESH = 20000;
+
+static bool IsNumber(const std::string& str)
+{
+    return !str.empty() && std::find_if(str.begin(), str.end(), [](unsigned char c) {
+        return !std::isdigit(c);
+        }) == str.end();
+}
+
+static int GetUid(int pid)
+{
+    std::string pidStr = std::to_string(pid);
+    std::ifstream statusFile("/proc/" + pidStr + "/status");
+    if (!statusFile.is_open()) {
+        return -1;
+    }
+    std::string line;
+    std::string uidLabel = "Uid:";
+    std::string uid;
+    while (std::getline(statusFile, line)) {
+        if ((line.length() >= uidLabel.length()) && line.substr(0, uidLabel.length()) == uidLabel) {
+            std::stringstream is(line);
+            is >> uid;
+            is >> uid;
+            if (IsNumber(uid)) {
+                return stoi(uid);
+            } else {
+                break;
+            }
+        }
+    }
+    return -1;
+}
 
 int MemProfilerCollectorImpl::Prepare()
 {
@@ -110,6 +146,14 @@ int MemProfilerCollectorImpl::Start(int fd, ProfilerType type,
     if (!COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid)) {
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
+    }
+    if (GetUid(pid) >= APP_THRESH) {
+        auto client = DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance();
+        if (client == nullptr) {
+            HIVIEW_LOGE("AppMgrClient is nullptr");
+        } else {
+            client->SetAppFreezeFilter(pid);
+        }
     }
     std::shared_ptr<NativeMemoryProfilerSaConfig> config = std::make_shared<NativeMemoryProfilerSaConfig>();
     if (type == ProfilerType::MEM_PROFILER_LIBRARY) {
