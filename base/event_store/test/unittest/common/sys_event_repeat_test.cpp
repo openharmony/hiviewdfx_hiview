@@ -33,6 +33,7 @@ namespace HiviewDFX {
 namespace {
 constexpr char TEST_PATH[] = "/data/text/";
 constexpr int64_t TWO_HOURS = 2 * 60 * 60 * 1000;
+constexpr int MAX_DB_COUNT = 10000;
 class TestContext : public HiviewContext {
 public:
     std::string GetHiViewDirectory(HiviewContext::DirectoryType type)
@@ -100,7 +101,8 @@ HWTEST_F(SysEventRepeatTest, CheckEventRepeatTest_02, testing::ext::TestSize.Lev
     sysEventCreator.SetKeyValue("KEY", values);
     time_t now = time(nullptr);
     sysEventCreator.SetKeyValue("testTime", now);
-    sysEventCreator.SetKeyValue("FINGERPRINT", "123456");
+    auto testHash = "testhash" + std::to_string(now);
+    sysEventCreator.SetKeyValue("FINGERPRINT", testHash);
     std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
     sysEvent->SetLevel("CRITICAL");
     int64_t testSeq = 0;
@@ -117,9 +119,9 @@ HWTEST_F(SysEventRepeatTest, CheckEventRepeatTest_02, testing::ext::TestSize.Lev
     ASSERT_EQ(repeatSysEvent->log_, LOG_NOT_ALLOW_PACK|LOG_REPEAT);
 
     SysEventHashRecord sysEventHashRecord("WINDOWMANAGER", "NO_FOCUS_WINDOW");
-    sysEventHashRecord.eventHash = "123456";
+    sysEventHashRecord.eventHash = testHash;
     sysEventHashRecord.happentime = time(nullptr) - TWO_HOURS;
-    SysEventRepeatDb::GetInstance().Update(sysEventHashRecord);
+    ASSERT_TRUE(SysEventRepeatDb::GetInstance().Update(sysEventHashRecord));
     std::shared_ptr<SysEvent> repackSysEvent = std::make_shared<SysEvent>("test", nullptr, sysEventCreator);
     testSeq++;
     repackSysEvent->SetLevel("CRITICAL");
@@ -156,6 +158,28 @@ HWTEST_F(SysEventRepeatTest, CheckEventRepeatTest_03, testing::ext::TestSize.Lev
     repeatSysEvent->SetEventSeq(testSeq);
     EventStore::SysEventDao::CheckRepeat(repeatSysEvent);
     ASSERT_EQ(repeatSysEvent->log_, 0);
+}
+
+/**
+ * @tc.name: CheckEventRepeatTest_04
+ * @tc.desc: test the function of CheckEventRepeat.
+ * @tc.type: FUNC
+ */
+HWTEST_F(SysEventRepeatTest, CheckEventRepeatTest_04, testing::ext::TestSize.Level0)
+{
+    TestContext context;
+    HiviewGlobal::CreateInstance(context);
+    time_t now = time(nullptr);
+    SysEventHashRecord sysEventHashRecord("WINDOWMANAGER", "NO_FOCUS_WINDOW");
+    for (int i = 0; i < MAX_DB_COUNT; ++i) {
+        now++;
+        sysEventHashRecord.eventHash = "testhash" + std::to_string(now);
+        sysEventHashRecord.happentime = now - TWO_HOURS;
+        SysEventRepeatDb::GetInstance().Insert(sysEventHashRecord);
+    }
+    ASSERT_EQ(SysEventRepeatDb::GetInstance().QueryHappentime(sysEventHashRecord), sysEventHashRecord.happentime);
+    SysEventRepeatDb::GetInstance().CheckAndClearDb(now);
+    ASSERT_EQ(SysEventRepeatDb::GetInstance().QueryHappentime(sysEventHashRecord), 0);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
