@@ -137,6 +137,8 @@ private:
     int GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
+    void GetAppFreezeStack(int fd, int jsonFd, std::shared_ptr<SysEvent> event,
+        std::string& stack, const std::string& msg);
     bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
