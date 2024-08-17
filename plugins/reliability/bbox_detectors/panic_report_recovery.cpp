@@ -15,7 +15,6 @@
 
 #include "panic_report_recovery.h"
 
-#include <filesystem>
 #include <regex>
 #include <cstdlib>
 
@@ -115,32 +114,23 @@ bool InitPanicReport()
     return InitPanicConfigFile() ;
 }
 
-bool ClearFilesInDir(const std::string &dirPath)
+bool ClearFilesInDir(const std::filesystem::path& dirPath)
 {
-    namespace fs  = std::filesystem;
-    if (!fs::exists(dirPath) || fs::is_regular_file(dirPath)) {
-        HIVIEW_LOGE("The file %{public}s is not existed or is not an directory", dirPath.c_str());
+    if (!std::filesystem::is_directory(dirPath)) {
+        HIVIEW_LOGE("The file %{public}s is not a directory.", dirPath.c_str());
         return false;
     }
     bool ret = true;
-    std::error_code errorCode;
-    for (const auto& entry : fs::directory_iterator(dirPath)) {
-        if (fs::is_regular_file(entry.path())) {
-            if (!fs::remove(entry.path(), errorCode)) {
-                HIVIEW_LOGE("Failed to deleted %{public}s errorCode: %{public}d",
-                            entry.path().c_str(), errorCode.value());
-                ret = false;
-            }
-        } else if (fs::is_directory(entry.path())) {
-            if (!ClearFilesInDir(entry.path()) || !fs::remove(entry.path(), errorCode)) {
-                HIVIEW_LOGE("Failed to deleted %{public}s errorCode: %{public}d",
-                            entry.path().c_str(), errorCode.value());
-                ret = false;
-            }
+    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+        std::error_code errorCode;
+        if (!std::filesystem::remove_all(entry.path(), errorCode)) {
+            HIVIEW_LOGE("Failed to deleted %{public}s errorCode: %{public}d",
+                        entry.path().c_str(), errorCode.value());
+            ret = false;
         }
     }
     return ret;
-};
+}
 
 bool IsBootCompleted()
 {
