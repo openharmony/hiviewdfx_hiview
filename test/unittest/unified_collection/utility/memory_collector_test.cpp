@@ -347,33 +347,6 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest016, TestSize.Level1)
     }
 }
 
-int32_t GetGraphicPid()
-{
-    const std::string targetName = "m.ohos.systemui";
-
-    DIR *dir = opendir("/proc/");
-    if (dir == nullptr) {
-        return -1;
-    }
-    struct dirent *de = nullptr;
-    int32_t pid = -1;
-    while ((de = readdir(dir)) != nullptr) {
-        if (de->d_type != DT_DIR) {
-            continue;
-        }
-        pid = StringUtil::StrToInt(std::string(de->d_name));
-        if (pid <= 0) {
-            continue;
-        }
-        std::string processName = CommonUtils::GetProcNameByPid(pid);
-        if (processName == targetName) {
-            break;
-        }
-    }
-    closedir(dir);
-    return pid;
-}
-
 /**
  * @tc.name: MemoryCollectorTest017
  * @tc.desc: used to test MemoryCollector.GetGraphicUsage
@@ -382,8 +355,10 @@ int32_t GetGraphicPid()
 HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
 {
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    int32_t pid = GetGraphicPid();
-    if (pid < 0) {
+    auto systemuiPid = CommonUtils::GetPidByName("com.ohos.systemui");
+    auto launcherPid = CommonUtils::GetPidByName("com.ohos.sceneboard");
+    auto pid = static_cast<int32_t>(systemuiPid > 0 ? systemuiPid : launcherPid);
+    if (pid <= 0) {
         std::cout << "Get pid failed" << std::endl;
         return;
     }

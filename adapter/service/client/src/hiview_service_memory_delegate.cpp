@@ -29,5 +29,17 @@ CollectResult<int32_t> HiViewServiceMemoryDelegate::SetAppResourceLimit(UCollect
     HiviewServiceAbilityProxy proxy(service);
     return proxy.SetAppResourceLimit(memoryCaller).result_;
 }
+
+CollectResult<int32_t> HiViewServiceMemoryDelegate::GetGraphicUsage()
+{
+    auto service = RemoteService::GetHiViewRemoteService();
+    if (!service) {
+        CollectResult<int32_t> ret;
+        return ret;
+    }
+    int32_t pid = getprocpid();
+    HiviewServiceAbilityProxy proxy(service);
+    return proxy.GetGraphicUsage(pid).result_;
+}
 }
 }

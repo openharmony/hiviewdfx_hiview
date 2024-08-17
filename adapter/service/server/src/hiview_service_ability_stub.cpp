@@ -82,7 +82,8 @@ const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
 };
 
 const std::unordered_map<uint32_t, std::string> MEMORY_PERMISSION_MAP = {
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""}
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE), ""}
 };
 
 bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
@@ -227,8 +228,11 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemory
 {
     static std::unordered_map<uint32_t, RequestHandler> memoryRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT),
-         std::bind(&HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest, this,
-                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+             std::bind(&HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest, this,
+             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE),
+             std::bind(&HiviewServiceAbilityStub::HandleGetGraphicUsageRequest, this,
+              std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
     };
     return memoryRequestHandlers;
 }
@@ -526,6 +530,18 @@ int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     auto ret = SetAppResourceLimit(memoryCaller);
+    return WritePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleGetGraphicUsageRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    int32_t pid = 0;
+    if (!data.ReadInt32(pid)) {
+        HIVIEW_LOGW("HandleGetGraphicUsageRequest failed to read pid from parcel");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    auto ret = GetGraphicUsage(pid);
     return WritePracelableToMessage(reply, ret);
 }
 } // namespace HiviewDFX

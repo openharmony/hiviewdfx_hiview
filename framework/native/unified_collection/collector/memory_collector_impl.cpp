@@ -32,12 +32,13 @@
 #include "common_util.h"
 #include "common_utils.h"
 #include "file_util.h"
+#include "graphic_memory.h"
 #include "hiview_logger.h"
 #include "memory_decorator.h"
+#include "process_status.h"
 #include "string_util.h"
 #include "time_util.h"
-#include "process_status.h"
-#include "graphic_memory.h"
+
 
 const std::size_t MAX_FILE_SAVE_SIZE = 10;
 const std::size_t WIDTH = 12;
