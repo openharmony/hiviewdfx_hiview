@@ -229,7 +229,7 @@ HWTEST_F(BBoxDetectorUnitTest, BBoxDetectorUnitTest007, TestSize.Level1)
     eventLoop->StartLoop();
     EXPECT_CALL(*(eventLoop.get()), GetMockInterval()).WillRepeatedly(Return(1));
     EXPECT_CALL(hiviewContext, GetSharedWorkLoop()).WillRepeatedly(Return(eventLoop));
-    EXPECT_CALL(MockHisyseventUtil::GetInstance(), IsEventProcessed).WillOnce(Return(true));
+    EXPECT_CALL(MockHisyseventUtil::GetInstance(), IsEventProcessed).WillRepeatedly(Return(true));
     auto testPlugin = make_shared<BBoxDetectorPlugin>();
     testPlugin->SetHiviewContext(&hiviewContext);
     testPlugin->OnLoad();
