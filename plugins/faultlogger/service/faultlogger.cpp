@@ -255,7 +255,9 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
 {
     info.sectionMap["DEVICE_INFO"] = Parameter::GetString("const.product.name", "Unknown");
-    info.sectionMap["BUILD_INFO"] = Parameter::GetString("const.product.software.version", "Unknown");
+    if (info.sectionMap.find("BUILD_INFO") == info.sectionMap.end()) {
+        info.sectionMap["BUILD_INFO"] = Parameter::GetString("const.product.software.version", "Unknown");
+    }
     info.sectionMap["UID"] = std::to_string(info.id);
     info.sectionMap["PID"] = std::to_string(info.pid);
     info.module = RegulateModuleNameIfNeed(info.module);
