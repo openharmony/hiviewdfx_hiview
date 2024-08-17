@@ -232,7 +232,7 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemory
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE),
             std::bind(&HiviewServiceAbilityStub::HandleGetGraphicUsageRequest, this,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)},
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
     };
     return memoryRequestHandlers;
 }
