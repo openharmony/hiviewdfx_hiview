@@ -500,11 +500,61 @@ std::string EventLogger::GetAppFreezeFile(std::string& stackPath)
         HIVIEW_LOGE("File is not exist");
         return result;
     }
-
     FileUtil::LoadStringFromFile(stackPath, result);
+    if (result.find("Stack backtrace") != std::string::npos) {
+        std::string newName = stackPath + ".log";
+        FileUtil::RenameFile(stackPath, newName);
+        return result;
+    }
     bool isRemove = FileUtil::RemoveFile(stackPath.c_str());
     HIVIEW_LOGI("Remove file? isRemove:%{public}d", isRemove);
     return result;
+}
+
+void EventLogger::GetAppFreezeStack(int fd, int jsonFd, std::shared_ptr<SysEvent> event,
+    std::string& stack, const std::string& msg)
+{
+    std::string message;
+    std::string eventHandlerStr;
+    ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
+    std::string appRunningUniqueId = event->GetEventValue("APP_RUNNING_UNIQUE_ID");
+
+    std::string jsonStack = event->GetEventValue("STACK");
+    HIVIEW_LOGI("Current jsonStack is? jsonStack:%{public}s", jsonStack.c_str());
+    if (FileUtil::FileExists(jsonStack)) {
+        jsonStack = GetAppFreezeFile(jsonStack);
+    }
+
+    if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
+        jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
+        if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
+            stack = jsonStack;
+        }
+    } else {
+        bool isKernal = DfxJsonFormatter::FormatKernelStack(jsonStack, stack, true);
+        if (isKernal) {
+            jsonStack = stack;
+            stack = "";
+            if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
+                stack = jsonStack;
+            }
+        } else {
+            stack = jsonStack;
+            jsonStack = "[]";
+        }
+    }
+
+    GetFailedDumpStackMsg(stack, event);
+
+    if (jsonFd >= 0) {
+        HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "appRunningUniqueId", appRunningUniqueId);
+        FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
+    } else {
+        HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
+    }
 }
 
 bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
@@ -513,39 +563,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     std::string stack;
     std::string binderInfo = event -> GetEventValue("BINDER_INFO");
     if (FreezeJsonUtil::IsAppFreeze(event -> eventName_)) {
-        std::string message;
-        std::string eventHandlerStr;
-        ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
-        std::string appRunningUniqueId = event->GetEventValue("APP_RUNNING_UNIQUE_ID");
-
-        std::string jsonStack = event->GetEventValue("STACK");
-        HIVIEW_LOGI("Current jsonStack is? jsonStack:%{public}s", jsonStack.c_str());
-        if (FileUtil::FileExists(jsonStack)) {
-            jsonStack = GetAppFreezeFile(jsonStack);
-        }
-
-        if (!jsonStack.empty() && jsonStack[0] == '[') { // json stack info should start with '['
-            jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
-            if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack)) {
-                stack = jsonStack;
-            }
-        } else {
-            stack = jsonStack;
-            jsonStack = "[]";
-        }
-
-        GetFailedDumpStackMsg(stack, event);
-
-        if (jsonFd >= 0) {
-            HIVIEW_LOGI("success to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
-            FreezeJsonUtil::WriteKeyValue(jsonFd, "message", message);
-            FreezeJsonUtil::WriteKeyValue(jsonFd, "event_handler", eventHandlerStr);
-            FreezeJsonUtil::WriteKeyValue(jsonFd, "appRunningUniqueId", appRunningUniqueId);
-            FreezeJsonUtil::WriteKeyValue(jsonFd, "stack", jsonStack);
-        } else {
-            HIVIEW_LOGE("fail to open FreezeJsonFile! jsonFd: %{public}d", jsonFd);
-        }
-
+        GetAppFreezeStack(fd, jsonFd, event, stack, msg);
         if (!binderInfo.empty() && jsonFd >= 0) {
             HIVIEW_LOGI("Current binderInfo is? binderInfo:%{public}s", binderInfo.c_str());
             if (FileUtil::FileExists(binderInfo)) {
@@ -560,6 +578,12 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         HIVIEW_LOGI("Current stack is? stack:%{public}s", stack.c_str());
         if (FileUtil::FileExists(stack)) {
             stack = GetAppFreezeFile(stack);
+            std::string tempStack = "";
+            bool isKernal = DfxJsonFormatter::FormatKernelStack(stack, tempStack, false);
+            if (isKernal) {
+                stack = tempStack;
+                tempStack = "";
+            }
         }
         GetFailedDumpStackMsg(stack, event);
     }

@@ -25,6 +25,7 @@
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "string_util.h"
+#include "dfx_json_formatter.h"
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
@@ -78,8 +79,14 @@ int DumpStacktrace(int fd, int pid)
     if (!GetDump(pid, msg)) {
         DfxDumpCatcher dumplog;
         std::string ret;
-        if (!dumplog.DumpCatch(pid, 0, ret)) {
+        auto dumpResult = dumplog.DumpCatchProcess(pid, ret);
+        if (dumpResult == -1) {
             msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n" + ret;
+        } else if (dumpResult == 1) {
+            bool isKernal = DfxJsonFormatter::FormatKernelStack(ret, msg, false);
+            if (!isKernal) {
+                msg = ret;
+            }
         } else {
             msg = ret;
         }
