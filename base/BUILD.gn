@@ -96,13 +96,6 @@ ohos_source_set("hiview_base") {
 }
 
 ohos_shared_library("hiviewbase") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    cfi_vcall_icall_only = true
-    debug = false
-  }
   all_dependent_configs = [ ":hiview_base_config" ]
   public_configs = [ ":hiview_base_config" ]
   public_configs += [ "event_report:hiview_event_report_config" ]
