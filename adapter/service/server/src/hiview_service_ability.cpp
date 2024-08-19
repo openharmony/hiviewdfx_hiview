@@ -354,7 +354,7 @@ CollectResultParcelable<int32_t> HiviewServiceAbility::SetAppResourceLimit(UColl
 
 CollectResultParcelable<int32_t> HiviewServiceAbility::GetGraphicUsage(int32_t pid)
 {
-    auto handler = [&pid] (HiviewService* service) {
+    auto handler = [pid] (HiviewService* service) {
         return service->GetGraphicUsage(pid);
     };
     return TraceCalling<int32_t>(handler);

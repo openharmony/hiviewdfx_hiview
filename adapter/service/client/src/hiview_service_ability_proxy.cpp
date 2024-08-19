@@ -329,13 +329,9 @@ CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::SetAppResourceLimit(
         parcelHandler);
 }
 
-CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::GetGraphicUsage(int32_t pid)
+CollectResultParcelable<int32_t> HiviewServiceAbilityProxy::GetGraphicUsage()
 {
-    auto parcelHandler = [&pid] (MessageParcel& data) {
-        if (!data.WriteInt32(pid)) {
-            HIVIEW_LOGE("GetGraphicUsage failed. write pid failed");
-            return false;
-        }
+    auto parcelHandler = [] (MessageParcel& data) {
         return true;
     };
     return SendTraceRequest<int32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE, parcelHandler);

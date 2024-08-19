@@ -59,12 +59,12 @@ public:
     CollectResultParcelable<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller) override;
     CollectResultParcelable<double> GetSysCpuUsage() override;
     CollectResultParcelable<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller) override;
-    CollectResultParcelable<int32_t> GetGraphicUsage(int32_t pid) override;
 
 protected:
     void OnDump() override;
     void OnStart() override;
     void OnStop() override;
+    CollectResultParcelable<int32_t> GetGraphicUsage(int32_t pid) override;
 
 private:
     template<typename T>

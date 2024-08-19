@@ -29,6 +29,14 @@ public:
     virtual ~HiviewServiceAbilityStub() {};
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
+    CollectResultParcelable<int32_t> GetGraphicUsage() override
+    {
+        return CollectResultParcelable<int32_t>::Init();
+    };
+
+protected:
+    virtual CollectResultParcelable<int32_t> GetGraphicUsage(int32_t pid) = 0;
+
 private:
     int32_t HandleListRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
     int32_t HandleCopyRequest(MessageParcel& data, MessageParcel& reply, MessageOption& option);
