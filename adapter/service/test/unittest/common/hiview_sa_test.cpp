@@ -115,7 +115,7 @@ HWTEST_F(HiviewSATest, CommonTest003, testing::ext::TestSize.Level3)
         std::cout << "Get pid failed" << std::endl;
         return;
     }
-    CollectResult<int32_t> data = hiviewSAProxy->GetGraphicUsage(pid).result_;
+    CollectResult<int32_t> data = hiviewSAProxy->GetGraphicUsage().result_;
     ASSERT_EQ(data.retCode, UCollect::UcError::SUCCESS);
     std::cout << "GetGraphicUsage result:" << data.data << std::endl;
     ASSERT_GT(data.data, 0);
