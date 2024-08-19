@@ -739,7 +739,8 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         return;
     }
     AddPublicInfo(info);
-
+    // Internal reserved fields, avoid illegal privilege escalation to access files
+    info.sectionMap.erase("APPEND_ORIGIN_LOG");
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
     } else if (info.faultLogType == FaultLogType::APP_FREEZE) {

@@ -187,8 +187,15 @@ std::string GetThreadStack(const std::string& path, int32_t threadId)
     if (path.empty()) {
         return stack;
     }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        return stack;
+    }
+    if (strncmp(realPath, FaultLogger::FAULTLOG_BASE_FOLDER, strlen(FaultLogger::FAULTLOG_BASE_FOLDER)) != 0) {
+        return stack;
+    }
 
-    std::ifstream logFile(path);
+    std::ifstream logFile(realPath);
     if (!logFile.is_open()) {
         return stack;
     }
