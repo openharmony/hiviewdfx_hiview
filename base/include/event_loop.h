@@ -110,8 +110,8 @@ public:
 
     // process delayed event
     // interval in seconds
-    uint64_t AddTimerEvent(std::shared_ptr<EventHandler> handler, std::shared_ptr<Event> event, const Task &task,
-        uint64_t interval, bool repeat);
+    virtual uint64_t AddTimerEvent(std::shared_ptr<EventHandler> handler, std::shared_ptr<Event> event,
+                                   const Task &task, uint64_t interval, bool repeat);
     bool RemoveEvent(uint64_t seq);
 
     std::string GetRawName() const;

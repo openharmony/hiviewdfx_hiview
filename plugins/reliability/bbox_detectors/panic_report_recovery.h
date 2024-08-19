@@ -16,6 +16,7 @@
 #ifndef PANIC_REPORT_RECOVERY_H_
 #define PANIC_REPORT_RECOVERY_H_
 
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -47,6 +48,14 @@ BboxSaveLogFlags LoadBboxSaveFlagFromFile();
  * @return whether save completed.
  */
 bool SaveBboxLogFlagsToFile(const BboxSaveLogFlags& bboxSaveLogFlags);
+
+/**
+ * clearAllFiles in the path given.
+ *
+ * @param dirPath the path
+ * @return whether clear completed.
+ */
+bool ClearFilesInDir(const std::filesystem::path& dirPath);
 
 /**
  * Initialize the configuration file.

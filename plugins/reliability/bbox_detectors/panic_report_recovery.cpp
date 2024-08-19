@@ -32,10 +32,16 @@ namespace HiviewDFX {
 namespace PanicReport {
 DEFINE_LOG_LABEL(0xD002D11, "PanicReport");
 
+#ifdef UNITTEST
+constexpr const char* BBOX_PARAM_PATH = "/data/test/bbox/bbox.save.log.flags";
+constexpr const char* PANIC_LOG_PATH = "/data/test/bbox/panic_log/";
+#else
 constexpr const char* BBOX_PARAM_PATH = "/log/bbox/bbox.save.log.flags";
+constexpr const char* PANIC_LOG_PATH = "/log/bbox/panic_log/";
+#endif
 constexpr const char* FACTORY_RECOVERY_TIME_PATH = "/log/bbox/factory.recovery.time";
 constexpr const char* CMD_LINE = "/proc/cmdline";
-constexpr const char* PANIC_LOG_PATH = "/log/bbox/panic_log/";
+
 constexpr const char* LAST_FASTBOOT_LOG = "/ap_log/last_fastboot_log";
 constexpr const char* HM_KLOG = "/ap_log/hm_klog.txt";
 constexpr const char* HM_SNAPSHOT = "/ap_log/hm_snapshot.txt";
@@ -103,9 +109,27 @@ bool InitPanicReport()
     auto fileSize = FileUtil::GetFolderSize(PANIC_LOG_PATH);
     if (fileSize > ZIP_FILE_SIZE_LIMIT) {
         HIVIEW_LOGW("zip file size: %{public}" PRIu64 " is over limit", fileSize);
-        FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+        ClearFilesInDir(PANIC_LOG_PATH);
     }
     return InitPanicConfigFile() ;
+}
+
+bool ClearFilesInDir(const std::filesystem::path& dirPath)
+{
+    if (!std::filesystem::is_directory(dirPath)) {
+        HIVIEW_LOGE("The file %{public}s is not a directory.", dirPath.c_str());
+        return false;
+    }
+    bool ret = true;
+    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+        std::error_code errorCode;
+        if (!std::filesystem::remove_all(entry.path(), errorCode)) {
+            HIVIEW_LOGE("Failed to deleted %{public}s errorCode: %{public}d",
+                        entry.path().c_str(), errorCode.value());
+            ret = false;
+        }
+    }
+    return ret;
 }
 
 bool IsBootCompleted()
@@ -182,7 +206,7 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
         HIVIEW_LOGE("The path of target file: %{public}s is not existed", PANIC_LOG_PATH);
         return;
     }
-    FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+    ClearFilesInDir(PANIC_LOG_PATH);
     HiviewZipUnit hiviewZipUnit(GetBackupFilePath(timeStr));
     std::string lastFastBootLog = srcPath + LAST_FASTBOOT_LOG;
     AddFileToZip(hiviewZipUnit, lastFastBootLog);
@@ -199,7 +223,7 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
     uint64_t zipFileSize = FileUtil::GetFolderSize(PANIC_LOG_PATH);
     if (zipFileSize > ZIP_FILE_SIZE_LIMIT) {
         HIVIEW_LOGW("zip file size: %{public}" PRIu64 " is over limit", zipFileSize);
-        FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+        ClearFilesInDir(PANIC_LOG_PATH);
         return;
     }
     BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
