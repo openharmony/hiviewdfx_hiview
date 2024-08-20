@@ -50,6 +50,7 @@ void ParamEventManager::SubscriberEvent()
     EventFwk::MatchingSkills matchingSkills;
     matchingSkills.AddEvent(CONFIG_UPDATED_ACTION);
     EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
+    subscribeInfo.SetPermission("ohos.permission.RECEIVE_UPDATE_MESSAGE");
     subscriber_ = std::make_shared<ParamCommonEventSubscriber>(subscribeInfo, *this);
 
     bool subscribeResult = EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_);
