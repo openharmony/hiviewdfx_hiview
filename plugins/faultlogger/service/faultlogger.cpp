@@ -683,10 +683,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
     HIVIEW_LOGI("Start saving Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s.",
         info.pid, info.module.c_str(), info.reason.c_str());
-
+    info.sectionMap["PROCESS_NAME"] = info.module; // save process name
     std::string appName = GetApplicationNameById(info.id);
     if (!appName.empty()) {
-        info.module = appName;
+        info.module = appName; //if bundle name is not empty, replace module name by it.
     }
 
     HIVIEW_LOGD("nameProc %{public}s", info.module.c_str());

@@ -105,7 +105,7 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
                             info.sectionMap.at("HITRACE_TIME") : "",
             "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end() ?
                           info.sectionMap.at("SYSRQ_TIME") : "",
-            "PNAME", info.module.empty() ? "/" : info.module,
+            "PNAME", info.sectionMap["PROCESS_NAME"].empty() ? "/" : info.sectionMap["PROCESS_NAME"],
             "FIRST_FRAME", info.sectionMap["FIRST_FRAME"].empty() ? "/" : info.sectionMap["FIRST_FRAME"],
             "SECOND_FRAME", info.sectionMap["SECOND_FRAME"].empty() ? "/" : info.sectionMap["SECOND_FRAME"],
             "LAST_FRAME", info.sectionMap["LAST_FRAME"].empty() ? "/" : info.sectionMap["LAST_FRAME"],
