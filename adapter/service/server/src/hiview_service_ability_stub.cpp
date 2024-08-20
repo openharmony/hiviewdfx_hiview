@@ -218,7 +218,7 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuReq
 {
     static std::unordered_map<uint32_t, RequestHandler> cpuRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE),
-         [this](MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+         [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
                 return HandleGetSysCpuUsageRequest(data, reply, option);
             }
         }

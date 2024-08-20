@@ -35,19 +35,19 @@ void HiviewSATest::SetUp() {}
 
 void HiviewSATest::TearDown() {}
 
-sptr<IRemoteObject> GetHiviewRemoteObjext()
+sptr<IRemoteObject> GetHiviewRemoteObject()
 {
     sptr<ISystemAbilityManager> serviceManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (serviceManager == nullptr) {
         printf("serviceManager == nullptr");
         return nullptr;
     }
-    sptr<IRemoteObject> abilityObjext = serviceManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
-    if (abilityObjext == nullptr) {
+    sptr<IRemoteObject> abilityObject = serviceManager->CheckSystemAbility(DFX_SYS_HIVIEW_ABILITY_ID);
+    if (abilityObject == nullptr) {
         printf("abilityObjext == nullptr");
         return nullptr;
     }
-    return abilityObjext;
+    return abilityObject;
 }
 
 /**
@@ -58,7 +58,7 @@ sptr<IRemoteObject> GetHiviewRemoteObjext()
  */
 HWTEST_F(HiviewSATest, CommonTest001, testing::ext::TestSize.Level3)
 {
-    sptr<IRemoteObject> abilityObjext = GetHiviewRemoteObjext();
+    sptr<IRemoteObject> abilityObjext = GetHiviewRemoteObject();
     if (abilityObjext == nullptr) {
         printf("CheckSystemAbility error \r\n");
         assert(false);
@@ -102,7 +102,7 @@ HWTEST_F(HiviewSATest, CommonTest002, testing::ext::TestSize.Level3)
  */
 HWTEST_F(HiviewSATest, CommonTest003, testing::ext::TestSize.Level3)
 {
-    sptr<IRemoteObject> abilityObjext = GetHiviewRemoteObjext();
+    sptr<IRemoteObject> abilityObjext = GetHiviewRemoteObject();
     if (abilityObjext == nullptr) {
         printf("CheckSystemAbility error \r\n");
         return;
