@@ -81,9 +81,9 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(UColl
 
     TraceRetInfo traceRetInfo;
     if (timeLimit == FULL_TRACE_DURATION) {
-        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(happenTime);
+        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(0, happenTime);
     } else {
-        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(happenTime, timeLimit);
+        traceRetInfo = OHOS::HiviewDFX::Hitrace::DumpTrace(timeLimit, happenTime);
     }
     // check 2, judge whether to upload or not
     if (!controlPolicy->NeedUpload(traceRetInfo)) {

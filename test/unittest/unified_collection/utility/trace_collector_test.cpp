@@ -304,7 +304,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.retCode != UcError::SUCCESS);
+    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
