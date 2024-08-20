@@ -16,8 +16,8 @@
 #ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEMORY_DECORATOR_H
 #define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_MEMORY_DECORATOR_H
 
-#include "memory_collector.h"
 #include "decorator.h"
+#include "memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {

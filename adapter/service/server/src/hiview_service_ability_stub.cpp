@@ -82,7 +82,8 @@ const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
 };
 
 const std::unordered_map<uint32_t, std::string> MEMORY_PERMISSION_MAP = {
-    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""}
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""},
+    {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE), ""}
 };
 
 bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
@@ -217,8 +218,10 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuReq
 {
     static std::unordered_map<uint32_t, RequestHandler> cpuRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE),
-         std::bind(&HiviewServiceAbilityStub::HandleGetSysCpuUsageRequest, this,
-                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+         [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return HandleGetSysCpuUsageRequest(data, reply, option);
+            }
+        }
     };
     return cpuRequestHandlers;
 }
@@ -227,8 +230,15 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemory
 {
     static std::unordered_map<uint32_t, RequestHandler> memoryRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT),
-         std::bind(&HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest, this,
-                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)}
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return HandleSetAppResourceLimitRequest(data, reply, option);
+            }
+        },
+        {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE),
+            [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
+                return HandleGetGraphicUsageRequest(data, reply, option);
+            }
+        }
     };
     return memoryRequestHandlers;
 }
@@ -526,6 +536,17 @@ int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     auto ret = SetAppResourceLimit(memoryCaller);
+    return WritePracelableToMessage(reply, ret);
+}
+
+int32_t HiviewServiceAbilityStub::HandleGetGraphicUsageRequest(MessageParcel& data, MessageParcel& reply,
+    MessageOption& option)
+{
+    int32_t pid = IPCObjectStub::GetCallingPid();
+    if (pid < 0) {
+        return TraceErrCode::ERR_SEND_REQUEST;
+    }
+    auto ret = GetGraphicUsage(pid);
     return WritePracelableToMessage(reply, ret);
 }
 } // namespace HiviewDFX
