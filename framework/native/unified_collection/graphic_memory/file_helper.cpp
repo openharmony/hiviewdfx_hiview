@@ -13,35 +13,30 @@
  * limitations under the License.
  */
 
-#ifndef HIVIEWDFX_HIVIEW_GRAPHIC_MEMORY_GRAPHIC_MEMORY_H
-#define HIVIEWDFX_HIVIEW_GRAPHIC_MEMORY_GRAPHIC_MEMORY_H
+#include "file_helper.h"
 
-#include <cstdint>
-#include <map>
-#include <string>
+#include <fstream>
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace Graphic {
-enum class Type {
-    TOTAL,
-    GL,
-    GRAPH,
-};
 
-enum class ResultCode {
-    SUCCESS,
-    FAIL,
-};
+bool FileHelper::ReadFileByLine(const std::string& filePath, const DataHandler &func)
+{
+    std::ifstream file(filePath);
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            if (func(line)) {
+                break;
+            }
+        }
+        file.close();
+        return true;
+    }
+    return false;
+}
 
-struct CollectResult {
-    ResultCode retCode = ResultCode::FAIL;
-    int32_t graphicData = 0;
-};
-
-CollectResult GetGraphicUsage(int32_t pid, Type type = Type::TOTAL);
 } // namespace Graphic
 } // namespace HiviewDFX
 } // namespace OHOS
-
-#endif // HIVIEWDFX_HIVIEW_GRAPHIC_MEMORY_GRAPHIC_MEMORY_H

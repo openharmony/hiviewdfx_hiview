@@ -30,11 +30,18 @@ ohos_shared_library("libgraphic_memory") {
 
   public_configs = [ ":libgraphic_memory_config" ]
 
-  sources = [ "graphic_memory.cpp" ]
+  sources = [
+    "file_helper.cpp",
+    "graphic_memory.cpp",
+  ]
 
   deps = []
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "drivers_interface_memorytracker:libmemorytracker_proxy_1.0",
+    "graphic_2d:librender_service_client",
+    "hilog:libhilog",
+  ]
 
   part_name = "hiview"
   subsystem_name = "hiviewdfx"
