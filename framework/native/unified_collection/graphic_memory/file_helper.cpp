@@ -21,7 +21,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace Graphic {
 
-bool FileHelper::ReadFileByLine(const std::string& filePath, const DataHandler &func)
+bool FileHelper::ReadFileByLine(const std::string &filePath, const DataHandler &func)
 {
     std::ifstream file(filePath);
     if (file.is_open()) {
