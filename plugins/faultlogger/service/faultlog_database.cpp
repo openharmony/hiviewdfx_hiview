@@ -48,7 +48,8 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
         return false;
     }
     auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, rawData);
-    HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", sysEvent->AsJsonStr().c_str());
+    constexpr string::size_type FIRST_200_BYTES = 200;
+    HIVIEW_LOGI("parse FaultLogInfo from %{public}s.", sysEvent->AsJsonStr().substr(0, FIRST_200_BYTES).c_str());
     constexpr int64_t DEFAULT_INT_VALUE = 0;
     info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
     if (info.time == DEFAULT_INT_VALUE) {
