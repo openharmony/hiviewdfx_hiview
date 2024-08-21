@@ -916,11 +916,9 @@ bool Faultlogger::GetHilog(int32_t pid, std::string& log) const
         _exit(rc);
     } else {
         syscall(SYS_close, fds[1]);
-
         // read log from fds[0]
-        char buffer[READ_HILOG_BUFFER_SIZE] = {0};
         while (true) {
-            (void)memset_s(buffer, sizeof(buffer), 0, sizeof(buffer));
+            char buffer[READ_HILOG_BUFFER_SIZE] = {0};
             ssize_t nread = TEMP_FAILURE_RETRY(read(fds[0], buffer, sizeof(buffer) - 1));
             if (nread <= 0) {
                 HIVIEW_LOGI("read hilog finished");
