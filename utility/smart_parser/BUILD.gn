@@ -52,6 +52,38 @@ ohos_source_set("smart_parser") {
   ]
 }
 
+ohos_source_set("smart_parser_with_cfi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  sources = [
+    "./feature_analysis/feature_analysis.cpp",
+    "./feature_analysis/log_util.cpp",
+    "./rule/compose_rule.cpp",
+    "./rule/extract_rule.cpp",
+    "./rule/rule.cpp",
+    "smart_parser.cpp",
+  ]
+
+  configs = [ ":smart_parser_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "jsoncpp:jsoncpp",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "config:config",
+  ]
+}
+
 group("moduletest") {
   testonly = true
   deps = [ "test:SmartParserModuleTest" ]

@@ -41,6 +41,37 @@ ohos_source_set("log_analyzer") {
   part_name = "hiview"
 }
 
+ohos_source_set("log_analyzer_with_cfi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
+  include_dirs = [
+    "//base/hiviewdfx/hiview/utility/smart_parser",
+    "//base/hiviewdfx/hiview/utility/common_utils/include",
+  ]
+
+  public_configs = [ ":faultlogger_common_config" ]
+
+  sources = [ "log_analyzer.cpp" ]
+
+  deps = [
+    ":faultlogger_common_with_cfi",
+    "$hiview_root/utility/common_utils:hiview_reliability_common_utils_with_cfi",
+    "$hiview_root/utility/smart_parser:smart_parser_with_cfi",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+  ]
+
+  part_name = "hiview"
+}
+
 ohos_source_set("faultlogger_common") {
   public_configs = [ ":faultlogger_common_config" ]
   sources = [

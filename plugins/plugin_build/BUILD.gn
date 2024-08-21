@@ -54,6 +54,7 @@ ohos_shared_library("bdfr") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
 
@@ -61,7 +62,7 @@ ohos_shared_library("bdfr") {
     ":bdfr_plugin_config",
     "$hiview_plugin/faultlogger:faultlogger",
     "$hiview_plugin/faultlogger:libfaultlogger",
-    "$hiview_plugin/reliability/bbox_detectors:bbox_detector",
+    "$hiview_plugin/reliability/bbox_detectors:bbox_detector_with_cfi",
   ]
 
   external_deps = [
