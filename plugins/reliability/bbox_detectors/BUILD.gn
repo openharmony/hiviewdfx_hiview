@@ -49,6 +49,38 @@ ohos_source_set("bbox_detector") {
   ]
 }
 
+ohos_source_set("bbox_detector_with_cfi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  sources = [
+    "bbox_detector_plugin.cpp",
+    "hisysevent_util.cpp",
+    "panic_report_recovery.cpp",
+  ]
+
+  configs = [ ":bbox_detector_config" ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "libxml2:libxml2",
+    "zlib:shared_libz",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "config:config",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [ "test:BBoxDetectorUnitTest" ]

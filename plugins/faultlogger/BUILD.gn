@@ -36,10 +36,17 @@ ohos_shared_library("libfaultlogger") {
 }
 
 ohos_source_set("faultlogger") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
   part_name = "hiview"
   deps = [
     "config:faultloggerPipeline",
-    "service:faultlogger_service",
+    "service:faultlogger_service_with_cfi",
   ]
 
   external_deps = [ "hilog:libhilog" ]
