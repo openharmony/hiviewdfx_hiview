@@ -117,7 +117,7 @@ void FuzzServiceInterfaceCreateTempFaultLogFile(const uint8_t* data, size_t size
     int64_t time;
     int32_t id;
     int32_t faultType;
-    int offsetTotalLength = sizeof(time) + sizeof(id) + sizeof(faultType);
+    int offsetTotalLength = sizeof(time) + sizeof(id) + sizeof(faultType) + FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     if (offsetTotalLength > size) {
         return;
     }
@@ -126,7 +126,8 @@ void FuzzServiceInterfaceCreateTempFaultLogFile(const uint8_t* data, size_t size
     STREAM_TO_VALUEINFO(data, id);
     STREAM_TO_VALUEINFO(data, faultType);
 
-    std::string module = std::string(reinterpret_cast<const char*>(data), size);
+    std::string module(reinterpret_cast<const char*>(data), FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH);
+    data += FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH;
     faultLogManager->CreateTempFaultLogFile(time, id, faultType, module);
 }
 
