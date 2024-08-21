@@ -54,6 +54,18 @@ int ShellCatcher::InInputProcesscatcher(int writeFd)
         case CATCHER_INPUT_HILOG:
             ret = execl("/system/bin/hilog", "hilog", "-T", "InputKeyFlow", "-x", nullptr);
             break;
+        case CATCHER_EEC:
+            {
+                std::string cmd = "-b EventExclusiveCommander getAllEventExclusiveCaller";
+                ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
+            }
+            break;
+        case CATCHER_GEC:
+            {
+                std::string cmd = "-b SCBGestureManager getAllGestureEnableCaller";
+                ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
+            }
+            break;
         default:
             break;
     }
