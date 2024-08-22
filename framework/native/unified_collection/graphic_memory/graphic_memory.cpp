@@ -62,8 +62,8 @@ int32_t MemoryTrackerGetGLByPid(int32_t pid)
 int32_t RsGetGLByPid(int32_t pid)
 {
     using namespace Rosen;
-    auto &rsClient = RSInterfaces::GetInstance();
-    std::unique_ptr<MemoryGraphic> memGraphic = std::make_unique<MemoryGraphic>(rsClient.GetMemoryGraphic(pid));
+    std::unique_ptr<MemoryGraphic> memGraphic =
+        std::make_unique<MemoryGraphic>(RSInterfaces::GetInstance().GetMemoryGraphic(pid));
     if (memGraphic == nullptr) {
         return 0;
     }
