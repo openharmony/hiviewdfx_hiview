@@ -591,6 +591,7 @@ void EventLogger::WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int or
     int kernelFd = logStore_->CreateLogFile(logFile);
     if (kernelFd >= 0) {
         FileUtil::SaveStringToFd(kernelFd, kernelStack);
+        close(kernelFd);
         HIVIEW_LOGD("Success WriteKernelStackToFile: %{public}s.", path.c_str());
     }
 }

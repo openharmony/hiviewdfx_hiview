@@ -23,7 +23,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
 int DumpStacktrace(int fd, int pid);
-int WriteKernelStackToFd(int originFd, const std::string& msg);
+int WriteKernelStackToFd(int originFd, const std::string& msg, int pid);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

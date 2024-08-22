@@ -26,6 +26,8 @@
 #include "hiview_logger.h"
 #include "string_util.h"
 #include "dfx_json_formatter.h"
+#include "time_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
@@ -34,7 +36,7 @@ static std::mutex dumpMutex;
 static std::condition_variable getSync;
 static constexpr int DUMP_KERNEL_STACK_SUCCESS = 1;
 static constexpr int DUMP_STACK_FAILED = -1;
-
+static constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
 bool GetDump(int pid, std::string& msg)
 {
     std::unique_lock lock(dumpMutex);
@@ -72,13 +74,13 @@ void FinshDump(int pid, const std::string& msg)
     getSync.notify_all();
 }
 
-int WriteKernelStackToFd(int originFd, const std::string& msg)
+int WriteKernelStackToFd(int originFd, const std::string& msg, int pid)
 {
-    std::string logPath = "/data/log/eventlog";
+    std::string logPath = "/data/log/eventlog/";
     std::vector<std::string> files;
     FileUtil::GetDirFiles(logPath, files, false);
-    std::string filterName = "-" + std::to_string(originFd);
-    std::string targetPath;
+    std::string filterName = "-KernelStack-" + std::to_string(originFd);
+    std::string targetPath = "";
     for (auto& fileName : files) {
         if (fileName.find(filterName) != std::string::npos) {
             targetPath = fileName;
@@ -86,9 +88,20 @@ int WriteKernelStackToFd(int originFd, const std::string& msg)
         }
     }
     int fd = -1;
-    std::string realPath;
+    std::string realPath = "";
     if (FileUtil::PathToRealPath(targetPath, realPath)) {
         fd = open(realPath.c_str(), O_WRONLY | O_APPEND);
+    } else {
+        std::string procName = CommonUtils::GetProcFullNameByPid(pid);
+        if (procName.empty()) {
+            return -1;
+        }
+        auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+        std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
+        std::string logName = procName + "-" + std::to_string(pid) +
+            "-" + formatTime + filterName + ".log";
+        realPath = logPath + logName;
+        fd = open(realPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     }
     if (fd >= 0) {
         FileUtil::SaveStringToFd(fd, msg);
@@ -114,7 +127,7 @@ int DumpStacktrace(int fd, int pid)
             if (!DfxJsonFormatter::FormatKernelStack(ret, msg, false)) {
                 msg = "Failed to format kernel stack for " + std::to_string(pid) + "\n";
             }
-            WriteKernelStackToFd(fd, ret);
+            WriteKernelStackToFd(fd, ret, pid);
         } else {
             msg = ret;
         }
