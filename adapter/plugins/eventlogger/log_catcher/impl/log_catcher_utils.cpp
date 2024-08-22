@@ -17,7 +17,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
-#include <string>
+#include <fcntl.h>
 
 #include "dfx_dump_catcher.h"
 
@@ -32,6 +32,8 @@ namespace LogCatcherUtils {
 static std::map<int, std::shared_ptr<std::pair<bool, std::string>>> dumpMap;
 static std::mutex dumpMutex;
 static std::condition_variable getSync;
+static constexpr int DUMP_KERNEL_STACK_SUCCESS = 1;
+static constexpr int DUMP_STACK_FAILED = -1;
 
 bool GetDump(int pid, std::string& msg)
 {
@@ -70,6 +72,32 @@ void FinshDump(int pid, const std::string& msg)
     getSync.notify_all();
 }
 
+int WriteKernelStackToFd(int originFd, const std::string& msg)
+{
+    std::string logPath = "/data/log/eventlog";
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(logPath, files, false);
+    std::string filterName = "-" + std::to_string(originFd);
+    std::string targetPath;
+    for (auto& fileName : files) {
+        if (fileName.find(filterName) != std::string::npos) {
+            targetPath = fileName;
+            break;
+        }
+    }
+    int fd = -1;
+    std::string realPath;
+    if (FileUtil::PathToRealPath(targetPath, realPath)) {
+        fd = open(realPath.c_str(), O_WRONLY | O_APPEND);
+    }
+    if (fd >= 0) {
+        FileUtil::SaveStringToFd(fd, msg);
+        close(fd);
+        return 0;
+    }
+    return -1;
+}
+
 int DumpStacktrace(int fd, int pid)
 {
     if (fd < 0) {
@@ -80,13 +108,13 @@ int DumpStacktrace(int fd, int pid)
         DfxDumpCatcher dumplog;
         std::string ret;
         auto dumpResult = dumplog.DumpCatchProcess(pid, ret);
-        if (dumpResult == -1) {
+        if (dumpResult == DUMP_STACK_FAILED) {
             msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n" + ret;
-        } else if (dumpResult == 1) {
-            bool isKernal = DfxJsonFormatter::FormatKernelStack(ret, msg, false);
-            if (!isKernal) {
-                msg = ret;
+        } else if (dumpResult == DUMP_KERNEL_STACK_SUCCESS) {
+            if (!DfxJsonFormatter::FormatKernelStack(ret, msg, false)) {
+                msg = "Failed to format kernel stack for " + std::to_string(pid) + "\n";
             }
+            WriteKernelStackToFd(fd, ret);
         } else {
             msg = ret;
         }
@@ -97,7 +125,6 @@ int DumpStacktrace(int fd, int pid)
         msg = "dumpCatch return empty stack!!!!";
     }
     FileUtil::SaveStringToFd(fd, msg);
-    
     return 0;
 }
 }

@@ -84,7 +84,6 @@ private:
         "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
         "BUSSINESS_THREAD_BLOCK_6S"
     };
-
 #ifdef WINDOW_MANAGER_ENABLE
     static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
     static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
@@ -137,8 +136,13 @@ private:
     int GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
-    void GetAppFreezeStack(int fd, int jsonFd, std::shared_ptr<SysEvent> event,
-        std::string& stack, const std::string& msg);
+    void GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
+        std::string& stack, const std::string& msg, std::string& kernelStack);
+    bool IsKernelStack(const std::string& stack);
+    void GetNoJsonStack(std::string& stack, std::string& contentStack, std::string& kernelStack, bool isFormat);
+    void ParsePeerStack(std::string& binderInfo, std::string& binderPeerStack);
+    void WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int originFd,
+        const std::string& kernelStack);
     bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
