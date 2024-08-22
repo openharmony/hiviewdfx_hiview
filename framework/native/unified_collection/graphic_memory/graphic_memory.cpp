@@ -39,33 +39,40 @@ struct DmaInfo {
 
 const int BYTE_PER_KB = 1024;
 
-int32_t GetGLByPid(int32_t pid)
+int32_t MemoryTrackerGetGLByPid(int32_t pid)
 {
     using namespace HDI::Memorytracker::V1_0;
-    using namespace Rosen;
-    int result = 0;
     sptr<IMemoryTrackerInterface> memtrack = IMemoryTrackerInterface::Get(true);
     if (memtrack == nullptr) {
-        return result;
+        return 0;
     }
     std::vector<MemoryRecord> records;
-    if (memtrack->GetDevMem(pid, MEMORY_TRACKER_TYPE_GL, records) == HDF_SUCCESS) {
-        int32_t value = 0;
-        for (const auto& record : records) {
-            if ((static_cast<uint32_t>(record.flags) & FLAG_UNMAPPED) == FLAG_UNMAPPED) {
-                value = static_cast<int32_t>(record.size / BYTE_PER_KB);
-                break;
-            }
-        }
-        result = value;
+    if (memtrack->GetDevMem(pid, MEMORY_TRACKER_TYPE_GL, records) != HDF_SUCCESS) {
+        return 0;
     }
-    auto& rsClient = RSInterfaces::GetInstance();
-    std::unique_ptr<MemoryGraphic> memGraphic = std::make_unique<MemoryGraphic>(rsClient.GetMemoryGraphic(pid));
+    auto it = std::find_if(records.begin(), records.end(), [](const auto &record) -> bool {
+        return (static_cast<uint32_t>(record.flags) & FLAG_UNMAPPED) == FLAG_UNMAPPED;
+    });
+    if (it == records.end()) {
+        return 0;
+    }
+    return static_cast<int32_t>(it->size / BYTE_PER_KB);
+}
+
+int32_t RsGetGLByPid(int32_t pid)
+{
+    using namespace Rosen;
+    std::unique_ptr<MemoryGraphic> memGraphic =
+        std::make_unique<MemoryGraphic>(RSInterfaces::GetInstance().GetMemoryGraphic(pid));
     if (memGraphic == nullptr) {
-        return result;
+        return 0;
     }
-    result += memGraphic->GetGpuMemorySize() / BYTE_PER_KB;
-    return result;
+    return memGraphic->GetGpuMemorySize() / BYTE_PER_KB;
+}
+
+int32_t GetGLByPid(int32_t pid)
+{
+    return MemoryTrackerGetGLByPid(pid) + RsGetGLByPid(pid);
 }
 
 void CreateDmaInfo(const std::string &line, std::map<uint64_t, DmaInfo> &dmaInfoMap)
@@ -91,27 +98,19 @@ int32_t GetGraphByPid(pid_t pid)
 {
     std::string path = "/proc/process_dmabuf_info";
     std::map<uint64_t, DmaInfo> dmaInfoMap;
-    std::string content;
-    FileHelper::ReadFileByLine(path, [&](std::string &line) -> bool {
+    FileHelper::ReadFileByLine(path, [&dmaInfoMap](std::string &line) -> bool {
         CreateDmaInfo(line, dmaInfoMap);
         return false;
     });
 
-    std::map<uint32_t, uint64_t> dmaMap;
-    for (const auto &it : dmaInfoMap) {
-        auto dma = dmaMap.find(it.second.pid);
-        if (dma != dmaMap.end()) {
-            dma->second += it.second.size;
-        } else {
-            dmaMap.insert(std::pair<uint32_t, uint64_t>(it.second.pid, it.second.size));
+    int32_t graph = 0;
+    for (const auto &pair : dmaInfoMap) {
+        if (static_cast<pid_t>(pair.second.pid) == pid) {
+            graph += pair.second.size;
         }
     }
 
-    auto it = dmaMap.find(pid);
-    if (it == dmaMap.end()) {
-        return 0;
-    }
-    return static_cast<int32_t>(it->second);
+    return graph;
 }
 } // namespace
 

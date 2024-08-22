@@ -16,6 +16,13 @@
 #include "file_helper.h"
 
 #include <fstream>
+#include "hilog/log.h"
+
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002D12
+
+#undef LOG_TAG
+#define LOG_TAG "file_helper"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -24,17 +31,19 @@ namespace Graphic {
 bool FileHelper::ReadFileByLine(const std::string &filePath, const DataHandler &func)
 {
     std::ifstream file(filePath);
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (func(line)) {
-                break;
-            }
-        }
-        file.close();
-        return true;
+    if (!file.is_open()) {
+        HILOG_ERROR(LOG_CORE, "file[%{public}s] open failed.", filePath.c_str());
+        return false;
     }
-    return false;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (func(line)) {
+            break;
+        }
+    }
+    file.close();
+    return true;
 }
 
 } // namespace Graphic
