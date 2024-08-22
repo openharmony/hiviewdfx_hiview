@@ -60,6 +60,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("cmd:rs", [this] { this->RSUsageCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:mmi", [this] { this->MMIUsageCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:dms", [this] { this->DMSUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:eec", [this] { this->EECUsageCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:gec", [this] { this->GECUsageCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:ss", [this] { this->Screenshot(); }));
     captureList_.insert(std::pair<std::string, capture>("T", [this] { this->HilogCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("t", [this] { this->LightHilogCapture(); }));
@@ -328,6 +330,22 @@ void EventLogTask::DMSUsageCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
     capture->Initialize("hidumper -s DisplayManagerService -a -a", ShellCatcher::CATCHER_DMS, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::EECUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s 4606 -a '-b EventExclusiveCommander getAllEventExclusiveCaller'",
+        ShellCatcher::CATCHER_EEC, pid_);
+    tasks_.push_back(capture);
+}
+
+void EventLogTask::GECUsageCapture()
+{
+    auto capture = std::make_shared<ShellCatcher>();
+    capture->Initialize("hidumper -s 4606 -a '-b SCBGestureManager getAllGestureEnableCaller'",
+        ShellCatcher::CATCHER_GEC, pid_);
     tasks_.push_back(capture);
 }
 

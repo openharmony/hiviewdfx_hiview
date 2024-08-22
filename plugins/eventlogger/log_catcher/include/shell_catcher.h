@@ -42,6 +42,8 @@ public:
         CATCHER_RS,
         CATCHER_MMI,
         CATCHER_DMS,
+        CATCHER_EEC,
+        CATCHER_GEC,
         CATCHER_SNAPSHOT,
         CATCHER_HILOG,
         CATCHER_LIGHT_HILOG,

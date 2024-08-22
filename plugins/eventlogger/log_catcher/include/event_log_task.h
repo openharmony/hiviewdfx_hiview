@@ -82,6 +82,8 @@ private:
     void RSUsageCapture();
     void MMIUsageCapture();
     void DMSUsageCapture();
+    void EECUsageCapture();
+    void GECUsageCapture();
     void Screenshot();
     void HilogCapture();
     void LightHilogCapture();
