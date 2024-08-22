@@ -28,6 +28,7 @@
 #include "hiview_logger.h"
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
+#include "memory_collector.h"
 #include "sys_event.h"
 #include "time_util.h"
 #include "trace_manager.h"
@@ -55,6 +56,7 @@ void HiviewService::StartService()
 
 void HiviewService::DumpRequestDispatcher(int fd, const std::vector<std::string> &cmds)
 {
+    using namespace OHOS::HiviewDFX::UCollectUtil;
     if (fd < 0) {
         HIVIEW_LOGW("invalid fd.");
         return;
@@ -75,6 +77,13 @@ void HiviewService::DumpRequestDispatcher(int fd, const std::vector<std::string>
     if ((cmds.size() >= MIN_SUPPORT_CMD_SIZE) && (cmds[0] == "-p")) {
         DumpPluginInfo(fd, cmds);
         return;
+    }
+
+    if (cmds.size() == 2 && cmds[0] == "-graphic") {
+        dprintf(fd, "%s %s", cmds[0].c_str(), cmds[1].c_str());
+        std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+        CollectResult<int32_t> data = collector->GetGraphicUsage(std::stoi(cmds[1]));
+        dprintf(fd, "GetGraphicUsage pid=%d, total=%d", std::stoi(cmds[1]), data.data);
     }
 
     PrintUsage(fd);

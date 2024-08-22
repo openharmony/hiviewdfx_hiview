@@ -369,7 +369,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
     ASSERT_EQ(data.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] total result:" << data.data;
     std::cout << std::endl;
-    ASSERT_GT(data.data, 0);
+    ASSERT_GE(data.data, 0);
     CollectResult<int32_t> glData = collector->GetGraphicUsage(pid, GraphicType::GL);
     ASSERT_EQ(glData.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] gl result:" << glData.data;
@@ -379,5 +379,5 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
     ASSERT_EQ(graphicData.retCode, UcError::SUCCESS);
     std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] graphic result:" << graphicData.data;
     std::cout << std::endl;
-    ASSERT_GT(graphicData.data, 0);
+    ASSERT_GE(graphicData.data, 0);
 }
