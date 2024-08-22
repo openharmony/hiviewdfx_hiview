@@ -657,8 +657,12 @@ HWTEST_F(EventloggerCatcherTest, LogCatcherUtilsTest_001, TestSize.Level1)
     EXPECT_EQ(ret, -1);
     LogCatcherUtils::DumpStacktrace(1, pid);
     LogCatcherUtils::DumpStacktrace(2, pid);
-    ret = LogCatcherUtils::WriteKernelStackToFd(2, "Test");
-    printf("WriteKernelStackToFd result: %d\n", ret);
+    ret = LogCatcherUtils::WriteKernelStackToFd(2, "Test", -1);
+    EXPECT_EQ(ret, -1);
+    ret = LogCatcherUtils::WriteKernelStackToFd(200, "Test\n", getprocpid());
+    EXPECT_EQ(ret, 0);
+    ret = LogCatcherUtils::WriteKernelStackToFd(200, "Test\n", getprocpid());
+    EXPECT_EQ(ret, 0);
 }
 } // namesapce HiviewDFX
 } // namespace OHOS
