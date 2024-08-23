@@ -86,8 +86,6 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
     sysEvent1->SetEventValue("eventLog_action", "pb:1");
     std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent1);
 #ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->isRegisterFocusListener = true;
-    EXPECT_EQ(eventLogger->OnEvent(event1), true);
     sptr<Rosen::FocusChangeInfo> focusChangeInfo;
     sptr<EventFocusListener> eventFocusListener_ = EventFocusListener::GetInstance();
     eventFocusListener_->OnFocused(focusChangeInfo);
@@ -298,8 +296,8 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_008, TestSize.Level3)
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
 #ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
+    EventFocusListener::RegisterFocusListener();
+    EventFocusListener::isRegistered_ = true;
 #endif
     uint64_t curentTime = TimeUtil::GetMilliseconds();
     for (int i = 0; i < 5 ; i++) {
@@ -338,27 +336,27 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_009, TestSize.Level3)
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
 #ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
     uint64_t curentTime = TimeUtil::GetMilliseconds();
     while (eventLogger->backTimes_.size() < 4) {
         eventLogger->backTimes_.push_back(curentTime);
         curentTime += 100;
     }
-#endif
+
     std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
         nullptr, jsonStr);
     sysEvent2->SetEventValue("PID", pid);
     sysEvent2->happenTime_ = TimeUtil::GetMilliseconds();
-#ifdef WINDOW_MANAGER_ENABLE
+    EventFocusListener::lastChangedTime_ = 0;
     eventLogger->ReportUserPanicWarning(sysEvent2, pid);
 #endif
 
     std::shared_ptr<SysEvent> sysEvent3 = std::make_shared<SysEvent>("FREQUENT_CLICK_WARNING",
         nullptr, jsonStr);
     sysEvent3->SetEventValue("PID", pid);
-    sysEvent3->happenTime_ = TimeUtil::GetMilliseconds();
+    sysEvent3->happenTime_ = 4000; // test value
 #ifdef WINDOW_MANAGER_ENABLE
+    eventLogger->ReportUserPanicWarning(sysEvent3, pid);
+    sysEvent3->happenTime_ = 2500; // test value
     eventLogger->ReportUserPanicWarning(sysEvent3, pid);
 #endif
     EXPECT_TRUE(true);
@@ -374,18 +372,14 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_010, TestSize.Level3)
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
-#ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
-#endif
     std::string testName = "FREQUENT_CLICK_WARNING";
     std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
     event->eventName_ = testName;
     event->SetEventValue("PID", pid);
 #ifdef WINDOW_MANAGER_ENABLE
+    EventFocusListener::lastChangedTime_ = 900; // test value
     event->happenTime_ = 1000; // test value
-    eventLogger->eventFocusListener_->lastChangedTime_ = 900; // test value
     eventLogger->ReportUserPanicWarning(event, pid);
     EXPECT_TRUE(eventLogger->backTimes_.empty());
     event->happenTime_ = 4000; // test value
@@ -405,10 +399,6 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_011, TestSize.Level3)
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
-#ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
-#endif
     std::string testName = "EventLoggerTest_011";
     std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
@@ -416,8 +406,8 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_011, TestSize.Level3)
     event->SetEventValue("PID", pid);
 #ifdef WINDOW_MANAGER_ENABLE
     EXPECT_TRUE(eventLogger->backTimes_.empty());
+    EventFocusListener::lastChangedTime_ = 0; // test value
     event->happenTime_ = 3000; // test value
-    eventLogger->eventFocusListener_->lastChangedTime_ = 0; // test value
     eventLogger->ReportUserPanicWarning(event, pid);
     EXPECT_EQ(eventLogger->backTimes_.size(), 1);
     while (eventLogger->backTimes_.size() <= 5) {
@@ -440,17 +430,15 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_012, TestSize.Level3)
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
-#ifdef WINDOW_MANAGER_ENABLE
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
     std::string testName = "EventLoggerTest_012";
     std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
     event->eventName_ = testName;
     event->SetEventValue("PID", pid);
+#ifdef WINDOW_MANAGER_ENABLE
     EXPECT_TRUE(eventLogger->backTimes_.empty());
+    EventFocusListener::lastChangedTime_ = 0; // test value
     event->happenTime_ = 5000; // test value
-    eventLogger->eventFocusListener_->lastChangedTime_ = 0; // test value
     while (eventLogger->backTimes_.size() < 5) {
         int count = 1000; // test value
         eventLogger->backTimes_.push_back(count++);
@@ -504,12 +492,12 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_013, TestSize.Level3)
 HWTEST_F(EventLoggerTest, EventLoggerTest_014, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
-#ifdef WINDOW_MANAGER_ENABLE
     eventLogger->OnLoad();
-    eventLogger->RegisterFocusListener();
-    eventLogger->isRegisterFocusListener = true;
+#ifdef WINDOW_MANAGER_ENABLE
+    EventFocusListener::RegisterFocusListener();
+    EventFocusListener::isRegistered_ = true;
     eventLogger->OnUnload();
-    EXPECT_EQ(eventLogger->isRegisterFocusListener, false);
+    EXPECT_EQ(EventFocusListener::isRegistered_, false);
 #endif
 }
 

@@ -19,24 +19,28 @@
 #include <mutex>
 
 #include "focus_change_info.h"
-#include "time_util.h"
 #include "window_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 class EventFocusListener : public Rosen::IFocusChangedListener {
 public:
-    uint64_t lastChangedTime_ = TimeUtil::GetMilliseconds();
+    static bool isRegistered_;
+    static uint64_t lastChangedTime_;
 
     explicit EventFocusListener(){};
     ~EventFocusListener() = default;
     static sptr<EventFocusListener> GetInstance();
+    static void RegisterFocusListener();
+    static void UnRegisterFocusListener();
+
     void OnFocused(const sptr<Rosen::FocusChangeInfo>& focusChangeInfo) override;
     void OnUnfocused(const sptr<Rosen::FocusChangeInfo>& focusChangeInfo) override;
 
 private:
     static sptr<EventFocusListener> instance_;
     static std::recursive_mutex mutex_;
+    static bool isRegistering_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

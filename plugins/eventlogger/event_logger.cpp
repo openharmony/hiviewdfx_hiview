@@ -48,6 +48,7 @@
 #include "sys_event_dao.h"
 #include "time_util.h"
 #ifdef WINDOW_MANAGER_ENABLE
+#include "event_focus_listener.h"
 #include "window_manager_lite.h"
 #include "wm_common.h"
 #endif
@@ -89,7 +90,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         return false;
     }
 #ifdef WINDOW_MANAGER_ENABLE
-    RegisterFocusListener();
+    EventFocusListener::RegisterFocusListener();
 #endif
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
 
@@ -97,7 +98,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     std::string eventName = sysEvent->eventName_;
     if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
 #ifdef WINDOW_MANAGER_ENABLE
-        if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+        if (EventFocusListener::isRegistered_) {
             ReportUserPanicWarning(sysEvent, pid);
         }
 #endif
@@ -122,7 +123,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     sysEvent->OnPending();
 
     bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
-    auto task = [this, sysEvent, isFfrt]() {
+    auto task = [this, sysEvent, isFfrt] {
         HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
@@ -780,7 +781,7 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
 void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid)
 {
     if (event->eventName_ == "FREQUENT_CLICK_WARNING") {
-        if (event->happenTime_ - eventFocusListener_->lastChangedTime_ <= CLICK_FREEZE_TIME_LIMIT) {
+        if (event->happenTime_ - EventFocusListener::lastChangedTime_ <= CLICK_FREEZE_TIME_LIMIT) {
             return;
         }
     } else {
@@ -789,7 +790,7 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
             return;
         }
         if ((event->happenTime_ - backTimes_[0] <= BACK_FREEZE_TIME_LIMIT) &&
-            (event->happenTime_ - eventFocusListener_->lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
+            (event->happenTime_ - EventFocusListener::lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
             backTimes_.clear();
         } else {
             backTimes_.erase(backTimes_.begin(), backTimes_.end() - (BACK_FREEZE_COUNT_LIMIT - 1));
@@ -905,14 +906,7 @@ void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
 #ifdef WINDOW_MANAGER_ENABLE
-    if (isRegisterFocusListener) {
-        Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
-        if (ret == Rosen::WMError::WM_OK) {
-            HIVIEW_LOGI("unRegister eventFocusListener succeed.");
-            eventFocusListener_ = nullptr;
-            isRegisterFocusListener = false;
-        }
-    }
+    EventFocusListener::UnRegisterFocusListener();
 #endif
 }
 
@@ -972,21 +966,6 @@ void EventLogger::ProcessRebootEvent()
         event->OnContinue();
     }
 }
-
-#ifdef WINDOW_MANAGER_ENABLE
-void EventLogger::RegisterFocusListener()
-{
-    if (isRegisterFocusListener) {
-        return;
-    }
-    eventFocusListener_ = EventFocusListener::GetInstance();
-    Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
-    if (ret == Rosen::WMError::WM_OK) {
-        HIVIEW_LOGI("register eventFocusListener succeed.");
-        isRegisterFocusListener = true;
-    }
-}
-#endif
 
 std::string EventLogger::GetRebootReason() const
 {

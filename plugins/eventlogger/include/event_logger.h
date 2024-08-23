@@ -32,9 +32,6 @@
 
 #include "active_key_event.h"
 #include "db_helper.h"
-#ifdef WINDOW_MANAGER_ENABLE
-#include "event_focus_listener.h"
-#endif
 #include "event_logger_config.h"
 #include "freeze_common.h"
 
@@ -102,9 +99,7 @@ private:
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
 
 #ifdef WINDOW_MANAGER_ENABLE
-    bool isRegisterFocusListener = false;
     std::vector<uint64_t> backTimes_;
-    sptr<EventFocusListener> eventFocusListener_;
 #endif
     std::unique_ptr<DBHelper> dbHelper_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
@@ -124,7 +119,6 @@ private:
     std::vector<std::string> rebootReasons_;
 
 #ifdef WINDOW_MANAGER_ENABLE
-    void RegisterFocusListener();
     void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
 #endif
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
