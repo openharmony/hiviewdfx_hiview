@@ -49,6 +49,7 @@ constexpr bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
 constexpr useconds_t SET_PROPERTY_MICRO_SECONDS_DELAY = 100 * 1000;
 constexpr useconds_t STATE_CHANGE_CALLBACK_MICRO_SECONDS_DELAY = 500 * 1000;
 std::shared_ptr g_unifiedCollector = std::make_shared<UnifiedCollector>();
+MockHiviewPlatform g_hiviewContext = MockHiviewPlatform();
 bool g_originalTestAppTraceOn, g_originalUCollectionSwitchOn, g_originalTraceCollectionSwitchOn;
 } // namespace
 
@@ -59,6 +60,7 @@ inline const std::string ConvertBoolToString(bool value)
 
 void TraceStateChangeTest::SetUpTestCase()
 {
+    g_unifiedCollector->SetHiviewContext(&g_hiviewContext);
 }
 
 void TraceStateChangeTest::TearDownTestCase()
@@ -95,7 +97,6 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
     constexpr uint64_t constantTestCaseNumber = 1<<stateConstantCount;
     constexpr std::size_t stateVariableCount = 3;
     constexpr uint64_t variableTestCaseNumber = 1<<stateVariableCount;
-    MockHiviewPlatform hiviewContext;
     for (uint64_t constantBinary = 0; constantBinary < constantTestCaseNumber; constantBinary++)
     {
         bool isBetaVersion = (constantBinary & 1<<1) == 0; // due to coupling of watch parameter in unified collector
@@ -110,8 +111,6 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest001, TestSize.Level3)
         Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
         Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
 
-        hiviewContext = MockHiviewPlatform();
-        g_unifiedCollector->SetHiviewContext(&hiviewContext);
         g_unifiedCollector->OnLoad();
         for (uint64_t variableBinary = 0; variableBinary < variableTestCaseNumber; variableBinary++)
         {
@@ -146,7 +145,6 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
 {
     constexpr std::size_t stateConstantCount = 5;
     constexpr uint64_t testCaseNumber = 1<<stateConstantCount;
-    MockHiviewPlatform hiviewContext;
     for (uint64_t binaryExpression = 0; binaryExpression < testCaseNumber; binaryExpression++)
     {
         bool isBetaVersion = (binaryExpression & 1<<0) != 0;
@@ -161,8 +159,6 @@ HWTEST_F(TraceStateChangeTest, TraceStateChangeTest002, TestSize.Level3)
         Parameter::SetProperty(HIVIEW_UCOLLECTION_STATE, ConvertBoolToString(isUCollectionSwitchOn));
         Parameter::SetProperty(DEVELOP_HIVIEW_TRACE_RECORDER, ConvertBoolToString(isTraceCollectionSwitchOn));
        
-        hiviewContext = MockHiviewPlatform();
-        g_unifiedCollector->SetHiviewContext(&hiviewContext);
         g_unifiedCollector->OnLoad();
         bool targetTraceState = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
             DYNAMIC_TRACE_FSM[isBetaVersion][isUCollectionSwitchOn][isTraceCollectionSwitchOn];

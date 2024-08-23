@@ -22,6 +22,18 @@ using namespace OHOS::HiviewDFX;
 using namespace OHOS::HiviewDFX::UCollectClient;
 using namespace OHOS::HiviewDFX::UCollect;
 
+bool IsXpowerPluginExist()
+{
+    std::string cmd = "ps -T $(pidof hiview) | grep -i Xpower";
+    FILE* fp = popen(cmd.c_str(), "r");
+    if (fp == nullptr) {
+        std::cout << "popen failed" << std::endl;
+        return false;
+    }
+    char buffer[256];
+    return fgets(buffer, sizeof(buffer), fp) != nullptr ? true : false;
+}
+
 class MemoryCollectorClientTest : public testing::Test {
 public:
     void SetUp() {};
@@ -37,6 +49,10 @@ public:
 */
 HWTEST_F(MemoryCollectorClientTest, MemoryCollectorClientTest001, TestSize.Level1)
 {
+    if (!IsXpowerPluginExist()) {
+        std::cout << "Xpower plugin not exist" << std::endl;
+        return;
+    }
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     MemoryCaller caller = {.pid = 100, .resourceType = "pss_memory", .limitValue = 100, .enabledDebugLog = false};
     auto collectResult = collector->SetAppResourceLimit(caller);
