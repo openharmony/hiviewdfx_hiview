@@ -26,6 +26,7 @@
 #include "hiview_err_code.h"
 #include "ipc_skeleton.h"
 #include "hiview_logger.h"
+#include "parameter_ex.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -515,7 +516,15 @@ int32_t HiviewServiceAbilityStub::HandleGetSysCpuUsageRequest(MessageParcel& dat
 int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
+    if (!Parameter::IsBetaVersion() && !Parameter::IsLeakStateMode()) {
+        HIVIEW_LOGE("Called SetAppResourceLimitRequest service failed.");
+        return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
     UCollectClient::MemoryCaller memoryCaller;
+    memoryCaller.pid = IPCObjectStub::GetCallingPid();
+    if (memoryCaller.pid < 0) {
+        return TraceErrCode::ERR_SEND_REQUEST;
+    }
     if (!data.ReadInt32(memoryCaller.pid)) {
         HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read pid from parcel");
         return TraceErrCode::ERR_READ_MSG_PARCEL;
