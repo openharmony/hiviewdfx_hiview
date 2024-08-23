@@ -44,6 +44,7 @@ public:
         CATCHER_DMS,
         CATCHER_EEC,
         CATCHER_GEC,
+        CATCHER_UI,
         CATCHER_SNAPSHOT,
         CATCHER_HILOG,
         CATCHER_LIGHT_HILOG,
@@ -63,7 +64,7 @@ private:
     CATCHER_TYPE catcherType_ = CATCHER_TYPE::CATCHER_UNKNOWN;
     std::shared_ptr<SysEvent> event_ = nullptr;
 
-    int InInputProcesscatcher(int writeFd);
+    int DoChildProcesscatcher(int writeFd);
     int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);

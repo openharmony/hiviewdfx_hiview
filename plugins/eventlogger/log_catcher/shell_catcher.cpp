@@ -43,7 +43,7 @@ void ShellCatcher::SetEvent(std::shared_ptr<SysEvent> event)
     event_ = event;
 }
 
-int ShellCatcher::InInputProcesscatcher(int writeFd)
+int ShellCatcher::DoChildProcesscatcher(int writeFd)
 {
     int ret = -1;
     switch (catcherType_) {
@@ -63,6 +63,12 @@ int ShellCatcher::InInputProcesscatcher(int writeFd)
         case CATCHER_GEC:
             {
                 std::string cmd = "-b SCBGestureManager getAllGestureEnableCaller";
+                ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
+            }
+            break;
+        case CATCHER_UI:
+            {
+                std::string cmd = "-p 0";
                 ret = execl("/system/bin/hidumper", "hidumper", "-s", "4606", "-a", cmd.c_str(), nullptr);
             }
             break;
@@ -117,7 +123,7 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
             }
             break;
         default:
-            ret = InInputProcesscatcher(writeFd);
+            ret = DoChildProcesscatcher(writeFd);
             break;
     }
     return ret;
