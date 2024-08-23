@@ -390,7 +390,8 @@ void EventLogTask::HitraceCapture()
 {
     std::shared_ptr<UCollectUtil::TraceCollector> collector = UCollectUtil::TraceCollector::Create();
     UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
-    auto result = collector->DumpTraceWithDuration(caller, MAX_DUMP_TRACE_LIMIT);
+    uint64_t traceEndTime = (event_->happenTime_ / MILLISEC_TO_SEC) + DELAY_TIME;
+    auto result = collector->DumpTraceWithDuration(caller, MAX_DUMP_TRACE_LIMIT, traceEndTime);
     if (result.retCode != 0) {
         HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);
         return;
