@@ -77,6 +77,12 @@ bool IsDeveloperMode()
     return GetBoolean(KEY_DEVELOPER_MODE_STATE, false);
 }
 
+bool IsLeakStateMode()
+{
+    auto leakState = OHOS::system::GetParameter(KEY_LEAKDECTOR_MODE_STATE, "unknown");
+    return (leakState.find("enable") != std::string::npos);
+}
+
 bool IsUCollectionSwitchOn()
 {
     std::string ucollectionState = GetString(HIVIEW_UCOLLECTION_STATE, "false");
