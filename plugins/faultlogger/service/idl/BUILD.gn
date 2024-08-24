@@ -45,6 +45,7 @@ ohos_source_set("faultlogger_service_ohos_common") {
 }
 
 ohos_source_set("faultlogger_service_ohos_common_with_cfi") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
