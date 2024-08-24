@@ -102,21 +102,6 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
     });
 }
 
-int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules, RegisteredListeners& listeners)
-{
-    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
-    if (rules.size() > watchRuleCntLimit) {
-        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
-        return ERR_TOO_MANY_WATCH_RULES;
-    }
-    size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
-    if (listeners.size() >= watcherTotalCntLimit) {
-        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
-        return ERR_TOO_MANY_WATCHERS;
-    }
-    return IPC_CALL_SUCCEED;
-}
-
 int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& events)
 {
     size_t maxEventNum = 30;  // count of total events is limited to 30.
@@ -258,9 +243,16 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
     }
-    auto checkRet = CheckEventListenerAddingValidity(rules, registeredListeners_);
-    if (checkRet != IPC_CALL_SUCCEED) {
-        return checkRet;
+    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
+    if (rules.size() > watchRuleCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
+        return ERR_TOO_MANY_WATCH_RULES;
+    }
+    lock_guard<mutex> lock(mutex_);
+    size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
+    if (registeredListeners_.size() >= watcherTotalCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
+        return ERR_TOO_MANY_WATCHERS;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
@@ -278,7 +270,6 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
-    lock_guard<mutex> lock(mutex_);
     pair<int32_t, SysEventRuleGroupOhos> rulesPair(pid, rules);
     if (registeredListeners_.find(callbackObject) != registeredListeners_.end()) {
         registeredListeners_[callbackObject] = rulesPair;
