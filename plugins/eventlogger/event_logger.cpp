@@ -98,7 +98,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     std::string eventName = sysEvent->eventName_;
     if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
 #ifdef WINDOW_MANAGER_ENABLE
-        if (EventFocusListener::isRegistered_) {
+        if (EventFocusListener::registerState_ == EventFocusListener::REGISTERED) {
             ReportUserPanicWarning(sysEvent, pid);
         }
 #endif

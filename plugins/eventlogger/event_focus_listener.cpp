@@ -25,8 +25,7 @@ namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "EventFocusListener");
 sptr<EventFocusListener> EventFocusListener::instance_ = nullptr;
 std::recursive_mutex EventFocusListener::mutex_;
-bool EventFocusListener::isRegistered_ = false;
-bool EventFocusListener::isRegistering_ = false;
+EventFocusListener::REGISTER_STATE EventFocusListener::registerState_ = UNREGISTERED;
 uint64_t EventFocusListener::lastChangedTime_ = TimeUtil::GetMilliseconds();
 
 sptr<EventFocusListener> EventFocusListener::GetInstance()
@@ -44,7 +43,7 @@ void EventFocusListener::RegisterFocusListener()
         return;
     }
 
-    if (isRegistered_) {
+    if (registerState_ == REGISTERED) {
         HIVIEW_LOGD("eventFocusListener is registered");
         return;
     }
@@ -52,19 +51,21 @@ void EventFocusListener::RegisterFocusListener()
         HIVIEW_LOGE("register eventFocusListener failed, listener is null");
         return;
     }
-    if (isRegistering_) {
+    if (registerState_ == REGISTERING) {
         HIVIEW_LOGI("register eventFocusListener task is executing");
         return;
     }
 
     auto registerTask = [] {
-        isRegistering_ = true;
+        registerState_ = REGISTERING;
         Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(GetInstance());
         if (ret == Rosen::WMError::WM_OK) {
             HIVIEW_LOGI("register eventFocusListener succeed.");
-            isRegistered_ = true;
+            registerState_ = REGISTERED;
+        } else {
+            HIVIEW_LOGI("register eventFocusListener failed.");
+            registerState_ = UNREGISTERED;
         }
-        isRegistering_ = false;
     };
     HIVIEW_LOGI("before submit registerFocusListener task to ffrt");
     ffrt::submit(registerTask, {}, {}, ffrt::task_attr().name("rgs_fcs_lst"));
@@ -73,8 +74,8 @@ void EventFocusListener::RegisterFocusListener()
 
 void EventFocusListener::UnRegisterFocusListener()
 {
-    if (!isRegistered_) {
-        HIVIEW_LOGD("eventFocusListener is unRegistered");
+    if (registerState_ != EventFocusListener::REGISTERED) {
+        HIVIEW_LOGD("eventFocusListener not need to unRegister");
         return;
     }
     if (GetInstance() == nullptr) {
@@ -85,8 +86,9 @@ void EventFocusListener::UnRegisterFocusListener()
     Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(GetInstance());
     if (ret == Rosen::WMError::WM_OK) {
         HIVIEW_LOGI("unRegister eventFocusListener succeed");
-        isRegistered_ = false;
-        GetInstance() = nullptr;
+        registerState_ = UNREGISTERED;
+        delete instance_;
+        instance_ = nullptr;
     }
 }
 

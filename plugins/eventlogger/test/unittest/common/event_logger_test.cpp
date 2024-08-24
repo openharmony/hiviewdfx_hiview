@@ -297,7 +297,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_008, TestSize.Level3)
     long pid = getpid();
 #ifdef WINDOW_MANAGER_ENABLE
     EventFocusListener::RegisterFocusListener();
-    EventFocusListener::isRegistered_ = true;
+    EventFocusListener::registerState_ = EventFocusListener::REGISTERED;
 #endif
     uint64_t curentTime = TimeUtil::GetMilliseconds();
     for (int i = 0; i < 5 ; i++) {
@@ -495,9 +495,9 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_014, TestSize.Level3)
     eventLogger->OnLoad();
 #ifdef WINDOW_MANAGER_ENABLE
     EventFocusListener::RegisterFocusListener();
-    EventFocusListener::isRegistered_ = true;
+    EventFocusListener::registerState_ = EventFocusListener::REGISTERED;
     eventLogger->OnUnload();
-    EXPECT_EQ(EventFocusListener::isRegistered_, false);
+    EXPECT_EQ(EventFocusListener::registerState_, EventFocusListener::UNREGISTERED);
 #endif
 }
 

@@ -25,7 +25,13 @@ namespace OHOS {
 namespace HiviewDFX {
 class EventFocusListener : public Rosen::IFocusChangedListener {
 public:
-    static bool isRegistered_;
+    enum REGISTER_STATE {
+        UNREGISTERED,
+        REGISTERED,
+        REGISTERING
+    };
+
+    static REGISTER_STATE registerState_;
     static uint64_t lastChangedTime_;
 
     explicit EventFocusListener(){};
@@ -40,7 +46,6 @@ public:
 private:
     static sptr<EventFocusListener> instance_;
     static std::recursive_mutex mutex_;
-    static bool isRegistering_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
