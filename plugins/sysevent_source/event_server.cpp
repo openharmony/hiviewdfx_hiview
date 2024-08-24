@@ -214,7 +214,7 @@ bool SocketDevice::IsValidMsg(char* msg, int32_t len)
     }
     int32_t dataByteCnt = *(reinterpret_cast<int32_t*>(msg));
     if (dataByteCnt != len) {
-        HIVIEW_LOGW("the data lengths=%{public}d are not equal", len);
+        HIVIEW_LOGW("the data byte count=%{public}d are not equal to read length %{public}d", dataByteCnt, len);
         return false;
     }
     int32_t pid = *(reinterpret_cast<int32_t*>(msg + sizeof(int32_t) + EventRaw::POS_OF_PID_IN_HEADER));

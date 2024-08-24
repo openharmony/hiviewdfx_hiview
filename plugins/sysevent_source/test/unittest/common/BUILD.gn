@@ -113,4 +113,7 @@ ohos_unittest("EventJsonParserTest") {
     "hilog:libhilog",
     "jsoncpp:jsoncpp",
   ]
+
+  resource_config_file =
+      "$hiview_plugin/sysevent_source/test/resource/ohos_test.xml"
 }

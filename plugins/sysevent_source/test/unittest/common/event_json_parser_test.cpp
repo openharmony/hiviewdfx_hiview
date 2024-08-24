@@ -14,12 +14,22 @@
  */
 #include "event_json_parser_test.h"
 
-#include <iostream>
-
 #include "event_json_parser.h"
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+constexpr char TEST_DEF_FILE_PATH[] = "/data/test/hiview/sys_def_parser/hisysevent.def";
+constexpr char INVALID_TEST_DEF_FILE_PATH[] = "/data/test/hiview/sys_def_parser/hisysevent_.def";
+constexpr char FIRST_TEST_DOMAIN[] = "FIRST_TEST_DOMAIN";
+constexpr char FIRST_TEST_NAME[] = "FIRST_TEST_NAME";
+constexpr int FIRST_TEST_EVENT_TYPE = 4;
+constexpr char SECOND_TEST_DOMAIN[] = "SECOND_TEST_DOMAIN";
+constexpr char SECOND_TEST_NAME[] = "SECOND_TEST_NAME";
+constexpr int SECOND_TEST_EVENT_TYPE = 1;
+constexpr int TEST_PRIVACY = 1;
+}
+
 void EventJsonParserTest::SetUpTestCase() {}
 
 void EventJsonParserTest::TearDownTestCase() {}
@@ -32,35 +42,31 @@ void EventJsonParserTest::TearDown() {}
  * @tc.name: EventJsonParserTest001
  * @tc.desc: parse a event and check Json info
  * @tc.type: FUNC
- * @tc.require: issueI62WJT
+ * @tc.require: issueIAKF5E
  */
 HWTEST_F(EventJsonParserTest, EventJsonParserTest001, testing::ext::TestSize.Level0)
 {
-    printf("start EventJsonParserTest001\n");
-    std::string defFilePath = "/system/etc/hiview/hisysevent.def";
-    auto sysEventParser = std::make_unique<EventJsonParser>(defFilePath);
+    EventJsonParser jsonParser(INVALID_TEST_DEF_FILE_PATH);
+    ASSERT_EQ(jsonParser.GetTagByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), "");
+    ASSERT_EQ(jsonParser.GetTypeByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), INVALID_EVENT_TYPE);
+    ASSERT_EQ(jsonParser.GetPreserveByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), true);
+    auto configBaseInfo = jsonParser.GetDefinedBaseInfoByDomainName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME);
+    ASSERT_TRUE(configBaseInfo.preserve);
 
-    std::shared_ptr<SysEvent> sysEvent = nullptr;
-    ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char invalidJsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"type_\":4,\
-        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
-    sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, invalidJsonStr);
-    ASSERT_FALSE(sysEventParser->HandleEventJson(sysEvent));
-    constexpr char jsonStr[] = "{\"domain_\":\"HIVIEWDFX\", \"name_\":\"PLUGIN_LOAD\", \"type_\":4,\
-        \"PARAM_A\":\"param a\", \"PARAM_B\":\"param b\"}";
-    sysEvent = std::make_shared<SysEvent>("SysEventService", nullptr, jsonStr);
+    jsonParser.ReadDefFile(TEST_DEF_FILE_PATH);
+    ASSERT_EQ(jsonParser.GetTagByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), "FIRST_TEST_CASE");
+    ASSERT_EQ(jsonParser.GetTypeByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), FIRST_TEST_EVENT_TYPE);
+    ASSERT_EQ(jsonParser.GetPreserveByDomainAndName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME), false);
+    configBaseInfo = jsonParser.GetDefinedBaseInfoByDomainName(FIRST_TEST_DOMAIN, FIRST_TEST_NAME);
+    ASSERT_FALSE(configBaseInfo.preserve);
+    ASSERT_EQ(configBaseInfo.privacy, TEST_PRIVACY);
 
-    ASSERT_TRUE(sysEventParser->HandleEventJson(sysEvent));
-    ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("abc", "abc") == "");
-    ASSERT_TRUE(sysEventParser->GetTagByDomainAndName("DEMO", "abc") == "");
-    ASSERT_TRUE(sysEventParser->GetTypeByDomainAndName("DEMO", "abc") == 0);
-
-    sysEventParser->UpdateTestType("test_param");
-
-    DuplicateIdFilter filter;
-    ASSERT_FALSE(filter.IsDuplicateEvent(0));
-    ASSERT_FALSE(filter.IsDuplicateEvent(1));
-    ASSERT_TRUE(filter.IsDuplicateEvent(1));
+    ASSERT_EQ(jsonParser.GetTagByDomainAndName(SECOND_TEST_DOMAIN, SECOND_TEST_NAME), "SECOND_TEST_CASE");
+    ASSERT_EQ(jsonParser.GetTypeByDomainAndName(SECOND_TEST_DOMAIN, SECOND_TEST_NAME), SECOND_TEST_EVENT_TYPE);
+    ASSERT_EQ(jsonParser.GetPreserveByDomainAndName(SECOND_TEST_DOMAIN, SECOND_TEST_NAME), true);
+    configBaseInfo = jsonParser.GetDefinedBaseInfoByDomainName(SECOND_TEST_DOMAIN, SECOND_TEST_NAME);
+    ASSERT_TRUE(configBaseInfo.preserve);
+    ASSERT_EQ(configBaseInfo.privacy, DEFAULT_PRIVACY);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -74,6 +74,7 @@ ohos_source_set("sysevent_source") {
     "cJSON:cjson",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
