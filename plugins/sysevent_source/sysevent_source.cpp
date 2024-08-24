@@ -128,7 +128,7 @@ void SysEventSource::OnLoad()
             return this->sysEventParser_->GetTypeByDomainAndName(domain, name);
         });
 
-    // watch paramter
+    // watch parameter
     if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, this) != 0) {
         HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
     }
@@ -222,8 +222,8 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
-    HIVIEW_LOGD("event[%{public}s|%{public}s}" PRId64 "] is valid.",
-        sysEvent->domain_.c_str(), sysEvent->eventName_.c_str());
+    HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
+        sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), sysEvent->GetEventSeq());
     sysEventStat_->AccumulateEvent();
     return true;
 }
