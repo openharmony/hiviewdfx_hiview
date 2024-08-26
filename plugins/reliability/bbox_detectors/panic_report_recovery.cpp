@@ -36,10 +36,10 @@ DEFINE_LOG_LABEL(0xD002D11, "PanicReport");
 constexpr const char* BBOX_PARAM_PATH = "/data/test/bbox/bbox.save.log.flags";
 constexpr const char* PANIC_LOG_PATH = "/data/test/bbox/panic_log/";
 #else
-constexpr const char* BBOX_PARAM_PATH = "/log/bbox/bbox.save.log.flags";
-constexpr const char* PANIC_LOG_PATH = "/log/bbox/panic_log/";
+constexpr const char* BBOX_PARAM_PATH = "/log/reliability/bbox/bbox.save.log.flags";
+constexpr const char* PANIC_LOG_PATH = "/log/reliability/bbox/panic_log/";
 #endif
-constexpr const char* FACTORY_RECOVERY_TIME_PATH = "/log/bbox/factory.recovery.time";
+constexpr const char* FACTORY_RECOVERY_TIME_PATH = "/log/reliability/bbox/factory.recovery.time";
 constexpr const char* CMD_LINE = "/proc/cmdline";
 
 constexpr const char* LAST_FASTBOOT_LOG = "/ap_log/last_fastboot_log";
