@@ -287,6 +287,25 @@ void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
     }
 }
 
+void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
+{
+    std::string historyFile = LOGGER_EVENT_LOG_PATH + "/" + "history.log";
+    mode_t mode = 0644;
+    if (!FileUtil::FileExists(historyFile) &&
+        FileUtil::CreateFile(historyFile, mode) != 0) {
+        HIVIEW_LOGI("failed to create file=%{public}s, errno=%{public}d",
+            historyFile.c_str(), errno);
+        return;
+    }
+    auto time = TimeUtil::TimestampFormatToDate(event->happenTime_ / TimeUtil::SEC_TO_MILLISEC,
+        "%Y%m%d%H%M%S");
+    long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+    long uid = event->GetEventIntValue("UID") ? event->GetEventIntValue("UID") : event->GetUid();
+    std::string str = "time[" + time + "], domain[" + event->domain_ + "], wpName[" +
+        event->eventName_ + "], pid: " + std::to_string(pid) + ", uid: " + std::to_string(uid) + "\n";
+    FileUtil::SaveStringToFile(historyFile, str, false);
+}
+
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
     std::string logFile;
@@ -334,6 +353,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         close(jsonFd);
     }
     UpdateDB(event, logFile);
+    SaveDbToFile(event);
 
     constexpr int waitTime = 1;
     auto CheckFinishFun = [this, event] { this->CheckEventOnContinue(event); };
