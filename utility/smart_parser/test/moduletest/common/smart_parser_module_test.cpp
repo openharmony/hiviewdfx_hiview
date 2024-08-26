@@ -155,7 +155,9 @@ HWTEST_F(SmartParserModuleTest, SmartParserTest003, TestSize.Level1)
      */
     EXPECT_EQ(eventInfos["END_STACK"].size() > 0, true);
     std::string content;
-    if (!FileUtil::LoadStringFromFile(traceFile, content)) {
+    bool isSuccess = FileUtil::LoadStringFromFile(traceFile, content);
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("read logFile: %s failed", traceFile.c_str());
         return;
     }

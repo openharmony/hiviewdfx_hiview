@@ -255,11 +255,12 @@ HWTEST_F(FaultloggerUnittest, dumpFileListTest001, testing::ext::TestSize.Level3
      */
     auto plugin = GetFaultloggerInstance();
     int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
-    if (fd < 0) {
+    bool isSuccess = fd >= 0;
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("Fail to create test result file.\n");
         return;
     }
-
     std::vector<std::string> cmds;
     plugin->Dump(fd, cmds);
     cmds.push_back("Faultlogger");
@@ -303,11 +304,12 @@ HWTEST_F(FaultloggerUnittest, DumpTest002, testing::ext::TestSize.Level3)
      */
     auto plugin = GetFaultloggerInstance();
     int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
-    if (fd < 0) {
+    bool isSuccess = fd >= 0;
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("Fail to create test result file.\n");
         return;
     }
-
     std::vector<std::vector<std::string>> cmds = {
         {"-f", "1cppcrash-10-20201209103823"},
         {"-f", "1cppcrash-ModuleName-10-20201209103823"},
@@ -343,11 +345,12 @@ HWTEST_F(FaultloggerUnittest, DumpTest003, testing::ext::TestSize.Level3)
      */
     auto plugin = GetFaultloggerInstance();
     int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
-    if (fd < 0) {
+    bool isSuccess = fd >= 0;
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("Fail to create test result file.\n");
         return;
     }
-
     std::vector<std::vector<std::string>> cmds = {
         {"-t", "cppcrash--10-20201209103823"},
         {"-m", ""},
@@ -777,6 +780,20 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
     ASSERT_TRUE(faultEventListener->CheckKeyWords());
 }
 
+std::string getTargetFileName(int32_t faultLogType, int64_t time)
+{
+    std::map<int, std::string> fileNames = {
+        {1, "Unknown"},
+        {2, "cppcrash"}, // 2 : faultLogType to cppcrash
+        {3, "jscrash"}, // 3 : faultLogType to jscrash
+        {4, "appfreeze"}, // 4 : faultLogType to appfreeze
+        {5, "sysfreeze"}, // 5 : faultLogType to sysfreeze
+        {6, "rustpanic"}, // 6 : faultLogType to rustpanic
+    };
+    std::string fileName = fileNames[faultLogType];
+    return fileName + "-FaultloggerUnittest1111-0-" + GetFormatedTime(time);
+}
+
 /**
  * @tc.name: FaultLogManager::SaveFaultLogToFile
  * @tc.desc: Test calling SaveFaultLogToFile Func
@@ -806,6 +823,8 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
         if (fileName.find("FaultloggerUnittest1111") == std::string::npos) {
             FAIL();
         }
+        std::string targetFileName = getTargetFileName(i, info.time);
+        ASSERT_EQ(fileName, targetFileName);
     }
 }
 
@@ -965,7 +984,9 @@ HWTEST_F(FaultloggerUnittest, FaultloggerServiceOhosTest002, testing::ext::TestS
     FaultloggerServiceOhos::StartService(service.get());
     ASSERT_EQ(FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr), service.get());
     auto fd = TEMP_FAILURE_RETRY(open("/data/test/testFile2", O_CREAT | O_WRONLY | O_TRUNC, 770));
-    if (fd < 0) {
+    bool isSuccess = fd >= 0;
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("Fail to create test result file.\n");
         return;
     }
@@ -996,7 +1017,9 @@ HWTEST_F(FaultloggerUnittest, FaultLogQueryResultOhosTest001, testing::ext::Test
     auto service = GetFaultloggerInstance();
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService(service.get());
-    if (FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr) != service.get()) {
+    bool isSuccess = FaultloggerServiceOhos::GetOrSetFaultlogger(nullptr) == service.get();
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
         printf("FaultloggerServiceOhos start service error.\n");
         return;
     }
