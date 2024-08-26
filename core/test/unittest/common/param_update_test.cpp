@@ -26,6 +26,8 @@ namespace {
     const std::string CERT_CONFIG_FILE_FULL_NAME = "/data/test/test_data/CERT_PRE.config";
     const std::string CERT_ENC_FILE_FULL_NAME =
         "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/CERT.ENC";
+    const std::string SOURCE_TEST_CONFIG_FILE =
+        "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/test.txt";
     constexpr int CHAR_0 = 48; // '0'
     constexpr int CHAR_9 = 57; // '9'
     constexpr int CHAR_A = 65; // 'A'
@@ -72,7 +74,6 @@ void ParamUpdateTest::SetUp()
     } else {
         std::cout << "init environment successful" << std::endl;
     }
-    CreateEncFile();
 }
 
 void ParamUpdateTest::TearDown()
@@ -93,5 +94,15 @@ void ParamUpdateTest::TearDown()
 HWTEST_F(ParamUpdateTest, ParamUpdateTest001, TestSize.Level1)
 {
     ParamManager::InitParam();
+    ASSERT_FALSE(FileUtil::FileExists(TEST_CONFIG_FILE));
+    if (!FileUtil::FileExists(PUBKEY_PATH)) {
+        return;
+    }
+    CreateEncFile();
+    ParamManager::InitParam();
     ASSERT_TRUE(FileUtil::FileExists(TEST_CONFIG_FILE));
+    FileUtil::RemoveFile(TEST_CONFIG_FILE);
+    FileUtil::SaveStringToFile(SOURCE_TEST_CONFIG_FILE, "1234");
+    ParamManager::InitParam();
+    ASSERT_FALSE(FileUtil::FileExists(TEST_CONFIG_FILE));
 }
