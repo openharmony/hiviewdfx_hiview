@@ -44,7 +44,9 @@ HWTEST_F(AsanUnittest, WriteGwpAsanLogTest001, testing::ext::TestSize.Level1)
 {
     char gwpAsanBuf[] = "Test GWP-ASAN, End GWP-ASan report";
     WriteGwpAsanLog(gwpAsanBuf, strlen(gwpAsanBuf));
-    char ubsanBuf[] = "Test UBSAN, End CFI report";
+    char cfiBuf[] = "Test CFI, End CFI report";
+    WriteGwpAsanLog(cfiBuf, strlen(cfiBuf));
+    char ubsanBuf[] = "Test UBSAN, End Ubsan report";
     WriteGwpAsanLog(ubsanBuf, strlen(ubsanBuf));
     char tsanBuf[] = "Test TSAN, End Tsan report";
     WriteGwpAsanLog(tsanBuf, strlen(tsanBuf));

@@ -62,6 +62,7 @@ void WriteGwpAsanLog(char* buf, size_t sz)
     char *gwpOutput = strstr(buf, "End GWP-ASan report");
     char *tsanOutput = strstr(buf, "End Tsan report");
     char *cfiOutput = strstr(buf, "End CFI report");
+    char *ubsanOutput = strstr(buf, "End Ubsan report");
     char *hwasanOutput = strstr(buf, "End Hwasan report");
     if (gwpOutput) {
         std::string gwpasanlog = g_asanlog.str();
@@ -77,7 +78,7 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         ReadGwpAsanRecord(tsanlog, errType);
         // clear buffer
         g_asanlog.str("");
-    } else if (cfiOutput) {
+    } else if (cfiOutput || ubsanOutput) {
         std::string ubsanlog = g_asanlog.str();
         // parse log
         std::string errType = "UBSAN";
