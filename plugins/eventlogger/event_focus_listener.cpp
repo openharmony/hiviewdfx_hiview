@@ -87,8 +87,6 @@ void EventFocusListener::UnRegisterFocusListener()
     if (ret == Rosen::WMError::WM_OK) {
         HIVIEW_LOGI("unRegister eventFocusListener succeed");
         registerState_ = UNREGISTERED;
-        delete instance_;
-        instance_ = nullptr;
     }
 }
 
