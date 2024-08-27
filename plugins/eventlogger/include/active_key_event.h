@@ -16,6 +16,7 @@
 #define HIVIEW_EVENT_LOG_ACTIVE_KEY_EVENT_H
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "log_store_ex.h"
@@ -41,6 +42,7 @@ private:
     void SysMemCapture(int fd);
     void DumpCapture(int fd);
 
+    std::mutex mutex_;
     const uint64_t initDelay_ = 5000;
     std::list<int32_t> subscribeIds_;
     std::shared_ptr<LogStoreEx> logStore_;
