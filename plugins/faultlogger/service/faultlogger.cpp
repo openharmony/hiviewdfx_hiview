@@ -740,6 +740,8 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
 
     if (info.faultLogType == FaultLogType::CPP_CRASH) {
         AddCppCrashInfo(info);
+    } else if (info.faultLogType == FaultLogType::APP_FREEZE) {
+        info.sectionMap["STACK"] = GetThreadStack(info.logPath, info.pid);
     }
 
     mgr_->SaveFaultLogToFile(info);
