@@ -243,8 +243,8 @@ void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
             eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str());
         return;
     }
-    HIVIEW_LOGI("save event finish, eventName=%{public}s, file=%{public}s, eventStr=%{public}s",
-        eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str(), eventStr.c_str());
+    HIVIEW_LOGI("save event finish, eventName=%{public}s, file=%{public}s", eventJson[NAME_PROPERTY].asString().c_str(),
+        filePath.c_str());
 }
 
 void SaveEventAndLogToSandBox(int32_t uid, const std::string& eventName, const std::string& bundleName,
