@@ -438,12 +438,14 @@ void EventLoop::InitThreadName()
 
 uint64_t EventLoop::ProcessQueuedEvent()
 {
-    if (pendingEvents_.empty()) {
-        return INT_MAX;
-    }
-
     uint64_t leftTimeNanosecond = 0;
-    while (!pendingEvents_.empty()) {
+    while (true) {
+        {
+            std::lock_guard<std::mutex> lock(queueMutex_);
+            if (pendingEvents_.empty()) {
+                return INT_MAX;
+            }
+        }
         uint64_t now = NanoSecondSinceSystemStart();
         LoopEvent event;
         if (!FetchNextEvent(now, leftTimeNanosecond, event)) {
