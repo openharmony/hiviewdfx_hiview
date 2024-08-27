@@ -32,9 +32,16 @@ namespace HiviewDFX {
 namespace PanicReport {
 DEFINE_LOG_LABEL(0xD002D11, "PanicReport");
 
+#ifdef UNITTEST
+constexpr const char* BBOX_PARAM_PATH = "/data/test/bbox/bbox.save.log.flags";
+constexpr const char* PANIC_LOG_PATH = "/data/test/bbox/panic_log/";
+#else
 constexpr const char* BBOX_PARAM_PATH = "/log/bbox/bbox.save.log.flags";
-constexpr const char* CMD_LINE = "/proc/cmdline";
 constexpr const char* PANIC_LOG_PATH = "/log/bbox/panic_log/";
+#endif
+constexpr const char* FACTORY_RECOVERY_TIME_PATH = "/log/bbox/factory.recovery.time";
+constexpr const char* CMD_LINE = "/proc/cmdline";
+
 constexpr const char* LAST_FASTBOOT_LOG = "/ap_log/last_fastboot_log";
 constexpr const char* HM_KLOG = "/ap_log/hm_klog.txt";
 constexpr const char* HM_SNAPSHOT = "/ap_log/hm_snapshot.txt";
@@ -43,10 +50,12 @@ constexpr const char* BOOTEVENT_BOOT_COMPLETED = "bootevent.boot.completed";
 constexpr const char* LAST_BOOTUP_KEYPOINT = "last_bootup_keypoint";
 
 constexpr const char* HAPPEN_TIME = "happentime";
-constexpr const char* IS_PANIC_UN_UPLOADED = "isPanicUnUploaded";
+constexpr const char* FACTORY_RECOVERY_TIME = "factoryRecoveryTime";
+constexpr const char* IS_PANIC_UPLOADED = "isPanicUploaded";
 constexpr const char* IS_STARTUP_SHORT = "isStartUpShort";
+constexpr const char* SOFTWARE_VERSION = "softwareVersion";
 
-constexpr const char* REGEX_FORMAT = R"(=(\S*))";
+constexpr const char* REGEX_FORMAT = R"(=((".*?")|(\S*)))";
 
 constexpr int COMPRESSION_RATION = 9;
 constexpr int ZIP_FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
@@ -55,16 +64,44 @@ static bool g_isLastStartUpShort = false;
 
 bool InitPanicConfigFile()
 {
-    if (!FileUtil::FileExists(BBOX_PARAM_PATH)) {
-        return FileUtil::CreateFile(BBOX_PARAM_PATH, FileUtil::FILE_PERM_640) &&
-            SetParamValueToFile(BBOX_PARAM_PATH, IS_STARTUP_SHORT, "true");
+    if (!FileUtil::FileExists(BBOX_PARAM_PATH) && !FileUtil::CreateFile(BBOX_PARAM_PATH, FileUtil::FILE_PERM_640)) {
+        return false;
     }
-    std::string paramsContent;
-    FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, paramsContent);
-    std::string lastStartUpShort = GetParamValueFromString(paramsContent, IS_STARTUP_SHORT);
-    g_isLastStartUpShort = lastStartUpShort == "true";
-    paramsContent = SetParamValueToString(paramsContent, IS_STARTUP_SHORT, "true");
-    return FileUtil::SaveStringToFile(BBOX_PARAM_PATH, paramsContent);
+    BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
+    g_isLastStartUpShort = bboxSaveLogFlags.isStartUpShort;
+    bboxSaveLogFlags.isStartUpShort = true;
+    return SaveBboxLogFlagsToFile(bboxSaveLogFlags);
+}
+
+BboxSaveLogFlags LoadBboxSaveFlagFromFile()
+{
+    std::string content;
+    if (!FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, content)) {
+        HIVIEW_LOGE("Failed to load file: %{public}s.", BBOX_PARAM_PATH);
+        return {};
+    }
+    return {
+        .happenTime = GetParamValueFromString(content, HAPPEN_TIME),
+        .factoryRecoveryTime = GetParamValueFromString(content, FACTORY_RECOVERY_TIME),
+        .softwareVersion = GetParamValueFromString(content, SOFTWARE_VERSION),
+        .isPanicUploaded = GetParamValueFromString(content, IS_PANIC_UPLOADED) != "false",
+        .isStartUpShort = GetParamValueFromString(content, IS_STARTUP_SHORT) == "true"
+    };
+}
+
+bool SaveBboxLogFlagsToFile(const BboxSaveLogFlags& bboxSaveLogFlags)
+{
+    std::stringstream ss;
+    ss << HAPPEN_TIME << "=" << bboxSaveLogFlags.happenTime <<
+        " " << FACTORY_RECOVERY_TIME << "=" << bboxSaveLogFlags.factoryRecoveryTime <<
+        " " << SOFTWARE_VERSION << "=" << bboxSaveLogFlags.softwareVersion <<
+        " " << IS_PANIC_UPLOADED << "=" << (bboxSaveLogFlags.isPanicUploaded ? "true" : "false") <<
+        " " << IS_STARTUP_SHORT << "=" << (bboxSaveLogFlags.isStartUpShort ? "true" : "false");
+    if (!FileUtil::SaveStringToFile(BBOX_PARAM_PATH, ss.str())) {
+        HIVIEW_LOGE("failed to save the msg to file: %{public}s", BBOX_PARAM_PATH);
+        return false;
+    }
+    return true;
 }
 
 bool InitPanicReport()
@@ -72,9 +109,27 @@ bool InitPanicReport()
     auto fileSize = FileUtil::GetFolderSize(PANIC_LOG_PATH);
     if (fileSize > ZIP_FILE_SIZE_LIMIT) {
         HIVIEW_LOGW("zip file size: %{public}" PRIu64 " is over limit", fileSize);
-        FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+        ClearFilesInDir(PANIC_LOG_PATH);
     }
     return InitPanicConfigFile() ;
+}
+
+bool ClearFilesInDir(const std::filesystem::path& dirPath)
+{
+    if (!std::filesystem::is_directory(dirPath)) {
+        HIVIEW_LOGE("The file %{public}s is not a directory.", dirPath.c_str());
+        return false;
+    }
+    bool ret = true;
+    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+        std::error_code errorCode;
+        if (!std::filesystem::remove_all(entry.path(), errorCode)) {
+            HIVIEW_LOGE("Failed to deleted %{public}s errorCode: %{public}d",
+                        entry.path().c_str(), errorCode.value());
+            ret = false;
+        }
+    }
+    return ret;
 }
 
 bool IsBootCompleted()
@@ -101,6 +156,19 @@ bool IsRecoveryPanicEvent(const std::shared_ptr<SysEvent>& sysEvent)
     return logPath.find(PANIC_LOG_PATH) == 0;
 }
 
+std::string GetLastRecoveryTime()
+{
+    std::string factoryRecoveryTime;
+    FileUtil::LoadStringFromFile(FACTORY_RECOVERY_TIME_PATH, factoryRecoveryTime);
+    return std::string("\"") + factoryRecoveryTime + "\"";
+}
+
+std::string GetCurrentVersion()
+{
+    std::string currentVersion = OHOS::system::GetParameter("const.product.software.version", "unknown");
+    return std::string("\"") + currentVersion + "\"";
+}
+
 std::string GetBackupFilePath(const std::string& timeStr)
 {
     return std::string(PANIC_LOG_PATH) + "panic_log_" + timeStr + ".zip";
@@ -125,28 +193,6 @@ std::string GetParamValueFromFile(const std::string& filePath, const std::string
     return GetParamValueFromString(content, param);
 }
 
-std::string SetParamValueToString(const std::string& content, const std::string& param, const std::string& value)
-{
-    std::string destValue = param + "=" + value;
-    if (content.empty()) {
-        return destValue;
-    }
-    if (!std::regex_search(content, std::regex(param + REGEX_FORMAT))) {
-        return content + " " + destValue;
-    }
-    return std::regex_replace(content, std::regex(param + REGEX_FORMAT), destValue);
-}
-
-bool SetParamValueToFile(const std::string& filePath, const std::string& param, const std::string& value)
-{
-    std::string content;
-    if (!FileUtil::LoadStringFromFile(filePath, content)) {
-        HIVIEW_LOGE("Failed to load file: %{public}s.", filePath.c_str());
-        return false;
-    }
-    return FileUtil::SaveStringToFile(filePath, SetParamValueToString(content, param, value));
-}
-
 void AddFileToZip(HiviewZipUnit& hiviewZipUnit, const std::string& path)
 {
     if (hiviewZipUnit.AddFileInZip(path, ZipFileLevel::KEEP_NONE_PARENT_PATH) != 0) {
@@ -160,7 +206,7 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
         HIVIEW_LOGE("The path of target file: %{public}s is not existed", PANIC_LOG_PATH);
         return;
     }
-    FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+    ClearFilesInDir(PANIC_LOG_PATH);
     HiviewZipUnit hiviewZipUnit(GetBackupFilePath(timeStr));
     std::string lastFastBootLog = srcPath + LAST_FASTBOOT_LOG;
     AddFileToZip(hiviewZipUnit, lastFastBootLog);
@@ -177,26 +223,22 @@ void CompressAndCopyLogFiles(const std::string& srcPath, const std::string& time
     uint64_t zipFileSize = FileUtil::GetFolderSize(PANIC_LOG_PATH);
     if (zipFileSize > ZIP_FILE_SIZE_LIMIT) {
         HIVIEW_LOGW("zip file size: %{public}" PRIu64 " is over limit", zipFileSize);
-        FileUtil::ForceRemoveDirectory(PANIC_LOG_PATH, false);
+        ClearFilesInDir(PANIC_LOG_PATH);
         return;
     }
-    std::string content;
-    if (!FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, content)) {
-        HIVIEW_LOGE("Failed to load file: %{public}s.", BBOX_PARAM_PATH);
-        return;
-    }
-    content = SetParamValueToString(content, HAPPEN_TIME, timeStr);
-    content = SetParamValueToString(content, IS_PANIC_UN_UPLOADED, "true");
-    if (!FileUtil::SaveStringToFile(BBOX_PARAM_PATH, content)) {
-        HIVIEW_LOGE("Failed to save content to file: %{public}s.", BBOX_PARAM_PATH);
-    }
+    BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
+    bboxSaveLogFlags.happenTime = timeStr;
+    bboxSaveLogFlags.factoryRecoveryTime = GetLastRecoveryTime();
+    bboxSaveLogFlags.isPanicUploaded = false;
+    bboxSaveLogFlags.softwareVersion = GetCurrentVersion();
+    SaveBboxLogFlagsToFile(bboxSaveLogFlags);
 }
 
-void ReportPanicEventAfterRecovery(const std::string& content)
+void ReportPanicEventAfterRecovery(const BboxSaveLogFlags& bboxSaveLogFlags)
 {
-    std::string timeStr = GetParamValueFromString(content, HAPPEN_TIME);
-    auto happenTime = Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
-                                          "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
+    const std::string& timeStr = bboxSaveLogFlags.happenTime;
+    int64_t happenTime = Tbox::GetHappenTime(StringUtil::GetRleftSubstr(timeStr, "-"),
+                                             "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})");
     HiSysEventWrite(
         HisysEventUtil::KERNEL_VENDOR,
         "PANIC",
@@ -207,45 +249,34 @@ void ReportPanicEventAfterRecovery(const std::string& content)
         "SUB_LOG_PATH", timeStr,
         "HAPPEN_TIME", happenTime,
         "FIRST_FRAME", "RECOVERY_PANIC",
-        "FINGERPRINT", Tbox::CalcFingerPrint(timeStr, 0, FP_BUFFER)
+        "LAST_FRAME", bboxSaveLogFlags.softwareVersion,
+        "FINGERPRINT", Tbox::CalcFingerPrint(timeStr + bboxSaveLogFlags.softwareVersion, 0, FP_BUFFER)
     );
 }
 
 bool TryToReportRecoveryPanicEvent()
 {
-    std::string content;
-    if (!FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, content)) {
-        HIVIEW_LOGE("Failed to load file: %{public}s.", BBOX_PARAM_PATH);
-        return false;
-    }
+    BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
     bool ret = false;
-    if (GetParamValueFromString(content, IS_PANIC_UN_UPLOADED) == "true") {
-        std::string filePath = GetBackupFilePath(GetParamValueFromString(content, HAPPEN_TIME));
-        if (FileUtil::FileExists(filePath)) {
-            ReportPanicEventAfterRecovery(content);
+    if (!bboxSaveLogFlags.isPanicUploaded && bboxSaveLogFlags.factoryRecoveryTime != GetLastRecoveryTime()) {
+        if (FileUtil::FileExists(GetBackupFilePath(bboxSaveLogFlags.happenTime))) {
+            ReportPanicEventAfterRecovery(bboxSaveLogFlags);
             ret = true;
         }
     }
-    content = SetParamValueToString(content, IS_STARTUP_SHORT, "false");
-    if (!FileUtil::SaveStringToFile(BBOX_PARAM_PATH, content)) {
-        HIVIEW_LOGE("Failed to save content to file: %{public}s.", BBOX_PARAM_PATH);
-    }
+    bboxSaveLogFlags.isStartUpShort = false;
+    SaveBboxLogFlagsToFile(bboxSaveLogFlags);
     return ret;
 }
 
-bool ConfirmReportResult()
+void ConfirmReportResult()
 {
-    std::string content;
-    if (!FileUtil::LoadStringFromFile(BBOX_PARAM_PATH, content)) {
-        HIVIEW_LOGE("Failed to load file: %{public}s.", BBOX_PARAM_PATH);
-        return true;
-    }
-    std::string timeStr = GetParamValueFromString(content, HAPPEN_TIME);
+    BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
+    const std::string& timeStr = bboxSaveLogFlags.happenTime;
     if (HisysEventUtil::IsEventProcessed("PANIC", "LOG_PATH", GetBackupFilePath(timeStr))) {
-        FileUtil::SaveStringToFile(BBOX_PARAM_PATH, SetParamValueToString(content, IS_PANIC_UN_UPLOADED, "false"));
-        return false;
+        bboxSaveLogFlags.isPanicUploaded = true;
+        SaveBboxLogFlagsToFile(bboxSaveLogFlags);
     }
-    return true;
 }
 }
 }
