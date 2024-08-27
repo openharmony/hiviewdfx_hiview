@@ -323,21 +323,12 @@ HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest015, testing::ext::TestSize.Lev
     auto ret1 = StringUtil::SplitStr(origin, ':');
     size_t expectSize = 3;
     ASSERT_TRUE(ret1.size() == expectSize);
-    if (ret1.empty()) {
-        return;
-    }
     auto element = ret1.front();
     ASSERT_EQ("1234", element);
     ret1.pop_front();
-    if (ret1.empty()) {
-        return;
-    }
     element = ret1.front();
     ASSERT_EQ("5678", element);
     ret1.pop_front();
-    if (ret1.empty()) {
-        return;
-    }
     element = ret1.front();
     ASSERT_EQ("abcd", element);
     ret1.pop_front();
