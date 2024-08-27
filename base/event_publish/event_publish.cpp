@@ -129,7 +129,7 @@ std::string GetSandBoxLogPath(int32_t uid, const std::string& bundleName, const 
 bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::string& destPath)
 {
     if (FileUtil::CopyFileFast(externalLog, destPath) == 0) {
-        std::string entryTxt = "g:" + std::to_string(uid) + ":rwx";
+        std::string entryTxt = "u:" + std::to_string(uid) + ":rwx";
         if (OHOS::StorageDaemon::AclSetAccess(destPath, entryTxt) != 0) {
             HIVIEW_LOGE("failed to set acl access dir=%{public}s", destPath.c_str());
             FileUtil::RemoveFile(destPath);
