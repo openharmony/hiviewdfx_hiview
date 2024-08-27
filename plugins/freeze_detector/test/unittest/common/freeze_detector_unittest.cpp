@@ -598,36 +598,14 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPlugin_005, TestSize.Level3)
 {
     auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
     auto event = std::make_shared<Event>("sender", "event");
-    ASSERT_EQ(freezeDetectorPlugin->CanProcessEvent(event), false);
-}
-
-/**
- * @tc.name: FreezeDetectorPlugin006
- * @tc.desc: FreezeDetectorPlugin send LIFECYCLE_TIMEOUT
- * @tc.type: FUNC
- * @tc.require: AR000H3T5D
- */
-HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPluginTest006, TestSize.Level3)
-{
-    auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
-    auto event = std::make_shared<Event>("sender", "event");
     freezeDetectorPlugin->OnEventListeningCallback(*(event.get()));
-}
-
-/**
- * @tc.name: FreezeDetectorPlugin007
- * @tc.desc: add testcase coverage
- * @tc.type: FUNC
- */
-HWTEST_F(FreezeDetectorUnittest, FreezeDetectorPluginTest007, TestSize.Level3)
-{
-    auto freezeDetectorPlugin = std::make_unique<FreezeDetectorPlugin>();
     freezeDetectorPlugin->RemoveRedundantNewline("test1\\ntest2\\ntest3");
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("KERNEL_VENDOR")
         .InitStringId("SCREEN_ON")
         .Build();
     freezeDetectorPlugin->ProcessEvent(watchPoint);
+    ASSERT_EQ(freezeDetectorPlugin->CanProcessEvent(event), false);
 }
 
 /**

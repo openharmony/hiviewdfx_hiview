@@ -460,6 +460,7 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_003, TestSize.Level1)
     };
     manager[info1.client].push_back(info1);
     peerBinderCatcher->ParseBinderCallChain(manager, pids, 1);
+    EXPECT_TRUE(!pids.empty());
 #ifdef HAS_HIPERF
     pids.insert(3);
     pids.insert(4);
