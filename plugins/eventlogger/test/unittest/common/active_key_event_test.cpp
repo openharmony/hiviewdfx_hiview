@@ -115,6 +115,7 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_004, TestSize.Level3)
 {
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
     activeKeyEvent->triggeringTime_ = (uint64_t)ActiveKeyEvent::SystemTimeMillisecond();
+    EXPECT_TRUE(activeKeyEvent->triggeringTime_ > 0);
     std::shared_ptr<OHOS::MMI::KeyEvent> keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
     std::set<int32_t> preKeys;
@@ -131,6 +132,7 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_005, TestSize.Level3)
 {
     std::shared_ptr<ActiveKeyEvent> activeKeyEvent = std::make_shared<ActiveKeyEvent>();
     activeKeyEvent->triggeringTime_ = (uint64_t)ActiveKeyEvent::SystemTimeMillisecond();
+    EXPECT_TRUE(activeKeyEvent->triggeringTime_ > 0);
     std::shared_ptr<OHOS::MMI::KeyEvent> keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
 }
