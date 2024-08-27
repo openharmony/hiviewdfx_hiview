@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
+#include "hisysevent.h"
+#include "hiview_logger.h"
 #include "reporter.h"
 #include "sanitizerd_log.h"
 #include "zip_helper.h"
-#include "hiview_logger.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -44,6 +45,18 @@ void Upload(T_SANITIZERD_PARAMS *params)
     }
 
     WriteCollectedData(params);
+    HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::RELIABILITY, "ADDR_SANITIZER",
+                    OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+                    "MODULE", params->procName,
+                    "VERSION", params->appVersion,
+                    "REASON", params->errType,
+                    "PID", params->pid,
+                    "UID", params->uid,
+                    "SUMMARY", params->description,
+                    "FAULT_TYPE", params->errType,
+                    "LOG_NAME", params->logName,
+                    "FINGERPRINT", params->hash,
+                    "HAPPEN_TIME", params->happenTime);
     return;
 }
 } // namespace HiviewDFX
