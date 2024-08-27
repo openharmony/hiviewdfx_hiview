@@ -267,7 +267,6 @@ static void UpdateFaultLogInfoFromTempFile(FaultLogInfo& info)
         }
         info.summary.replace(removeStartPos, removeEndPos - removeStartPos + 1, "Thread n");
     }
-    info.sectionMap.clear();
 }
 
 FaultLogInfo ParseFaultLogInfoFromFile(const std::string &path, bool isTempFile)
@@ -316,10 +315,15 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
 
     std::string line;
     std::ifstream logFile(path);
+    bool hasFindFirstLine = false;
     while (std::getline(logFile, line)) {
         if (!logFile.good()) {
             return false;
         }
+        if (!hasFindFirstLine && line.find("Build info:") != std::string::npos) {
+            continue;
+        }
+        hasFindFirstLine = true;
         FileUtil::SaveStringToFd(fd, line);
         FileUtil::SaveStringToFd(fd, "\n");
     }
