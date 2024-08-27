@@ -82,6 +82,7 @@ void ActiveKeyEvent::InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, 
         std::string taskName("InitSubscribe" + std::to_string(finalKey) + "_" + std::to_string(count));
         ffrt::submit(task, {}, {&taskOutDeps}, ffrt::task_attr().name(taskName.c_str()));
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     subscribeIds_.emplace_back(subscribeId);
     HIVIEW_LOGI("CombinationKeyInit finalKey: %{public}d subscribeId_: %{public}d",
         finalKey, subscribeId);
