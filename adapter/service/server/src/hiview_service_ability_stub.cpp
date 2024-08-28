@@ -521,10 +521,6 @@ int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel
         return TraceErrCode::ERR_READ_MSG_PARCEL;
     }
     UCollectClient::MemoryCaller memoryCaller;
-    memoryCaller.pid = IPCObjectStub::GetCallingPid();
-    if (memoryCaller.pid < 0) {
-        return TraceErrCode::ERR_SEND_REQUEST;
-    }
     if (!data.ReadInt32(memoryCaller.pid)) {
         HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read pid from parcel");
         return TraceErrCode::ERR_READ_MSG_PARCEL;
@@ -543,6 +539,10 @@ int32_t HiviewServiceAbilityStub::HandleSetAppResourceLimitRequest(MessageParcel
     if (!data.ReadBool(memoryCaller.enabledDebugLog)) {
         HIVIEW_LOGW("HandleSetAppResourceLimitRequest failed to read enabledDebugLog from parcel");
         return TraceErrCode::ERR_READ_MSG_PARCEL;
+    }
+    memoryCaller.pid = IPCObjectStub::GetCallingPid();
+    if (memoryCaller.pid < 0) {
+        return TraceErrCode::ERR_SEND_REQUEST;
     }
     auto ret = SetAppResourceLimit(memoryCaller);
     return WritePracelableToMessage(reply, ret);
