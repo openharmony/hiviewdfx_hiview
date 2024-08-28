@@ -51,28 +51,17 @@ bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
         return false;
     }
     unsigned long long timestamp = watchPoint.GetTimestamp();
+    std::string packageName = watchPoint.GetPackageName().empty() ?
+        watchPoint.GetProcessName() : watchPoint.GetPackageName();
     for (auto& i : result) {
-        int window = i.GetWindow();
+        long window = i.GetWindow();
         if (window == 0) {
             list.push_back(watchPoint);
-        } else if (window > 0) {
-            unsigned long long start = timestamp;
-            unsigned long long end = timestamp +
-                static_cast<unsigned long long>(window * MILLISECOND);
-            std::string packageName = watchPoint.GetPackageName().empty() ?
-                watchPoint.GetProcessName() : watchPoint.GetPackageName();
-            if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
-            }
-        } else {
-            unsigned long long start = timestamp +
-                static_cast<unsigned long long>(window * MILLISECOND);
-            unsigned long long end = timestamp;
-            std::string packageName = watchPoint.GetPackageName().empty() ?
-                watchPoint.GetProcessName() : watchPoint.GetPackageName();
-            if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
-            }
+        } else if (dBHelper_ != nullptr) {
+            unsigned long long timeInterval = static_cast<unsigned long long>(std::abs(window) * MILLISECOND);
+            unsigned long long start = window > 0 ? timestamp : timestamp - timeInterval;
+            unsigned long long end = window > 0 ? timestamp + timeInterval : timestamp;
+            dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
         }
     }
 
