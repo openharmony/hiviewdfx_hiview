@@ -32,6 +32,7 @@ enum UcError {
     TRACE_FILE_ERROR = 1004,
     TRACE_WRITE_ERROR = 1005,
     TRACE_CALL_ERROR = 1006,
+    TRACE_OUT_OF_TIME = 1007,
 
     // control policy
     TRACE_OVER_FLOW = 1100,
