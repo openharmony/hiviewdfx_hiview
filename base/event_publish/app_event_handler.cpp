@@ -33,9 +33,9 @@ int32_t GetUidByBundleName(const std::string& bundleName)
     AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
         AppExecFwk::Constants::ALL_USERID)) {
-        HIVIEW_LOGE("Failed to query uid from bms, bundleName=%{public}s.", bundleName.c_str());
+        HIVIEW_LOGE("Failed to query uid from bms.");
     } else {
-        HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", info.uid, bundleName.c_str());
+        HIVIEW_LOGD("bundleName of uid=%{public}d", info.uid);
     }
     return info.uid;
 }
