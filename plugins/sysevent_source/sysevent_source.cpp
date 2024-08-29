@@ -84,6 +84,25 @@ void ParameterWatchCallback(const char* key, const char* value, void* context)
     HIVIEW_LOGI("test_type is set to be \"%{public}s\"", testTypeStr.c_str());
     eventSourcePlugin->UpdateTestType(testTypeStr);
 }
+
+void CheckIfEventDelayed(std::shared_ptr<SysEvent> event)
+{
+    // only delay detection is performed on fault events
+    if (event->GetEventType() != SysEventCreator::EventType::FAULT) {
+        return;
+    }
+
+    uint64_t happenTime = event->happenTime_;
+    uint64_t createTime = event->createTime_ / 1000; // 1000: us->ms
+    if (createTime < happenTime) { // for the time jump scene
+        return;
+    }
+    constexpr uint64_t delayDetectLimit = 5 * 1000; // 5s
+    if (uint64_t delayTime = createTime - happenTime; delayTime > delayDetectLimit) {
+        HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRIu64 "] delayed by %{public}" PRIu64 "ms",
+            event->domain_.c_str(), event->eventName_.c_str(), happenTime, delayTime);
+    }
+}
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
@@ -213,6 +232,7 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
+    CheckIfEventDelayed(sysEvent);
     if (controller_ != nullptr && !controller_->CheckThreshold(sysEvent)) {
         sysEventStat_->AccumulateEvent(false);
         return false;
