@@ -29,6 +29,7 @@
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
 #include "sys_event.h"
+#include "string_util.h"
 #include "time_util.h"
 #include "trace_manager.h"
 
@@ -233,7 +234,7 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
 {
     int srcFd = open(srcFilePath.c_str(), O_RDONLY);
     if (srcFd == -1) {
-        HIVIEW_LOGE("failed to open source file, src=%{public}s", srcFilePath.c_str());
+        HIVIEW_LOGE("failed to open source file, src=%{public}s", StringUtil::HideSnInfo(srcFilePath).c_str());
         return ERR_DEFAULT;
     }
     struct stat st{};
@@ -244,7 +245,7 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
     }
     int destFd = open(destFilePath.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IROTH);
     if (destFd == -1) {
-        HIVIEW_LOGE("failed to open destination file, des=%{public}s", destFilePath.c_str());
+        HIVIEW_LOGE("failed to open destination file, des=%{public}s", StringUtil::HideSnInfo(destFilePath).c_str());
         close(srcFd);
         return ERR_DEFAULT;
     }
