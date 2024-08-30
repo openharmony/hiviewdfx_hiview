@@ -328,11 +328,11 @@ CollectResultParcelable<int32_t> HiviewServiceAbility::RecoverTrace()
 
 CollectResultParcelable<int32_t> HiviewServiceAbility::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
 {
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
+    appCaller.uid = IPCSkeleton::GetCallingUid();
+    appCaller.pid = IPCSkeleton::GetCallingPid();
 
     auto traceRetHandler = [=, &appCaller] (HiviewService* service) {
-        return service->CaptureDurationTrace(uid, pid, appCaller);
+        return service->CaptureDurationTrace(appCaller);
     };
     return TraceCalling<int32_t>(traceRetHandler);
 }
