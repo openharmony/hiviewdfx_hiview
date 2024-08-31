@@ -50,6 +50,7 @@ public:
     EventLogTask::Status StartCompose();
     EventLogTask::Status GetTaskStatus() const;
     long GetLogSize() const;
+    void SetFocusWindowId(const std::string& focusWindowId);
 private:
     static constexpr uint32_t MAX_DUMP_TRACE_LIMIT = 15;
 
@@ -65,6 +66,7 @@ private:
     std::map<std::string, capture> captureList_;
     int pid_;
     std::set<int> catchedPids_;
+    std::string focusWindowId_ = "";
 
     bool ShouldStopLogTask(int fd, uint32_t curTaskIndex, int curLogSize, std::shared_ptr<EventLogCatcher> catcher);
     void AddStopReason(int fd, std::shared_ptr<EventLogCatcher> catcher, const std::string& reason);

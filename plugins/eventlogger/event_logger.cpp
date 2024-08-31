@@ -321,30 +321,28 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         jsonFd = FreezeJsonUtil::GetFd(jsonFilePath);
     }
 
+    auto start = TimeUtil::GetMilliseconds();
+    WriteStartTime(fd, start);
+    WriteCommonHead(fd, event);
+    WriteFreezeJsonInfo(fd, jsonFd, event);
+
     std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, jsonFd, event);
     std::string cmdStr = event->GetValue("eventLog_action");
+    if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
+        std::string focusWindowId = DumpWindowInfo(fd);
+        logTask->SetFocusWindowId(focusWindowId);
+    }
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmdStr, ",", cmdList);
     for (const std::string& cmd : cmdList) {
         logTask->AddLog(cmd);
     }
 
-    const uint32_t placeholder = 3;
-    auto start = TimeUtil::GetMilliseconds();
-    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
-    std::ostringstream startTimeStr;
-    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
-    startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
-        std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
-    startTimeStr << std::endl;
-    FileUtil::SaveStringToFd(fd, startTimeStr.str());
-    WriteCommonHead(fd, event);
-    WriteFreezeJsonInfo(fd, jsonFd, event);
-    CollectMemInfo(fd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
     }
+    CollectMemInfo(fd, event);
     auto end = TimeUtil::GetMilliseconds();
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
@@ -461,6 +459,49 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         infoList.push_back(lineStr);
     }
     binderInfoJsonStr = FreezeJsonUtil::GetStrByList(infoList);
+}
+
+std::string EventLogger::DumpWindowInfo(int fd)
+{
+    std::string focusWindowId = "";
+    FILE *file = popen("/system/bin/hidumper -s WindowManagerService -a -a", "r");
+    if (file == nullptr) {
+        HIVIEW_LOGE("parse focus window id error");
+        return focusWindowId;
+    }
+    FileUtil::SaveStringToFd(fd, std::string("\ncatcher cmd: hidumper -s WindowManagerService -a -a\n"));
+    std::smatch result;
+    std::string line = "";
+    auto windowIdRegex = std::regex("Focus window: ([0-9]+)");
+    char *buffer = nullptr;
+    size_t length = 0;
+    while (getline(&buffer, &length, file) != -1) {
+        line = buffer;
+        if (regex_search(line, result, windowIdRegex)) {
+            focusWindowId = result[1];
+        }
+        FileUtil::SaveStringToFd(fd, line);
+    }
+    if (buffer != nullptr) {
+        free(buffer);
+        buffer = nullptr;
+    }
+    pclose(file);
+    file = nullptr;
+    return focusWindowId;
+}
+
+bool EventLogger::WriteStartTime(int fd, uint64_t start)
+{
+    const uint32_t placeholder = 3;
+    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
+    std::ostringstream startTimeStr;
+    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
+        std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
+    startTimeStr << std::endl;
+    FileUtil::SaveStringToFd(fd, startTimeStr.str());
+    return true;
 }
 
 bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)

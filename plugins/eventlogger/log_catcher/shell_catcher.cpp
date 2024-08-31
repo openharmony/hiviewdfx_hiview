@@ -95,10 +95,6 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
         case CATCHER_SCBWMS:
         case CATCHER_SCBWMSEVT:
             {
-                if (event_ == nullptr || focusWindowId_.empty()) {
-                    HIVIEW_LOGI("check param error %{public}d", focusWindowId_.empty());
-                    break;
-                }
                 std::string cmdSuffix = (catcherType_ == CATCHER_SCBWMS) ? " -simplify" : " -event";
                 std::string cmd = "-w " + focusWindowId_ + cmdSuffix;
                 ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a",
@@ -131,9 +127,6 @@ int ShellCatcher::CaDoInChildProcesscatcher(int writeFd)
 
 void ShellCatcher::DoChildProcess(int writeFd)
 {
-    if (focusWindowId_.empty() && (catcherType_ == CATCHER_SCBWMS || catcherType_ == CATCHER_SCBWMSEVT)) {
-        GetFocusWindowId();
-    }
     if (writeFd < 0 || dup2(writeFd, STDOUT_FILENO) == -1 ||
         dup2(writeFd, STDIN_FILENO) == -1 || dup2(writeFd, STDERR_FILENO) == -1) {
         HIVIEW_LOGE("dup2 writeFd fail");
@@ -176,39 +169,9 @@ void ShellCatcher::DoChildProcess(int writeFd)
     }
 }
 
-std::string ShellCatcher::GetFocusWindowId()
+void ShellCatcher::SetFocusWindowId(const std::string& focusWindowId)
 {
-    if (focusWindowId_.empty()) {
-        ParseFocusWindowId();
-    }
-    return focusWindowId_;
-}
-
-void ShellCatcher::ParseFocusWindowId()
-{
-    FILE *file = popen("/system/bin/hidumper -s WindowManagerService -a -a", "r");
-    if (file == nullptr) {
-        HIVIEW_LOGE("parse focus window id error");
-        return;
-    }
-    std::smatch result;
-    std::string line = "";
-    auto windowIdRegex = std::regex("Focus window: ([0-9]+)");
-    char *buffer = nullptr;
-    size_t length = 0;
-    while (getline(&buffer, &length, file) != -1) {
-        line = buffer;
-        if (regex_search(line, result, windowIdRegex)) {
-            focusWindowId_ = result[1];
-            break;
-        }
-    }
-    if (buffer != nullptr) {
-        free(buffer);
-        buffer = nullptr;
-    }
-    pclose(file);
-    file = nullptr;
+    focusWindowId_ = focusWindowId;
 }
 
 bool ShellCatcher::ReadShellToFile(int writeFd, const std::string& cmd)
