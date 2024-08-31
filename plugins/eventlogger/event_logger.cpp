@@ -340,11 +340,11 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
     WriteCommonHead(fd, event);
     WriteFreezeJsonInfo(fd, jsonFd, event);
-    CollectMemInfo(fd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
     }
+    CollectMemInfo(fd, event);
     auto end = TimeUtil::GetMilliseconds();
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
