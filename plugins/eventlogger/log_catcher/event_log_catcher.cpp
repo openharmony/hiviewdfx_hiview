@@ -35,6 +35,11 @@ namespace {
     constexpr char SED_EXEC_PATH[] = "/system/bin/sed";
 }
 
+std::string EventLogCatcher::GetName() const
+{
+    return name_;
+}
+
 int EventLogCatcher::GetLogSize() const
 {
     return logSize_;

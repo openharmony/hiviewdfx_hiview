@@ -32,13 +32,6 @@ public:
     int Catch(int fd, int jsonFd) override;
     void Init(std::shared_ptr<SysEvent> event, const std::string& filePath, std::set<int>& catchedPids);
 
-    static const inline std::string LOGGER_EVENT_PEERBINDER = "PeerBinder";
-    static const inline std::string LOGGER_BINDER_DEBUG_PROC_PATH = "/proc/transaction_proc";
-    static constexpr int BP_CMD_LAYER_INDEX = 1;
-    static constexpr int BP_CMD_PERF_TYPE_INDEX = 2;
-    static constexpr int PERF_LOG_EXPIRE_TIME = 60;
-    static constexpr size_t BP_CMD_SZ = 3;
-
 private:
     struct BinderInfo {
         int client;
@@ -49,15 +42,11 @@ private:
         std::string info = "";
         int pid = 0;
     };
-    enum {
-        LOGGER_BINDER_STACK_ONE = 0,
-        LOGGER_BINDER_STACK_ALL = 1,
-    };
 
     int pid_ = 0;
     int layer_ = 0;
     std::string perfCmd_ = "";
-    std::string binderPath_ = LOGGER_BINDER_DEBUG_PROC_PATH;
+    std::string binderPath_ = "/proc/transaction_proc";
     std::shared_ptr<SysEvent> event_ = nullptr;
     std::set<int> catchedPids_ = {0};
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>> BinderInfoParser(std::ifstream& fin,

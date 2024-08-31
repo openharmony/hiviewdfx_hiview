@@ -26,6 +26,13 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const int DEFAULT_TIME_WINDOW = 30;
+    static const int MINUTES_IN_HOUR = 60;
+    static const int MIN_MATCH_NUM = 2;
+    static const int DEFAULT_HOURS = 10;
+}
+
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 bool FreezeResolver::Init()
 {
@@ -93,7 +100,7 @@ bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
     if (std::any_of(result.begin(), result.end(), [&list](auto& res) {
         return res.GetAction() == "or";
     })) {
-        return list.size() >= minMatchNum;
+        return list.size() >= MIN_MATCH_NUM;
     }
 
     if (list.size() == result.size()) {
@@ -141,14 +148,14 @@ std::string FreezeResolver::GetTimeZone() const
     timeZone = (hour >= 0) ? "+" : "-";
 
     int absHour = std::abs(hour);
-    if (absHour < defaultHours) {
+    if (absHour < DEFAULT_HOURS) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absHour));
 
     int minute = (-tz.tz_minuteswest) % MINUTES_IN_HOUR;
     int absMinute = std::abs(minute);
-    if (absMinute < defaultHours) {
+    if (absMinute < DEFAULT_HOURS) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absMinute));

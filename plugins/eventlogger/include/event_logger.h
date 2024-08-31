@@ -56,47 +56,7 @@ public:
     void OnUnorderedEvent(const Event& msg) override;
     std::string GetAppFreezeFile(std::string& stackPath);
 private:
-    enum {APP, SYS, TOP};
-
-    static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
-    static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
-    static const inline std::string LONG_PRESS = "LONG_PRESS";
-    static const inline std::string AP_S_PRESS6S = "AP_S_PRESS6S";
-    static const inline std::string REBOOT_REASON = "reboot_reason";
-    static const inline std::string NORMAL_RESET_TYPE = "normal_reset_type";
-    static const inline std::string PATTERN_WITHOUT_SPACE = "\\s*=\\s*([^ \\n]*)";
-    static const inline std::string DOMAIN_LONGPRESS = "KERNEL_VENDOR";
-    static const inline std::string STRINGID_LONGPRESS = "COM_LONG_PRESS";
-    static const inline std::string LONGPRESS_LEVEL = "CRITICAL";
-    static const inline std::string FFRT_HEADER = "=== ffrt info ===\n";
-    static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
-        "jsstack",
-    };
-    static const inline std::string MONITOR_LOG_PATH[] = {
-        MONITOR_STACK_LOG_PATH,
-    };
-    static const inline std::vector<std::string> FFRT_VECTOR = {
-        "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
-        "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
-        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
-        "BUSSINESS_THREAD_BLOCK_6S"
-    };
-#ifdef WINDOW_MANAGER_ENABLE
-    static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
-    static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
-    static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
-    static constexpr int TOP_WINDOW_NUM = 3;
-    static constexpr uint8_t USER_PANIC_WARNING_PRIVACY = 2;
-#endif
-    static constexpr int DUMP_TIME_RATIO = 2;
-    static constexpr int EVENT_MAX_ID = 1000000;
-    static constexpr int MAX_FILE_NUM = 500;
-    static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
-    static constexpr int MAX_RETRY_COUNT = 20;
-    static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
-    static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
-    static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
-    static constexpr uint8_t LONGPRESS_PRIVACY = 1;
+    static constexpr const char* const LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
 
 #ifdef WINDOW_MANAGER_ENABLE
     std::vector<uint64_t> backTimes_;

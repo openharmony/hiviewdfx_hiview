@@ -39,9 +39,6 @@ public:
     void OnEventListeningCallback(const Event& msg) override;
 
 private:
-    const static uint64_t toNanoSecondMultple = 1000000;
-    const static int minAppUid = 10000;
-
     std::string RemoveRedundantNewline(const std::string& content) const;
     WatchPoint MakeWatchPoint(const Event& event);
     void CheckForeGround(long uid, long pid, unsigned long long eventTime, std::string& foreGround);

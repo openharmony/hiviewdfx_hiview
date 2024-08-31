@@ -25,6 +25,17 @@
 #include "trace_collector.h"
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const inline char* CMD_LIST[] = {
+        "cmd:w",
+        "cmd:rs",
+        "cmd:a",
+        "k:SysRqFile",
+        "cmd:p",
+        "cmd:d",
+        "cmd:c",
+    };
+}
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-ActiveKeyEvent");
 ActiveKeyEvent::ActiveKeyEvent()
 {

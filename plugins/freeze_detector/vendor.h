@@ -49,25 +49,6 @@ public:
     bool ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const;
 
 private:
-    static const int MAX_LINE_NUM = 100;
-    static const int TIME_STRING_LEN = 16;
-    static const int MAX_FILE_NUM = 500;
-    static const int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
-    static const inline std::string TRIGGER_HEADER = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-    static const inline std::string HEADER = "*******************************************";
-    static const inline std::string HYPHEN = "-";
-    static const inline std::string NEW_LINE = "\n";
-    static const inline std::string EVENT_SUMMARY = "SUMMARY";
-    static const inline std::string POSTFIX = ".tmp";
-    static const inline std::string APPFREEZE = "appfreeze";
-    static const inline std::string SYSFREEZE = "sysfreeze";
-    static const inline std::string SP_SYSTEMHUNGFAULT = "SystemHungFault";
-    static const inline std::string SP_APPFREEZE = "AppFreeze";
-    static const inline std::string SP_ENDSTACK = "END_STACK";
-    static const inline std::string FREEZE_DETECTOR_PATH = "/data/log/faultlog/";
-    static const inline std::string FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
-    static const inline std::string SMART_PARSER_PATH = "/system/etc/hiview/";
-
     static void FormatProcessName(std::string& processName);
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
         const std::string& logName) const;

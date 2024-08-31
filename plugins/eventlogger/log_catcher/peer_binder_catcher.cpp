@@ -37,6 +37,13 @@
 #include "perf_collector.h"
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static constexpr const char* const LOGGER_EVENT_PEERBINDER = "PeerBinder";
+    enum {
+        LOGGER_BINDER_STACK_ONE = 0,
+        LOGGER_BINDER_STACK_ALL = 1,
+    };
+}
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-PeerBinderCatcher");
 #ifdef HAS_HIPERF
 using namespace OHOS::HiviewDFX::UCollectUtil;
@@ -338,13 +345,14 @@ void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
     std::unique_lock<std::mutex> mlock(lock);
     std::string fileName = "hiperf-" + std::to_string(pid_) + ".data";
     std::string fullPath = std::string(EVENT_LOG_PATH) + "/" + fileName;
+    constexpr int perfLogExPireTime = 60;
     if (access(fullPath.c_str(), F_OK) == 0) {
         struct stat statBuf;
         auto now = time(nullptr);
         if (stat(fullPath.c_str(), &statBuf) == -1) {
             HIVIEW_LOGI("Failed to stat file, error:%{public}d.", errno);
             FileUtil::RemoveFile(fullPath);
-        } else if (now - statBuf.st_mtime < PERF_LOG_EXPIRE_TIME) {
+        } else if (now - statBuf.st_mtime < perfLogExPireTime) {
             HIVIEW_LOGI("Target log has exist, reuse it.");
             return;
         } else {

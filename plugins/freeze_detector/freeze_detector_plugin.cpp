@@ -28,6 +28,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    const static uint64_t TO_NANO_SECOND_MULTPLE = 1000000;
+    const static int MIN_APP_UID = 10000;
+}
 REGISTER_PROXY(FreezeDetectorPlugin);
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 FreezeDetectorPlugin::FreezeDetectorPlugin()
@@ -147,7 +151,7 @@ WatchPoint FreezeDetectorPlugin::MakeWatchPoint(const Event& event)
 
 void FreezeDetectorPlugin::CheckForeGround(long uid, long pid, unsigned long long eventTime, std::string& foreGround)
 {
-    if (uid < minAppUid) {
+    if (uid < MIN_APP_UID) {
         return;
     }
 
@@ -213,7 +217,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
     }
     ffrt::submit([this, watchPoint] { this->ProcessEvent(watchPoint); }, {}, {},
         ffrt::task_attr().name("dfr_fre_detec").qos(ffrt::qos_default)
-        .delay(static_cast<unsigned long long>(delayTime) * toNanoSecondMultple));
+        .delay(static_cast<unsigned long long>(delayTime) * TO_NANO_SECOND_MULTPLE));
 }
 
 void FreezeDetectorPlugin::ProcessEvent(WatchPoint watchPoint)

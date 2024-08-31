@@ -29,24 +29,12 @@ const std::string FREEZE_DETECTOR_PLUGIN_NAME = "FreezeDetector";
 const std::string FREEZE_DETECTOR_PLUGIN_VERSION = "1.0";
 class FreezeCommon {
 public:
-    static const int MILLISECOND = 1000;
-    static const int SYSTEM_RESULT_ID = 1;
-    static const int APPLICATION_RESULT_ID = 0;
-    static const inline std::string COLON = ":";
-    static const inline std::string EVENT_DOMAIN = "DOMAIN";
-    static const inline std::string EVENT_STRINGID = "STRINGID";
-    static const inline std::string EVENT_TIMESTAMP = "TIMESTAMP";
-    static const inline std::string EVENT_PID = "PID";
-    static const inline std::string EVENT_TID = "TID";
-    static const inline std::string EVENT_UID = "UID";
-    static const inline std::string EVENT_PACKAGE_NAME = "PACKAGE_NAME";
-    static const inline std::string EVENT_PROCESS_NAME = "PROCESS_NAME";
-    static const inline std::string EVENT_MSG = "MSG";
-    static const inline std::string FORE_GROUND = "FOREGROUND";
-    static const inline std::string HIREACE_TIME = "HITRACE_TIME";
-    static const inline std::string SYSRQ_TIME = "SYSRQ_TIME";
-    static const inline std::string SYSEVENT_PIPELINE = "SysEventPipeline";
-    static const inline std::string DISPLAY_POWER_INFO = "DisplayPowerInfo:";
+    static constexpr const char* const EVENT_PID = "PID";
+    static constexpr const char* const EVENT_UID = "UID";
+    static constexpr const char* const EVENT_PACKAGE_NAME = "PACKAGE_NAME";
+    static constexpr const char* const EVENT_PROCESS_NAME = "PROCESS_NAME";
+    static constexpr const char* const HIREACE_TIME = "HITRACE_TIME";
+    static constexpr const char* const SYSRQ_TIME = "SYSRQ_TIME";
 
     FreezeCommon();
     ~FreezeCommon();
@@ -59,10 +47,7 @@ public:
     bool IsSystemResult(const FreezeResult& result) const;
     bool IsApplicationResult(const FreezeResult& result) const;
     std::set<std::string> GetPrincipalStringIds() const;
-    std::shared_ptr<FreezeRuleCluster> GetFreezeRuleCluster() const
-    {
-        return freezeRuleCluster_;
-    }
+    std::shared_ptr<FreezeRuleCluster> GetFreezeRuleCluster() const;
 
 private:
     std::shared_ptr<FreezeRuleCluster> freezeRuleCluster_;

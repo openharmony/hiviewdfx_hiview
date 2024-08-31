@@ -26,6 +26,28 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const int MILLISECOND = 1000;
+    static const int MAX_LINE_NUM = 100;
+    static const int TIME_STRING_LEN = 16;
+    static const int MAX_FILE_NUM = 500;
+    static const int MAX_FOLDER_SIZE = 50 * 1024 * 1024;
+    static constexpr const char* const TRIGGER_HEADER = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    static constexpr const char* const HEADER = "*******************************************";
+    static constexpr const char* const HYPHEN = "-";
+    static constexpr const char* const POSTFIX = ".tmp";
+    static constexpr const char* const APPFREEZE = "appfreeze";
+    static constexpr const char* const SYSFREEZE = "sysfreeze";
+    static constexpr const char* const FREEZE_DETECTOR_PATH = "/data/log/faultlog/";
+    static constexpr const char* const FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
+    static constexpr const char* const COLON = ":";
+    static constexpr const char* const EVENT_DOMAIN = "DOMAIN";
+    static constexpr const char* const EVENT_STRINGID = "STRINGID";
+    static constexpr const char* const EVENT_TIMESTAMP = "TIMESTAMP";
+    static constexpr const char* const DISPLAY_POWER_INFO = "DisplayPowerInfo:";
+    static constexpr const char* const FORE_GROUND = "FOREGROUND";
+}
+
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const
 {
@@ -71,7 +93,7 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
 std::string Vendor::GetTimeString(unsigned long long timestamp) const
 {
     struct tm tm;
-    time_t ts = static_cast<long long>(timestamp) / FreezeCommon::MILLISECOND; // ms
+    time_t ts = static_cast<long long>(timestamp) / MILLISECOND; // ms
     localtime_r(&ts, &tm);
     char buf[TIME_STRING_LEN] = {0};
 
@@ -90,7 +112,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string stringId = watchPoint.GetStringId();
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        APPFREEZE : SYSFREEZE;
+        std::string(APPFREEZE) : std::string(SYSFREEZE);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
@@ -109,11 +131,11 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string disPlayPowerInfo = GetDisPlayPowerInfo();
     info.summary = type + ": " + processName + " " + stringId +
         " at " + GetTimeString(watchPoint.GetTimestamp()) + "\n";
-    info.summary += FreezeCommon::DISPLAY_POWER_INFO + disPlayPowerInfo;
+    info.summary += std::string(DISPLAY_POWER_INFO) + disPlayPowerInfo;
     info.logPath = logPath;
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
-    info.sectionMaps[FreezeCommon::FORE_GROUND] = watchPoint.GetForeGround();
+    info.sectionMaps[FORE_GROUND] = watchPoint.GetForeGround();
     AddFaultLog(info);
     return logPath;
 }
@@ -122,15 +144,15 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
 {
     uint64_t timestamp = watchPoint.GetTimestamp() / TimeUtil::SEC_TO_MILLISEC;
     oss << header << std::endl;
-    oss << FreezeCommon::EVENT_DOMAIN << FreezeCommon::COLON << watchPoint.GetDomain() << std::endl;
-    oss << FreezeCommon::EVENT_STRINGID << FreezeCommon::COLON << watchPoint.GetStringId() << std::endl;
-    oss << FreezeCommon::EVENT_TIMESTAMP << FreezeCommon::COLON <<
+    oss << std::string(EVENT_DOMAIN) << std::string(COLON) << watchPoint.GetDomain() << std::endl;
+    oss << std::string(EVENT_STRINGID) << std::string(COLON) << watchPoint.GetStringId() << std::endl;
+    oss << std::string(EVENT_TIMESTAMP) << std::string(COLON) <<
         TimeUtil::TimestampFormatToDate(timestamp, "%Y/%m/%d-%H:%M:%S") <<
         ":" << watchPoint.GetTimestamp() % TimeUtil::SEC_TO_MILLISEC << std::endl;
-    oss << FreezeCommon::EVENT_PID << FreezeCommon::COLON << watchPoint.GetPid() << std::endl;
-    oss << FreezeCommon::EVENT_UID << FreezeCommon::COLON << watchPoint.GetUid() << std::endl;
-    oss << FreezeCommon::EVENT_PACKAGE_NAME << FreezeCommon::COLON << watchPoint.GetPackageName() << std::endl;
-    oss << FreezeCommon::EVENT_PROCESS_NAME << FreezeCommon::COLON << watchPoint.GetProcessName() << std::endl;
+    oss << FreezeCommon::EVENT_PID << std::string(COLON) << watchPoint.GetPid() << std::endl;
+    oss << FreezeCommon::EVENT_UID << std::string(COLON) << watchPoint.GetUid() << std::endl;
+    oss << FreezeCommon::EVENT_PACKAGE_NAME << std::string(COLON) << watchPoint.GetPackageName() << std::endl;
+    oss << FreezeCommon::EVENT_PROCESS_NAME << std::string(COLON) << watchPoint.GetProcessName() << std::endl;
 }
 
 void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const
@@ -195,7 +217,7 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? APPFREEZE : SYSFREEZE;
+        ? std::string(APPFREEZE) : std::string(SYSFREEZE);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
@@ -203,17 +225,19 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
         FormatProcessName(processName);
     }
     if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
-        retPath = FAULT_LOGGER_PATH + APPFREEZE + HYPHEN + processName +
-            HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + processName +
-            HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-        logName = APPFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = std::string(FAULT_LOGGER_PATH) + std::string(APPFREEZE) + std::string(HYPHEN) + processName +
+            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp;
+        logPath = std::string(FREEZE_DETECTOR_PATH) + std::string(APPFREEZE) + std::string(HYPHEN) + processName +
+            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
+        logName = std::string(APPFREEZE) + std::string(HYPHEN) + processName + std::string(HYPHEN) +
+            std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
     } else {
-        retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + processName +
-            HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
-        logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + processName +
-            HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-        logName = SYSFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        retPath = std::string(FAULT_LOGGER_PATH) + std::string(SYSFREEZE) + std::string(HYPHEN) + processName +
+            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp;
+        logPath = std::string(FREEZE_DETECTOR_PATH) + std::string(SYSFREEZE) + std::string(HYPHEN) + processName +
+            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
+        logName = std::string(SYSFREEZE) + std::string(HYPHEN) + processName + std::string(HYPHEN) +
+            std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
     }
 }
 
@@ -250,7 +274,7 @@ void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream
             continue;
         }
 
-        body << HEADER << std::endl;
+        body << std::string(HEADER) << std::endl;
         body << ifs.rdbuf();
         ifs.close();
     }
@@ -314,7 +338,7 @@ std::string Vendor::MergeEventLog(
         return "";
     }
 
-    if (type == APPFREEZE) {
+    if (type == std::string(APPFREEZE)) {
         MergeFreezeJsonFile(watchPoint, list);
     }
 
