@@ -29,9 +29,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 class EventLogTask {
-    static constexpr int DEFAULT_LOG_SIZE = 1024 * 1024; // 1M
-    static constexpr uint64_t MILLISEC_TO_SEC = 1000;
-    static constexpr uint64_t DELAY_TIME = 2;
 public:
     enum Status {
         TASK_RUNNABLE = 0,

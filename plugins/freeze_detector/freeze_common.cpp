@@ -18,6 +18,10 @@
 #include "hiview_logger.h"
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const int SYSTEM_RESULT_ID = 1;
+    static const int APPLICATION_RESULT_ID = 0;
+}
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 FreezeCommon::FreezeCommon()
 {
@@ -106,6 +110,11 @@ std::set<std::string> FreezeCommon::GetPrincipalStringIds() const
     }
 
     return set;
+}
+
+std::shared_ptr<FreezeRuleCluster> FreezeCommon::GetFreezeRuleCluster() const
+{
+    return freezeRuleCluster_;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

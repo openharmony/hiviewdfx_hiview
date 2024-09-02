@@ -58,6 +58,44 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    enum {APP, SYS, TOP};
+    static constexpr const char* const LONG_PRESS = "LONG_PRESS";
+    static constexpr const char* const AP_S_PRESS6S = "AP_S_PRESS6S";
+    static constexpr const char* const REBOOT_REASON = "reboot_reason";
+    static constexpr const char* const NORMAL_RESET_TYPE = "normal_reset_type";
+    static constexpr const char* const PATTERN_WITHOUT_SPACE = "\\s*=\\s*([^ \\n]*)";
+    static constexpr const char* const DOMAIN_LONGPRESS = "KERNEL_VENDOR";
+    static constexpr const char* const STRINGID_LONGPRESS = "COM_LONG_PRESS";
+    static constexpr const char* const LONGPRESS_LEVEL = "CRITICAL";
+    static constexpr const char* const FFRT_HEADER = "=== ffrt info ===\n";
+    static constexpr const char* const MONITOR_STACK_FLIE_NAME[] = {
+        "jsstack",
+    };
+    constexpr const char* FFRT_VECTOR[] = {
+        "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
+        "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
+        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
+        "BUSSINESS_THREAD_BLOCK_6S"
+    };
+#ifdef WINDOW_MANAGER_ENABLE
+    static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
+    static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
+    static constexpr int CLICK_FREEZE_TIME_LIMIT = 3000;
+    static constexpr int TOP_WINDOW_NUM = 3;
+    static constexpr uint8_t USER_PANIC_WARNING_PRIVACY = 2;
+#endif
+    static constexpr int DUMP_TIME_RATIO = 2;
+    static constexpr int EVENT_MAX_ID = 1000000;
+    static constexpr int MAX_FILE_NUM = 500;
+    static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
+    static constexpr int MAX_RETRY_COUNT = 20;
+    static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
+    static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
+    static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
+    static constexpr uint8_t LONGPRESS_PRIVACY = 1;
+}
+
 REGISTER(EventLogger);
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger");
 bool EventLogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
@@ -122,8 +160,8 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     sysEvent->OnPending();
 
-    bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
-    auto task = [this, sysEvent, isFfrt] {
+    bool isFfrt = std::find(std::begin(FFRT_VECTOR), std::end(FFRT_VECTOR), eventName) != std::end(FFRT_VECTOR);
+    auto task = [this, sysEvent, isFfrt]() {
         HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
@@ -153,7 +191,7 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
         logFile = "ffrt_" + std::to_string(pid) + "_" + formatTime;
     }
 
-    if (FileUtil::FileExists(LOGGER_EVENT_LOG_PATH + "/" + logFile)) {
+    if (FileUtil::FileExists(std::string(LOGGER_EVENT_LOG_PATH) + "/" + logFile)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
         if (!isFfrt) {
             UpdateDB(event, logFile);
@@ -289,7 +327,7 @@ void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
 
 void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
 {
-    std::string historyFile = LOGGER_EVENT_LOG_PATH + "/" + "history.log";
+    std::string historyFile = std::string(LOGGER_EVENT_LOG_PATH) + "/" + "history.log";
     mode_t mode = 0644;
     if (!FileUtil::FileExists(historyFile) &&
         FileUtil::CreateFile(historyFile, mode) != 0) {
@@ -604,7 +642,7 @@ void EventLogger::WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int or
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     std::string logFile = idStr + "-" + std::to_string(pid) + "-" + formatTime + "-KernelStack-" +
         std::to_string(originFd) + ".log";
-    std::string path = LOGGER_EVENT_LOG_PATH + "/" + logFile;
+    std::string path = std::string(LOGGER_EVENT_LOG_PATH) + "/" + logFile;
     if (FileUtil::FileExists(path)) {
         HIVIEW_LOGI("Filename: %{public}s is existed.", logFile.c_str());
         return;
@@ -769,7 +807,7 @@ bool EventLogger::UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile)
         HIVIEW_LOGI("set info_ with nolog into db.");
         event->SetEventValue(EventStore::EventCol::INFO, "nolog", false);
     } else {
-        auto logPath = R"~(logPath:)~" + LOGGER_EVENT_LOG_PATH  + "/" + logFile;
+        auto logPath = R"~(logPath:)~" + std::string(LOGGER_EVENT_LOG_PATH)  + "/" + logFile;
         event->SetEventValue(EventStore::EventCol::INFO, logPath, true);
     }
     return true;
@@ -951,7 +989,7 @@ bool EventLogger::CanProcessRebootEvent(const Event& event)
 
 void EventLogger::ProcessRebootEvent()
 {
-    if (GetRebootReason() != LONG_PRESS) {
+    if (GetRebootReason() != std::string(LONG_PRESS)) {
         return;
     }
 
@@ -991,8 +1029,10 @@ std::string EventLogger::GetRebootReason() const
 {
     std::string reboot = "";
     std::string reset = "";
-    if (GetMatchString(cmdlineContent_, reboot, REBOOT_REASON + PATTERN_WITHOUT_SPACE) &&
-        GetMatchString(cmdlineContent_, reset, NORMAL_RESET_TYPE + PATTERN_WITHOUT_SPACE)) {
+    if (GetMatchString(cmdlineContent_, reboot, std::string(REBOOT_REASON) +
+        std::string(PATTERN_WITHOUT_SPACE)) &&
+        GetMatchString(cmdlineContent_, reset, std::string(NORMAL_RESET_TYPE) +
+        std::string(PATTERN_WITHOUT_SPACE))) {
             if (std::any_of(rebootReasons_.begin(), rebootReasons_.end(), [&reboot, &reset](auto& reason) {
                 return (reason == reboot || reason == reset);
             })) {

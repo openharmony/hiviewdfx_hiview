@@ -33,7 +33,6 @@ public:
     bool Init(std::shared_ptr<SysEvent> event);
 
 private:
-    static const inline std::string FULL_DIR = "/data/log/eventlog/";
     bool needWriteSysrq_ = false;
     bool isWriteNewFile_ = false;
     std::shared_ptr<SysEvent> event_;
