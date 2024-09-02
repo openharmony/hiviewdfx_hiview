@@ -144,10 +144,7 @@ HWTEST_F(FaultloggerClientUnittest, QuerySelfFaultLogTest001, testing::ext::Test
                 break;
             }
             auto info = result->Next();
-            if (info == nullptr) {
-                FAIL();
-                return;
-            }
+            ASSERT_TRUE(info != nullptr);
             info->GetStringFaultType();
             currentCount++;
         }
