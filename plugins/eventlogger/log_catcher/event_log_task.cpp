@@ -32,10 +32,16 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-const std::string SYSTEM_STACK[] = {
-    "foundation",
-    "render_service",
-};
+    static constexpr int BP_CMD_PERF_TYPE_INDEX = 2;
+    static constexpr int BP_CMD_LAYER_INDEX = 1;
+    static constexpr size_t BP_CMD_SZ = 3;
+    const char* SYSTEM_STACK[] = {
+        "foundation",
+        "render_service",
+    };
+    static constexpr int DEFAULT_LOG_SIZE = 1024 * 1024; // 1M
+    static constexpr uint64_t MILLISEC_TO_SEC = 1000;
+    static constexpr uint64_t DELAY_TIME = 2;
 }
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-EventLogTask");
 EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
@@ -271,13 +277,13 @@ bool EventLogTask::PeerBinderCapture(const std::string &cmd)
 
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmd, ":", cmdList, true);
-    if (cmdList.size() != PeerBinderCatcher::BP_CMD_SZ || cmdList.front() != "pb") {
+    if (cmdList.size() != BP_CMD_SZ || cmdList.front() != "pb") {
         return false;
     }
 
     auto capture = std::make_shared<PeerBinderCatcher>();
-    capture->Initialize(cmdList[PeerBinderCatcher::BP_CMD_PERF_TYPE_INDEX],
-        StringUtil::StrToInt(cmdList[PeerBinderCatcher::BP_CMD_LAYER_INDEX]), pid_);
+    capture->Initialize(cmdList[BP_CMD_PERF_TYPE_INDEX],
+        StringUtil::StrToInt(cmdList[BP_CMD_LAYER_INDEX]), pid_);
     capture->Init(event_, "", catchedPids_);
     tasks_.push_back(capture);
     return true;

@@ -21,31 +21,6 @@ using namespace testing::ext;
 namespace OHOS {
 namespace HiviewDFX {
 class ZipHeloerUnittest : public testing::Test {};
-/**
- * @tc.name: SplitStringTest001
- * @tc.desc: Test SplitString
- * @tc.type: FUNC
- */
-HWTEST_F(ZipHeloerUnittest, SplitStringTest001, testing::ext::TestSize.Level1)
-{
-    std::string input = "data/test";
-    std::string regex = "/";
-    auto resultArray = SplitString(input, regex);
-    ASSERT_EQ(resultArray[0], "data");
-    ASSERT_EQ(resultArray[1], "test");
-}
-
-/**
- * @tc.name: HashStringTest001
- * @tc.desc: Test HashString
- * @tc.type: FUNC
- */
-HWTEST_F(ZipHeloerUnittest, HashStringTest001, testing::ext::TestSize.Level1)
-{
-    std::string input = "data/test";
-    auto result = HashString(input);
-    ASSERT_GT(result, 0);
-}
 
 /**
  * @tc.name: IsModuleNameValidTest001

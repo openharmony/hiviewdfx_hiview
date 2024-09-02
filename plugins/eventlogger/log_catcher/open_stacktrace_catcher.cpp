@@ -27,6 +27,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const inline int SLEEP_TIME_US = 100000;
+    static const inline int MAX_RETRY_COUNT = 10;
+}
 DEFINE_LOG_LABEL(0xD002D01, "EventLogger-OpenStacktraceCatcher");
 OpenStacktraceCatcher::OpenStacktraceCatcher() : EventLogCatcher()
 {

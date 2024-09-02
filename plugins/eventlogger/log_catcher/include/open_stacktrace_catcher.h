@@ -30,8 +30,6 @@ public:
 private:
     int32_t ForkAndDumpStackTrace(int32_t fd);
     static void WaitChildPid(pid_t pid);
-    static const inline int SLEEP_TIME_US = 100000;
-    static const inline int MAX_RETRY_COUNT = 10;
     int32_t pid_ = -1;
     std::string packageName_ = "";
 };

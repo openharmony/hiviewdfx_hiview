@@ -29,6 +29,7 @@
 #include "hiview_platform.h"
 #include "hiview_service_adapter.h"
 #include "sys_event.h"
+#include "string_util.h"
 #include "time_util.h"
 #include "trace_manager.h"
 
@@ -234,7 +235,7 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
 {
     int srcFd = open(srcFilePath.c_str(), O_RDONLY);
     if (srcFd == -1) {
-        HIVIEW_LOGE("failed to open source file, src=%{public}s", srcFilePath.c_str());
+        HIVIEW_LOGE("failed to open source file, src=%{public}s", StringUtil::HideSnInfo(srcFilePath).c_str());
         return ERR_DEFAULT;
     }
     struct stat st{};
@@ -245,7 +246,7 @@ int32_t HiviewService::CopyFile(const std::string& srcFilePath, const std::strin
     }
     int destFd = open(destFilePath.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IROTH);
     if (destFd == -1) {
-        HIVIEW_LOGE("failed to open destination file, des=%{public}s", destFilePath.c_str());
+        HIVIEW_LOGE("failed to open destination file, des=%{public}s", StringUtil::HideSnInfo(destFilePath).c_str());
         close(srcFd);
         return ERR_DEFAULT;
     }
@@ -406,8 +407,7 @@ static std::shared_ptr<AppCallerEvent> InnerCreateAppCallerEvent(UCollectClient:
     return appCallerEvent;
 }
 
-static CollectResult<int32_t> InnerResponseAppTrace(int32_t uid, int32_t pid,
-    UCollectClient::AppCaller &appCaller, const std::string &eventName)
+static CollectResult<int32_t> InnerResponseAppTrace(UCollectClient::AppCaller &appCaller, const std::string &eventName)
 {
     CollectResult<int32_t> result;
     result.data = 0;
@@ -415,7 +415,8 @@ static CollectResult<int32_t> InnerResponseAppTrace(int32_t uid, int32_t pid,
 
     std::shared_ptr<Plugin> plugin = HiviewPlatform::GetInstance().GetPluginByName(UCollectUtil::UCOLLECTOR_PLUGIN);
     if (plugin == nullptr) {
-        HIVIEW_LOGE("UnifiedCollector plugin does not exists, uid=%{public}d, pid=%{public}d", uid, pid);
+        HIVIEW_LOGE("UnifiedCollector plugin does not exists, uid=%{public}d, pid=%{public}d",
+            appCaller.uid, appCaller.pid);
         result.retCode = UCollect::UcError::SYSTEM_ERROR;
         return result;
     }
@@ -424,43 +425,41 @@ static CollectResult<int32_t> InnerResponseAppTrace(int32_t uid, int32_t pid,
     std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(appCallerEvent);
     if (!plugin->OnEvent(event)) {
         HIVIEW_LOGE("%{public}s failed for uid=%{public}d pid=%{public}d error code=%{public}d",
-            eventName.c_str(), uid, pid, appCallerEvent->resultCode_);
+            eventName.c_str(), appCaller.uid, appCaller.pid, appCallerEvent->resultCode_);
         result.retCode = UCollect::UcError(appCallerEvent->resultCode_);
         return result;
     }
     return result;
 }
 
-static CollectResult<int32_t> InnerResponseStartAppTrace(int32_t uid, int32_t pid,
-    UCollectClient::AppCaller &appCaller)
+static CollectResult<int32_t> InnerResponseStartAppTrace(UCollectClient::AppCaller &appCaller)
 {
-    return InnerResponseAppTrace(uid, pid, appCaller, UCollectUtil::START_APP_TRACE);
+    return InnerResponseAppTrace(appCaller, UCollectUtil::START_APP_TRACE);
 }
 
-static CollectResult<int32_t> InnerResponseDumpAppTrace(int32_t uid, int32_t pid,
-    UCollectClient::AppCaller &appCaller)
+static CollectResult<int32_t> InnerResponseDumpAppTrace(UCollectClient::AppCaller &appCaller)
 {
-    return InnerResponseAppTrace(uid, pid, appCaller, UCollectUtil::DUMP_APP_TRACE);
+    return InnerResponseAppTrace(appCaller, UCollectUtil::DUMP_APP_TRACE);
 }
 
-CollectResult<int32_t> HiviewService::CaptureDurationTrace(int32_t uid, int32_t pid,
-    UCollectClient::AppCaller &appCaller)
+CollectResult<int32_t> HiviewService::CaptureDurationTrace(UCollectClient::AppCaller &appCaller)
 {
     CollectResult<int32_t> result;
     result.data = 0;
     if (!AppCallerEvent::enableDynamicTrace_) {
-        HIVIEW_LOGE("disable dynamic trace, can not capture trace for uid=%{public}d, pid=%{public}d", uid, pid);
+        HIVIEW_LOGE("disable dynamic trace, can not capture trace for uid=%{public}d, pid=%{public}d",
+            appCaller.uid, appCaller.pid);
         result.retCode = UCollect::UcError::UNSUPPORT;
         return result;
     }
 
     if (appCaller.actionId == UCollectClient::ACTION_ID_START_TRACE) {
-        return InnerResponseStartAppTrace(uid, pid, appCaller);
+        return InnerResponseStartAppTrace(appCaller);
     } else if (appCaller.actionId == UCollectClient::ACTION_ID_DUMP_TRACE) {
-        return InnerResponseDumpAppTrace(uid, pid, appCaller);
+        return InnerResponseDumpAppTrace(appCaller);
     } else {
         HIVIEW_LOGE("invalid param %{public}d, can not capture trace for uid=%{public}d, pid=%{public}d",
-            appCaller.actionId, uid, pid);
+            appCaller.actionId, appCaller.uid, appCaller.pid);
         result.retCode = UCollect::UcError::INVALID_ACTION_ID;
         return result;
     }

@@ -97,7 +97,7 @@ std::string GetBundleNameById(int32_t uid)
     if (client.GetNameForUid(uid, bundleName) != 0) {
         HIVIEW_LOGW("Failed to query bundleName from bms, uid=%{public}d.", uid);
     } else {
-        HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", uid, bundleName.c_str());
+        HIVIEW_LOGD("bundleName of uid=%{public}d", uid);
     }
     return bundleName;
 }
@@ -131,13 +131,13 @@ bool CopyExternalLog(int32_t uid, const std::string& externalLog, const std::str
     if (FileUtil::CopyFileFast(externalLog, destPath) == 0) {
         std::string entryTxt = "u:" + std::to_string(uid) + ":rwx";
         if (OHOS::StorageDaemon::AclSetAccess(destPath, entryTxt) != 0) {
-            HIVIEW_LOGE("failed to set acl access dir=%{public}s", destPath.c_str());
+            HIVIEW_LOGE("failed to set acl access dir");
             FileUtil::RemoveFile(destPath);
             return false;
         }
         return true;
     }
-    HIVIEW_LOGE("failed to move log file=%{public}s to sandbox.", externalLog.c_str());
+    HIVIEW_LOGE("failed to move log file to sandbox.");
     return false;
 }
 
@@ -150,7 +150,7 @@ bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBo
         if (FileUtil::FileExists(sandBoxLogPath + "/" + fileName)) {
             externalLogJson.append(externalLog);
         } else {
-            HIVIEW_LOGE("sand box log does not exist, file=%{public}s", externalLog.c_str());
+            HIVIEW_LOGE("sand box log does not exist");
             logOverLimit = true;
         }
         return true;
@@ -212,12 +212,11 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
             if (CopyExternalLog(uid, externalLog, destPath)) {
                 dirSize += fileSize;
                 externalLogJson.append("/data/storage/el2/log/" + externalLogInfo.subPath_ + "/" + desFileName);
-                HIVIEW_LOGI("move log file=%{public}s to sandBoxLogPath=%{public}s.",
-                    externalLog.c_str(), sandBoxLogPath.c_str());
+                HIVIEW_LOGI("move log file to sandBoxLogPath.");
             }
         } else {
-            HIVIEW_LOGE("sand box log dir overlimit file=%{public}s, dirSzie=%{public}" PRIu64
-                ", limitSize=%{public}" PRIu64, externalLog.c_str(), dirSize, externalLogInfo.maxFileSize_);
+            HIVIEW_LOGE("sand box log dir overlimit file, dirSzie=%{public}" PRIu64 ", limitSize=%{public}" PRIu64,
+                dirSize, externalLogInfo.maxFileSize_);
             logOverLimit = true;
             break;
         }
@@ -239,12 +238,10 @@ void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
     RemoveEventInternalField(eventJson);
     std::string eventStr = Json::FastWriter().write(eventJson);
     if (!FileUtil::SaveStringToFile(filePath, eventStr, false)) {
-        HIVIEW_LOGE("failed to save event, eventName=%{public}s, file=%{public}s",
-            eventJson[NAME_PROPERTY].asString().c_str(), filePath.c_str());
+        HIVIEW_LOGE("failed to save event, eventName=%{public}s", eventJson[NAME_PROPERTY].asString().c_str());
         return;
     }
-    HIVIEW_LOGI("save event finish, eventName=%{public}s, file=%{public}s", eventJson[NAME_PROPERTY].asString().c_str(),
-        filePath.c_str());
+    HIVIEW_LOGI("save event finish, eventName=%{public}s", eventJson[NAME_PROPERTY].asString().c_str());
 }
 
 void SaveEventAndLogToSandBox(int32_t uid, const std::string& eventName, const std::string& bundleName,
@@ -269,25 +266,24 @@ void SaveEventToTempFile(int32_t uid, Json::Value& eventJson)
 bool CheckAppListenedEvents(const std::string& path, const std::string& eventName)
 {
     if (OS_EVENT_POS_INFOS.find(eventName) == OS_EVENT_POS_INFOS.end()) {
-        HIVIEW_LOGE("undefined event path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
+        HIVIEW_LOGE("undefined event path, eventName=%{public}s.", eventName.c_str());
         return false;
     }
 
     std::string value;
     if (!FileUtil::GetDirXattr(path, XATTR_NAME, value)) {
-        HIVIEW_LOGE("failed to get xattr path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
+        HIVIEW_LOGE("failed to get xattr path, eventName=%{public}s.", eventName.c_str());
         return false;
     }
     if (value.empty()) {
-        HIVIEW_LOGE("getxattr value empty path=%{public}s, eventName=%{public}s.", path.c_str(), eventName.c_str());
+        HIVIEW_LOGE("getxattr value empty path, eventName=%{public}s.", eventName.c_str());
         return false;
     }
-    HIVIEW_LOGD("getxattr success path=%{public}s, eventName=%{public}s, value=%{public}s.",
-        path.c_str(), eventName.c_str(), value.c_str());
+    HIVIEW_LOGD("getxattr success path, eventName=%{public}s, value=%{public}s.", eventName.c_str(), value.c_str());
     uint64_t eventsMask = static_cast<uint64_t>(std::strtoull(value.c_str(), nullptr, 0));
     if (!(eventsMask & (BIT_MASK << OS_EVENT_POS_INFOS.at(eventName)))) {
-        HIVIEW_LOGI("unlistened event path=%{public}s, eventName=%{public}s, eventsMask=%{public}" PRIu64,
-            path.c_str(), eventName.c_str(), eventsMask);
+        HIVIEW_LOGI("unlistened event path, eventName=%{public}s, eventsMask=%{public}" PRIu64, eventName.c_str(),
+            eventsMask);
         return false;
     }
     return true;
@@ -351,17 +347,16 @@ void EventPublish::SendEventToSandBox()
         }
         std::string desPath = GetSandBoxBasePath(uid, bundleName);
         if (!FileUtil::FileExists(desPath)) {
-            HIVIEW_LOGE("SendEventToSandBox not exit desPath=%{public}s.", desPath.c_str());
+            HIVIEW_LOGE("SendEventToSandBox not exit.");
             (void)FileUtil::RemoveFile(srcPath);
             continue;
         }
         desPath.append(FILE_PREFIX).append(timeStr).append(".txt");
         if (FileUtil::CopyFile(srcPath, desPath) == -1) {
-            HIVIEW_LOGE("failed to move file=%{public}s to desFile=%{public}s.",
-                srcPath.c_str(), desPath.c_str());
+            HIVIEW_LOGE("failed to move file to desFile.");
             continue;
         }
-        HIVIEW_LOGI("copy srcPath=%{public}s, desPath=%{public}s.", srcPath.c_str(), desPath.c_str());
+        HIVIEW_LOGI("copy srcPath to desPath success.");
         (void)FileUtil::RemoveFile(srcPath);
     }
     sendingThread_.reset();
@@ -387,7 +382,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     std::string srcPath = GetTempFilePath(uid);
     std::string desPath = GetSandBoxBasePath(uid, bundleName);
     if (!FileUtil::FileExists(desPath)) {
-        HIVIEW_LOGE("desPath=%{public}s not exit.", desPath.c_str());
+        HIVIEW_LOGE("desPath not exit.");
         (void)FileUtil::RemoveFile(srcPath);
         return;
     }
@@ -402,8 +397,7 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
     Json::Value params;
     Json::Reader reader;
     if (!reader.parse(paramJson, params)) {
-        HIVIEW_LOGE("failed to parse paramJson bundleName=%{public}s, eventName=%{public}s.",
-            bundleName.c_str(), eventName.c_str());
+        HIVIEW_LOGE("failed to parse paramJson bundleName, eventName=%{public}s.", eventName.c_str());
         return;
     }
     eventJson[PARAM_PROPERTY] = params;

@@ -37,70 +37,19 @@ public:
         : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), action_("and"),
         ffrt_("") {};
     ~FreezeResult() {};
-    std::string GetDomain() const
-    {
-        return domain_;
-    }
-
-    std::string GetStringId() const
-    {
-        return stringId_;
-    }
-
-    unsigned long GetId() const
-    {
-        return code_;
-    }
-
-    void SetId(unsigned long code)
-    {
-        code_ = code;
-    }
-
-    std::string GetScope() const
-    {
-        return scope_;
-    }
-
-    void SetScope(const std::string& scope)
-    {
-        scope_ = scope;
-    }
-
-    long GetWindow() const
-    {
-        return window_;
-    }
-
-    std::string GetSamePackage() const
-    {
-        return samePackage_;
-    }
-
-    void SetSamePackage(const std::string& samePackage)
-    {
-        samePackage_ = samePackage;
-    }
-
-    std::string GetAction() const
-    {
-        return action_;
-    }
-
-    void SetAction(const std::string& action)
-    {
-        action_ = action;
-    }
-
-    std::string GetFfrt() const
-    {
-        return ffrt_;
-    }
-
-    void SetFfrt(const std::string& ffrt)
-    {
-        ffrt_ = ffrt;
-    }
+    std::string GetDomain() const;
+    std::string GetStringId() const;
+    unsigned long GetId() const;
+    void SetId(unsigned long code);
+    std::string GetScope() const;
+    void SetScope(const std::string& scope);
+    long GetWindow() const;
+    std::string GetSamePackage() const;
+    void SetSamePackage(const std::string& samePackage);
+    std::string GetAction() const;
+    void SetAction(const std::string& action);
+    std::string GetFfrt() const;
+    void SetFfrt(const std::string& ffrt);
 
 private:
     long window_;
@@ -123,30 +72,11 @@ public:
         results_.clear();
     }
 
-    std::string GetDomain() const
-    {
-        return domain_;
-    }
-
-    void SetDomain(const std::string& domain)
-    {
-        domain_ = domain;
-    }
-
-    std::string GetStringId() const
-    {
-        return stringId_;
-    }
-
-    void SetStringId(const std::string& stringId)
-    {
-        stringId_ = stringId;
-    }
-
-    std::map<std::string, FreezeResult> GetMap() const
-    {
-        return results_;
-    }
+    std::string GetDomain() const;
+    void SetDomain(const std::string& domain);
+    std::string GetStringId() const;
+    void SetStringId(const std::string& stringId);
+    std::map<std::string, FreezeResult> GetMap() const;
 
     void AddResult(const std::string& domain, const std::string& stringId, const FreezeResult& result);
     bool GetResult(const std::string& domain, const std::string& stringId, FreezeResult& result);
@@ -177,41 +107,10 @@ public:
     template<typename T>
     T GetAttributeValue(xmlNode* node, const std::string& name);
     bool GetResult(const WatchPoint& watchPoint, std::vector<FreezeResult>& list);
-    std::map<std::string, std::pair<std::string, bool>> GetApplicationPairs() const
-    {
-        return applicationPairs_;
-    }
-
-    std::map<std::string, std::pair<std::string, bool>> GetSystemPairs() const
-    {
-        return systemPairs_;
-    }
+    std::map<std::string, std::pair<std::string, bool>> GetApplicationPairs() const;
+    std::map<std::string, std::pair<std::string, bool>> GetSystemPairs() const;
 
 private:
-    static const inline std::string DEFAULT_RULE_FILE = "/system/etc/hiview/freeze_rules.xml";
-    static const inline std::string TAG_FREEZE = "freeze";
-    static const inline std::string TAG_RULES = "rules";
-    static const inline std::string TAG_RULE = "rule";
-    static const inline std::string TAG_LINKS = "links";
-    static const inline std::string TAG_EVENT = "event";
-    static const inline std::string TAG_RESULT = "result";
-    static const inline std::string TAG_RELEVANCE = "relevance";
-    static const inline std::string ATTRIBUTE_ID = "id";
-    static const inline std::string ATTRIBUTE_WINDOW = "window";
-    static const inline std::string ATTRIBUTE_DOMAIN = "domain";
-    static const inline std::string ATTRIBUTE_STRINGID = "stringid";
-    static const inline std::string ATTRIBUTE_TYPE = "type";
-    static const inline std::string ATTRIBUTE_USER = "user";
-    static const inline std::string ATTRIBUTE_WATCHPOINT = "watchpoint";
-    static const inline std::string ATTRIBUTE_CODE = "code";
-    static const inline std::string ATTRIBUTE_SCOPE = "scope";
-    static const inline std::string ATTRIBUTE_SAME_PACKAGE = "samePackage";
-    static const inline std::string attributeAction = "action";
-    static const inline std::string attributeFfrt = "ffrt";
-    static const inline std::string ATTRIBUTE_APPLICATION = "application";
-    static const inline std::string ATTRIBUTE_SYSTEM = "system";
-    static const int MAX_FILE_SIZE = 512 * 1024;
-
     std::map<std::string, FreezeRule> rules_;
     std::map<std::string, std::pair<std::string, bool>> applicationPairs_;
     std::map<std::string, std::pair<std::string, bool>> systemPairs_;

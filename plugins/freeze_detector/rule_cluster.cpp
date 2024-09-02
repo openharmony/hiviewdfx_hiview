@@ -24,6 +24,31 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
+namespace {
+    static constexpr const char* const DEFAULT_RULE_FILE = "/system/etc/hiview/freeze_rules.xml";
+    static constexpr const char* const TAG_FREEZE = "freeze";
+    static constexpr const char* const TAG_RULES = "rules";
+    static constexpr const char* const TAG_RULE = "rule";
+    static constexpr const char* const TAG_LINKS = "links";
+    static constexpr const char* const TAG_EVENT = "event";
+    static constexpr const char* const TAG_RESULT = "result";
+    static constexpr const char* const TAG_RELEVANCE = "relevance";
+    static constexpr const char* const ATTRIBUTE_ID = "id";
+    static constexpr const char* const ATTRIBUTE_WINDOW = "window";
+    static constexpr const char* const ATTRIBUTE_DOMAIN = "domain";
+    static constexpr const char* const ATTRIBUTE_STRINGID = "stringid";
+    static constexpr const char* const ATTRIBUTE_TYPE = "type";
+    static constexpr const char* const ATTRIBUTE_USER = "user";
+    static constexpr const char* const ATTRIBUTE_WATCHPOINT = "watchpoint";
+    static constexpr const char* const ATTRIBUTE_CODE = "code";
+    static constexpr const char* const ATTRIBUTE_SCOPE = "scope";
+    static constexpr const char* const ATTRIBUTE_SAME_PACKAGE = "samePackage";
+    static constexpr const char* const ATTRIBUTE_ACTION = "action";
+    static constexpr const char* const ATTRIBUTE_FFRT = "ffrt";
+    static constexpr const char* const ATTRIBUTE_APPLICATION = "application";
+    static constexpr const char* const ATTRIBUTE_SYSTEM = "system";
+    static const int MAX_FILE_SIZE = 512 * 1024;
+}
 
 FreezeRuleCluster::FreezeRuleCluster()
 {
@@ -37,7 +62,7 @@ FreezeRuleCluster::~FreezeRuleCluster()
 
 bool FreezeRuleCluster::Init()
 {
-    if (access(DEFAULT_RULE_FILE.c_str(), R_OK) != 0) {
+    if (access(DEFAULT_RULE_FILE, R_OK) != 0) {
         HIVIEW_LOGE("cannot access rule file.");
         return false;
     }
@@ -199,8 +224,8 @@ void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
     unsigned long code = GetAttributeValue<unsigned long>(tag, ATTRIBUTE_CODE);
     std::string scope = GetAttributeValue<std::string>(tag, ATTRIBUTE_SCOPE);
     std::string samePackage = GetAttributeValue<std::string>(tag, ATTRIBUTE_SAME_PACKAGE);
-    std::string action = GetAttributeValue<std::string>(tag, attributeAction);
-    std::string ffrt = GetAttributeValue<std::string>(tag, attributeFfrt);
+    std::string action = GetAttributeValue<std::string>(tag, ATTRIBUTE_ACTION);
+    std::string ffrt = GetAttributeValue<std::string>(tag, ATTRIBUTE_FFRT);
 
     result.SetId(code);
     result.SetScope(scope);
@@ -240,6 +265,106 @@ bool FreezeRuleCluster::GetResult(const WatchPoint& watchPoint, std::vector<Free
         return false;
     }
     return true;
+}
+
+std::map<std::string, std::pair<std::string, bool>> FreezeRuleCluster::GetApplicationPairs() const
+{
+    return applicationPairs_;
+}
+
+std::map<std::string, std::pair<std::string, bool>> FreezeRuleCluster::GetSystemPairs() const
+{
+    return systemPairs_;
+}
+
+std::string FreezeResult::GetDomain() const
+{
+    return domain_;
+}
+
+std::string FreezeResult::GetStringId() const
+{
+    return stringId_;
+}
+
+unsigned long FreezeResult::GetId() const
+{
+    return code_;
+}
+
+void FreezeResult::SetId(unsigned long code)
+{
+    code_ = code;
+}
+
+std::string FreezeResult::GetScope() const
+{
+    return scope_;
+}
+
+void FreezeResult::SetScope(const std::string& scope)
+{
+    scope_ = scope;
+}
+
+long FreezeResult::GetWindow() const
+{
+    return window_;
+}
+
+std::string FreezeResult::GetSamePackage() const
+{
+    return samePackage_;
+}
+
+void FreezeResult::SetSamePackage(const std::string& samePackage)
+{
+    samePackage_ = samePackage;
+}
+
+std::string FreezeResult::GetAction() const
+{
+    return action_;
+}
+
+void FreezeResult::SetAction(const std::string& action)
+{
+    action_ = action;
+}
+
+std::string FreezeResult::GetFfrt() const
+{
+    return ffrt_;
+}
+
+void FreezeResult::SetFfrt(const std::string& ffrt)
+{
+    ffrt_ = ffrt;
+}
+
+std::string FreezeRule::GetDomain() const
+{
+    return domain_;
+}
+
+void FreezeRule::SetDomain(const std::string& domain)
+{
+    domain_ = domain;
+}
+
+std::string FreezeRule::GetStringId() const
+{
+    return stringId_;
+}
+
+void FreezeRule::SetStringId(const std::string& stringId)
+{
+    stringId_ = stringId;
+}
+
+std::map<std::string, FreezeResult> FreezeRule::GetMap() const
+{
+    return results_;
 }
 
 void FreezeRule::AddResult(const std::string& domain, const std::string& stringId, const FreezeResult& result)

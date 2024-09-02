@@ -33,8 +33,11 @@ constexpr uint64_t DAY_TO_SECONDS = 24 * 60 * 60;
 
 uint64_t GetFileLastModifiedTime(const std::string& file)
 {
-    struct stat fileInfo;
-    stat(file.c_str(), &fileInfo);
+    struct stat fileInfo {0};
+    if (stat(file.c_str(), &fileInfo) != ERR_OK) {
+        HIVIEW_LOGW("failed to get file info %{private}s", file.c_str());
+        return 0;
+    }
     return fileInfo.st_mtime;
 }
 

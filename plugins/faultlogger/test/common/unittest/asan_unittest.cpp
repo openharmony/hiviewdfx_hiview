@@ -52,6 +52,8 @@ HWTEST_F(AsanUnittest, WriteGwpAsanLogTest001, testing::ext::TestSize.Level1)
     WriteGwpAsanLog(tsanBuf, strlen(tsanBuf));
     char hwasanBuf[] = "Test HWASAN, End Hwasan report";
     WriteGwpAsanLog(hwasanBuf, strlen(hwasanBuf));
+    char asanBuf[] = "Test ASAN, End Asan report";
+    WriteGwpAsanLog(asanBuf, strlen(asanBuf));
     ASSERT_TRUE(true);
 }
 } // namespace HiviewDFX

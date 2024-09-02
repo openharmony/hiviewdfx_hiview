@@ -40,6 +40,9 @@ int MemoryCatcher::Catch(int fd, int jsonFd)
     std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
     CollectResult<SysMemory> result = collector->CollectSysMemory();
     if (result.retCode == UcError::SUCCESS) {
+        std::string pressMemInfo = "";
+        FileUtil::LoadStringFromFile("/proc/pressure/memory", pressMemInfo);
+        FileUtil::SaveStringToFd(fd, pressMemInfo + "\n");
         FileUtil::SaveStringToFd(fd, "memTotal " + std::to_string(result.data.memTotal) + "\n");
         FileUtil::SaveStringToFd(fd, "memFree " + std::to_string(result.data.memFree) + "\n");
         FileUtil::SaveStringToFd(fd, "memAvailable " + std::to_string(result.data.memAvailable) + "\n");

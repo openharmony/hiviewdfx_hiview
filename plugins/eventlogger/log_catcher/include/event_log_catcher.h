@@ -37,11 +37,7 @@ public:
     // should not be longer than 256 bytes
     virtual std::string GetDescription() const;
     int GetFdSize(int32_t fd);
-
-    std::string GetName() const
-    {
-        return name_;
-    }
+    std::string GetName() const;
 protected:
     int logSize_ = -1;
     time_t catcherStartTime_ = -1;

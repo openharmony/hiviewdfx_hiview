@@ -24,6 +24,9 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static constexpr const char* const EVENT_MSG = "MSG";
+}
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult& result,
     EventStore::ResultSet& set, std::map<std::string, WatchPoint>& resultMap)
@@ -51,7 +54,7 @@ void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult&
             .InitSeq(record->GetSeq()).InitDomain(result.GetDomain()).InitStringId(result.GetStringId())
             .InitTimestamp(record->happenTime_).InitPid(pid).InitUid(uid).InitTid(tid).InitPackageName(packageName)
             .InitProcessName(record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME))
-            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(FreezeCommon::EVENT_MSG), "\\n", "\n")).Build();
+            .InitMsg(StringUtil::ReplaceStr(record->GetEventValue(EVENT_MSG), "\\n", "\n")).Build();
 
         std::string info = record->GetEventValue(EventStore::EventCol::INFO);
         std::regex reg("logPath:([^,]+)");

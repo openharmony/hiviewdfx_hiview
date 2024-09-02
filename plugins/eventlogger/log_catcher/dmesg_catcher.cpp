@@ -34,6 +34,7 @@ namespace {
     constexpr int SYSLOG_ACTION_READ_ALL = 3;
     constexpr int SYSLOG_ACTION_SIZE_BUFFER = 10;
     constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
+    static constexpr const char* const FULL_DIR = "/data/log/eventlog/";
 }
 DmesgCatcher::DmesgCatcher() : EventLogCatcher()
 {
@@ -100,7 +101,7 @@ std::string DmesgCatcher::DmesgSaveTofile()
 {
     auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
     std::string sysrqTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
-    std::string fullPath = FULL_DIR + "sysrq-" + sysrqTime + ".log";
+    std::string fullPath = std::string(FULL_DIR) + "sysrq-" + sysrqTime + ".log";
 
     if (FileUtil::FileExists(fullPath)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", fullPath.c_str());

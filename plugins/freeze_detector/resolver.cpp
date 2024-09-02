@@ -26,6 +26,13 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const int DEFAULT_TIME_WINDOW = 30;
+    static const int MINUTES_IN_HOUR = 60;
+    static const int MIN_MATCH_NUM = 2;
+    static const int DEFAULT_HOURS = 10;
+}
+
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 bool FreezeResolver::Init()
 {
@@ -51,28 +58,17 @@ bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
         return false;
     }
     unsigned long long timestamp = watchPoint.GetTimestamp();
+    std::string packageName = watchPoint.GetPackageName().empty() ?
+        watchPoint.GetProcessName() : watchPoint.GetPackageName();
     for (auto& i : result) {
-        int window = i.GetWindow();
+        long window = i.GetWindow();
         if (window == 0) {
             list.push_back(watchPoint);
-        } else if (window > 0) {
-            unsigned long long start = timestamp;
-            unsigned long long end = timestamp +
-                static_cast<unsigned long long>(window * MILLISECOND);
-            std::string packageName = watchPoint.GetPackageName().empty() ?
-                watchPoint.GetProcessName() : watchPoint.GetPackageName();
-            if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
-            }
-        } else {
-            unsigned long long start = timestamp +
-                static_cast<unsigned long long>(window * MILLISECOND);
-            unsigned long long end = timestamp;
-            std::string packageName = watchPoint.GetPackageName().empty() ?
-                watchPoint.GetProcessName() : watchPoint.GetPackageName();
-            if (dBHelper_ != nullptr) {
-                dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
-            }
+        } else if (dBHelper_ != nullptr) {
+            unsigned long long timeInterval = static_cast<unsigned long long>(std::abs(window) * MILLISECOND);
+            unsigned long long start = window > 0 ? timestamp : timestamp - timeInterval;
+            unsigned long long end = window > 0 ? timestamp + timeInterval : timestamp;
+            dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
         }
     }
 
@@ -104,7 +100,7 @@ bool FreezeResolver::JudgmentResult(const WatchPoint& watchPoint,
     if (std::any_of(result.begin(), result.end(), [&list](auto& res) {
         return res.GetAction() == "or";
     })) {
-        return list.size() >= minMatchNum;
+        return list.size() >= MIN_MATCH_NUM;
     }
 
     if (list.size() == result.size()) {
@@ -152,14 +148,14 @@ std::string FreezeResolver::GetTimeZone() const
     timeZone = (hour >= 0) ? "+" : "-";
 
     int absHour = std::abs(hour);
-    if (absHour < defaultHours) {
+    if (absHour < DEFAULT_HOURS) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absHour));
 
     int minute = (-tz.tz_minuteswest) % MINUTES_IN_HOUR;
     int absMinute = std::abs(minute);
-    if (absMinute < defaultHours) {
+    if (absMinute < DEFAULT_HOURS) {
         timeZone.append("0");
     }
     timeZone.append(std::to_string(absMinute));
