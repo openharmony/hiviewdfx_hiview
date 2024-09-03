@@ -199,7 +199,9 @@ void EventExportEngine::InitAndRunTask(std::shared_ptr<ExportConfig> config)
 
 void EventExportEngine::HandleExportSwitchOn(const std::string& moduleName)
 {
-    dbMgr_->HandleExportSwitchChanged(moduleName, EventStore::SysEventSequenceManager::GetInstance().GetSequence());
+    auto curEventSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
+    HIVIEW_LOGI("update enabled seq:%{public}" PRId64 " for moudle %{public}s", curEventSeq, moduleName.c_str());
+    dbMgr_->HandleExportSwitchChanged(moduleName, curEventSeq);
 }
 
 void EventExportEngine::HandleExportSwitchOff(const std::string& moduleName)
