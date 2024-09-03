@@ -39,11 +39,7 @@ ohos_unittest("EventPublishTest") {
     "unittest/common/event_publish_test.cpp",
   ]
 
-  deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
-    "$hiview_base/event_publish:hiview_event_publish",
-    "$hiview_core:hiview_core",
-  ]
+  deps = [ "$hiview_base/event_publish:hiview_event_publish" ]
 
   external_deps = [
     "googletest:gmock",

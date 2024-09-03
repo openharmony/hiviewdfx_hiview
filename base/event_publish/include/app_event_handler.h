@@ -37,12 +37,6 @@ public:
         std::string abilityName;
     };
 
-    struct TimeInfo {
-        uint64_t time = 0;
-        uint64_t beginTime = 0;
-        uint64_t endTime = 0;
-    };
-
     struct MemoryInfo {
         uint64_t pss = 0;
         uint64_t rss = 0;
@@ -70,6 +64,12 @@ public:
         int32_t totalRenderMissedFrames = 0;
         uint64_t maxRenderFrametime = 0;
         int32_t maxRenderSeqFrames = 0;
+    };
+
+    struct TimeInfo {
+        uint64_t time = 0;
+        uint64_t beginTime = 0;
+        uint64_t endTime = 0;
     };
 
     struct ThreadInfo {
@@ -137,9 +137,9 @@ public:
 
     int PostEvent(const AppLaunchInfo& event);
     int PostEvent(const ScrollJankInfo& event);
+    int PostEvent(const ResourceOverLimitInfo& event);
     int PostEvent(const CpuUsageHighInfo& event);
     int PostEvent(const BatteryUsageInfo& event);
-    int PostEvent(const ResourceOverLimitInfo& event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
