@@ -67,8 +67,6 @@ ohos_unittest("FreezeDetectorUnittest") {
   sources = [ "unittest/common/freeze_detector_unittest.cpp" ]
 
   external_deps = [
-    "display_manager:displaymgr",
-    "googletest:gtest_main",
     "hilog:libhilog",
     "hiview:libfaultlogger",
     "libxml2:libxml2",

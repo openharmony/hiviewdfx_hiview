@@ -46,8 +46,9 @@
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
-#include "wm_common.h"
+#include "event_focus_listener.h"
 #include "window_manager_lite.h"
+#include "wm_common.h"
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
@@ -85,14 +86,14 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         HIVIEW_LOGE("event == nullptr");
         return false;
     }
-    RegisterFocusListener();
+    EventFocusListener::RegisterFocusListener();
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
 
     long pid = sysEvent->GetEventIntValue("PID");
     pid = pid ? pid : sysEvent->GetPid();
     std::string eventName = sysEvent->eventName_;
     if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
-        if (eventFocusListener_ != nullptr && isRegisterFocusListener) {
+        if (EventFocusListener::registerState_ == EventFocusListener::REGISTERED) {
             ReportUserPanicWarning(sysEvent, pid);
         }
         return true;
@@ -117,7 +118,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     sysEvent->OnPending();
 
     bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
-    auto task = [this, sysEvent, isFfrt]() {
+    auto task = [this, sysEvent, isFfrt] {
         HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
@@ -174,7 +175,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         sam->GetRunningSystemProcess(systemProcessInfos);
         if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
-            [pid, type](auto& systemProcessInfo) {
+            [pid](auto& systemProcessInfo) {
             return pid == systemProcessInfo.pid;
         })) {
             type = SYS;
@@ -264,6 +265,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
         return;
     }
+
     int jsonFd = -1;
     if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
         std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
@@ -380,7 +382,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
-        if (strList.size() < 7) { // more than or equal to 7: valid array size
+        if (strList.size() < 7) { // less than 7: valid array size
             continue;
         }
         // 2: binder peer id
@@ -444,6 +446,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, headerStream.str());
     return true;
 }
+
 void EventLogger::WriteCallStack(std::shared_ptr<SysEvent> event, int fd)
 {
     if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_BLOCK_CALLSTACK") == 0) {
@@ -502,7 +505,6 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
             stack = jsonStack;
             jsonStack = "[]";
         }
-
         GetFailedDumpStackMsg(stack, event);
 
         if (jsonFd >= 0) {
@@ -549,9 +551,9 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
 void EventLogger::GetFailedDumpStackMsg(std::string& stack, std::shared_ptr<SysEvent> event)
 {
     std::string failedStackStart = " Failed to dump stacktrace for ";
-    if (dbHelper_ != nullptr && stack.size() >= failedStackStart.size()
-        && !stack.compare(0, failedStackStart.size(), failedStackStart)
-        && stack.find("syscall SIGDUMP error") != std::string::npos) {
+    if (dbHelper_ != nullptr && stack.size() >= failedStackStart.size() &&
+        !stack.compare(0, failedStackStart.size(), failedStackStart) &&
+        stack.find("syscall SIGDUMP error") != std::string::npos) {
         long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
         std::string packageName = event->GetEventValue("PACKAGE_NAME").empty() ?
             event->GetEventValue("PROCESS_NAME") : event->GetEventValue("PACKAGE_NAME");
@@ -653,7 +655,7 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
 void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid)
 {
     if (event->eventName_ == "FREQUENT_CLICK_WARNING") {
-        if (event->happenTime_ - eventFocusListener_->lastChangedTime_ <= CLICK_FREEZE_TIME_LIMIT) {
+        if (event->happenTime_ - EventFocusListener::lastChangedTime_ <= CLICK_FREEZE_TIME_LIMIT) {
             return;
         }
     } else {
@@ -662,7 +664,7 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
             return;
         }
         if ((event->happenTime_ - backTimes_[0] <= BACK_FREEZE_TIME_LIMIT) &&
-            (event->happenTime_ - eventFocusListener_->lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
+            (event->happenTime_ - EventFocusListener::lastChangedTime_ > BACK_FREEZE_TIME_LIMIT)) {
             backTimes_.clear();
         } else {
             backTimes_.erase(backTimes_.begin(), backTimes_.end() - (BACK_FREEZE_COUNT_LIMIT - 1));
@@ -776,14 +778,7 @@ void EventLogger::OnLoad()
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
-    if (isRegisterFocusListener) {
-        Rosen::WMError ret = Rosen::WindowManager::GetInstance().UnregisterFocusChangedListener(eventFocusListener_);
-        if (ret == Rosen::WMError::WM_OK) {
-            HIVIEW_LOGI("unRegister eventFocusListener succeed.");
-            eventFocusListener_ = nullptr;
-            isRegisterFocusListener = false;
-        }
-    }
+    EventFocusListener::UnRegisterFocusListener();
 }
 
 std::string EventLogger::GetListenerName()
@@ -840,19 +835,6 @@ void EventLogger::ProcessRebootEvent()
         auto seq = context->GetPipelineSequenceByName("EventloggerPipeline");
         event->SetPipelineInfo("EventloggerPipeline", seq);
         event->OnContinue();
-    }
-}
-
-void EventLogger::RegisterFocusListener()
-{
-    if (isRegisterFocusListener) {
-        return;
-    }
-    eventFocusListener_ = EventFocusListener::GetInstance();
-    Rosen::WMError ret = Rosen::WindowManager::GetInstance().RegisterFocusChangedListener(eventFocusListener_);
-    if (ret == Rosen::WMError::WM_OK) {
-        HIVIEW_LOGI("register eventFocusListener succeed.");
-        isRegisterFocusListener = true;
     }
 }
 

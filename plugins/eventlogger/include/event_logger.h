@@ -32,7 +32,6 @@
 
 #include "active_key_event.h"
 #include "db_helper.h"
-#include "event_focus_listener.h"
 #include "event_logger_config.h"
 #include "freeze_common.h"
 
@@ -101,7 +100,6 @@ private:
     std::unique_ptr<DBHelper> dbHelper_ = nullptr;
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
     std::shared_ptr<LogStoreEx> logStore_;
-    bool isRegisterFocusListener = false;
     long lastPid_ = 0;
     uint64_t startTime_;
     std::unordered_map<std::string, std::time_t> eventTagTime_;
@@ -116,7 +114,6 @@ private:
     std::string lastEventName_ = "";
     std::vector<std::string> rebootReasons_;
     std::vector<uint64_t> backTimes_;
-    sptr<EventFocusListener> eventFocusListener_;
 
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
     void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
@@ -134,7 +131,6 @@ private:
     void CheckEventOnContinue(std::shared_ptr<SysEvent> event);
     bool CanProcessRebootEvent(const Event& event);
     void ProcessRebootEvent();
-    void RegisterFocusListener();
     std::string GetRebootReason() const;
     void GetCmdlineContent();
     void GetRebootReasonConfig();

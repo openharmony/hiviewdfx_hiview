@@ -35,6 +35,6 @@ private:
 
     bool isSelinuxEnabled_ = false;
 };
-} // namespace HiviewDFX
+} // namesapce HiviewDFX
 } // namespace OHOS
 #endif // EVENT_LOGGER_CATCHER_TEST_H
