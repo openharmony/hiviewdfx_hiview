@@ -652,13 +652,29 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
 
     close(fd);
 }
+ 
+ /**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: GET_DISPLAY_SNAPSHOT test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
+{
+    int windowId = 4;
+    int ret = HiSysEventWrite(HiSysEvent::Domain::WINDOW_MANAGER,
+        "GET_DISPLAY_SNAPSHOT",
+        HiSysEvent::EventType::STATISTIC,
+        "FOCUS_WINDOW", windowId);
+    printf("HiSysEventWrite: %d\n", ret);
+    EXPECT_EQ(ret, 0);
+}
 
 /**
  * @tc.name: ShellCatcherTest
  * @tc.desc: add test
  * @tc.type: FUNC
  */
-HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
 {
     auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
     if (fd < 0) {
@@ -671,5 +687,5 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
     printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
     close(fd);
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS

@@ -300,6 +300,7 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest002, TestSize.Level3)
                                  "FreezeDectorTest002",
                                  time)) {
         printf("GetFreezeDectorTest002File, failed\n");
+        FAIL();
     }
 }
 
@@ -382,21 +383,16 @@ HWTEST_F(FreezeDetectorTest, FreezeDetectorTest004, TestSize.Level3)
 HWTEST_F(FreezeDetectorTest, FreezeRuleTest001, TestSize.Level3)
 {
     auto freezeRuleCluster = std::make_shared<FreezeRuleCluster>();
-
     bool freezeRuleFlag = freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml");
     ASSERT_TRUE(freezeRuleFlag);
-
     std::map<std::string, std::pair<std::string, bool>> appPairs =
         freezeRuleCluster->GetApplicationPairs();
-
     if (appPairs.find("THREAD_BLOCK_6S") != appPairs.end()) {
         auto tmp = appPairs["THREAD_BLOCK_6S"];
-        
         if (tmp.first != "AAFWK") {
             printf("THREAD_BLOCK_6S tmp.first != AAFWK.");
             FAIL();
         }
-
         if (!tmp.second) {
             printf("THREAD_BLOCK_6S tmp.second == false.");
             FAIL();
@@ -405,15 +401,12 @@ HWTEST_F(FreezeDetectorTest, FreezeRuleTest001, TestSize.Level3)
         printf("THREAD_BLOCK_6S not find.");
         FAIL();
     }
-
     if (appPairs.find("UI_BLOCK_3S") != appPairs.end()) {
         auto tmp = appPairs["UI_BLOCK_3S"];
-        
         if (tmp.first != "ACE") {
             printf("UI_BLOCK_3S tmp.first != AAFWK.");
             FAIL();
         }
-
         if (tmp.second) {
             printf("UI_BLOCK_3S tmp.second == false.");
             FAIL();
@@ -433,22 +426,16 @@ HWTEST_F(FreezeDetectorTest, FreezeRuleTest001, TestSize.Level3)
 HWTEST_F(FreezeDetectorTest, FreezeRuleTest002, TestSize.Level3)
 {
     auto freezeRuleCluster = std::make_shared<FreezeRuleCluster>();
-
     bool freezeRuleFlag = freezeRuleCluster->ParseRuleFile("/data/test/test_data/freeze_rules.xml");
     ASSERT_TRUE(freezeRuleFlag);
-
     std::map<std::string, std::pair<std::string, bool>> systemPairs =
         freezeRuleCluster->GetSystemPairs();
-    
-
     if (systemPairs.find("SCREEN_ON") != systemPairs.end()) {
         auto tmp = systemPairs["SCREEN_ON"];
-        
         if (tmp.first != "KERNEL_VENDOR") {
             printf("SCREEN_ON tmp.first != AAFWK.");
             FAIL();
         }
-
         if (!tmp.second) {
             printf("SCREEN_ON tmp.second == false.");
             FAIL();
@@ -457,15 +444,12 @@ HWTEST_F(FreezeDetectorTest, FreezeRuleTest002, TestSize.Level3)
         printf("SCREEN_ON not find.");
         FAIL();
     }
-
     if (systemPairs.find("HUNGTASK") != systemPairs.end()) {
         auto tmp = systemPairs["HUNGTASK"];
-        
         if (tmp.first != "KERNEL_VENDOR") {
             printf("HUNGTASK tmp.first != AAFWK.");
             FAIL();
         }
-
         if (tmp.second) {
             printf("HUNGTASK tmp.second == false.");
             FAIL();

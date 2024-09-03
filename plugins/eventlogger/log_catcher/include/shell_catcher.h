@@ -28,6 +28,7 @@ public:
     explicit ShellCatcher();
     ~ShellCatcher() override {};
     bool Initialize(const std::string& cmd, int type, int intParam2) override;
+    void SetCmdArgument(const char* arg[], size_t argSize);
     int Catch(int fd, int jsonFd) override;
     void SetEvent(std::shared_ptr<SysEvent> event);
     std::string GetFocusWindowId();

@@ -106,14 +106,10 @@ std::string DmesgCatcher::DmesgSaveTofile()
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", fullPath.c_str());
         return fullPath;
     }
-    std::string realPath;
-    if (!FileUtil::PathToRealPath(fullPath, realPath)) {
-        HIVIEW_LOGI("Fail to verify realpath %s.", fullPath.c_str());
-        return "";
-    }
-    auto fd = open(realPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
+
+    auto fd = open(fullPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
     if (fd < 0) {
-        HIVIEW_LOGI("Fail to create %s.", realPath.c_str());
+        HIVIEW_LOGI("Fail to create %s.", fullPath.c_str());
         return "";
     }
     bool dumpRet = DumpDmesgLog(fd);
@@ -125,7 +121,7 @@ std::string DmesgCatcher::DmesgSaveTofile()
     if (event_ != nullptr) {
         event_->SetEventValue("SYSRQ_TIME", sysrqTime);
     }
-    return realPath;
+    return fullPath;
 }
 
 int DmesgCatcher::Catch(int fd, int jsonFd)

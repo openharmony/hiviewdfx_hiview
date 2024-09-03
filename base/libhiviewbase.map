@@ -362,6 +362,7 @@
         "OHOS::HiviewDFX::Parameter::IsUCollectionSwitchOn()";
         "OHOS::HiviewDFX::Parameter::IsDeveloperMode()";
         "OHOS::HiviewDFX::Parameter::IsTraceCollectionSwitchOn()";
+        "OHOS::HiviewDFX::Parameter::IsLeakStateMode()";
         "OHOS::HiviewDFX::TraceFlowController::CleanAppTrace()";
         "OHOS::HiviewDFX::TraceFlowController::HasCallOnceToday(int, unsigned long)";
         "OHOS::HiviewDFX::TraceFlowController::TraceFlowController()";
