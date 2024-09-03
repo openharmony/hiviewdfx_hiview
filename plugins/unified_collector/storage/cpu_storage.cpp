@@ -21,12 +21,13 @@
 #include "hisysevent.h"
 #include "hiview_db_util.h"
 #include "hiview_logger.h"
-#include "process_status.h"
 #include "parameter_ex.h"
+#include "power_status_manager.h"
+#include "process_collector.h"
+#include "process_status.h"
 #include "rdb_predicates.h"
 #include "sql_util.h"
 #include "string_util.h"
-#include "power_status_manager.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -49,6 +50,7 @@ const std::string COLUMN_CPU_USAGE = "cpu_usage";
 const std::string COLUMN_THREAD_CNT = "thread_cnt";
 const std::string COLUMN_VERSION_NAME = "name";
 constexpr uint32_t DEFAULT_PRECISION_OF_DECIMAL = 6; // 0.123456
+constexpr int32_t MEM_CG_PROCESS_FLAG = 100;
 
 std::string CreateDbFileName()
 {
@@ -110,16 +112,17 @@ bool IsForegroundStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollection
     return procForegroundTime >= cpuCollectionInfo.startTime;
 }
 
-int32_t GetPowerProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo)
+int32_t GetPowerProcessStateInCollectionPeriod(const ProcessCpuStatInfo& cpuCollectionInfo,
+    const std::unordered_set<int32_t>& memCgProcs)
 {
     int32_t processState = IsForegroundStateInCollectionPeriod(cpuCollectionInfo) ? static_cast<int32_t>(FOREGROUND) :
         static_cast<int32_t>(ProcessStatus::GetInstance().GetProcessState(cpuCollectionInfo.pid));
 #ifdef POWER_MANAGER_ENABLE
     int32_t powerState = PowerStatusManager::GetInstance().GetPowerState();
-    return processState + powerState;
-#else
-    return processState;
+    processState += powerState;
 #endif
+    processState += (memCgProcs.find(cpuCollectionInfo.pid) != memCgProcs.end() ? MEM_CG_PROCESS_FLAG : 0);
+    return processState;
 }
 
 int32_t CreateTable(NativeRdb::RdbStore& dbStore, const std::string& tableName,
@@ -290,9 +293,11 @@ void CpuStorage::StoreProcessDatas(const std::vector<ProcessCpuStatInfo>& cpuCol
         HIVIEW_LOGW("db store is null, path=%{public}s", dbStorePath_.c_str());
         return;
     }
+    auto processCollector = UCollectUtil::ProcessCollector::Create();
+    auto result = processCollector->GetMemCgProcess();
     for (auto& cpuCollectionInfo : cpuCollectionInfos) {
         if (NeedStoreInDb(cpuCollectionInfo)) {
-            StoreProcessData(cpuCollectionInfo);
+            StoreProcessData(cpuCollectionInfo, result.data);
         }
     }
 }
@@ -308,13 +313,14 @@ void CpuStorage::StoreThreadDatas(const std::vector<ThreadCpuStatInfo>& cpuColle
     }
 }
 
-void CpuStorage::StoreProcessData(const ProcessCpuStatInfo& cpuCollectionInfo)
+void CpuStorage::StoreProcessData(const ProcessCpuStatInfo& cpuCollectionInfo,
+    const std::unordered_set<int32_t>& memCgProcs)
 {
     NativeRdb::ValuesBucket bucket;
     bucket.PutLong(COLUMN_START_TIME, static_cast<int64_t>(cpuCollectionInfo.startTime));
     bucket.PutLong(COLUMN_END_TIME, static_cast<int64_t>(cpuCollectionInfo.endTime));
     bucket.PutInt(COLUMN_PID, cpuCollectionInfo.pid);
-    bucket.PutInt(COLUMN_PROC_STATE, GetPowerProcessStateInCollectionPeriod(cpuCollectionInfo));
+    bucket.PutInt(COLUMN_PROC_STATE, GetPowerProcessStateInCollectionPeriod(cpuCollectionInfo, memCgProcs));
     bucket.PutString(COLUMN_PROC_NAME, cpuCollectionInfo.procName);
     bucket.PutDouble(COLUMN_CPU_LOAD, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuLoad));
     bucket.PutDouble(COLUMN_CPU_USAGE, TruncateDecimalWithNBitPrecision(cpuCollectionInfo.cpuUsage));
