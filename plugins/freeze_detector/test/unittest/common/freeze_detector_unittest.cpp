@@ -435,7 +435,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_009, TestSize.Level3)
         .InitPackageName("com.package.name")
         .InitMsg("msg")
         .Build();
-    vendor1->SendFaultLog(watchPoint, "test", "test");
+    vendor1->SendFaultLog(watchPoint, "test", "sysfreeze");
 
     auto freezeCommon = std::make_shared<FreezeCommon>();
     bool ret1 = freezeCommon->Init();
@@ -788,7 +788,8 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDBHelper_001, TestSize.Level3)
     unsigned long long start = TimeUtil::GetMilliseconds() - 5L;
     unsigned long long end = TimeUtil::GetMilliseconds();
     auto result = FreezeResult(5, "ACE", "UI_BLOCK_3S");
-    db->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), result);
+    DBHelper::WatchParams params = {watchPoint.GetPid(), watchPoint.GetPackageName()};
+    db->SelectEventFromDB(start, end, list, params, result);
 }
 
 /**
@@ -821,7 +822,8 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDBHelper_002, TestSize.Level3)
     unsigned long long start = TimeUtil::GetMilliseconds() + 1000L;
     unsigned long long end = TimeUtil::GetMilliseconds();
     auto result = FreezeResult(5, "ACE", "UI_BLOCK_3S");
-    db->SelectEventFromDB(start, end, list, watchPoint.GetPackageName(), result);
+    DBHelper::WatchParams params = {watchPoint.GetPid(), watchPoint.GetPackageName()};
+    db->SelectEventFromDB(start, end, list, params, result);
 }
 }
 }

@@ -28,7 +28,7 @@ namespace {
     static constexpr const char* const EVENT_MSG = "MSG";
 }
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
-void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult& result,
+void DBHelper::GetResultMap(const struct WatchParams& watchParams, const FreezeResult& result,
     EventStore::ResultSet& set, std::map<std::string, WatchPoint>& resultMap)
 {
     while (set.HasNext()) {
@@ -38,14 +38,14 @@ void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult&
         std::string packageName = record->GetEventValue(FreezeCommon::EVENT_PACKAGE_NAME);
         packageName = packageName.empty() ?
             record->GetEventValue(FreezeCommon::EVENT_PROCESS_NAME) : packageName;
-        if (result.GetSamePackage() == "true" && watchPackage != packageName) {
-            HIVIEW_LOGE("failed to match the same package: %{public}s and  %{public}s",
-                watchPackage.c_str(), packageName.c_str());
+        long pid = record->GetEventIntValue(FreezeCommon::EVENT_PID);
+        pid = pid ? pid : record->GetPid();
+        if (result.GetSamePackage() == "true" && (watchParams.packageName != packageName || watchParams.pid != pid)) {
+            HIVIEW_LOGE("failed to match the same package: %{public}s and %{public}s, the same pid: %{public}lu and "
+                "%{public}lu", watchParams.packageName.c_str(), packageName.c_str(), watchParams.pid, pid);
             continue;
         }
 
-        long pid = record->GetEventIntValue(FreezeCommon::EVENT_PID);
-        pid = pid ? pid : record->GetPid();
         long uid = record->GetEventIntValue(FreezeCommon::EVENT_UID);
         uid = uid ? uid : record->GetUid();
         long tid = std::strtol(record->GetEventValue(EventStore::EventCol::TID).c_str(), nullptr, 0);
@@ -72,7 +72,7 @@ void DBHelper::GetResultMap(const std::string& watchPackage, const FreezeResult&
 }
 
 void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long end, std::vector<WatchPoint>& list,
-    const std::string& watchPackage, const FreezeResult& result)
+    const struct WatchParams& watchParams, const FreezeResult& result)
 {
     if (freezeCommon_ == nullptr) {
         return;
@@ -94,12 +94,15 @@ void DBHelper::SelectEventFromDB(unsigned long long start, unsigned long long en
     }
 
     std::map<std::string, WatchPoint> resultMap;
-    GetResultMap(watchPackage, result, set, resultMap);
+    GetResultMap(watchParams, result, set, resultMap);
 
     std::map<std::string, WatchPoint>::iterator it;
     for (it = resultMap.begin(); it != resultMap.end(); ++it) {
         list.push_back(it->second);
     }
+    sort(list.begin(), list.end(), [] (const WatchPoint& frontWatchPoint, const WatchPoint& rearWatchPoint) {
+        return frontWatchPoint.GetTimestamp() < rearWatchPoint.GetTimestamp();
+    });
 
     HIVIEW_LOGI("select event from db, size =%{public}zu.", list.size());
 }

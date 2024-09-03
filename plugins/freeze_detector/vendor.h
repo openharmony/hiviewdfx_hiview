@@ -40,7 +40,7 @@ public:
     std::string GetTimeString(unsigned long long timestamp) const;
     void DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const;
     void InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
-        std::string& logPath, std::string& logName) const;
+        std::string& tmpLogPath, std::string& tmpLogName) const;
     void InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
         bool& isFileExists) const;
     std::string MergeEventLog(
@@ -50,8 +50,7 @@ public:
 
 private:
     static void FormatProcessName(std::string& processName);
-    std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
-        const std::string& logName) const;
+    std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath, const std::string& type) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
     static void InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt);
     static std::string GetDisPlayPowerInfo();

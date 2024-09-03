@@ -51,13 +51,11 @@ bool FreezeResolver::Init()
 bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
     std::vector<WatchPoint>& list, std::vector<FreezeResult>& result) const
 {
-    if (freezeRuleCluster_ == nullptr) {
-        return false;
-    }
-    if (!freezeRuleCluster_->GetResult(watchPoint, result)) {
+    if (freezeRuleCluster_ == nullptr || !freezeRuleCluster_->GetResult(watchPoint, result)) {
         return false;
     }
     unsigned long long timestamp = watchPoint.GetTimestamp();
+    long pid = watchPoint.GetPid();
     std::string packageName = watchPoint.GetPackageName().empty() ?
         watchPoint.GetProcessName() : watchPoint.GetPackageName();
     for (auto& i : result) {
@@ -68,7 +66,8 @@ bool FreezeResolver::ResolveEvent(const WatchPoint& watchPoint,
             unsigned long long timeInterval = static_cast<unsigned long long>(std::abs(window) * MILLISECOND);
             unsigned long long start = window > 0 ? timestamp : timestamp - timeInterval;
             unsigned long long end = window > 0 ? timestamp + timeInterval : timestamp;
-            dBHelper_->SelectEventFromDB(start, end, list, packageName, i);
+            DBHelper::WatchParams params = {pid, packageName};
+            dBHelper_->SelectEventFromDB(start, end, list, params, i);
         }
     }
 
