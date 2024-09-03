@@ -26,7 +26,6 @@ public:
     static SysEventSequenceManager& GetInstance();
     void SetSequence(int64_t seq);
     int64_t GetSequence();
-    std::string GetSequenceFile() const;
 
 private:
    SysEventSequenceManager();
@@ -35,6 +34,7 @@ private:
 private:
     void WriteSeqToFile(int64_t seq);
     void ReadSeqFromFile(int64_t& seq);
+    std::string GetSequenceFile() const;
 
 private:
     std::atomic<int64_t> curSeq_ = 0;

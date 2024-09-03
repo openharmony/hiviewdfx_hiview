@@ -54,6 +54,9 @@ SysEventSequenceManager& SysEventSequenceManager::GetInstance()
 
 SysEventSequenceManager::SysEventSequenceManager()
 {
+    if (!FileUtil::FileExists(GetSequenceFile())) {
+        EventStore::SysEventDao::Restore();
+    }
     int64_t seq = 0;
     ReadSeqFromFile(seq);
     curSeq_.store(seq, std::memory_order_release);
