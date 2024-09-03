@@ -102,7 +102,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
 {
     auto fileName = GetFaultLogName(info);
     std::string filePath = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + fileName;
-    if (FileUtil::FileExists(filePath.c_str())) {
+    if (FileUtil::FileExists(filePath)) {
         HIVIEW_LOGI("logfile %{public}s already exist.", filePath.c_str());
         return "";
     }
