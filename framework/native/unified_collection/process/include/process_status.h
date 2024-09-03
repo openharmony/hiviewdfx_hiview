@@ -57,7 +57,7 @@ private:
     std::mutex mutex_;
     /* map<pid, ProcessInfo> */
     std::unordered_map<int32_t, ProcessInfo> processInfos_;
-    uint32_t capacity_ = 0; // 0 for dynamic resizing based on actual size
+    uint32_t capacity_ = 1000; // 1000, max number of processes
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX
