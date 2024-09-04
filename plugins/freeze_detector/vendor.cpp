@@ -121,7 +121,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
-    info.faultLogType = (type == APP_FREEZE) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.faultLogType = (type == APPFREEZE) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = processName;
     info.reason = stringId;
     std::string disPlayPowerInfo = GetDisPlayPowerInfo();
