@@ -102,7 +102,7 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
 }
 
 std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
-    const std::string& logName) const
+    const std::string& type) const
 {
     if (freezeCommon_ == nullptr) {
         return "";
@@ -110,9 +110,6 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
-
-    std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        std::string(APPFREEZE) : std::string(SYSFREEZE);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
@@ -124,8 +121,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
-    info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.faultLogType = (type == APPFREEZE) ? FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
     info.module = processName;
     info.reason = stringId;
     std::string disPlayPowerInfo = GetDisPlayPowerInfo();
@@ -209,36 +205,25 @@ void Vendor::FormatProcessName(std::string& processName)
 }
 
 void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
-    std::string& logPath, std::string& logName) const
+    std::string& tmpLogPath, std::string& tmpLogName) const
 {
     std::string stringId = watchPoint.GetStringId();
     std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
-    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? std::string(APPFREEZE) : std::string(SYSFREEZE);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
     } else {
         FormatProcessName(processName);
     }
-    if (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
-        retPath = std::string(FAULT_LOGGER_PATH) + std::string(APPFREEZE) + std::string(HYPHEN) + processName +
-            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp;
-        logPath = std::string(FREEZE_DETECTOR_PATH) + std::string(APPFREEZE) + std::string(HYPHEN) + processName +
-            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
-        logName = std::string(APPFREEZE) + std::string(HYPHEN) + processName + std::string(HYPHEN) +
-            std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
-    } else {
-        retPath = std::string(FAULT_LOGGER_PATH) + std::string(SYSFREEZE) + std::string(HYPHEN) + processName +
-            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp;
-        logPath = std::string(FREEZE_DETECTOR_PATH) + std::string(SYSFREEZE) + std::string(HYPHEN) + processName +
-            std::string(HYPHEN) + std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
-        logName = std::string(SYSFREEZE) + std::string(HYPHEN) + processName + std::string(HYPHEN) +
-            std::to_string(uid) + std::string(HYPHEN) + timestamp + std::string(POSTFIX);
-    }
+    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? APPFREEZE : SYSFREEZE;
+    std::string pubLogPathName = type + std::string(HYPHEN) + processName + std::string(HYPHEN) + std::to_string(uid) +
+        std::string(HYPHEN) + timestamp;
+    retPath = std::string(FAULT_LOGGER_PATH) + pubLogPathName;
+    tmpLogName = pubLogPathName + std::string(POSTFIX);
+    tmpLogPath = std::string(FREEZE_DETECTOR_PATH) + tmpLogName;
 }
 
 void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
@@ -309,9 +294,9 @@ std::string Vendor::MergeEventLog(
 
     std::string type;
     std::string retPath;
-    std::string logPath;
-    std::string logName;
-    InitLogInfo(watchPoint, type, retPath, logPath, logName);
+    std::string tmpLogPath;
+    std::string tmpLogName;
+    InitLogInfo(watchPoint, type, retPath, tmpLogPath, tmpLogName);
 
     if (FileUtil::FileExists(retPath)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", retPath.c_str());
@@ -338,13 +323,13 @@ std::string Vendor::MergeEventLog(
         return "";
     }
 
-    if (type == std::string(APPFREEZE)) {
+    if (type == APPFREEZE) {
         MergeFreezeJsonFile(watchPoint, list);
     }
 
-    int fd = logStore_->CreateLogFile(logName);
+    int fd = logStore_->CreateLogFile(tmpLogName);
     if (fd < 0) {
-        HIVIEW_LOGE("failed to create log file %{public}s.", logPath.c_str());
+        HIVIEW_LOGE("failed to create tmp log file %{public}s.", tmpLogPath.c_str());
         return "";
     }
 
@@ -352,7 +337,7 @@ std::string Vendor::MergeEventLog(
     FileUtil::SaveStringToFd(fd, body.str());
     FileUtil::SaveStringToFd(fd, ffrt.str());
     close(fd);
-    return SendFaultLog(watchPoint, logPath, logName);
+    return SendFaultLog(watchPoint, tmpLogPath, type);
 }
 
 bool Vendor::Init()

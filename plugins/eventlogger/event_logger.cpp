@@ -785,15 +785,13 @@ void EventLogger::GetFailedDumpStackMsg(std::string& stack, std::shared_ptr<SysE
         std::vector<WatchPoint> list;
         FreezeResult freezeResult(0, "FRAMEWORK", "PROCESS_KILL");
         freezeResult.SetSamePackage("true");
+        DBHelper::WatchParams params = {pid, packageName};
         dbHelper_->SelectEventFromDB(event->happenTime_ - QUERY_PROCESS_KILL_INTERVAL, event->happenTime_, list,
-            packageName, freezeResult);
-
+            params, freezeResult);
         std::string appendStack = "";
-        for (auto watchPoint : list) {
-            if (watchPoint.GetPid() == pid) {
-                appendStack += "\n" + watchPoint.GetMsg();
-            }
-        }
+        std::for_each(list.begin(), list.end(), [&appendStack] (const WatchPoint& watchPoint) {
+            appendStack += "\n" + watchPoint.GetMsg();
+        });
         stack += appendStack.empty() ? "\ncan not get process kill reason" : "\nprocess may be killed by : "
             + appendStack;
     }
