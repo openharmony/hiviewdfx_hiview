@@ -29,8 +29,8 @@ namespace HiviewDFX {
 static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo& info,
                                std::map<std::string, std::string>& eventInfos)
 {
-    if ((info.reason.compare("SERVICE_TIMEOUT") == 0 || info.reason.compare("APP_HICOLLIE") == 0) &&
-        !eventInfos["TIME_OUT"].empty()) {
+    if ((info.reason.compare("APP_HICOLLIE") == 0 || info.reason.compare("SERVICE_TIMEOUT_WARNING") == 0 ||
+        info.reason.compare("SERVICE_TIMEOUT") == 0) && !eventInfos["TIME_OUT"].empty()) {
         eventInfos["LAST_FRAME"] = eventInfos["TIME_OUT"];
     }
 

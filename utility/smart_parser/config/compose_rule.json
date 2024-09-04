@@ -22,6 +22,13 @@
                 "END_STACK":"MainCallTrace.v_trace"
             }
     },
+    "SYS_WARNING": {
+        "63_SYS_WARNING_01": {
+            "PNAME": "BasicParam.v_process",
+            "TIME_OUT": "BasicParam.v_timeout",
+            "END_STACK":"MainCallTrace.v_trace"
+        }
+    },
     "CPP_CRASH": {
             "07_CPP_CRASH_00": {
                 "PNAME": "BasicParam.v_process",

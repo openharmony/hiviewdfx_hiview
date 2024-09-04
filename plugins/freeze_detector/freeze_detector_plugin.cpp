@@ -183,7 +183,7 @@ void FreezeDetectorPlugin::OnEventListeningCallback(const Event& event)
         return;
     }
 
-    if (freezeCommon_->IsFreezeEvent(event.domain_, event.eventName_) == false) {
+    if (!freezeCommon_->IsFreezeEvent(event.domain_, event.eventName_)) {
         HIVIEW_LOGE("not freeze event.");
         return;
     }

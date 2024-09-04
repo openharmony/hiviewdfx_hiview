@@ -47,7 +47,7 @@
         "Subcatalog":"sysfreeze-.*-\\d+-\\d+",
         "featureId":"63_SYS_FREEZE_01",
         "rules":[
-            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)", "v_service_block":"Module name:SERVICE_BLOCK"},
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"FfrtCallback: task(SERIAL_TASK_TIMEOUT:", "v_queue_name":"FfrtCallback: task\\(SERIAL_TASK_TIMEOUT:.*queue name \\[(sq_\\w+)_\\d+\\]"},
@@ -169,6 +169,18 @@
             {"namespace":"BasicParam", "matchKey":"qtp_rsp", "v_cause":"dfx_qic\\]:(.*)", "v_last":"(qtp_rsp.*)"},
             {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"MID(Master id)", "v_first":"(MID\\(Master id\\).*)"},
             {"namespace":"BasicParam", "depend":"BasicParam.v_cause","matchKey":"qic_addr", "v_second":"(qic_addr.*)"}
+        ]
+    },
+    "Rule16":{
+        "DirOrFile":"/data/log/faultlog/faultlogger/",
+        "Subcatalog":"syswarning-.*-\\d+-\\d+",
+        "featureId":"63_SYS_WARNING_01",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
+            {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
+            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
+            {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
     }
 }

@@ -44,13 +44,16 @@ public:
     bool IsApplicationEvent(const std::string& domain, const std::string& stringId) const;
     bool IsBetaVersion() const;
     bool IsSystemEvent(const std::string& domain, const std::string& stringId) const;
+    bool IsSysWarningEvent(const std::string& domain, const std::string& stringId) const;
     bool IsSystemResult(const FreezeResult& result) const;
+    bool IsSysWarningResult(const FreezeResult& result) const;
     bool IsApplicationResult(const FreezeResult& result) const;
     std::set<std::string> GetPrincipalStringIds() const;
     std::shared_ptr<FreezeRuleCluster> GetFreezeRuleCluster() const;
 
 private:
     std::shared_ptr<FreezeRuleCluster> freezeRuleCluster_;
+    bool IsAssignedEvent(const std::string& domain, const std::string& stringId, int freezeId) const;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
