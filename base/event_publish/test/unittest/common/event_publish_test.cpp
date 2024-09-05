@@ -40,3 +40,36 @@ HWTEST_F(EventPublishTest, EventPublishTest001, TestSize.Level1)
     EventPublish::GetInstance().PushEvent(100, "APP_CRASH", HiSysEvent::EventType::BEHAVIOR, "{\"time\":123}");
     ASSERT_TRUE(true);
 }
+
+/**
+ * @tc.name: EventPublishTest002
+ * @tc.desc: used to test PushEvent
+ * @tc.type: FUNC
+*/
+HWTEST_F(EventPublishTest, EventPublishTest002, TestSize.Level1)
+{
+    EventPublish::GetInstance().PushEvent(100, "APP_FREEZE", HiSysEvent::EventType::FAULT, "{\"time\":123}");
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: EventPublishTest003
+ * @tc.desc: used to test PushEvent
+ * @tc.type: FUNC
+*/
+HWTEST_F(EventPublishTest, EventPublishTest003, TestSize.Level1)
+{
+    EventPublish::GetInstance().PushEvent(100, "ADDRESS_SANITIZER", HiSysEvent::EventType::FAULT, "{\"time\":123}");
+    ASSERT_TRUE(true);
+}
+
+/**
+ * @tc.name: EventPublishTest004
+ * @tc.desc: used to test PushEvent
+ * @tc.type: FUNC
+*/
+HWTEST_F(EventPublishTest, EventPublishTest004, TestSize.Level1)
+{
+    EventPublish::GetInstance().PushEvent(100, "APP_START", HiSysEvent::EventType::BEHAVIOR, "{\"time\":123}");
+    ASSERT_TRUE(true);
+}
