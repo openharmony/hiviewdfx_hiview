@@ -17,6 +17,7 @@
 #include <iostream>
 
 #include "file_util.h"
+#include "parameter_ex.h"
 #include "trace_collector.h"
 #include "trace_manager.h"
 
@@ -51,7 +52,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest001, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::XPERF;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -74,7 +75,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest002, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::XPOWER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -97,7 +98,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest003, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
     UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -145,7 +146,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::BETACLUB;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -153,6 +154,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -168,7 +172,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::OTHER;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -176,6 +180,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -189,7 +196,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
     ASSERT_TRUE(g_traceManager.OpenRecordingTrace(args) == 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -203,7 +210,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest008, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -240,7 +247,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest010, TestSize.Level1)
 HWTEST_F(TraceCollectorTest, TraceCollectorTest011, TestSize.Level1)
 {
     const std::vector<std::string> tagGroups = {"scene_performance"};
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     ASSERT_TRUE(g_traceManager.RecoverTrace() == 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
@@ -255,7 +262,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -263,6 +270,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest012, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -295,7 +305,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(TIME_10S);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, TIME_0S);
@@ -304,7 +314,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest014, TestSize.Level1)
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
     }
-    ASSERT_TRUE(resultDumpTrace.retCode == UcError::SUCCESS);
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
+    }
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
 
@@ -318,7 +330,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(TIME_30S);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, TIME_20S);
@@ -326,6 +338,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest015, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -341,7 +356,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::DEVELOP;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(TIME_30S);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTraceWithDuration(caller, UINT32_MAX);
@@ -349,6 +364,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest016, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
@@ -364,7 +382,7 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest017, TestSize.Level1)
     const std::vector<std::string> tagGroups = {"scene_performance"};
     UCollect::TraceCaller caller = UCollect::TraceCaller::HIVIEW;
     std::shared_ptr<TraceCollector> collector = TraceCollector::Create();
-    g_traceManager.OpenSnapshotTrace(tagGroups);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), 0);
     sleep(10);
     std::cout << "caller : " << caller << std::endl;
     CollectResult<std::vector<std::string>> resultDumpTrace = collector->DumpTrace(caller);
@@ -372,6 +390,9 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest017, TestSize.Level1)
     std::cout << "collect DumpTrace result size : " << items.size() << std::endl;
     for (auto it = items.begin(); it != items.end(); it++) {
         std::cout << "collect DumpTrace result path : " << it->c_str() << std::endl;
+    }
+    if (Parameter::IsBetaVersion()) {
+        ASSERT_EQ(resultDumpTrace.retCode, UcError::SUCCESS);
     }
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);

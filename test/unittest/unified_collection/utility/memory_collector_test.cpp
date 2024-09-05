@@ -66,10 +66,10 @@ const std::regex RAW_PAGE_TYPE_INFO2("^(\\w{1,}\\s{1,}){5,}$");
 //     abc - version: 1.2
 //     #name       <ab> <cd> <ef> <hi> <jk> : tunables <lmn> <opq> <rst> : slabdata <uv> <wx> <yz>
 const std::string RAW_SLAB_STR1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}( : tunables)(\\s{1,}\\d{1,}){3}");
-const std::string RAW_SLAB_STR2("( : slabdata)(\\s{1,}\\d{1,}){3}(\\s{1,}\\w{1,})?$");
+const std::string RAW_SLAB_STR2("( : slabdata)(\\s{1,}\\d{1,}){3,5}(\\s{1,}\\w{1,})?$");
 const std::regex RAW_SLAB_INFO1(RAW_SLAB_STR1 + RAW_SLAB_STR2);
 const std::string RAW_SLAB_STR3("^(\\w{1,} - version: )[\\d\\.]{1,}|# ?name\\s{1,}");
-const std::string RAW_SLAB_STR4("( <\\w{1,}>){5} : tunables( <\\w{1,}>){3} : slabdata( <\\w{1,}>){3,}$");
+const std::string RAW_SLAB_STR4("( <\\w{1,}>){5} : tunables( <\\w{1,}>){3} : slabdata( <\\w{1,}>){3,5}$");
 const std::regex RAW_SLAB_INFO2(RAW_SLAB_STR3 + RAW_SLAB_STR4);
 
 bool HasValidAILibrary()
