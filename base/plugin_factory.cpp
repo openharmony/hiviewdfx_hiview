@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -68,8 +68,12 @@ void PluginFactory::RegisterPlugin(const std::string& name, std::shared_ptr<Plug
 
 void PluginFactory::UnregisterPlugin(const std::string& name)
 {
-    HIVIEW_LOGD("UnregisterPlugin from %{public}s.", name.c_str());
+    HIVIEW_LOGI("Unregister plugin from %{public}s.", name.c_str());
     auto pluginMap = GetGlobalPluginRegistryMap();
+    if (pluginMap->find(name) == pluginMap->end()) {
+        HIVIEW_LOGW("plugin %{public}s does not exist!", name.c_str());
+        return;
+    }
     pluginMap->erase(name);
 }
 } // namespace HiviewDFX

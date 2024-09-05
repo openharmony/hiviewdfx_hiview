@@ -749,41 +749,36 @@ void HiviewPlatform::UnloadPlugin(const std::string& name)
         HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_NOT_FOUND);
         return;
     }
-
     auto target = it->second;
     if (target == nullptr) {
+        HIVIEW_LOGW("Plugin %{public}s target is null.", name.c_str());
         return;
     }
-
     auto count = target.use_count();
-    // two counts for 1.current ref 2.map holder ref
-    if (count > 2) {
+    if (count > 2) { // two counts for 1.current ref 2.map holder ref
         HIVIEW_LOGW("Plugin %{public}s has more refs(%{public}ld), may caused by unfinished task. unload failed.",
             name.c_str(), count);
         HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_IN_USE);
         return;
     }
-
     pluginMap_.erase(name);
     target->OnUnload();
+
+    // By default, reloading is not supported after unloading!
+    PluginFactory::UnregisterPlugin(target->GetName());
+    // report unloading success event
     HiviewEventReport::ReportPluginUnload(name, PluginEventSpace::UNLOAD_SUCCESS);
+
     auto looper = target->GetWorkLoop();
     if (looper == nullptr) {
         return;
     }
-
-    // three counts for 1.current ref 2.plugin ref 3.map holder ref
-    if (looper.use_count() <= 3) {
+    if (looper.use_count() <= 3) { // three counts for 1.current ref 2.plugin ref 3.map holder ref
         auto looperName = looper->GetRawName();
         HIVIEW_LOGI("%{public}s has refs(%{public}ld).", looperName.c_str(), looper.use_count());
         looper->StopLoop();
         privateWorkLoopMap_.erase(looperName);
         HIVIEW_LOGI("Stop %{public}s done.", looperName.c_str());
-    }
-
-    if (target->GetType() == Plugin::PluginType::DYNAMIC) {
-        // remove static register before closing the dynamic library handle
-        PluginFactory::UnregisterPlugin(target->GetName());
     }
 }
 
