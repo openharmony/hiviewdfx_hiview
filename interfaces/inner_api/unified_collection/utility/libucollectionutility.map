@@ -33,8 +33,8 @@
       "OHOS::HiviewDFX::TraceFlowController::RecordCaller(std::__h::shared_ptr<OHOS::HiviewDFX::AppCallerEvent>)";
       "OHOS::HiviewDFX::TraceFlowController::CleanOldAppTrace()";
       "OHOS::HiviewDFX::TraceManager::GetTraceMode()";
-      "OHOS::HiviewDFX::TraceManager::RecoverTmpTrace()";
       "OHOS::HiviewDFX::TraceFlowController::TraceFlowController(OHOS::HiviewDFX::UCollect::TraceCaller)";
+      "OHOS::HiviewDFX::TraceManager::RecoverTmpTrace()";
     };
   local:
     *;
