@@ -485,6 +485,10 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     info.reason = sysEvent->GetEventValue("REASON");
     auto summary = sysEvent->GetEventValue("SUMMARY");
     auto pName = sysEvent->GetEventValue("PNAME");
+    if (event->eventName_ == "ADDR_SANITIZER" && summary.empty()) {
+        HIVIEW_LOGI("Is fdsan not crash request. Exit");
+        return true;
+    }
     info.summary = StringUtil::UnescapeJsonStringValue(summary);
     info.sectionMap = sysEvent->GetKeyValuePairs();
     AddFaultLog(info);
