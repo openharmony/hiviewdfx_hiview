@@ -109,11 +109,13 @@ public:
     bool GetResult(const WatchPoint& watchPoint, std::vector<FreezeResult>& list);
     std::map<std::string, std::pair<std::string, bool>> GetApplicationPairs() const;
     std::map<std::string, std::pair<std::string, bool>> GetSystemPairs() const;
+    std::map<std::string, std::pair<std::string, bool>> GetSysWarningPairs() const;
 
 private:
     std::map<std::string, FreezeRule> rules_;
     std::map<std::string, std::pair<std::string, bool>> applicationPairs_;
     std::map<std::string, std::pair<std::string, bool>> systemPairs_;
+    std::map<std::string, std::pair<std::string, bool>> sysWarningPairs_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

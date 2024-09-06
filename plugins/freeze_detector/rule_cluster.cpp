@@ -202,8 +202,10 @@ void FreezeRuleCluster::ParseTagLinks(xmlNode* tag, FreezeRule& rule)
             }
             if (result.GetScope() == "app") {
                 applicationPairs_[stringId] = std::pair<std::string, bool>(domain, principalPoint);
-            } else {
+            } else if (result.GetScope() == "sys") {
                 systemPairs_[stringId] = std::pair<std::string, bool>(domain, principalPoint);
+            } else {
+                sysWarningPairs_[stringId] = std::pair<std::string, bool>(domain, principalPoint);
             }
         }
     }
@@ -275,6 +277,11 @@ std::map<std::string, std::pair<std::string, bool>> FreezeRuleCluster::GetApplic
 std::map<std::string, std::pair<std::string, bool>> FreezeRuleCluster::GetSystemPairs() const
 {
     return systemPairs_;
+}
+
+std::map<std::string, std::pair<std::string, bool>> FreezeRuleCluster::GetSysWarningPairs() const
+{
+    return sysWarningPairs_;
 }
 
 std::string FreezeResult::GetDomain() const

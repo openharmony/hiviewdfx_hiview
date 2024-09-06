@@ -45,6 +45,7 @@ enum FaultLogType {
     JS_CRASH,
     APP_FREEZE,
     SYS_FREEZE,
+    SYS_WARNING,
     RUST_PANIC,
     ADDR_SANITIZER,
 };
