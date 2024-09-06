@@ -24,9 +24,9 @@
 #include "mem_profiler_decorator.h"
 #include "native_memory_profiler_sa_client_manager.h"
 #include "native_memory_profiler_sa_config.h"
-#include "parameters.h"
 #include "app_mgr_client.h"
 #include "singleton.h"
+#include "parameters.h"
 
 using namespace OHOS::Developtools::NativeDaemon;
 
@@ -45,8 +45,8 @@ constexpr int APP_THRESH = 20000;
 static bool IsNumber(const std::string& str)
 {
     return !str.empty() && std::find_if(str.begin(), str.end(), [](unsigned char c) {
-        return !std::isdigit(c);
-        }) == str.end();
+           return !std::isdigit(c);
+           }) == str.end();
 }
 
 static int GetUid(int pid)
@@ -56,6 +56,7 @@ static int GetUid(int pid)
     if (!statusFile.is_open()) {
         return -1;
     }
+
     std::string line;
     std::string uidLabel = "Uid:";
     std::string uid;
