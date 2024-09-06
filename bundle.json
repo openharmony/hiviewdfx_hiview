@@ -45,7 +45,6 @@
                 "c_utils",
                 "data_share",
                 "device_usage_statistics",
-                "display_manager",
                 "ets_runtime",
                 "faultloggerd",
                 "ffrt",
