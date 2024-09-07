@@ -46,6 +46,9 @@ void EventStoreConfig::Init()
 {
     Json::Value root;
     std::ifstream fin(CONFIG_FILE_PATH, std::ifstream::binary);
+    if (!fin.is_open()) {
+        return;
+    }
     Json::CharReaderBuilder jsonRBuilder;
     Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
     JSONCPP_STRING errs;
