@@ -32,15 +32,14 @@ DispatchRuleParser::DispatchRuleParser(const std::string& filePath)
 {
     Json::Value root;
     std::ifstream fin(filePath, std::ifstream::binary);
-#ifdef JSONCPP_VERSION_STRING
+    if (!fin.is_open()) {
+        HIVIEW_LOGW("failed to open file, path: %{public}s.", filePath.c_str());
+        return;
+    }
     Json::CharReaderBuilder jsonRBuilder;
     Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
     JSONCPP_STRING errs;
     if (!parseFromStream(jsonRBuilder, fin, &root, &errs)) {
-#else
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(fin, root)) {
-#endif
         HIVIEW_LOGE("parse json file failed, please check the style of json file: %{public}s",
             filePath.c_str());
         return;

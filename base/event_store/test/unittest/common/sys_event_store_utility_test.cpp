@@ -253,7 +253,6 @@ HWTEST_F(SysEventStoreUtilityTest, SysEventStoreUtilityTest003, testing::ext::Te
     EventInfo info;
     auto ret = reader->ReadRawData(info, content, contentSize);
     ASSERT_NE(ret, nullptr);
-    dbFileStream.close();
 }
 
 /**

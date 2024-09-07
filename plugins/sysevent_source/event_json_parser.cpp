@@ -40,6 +40,10 @@ const std::map<std::string, uint8_t> EVENT_TYPE_MAP = {
 bool ReadSysEventDefFromFile(const std::string& path, Json::Value& hiSysEventDef)
 {
     std::ifstream fin(path, std::ifstream::binary);
+    if (!fin.is_open()) {
+        HIVIEW_LOGW("failed to open file, path: %{public}s.", path.c_str());
+        return false;
+    }
     Json::CharReaderBuilder jsonRBuilder;
     Json::CharReaderBuilder::strictMode(&jsonRBuilder.settings_);
     JSONCPP_STRING errs;

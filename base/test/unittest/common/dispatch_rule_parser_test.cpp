@@ -70,14 +70,6 @@ namespace {
 }
 void DispatchRuleParserTest::SetUpTestCase()
 {
-}
-
-void DispatchRuleParserTest::TearDownTestCase()
-{
-}
-
-void DispatchRuleParserTest::SetUp()
-{
     if (!FileUtil::FileExists(TEST_FILE_DIR)) {
         FileUtil::ForceCreateDirectory(TEST_FILE_DIR, FileUtil::FILE_PERM_770);
     }
@@ -86,6 +78,14 @@ void DispatchRuleParserTest::SetUp()
     FileUtil::SaveStringToFile(TEST_FILE_DIR + "test_json_nojson", TEST_JSON_NOJSON, true);
     FileUtil::SaveStringToFile(TEST_FILE_DIR + "test_json_error_type_key", TEST_JSON_ERROR_TYPE_KEY, true);
     FileUtil::SaveStringToFile(TEST_FILE_DIR + "test_json_error_type_value", TEST_JSON_ERROR_TYPE_VALUE, true);
+}
+
+void DispatchRuleParserTest::TearDownTestCase()
+{
+}
+
+void DispatchRuleParserTest::SetUp()
+{
 }
 
 void DispatchRuleParserTest::TearDown()

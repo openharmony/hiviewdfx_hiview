@@ -32,16 +32,15 @@ Json::Value ParseJsonFile(const std::string& path)
 {
     Json::Value jsonRoot;
     std::ifstream fin(path, std::ifstream::binary);
-#ifdef JSONCPP_VERSION_STRING
+    if (!fin.is_open()) {
+        HIVIEW_LOGW("failed to open file, path: %{public}s.", path.c_str());
+        return Json::Value();
+    }
     Json::CharReaderBuilder builder;
     Json::CharReaderBuilder::strictMode(&builder.settings_);
     JSONCPP_STRING errs;
     if (!parseFromStream(builder, fin, &jsonRoot, &errs)) {
-#else
-    Json::Reader reader(Json::Features::strictMode());
-    if (!reader.parse(fin, jsonRoot)) {
-#endif
-        HIVIEW_LOGE("parse file failed, path: %{public}s.", path.c_str());
+        HIVIEW_LOGE("failed to parse file, path: %{public}s.", path.c_str());
         return Json::Value();
     }
     return jsonRoot;
