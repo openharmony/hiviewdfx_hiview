@@ -19,7 +19,7 @@
     "Rule3":{
         "DirOrFile":"/data/log/faultlog/faultlogger/",
         "Subcatalog":"jscrash-.*-\\d+-\\d+",
-        "featureId":"07_JS_ERROR_00",
+        "featureId":"07_JS_ERROR_00,07_JS_ERROR_01",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
             {"namespace":"BasicParam", "matchKey":"Error message:", "v_subreasion":"Error message:(.*)"},
@@ -37,7 +37,7 @@
             {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"State:", "v_state":"\\bState:(.*)"},
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
-            {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
+            {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper: (.*):"},
             {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
