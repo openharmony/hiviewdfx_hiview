@@ -20,6 +20,7 @@
 #include <set>
 
 #include "accesstoken_kit.h"
+#include "compliant_event_checker.h"
 #include "data_publisher.h"
 #include "event_query_wrapper_builder.h"
 #include "if_system_ability_manager.h"
@@ -179,10 +180,15 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
             HIVIEW_LOGE("interface is null, no need to match rules.");
             continue;
         }
-        bool isMatched = MatchRules(listener->second.second, event->domain_, event->eventName_,
+        if ((listener->second.uid == HID_SHELL) &&
+            eventChecker_.IsInCompliantEvent(event->domain_, event->eventName_)) {
+            HIVIEW_LOGW("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
+                event->domain_.c_str(), event->eventName_.c_str(), listener->second.uid);
+            continue;
+        }
+        bool isMatched = MatchRules(listener->second.rules, event->domain_, event->eventName_,
             event->GetTag(), event->eventType_);
-        HIVIEW_LOGD("pid %{public}d rules match %{public}s.", listener->second.first,
-            isMatched ? "success" : "fail");
+        HIVIEW_LOGD("pid %{public}d rules match %{public}s.", listener->second.pid, isMatched ? "success" : "fail");
         if (isMatched) {
             callback->Handle(Str8ToStr16(event->domain_), Str8ToStr16(event->eventName_),
                 static_cast<uint32_t>(event->eventType_), Str8ToStr16(event->AsJsonStr()));
@@ -216,7 +222,7 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
     auto listener = registeredListeners_.find(remoteObject);
     if (listener != registeredListeners_.end()) {
         listener->first->RemoveDeathRecipient(deathRecipient_);
-        HIVIEW_LOGE("pid %{public}d has died and remove listener.", listener->second.first);
+        HIVIEW_LOGE("pid %{public}d has died and remove listener.", listener->second.pid);
         registeredListeners_.erase(listener);
     }
 }
@@ -271,21 +277,20 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
         HIVIEW_LOGE("subscribe fail, object in callback is null.");
         return ERR_LISTENER_STATUS_INVALID;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    pair<int32_t, SysEventRuleGroupOhos> rulesPair(pid, rules);
+    ListenerInfo listenerInfo {IPCSkeleton::GetCallingPid(), IPCSkeleton::GetCallingUid(), rules};
     if (registeredListeners_.find(callbackObject) != registeredListeners_.end()) {
-        registeredListeners_[callbackObject] = rulesPair;
-        HIVIEW_LOGD("uid %{public}d pid %{public}d listener has been added and update rules.", uid, pid);
+        registeredListeners_[callbackObject] = listenerInfo;
+        HIVIEW_LOGD("uid %{public}d pid %{public}d listener has been added and update rules.",
+            listenerInfo.uid, listenerInfo.pid);
         return IPC_CALL_SUCCEED;
     }
     if (!callbackObject->AddDeathRecipient(deathRecipient_)) {
         HIVIEW_LOGE("subscribe fail, can not add death recipient.");
         return ERR_ADD_DEATH_RECIPIENT;
     }
-    registeredListeners_.insert(make_pair(callbackObject, rulesPair));
+    registeredListeners_.insert(make_pair(callbackObject, listenerInfo));
     HIVIEW_LOGD("uid %{public}d pid %{public}d listener is added successfully, total is %{public}zu.",
-        uid, pid, registeredListeners_.size());
+        listenerInfo.uid, listenerInfo.pid, registeredListeners_.size());
     return IPC_CALL_SUCCEED;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include <unordered_map>
 
+#include "compliant_event_checker.h"
 #include "data_share_common.h"
 #include "iquery_base_callback.h"
 #include "json/json.h"
@@ -51,7 +52,7 @@ private:
 
 class BaseEventQueryWrapper {
 public:
-    BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query) : query_(query) {}
+    BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query);
     virtual ~BaseEventQueryWrapper() {}
 
 public:
@@ -73,6 +74,13 @@ public:
     bool NeedStartNextQuery();
 
 protected:
+    struct QuerierInfo {
+        int32_t uid;
+        int32_t pid;
+        std::string processName;
+    };
+
+protected:
     virtual void BuildQuery() = 0;
     virtual void Order() = 0;
     void BuildCondition(const std::string& condition);
@@ -91,6 +99,8 @@ protected:
     int32_t ignoredEventCnt_ = 0;
     std::shared_ptr<EventStore::SysEventQuery> query_ = nullptr;
     std::vector<SysEventQueryRule> queryRules_;
+    QuerierInfo querierInfo_;
+    CompliantEventChecker eventChecker_;
 
 private:
     bool isFirstPartialQuery_ = true;

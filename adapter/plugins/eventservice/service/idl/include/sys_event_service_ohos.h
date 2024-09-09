@@ -18,6 +18,8 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
+#include <tuple>
 #include <vector>
 #include <unordered_map>
 
@@ -40,7 +42,13 @@ using CallbackObjectOhos = OHOS::sptr<OHOS::IRemoteObject>;
 using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
 using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
 using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
-using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
+
+struct ListenerInfo {
+    int32_t pid;
+    int32_t uid;
+    SysEventRuleGroupOhos rules;
+};
+using RegisteredListeners = std::map<CallbackObjectOhos, ListenerInfo>;
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -105,6 +113,7 @@ private:
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
     std::mutex publisherMutex_;
     std::shared_ptr<DataPublisher> dataPublisher_;
+    CompliantEventChecker eventChecker_;
 
 private:
     static sptr<SysEventServiceOhos> instance;

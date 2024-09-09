@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,13 +39,7 @@ constexpr int32_t IGNORED_DEFAULT_CNT = 0;
 constexpr int MAX_QUERY_EVENTS = 1000; // The maximum number of queries is 1000 at one time
 constexpr int MAX_TRANS_BUF = 1024 * 770;  // Max transmission at one time: 384KB * 2 + 2KB for extra fields
 constexpr size_t U16_CHAR_SIZE = sizeof(char16_t);
-
-EventStore::QueryProcessInfo GetCallingProcessInfo()
-{
-    std::string processName = CommonUtils::GetProcNameByPid(IPCSkeleton::GetCallingPid());
-    processName = processName.empty() ? "unknown" : processName;
-    return std::make_pair(IPCSkeleton::GetCallingPid(), processName);
-}
+constexpr int32_t HID_SHELL = 2000;
 }
 
 bool ConditionParser::ParseCondition(const std::string& condStr, EventStore::Cond& condition)
@@ -179,6 +173,17 @@ bool ConditionParser::ParseQueryCondition(const std::string& condStr, EventStore
     return true;
 }
 
+BaseEventQueryWrapper::BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEventQuery> query)
+{
+    query_ = query;
+
+    querierInfo_.uid = IPCSkeleton::GetCallingUid();
+    querierInfo_.pid = IPCSkeleton::GetCallingPid();
+    querierInfo_.processName = CommonUtils::GetProcNameByPid(querierInfo_.pid);
+    HIVIEW_LOGI("uid is %{public}d, pid is %{public}d and process name of querier is %{public}s",
+        querierInfo_.uid, querierInfo_.pid, querierInfo_.processName.c_str());
+}
+
 void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& eventQueryCallback,
     int32_t& queryResult)
 {
@@ -193,7 +198,8 @@ void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCa
             ", endTime=%{public}" PRId64 ", maxEvents=%{public}d, fromSeq=%{public}" PRId64
             ", toSeq=%{public}" PRId64 ", queryLimit=%{public}d.", argument_.beginTime, argument_.endTime,
             argument_.maxEvents, argument_.fromSeq, argument_.toSeq, queryLimit_);
-        auto resultSet = query_->Execute(queryLimit_, { false, isFirstPartialQuery_ }, GetCallingProcessInfo(),
+        auto resultSet = query_->Execute(queryLimit_, { false, isFirstPartialQuery_ },
+            std::make_pair(querierInfo_.pid, querierInfo_.processName),
             [&queryResult] (EventStore::DbQueryStatus status) {
                 std::unordered_map<EventStore::DbQueryStatus, int32_t> statusToCode {
                     { EventStore::DbQueryStatus::CONCURRENT, ERR_TOO_MANY_CONCURRENT_QUERIES },
@@ -255,6 +261,11 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
         iter = result.Next();
         auto eventJsonStr = iter->AsJsonStr();
         if (eventJsonStr.empty()) {
+            continue;
+        }
+        if ((querierInfo_.uid == HID_SHELL) && eventChecker_.IsInCompliantEvent(iter->domain_, iter->eventName_)) {
+            HIVIEW_LOGD("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
+                iter->domain_.c_str(), iter->eventName_.c_str(), querierInfo_.uid);
             continue;
         }
         std::u16string curJson = Str8ToStr16(eventJsonStr);
