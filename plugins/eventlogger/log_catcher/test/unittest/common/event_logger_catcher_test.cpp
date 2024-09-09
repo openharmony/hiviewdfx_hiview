@@ -687,5 +687,5 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
     printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
     close(fd);
 }
-} // namespace HiviewDFX
+} // namesapce HiviewDFX
 } // namespace OHOS
