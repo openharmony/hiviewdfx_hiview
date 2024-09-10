@@ -30,6 +30,6 @@ public:
 
 private:
 };
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
 #endif // EVENT_LOGGER_PLUGIN_TEST_H

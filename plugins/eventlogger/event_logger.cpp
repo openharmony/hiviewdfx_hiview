@@ -1107,5 +1107,5 @@ bool EventLogger::GetMatchString(const std::string& src, std::string& dst, const
     }
     return false;
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS

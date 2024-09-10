@@ -665,5 +665,5 @@ HWTEST_F(EventloggerCatcherTest, LogCatcherUtilsTest_001, TestSize.Level1)
     ret = LogCatcherUtils::WriteKernelStackToFd(200, "Test\n", getprocpid());
     EXPECT_EQ(ret, 0);
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
