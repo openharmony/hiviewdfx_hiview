@@ -484,6 +484,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     info.module = isJsError ? sysEvent->GetEventValue("PACKAGE_NAME") : sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
     auto summary = sysEvent->GetEventValue("SUMMARY");
+    auto pName = sysEvent->GetEventValue("PNAME");
     if (event->eventName_ == "ADDR_SANITIZER" && summary.empty()) {
         HIVIEW_LOGI("Is fdsan not crash request. Exit");
         return true;
@@ -501,7 +502,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     sysEvent->SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
     std::map<std::string, std::string> eventInfos;
     if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("PNAME", info.module.empty() ? "/" : info.module);
+        sysEvent->SetEventValue("PNAME", pName.empty() ? "/" : pName);
         sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
                                 StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
         sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
