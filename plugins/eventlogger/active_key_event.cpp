@@ -208,5 +208,5 @@ void ActiveKeyEvent::CombinationKeyCallback(std::shared_ptr<MMI::KeyEvent> keyEv
     ffrt::submit(combinationKeyHandle, {}, {},
         ffrt::task_attr().name("ActiveKeyEvent").qos(ffrt::qos_user_initiated));
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS

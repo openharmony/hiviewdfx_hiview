@@ -22,6 +22,6 @@ public:
     void SetUp();
     void TearDown();
 };
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
 #endif // HIVIEW_PLATFORM_CONFIG_TEST_H
