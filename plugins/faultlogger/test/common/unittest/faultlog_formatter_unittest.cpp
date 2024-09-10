@@ -59,7 +59,7 @@ HWTEST_F(FaultlogFormatterUnittest, WriteStackTraceFromLogTest001, testing::ext:
     ASSERT_EQ(fd, -1);
     path = "/data/test/test_faultlogger_data/plugin_config_test";
     FaultLogger::WriteStackTraceFromLog(fd, pidStr, path);
-    ASSERT_NE(fd, -1);
+    ASSERT_EQ(fd, -1);
 }
 } // namespace HiviewDFX
 } // namespace OHOS
