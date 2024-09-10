@@ -58,10 +58,6 @@ ohos_source_set("faultlogger_service") {
     "faultlog_manager.cpp",
     "faultlogger.cpp",
     "freeze_json_generator.cpp",
-    "sanitizer_collector/asan_collector.cpp",
-    "sanitizer_collector/reporter.cpp",
-    "sanitizer_collector/sanitizerd_collector.cpp",
-    "sanitizer_collector/sanitizerd_monitor.cpp",
     "sanitizer_collector/zip_helper.cpp",
   ]
 

@@ -86,6 +86,10 @@ std::string GetFaultLogName(const FaultLogInfo& info)
             ret.append("ubsan");
         } else if (info.reason.compare("GWP-ASAN") == 0) {
             ret.append("gwpasan");
+        } else if (info.reason.compare("HWASAN") == 0) {
+            ret.append("hwasan");
+        } else if (info.reason.compare("ASAN") == 0) {
+            ret.append("asan");
         } else {
             ret.append("sanitizer");
         }
