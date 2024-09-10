@@ -93,6 +93,7 @@ namespace {
     static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
     static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
     static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
+    static constexpr int HISTORY_EVENT_LIMIT = 500;
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
 }
 
@@ -329,11 +330,15 @@ void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
 {
     std::string historyFile = std::string(LOGGER_EVENT_LOG_PATH) + "/" + "history.log";
     mode_t mode = 0644;
-    if (!FileUtil::FileExists(historyFile) &&
-        FileUtil::CreateFile(historyFile, mode) != 0) {
-        HIVIEW_LOGI("failed to create file=%{public}s, errno=%{public}d",
-            historyFile.c_str(), errno);
+    if (FileUtil::CreateFile(historyFile, mode) != 0 && !FileUtil::FileExists(historyFile)) {
+        HIVIEW_LOGI("failed to create file=%{public}s, errno=%{public}d", historyFile.c_str(), errno);
         return;
+    }
+    std::vector<std::string> lines;
+    FileUtil::LoadLinesFromFile(historyFile, lines);
+    bool truncated = false;
+    if (lines.size() > HISTORY_EVENT_LIMIT) {
+        truncated = true;
     }
     auto time = TimeUtil::TimestampFormatToDate(event->happenTime_ / TimeUtil::SEC_TO_MILLISEC,
         "%Y%m%d%H%M%S");
@@ -341,7 +346,7 @@ void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
     long uid = event->GetEventIntValue("UID") ? event->GetEventIntValue("UID") : event->GetUid();
     std::string str = "time[" + time + "], domain[" + event->domain_ + "], wpName[" +
         event->eventName_ + "], pid: " + std::to_string(pid) + ", uid: " + std::to_string(uid) + "\n";
-    FileUtil::SaveStringToFile(historyFile, str, false);
+    FileUtil::SaveStringToFile(historyFile, str, truncated);
 }
 
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
