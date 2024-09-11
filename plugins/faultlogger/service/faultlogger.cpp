@@ -514,6 +514,9 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (isJsError) {
         ReportJsErrorToAppEvent(sysEvent);
     }
+    if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
+        ReportSanitizerToAppEvent(sysEvent);
+    }
     return true;
 }
 
@@ -582,6 +585,32 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
 #else
     EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, paramsStr);
 #endif
+}
+
+void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
+{
+    std::string summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
+    HIVIEW_LOGD("ReportSanitizerAppEvent:summary:%{public}s.", summary.c_str());
+
+    Json::Value params;
+    params["time"] = sysEvent->GetEventValue("HAPPEN_TIME");
+    params["type"] = sysEvent->GetEventValue("REASON");
+    Json::Value externalLog(Json::arrayValue);
+    std::string logPath = sysEvent->GetEventValue("LOG_PATH");
+    if (!logPath.empty()) {
+        externalLog.append(logPath);
+    }
+    params["external_log"] = externalLog;
+    params["bundle_version"] = sysEvent->GetEventValue("VERSION");
+    params["bundle_name"] = sysEvent->GetEventValue("MODULE");
+    params["pid"] = sysEvent->GetPid();
+    params["uid"] = sysEvent->GetUid();
+    FillJsErrorParams(summary, params);
+    std::string paramsStr = Json::FastWriter().write(params);
+    HIVIEW_LOGD("ReportSanitizerAppEvent: uid:%{public}d, json:%{public}s.",
+        sysEvent->GetUid(), paramsStr.c_str());
+    EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), "ADDR_SANITIZER",
+        HiSysEvent::EventType::FAULT, paramsStr);
 }
 
 bool Faultlogger::ReadyToLoad()
