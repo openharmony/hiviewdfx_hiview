@@ -15,6 +15,7 @@
 #include "event_log_task.h"
 
 #include <unistd.h>
+#include <regex>
 
 #include "binder_catcher.h"
 #include "common_utils.h"
@@ -28,6 +29,7 @@
 #include "shell_catcher.h"
 #include "string_util.h"
 #include "trace_collector.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -39,6 +41,8 @@ namespace {
         "foundation",
         "render_service",
     };
+    static constexpr int TRACE_OUT_OF_TIME = 30; // 30s
+    static constexpr int DELAY_OUT_OF_TIME = 15; // 15s
     static constexpr int DEFAULT_LOG_SIZE = 1024 * 1024; // 1M
     static constexpr uint64_t MILLISEC_TO_SEC = 1000;
     static constexpr uint64_t DELAY_TIME = 2;
@@ -409,8 +413,18 @@ void EventLogTask::HitraceCapture()
 {
     std::shared_ptr<UCollectUtil::TraceCollector> collector = UCollectUtil::TraceCollector::Create();
     UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
-    uint64_t traceEndTime = (event_->happenTime_ / MILLISEC_TO_SEC) + DELAY_TIME;
-    auto result = collector->DumpTraceWithDuration(caller, MAX_DUMP_TRACE_LIMIT, traceEndTime);
+    std::regex reg("Fault time:(\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2})");
+    std::string timeStamp = event_->GetEventValue("MSG");
+    std::smatch match;
+    timeStamp = std::regex_search(timeStamp, match, reg) ? match[1].str() : "";
+    uint64_t faultTime = timeStamp.empty() ? (event_->happenTime_) :
+        TimeUtil::StrToTimeStamp(timeStamp, "%Y/%m/%d-%H:%M:%S");
+    faultTime += DELAY_TIME;
+    uint64_t currentTime = TimeUtil::GetMilliseconds() / MILLISEC_TO_SEC;
+    if (currentTime >= (TRACE_OUT_OF_TIME + faultTime)) {
+        faultTime = currentTime - DELAY_OUT_OF_TIME;
+    }
+    auto result = collector->DumpTraceWithDuration(caller, MAX_DUMP_TRACE_LIMIT, faultTime);
     if (result.retCode != 0) {
         HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);
         return;
