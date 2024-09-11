@@ -49,7 +49,7 @@ public:
     CollectResult<std::vector<std::string>> RecordingTraceOff();
     CollectResult<int32_t> CloseTrace();
     CollectResult<int32_t> RecoverTrace();
-    CollectResult<int32_t> CaptureDurationTrace(int32_t uid, int32_t pid, UCollectClient::AppCaller &appCaller);
+    CollectResult<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller);
     CollectResult<double> GetSysCpuUsage();
     CollectResult<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller);
 private:
