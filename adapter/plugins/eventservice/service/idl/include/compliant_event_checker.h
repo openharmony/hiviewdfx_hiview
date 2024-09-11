@@ -26,10 +26,10 @@ public:
     ~CompliantEventChecker() = default;
 
 public:
-    bool IsInCompliantEvent(const std::string& domain, const std::string& eventName);
+    bool IsCompliantEvent(const std::string& domain, const std::string& eventName);
 
 private:
-    int64_t secureVal_ = 0;
+    int64_t secureVal_ = 1; // 1 means system isn't rooted
 };
 } // namespace HiviewDFX
 } // namespace OHOS

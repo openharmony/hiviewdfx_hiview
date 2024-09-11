@@ -18,7 +18,6 @@
 
 #include <unordered_map>
 
-#include "compliant_event_checker.h"
 #include "data_share_common.h"
 #include "iquery_base_callback.h"
 #include "json/json.h"
@@ -100,7 +99,6 @@ protected:
     std::shared_ptr<EventStore::SysEventQuery> query_ = nullptr;
     std::vector<SysEventQueryRule> queryRules_;
     QuerierInfo querierInfo_;
-    CompliantEventChecker eventChecker_;
 
 private:
     bool isFirstPartialQuery_ = true;

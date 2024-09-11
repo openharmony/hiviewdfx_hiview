@@ -49,10 +49,10 @@ CompliantEventChecker::CompliantEventChecker()
     HIVIEW_LOGD("value of const.secure is %{public}" PRId64 "", secureVal_);
 }
 
-bool CompliantEventChecker::IsInCompliantEvent(const std::string& domain, const std::string& eventName)
+bool CompliantEventChecker::IsCompliantEvent(const std::string& domain, const std::string& eventName)
 {
     if (secureVal_ == SECURE_DISBALED_VAL) {
-        return false;
+        return true;
     }
     for (const auto& compliantConfig : COMPLIANT_EVENT_CONFIGS) {
         if (compliantConfig.first != domain) {
@@ -60,16 +60,16 @@ bool CompliantEventChecker::IsInCompliantEvent(const std::string& domain, const 
         }
         if (compliantConfig.second.empty()) {
             HIVIEW_LOGD("event with domain [%{public}s] is compliant", domain.c_str());
-            return false;
+            return true;
         }
         auto findRet = std::find(compliantConfig.second.begin(), compliantConfig.second.end(), eventName);
         if (findRet != compliantConfig.second.end()) {
             HIVIEW_LOGD("event [%{public}s|%{public}s] is compliant", domain.c_str(), eventName.c_str());
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
-    return true;
+    return false;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

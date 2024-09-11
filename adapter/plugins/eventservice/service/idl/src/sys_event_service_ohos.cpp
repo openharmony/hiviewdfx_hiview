@@ -87,7 +87,7 @@ bool IsMatchedRule(const OHOS::HiviewDFX::SysEventRule& rule, const string& doma
         && MatchEventType(rule.eventType, eventType);
 }
 
-bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const string& eventName,
+bool MatchRules(const std::vector<SysEventRule>& rules, const string& domain, const string& eventName,
     const string& tag, uint32_t eventType)
 {
     return any_of(rules.begin(), rules.end(), [domain, eventName, tag, eventType] (auto& rule) {
@@ -113,26 +113,26 @@ int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& event
     return IPC_CALL_SUCCEED;
 }
 
-int32_t CheckEventQueryingValidity(const SysEventQueryRuleGroupOhos& rules, size_t limit)
+int32_t CheckEventQueryingValidity(const std::vector<SysEventQueryRule>& rules, size_t limit)
 {
     if (rules.size() > limit) {
-        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyQueryRules(rules);
+        RunningStatusLogUtil::LogTooManyQueryRules(rules);
         return ERR_TOO_MANY_QUERY_RULES;
     }
     return IPC_CALL_SUCCEED;
 }
 }
 
-OHOS::HiviewDFX::NotifySysEvent SysEventServiceOhos::gISysEventNotify_;
-sptr<OHOS::HiviewDFX::SysEventServiceOhos> SysEventServiceOhos::instance(new SysEventServiceOhos);
+NotifySysEvent SysEventServiceOhos::gISysEventNotify_;
+sptr<SysEventServiceOhos> SysEventServiceOhos::instance(new SysEventServiceOhos);
 
-sptr<OHOS::HiviewDFX::SysEventServiceOhos> SysEventServiceOhos::GetInstance()
+sptr<SysEventServiceOhos> SysEventServiceOhos::GetInstance()
 {
     return instance;
 }
 
 void SysEventServiceOhos::StartService(SysEventServiceBase *service,
-    const OHOS::HiviewDFX::NotifySysEvent notify)
+    const NotifySysEvent notify)
 {
     gISysEventNotify_ = notify;
     GetSysEventService(service);
@@ -167,21 +167,22 @@ uint32_t SysEventServiceOhos::GetTypeByDomainAndName(const string& eventDomain, 
     return getTypeFunc_(eventDomain, eventName);
 }
 
-void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& event)
+void SysEventServiceOhos::OnSysEvent(std::shared_ptr<SysEvent>& event)
 {
     {
         lock_guard<mutex> lock(publisherMutex_);
         dataPublisher_->OnSysEvent(event);
     }
     lock_guard<mutex> lock(listenersMutex_);
+    CompliantEventChecker compliantEventChecker;
     for (auto listener = registeredListeners_.begin(); listener != registeredListeners_.end(); ++listener) {
-        SysEventCallbackPtrOhos callback = iface_cast<ISysEventCallback>(listener->first);
+        OHOS::sptr<ISysEventCallback> callback = iface_cast<ISysEventCallback>(listener->first);
         if (callback == nullptr) {
             HIVIEW_LOGE("interface is null, no need to match rules.");
             continue;
         }
         if ((listener->second.uid == HID_SHELL) &&
-            eventChecker_.IsInCompliantEvent(event->domain_, event->eventName_)) {
+            !compliantEventChecker.IsCompliantEvent(event->domain_, event->eventName_)) {
             HIVIEW_LOGW("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
                 event->domain_.c_str(), event->eventName_.c_str(), listener->second.uid);
             continue;
@@ -208,7 +209,7 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
         return;
     }
     if (debugModeCallback_ != nullptr) {
-        CallbackObjectOhos callbackObject = debugModeCallback_->AsObject();
+        OHOS::sptr<OHOS::IRemoteObject> callbackObject = debugModeCallback_->AsObject();
         if (callbackObject == remoteObject && isDebugMode_) {
             HIVIEW_LOGE("quit debugmode.");
             auto event = std::make_shared<Event>("SysEventSource");
@@ -272,7 +273,7 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
         HIVIEW_LOGE("subscribe fail, callback is null.");
         return ERR_LISTENER_NOT_EXIST;
     }
-    CallbackObjectOhos callbackObject = callback->AsObject();
+    OHOS::sptr<OHOS::IRemoteObject> callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HIVIEW_LOGE("subscribe fail, object in callback is null.");
         return ERR_LISTENER_STATUS_INVALID;
@@ -294,7 +295,7 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     return IPC_CALL_SUCCEED;
 }
 
-int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callback)
+int32_t SysEventServiceOhos::RemoveListener(const OHOS::sptr<ISysEventCallback>& callback)
 {
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
@@ -308,7 +309,7 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
         HIVIEW_LOGE("callback is null.");
         return ERR_LISTENER_NOT_EXIST;
     }
-    CallbackObjectOhos callbackObject = callback->AsObject();
+    OHOS::sptr<OHOS::IRemoteObject> callbackObject = callback->AsObject();
     if (callbackObject == nullptr) {
         HIVIEW_LOGE("object in callback is null.");
         return ERR_LISTENER_STATUS_INVALID;
@@ -336,7 +337,7 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
 }
 
 bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder,
-    const SysEventQueryRuleGroupOhos& rules)
+    const std::vector<SysEventQueryRule>& rules)
 {
     if (builder == nullptr) {
         return false;
@@ -374,8 +375,8 @@ bool SysEventServiceOhos::BuildEventQuery(std::shared_ptr<EventQueryWrapperBuild
     });
 }
 
-int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-    const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>& callback)
+int32_t SysEventServiceOhos::Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
+    const OHOS::sptr<IQuerySysEventCallback>& callback)
 {
     if (callback == nullptr) {
         return ERR_LISTENER_NOT_EXIST;
@@ -429,7 +430,7 @@ bool SysEventServiceOhos::HasAccessPermission() const
     return false;
 }
 
-int32_t SysEventServiceOhos::SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode)
+int32_t SysEventServiceOhos::SetDebugMode(const OHOS::sptr<ISysEventCallback>& callback, bool mode)
 {
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
@@ -469,7 +470,7 @@ void CallbackDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
     service->OnRemoteDied(remote);
 }
 
-int64_t SysEventServiceOhos::AddSubscriber(const SysEventQueryRuleGroupOhos &rules)
+int64_t SysEventServiceOhos::AddSubscriber(const std::vector<SysEventQueryRule>& rules)
 {
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
@@ -514,7 +515,7 @@ int32_t SysEventServiceOhos::RemoveSubscriber()
     return IPC_CALL_SUCCEED;
 }
 
-int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules)
+int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const std::vector<SysEventQueryRule>& rules)
 {
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;

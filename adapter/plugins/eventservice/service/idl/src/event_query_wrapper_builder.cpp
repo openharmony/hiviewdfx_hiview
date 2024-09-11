@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cinttypes>
 
+#include "compliant_event_checker.h"
 #include "common_utils.h"
 #include "data_publisher.h"
 #include "hiview_event_common.h"
@@ -257,13 +258,15 @@ void BaseEventQueryWrapper::TransportSysEvent(OHOS::HiviewDFX::EventStore::Resul
     const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& callback, std::pair<int64_t, int32_t>& details)
 {
     OHOS::HiviewDFX::EventStore::ResultSet::RecordIter iter;
+    CompliantEventChecker compliantEventChecker;
     while (result.HasNext() && argument_.maxEvents > 0) {
         iter = result.Next();
         auto eventJsonStr = iter->AsJsonStr();
         if (eventJsonStr.empty()) {
             continue;
         }
-        if ((querierInfo_.uid == HID_SHELL) && eventChecker_.IsInCompliantEvent(iter->domain_, iter->eventName_)) {
+        if ((querierInfo_.uid == HID_SHELL) &&
+            !compliantEventChecker.IsCompliantEvent(iter->domain_, iter->eventName_)) {
             HIVIEW_LOGD("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
                 iter->domain_.c_str(), iter->eventName_.c_str(), querierInfo_.uid);
             continue;

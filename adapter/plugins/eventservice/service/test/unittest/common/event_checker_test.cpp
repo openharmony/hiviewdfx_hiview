@@ -39,31 +39,31 @@ HWTEST_F(EventCheckerTest, EventCheckerTest001, testing::ext::TestSize.Level3)
 {
     CompliantEventChecker eventChecker;
     if (Parameter::GetInteger("const.secure", 1) == 0) { // 1 and 0 is test value
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("AAFWK", ""));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("AAFWK", "START_ABILITY"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("ACE", "INTERACTION_COMPLETED_LATENCY"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("AV_CODEC", "CODEC_START_INFO"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("GRAPHIC", "INTERACTION_COMPLETED_LATENCY"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("LOCATION", "GNSS_STATE"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("PERFORMANCE", ""));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("RELIBILITY", ""));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("STABILITY", "JS_ERROR"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("STABILITY", "JS_ERROR_INVALID"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("WORKSCHEDULER", "WORK_ADD"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("STABILITY", "WORK_ADD_INVALID"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("AAFWK", ""));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("AAFWK", "START_ABILITY"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("ACE", "INTERACTION_COMPLETED_LATENCY"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("AV_CODEC", "CODEC_START_INFO"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("GRAPHIC", "INTERACTION_COMPLETED_LATENCY"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("LOCATION", "GNSS_STATE"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("PERFORMANCE", ""));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("RELIBILITY", ""));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("STABILITY", "JS_ERROR"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("STABILITY", "JS_ERROR_INVALID"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("WORKSCHEDULER", "WORK_ADD"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("STABILITY", "WORK_ADD_INVALID"));
     } else {
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("AAFWK", ""));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("AAFWK", "START_ABILITY"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("ACE", "INTERACTION_COMPLETED_LATENCY"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("AV_CODEC", "CODEC_START_INFO"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("GRAPHIC", "INTERACTION_COMPLETED_LATENCY"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("LOCATION", "GNSS_STATE"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("PERFORMANCE", ""));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("RELIBILITY", ""));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("STABILITY", "JS_ERROR"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("STABILITY", "JS_ERROR_INVALID"));
-        ASSERT_TRUE(eventChecker.IsInCompliantEvent("WORKSCHEDULER", "WORK_ADD"));
-        ASSERT_FALSE(eventChecker.IsInCompliantEvent("STABILITY", "WORK_ADD_INVALID"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("AAFWK", ""));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("AAFWK", "START_ABILITY"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("ACE", "INTERACTION_COMPLETED_LATENCY"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("AV_CODEC", "CODEC_START_INFO"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("GRAPHIC", "INTERACTION_COMPLETED_LATENCY"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("LOCATION", "GNSS_STATE"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("PERFORMANCE", ""));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("RELIBILITY", ""));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("STABILITY", "JS_ERROR"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("STABILITY", "JS_ERROR_INVALID"));
+        ASSERT_FALSE(eventChecker.IsCompliantEvent("WORKSCHEDULER", "WORK_ADD"));
+        ASSERT_TRUE(eventChecker.IsCompliantEvent("STABILITY", "WORK_ADD_INVALID"));
     }
 }
 } //
