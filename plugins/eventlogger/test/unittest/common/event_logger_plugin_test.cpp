@@ -152,5 +152,5 @@ HWTEST_F(EventloggerPluginTest, EventloggerPluginTest006, TestSize.Level3)
     std::shared_ptr<Event> event = nullptr;
     ASSERT_EQ(eventLogger.OnEvent(event), false);
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS

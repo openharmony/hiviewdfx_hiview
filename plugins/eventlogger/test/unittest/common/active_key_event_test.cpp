@@ -147,5 +147,5 @@ HWTEST_F(ActiveKeyEventTest, ActiveKeyEventTest_006, TestSize.Level3)
     auto keyEvent = OHOS::MMI::KeyEvent::Create();
     activeKeyEvent->CombinationKeyCallback(keyEvent);
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
