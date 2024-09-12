@@ -44,6 +44,38 @@ ohos_source_set("faultlogger_service_ability") {
   ]
 }
 
+ohos_source_set("faultlogger_service_ability_with_cfi") {
+  part_name = "hiview"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
+  include_dirs = [
+    "$hiview_plugin/faultlogger/common",
+    "$hiview_plugin/faultlogger/service",
+  ]
+
+  public_configs = [ ":faultlogger_service_adapter_config" ]
+
+  sources = [ "faultlogger_adapter.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "idl:faultlogger_service_impl_with_cfi",
+  ]
+
+  external_deps = [
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "jsoncpp:jsoncpp",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 ohos_source_set("faultlogger_service") {
   part_name = "hiview"
   include_dirs = [
@@ -85,7 +117,55 @@ ohos_source_set("faultlogger_service") {
     "jsoncpp:jsoncpp",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "zlib:libz",
+  ]
+}
+
+ohos_source_set("faultlogger_service_with_cfi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+  part_name = "hiview"
+  include_dirs = [
+    "$hiview_plugin/faultlogger/common",
+    "$hiview_plugin/faultlogger/service/sanitizer_collector",
+    "$hiview_framework/native/unified_collection/process/include",
+  ]
+
+  sources = [
+    "faultlog_database.cpp",
+    "faultlog_formatter.cpp",
+    "faultlog_manager.cpp",
+    "faultlogger.cpp",
+    "freeze_json_generator.cpp",
+    "sanitizer_collector/zip_helper.cpp",
+  ]
+
+  deps = [
+    ":faultlogger_service_ability_with_cfi",
+    "$hiview_base:hiviewbase",
+    "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
+    "$hiview_plugin/faultlogger/common:faultlogger_common_with_cfi",
+    "$hiview_plugin/faultlogger/common:log_analyzer_with_cfi",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "faultloggerd:crash_exception",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "jsoncpp:jsoncpp",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 }
 
