@@ -82,9 +82,6 @@ private:
     void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
 #endif
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
-    void UpdateFfrtDumpType(int pid, int& type);
-    void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
-    void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const;
     void CollectMemInfo(int fd, std::shared_ptr<SysEvent> event);
     void SaveDbToFile(const std::shared_ptr<SysEvent>& event);
     void StartLogCollect(std::shared_ptr<SysEvent> event);

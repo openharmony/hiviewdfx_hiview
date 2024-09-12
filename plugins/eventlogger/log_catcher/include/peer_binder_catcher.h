@@ -59,6 +59,7 @@ private:
     std::set<int>& pids, int pid) const;
     std::set<int> GetBinderPeerPids(int fd, int jsonFd) const;
     bool IsAncoProc(int pid) const;
+    void CatcherFfrtStack(int fd, int pid) const;
     void CatcherStacktrace(int fd, int pid) const;
     void AddBinderJsonInfo(std::list<OutputBinderInfo> outputBinderInfoList, int jsonFd) const;
 #ifdef HAS_HIPERF

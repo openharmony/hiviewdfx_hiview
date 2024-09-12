@@ -14,16 +14,18 @@
  */
 #ifndef EVENTLOGGER_LOG_CATCHER_UTILS_H
 #define EVENTLOGGER_LOG_CATCHER_UTILS_H
-#include <sys/prctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
+enum FFRT_TYPE {TOP, APP, SYS};
+static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
+
 int DumpStacktrace(int fd, int pid);
 int WriteKernelStackToFd(int originFd, const std::string& msg, int pid);
+FFRT_TYPE GetFfrtDumpType(int pid);
+void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

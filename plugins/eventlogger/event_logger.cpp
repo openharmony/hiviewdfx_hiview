@@ -19,14 +19,8 @@
 #include <cinttypes>
 #include <list>
 #include <map>
-#include <mutex>
 #include <regex>
 #include <sstream>
-#include <sys/epoll.h>
-#include <sys/inotify.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
 #include <iostream>
@@ -40,7 +34,7 @@
 #include "event_source.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
-#include "iservice_registry.h"
+#include "log_catcher_utils.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "string_util.h"
@@ -59,7 +53,6 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
-    enum {APP, SYS, TOP};
     static constexpr const char* const LONG_PRESS = "LONG_PRESS";
     static constexpr const char* const AP_S_PRESS6S = "AP_S_PRESS6S";
     static constexpr const char* const REBOOT_REASON = "reboot_reason";
@@ -68,11 +61,10 @@ namespace {
     static constexpr const char* const DOMAIN_LONGPRESS = "KERNEL_VENDOR";
     static constexpr const char* const STRINGID_LONGPRESS = "COM_LONG_PRESS";
     static constexpr const char* const LONGPRESS_LEVEL = "CRITICAL";
-    static constexpr const char* const FFRT_HEADER = "=== ffrt info ===\n";
     static constexpr const char* const MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };
-    constexpr const char* FFRT_VECTOR[] = {
+    constexpr const char* DUMP_FFRT[] = {
         "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
         "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
         "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
@@ -89,10 +81,7 @@ namespace {
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
-    static constexpr int MAX_RETRY_COUNT = 20;
     static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
-    static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
-    static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
     static constexpr int HISTORY_EVENT_LIMIT = 500;
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
 }
@@ -161,7 +150,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     sysEvent->OnPending();
 
-    bool isFfrt = std::find(std::begin(FFRT_VECTOR), std::end(FFRT_VECTOR), eventName) != std::end(FFRT_VECTOR);
+    bool isFfrt = std::find(std::begin(DUMP_FFRT), std::end(DUMP_FFRT), eventName) != std::end(DUMP_FFRT);
     auto task = [this, sysEvent, isFfrt]() {
         HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
@@ -204,7 +193,7 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
 
 void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 {
-    int type = APP;
+    LogCatcherUtils::FFRT_TYPE type = LogCatcherUtils::TOP;
     long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
 #ifdef WINDOW_MANAGER_ENABLE
     std::vector<Rosen::MainWindowInfo> windowInfos;
@@ -215,12 +204,11 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         if (windowInfos.size() == 0) {
             return;
         }
-        type = TOP;
 #else
         return;
 #endif
     } else {
-        UpdateFfrtDumpType(pid, type);
+        type = LogCatcherUtils::GetFfrtDumpType(pid);
     }
 
     std::string ffrtFile;
@@ -230,87 +218,31 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         return;
     }
 
-    int count = (type == TOP) ? WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO : WAIT_CHILD_PROCESS_COUNT;
-    if (type == TOP) {
+    int count = (type == LogCatcherUtils::TOP) ? LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO :
+        LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT;
+    if (type == LogCatcherUtils::TOP) {
 #ifdef WINDOW_MANAGER_ENABLE
-        int size = static_cast<int>(windowInfos.size());
+        FileUtil::SaveStringToFd(ffrtFd, "ffrt dump topWindowInfos, process infos:\n");
         std::string cmdAms = "--ffrt ";
         std::string cmdSam = "--ffrt ";
-        FileUtil::SaveStringToFd(ffrtFd, "dump topWindowInfos, process infos:\n");
+        int size = static_cast<int>(windowInfos.size());
         for (int i = 0; i < size ; i++) {
             auto info = windowInfos[i];
             FileUtil::SaveStringToFd(ffrtFd, "    " + std::to_string(info.pid_) + ":" + info.bundleName_ + "\n");
             cmdAms += std::to_string(info.pid_) + (i < size -1 ? "," : "");
             cmdSam += std::to_string(info.pid_) + (i < size -1 ? "|" : "");
         }
-        ReadShellToFile(ffrtFd, "ApplicationManagerService", cmdAms, count);
-        if (count > WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
-            ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
+        LogCatcherUtils::ReadShellToFile(ffrtFd, "ApplicationManagerService", cmdAms, count);
+        if (count > LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
+            LogCatcherUtils::ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
         }
 #endif
     } else {
-        std::string cmd = "--ffrt " + std::to_string(pid);
-        std::string serviceName = (type == APP) ? "ApplicationManagerService" : "SystemAbilityManager";
-        ReadShellToFile(ffrtFd, serviceName, cmd, count);
+        FileUtil::SaveStringToFd(ffrtFd, "ffrt dump info:\n");
+        std::string serviceName = (type == LogCatcherUtils::APP) ? "ApplicationManagerService" : "SystemAbilityManager";
+        LogCatcherUtils::ReadShellToFile(ffrtFd, serviceName, "--ffrt " + std::to_string(pid), count);
     }
     close(ffrtFd);
-}
-
-void EventLogger::UpdateFfrtDumpType(int pid, int& type)
-{
-    std::list<SystemProcessInfo> systemProcessInfos;
-    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    sam->GetRunningSystemProcess(systemProcessInfos);
-    if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
-        [pid](auto& systemProcessInfo) {
-        return pid == systemProcessInfo.pid;
-    })) {
-        type = SYS;
-    }
-}
-
-void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)
-{
-    int childPid = fork();
-    if (childPid < 0) {
-        HIVIEW_LOGE("fork falied");
-    } else if (childPid == 0) {
-        FfrtChildProcess(fd, serviceName, cmd);
-    } else {
-        int ret = waitpid(childPid, nullptr, WNOHANG);
-        while (count > 0 && (ret == 0)) {
-            usleep(WAIT_CHILD_PROCESS_INTERVAL);
-            count--;
-            ret = waitpid(childPid, nullptr, WNOHANG);
-        }
-
-        if (ret == childPid) {
-            HIVIEW_LOGI("waitpid pid:%{public}d success", childPid);
-            return;
-        }
-
-        if (ret < 0) {
-            HIVIEW_LOGE("waitpid return ret=%{public}d, errno:%{public}d", ret, errno);
-            return;
-        }
-
-        kill(childPid, SIGKILL);
-        int retryCount = MAX_RETRY_COUNT;
-        while (retryCount > 0 && waitpid(childPid, nullptr, WNOHANG) == 0) {
-            usleep(WAIT_CHILD_PROCESS_INTERVAL);
-            retryCount--;
-        }
-    }
-}
-
-void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const
-{
-    if (fd < 0 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1) {
-        HIVIEW_LOGE("dup2 fd failed");
-        _exit(-1);
-    }
-    FileUtil::SaveStringToFd(fd, FFRT_HEADER);
-    execl("/system/bin/hidumper", "hidumper", "-s", serviceName.c_str(), "-a", cmd.c_str(), nullptr);
 }
 
 void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)

@@ -274,11 +274,6 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_007, TestSize.Level3)
     result = eventLogger->GetFile(sysEvent, logFile, true);
     printf("GetFile result=%d\n", result);
     EXPECT_TRUE(logFile.size() > 0);
-    int count = 2;
-    eventLogger->ReadShellToFile(0, "GET_DISPLAY_SNAPSHOT", "testCmd", count);
-    EXPECT_TRUE(count < 2);
-    eventLogger->ReadShellToFile(-1, "GET_DISPLAY_SNAPSHOT", "testCmd", count);
-    printf("ReadShellToFile count=%d\n", count);
     sysEvent->SetEventValue("FREEZE_MEMORY", "test\\ntest");
     eventLogger->CollectMemInfo(0, sysEvent);
 }

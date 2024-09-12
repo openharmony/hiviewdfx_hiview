@@ -14,18 +14,19 @@
  */
 #include "log_catcher_utils.h"
 
+#include <fcntl.h>
 #include <map>
 #include <memory>
 #include <sstream>
-#include <fcntl.h>
-
-#include "dfx_dump_catcher.h"
+#include <sys/wait.h>
 
 #include "common_utils.h"
+#include "dfx_dump_catcher.h"
+#include "dfx_json_formatter.h"
 #include "file_util.h"
 #include "hiview_logger.h"
+#include "iservice_registry.h"
 #include "string_util.h"
-#include "dfx_json_formatter.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -36,6 +37,8 @@ static std::mutex dumpMutex;
 static std::condition_variable getSync;
 static constexpr int DUMP_KERNEL_STACK_SUCCESS = 1;
 static constexpr int DUMP_STACK_FAILED = -1;
+static constexpr int MAX_RETRY_COUNT = 20;
+static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
 static constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
 bool GetDump(int pid, std::string& msg)
 {
@@ -139,6 +142,52 @@ int DumpStacktrace(int fd, int pid)
     }
     FileUtil::SaveStringToFd(fd, msg);
     return 0;
+}
+
+FFRT_TYPE GetFfrtDumpType(int pid)
+{
+    std::list<SystemProcessInfo> systemProcessInfos;
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sam->GetRunningSystemProcess(systemProcessInfos);
+    if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
+        [pid](auto& systemProcessInfo) {
+        return pid == systemProcessInfo.pid;
+    })) {
+        return SYS;
+    }
+    return APP;
+}
+
+void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)
+{
+    int childPid = fork();
+    if (childPid < 0) {
+        return;
+    }
+    if (childPid == 0) {
+        if (fd < 0 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1) {
+            _exit(-1);
+        }
+        execl("/system/bin/hidumper", "hidumper", "-s", serviceName.c_str(), "-a", cmd.c_str(), nullptr);
+    } else {
+        int ret = waitpid(childPid, nullptr, WNOHANG);
+        while (count > 0 && (ret == 0)) {
+            usleep(WAIT_CHILD_PROCESS_INTERVAL);
+            count--;
+            ret = waitpid(childPid, nullptr, WNOHANG);
+        }
+
+        if (ret == childPid || ret < 0) {
+            return;
+        }
+
+        kill(childPid, SIGKILL);
+        int retryCount = MAX_RETRY_COUNT;
+        while (retryCount > 0 && waitpid(childPid, nullptr, WNOHANG) == 0) {
+            usleep(WAIT_CHILD_PROCESS_INTERVAL);
+            retryCount--;
+        }
+    }
 }
 }
 } // namespace HiviewDFX
