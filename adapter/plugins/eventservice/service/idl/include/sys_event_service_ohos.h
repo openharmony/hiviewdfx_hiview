@@ -36,12 +36,6 @@
 #include "sys_event_service_stub.h"
 #include "system_ability.h"
 
-using CallbackObjectOhos = OHOS::sptr<OHOS::IRemoteObject>;
-using SysEventCallbackPtrOhos = OHOS::sptr<OHOS::HiviewDFX::ISysEventCallback>;
-using SysEventRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventRule>;
-using SysEventQueryRuleGroupOhos = std::vector<OHOS::HiviewDFX::SysEventQueryRule>;
-using RegisteredListeners = std::map<CallbackObjectOhos, std::pair<int32_t, SysEventRuleGroupOhos>>;
-
 namespace OHOS {
 namespace HiviewDFX {
 using NotifySysEvent = std::function<void (std::shared_ptr<Event>)>;
@@ -68,28 +62,34 @@ public:
     virtual ~SysEventServiceOhos() = default;
 
     static sptr<SysEventServiceOhos> GetInstance();
-    static void StartService(SysEventServiceBase* service,
-        const OHOS::HiviewDFX::NotifySysEvent notify);
-    static SysEventServiceBase* GetSysEventService(
-        OHOS::HiviewDFX::SysEventServiceBase* service = nullptr);
-    void OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& sysEvent);
-    int32_t AddListener(const SysEventRuleGroupOhos& rules, const SysEventCallbackPtrOhos& callback) override;
-    int32_t RemoveListener(const SysEventCallbackPtrOhos& callback) override;
-    int32_t Query(const QueryArgument& queryArgument, const SysEventQueryRuleGroupOhos& rules,
-        const OHOS::sptr<OHOS::HiviewDFX::IQuerySysEventCallback>& callback) override;
-    int32_t SetDebugMode(const SysEventCallbackPtrOhos& callback, bool mode) override;
-    void OnRemoteDied(const wptr<IRemoteObject> &remote);
+    static void StartService(SysEventServiceBase* service, const NotifySysEvent notify);
+    static SysEventServiceBase* GetSysEventService(SysEventServiceBase* service = nullptr);
+    void OnSysEvent(std::shared_ptr<SysEvent>& sysEvent);
+    int32_t AddListener(const std::vector<SysEventRule>& rules, const OHOS::sptr<ISysEventCallback>& callback) override;
+    int32_t RemoveListener(const OHOS::sptr<ISysEventCallback>& callback) override;
+    int32_t Query(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules,
+        const OHOS::sptr<IQuerySysEventCallback>& callback) override;
+    int32_t SetDebugMode(const OHOS::sptr<ISysEventCallback>& callback, bool mode) override;
+    void OnRemoteDied(const wptr<IRemoteObject>& remote);
     void BindGetTagFunc(const GetTagByDomainNameFunc& getTagFunc);
     void BindGetTypeFunc(const GetTypeByDomainNameFunc& getTypeFunc);
-    int32_t Dump(int32_t fd, const std::vector<std::u16string> &args) override;
-    int64_t AddSubscriber(const SysEventQueryRuleGroupOhos &rules) override;
+    int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
+    int64_t AddSubscriber(const std::vector<SysEventQueryRule>& rules) override;
     int32_t RemoveSubscriber() override;
-    int64_t Export(const QueryArgument &queryArgument, const SysEventQueryRuleGroupOhos &rules) override;
+    int64_t Export(const QueryArgument& queryArgument, const std::vector<SysEventQueryRule>& rules) override;
     void SetWorkLoop(std::shared_ptr<EventLoop> looper);
 
 private:
+    struct ListenerInfo {
+        int32_t pid = 0;
+        int32_t uid = 0;
+        std::vector<SysEventRule> rules;
+    };
+
+private:
     bool HasAccessPermission() const;
-    bool BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder, const SysEventQueryRuleGroupOhos& rules);
+    bool BuildEventQuery(std::shared_ptr<EventQueryWrapperBuilder> builder,
+        const std::vector<SysEventQueryRule>& rules);
     std::string GetTagByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     uint32_t GetTypeByDomainAndName(const std::string& eventDomain, const std::string& eventName);
     void MergeEventList(const std::vector<SysEventQueryRule>& rules, std::vector<std::string>& events) const;
@@ -97,9 +97,9 @@ private:
 private:
     sptr<CallbackDeathRecipient> deathRecipient_;
     std::mutex listenersMutex_;
-    RegisteredListeners registeredListeners_;
+    std::map<OHOS::sptr<OHOS::IRemoteObject>, ListenerInfo> registeredListeners_;
     bool isDebugMode_;
-    SysEventCallbackPtrOhos debugModeCallback_;
+    OHOS::sptr<ISysEventCallback> debugModeCallback_;
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
