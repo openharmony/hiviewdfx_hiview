@@ -17,10 +17,14 @@
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <string>
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
 int DumpStacktrace(int fd, int pid);
+int WriteKernelStackToFd(int originFd, const std::string& msg, int pid);
+void FormatFileName(std::string& processName);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

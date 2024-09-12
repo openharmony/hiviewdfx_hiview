@@ -17,7 +17,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
-#include <string>
+#include <fcntl.h>
 
 #include "dfx_dump_catcher.h"
 
@@ -25,12 +25,18 @@
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "string_util.h"
+#include "dfx_json_formatter.h"
+#include "time_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace LogCatcherUtils {
 static std::map<int, std::shared_ptr<std::pair<bool, std::string>>> dumpMap;
 static std::mutex dumpMutex;
 static std::condition_variable getSync;
+static constexpr int DUMP_KERNEL_STACK_SUCCESS = 1;
+static constexpr int DUMP_STACK_FAILED = -1;
+static constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
 
 bool GetDump(int pid, std::string& msg)
 {
@@ -69,6 +75,52 @@ void FinshDump(int pid, const std::string& msg)
     getSync.notify_all();
 }
 
+void FormatFileName(std::string& processName)
+{
+    std::regex regExpress("[\\/:*?\"<>|]");
+    if (std::regex_search(processName, regExpress)) {
+        processName = std::regex_replace(processName, regExpress, "_");
+    }
+}
+
+int WriteKernelStackToFd(int originFd, const std::string& msg, int pid)
+{
+    std::string logPath = "/data/log/eventlog/";
+    std::vector<std::string> files;
+    FileUtil::GetDirFiles(logPath, files, false);
+    std::string filterName = "-KernelStack-" + std::to_string(originFd);
+    std::string targetPath = "";
+    for (auto& fileName : files) {
+        if (fileName.find(filterName) != std::string::npos) {
+            targetPath = fileName;
+            break;
+        }
+    }
+    int fd = -1;
+    std::string realPath = "";
+    if (FileUtil::PathToRealPath(targetPath, realPath)) {
+        fd = open(realPath.c_str(), O_WRONLY | O_APPEND);
+    } else {
+        std::string procName = CommonUtils::GetProcFullNameByPid(pid);
+        if (procName.empty()) {
+            return -1;
+        }
+        FormatFileName(procName);
+        auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+        std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
+        std::string logName = procName + "-" + std::to_string(pid) +
+            "-" + formatTime + filterName + ".log";
+        realPath = logPath + logName;
+        fd = open(realPath.c_str(), O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_LOG_FILE_MODE);
+    }
+    if (fd >= 0) {
+        FileUtil::SaveStringToFd(fd, msg);
+        close(fd);
+        return 0;
+    }
+    return -1;
+}
+
 int DumpStacktrace(int fd, int pid)
 {
     if (fd < 0) {
@@ -78,8 +130,14 @@ int DumpStacktrace(int fd, int pid)
     if (!GetDump(pid, msg)) {
         DfxDumpCatcher dumplog;
         std::string ret;
-        if (!dumplog.DumpCatch(pid, 0, ret)) {
+        auto dumpResult = dumplog.DumpCatchProcess(pid, ret);
+        if (dumpResult == DUMP_STACK_FAILED) {
             msg = "Failed to dump stacktrace for " + std::to_string(pid) + "\n" + ret;
+        } else if (dumpResult == DUMP_KERNEL_STACK_SUCCESS) {
+            if (!DfxJsonFormatter::FormatKernelStack(ret, msg, false)) {
+                msg = "Failed to format kernel stack for " + std::to_string(pid) + "\n";
+            }
+            WriteKernelStackToFd(fd, ret, pid);
         } else {
             msg = ret;
         }
@@ -90,7 +148,6 @@ int DumpStacktrace(int fd, int pid)
         msg = "dumpCatch return empty stack!!!!";
     }
     FileUtil::SaveStringToFd(fd, msg);
-    
     return 0;
 }
 }
