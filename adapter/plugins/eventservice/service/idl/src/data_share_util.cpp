@@ -90,7 +90,7 @@ std::string DataShareUtil::GetBundleNameById(int32_t uid)
     if (client.GetNameForUid(uid, bundleName) != ERR_OK) {
         HIVIEW_LOGE("Failed to query bundleName from bms, uid:%{public}d.", uid);
     } else {
-        HIVIEW_LOGE("bundleName of uid:%{public}d, bundleName is %{public}s", uid, bundleName.c_str());
+        HIVIEW_LOGE("Succ to get bundleName of uid:%{public}d", uid);
     }
     return bundleName;
 }
@@ -101,9 +101,9 @@ int32_t DataShareUtil::GetUidByBundleName(const std::string& bundleName)
     AppExecFwk::BundleMgrClient client;
     if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
         AppExecFwk::Constants::ALL_USERID)) {
-        HIVIEW_LOGE("Failed to query uid from bms, bundleName=%{public}s.", bundleName.c_str());
+        HIVIEW_LOGE("Failed to query uid from bms");
     } else {
-        HIVIEW_LOGD("bundleName of uid=%{public}d, bundleName=%{public}s", info.uid, bundleName.c_str());
+        HIVIEW_LOGD("Succ to get uid=%{public}d", info.uid);
     }
     return info.uid;
 }
