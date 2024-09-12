@@ -26,7 +26,6 @@ namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("CompliantEventChecker");
 
-constexpr int64_t SECURE_DISBALED_VAL = 0;
 constexpr int64_t SECURE_ENABALED_VAL = 1;
 
 std::unordered_map<std::string, std::list<std::string>> COMPLIANT_EVENT_CONFIGS {
@@ -45,29 +44,27 @@ std::unordered_map<std::string, std::list<std::string>> COMPLIANT_EVENT_CONFIGS 
 
 CompliantEventChecker::CompliantEventChecker()
 {
-    secureVal_ = Parameter::GetInteger("const.secure", SECURE_ENABALED_VAL);
-    HIVIEW_LOGD("value of const.secure is %{public}" PRId64 "", secureVal_);
+    isSecureEnabeled_ = (Parameter::GetInteger("const.secure", SECURE_ENABALED_VAL) == SECURE_ENABALED_VAL);
+    HIVIEW_LOGD("value of const.secure is %{public}d", isSecureEnabeled_);
 }
 
 bool CompliantEventChecker::IsCompliantEvent(const std::string& domain, const std::string& eventName)
 {
-    if (secureVal_ == SECURE_DISBALED_VAL) {
+    if (!isSecureEnabeled_) {
         return true;
     }
-    for (const auto& compliantConfig : COMPLIANT_EVENT_CONFIGS) {
-        if (compliantConfig.first != domain) {
-            continue;
-        }
-        if (compliantConfig.second.empty()) {
-            HIVIEW_LOGD("event with domain [%{public}s] is compliant", domain.c_str());
-            return true;
-        }
-        auto findRet = std::find(compliantConfig.second.begin(), compliantConfig.second.end(), eventName);
-        if (findRet != compliantConfig.second.end()) {
-            HIVIEW_LOGD("event [%{public}s|%{public}s] is compliant", domain.c_str(), eventName.c_str());
-            return true;
-        }
+    auto iter = COMPLIANT_EVENT_CONFIGS.find(domain);
+    if (iter == COMPLIANT_EVENT_CONFIGS.end()) {
         return false;
+    }
+    if (iter->second.empty()) {
+        HIVIEW_LOGD("event with domain [%{public}s] is compliant", domain.c_str());
+        return true;
+    }
+    auto findRet = std::find(iter->second.begin(), iter->second.end(), eventName);
+    if (findRet != iter->second.end()) {
+        HIVIEW_LOGD("event [%{public}s|%{public}s] is compliant", domain.c_str(), eventName.c_str());
+        return true;
     }
     return false;
 }

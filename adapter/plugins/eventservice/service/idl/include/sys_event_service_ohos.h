@@ -81,8 +81,8 @@ public:
 
 private:
     struct ListenerInfo {
-        int32_t pid;
-        int32_t uid;
+        int32_t pid = 0;
+        int32_t uid = 0;
         std::vector<SysEventRule> rules;
     };
 

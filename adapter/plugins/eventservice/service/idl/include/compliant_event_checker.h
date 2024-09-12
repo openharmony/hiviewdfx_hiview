@@ -29,7 +29,7 @@ public:
     bool IsCompliantEvent(const std::string& domain, const std::string& eventName);
 
 private:
-    int64_t secureVal_ = 1; // 1 means system isn't rooted
+    bool isSecureEnabeled_ = false;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

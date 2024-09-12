@@ -181,8 +181,7 @@ BaseEventQueryWrapper::BaseEventQueryWrapper(std::shared_ptr<EventStore::SysEven
     querierInfo_.uid = IPCSkeleton::GetCallingUid();
     querierInfo_.pid = IPCSkeleton::GetCallingPid();
     querierInfo_.processName = CommonUtils::GetProcNameByPid(querierInfo_.pid);
-    HIVIEW_LOGI("uid is %{public}d, pid is %{public}d and process name of querier is %{public}s",
-        querierInfo_.uid, querierInfo_.pid, querierInfo_.processName.c_str());
+    HIVIEW_LOGI("uid is %{public}d, pid is %{public}d of querier", querierInfo_.uid, querierInfo_.pid);
 }
 
 void BaseEventQueryWrapper::Query(const OHOS::sptr<OHOS::HiviewDFX::IQueryBaseCallback>& eventQueryCallback,

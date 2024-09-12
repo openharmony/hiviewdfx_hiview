@@ -74,8 +74,8 @@ public:
 
 protected:
     struct QuerierInfo {
-        int32_t uid;
-        int32_t pid;
+        int32_t uid = 0;
+        int32_t pid = 0;
         std::string processName;
     };
 

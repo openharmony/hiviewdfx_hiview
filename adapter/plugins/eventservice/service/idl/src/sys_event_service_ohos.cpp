@@ -183,7 +183,7 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<SysEvent>& event)
         }
         if ((listener->second.uid == HID_SHELL) &&
             !compliantEventChecker.IsCompliantEvent(event->domain_, event->eventName_)) {
-            HIVIEW_LOGW("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
+            HIVIEW_LOGD("event [%{public}s|%{public}s] isn't compliant for the process with uid %{public}d",
                 event->domain_.c_str(), event->eventName_.c_str(), listener->second.uid);
             continue;
         }
