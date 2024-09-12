@@ -29,6 +29,6 @@ public:
 
 private:
 };
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
 #endif // ACTIVE_KEY_EVENT_TEST_H

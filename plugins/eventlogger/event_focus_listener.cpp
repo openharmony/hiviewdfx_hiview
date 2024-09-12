@@ -98,5 +98,5 @@ void EventFocusListener::OnUnfocused(const sptr<Rosen::FocusChangeInfo>& focusCh
 {
     lastChangedTime_ = TimeUtil::GetMilliseconds();
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS

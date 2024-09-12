@@ -57,5 +57,5 @@ HWTEST_F(EventLoggerConfigTest, EventLoggerConfigTest002, TestSize.Level3)
     auto result = config->GetConfig();
     auto config1 = std::make_unique<EventLoggerConfig>();
 }
-} // namesapce HiviewDFX
+} // namespace HiviewDFX
 } // namespace OHOS
