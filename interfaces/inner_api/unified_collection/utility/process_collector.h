@@ -29,8 +29,9 @@ public:
     virtual ~ProcessCollector() = default;
 
 public:
-    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcess() = 0;
+    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcesses() = 0;
     virtual CollectResult<bool> IsMemCgProcess(int32_t pid) = 0;
+    virtual CollectResult<std::string> ExportMemCgProcesses() = 0;
     static std::shared_ptr<ProcessCollector> Create();
 };
 } // UCollectUtil

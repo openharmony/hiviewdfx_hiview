@@ -294,7 +294,7 @@ void CpuStorage::StoreProcessDatas(const std::vector<ProcessCpuStatInfo>& cpuCol
         return;
     }
     auto processCollector = UCollectUtil::ProcessCollector::Create();
-    auto result = processCollector->GetMemCgProcess();
+    auto result = processCollector->GetMemCgProcesses();
     for (auto& cpuCollectionInfo : cpuCollectionInfos) {
         if (NeedStoreInDb(cpuCollectionInfo)) {
             StoreProcessData(cpuCollectionInfo, result.data);
