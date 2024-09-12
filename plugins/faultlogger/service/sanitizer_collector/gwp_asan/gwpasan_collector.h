@@ -56,7 +56,6 @@ constexpr int MIN_APP_UID = 10000;
 
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
 std::string GetNameByPid(int32_t pid);
-void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
 
 #endif // GWPASAN_COLLECTOR_H

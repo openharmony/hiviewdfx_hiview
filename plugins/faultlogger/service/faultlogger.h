@@ -86,6 +86,7 @@ private:
     int DoGetHilogProcess(int32_t pid, int writeFd) const;
     void GetStackInfo(const FaultLogInfo& info, std::string& stackInfo) const;
     void ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
+    void ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) const;
     std::string GetMemoryStrByPid(long pid) const;
     FreezeJsonUtil::FreezeJsonCollector GetFreezeJsonCollector(const FaultLogInfo& info) const;
     void ReportAppFreezeToAppEvent(const FaultLogInfo& info) const;

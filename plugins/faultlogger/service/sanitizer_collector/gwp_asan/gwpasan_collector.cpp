@@ -109,9 +109,12 @@ void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errT
     uint64_t timeTmp = timeNow;
     std::string timeStr = OHOS::HiviewDFX::GetFormatedTime(timeTmp);
     currInfo.happenTime = std::stoll(timeStr);
+    std::string fullName = CalcCollectedLogName(currInfo);
+    currInfo.logPath = fullName;
+    HILOG_INFO(LOG_CORE, "ReportSanitizerAppEvent: uid:%{public}d, logPath:%{public}s.",
+        currInfo.uid, currInfo.logPath.c_str());
 
     // Do upload when data ready
-    WriteCollectedData(currInfo);
     HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::RELIABILITY, "ADDR_SANITIZER",
                     OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
                     "MODULE", currInfo.procName,
@@ -120,12 +123,13 @@ void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errT
                     "PID", currInfo.pid,
                     "UID", currInfo.uid,
                     "SUMMARY", currInfo.description,
-                    "HAPPEN_TIME", currInfo.happenTime);
+                    "HAPPEN_TIME", currInfo.happenTime,
+                    "LOG_PATH", currInfo.logPath);
 }
 
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
 {
-    std::string filePath = "/dev/asanlog/";
+    std::string filePath = "/data/log/faultlog/faultlogger/";
     std::string prefix = "";
     if (currInfo.errType.compare("GWP-ASAN") == 0) {
         prefix = "gwpasan";
@@ -133,8 +137,12 @@ std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
         prefix = "tsan";
     } else if (currInfo.errType.compare("UBSAN") == 0) {
         prefix = "ubsan";
+    } else if (currInfo.errType.compare("HWASAN") == 0) {
+        prefix = "hwasan";
+    } else if (currInfo.errType.compare("ASAN") == 0) {
+        prefix = "asan";
     } else {
-        prefix = "unknown-crash";
+        prefix = "sanitizer";
     }
     std::string name = currInfo.procName;
     if (name.find("/") != std::string::npos) {
@@ -146,37 +154,12 @@ std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo)
     fileName.append("-");
     fileName.append(name);
     fileName.append("-");
-    fileName.append(std::to_string(currInfo.pid));
+    fileName.append(std::to_string(currInfo.uid));
     fileName.append("-");
     fileName.append(std::to_string(currInfo.happenTime));
 
     std::string fullName = filePath + fileName;
     return fullName;
-}
-
-void WriteCollectedData(const GwpAsanCurrInfo &currInfo)
-{
-    std::string fullName = CalcCollectedLogName(currInfo);
-    if (fullName.size() == 0) {
-        return;
-    }
-    Json::Value eventParams;
-    auto timeNow = OHOS::HiviewDFX::TimeUtil::GetMilliseconds();
-    eventParams["time"] = timeNow;
-    eventParams["type"] = currInfo.errType;
-    eventParams["bundle_version"] = currInfo.appVersion;
-    eventParams["bundle_name"] = currInfo.procName;
-    Json::Value externalLog;
-    externalLog.append(fullName);
-    eventParams["external_log"] = externalLog;
-    eventParams["pid"] = currInfo.pid;
-    eventParams["uid"] = currInfo.uid;
-
-    std::string paramsStr = Json::FastWriter().write(eventParams);
-    HILOG_INFO(LOG_CORE, "Gwpasan ReportAppEvent: uid:%{public}d, json:%{public}s.",
-        currInfo.uid, paramsStr.c_str());
-    OHOS::HiviewDFX::EventPublish::GetInstance().PushEvent(currInfo.uid, "ADDRESS_SANITIZER",
-        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT, paramsStr);
 }
 
 std::string GetNameByPid(int32_t pid)
