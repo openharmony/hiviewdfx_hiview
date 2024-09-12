@@ -21,15 +21,21 @@ namespace UCollectUtil {
 const std::string PROCESS_COLLECTOR_NAME = "ProcessCollector";
 StatInfoWrapper ProcessDecorator::statInfoWrapper_;
 
-CollectResult<std::unordered_set<int32_t>> ProcessDecorator::GetMemCgProcess()
+CollectResult<std::unordered_set<int32_t>> ProcessDecorator::GetMemCgProcesses()
 {
-    auto task = [this] { return processCollector_->GetMemCgProcess(); };
+    auto task = [this] { return processCollector_->GetMemCgProcesses(); };
     return Invoke(task, statInfoWrapper_, PROCESS_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 
 CollectResult<bool> ProcessDecorator::IsMemCgProcess(int32_t pid)
 {
     auto task = [this, pid] { return processCollector_->IsMemCgProcess(pid); };
+    return Invoke(task, statInfoWrapper_, PROCESS_COLLECTOR_NAME + UC_SEPARATOR + __func__);
+}
+
+CollectResult<std::string> ProcessDecorator::ExportMemCgProcesses()
+{
+    auto task = [this] { return processCollector_->ExportMemCgProcesses(); };
     return Invoke(task, statInfoWrapper_, PROCESS_COLLECTOR_NAME + UC_SEPARATOR + __func__);
 }
 

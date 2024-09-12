@@ -108,7 +108,7 @@ std::string CommonUtil::CreateExportFile(const std::string& path, int32_t maxFil
     GetDirRegexFiles(path, prefix + EXPORT_FILE_REGEX, files);
     if (files.size() >= static_cast<size_t>(maxFileNum)) {
         for (size_t index = 0; index <= files.size() - static_cast<size_t>(maxFileNum); ++index) {
-            HIVIEW_LOGI("remove file=%{public}s", files[index].c_str());
+            HIVIEW_LOGI("remove file=%{public}s", FileUtil::ExtractFileName(files[index]).c_str());
             (void)FileUtil::RemoveFile(files[index]);
         }
     }
@@ -126,7 +126,7 @@ std::string CommonUtil::CreateExportFile(const std::string& path, int32_t maxFil
     }
     fileName.append(ext);
     (void)FileUtil::CreateFile(fileName);
-    HIVIEW_LOGI("create file=%{public}s", fileName.c_str());
+    HIVIEW_LOGI("create file=%{public}s", FileUtil::ExtractFileName(fileName).c_str());
     return fileName;
 }
 

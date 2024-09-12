@@ -16,6 +16,8 @@
 #ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_PROCESS_COLLECTOR_IMPL_H
 #define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_PROCESS_COLLECTOR_IMPL_H
 
+#include <mutex>
+
 #include "process_collector.h"
 
 namespace OHOS {
@@ -27,11 +29,13 @@ public:
     virtual ~ProcessCollectorImpl();
 
 public:
-    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcess() override;
+    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcesses() override;
     virtual CollectResult<bool> IsMemCgProcess(int32_t pid) override;
+    virtual CollectResult<std::string> ExportMemCgProcesses() override;
 
 private:
     void* handle_;
+    std::mutex fileMutex_;
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

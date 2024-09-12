@@ -28,8 +28,9 @@ public:
     virtual ~ProcessDecorator() = default;
 
 public:
-    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcess() override;
+    virtual CollectResult<std::unordered_set<int32_t>> GetMemCgProcesses() override;
     virtual CollectResult<bool> IsMemCgProcess(int32_t pid) override;
+    virtual CollectResult<std::string> ExportMemCgProcesses() override;
     static void SaveStatCommonInfo();
     static void ResetStatInfo();
 
