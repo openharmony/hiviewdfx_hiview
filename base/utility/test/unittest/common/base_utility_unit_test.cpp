@@ -336,5 +336,27 @@ HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest015, testing::ext::TestSize.Lev
     StringUtil::SplitStr(origin, ":", ret2);
     ASSERT_TRUE(ret2.size() == expectSize);
 }
+
+/**
+ * @tc.name: BaseUtilityUnitTest016
+ * @tc.desc: Test HideDeviceId defined in namespace StringUtil
+ * @tc.type: FUNC
+ * @tc.require: issueIAR8QU
+ */
+HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest016, testing::ext::TestSize.Level3)
+{
+    std::string originStr1 = "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422_V";
+    auto ret = StringUtil::HideDeviceIdInfo(originStr1);
+    ASSERT_EQ(ret, "TEST_VAL_******_V");
+    originStr1 = "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422ABCDE_V";
+    ret = StringUtil::HideDeviceIdInfo(originStr1);
+    ASSERT_EQ(ret, "TEST_VAL_******_V");
+    originStr1 = "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD33344442_V";
+    ret = StringUtil::HideDeviceIdInfo(originStr1);
+    ASSERT_EQ(ret, "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD33344442_V");
+    originStr1 = "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422ABCDEF_V";
+    ret = StringUtil::HideDeviceIdInfo(originStr1);
+    ASSERT_EQ(ret, "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422ABCDEF_V");
+}
 } // namespace HiviewDFX
 } // namespace OHOS

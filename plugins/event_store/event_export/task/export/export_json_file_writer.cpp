@@ -26,6 +26,7 @@
 #include "hiview_zip_util.h"
 #include "parameter.h"
 #include "parameter_ex.h"
+#include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -202,14 +203,14 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 
 bool ZipDbFile(const std::string& src, const std::string& dest)
 {
-    HIVIEW_LOGI("zip file: %{public}s to %{private}s", src.c_str(), dest.c_str());
+    HIVIEW_LOGI("zip file: %{public}s to %{public}s", src.c_str(), StringUtil::HideDeviceIdInfo(dest).c_str());
     HiviewZipUnit zipUnit(dest);
     if (int32_t ret = zipUnit.AddFileInZip(src, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
         HIVIEW_LOGW("zip db failed, ret: %{public}d.", ret);
         return false;
     }
     if (bool ret = FileUtil::ChangeModeFile(dest, EVENT_EXPORT_FILE_MODE); !ret) {
-        HIVIEW_LOGE("failed to chmod file %{private}s.", dest.c_str());
+        HIVIEW_LOGE("failed to chmod file %{public}s.", StringUtil::HideDeviceIdInfo(dest).c_str());
         return false;
     }
     // delete json file
@@ -323,11 +324,12 @@ bool ExportJsonFileWriter::Write()
     // zip json file into a temporary zip file
     auto tmpZipFile = GetTmpZipFile(exportDir_, moduleName_, eventVersion_);
     if (!ZipDbFile(packagedFile, tmpZipFile)) {
-        HIVIEW_LOGE("failed to zip %{public}s to %{private}s", packagedFile.c_str(), tmpZipFile.c_str());
+        HIVIEW_LOGE("failed to zip %{public}s to %{public}s", packagedFile.c_str(),
+            StringUtil::HideDeviceIdInfo(tmpZipFile).c_str());
         return false;
     }
     auto zipFile = GetZipFile(exportDir_);
-    HIVIEW_LOGD("zipFile: %{private}s", zipFile.c_str());
+    HIVIEW_LOGD("zipFile: %{public}s", StringUtil::HideDeviceIdInfo(zipFile).c_str());
     if (exportJsonFileZippedListener_ != nullptr) {
         exportJsonFileZippedListener_(tmpZipFile, zipFile);
     }

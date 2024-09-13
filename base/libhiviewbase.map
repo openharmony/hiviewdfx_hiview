@@ -429,6 +429,7 @@
         "OHOS::HiviewDFX::HiviewUnzipUnit::~HiviewUnzipUnit()";
         "OHOS::HiviewDFX::Parameter::GetInteger(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, long long)";
         "OHOS::HiviewDFX::Parameter::GetInteger(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, long)";
+        "OHOS::HiviewDFX::StringUtil::HideDeviceIdInfo(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;
