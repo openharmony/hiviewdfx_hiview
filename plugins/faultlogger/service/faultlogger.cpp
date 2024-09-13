@@ -692,6 +692,31 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
     return std::make_unique<FaultLogQueryResultInner>(mgr_->GetFaultInfoList(name, id, faultType, maxNum));
 }
 
+void Faultlogger::RemoveHilogFromFaultlog(const std::string &logPath, int32_t faultType) const
+{
+    std::ifstream logReadFile(logPath);
+    std::string readContent(std::istreambuf_iterator<char>(logReadFile), (std::istreambuf_iterator<char>()));
+    if (faultType == FaultLogType::CPP_CRASH) {
+        size_t pos = readContent.find("HiLog:");
+        if (pos == std::string::npos) {
+            HIVIEW_LOGW("No Hilog Found In Crash Log");
+            return;
+        }
+        readContent = readContent.substr(0, pos);
+    } else if (faultType == FaultLogType::APP_FREEZE) {
+        size_t posStart = readContent.find("catcher cmd: hilog");
+        size_t posEnd = readContent.find("catcher cmd: hidumper --cpuusage", posStart);
+        if (posStart == std::string::npos || posEnd == std::string::npos) {
+            HIVIEW_LOGW("No Hilog Found In Freeze Log");
+            return;
+        }
+        readContent.erase(posStart, posEnd - posStart);
+    }
+    std::ofstream logWriteFile(logPath);
+    logWriteFile << readContent;
+    logWriteFile.close();
+}
+
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
 {
     if ((info.faultLogType <= FaultLogType::ALL) || (info.faultLogType > FaultLogType::ADDR_SANITIZER)) {
@@ -743,6 +768,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         ReportCppCrashToAppEvent(info);
     } else if (reportToAppEvent && info.faultLogType == FaultLogType::APP_FREEZE) {
         ReportAppFreezeToAppEvent(info);
+    }
+
+    if (IsFaultLogLimit()) {
+        RemoveHilogFromFaultlog(info.logPath, info.faultLogType);
     }
 }
 
