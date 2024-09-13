@@ -238,6 +238,14 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
     exception["stack"] = stack;
     params["exception"] = exception;
 }
+
+static bool IsSystemProcess(std::string &processName)
+{
+    std::string sysBin = "/system/bin";
+    std::string venBin = "/vendor/bin";
+    return ((processName.compare(0, sysBin.length(), sysBin) == 0) ||
+            (processName.compare(0, venBin.length(), venBin) == 0));
+}
 } // namespace
 
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
@@ -657,10 +665,13 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
     HIVIEW_LOGI("Start saving Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s.",
         info.pid, info.module.c_str(), info.reason.c_str());
-
-    std::string appName = GetApplicationNameById(info.id);
-    if (!appName.empty()) {
-        info.module = appName;
+    // Non system processes use UID to pass events to applications
+    bool reportToAppEvent = !IsSystemProcess(info.module);
+    if (reportToAppEvent) {
+        std::string appName = GetApplicationNameById(info.id);
+        if (!appName.empty()) {
+            info.module = appName; // if bundle name is not empty, replace module name by it.
+        }
     }
 
     HIVIEW_LOGD("nameProc %{public}s", info.module.c_str());
@@ -691,12 +702,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.reason.c_str(),
                 info.summary.c_str());
 
-    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+    if (reportToAppEvent && info.faultLogType == FaultLogType::CPP_CRASH) {
         CheckFaultLogAsync(info);
         ReportCppCrashToAppEvent(info);
-    }
-
-    if (info.faultLogType == FaultLogType::APP_FREEZE) {
+    } else if (reportToAppEvent && info.faultLogType == FaultLogType::APP_FREEZE) {
         ReportAppFreezeToAppEvent(info);
     }
 }
