@@ -81,6 +81,12 @@ std::string GetEventTypeFromFileName(const std::string& fileName)
 SysEventDatabase::SysEventDatabase()
 {
     lruCache_ = std::make_unique<SysEventDocLruCache>(DEFAULT_CAPACITY);
+    SysEventRepeatGuard::RegisterListeningUeSwitch();
+}
+
+SysEventDatabase::~SysEventDatabase()
+{
+    SysEventRepeatGuard::UnregisterListeningUeSwitch();
 }
 
 std::string SysEventDatabase::GetDatabaseDir()
