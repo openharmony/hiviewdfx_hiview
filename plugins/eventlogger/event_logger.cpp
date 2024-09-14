@@ -989,8 +989,9 @@ void EventLogger::OnLoad()
         auto plugin = context->GetPluginByName("FreezeDetectorPlugin");
         if (plugin == nullptr) {
             HIVIEW_LOGE("freeze_detecotr plugin is null.");
+            return;
         }
-        HIVIEW_LOGD("plugin plugin %{public}s.", plugin->GetName().c_str());
+        HIVIEW_LOGI("plugin: %{public}s.", plugin->GetName().c_str());
         context->AddDispatchInfo(plugin, {}, eventNames, {}, {});
 
         auto ptr = std::static_pointer_cast<EventLogger>(shared_from_this());
