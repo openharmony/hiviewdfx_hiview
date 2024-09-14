@@ -17,8 +17,10 @@
 
 #include "calc_fingerprint.h"
 #include "file_util.h"
+#include "ffrt.h"
 #include "hiview_logger.h"
 #include "parameter_ex.h"
+#include "setting_observer_manager.h"
 #include "string_util.h"
 #include "sys_event_repeat_db.h"
 
@@ -28,6 +30,10 @@ DEFINE_LOG_TAG("HiView-SysEvent-Repeat-Guard");
 namespace {
 constexpr time_t TIME_RANGE_COMMERCIAL = 24 * 60 * 60; // 24h
 constexpr time_t TIME_RANGE_BETA = 1 * 60 * 60; // 1h
+constexpr char HIVIEW_UE_SWITCH[] = "hiview_ue_switch_enable";
+constexpr char KEY_ON[] = "1";
+constexpr int REGISTER_RETRY_CNT = 100;
+constexpr int REGISTER_LOOP_DURATION = 6;
 
 bool GetShaStr(uint8_t* eventData, std::string& hashStr)
 {
@@ -114,6 +120,39 @@ bool SysEventRepeatGuard::IsEventRepeat(std::shared_ptr<SysEvent> event)
         SysEventRepeatDb::GetInstance().CheckAndClearDb(minValidTime);
     }
     return false;
+}
+
+void SysEventRepeatGuard::UnregisterListeningUeSwitch()
+{
+    SettingObserverManager::GetInstance()->UnregisterObserver(HIVIEW_UE_SWITCH);
+}
+
+void SysEventRepeatGuard::RegisterListeningUeSwitch()
+{
+    ffrt::submit([] () {
+        SettingObserver::ObserverCallback callback =
+        [] (const std::string& paramKey) {
+            std::string val = SettingObserverManager::GetInstance()->GetStringValue(paramKey);
+            HIVIEW_LOGI("value of param key[%{public}s] is %{public}s", paramKey.c_str(), val.c_str());
+            if (val == KEY_ON) {
+                int64_t curTime = time(nullptr);
+                SysEventRepeatDb::GetInstance().Clear(curTime);
+            }
+        };
+        bool success = false;
+        int retryCount = REGISTER_RETRY_CNT;
+        while (!success && retryCount > 0) {
+            success = SettingObserverManager::GetInstance()->RegisterObserver(HIVIEW_UE_SWITCH, callback);
+            if (success) {
+                break;
+            }
+            retryCount--;
+            ffrt::this_task::sleep_for(std::chrono::seconds(REGISTER_LOOP_DURATION));
+        }
+        if (!success) {
+            HIVIEW_LOGW("failed to regist setting db observer");
+        }
+        }, {}, {}, ffrt::task_attr().name("repeat_guard_register").qos(ffrt::qos_default));
 }
 } // HiviewDFX
 } // OHOS

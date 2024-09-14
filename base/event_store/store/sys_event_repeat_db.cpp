@@ -123,6 +123,11 @@ void SysEventRepeatDb::CheckAndClearDb(const int64_t happentime)
     if (dbCount_ <= MAX_DB_COUNT) {
         return;
     }
+    Clear(happentime);
+}
+
+void SysEventRepeatDb::Clear(const int64_t happentime)
+{
     ClearHistory(happentime);
     RefreshDbCount();
 }

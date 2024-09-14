@@ -495,6 +495,10 @@
         "OHOS::HiviewDFX::FileUtil::ChangeModeFile(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int const&)";
         "OHOS::HiviewDFX::HiviewZipUnit::~HiviewZipUnit()";
         "OHOS::HiviewDFX::Parameter::GetSysVersionStr()";
+        "OHOS::HiviewDFX::SettingObserverManager::UnregisterObserver(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::SettingObserverManager::SettingObserverManager()";
+        "OHOS::HiviewDFX::SettingObserverManager::RegisterObserver(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::function<void (std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)>)";
+        "OHOS::HiviewDFX::SettingObserverManager::GetStringValue(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::TimeUtil::GetFormattedTimestampEndWithMilli()";
         "OHOS::HiviewDFX::HiViewConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::HiViewConfigUtil::GetConfigFilePath(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>)";

@@ -45,7 +45,6 @@ ohos_source_set("event_export_engine") {
     "database/adapter/export_db_storage.cpp",
     "database/export_db_manager.cpp",
     "event_export_engine.cpp",
-    "setting_observer_manager.cpp",
     "task/expire/event_delete_handler.cpp",
     "task/expire/event_expire_task.cpp",
     "task/expire/event_scan_handler.cpp",
