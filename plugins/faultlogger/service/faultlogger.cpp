@@ -239,7 +239,7 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
     params["exception"] = exception;
 }
 
-static bool IsSystemProcess(std::string &processName)
+static bool IsSystemProcess(const std::string &processName)
 {
     std::string sysBin = "/system/bin";
     std::string venBin = "/vendor/bin";
