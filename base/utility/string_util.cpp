@@ -23,6 +23,23 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace StringUtil {
+namespace {
+std::string ReplaceMatchedStrWithAsterisk(const std::string& source, const std::string& patternStr)
+{
+    if (source.empty()) {
+        return "";
+    }
+    std::regex pattern(patternStr);
+    std::smatch result;
+    if (regex_search(source, result, pattern)) {
+        const size_t regexSize = 2;
+        if (result.size() == regexSize) {
+            return StringUtil::ReplaceStr(source, result[1].str(), "******");
+        }
+    }
+    return source;
+}
+}
 using namespace std;
 const char INDICATE_VALUE_CHAR = ':';
 const char KEY_VALUE_END_CHAR = ';';
@@ -432,19 +449,12 @@ std::string FormatCmdLine(const std::string& cmdLine)
 
 std::string HideSnInfo(const std::string& str)
 {
-    if (str.empty()) {
-        return "";
-    }
-    std::string patternSn = R"(_([-=+$a-zA-Z0-9\[\)\>]{12,50})_)";
-    std::regex pattern(patternSn);
-    std::smatch result;
-    if (regex_search(str, result, pattern)) {
-        const size_t regexSize = 2;
-        if (result.size() == regexSize) {
-            return StringUtil::ReplaceStr(str, result[1].str(), "******");
-        }
-    }
-    return str;
+    return ReplaceMatchedStrWithAsterisk(str, R"(_([-=+$a-zA-Z0-9\[\)\>]{12,50})_)");
+}
+
+std::string HideDeviceIdInfo(const std::string& str)
+{
+    return ReplaceMatchedStrWithAsterisk(str, R"(_([A-Za-z0-9]{60,65})_)");
 }
 
 bool StartWith(const std::string& str, const std::string& sub)

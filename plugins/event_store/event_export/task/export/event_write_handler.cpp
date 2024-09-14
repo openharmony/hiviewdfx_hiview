@@ -17,6 +17,7 @@
 
 #include "file_util.h"
 #include "hiview_logger.h"
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -73,7 +74,8 @@ void EventWriteHandler::CopyTmpZipFilesToDest()
     // move all tmp zipped event export file to dest dir
     std::for_each(zippedExportFileMap_.begin(), zippedExportFileMap_.end(), [] (const auto& item) {
         if (!FileUtil::RenameFile(item.first, item.second)) {
-            HIVIEW_LOGE("failed to move %{private}s to %{private}s", item.first.c_str(), item.second.c_str());
+            HIVIEW_LOGE("failed to move %{public}s to %{public}s", StringUtil::HideDeviceIdInfo(item.first).c_str(),
+                StringUtil::HideDeviceIdInfo(item.second).c_str());
         }
     });
     zippedExportFileMap_.clear();
@@ -90,7 +92,7 @@ void EventWriteHandler::Rollback()
     // delete all tmp zipped export file
     std::for_each(zippedExportFileMap_.begin(), zippedExportFileMap_.end(), [] (const auto& item) {
         if (!FileUtil::RemoveFile(item.first)) {
-            HIVIEW_LOGE("failed to delete %{private}s", item.first.c_str());
+            HIVIEW_LOGE("failed to delete %{public}s", StringUtil::HideDeviceIdInfo(item.first).c_str());
         }
     });
     zippedExportFileMap_.clear();
