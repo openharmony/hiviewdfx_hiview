@@ -60,6 +60,42 @@ void EventLoggerTest::TearDownTestCase()
 }
 
 /**
+ * @tc.name: EventLoggerTest_OnEvent_001
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_001, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    std::shared_ptr<Event> event = nullptr;
+    EXPECT_FALSE(eventLogger->OnEvent(event));
+}
+
+/**
+ * @tc.name: EventLoggerTest_IsInterestedPipelineEvent_001
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_IsInterestedPipelineEvent_001, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    EXPECT_FALSE(eventLogger->IsInterestedPipelineEvent(nullptr));
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_002";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventId_ = 1000001;
+    EXPECT_FALSE(eventLogger->IsInterestedPipelineEvent(sysEvent));
+    sysEvent->eventId_ = 1;
+    sysEvent->eventName_ = "UninterestedEvent";
+    EXPECT_FALSE(eventLogger->IsInterestedPipelineEvent(sysEvent));
+    sysEvent->eventName_ = "InterestedEvent";
+    eventLogger->eventLoggerConfig_[sysEvent->eventName_] =
+        EventLoggerConfig::EventLoggerConfigData();
+    EXPECT_TRUE(eventLogger->IsInterestedPipelineEvent(sysEvent));
+}
+
+/**
  * @tc.name: EventLoggerTest_001
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC

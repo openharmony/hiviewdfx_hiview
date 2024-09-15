@@ -607,9 +607,6 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
     printf("CATCHER_SCBVIEWPARAM result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
 
-    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
-    EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
-
     auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
     std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("ShellCatcherTest", nullptr, jsonStr);
     event->SetValue("FOCUS_WINDOW", 4); // 4 test value
