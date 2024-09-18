@@ -40,6 +40,7 @@ public:
     int64_t QueryHappentime(SysEventHashRecord &sysEventHashRecord);
     bool Update(const SysEventHashRecord &sysEventHashRecord);
     void CheckAndClearDb(const int64_t happentime);
+    void Clear(const int64_t happentime);
 
 private:
     void InitDbStore();

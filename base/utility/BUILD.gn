@@ -37,6 +37,7 @@ ohos_source_set("hiview_utility") {
     "hiview_zip_util.cpp",
     "memory_util.cpp",
     "parameter_ex.cpp",
+    "setting_observer_manager.cpp",
     "socket_util.cpp",
     "sql_util.cpp",
     "string_util.cpp",
@@ -52,11 +53,17 @@ ohos_source_set("hiview_utility") {
   deps = [ "$hiview_base:logger" ]
 
   external_deps = [
+    "ability_base:zuri",
+    "ability_runtime:ability_manager",
+    "ability_runtime:dataobs_manager",
     "cJSON:cjson",
     "c_utils:utils",
+    "data_share:datashare_consumer",
     "hilog:libhilog",
     "init:libbeget_proxy",
     "init:libbegetutil",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
     "zlib:shared_libz",
   ]
 

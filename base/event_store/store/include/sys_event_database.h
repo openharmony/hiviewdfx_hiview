@@ -33,7 +33,7 @@ namespace EventStore {
 class SysEventDatabase : public OHOS::DelayedRefSingleton<SysEventDatabase> {
 public:
     SysEventDatabase();
-    ~SysEventDatabase() {}
+    ~SysEventDatabase();
     int Insert(const std::shared_ptr<SysEvent>& sysEvent);
     void Clear();
     int Query(SysEventQuery& query, EntryQueue& entries);
