@@ -53,6 +53,23 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+    static constexpr const char* const TEMP_SHELL_FRONT = "/sys/class/hw_thermal/temp/shell_front/temp";
+    static constexpr const char* const TEMP_SHELL_FRAME = "/sys/class/hw_thermal/temp/shell_frame/temp";
+    static constexpr const char* const TEMP_AMBIENT = "/sys/class/hw_thermal/temp/ambient";
+    static constexpr const char* const TWELVE_BIG_CPU_CUR_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy2/scaling_cur_freq";
+    static constexpr const char* const TWELVE_BIG_CPU_MAX_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq";
+    static constexpr const char* const TWELVE_MID_CPU_CUR_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy1/scaling_cur_freq";
+    static constexpr const char* const TWELVE_MID_CPU_MAX_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy1/scaling_max_freq";
+    static constexpr const char* const TWELVE_LIT_CPU_CUR_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq";
+    static constexpr const char* const TWELVE_LIT_CPU_MAX_FREQ =
+        "/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
+    static constexpr const char* const SUSTAINABLE_POWER =
+        "/sys/class/thermal/thermal_zone1/sustainable_power";
     static constexpr const char* const LONG_PRESS = "LONG_PRESS";
     static constexpr const char* const AP_S_PRESS6S = "AP_S_PRESS6S";
     static constexpr const char* const REBOOT_REASON = "reboot_reason";
@@ -281,6 +298,27 @@ void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
     FileUtil::SaveStringToFile(historyFile, str, truncated);
 }
 
+std::string EventLogger::StabilityGetTempFreqInfo()
+{
+    std::string tempInfo = "";
+    std::string shellFront = FileUtil::GetFirstLine(TEMP_SHELL_FRONT);
+    std::string shellFrame = FileUtil::GetFirstLine(TEMP_SHELL_FRAME);
+    std::string ambientTemp = FileUtil::GetFirstLine(TEMP_AMBIENT);
+    std::string bigCpuCurFreq = FileUtil::GetFirstLine(TWELVE_BIG_CPU_CUR_FREQ);
+    std::string bigCpuMaxFreq = FileUtil::GetFirstLine(TWELVE_BIG_CPU_MAX_FREQ);
+    std::string midCpuCurFreq = FileUtil::GetFirstLine(TWELVE_MID_CPU_CUR_FREQ);
+    std::string midCpuMaxFreq = FileUtil::GetFirstLine(TWELVE_MID_CPU_MAX_FREQ);
+    std::string litCpuCurFreq = FileUtil::GetFirstLine(TWELVE_LIT_CPU_CUR_FREQ);
+    std::string litCpuMaxFreq = FileUtil::GetFirstLine(TWELVE_LIT_CPU_MAX_FREQ);
+    std::string ipaValue = FileUtil::GetFirstLine(SUSTAINABLE_POWER);
+    tempInfo = "\nTemp: shellFront: " + shellFront + ", shellFrame: " + shellFrame +
+        ", ambientTemp" + ambientTemp + "\nFreq: bigCur: " + bigCpuCurFreq + ", bigMax: " +
+        bigCpuMaxFreq + ", midCur: " + midCpuCurFreq + ", midMax: " + midCpuMaxFreq +
+        ", litCur: " + litCpuCurFreq + ", litMax: " + litCpuMaxFreq + "\n" + "IPA: " +
+        ipaValue;
+    return tempInfo;
+}
+
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
     std::string logFile;
@@ -318,6 +356,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         HIVIEW_LOGE("capture fail %{public}d", ret);
     }
     CollectMemInfo(fd, event);
+    FileUtil::SaveStringToFd(fd, StabilityGetTempFreqInfo());
     auto end = TimeUtil::GetMilliseconds();
     std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
     FileUtil::SaveStringToFd(fd, totalTime);
