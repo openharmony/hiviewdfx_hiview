@@ -158,7 +158,7 @@ bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBo
     return false;
 }
 
-std::string GetDesFileName(const Json::Value& params, const std::string& eventName,
+std::string GetDesFileName(Json::Value& params, const std::string& eventName,
     const ExternalLogInfo& externalLogInfo)
 {
     std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
@@ -177,7 +177,6 @@ std::string GetDesFileName(const Json::Value& params, const std::string& eventNa
         desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
         + externalLogInfo.extensionType_;
     }
-
     return desFileName;
 }
 
