@@ -625,5 +625,16 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_018, TestSize.Level3)
     eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
     EXPECT_TRUE(!binderPeerStack.empty());
 }
+
+/**
+ * @tc.name: EventLoggerTest_019
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_019, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    EXPECT_TRUE(!eventLogger->StabilityGetTempFreqInfo().empty());
+}
 } // namespace HiviewDFX
 } // namespace OHOS
