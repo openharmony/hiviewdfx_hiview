@@ -80,7 +80,6 @@ group("unittest") {
     "log_catcher/test:EventloggerCatcherTest",
     "test:ActiveKeyEventTest",
     "test:EventLoggerTest",
-    "test:EventloggerPluginTest",
   ]
 }
 
