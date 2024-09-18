@@ -152,7 +152,7 @@ void SysEventRepeatGuard::RegisterListeningUeSwitch()
         if (!success) {
             HIVIEW_LOGW("failed to regist setting db observer");
         }
-        }, {}, {}, ffrt::task_attr().name("repeat_guard_register").qos(ffrt::qos_default));
+        }, {}, {}, ffrt::task_attr().name("repeat_guard").qos(ffrt::qos_default));
 }
 } // HiviewDFX
 } // OHOS
