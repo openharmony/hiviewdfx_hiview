@@ -777,7 +777,8 @@ std::string getTargetFileName(int32_t faultLogType, int64_t time)
         {3, "jscrash"}, // 3 : faultLogType to jscrash
         {4, "appfreeze"}, // 4 : faultLogType to appfreeze
         {5, "sysfreeze"}, // 5 : faultLogType to sysfreeze
-        {6, "rustpanic"}, // 6 : faultLogType to rustpanic
+        {6, "syswarning"}, // 6 : faultLogType to syswarning
+        {7, "sanitizer"}, // 6 : faultLogType to sanitizer
     };
     std::string fileName = fileNames[faultLogType];
     return fileName + "-FaultloggerUnittest1111-0-" + GetFormatedTime(time);
