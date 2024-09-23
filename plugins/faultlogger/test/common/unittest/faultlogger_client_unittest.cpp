@@ -190,7 +190,7 @@ HWTEST_F(FaultloggerClientUnittest, FaultLogInfoTest001, testing::ext::TestSize.
     ASSERT_EQ(info.GetStringFaultType(), "SysFreeze");
     info.SetFaultType(6);
     ASSERT_EQ(info.GetFaultType(), 6);
-    ASSERT_EQ(info.GetStringFaultType(), "SYS_WARNING");
+    ASSERT_EQ(info.GetStringFaultType(), "SysWarning");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -54,6 +54,7 @@ namespace OHOS {
 namespace HiviewDFX {
 static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
 static std::unordered_map<std::string, std::string> g_stacks;
+static std::map<int, std::string> fileNames_ = {};
 
 static HiviewContext& InitHiviewContext()
 {
@@ -771,16 +772,18 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest001, testing::ext::TestSize.Lev
 
 std::string getTargetFileName(int32_t faultLogType, int64_t time)
 {
-    std::map<int, std::string> fileNames = {
+    fileNames_.clear();
+    fileNames_ = {
         {1, "Unknown"},
         {2, "cppcrash"}, // 2 : faultLogType to cppcrash
         {3, "jscrash"}, // 3 : faultLogType to jscrash
         {4, "appfreeze"}, // 4 : faultLogType to appfreeze
         {5, "sysfreeze"}, // 5 : faultLogType to sysfreeze
         {6, "syswarning"}, // 6 : faultLogType to syswarning
-        {7, "sanitizer"}, // 6 : faultLogType to sanitizer
+        {7, "rustpanic"}, // 7 : faultLogType to rustpanic
+        {8, "sanitizer"}, // 8 : faultLogType to sanitizer
     };
-    std::string fileName = fileNames[faultLogType];
+    std::string fileName = fileNames_[faultLogType];
     return fileName + "-FaultloggerUnittest1111-0-" + GetFormatedTime(time);
 }
 
@@ -794,7 +797,7 @@ HWTEST_F(FaultloggerUnittest, FaultLogManagerTest003, testing::ext::TestSize.Lev
     FaultLogInfo info;
     std::unique_ptr<FaultLogManager> faultLogManager = std::make_unique<FaultLogManager>(nullptr);
     faultLogManager->Init();
-    for (int i = 1; i < 7; i++) {
+    for (int i = 1; i <= fileNames_.size(); i++) {
         info.time = std::time(nullptr);
         info.pid = getpid();
         info.id = 0;
