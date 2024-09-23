@@ -29,6 +29,7 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 constexpr int DEFAULT_BUFFER_SIZE = 64;
+constexpr const char* const DEFAULT_FAULTLOG_TEMP_FOLDER = "/data/log/faultlog/temp/";
 } // namespace
 
 std::string GetFormatedTime(uint64_t target)
@@ -182,7 +183,7 @@ time_t GetFileLastAccessTimeStamp(const std::string& fileName)
 
 std::string GetCppCrashTempLogName(const FaultLogInfo& info)
 {
-    return std::string(FaultLogger::DEFAULT_FAULTLOG_TEMP_FOLDER) +
+    return std::string(DEFAULT_FAULTLOG_TEMP_FOLDER) +
         "cppcrash-" +
         std::to_string(info.pid) +
         "-" +

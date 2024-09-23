@@ -22,15 +22,11 @@
 namespace OHOS {
 namespace HiviewDFX {
 constexpr unsigned BUF_SIZE = 1024;
-constexpr unsigned MAX_PROCESS_PATH = 1024;
 constexpr int MIN_APP_USERID = 10000;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
-constexpr int AID_ROOT   = 0;
 constexpr int AID_SYSTEM = 1000;
 constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
 constexpr mode_t DEFAULT_LOG_DIR_MODE = 0775;
-const std::string DEVICE_OHOS_VERSION_PARAM = "hw_sc.build.os.version";
-const std::string EMPTY_PARAM = "";
 
 typedef struct DfxBundleInfo {
     bool isPreInstalled;
