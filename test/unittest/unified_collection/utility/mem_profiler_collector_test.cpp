@@ -48,6 +48,7 @@ public:
 HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest001, TestSize.Level1)
 {
     std::shared_ptr<MemProfilerCollector> collector = MemProfilerCollector::Create();
+    collector->Prepare();
     collector->Start(NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
                      0, DURATION, INTERVAL);
     int time = 0;
@@ -66,11 +67,90 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest001, TestSize.Level1)
 HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest002, TestSize.Level1)
 {
     std::shared_ptr<MemProfilerCollector> collector = MemProfilerCollector::Create();
+    collector->Prepare();
     collector->Start(NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
                      0, DURATION, INTERVAL);
     std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
     collector->Stop(0);
     int time = 0;
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+        time += WAIT_EXIT_MILLS;
+    }
+    ASSERT_FALSE(time < FINAL_TIME);
+
+    collector->Prepare();
+    collector->Start(NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
+                     0, DURATION, INTERVAL);
+    std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
+    collector->Stop(0);
+    time = 0;
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+        time += WAIT_EXIT_MILLS;
+    }
+    ASSERT_FALSE(time < FINAL_TIME);
+}
+
+/**
+ * @tc.name: MemProfilerCollectorTest002
+ * @tc.desc: used to test MemProfilerCollector.Stop
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest003, TestSize.Level1)
+{
+    std::shared_ptr<MemProfilerCollector> collector = MemProfilerCollector::Create();
+    collector->Prepare();
+    collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
+                     0, DURATION, INTERVAL);
+    std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
+    collector->Stop(0);
+    int time = 0;
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+        time += WAIT_EXIT_MILLS;
+    }
+    ASSERT_FALSE(time < FINAL_TIME);
+
+    collector->Prepare();
+    collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
+                     0, DURATION, INTERVAL);
+    std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
+    collector->Stop(0);
+    time = 0;
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+        time += WAIT_EXIT_MILLS;
+    }
+    ASSERT_FALSE(time < FINAL_TIME);
+}
+
+/**
+ * @tc.name: MemProfilerCollectorTest002
+ * @tc.desc: used to test MemProfilerCollector.Stop
+ * @tc.type: FUNC
+*/
+HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest004, TestSize.Level1)
+{
+    std::shared_ptr<MemProfilerCollector> collector = MemProfilerCollector::Create();
+    collector->Prepare();
+    collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
+                     0, DURATION, INTERVAL, true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
+    collector->Stop(0);
+    int time = 0;
+    while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
+        time += WAIT_EXIT_MILLS;
+    }
+    ASSERT_FALSE(time < FINAL_TIME);
+
+    collector->Prepare();
+    collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
+                     0, DURATION, INTERVAL, true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
+    collector->Stop(0);
+    time = 0;
     while (COMMON::IsProcessExist(NATIVE_DAEMON_NAME, g_nativeDaemonPid) && time < FINAL_TIME) {
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_EXIT_MILLS));
         time += WAIT_EXIT_MILLS;
