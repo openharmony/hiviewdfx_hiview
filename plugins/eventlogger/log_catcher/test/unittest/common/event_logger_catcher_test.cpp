@@ -574,53 +574,32 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
     int jsonFd = 1;
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) < 0);
 
-    shellCatcher->Initialize("hidumper -s WindowManagerService -a -a", ShellCatcher::CATCHER_WMS, pid);
+    std::string cmd = "ShellCatcherTest_001";
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_WMS, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hidumper -s AbilityManagerService -a -a", ShellCatcher::CATCHER_AMS, pid);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_AMS, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hidumper --cpuusage", ShellCatcher::CATCHER_CPU, pid);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_CPU, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hidumper -s PowerManagerService -a -s", ShellCatcher::CATCHER_PMS, pid);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_PMS, pid);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_DPMS, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hidumper -s DisplayPowerManagerService", ShellCatcher::CATCHER_DPMS, pid);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_RS, pid);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hidumper -s RenderService -a allInfo", ShellCatcher::CATCHER_RS, pid);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_HILOG, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_LIGHT_HILOG, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
 
-    shellCatcher->Initialize("hilog -z", ShellCatcher::CATCHER_LIGHT_HILOG, 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_SNAPSHOT, 0);
     EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
-
-    shellCatcher->Initialize("snapshot_display -f", ShellCatcher::CATCHER_SNAPSHOT, 0);
-    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) > 0);
-
-    shellCatcher->Initialize("scb_debug SCBScenePanel getContainerSession", ShellCatcher::CATCHER_SCBSESSION, 0);
-    printf("CATCHER_SCBSESSION result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
-
-    shellCatcher->Initialize("scb_debug SCBScenePanel getViewParam", ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
-    printf("CATCHER_SCBVIEWPARAM result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
-
-    auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
-    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("ShellCatcherTest", nullptr, jsonStr);
-    event->SetValue("FOCUS_WINDOW", 4); // 4 test value
-    shellCatcher->SetEvent(event);
-    shellCatcher->Initialize("hidumper -s WindowManagerService -a -w -default", ShellCatcher::CATCHER_SCBWMS, 0);
-    printf("CATCHER_SCBWMS result: %s\n", shellCatcher->Catch(fd, jsonFd) > 0 ? "true" : "false");
-
-    shellCatcher->Initialize("hilog -T InputKeyFlow -z 1000", ShellCatcher::CATCHER_INPUT_HILOG, 0);
-    shellCatcher->Initialize("hilog -T InputKeyFlow -e eventId -z 1000",
-        ShellCatcher::CATCHER_INPUT_EVENT_HILOG, 0);
-
-    shellCatcher->Initialize("default", -1, 0);
-    EXPECT_EQ(shellCatcher->Catch(fd, jsonFd), 0);
-
     close(fd);
 }
 
@@ -631,16 +610,51 @@ HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_001, TestSize.Level1)
  */
 HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_002, TestSize.Level1)
 {
-    auto fd = open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    auto fd = open("/data/test/shellCatcherFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
     if (fd < 0) {
-        printf("Fail to create testFile. errno: %d\n", errno);
+        printf("Fail to create shellCatcherFile. errno: %d\n", errno);
         FAIL();
     }
     auto shellCatcher = std::make_shared<ShellCatcher>();
-    shellCatcher->Initialize("hidumper -s 1910 -a DumpAppMap", ShellCatcher::CATCHER_DAM, 0);
-    EXPECT_TRUE(shellCatcher->Catch(fd, 1) >= 0);
-    printf("DumpAppMap result: %s\n", shellCatcher->Catch(fd, 1) > 0 ? "true" : "false");
+    int jsonFd = 1;
+    std::string cmd = "ShellCatcherTest_002";
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_INPUT_HILOG, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_INPUT_EVENT_HILOG, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_EEC, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_GEC, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_UI, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    auto jsonStr = "{\"domain_\":\"KERNEL_VENDOR\"}";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>("ShellCatcherTest", nullptr, jsonStr);
+    event->SetValue("FOCUS_WINDOW", 4); // 4 test value
+    shellCatcher->SetEvent(event);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_SCBWMSEVT, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_SCBVIEWPARAM, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_SCBWMS, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_MMI, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
+    shellCatcher->Initialize(cmd, ShellCatcher::CATCHER_DMS, 0);
+    EXPECT_TRUE(shellCatcher->Catch(fd, jsonFd) >= 0);
     close(fd);
+}
+
+/**
+ * @tc.name: ShellCatcherTest
+ * @tc.desc: add test
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, ShellCatcherTest_003, TestSize.Level1)
+{
+    auto shellCatcher = std::make_shared<ShellCatcher>();
+    shellCatcher->SetFocusWindowId("ShellCatcherTest_003");
+    EXPECT_TRUE(!shellCatcher->focusWindowId_.empty());
 }
 
 /**
