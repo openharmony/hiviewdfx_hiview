@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "constants.h"
 #include "defines.h"
 #include "file_util.h"
 #include "log_store_ex.h"
@@ -39,7 +38,11 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-using namespace FaultLogger;
+namespace {
+constexpr char DEFAULT_FAULTLOG_FOLDER[] = "/data/log/faultlog/faultlogger/";
+constexpr int32_t MAX_FAULT_LOG_PER_HAP = 10;
+}
+
 DEFINE_LOG_LABEL(0xD002D11, "FaultLogManager");
 LogStoreEx::LogFileFilter CreateLogFileFilter(time_t time, int32_t id, int32_t faultLogType, const std::string& module)
 {
@@ -87,7 +90,7 @@ int32_t FaultLogManager::CreateTempFaultLogFile(time_t time, int32_t id, int32_t
 
 void FaultLogManager::Init()
 {
-    store_ = std::make_unique<LogStoreEx>(FaultLogger::DEFAULT_FAULTLOG_FOLDER, true);
+    store_ = std::make_unique<LogStoreEx>(DEFAULT_FAULTLOG_FOLDER, true);
     LogStoreEx::LogFileComparator comparator = [](const LogFile &lhs, const LogFile &rhs) {
         FaultLogInfo lhsInfo = ExtractInfoFromFileName(lhs.name_);
         FaultLogInfo rhsInfo = ExtractInfoFromFileName(rhs.name_);
@@ -101,7 +104,7 @@ void FaultLogManager::Init()
 std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
 {
     auto fileName = GetFaultLogName(info);
-    std::string filePath = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + fileName;
+    std::string filePath = std::string(DEFAULT_FAULTLOG_FOLDER) + fileName;
     if (FileUtil::FileExists(filePath)) {
         HIVIEW_LOGI("logfile %{public}s already exist.", filePath.c_str());
         return "";
@@ -131,7 +134,7 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo &info) const
     }
     store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, info.faultLogType, info.module),
         MAX_FAULT_LOG_PER_HAP);
-    info.logPath = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + fileName;
+    info.logPath = std::string(DEFAULT_FAULTLOG_FOLDER) + fileName;
     HIVIEW_LOGI("create log %{public}s", fileName.c_str());
     return fileName;
 }
@@ -179,7 +182,7 @@ std::list<std::string> FaultLogManager::GetFaultLogFileList(const std::string &m
 
 bool FaultLogManager::GetFaultLogContent(const std::string &name, std::string &content) const
 {
-    auto path = std::string(FaultLogger::DEFAULT_FAULTLOG_FOLDER) + name;
+    auto path = std::string(DEFAULT_FAULTLOG_FOLDER) + name;
     return FileUtil::LoadStringFromFile(path, content);
 }
 

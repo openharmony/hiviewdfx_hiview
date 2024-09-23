@@ -27,6 +27,11 @@
 
 using namespace OHOS::HiviewDFX;
 namespace OHOS {
+namespace {
+constexpr int FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH = 50;
+constexpr int32_t FAULTLOGTYPE_SIZE = 6;
+}
+
 class HiviewTestContext : public HiviewContext {
 public:
     std::string GetHiViewDirectory(DirectoryType type __UNUSED)
@@ -34,9 +39,6 @@ public:
         return "/data/log/hiview/sys_event_test";
     }
 };
-
-const int FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH = 50;
-const int32_t FAULTLOGTYPE_SIZE = 6;
 
 std::shared_ptr<Faultlogger> CreateFaultloggerInstance()
 {

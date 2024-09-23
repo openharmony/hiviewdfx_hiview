@@ -42,8 +42,8 @@ public:
     std::string JsonStr() const;
 
 private:
-    static const inline std::string jsonExceptionName = "name";
-    static const inline std::string jsonExceptionMessage = "message";
+    static constexpr const char* const jsonExceptionName = "name";
+    static constexpr const char* const jsonExceptionMessage = "message";
 
     std::string name_;
     std::string message_;
@@ -78,12 +78,12 @@ public:
     std::string JsonStr() const;
 
 private:
-    static const inline std::string jsonMemoryRss = "rss";
-    static const inline std::string jsonMemoryVss = "vss";
-    static const inline std::string jsonMemoryPss = "pss";
-    static const inline std::string jsonMemorySysFreeMem = "sys_free_mem";
-    static const inline std::string jsonMemorySysAvailMem = "sys_avail_mem";
-    static const inline std::string jsonMemorySysTotalMem = "sys_total_mem";
+    static constexpr const char* const jsonMemoryRss = "rss";
+    static constexpr const char* const jsonMemoryVss = "vss";
+    static constexpr const char* const jsonMemoryPss = "pss";
+    static constexpr const char* const jsonMemorySysFreeMem = "sys_free_mem";
+    static constexpr const char* const jsonMemorySysAvailMem = "sys_avail_mem";
+    static constexpr const char* const jsonMemorySysTotalMem = "sys_total_mem";
     unsigned long long rss_;
     unsigned long long vss_;
     unsigned long long pss_;
@@ -147,25 +147,25 @@ public:
     std::string JsonStr() const;
 
 private:
-    static const inline std::string jsonParamsTime = "time";
-    static const inline std::string jsonParamsUuid = "uuid";
-    static const inline std::string jsonParamsFreezeType = "freeze_type";
-    static const inline std::string jsonParamsForeground = "foreground";
-    static const inline std::string jsonParamsBundleVersion = "bundle_version";
-    static const inline std::string jsonParamsBundleName = "bundle_name";
-    static const inline std::string jsonParamsProcessName = "process_name";
-    static const inline std::string jsonParamsExternalLog = "external_log";
-    static const inline std::string jsonParamsPid = "pid";
-    static const inline std::string jsonParamsUid = "uid";
-    static const inline std::string jsonParamsAppRunningUniqueId = "app_running_unique_id";
-    static const inline std::string jsonParamsException = "exception";
-    static const inline std::string jsonParamsHilog = "hilog";
-    static const inline std::string jsonParamsEventHandler = "event_handler";
-    static const inline std::string jsonParamsEventHandlerSize3s = "event_handler_size_3s";
-    static const inline std::string jsonParamsEventHandlerSize6s = "event_handler_size_6s";
-    static const inline std::string jsonParamsPeerBinder = "peer_binder";
-    static const inline std::string jsonParamsThreads = "threads";
-    static const inline std::string jsonParamsMemory = "memory";
+    static constexpr const char* const jsonParamsTime = "time";
+    static constexpr const char* const jsonParamsUuid = "uuid";
+    static constexpr const char* const jsonParamsFreezeType = "freeze_type";
+    static constexpr const char* const jsonParamsForeground = "foreground";
+    static constexpr const char* const jsonParamsBundleVersion = "bundle_version";
+    static constexpr const char* const jsonParamsBundleName = "bundle_name";
+    static constexpr const char* const jsonParamsProcessName = "process_name";
+    static constexpr const char* const jsonParamsExternalLog = "external_log";
+    static constexpr const char* const jsonParamsPid = "pid";
+    static constexpr const char* const jsonParamsUid = "uid";
+    static constexpr const char* const jsonParamsAppRunningUniqueId = "app_running_unique_id";
+    static constexpr const char* const jsonParamsException = "exception";
+    static constexpr const char* const jsonParamsHilog = "hilog";
+    static constexpr const char* const jsonParamsEventHandler = "event_handler";
+    static constexpr const char* const jsonParamsEventHandlerSize3s = "event_handler_size_3s";
+    static constexpr const char* const jsonParamsEventHandlerSize6s = "event_handler_size_6s";
+    static constexpr const char* const jsonParamsPeerBinder = "peer_binder";
+    static constexpr const char* const jsonParamsThreads = "threads";
+    static constexpr const char* const jsonParamsMemory = "memory";
     
     unsigned long long time_;
     std::string uuid_;
