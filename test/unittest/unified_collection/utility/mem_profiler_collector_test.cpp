@@ -29,6 +29,7 @@ const static std::string NATIVE_DAEMON_NAME("native_daemon");
 int g_nativeDaemonPid = 0;
 constexpr int WAIT_EXIT_MILLS = 50;
 constexpr int FINAL_TIME = 1000;
+constexpr int EXIT_TIME = 21000;
 constexpr int DURATION = 10;
 constexpr int INTERVAL = 1;
 
@@ -57,6 +58,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest001, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_TRUE(time < FINAL_TIME);
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
 }
 
 /**
@@ -78,7 +80,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest002, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
-
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
     collector->Prepare();
     collector->Start(NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
                      0, DURATION, INTERVAL);
@@ -90,10 +92,11 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest002, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
 }
 
 /**
- * @tc.name: MemProfilerCollectorTest002
+ * @tc.name: MemProfilerCollectorTest003
  * @tc.desc: used to test MemProfilerCollector.Stop
  * @tc.type: FUNC
 */
@@ -111,7 +114,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest003, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
-
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
     collector->Prepare();
     collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
                      0, DURATION, INTERVAL);
@@ -123,10 +126,11 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest003, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
 }
 
 /**
- * @tc.name: MemProfilerCollectorTest002
+ * @tc.name: MemProfilerCollectorTest004
  * @tc.desc: used to test MemProfilerCollector.Stop
  * @tc.type: FUNC
 */
@@ -135,7 +139,7 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest004, TestSize.Level1)
     std::shared_ptr<MemProfilerCollector> collector = MemProfilerCollector::Create();
     collector->Prepare();
     collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_LIBRARY,
-                     0, DURATION, INTERVAL, true);
+                     "", DURATION, INTERVAL, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
     collector->Stop(0);
     int time = 0;
@@ -144,10 +148,10 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest004, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
-
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
     collector->Prepare();
     collector->Start(0, NativeMemoryProfilerSaClientManager::NativeMemProfilerType::MEM_PROFILER_CALL_STACK,
-                     0, DURATION, INTERVAL, true);
+                     "", DURATION, INTERVAL, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(FINAL_TIME));
     collector->Stop(0);
     time = 0;
@@ -156,4 +160,5 @@ HWTEST_F(MemProfilerCollectorTest, MemProfilerCollectorTest004, TestSize.Level1)
         time += WAIT_EXIT_MILLS;
     }
     ASSERT_FALSE(time < FINAL_TIME);
+    std::this_thread::sleep_for(std::chrono::milliseconds(EXIT_TIME));
 }
