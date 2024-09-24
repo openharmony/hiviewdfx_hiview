@@ -192,7 +192,7 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
             continue;
         }
 
-        if (line.find("async") != std::string::npos) {
+        if (line.find("async\t") != std::string::npos) {
             continue;
         }
 
