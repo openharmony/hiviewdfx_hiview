@@ -64,7 +64,7 @@ static bool g_isLastStartUpShort = false;
 
 bool InitPanicConfigFile()
 {
-    if (!FileUtil::FileExists(BBOX_PARAM_PATH) && !FileUtil::CreateFile(BBOX_PARAM_PATH, FileUtil::FILE_PERM_640)) {
+    if (FileUtil::CreateFile(BBOX_PARAM_PATH, FileUtil::FILE_PERM_640) != 0) {
         return false;
     }
     BboxSaveLogFlags bboxSaveLogFlags = LoadBboxSaveFlagFromFile();
