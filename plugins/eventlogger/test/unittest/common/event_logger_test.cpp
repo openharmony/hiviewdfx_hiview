@@ -72,6 +72,54 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_001, TestSize.Level3)
 }
 
 /**
+ * @tc.name: EventLoggerTest_OnEvent_002
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_002, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
+        nullptr, jsonStr);
+    sysEvent1->eventName_ = "GESTURE_NAVIGATION_BACK";
+    sysEvent1->SetEventValue("PID", getpid());
+    std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent1);
+    EXPECT_EQ(eventLogger->OnEvent(event1), true);
+#ifdef WINDOW_MANAGER_ENABLE
+    sptr<Rosen::FocusChangeInfo> focusChangeInfo;
+    sptr<EventFocusListener> eventFocusListener_ = EventFocusListener::GetInstance();
+    eventFocusListener_->OnFocused(focusChangeInfo);
+    eventFocusListener_->OnUnfocused(focusChangeInfo);
+    EventFocusListener::registerState_ = EventFocusListener::REGISTERED;
+    EXPECT_EQ(eventLogger->OnEvent(event1), true);
+#endif
+}
+
+/**
+ * @tc.name: EventLoggerTest_OnEvent_003
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_003, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_001",
+        nullptr, jsonStr);
+    EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
+    sysEvent->SetEventValue("PACKAGE_NAME", "EventLoggerTest");
+    EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
+    sysEvent->SetEventValue("PID", 0);
+    sysEvent->SetEventValue("eventLog_action", "");
+    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
+    EXPECT_EQ(eventLogger->OnEvent(event), true);
+    sysEvent->eventName_ = "THREAD_BLOCK_6S";
+    event = std::static_pointer_cast<Event>(sysEvent);
+    EXPECT_EQ(eventLogger->OnEvent(event), true);
+}
+
+/**
  * @tc.name: EventLoggerTest_IsInterestedPipelineEvent_001
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
@@ -96,39 +144,13 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_IsInterestedPipelineEvent_001, TestSiz
 }
 
 /**
- * @tc.name: EventLoggerTest_001
+ * @tc.name: EventLoggerTest_CheckProcessRepeatFreeze_001
  * @tc.desc: add testcase coverage
  * @tc.type: FUNC
  */
-HWTEST_F(EventLoggerTest, EventLoggerTest_001, TestSize.Level3)
+HWTEST_F(EventLoggerTest, EventLoggerTest_CheckProcessRepeatFreeze_001, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
-    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_001",
-        nullptr, jsonStr);
-    sysEvent->SetEventValue("PACKAGE_NAME", "");
-    sysEvent->SetEventValue("MODULE_NAME", "");
-    EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
-    sysEvent->SetEventValue("PACKAGE_NAME", "EventLoggerTest");
-    EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
-    sysEvent->SetEventValue("PID", 0);
-    sysEvent->SetEventValue("eventLog_action", "");
-    std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
-    EXPECT_EQ(eventLogger->OnEvent(event), true);
-    std::shared_ptr<SysEvent> sysEvent1 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
-        nullptr, jsonStr);
-    sysEvent1->eventName_ = "GESTURE_NAVIGATION_BACK";
-    sysEvent1->SetEventValue("PID", getpid());
-    sysEvent1->SetEventValue("eventLog_action", "pb:1");
-    std::shared_ptr<OHOS::HiviewDFX::Event> event1 = std::static_pointer_cast<Event>(sysEvent1);
-#ifdef WINDOW_MANAGER_ENABLE
-    sptr<Rosen::FocusChangeInfo> focusChangeInfo;
-    sptr<EventFocusListener> eventFocusListener_ = EventFocusListener::GetInstance();
-    eventFocusListener_->OnFocused(focusChangeInfo);
-    eventFocusListener_->OnUnfocused(focusChangeInfo);
-#endif
-    sysEvent->eventName_ = "THREAD_BLOCK_6S";
-    EXPECT_EQ(eventLogger->OnEvent(event1), true);
     long pid = getprocpid();
     eventLogger->lastPid_ = pid;
     bool ret = eventLogger->CheckProcessRepeatFreeze("THREAD_BLOCK_6S", pid);
@@ -189,7 +211,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_003, TestSize.Level3)
     sysEvent->eventName_ = "GET_DISPLAY_SNAPSHOT";
     sysEvent->happenTime_ = TimeUtil::GetMilliseconds();
     sysEvent->SetEventValue("UID", getuid());
-    sysEvent->SetEventValue("eventLog_action", "pb:1");
+    sysEvent->SetValue("eventLog_action", "pb:1\npb:2");
     std::shared_ptr<EventLoop> loop = std::make_shared<EventLoop>("eventLoop");
     loop->StartLoop();
     eventLogger->BindWorkLoop(loop);
@@ -620,8 +642,8 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_018, TestSize.Level3)
     binderInfo = "Test";
     eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
     EXPECT_TRUE(binderPeerStack.empty());
-    binderInfo = "PeerBinder catcher stacktrace for pid : 111\n Test Test\n "
-        "PeerBinder catcher stacktrace for pid : 112\n Test";
+    binderInfo = "PeerBinder catcher stacktrace for pid : 111\n Stack "
+        "backtrace: Test\n PeerBinder catcher stacktrace for pid : 112\n Test";
     eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
     EXPECT_TRUE(!binderPeerStack.empty());
 }
