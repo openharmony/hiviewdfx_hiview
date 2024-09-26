@@ -463,6 +463,55 @@ bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
     return true;
 }
 
+static FaultLogInfo FillFaultLogInfo(SysEvent &sysEvent)
+{
+    FaultLogInfo info;
+    info.time = sysEvent.happenTime_;
+    info.id = sysEvent.GetUid();
+    info.pid = sysEvent.GetPid();
+    if (sysEvent.eventName_ == "JS_ERROR") {
+        info.faultLogType = FaultLogType::JS_CRASH;
+    } else if (sysEvent.eventName_ == "RUST_PANIC") {
+        info.faultLogType = FaultLogType::RUST_PANIC;
+    } else {
+        info.faultLogType = FaultLogType::ADDR_SANITIZER;
+    }
+    info.module = info.faultLogType == FaultLogType::JS_CRASH ?
+        sysEvent.GetEventValue("PACKAGE_NAME") : sysEvent.GetEventValue("MODULE");
+    info.reason = sysEvent.GetEventValue("REASON");
+    auto summary = sysEvent.GetEventValue("SUMMARY");
+    info.summary = StringUtil::UnescapeJsonStringValue(summary);
+    info.sectionMap = sysEvent.GetKeyValuePairs();
+
+    return info;
+}
+
+static void UpdateSysEvent(SysEvent &sysEvent, FaultLogInfo &info)
+{
+    sysEvent.SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
+    sysEvent.SetEventValue("MODULE", info.module);
+    sysEvent.SetEventValue("LOG_PATH", info.logPath);
+    sysEvent.SetEventValue("HAPPEN_TIME", sysEvent.happenTime_);
+    sysEvent.SetEventValue("tz_", TimeUtil::GetTimeZone());
+    sysEvent.SetEventValue("VERSION", info.sectionMap["VERSION"]);
+    sysEvent.SetEventValue("PRE_INSTALL", info.sectionMap["PRE_INSTALL"]);
+    sysEvent.SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
+    std::map<std::string, std::string> eventInfos;
+    if (AnalysisFaultlog(info, eventInfos)) {
+        auto pName = sysEvent.GetEventValue("PNAME");
+        if (pName.empty()) {
+            sysEvent.SetEventValue("PNAME", "/");
+        }
+        sysEvent.SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
+        sysEvent.SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
+        sysEvent.SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
+                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
+    }
+    sysEvent.SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+}
+
 bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
 {
     if (!hasInit_ || event == nullptr) {
@@ -475,51 +524,16 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (event->rawData_ == nullptr) {
         return false;
     }
-    bool isJsError = event->eventName_ == "JS_ERROR";
-    bool isRustPanic = event->eventName_ == "RUST_PANIC";
     auto sysEvent = std::static_pointer_cast<SysEvent>(event);
-    HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(),
-        sysEvent->AsJsonStr().c_str());
-    FaultLogInfo info;
-    info.time = sysEvent->happenTime_;
-    info.id = sysEvent->GetUid();
-    info.pid = sysEvent->GetPid();
-    if (isJsError) {
-        info.faultLogType = FaultLogType::JS_CRASH;
-    } else {
-        info.faultLogType = isRustPanic ? FaultLogType::RUST_PANIC : FaultLogType::ADDR_SANITIZER;
-    }
-    info.module = isJsError ? sysEvent->GetEventValue("PACKAGE_NAME") : sysEvent->GetEventValue("MODULE");
-    info.reason = sysEvent->GetEventValue("REASON");
-    auto summary = sysEvent->GetEventValue("SUMMARY");
-    auto pName = sysEvent->GetEventValue("PNAME");
-    if (event->eventName_ == "ADDR_SANITIZER" && summary.empty()) {
-        HIVIEW_LOGI("Is fdsan not crash request. Exit");
+    HIVIEW_LOGI("Receive %{public}s Event:%{public}s.", event->eventName_.c_str(), sysEvent->AsJsonStr().c_str());
+    FaultLogInfo info = FillFaultLogInfo(*sysEvent);
+    if (info.faultLogType == FaultLogType::ADDR_SANITIZER && info.summary.empty()) {
+        HIVIEW_LOGI("Skip non address_sanitizer request.");
         return true;
     }
-    info.summary = StringUtil::UnescapeJsonStringValue(summary);
-    info.sectionMap = sysEvent->GetKeyValuePairs();
     AddFaultLog(info);
-    sysEvent->SetEventValue("FAULT_TYPE", std::to_string(info.faultLogType));
-    sysEvent->SetEventValue("MODULE", info.module);
-    sysEvent->SetEventValue("LOG_PATH", info.logPath);
-    sysEvent->SetEventValue("HAPPEN_TIME", sysEvent->happenTime_);
-    sysEvent->SetEventValue("tz_", TimeUtil::GetTimeZone());
-    sysEvent->SetEventValue("VERSION", info.sectionMap["VERSION"]);
-    sysEvent->SetEventValue("PRE_INSTALL", info.sectionMap["PRE_INSTALL"]);
-    sysEvent->SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
-    std::map<std::string, std::string> eventInfos;
-    if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("PNAME", pName.empty() ? "/" : pName);
-        sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
-                                StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
-        sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
-                                StringUtil::EscapeJsonStringValue(eventInfos["SECOND_FRAME"]));
-        sysEvent->SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
-                                StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
-    }
-    sysEvent->SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
-    if (isJsError) {
+    UpdateSysEvent(*sysEvent, info);
+    if (info.faultLogType == FaultLogType::JS_CRASH) {
         ReportJsErrorToAppEvent(sysEvent);
     }
     if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
