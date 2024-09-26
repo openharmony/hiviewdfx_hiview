@@ -45,3 +45,17 @@ ohos_source_set("hiviewplatform_config") {
 
   external_deps = [ "hilog:libhilog" ]
 }
+
+ohos_source_set("hiviewplatform_config_for_tdd") {
+  part_name = "hiview"
+  public_configs = [ ":hiview_platform_config_config" ]
+
+  sources = [ "hiview_platform_config.cpp" ]
+
+  deps = [
+    ":hiview_platform_config",
+    "$hiview_base:hiviewbase",
+  ]
+
+  external_deps = [ "hilog:libhilog" ]
+}
