@@ -62,3 +62,30 @@ ohos_source_set("hiview_param_update") {
     "samgr:samgr_proxy",
   ]
 }
+
+ohos_source_set("hiview_param_update_for_tdd") {
+  part_name = "hiview"
+  public_configs = [ ":hiview_param_update_config" ]
+  subsystem_name = "hiviewdfx"
+
+  sources = [
+    "src/log_sign_tools.cpp",
+    "src/param_event_manager.cpp",
+    "src/param_manager.cpp",
+    "src/param_reader.cpp",
+  ]
+
+  deps = [ "$hiview_base:hiviewbase" ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_runtime:ability_manager",
+    "common_event_service:cesfwk_innerkits",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "openssl:libcrypto_shared",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
