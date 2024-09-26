@@ -42,7 +42,42 @@ public:
 
 int SysEventRepeatDbCallback::OnCreate(NativeRdb::RdbStore& rdbStore)
 {
-    HIVIEW_LOGI("create dbStore");
+    /**
+     * table: sys_event_history
+     *
+     * describe: store data that app task
+     * |---------|------|-----------|------------|
+     * |  domain | name | eventHash | happentime |
+     * |---------|------|-----------|------------|
+     * |  TEXT   | TEXT |   TEXT    |    INT64   |
+     * |---------|------|-----------|------------|
+     */
+    const std::vector<std::pair<std::string, std::string>> fields = {
+        {COLUMN_DOMAIN, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_NAME, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_EVENT_HASH, SqlUtil::COLUMN_TYPE_STR},
+        {COLUMN_HAPPENTIME, SqlUtil::COLUMN_TYPE_INT},
+    };
+    std::string sql = SqlUtil::GenerateCreateSql(TABLE_NAME, fields);
+    if (int32_t ret = rdbStore.ExecuteSql(sql); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create table, sql=%{public}s", sql.c_str());
+        return ret;
+    }
+
+    std::string indexSql = "create index sys_event_his_index1 on ";
+    indexSql.append(TABLE_NAME).append("(").append(COLUMN_DOMAIN).append(", ")
+        .append(COLUMN_NAME).append(",").append(COLUMN_EVENT_HASH).append(");");
+    if (int32_t ret = rdbStore.ExecuteSql(indexSql); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create index1, sql=%{public}s", indexSql.c_str());
+        return ret;
+    }
+
+    std::string indexHappentimeSql = "create index sys_event_his_index2 on ";
+    indexHappentimeSql.append(TABLE_NAME).append("(").append(COLUMN_HAPPENTIME).append(");");
+    if (int32_t ret = rdbStore.ExecuteSql(indexHappentimeSql); ret != NativeRdb::E_OK) {
+        HIVIEW_LOGE("failed to create index2, sql=%{public}s", indexHappentimeSql.c_str());
+        return ret;
+    }
     return NativeRdb::E_OK;
 }
 
@@ -72,8 +107,16 @@ void SysEventRepeatDb::CheckAndRepairDbFile(const int32_t errCode)
         HIVIEW_LOGE("delete db failed.");
         return;
     }
+}
+
+bool SysEventRepeatDb::CheckDbStoreValid()
+{
+    if (dbStore_ != nullptr) {
+        return true;
+    }
     InitDbStore();
     RefreshDbCount();
+    return dbStore_ != nullptr;
 }
 
 void SysEventRepeatDb::InitDbStore()
@@ -84,56 +127,8 @@ void SysEventRepeatDb::InitDbStore()
     SysEventRepeatDbCallback callback;
     auto ret = NativeRdb::E_OK;
     dbStore_ = NativeRdb::RdbHelper::GetRdbStore(config, DB_VERSION, callback, ret);
-    if (ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to init db store, db store path=%{public}s", dbFullName.c_str());
-        dbStore_ = nullptr;
-        CheckAndRepairDbFile(ret);
-        return;
-    }
-    CreateTable();
-}
-
-void SysEventRepeatDb::CreateTable()
-{
     if (dbStore_ == nullptr) {
-        return;
-    }
-    /**
-     * table: sys_event_history
-     *
-     * describe: store data that app task
-     * |---------|------|-----------|------------|
-     * |  domain | name | eventHash | happentime |
-     * |---------|------|-----------|------------|
-     * |  TEXT   | TEXT |   TEXT    |    INT64   |
-     * |---------|------|-----------|------------|
-     */
-    const std::vector<std::pair<std::string, std::string>> fields = {
-        {COLUMN_DOMAIN, SqlUtil::COLUMN_TYPE_STR},
-        {COLUMN_NAME, SqlUtil::COLUMN_TYPE_STR},
-        {COLUMN_EVENT_HASH, SqlUtil::COLUMN_TYPE_STR},
-        {COLUMN_HAPPENTIME, SqlUtil::COLUMN_TYPE_INT},
-    };
-    std::string sql = SqlUtil::GenerateCreateSql(TABLE_NAME, fields);
-    if (int32_t ret = dbStore_->ExecuteSql(sql); ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to create table, sql=%{public}s", sql.c_str());
-        CheckAndRepairDbFile(ret);
-        return;
-    }
-
-    std::string indexSql = "create index sys_event_his_index1 on ";
-    indexSql.append(TABLE_NAME).append("(").append(COLUMN_DOMAIN).append(", ")
-        .append(COLUMN_NAME).append(",").append(COLUMN_EVENT_HASH).append(");");
-    if (int32_t ret = dbStore_->ExecuteSql(indexSql); ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to create index1, sql=%{public}s", indexSql.c_str());
-        CheckAndRepairDbFile(ret);
-        return;
-    }
-
-    std::string indexHappentimeSql = "create index sys_event_his_index2 on ";
-    indexHappentimeSql.append(TABLE_NAME).append("(").append(COLUMN_HAPPENTIME).append(");");
-    if (int32_t ret = dbStore_->ExecuteSql(indexHappentimeSql); ret != NativeRdb::E_OK) {
-        HIVIEW_LOGE("failed to create index2, sql=%{public}s", indexHappentimeSql.c_str());
+        HIVIEW_LOGE("failed to init db store, db store path=%{public}s", dbFullName.c_str());
         CheckAndRepairDbFile(ret);
         return;
     }
@@ -155,7 +150,8 @@ void SysEventRepeatDb::Clear(const int64_t happentime)
 
 bool SysEventRepeatDb::Insert(const SysEventHashRecord &sysEventHashRecord)
 {
-    if (dbStore_ == nullptr) {
+    if (!CheckDbStoreValid()) {
+        HIVIEW_LOGE("dbStore_ not valid.");
         return false;
     }
     NativeRdb::ValuesBucket bucket;
@@ -175,7 +171,7 @@ bool SysEventRepeatDb::Insert(const SysEventHashRecord &sysEventHashRecord)
 
 bool SysEventRepeatDb::Update(const SysEventHashRecord &sysEventHashRecord)
 {
-    if (dbStore_ == nullptr) {
+    if (!CheckDbStoreValid()) {
         return false;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE_NAME);
@@ -195,7 +191,7 @@ bool SysEventRepeatDb::Update(const SysEventHashRecord &sysEventHashRecord)
 
 void SysEventRepeatDb::ClearHistory(const int64_t happentime)
 {
-    if (dbStore_ == nullptr) {
+    if (!CheckDbStoreValid()) {
         return;
     }
     std::string whereClause = COLUMN_HAPPENTIME;
@@ -220,19 +216,19 @@ void SysEventRepeatDb::RefreshDbCount()
         HIVIEW_LOGE("failed to query from table %{public}s, db is null", TABLE_NAME.c_str());
         return;
     }
-    int32_t ret = resultSet->GoToNextRow();
-    if (ret == NativeRdb::E_OK) {
-        resultSet->GetLong(0, dbCount_);
+    if (int32_t ret = resultSet->GoToNextRow(); ret != NativeRdb::E_OK) {
         resultSet->Close();
+        CheckAndRepairDbFile(ret);
         return;
     }
+
+    resultSet->GetLong(0, dbCount_);
     resultSet->Close();
-    CheckAndRepairDbFile(ret);
 }
 
 int64_t SysEventRepeatDb::QueryHappentime(SysEventHashRecord &sysEventHashRecord)
 {
-    if (dbStore_ == nullptr) {
+    if (!CheckDbStoreValid()) {
         return 0;
     }
     NativeRdb::AbsRdbPredicates predicates(TABLE_NAME);
@@ -245,16 +241,16 @@ int64_t SysEventRepeatDb::QueryHappentime(SysEventHashRecord &sysEventHashRecord
         return 0;
     }
 
-    int32_t ret = resultSet->GoToNextRow();
-    if (ret == NativeRdb::E_OK) {
-        int64_t happentime = 0;
-        resultSet->GetLong(0, happentime);   // 0 is result of happentime
+    if (int32_t ret = resultSet->GoToNextRow(); ret != NativeRdb::E_OK) {
         resultSet->Close();
-        return happentime;
+        CheckAndRepairDbFile(ret);
+        return 0;
     }
+
+    int64_t happentime = 0;
+    resultSet->GetLong(0, happentime);   // 0 is result of happentime
     resultSet->Close();
-    CheckAndRepairDbFile(ret);
-    return 0;
+    return happentime;
 }
 
 } // HiviewDFX
