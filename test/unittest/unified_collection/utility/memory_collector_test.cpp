@@ -356,38 +356,3 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest016, TestSize.Level1)
         ASSERT_GT(data.data, 0);
     }
 }
-
-/**
- * @tc.name: MemoryCollectorTest017
- * @tc.desc: used to test MemoryCollector.GetGraphicUsage
- * @tc.type: FUNC
-*/
-HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
-{
-    const std::string SYSTEMUI_PROC_NAME = "com.ohos.systemui";
-    const std::string SCENEBOARD_RPOC_NAME = "com.ohos.sceneboard";
-    auto systemuiPid = CommonUtils::GetPidByName(SYSTEMUI_PROC_NAME);
-    auto launcherPid = CommonUtils::GetPidByName(SCENEBOARD_RPOC_NAME);
-    auto pid = static_cast<int32_t>(systemuiPid > 0 ? systemuiPid : launcherPid);
-    const std::string procName = systemuiPid > 0 ? SYSTEMUI_PROC_NAME : SCENEBOARD_RPOC_NAME;
-    if (pid <= 0) {
-        std::cout << "Get pid failed" << std::endl;
-        return;
-    }
-    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<int32_t> data = collector->GetGraphicUsage(pid);
-    ASSERT_EQ(data.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] total result:" << data.data;
-    std::cout << std::endl;
-    ASSERT_GE(data.data, 0);
-    CollectResult<int32_t> glData = collector->GetGraphicUsage(pid, GraphicType::GL);
-    ASSERT_EQ(glData.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] gl result:" << glData.data;
-    std::cout << std::endl;
-    ASSERT_GE(glData.data, 0);
-    CollectResult<int32_t> graphicData = collector->GetGraphicUsage(pid, GraphicType::GRAPH);
-    ASSERT_EQ(graphicData.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] graphic result:" << graphicData.data;
-    std::cout << std::endl;
-    ASSERT_GE(graphicData.data, 0);
-}

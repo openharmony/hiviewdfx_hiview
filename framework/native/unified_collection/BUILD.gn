@@ -22,7 +22,6 @@ config("ucolletciton_source_config") {
     "process/include",
     "decorator/include",
     "utils/include",
-    "graphic_memory/include",
     "$hiview_interfaces/inner_api/unified_collection",
     "$hiview_interfaces/inner_api/unified_collection/utility",
     "$hiview_interfaces/inner_api/unified_collection/resource",
@@ -75,7 +74,6 @@ ohos_source_set("ucollection_source") {
     "decorator/process_decorator.cpp",
     "decorator/thermal_decorator.cpp",
     "decorator/trace_decorator.cpp",
-    "decorator/unified_collection_stat.cpp",
     "decorator/wm_decorator.cpp",
     "process/process_status.cpp",
     "utils/cpu_util.cpp",
@@ -88,10 +86,7 @@ ohos_source_set("ucollection_source") {
     ]
   }
 
-  deps = [
-    "collector/device_client:collect_device_client",
-    "graphic_memory:libgraphic_memory",
-  ]
+  deps = [ "collector/device_client:collect_device_client" ]
 
   external_deps = [
     "ability_base:want",

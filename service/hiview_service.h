@@ -25,7 +25,7 @@
 #include "utility/cpu_collector.h"
 #include "client/trace_collector.h"
 #include "client/memory_collector.h"
-#include "utility/memory_collector.h"
+#include "utility/graphic_memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -76,7 +76,7 @@ private:
     std::unique_ptr<AuditLogParser> parser_ = nullptr;
     std::shared_ptr<UCollectUtil::TraceCollector> traceCollector_;
     std::shared_ptr<UCollectUtil::CpuCollector> cpuCollector_;
-    std::shared_ptr<UCollectUtil::MemoryCollector> memoryCollector_;
+    std::shared_ptr<UCollectUtil::GraphicMemoryCollector> graphicMemoryCollector_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
