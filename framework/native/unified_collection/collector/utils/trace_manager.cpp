@@ -148,7 +148,6 @@ void TraceManager::RecoverTmpTrace()
             continue;
         }
         HIVIEW_LOGI("originTraceFile path: %{public}s", originTraceFile.c_str());
-        FileUtil::RemoveFile(UNIFIED_SHARE_TEMP_PATH + fileName);
         UcollectionTask traceTask = [=]() {
             ZipTraceFile(originTraceFile, UNIFIED_SHARE_PATH + fileName);
             flock(fd, LOCK_UN);
