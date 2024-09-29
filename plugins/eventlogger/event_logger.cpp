@@ -197,7 +197,6 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
     } else {
         logFile = "ffrt_" + std::to_string(pid) + "_" + formatTime;
     }
-
     if (FileUtil::FileExists(std::string(LOGGER_EVENT_LOG_PATH) + "/" + logFile)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
         if (!isFfrt) {
@@ -280,7 +279,7 @@ void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
     std::string historyFile = std::string(LOGGER_EVENT_LOG_PATH) + "/" + "history.log";
     mode_t mode = 0644;
     if (FileUtil::CreateFile(historyFile, mode) != 0 && !FileUtil::FileExists(historyFile)) {
-        HIVIEW_LOGI("failed to create file=%{public}s, errno=%{public}d", historyFile.c_str(), errno);
+        HIVIEW_LOGE("failed to create file=%{public}s, errno=%{public}d", historyFile.c_str(), errno);
         return;
     }
     std::vector<std::string> lines;
@@ -312,7 +311,7 @@ std::string EventLogger::StabilityGetTempFreqInfo()
     std::string litCpuMaxFreq = FileUtil::GetFirstLine(TWELVE_LIT_CPU_MAX_FREQ);
     std::string ipaValue = FileUtil::GetFirstLine(SUSTAINABLE_POWER);
     tempInfo = "\nTemp: shellFront: " + shellFront + ", shellFrame: " + shellFrame +
-        ", ambientTemp" + ambientTemp + "\nFreq: bigCur: " + bigCpuCurFreq + ", bigMax: " +
+        ", ambientTemp: " + ambientTemp + "\nFreq: bigCur: " + bigCpuCurFreq + ", bigMax: " +
         bigCpuMaxFreq + ", midCur: " + midCpuCurFreq + ", midMax: " + midCpuMaxFreq +
         ", litCur: " + litCpuCurFreq + ", litMax: " + litCpuMaxFreq + "\n" + "IPA: " +
         ipaValue;
@@ -327,6 +326,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
         return;
     }
+
     int jsonFd = -1;
     if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
         std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
@@ -338,7 +338,6 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     WriteStartTime(fd, start);
     WriteCommonHead(fd, event);
     WriteFreezeJsonInfo(fd, jsonFd, event);
-
     std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, jsonFd, event);
     std::string cmdStr = event->GetValue("eventLog_action");
     if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
@@ -444,7 +443,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
         while (lineStream >> tmpstr) {
             strList.push_back(tmpstr);
         }
-        if (strList.size() < 7) { // more than or equal to 7: valid array size
+        if (strList.size() < 7) { // less than 7: invalid array size
             continue;
         }
         // 2: binder peer id
@@ -551,6 +550,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, headerStream.str());
     return true;
 }
+
 void EventLogger::WriteCallStack(std::shared_ptr<SysEvent> event, int fd)
 {
     if (event->domain_.compare("FORM_MANAGER") == 0 && event->eventName_.compare("FORM_BLOCK_CALLSTACK") == 0) {
@@ -584,10 +584,7 @@ std::string EventLogger::GetAppFreezeFile(std::string& stackPath)
 
 bool EventLogger::IsKernelStack(const std::string& stack)
 {
-    if (!stack.empty() && stack.find("Stack backtrace") != std::string::npos) {
-        return true;
-    }
-    return false;
+    return (!stack.empty() && stack.find("Stack backtrace") != std::string::npos);
 }
 
 void EventLogger::GetNoJsonStack(std::string& stack, std::string& contentStack,
@@ -679,21 +676,20 @@ void EventLogger::ParsePeerStack(std::string& binderInfo, std::string& binderPee
     }
     std::string tags = "PeerBinder catcher stacktrace for pid ";
     auto index = binderInfo.find(tags);
-    std::ostringstream oss;
-    std::string bodys = "";
-    if (index != std::string::npos) {
-        oss << binderInfo.substr(0, index);
-        bodys = binderInfo.substr(index, binderInfo.size());
-    } else {
+    if (index == std::string::npos) {
         return;
     }
+    std::ostringstream oss;
+    oss << binderInfo.substr(0, index);
+    std::string bodys = binderInfo.substr(index, binderInfo.size());
     std::vector<std::string> lines;
     StringUtil::SplitStr(bodys, tags, lines, false, true);
-    binderInfo = "";
+    std::string stack;
+    std::string kernelStack;
     for (auto lineIt = lines.begin(); lineIt != lines.end(); lineIt++) {
         std::string line = tags + *lineIt;
-        std::string stack = "";
-        std::string kernelStack = "";
+        stack = "";
+        kernelStack = "";
         GetNoJsonStack(stack, line, kernelStack, false);
         binderPeerStack += kernelStack;
         oss << stack << std::endl;
@@ -707,7 +703,6 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     std::string stack;
     std::string binderInfo = event -> GetEventValue("BINDER_INFO");
     if (FreezeJsonUtil::IsAppFreeze(event -> eventName_)) {
-        int kernelFd = -1;
         std::string kernelStack = "";
         GetAppFreezeStack(jsonFd, event, stack, msg, kernelStack);
         if (!binderInfo.empty() && jsonFd >= 0) {
@@ -751,9 +746,9 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
 void EventLogger::GetFailedDumpStackMsg(std::string& stack, std::shared_ptr<SysEvent> event)
 {
     std::string failedStackStart = " Failed to dump stacktrace for ";
-    if (dbHelper_ != nullptr && stack.size() >= failedStackStart.size()
-        && !stack.compare(0, failedStackStart.size(), failedStackStart)
-        && stack.find("syscall SIGDUMP error") != std::string::npos) {
+    if (dbHelper_ != nullptr && stack.size() >= failedStackStart.size() &&
+        !stack.compare(0, failedStackStart.size(), failedStackStart) &&
+        stack.find("syscall SIGDUMP error") != std::string::npos) {
         long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
         std::string packageName = event->GetEventValue("PACKAGE_NAME").empty() ?
             event->GetEventValue("PROCESS_NAME") : event->GetEventValue("PACKAGE_NAME");

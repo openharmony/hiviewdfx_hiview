@@ -40,6 +40,7 @@ static constexpr int DUMP_STACK_FAILED = -1;
 static constexpr int MAX_RETRY_COUNT = 20;
 static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
 static constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
+
 bool GetDump(int pid, std::string& msg)
 {
     std::unique_lock lock(dumpMutex);
@@ -77,6 +78,14 @@ void FinshDump(int pid, const std::string& msg)
     getSync.notify_all();
 }
 
+void FormatFileName(std::string& processName)
+{
+    std::regex regExpress("[\\/:*?\"<>|]");
+    if (std::regex_search(processName, regExpress)) {
+        processName = std::regex_replace(processName, regExpress, "_");
+    }
+}
+
 int WriteKernelStackToFd(int originFd, const std::string& msg, int pid)
 {
     std::string logPath = "/data/log/eventlog/";
@@ -99,6 +108,7 @@ int WriteKernelStackToFd(int originFd, const std::string& msg, int pid)
         if (procName.empty()) {
             return -1;
         }
+        FormatFileName(procName);
         auto logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
         std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y%m%d%H%M%S");
         std::string logName = procName + "-" + std::to_string(pid) +
