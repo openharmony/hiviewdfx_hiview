@@ -418,7 +418,7 @@ void EventLogTask::HitraceCapture()
     std::smatch match;
     timeStamp = std::regex_search(timeStamp, match, reg) ? match[1].str() : "";
     uint64_t faultTime = timeStamp.empty() ? (event_->happenTime_) :
-        TimeUtil::StrToTimeStamp(timeStamp, "%Y/%m/%d-%H:%M:%S");
+        static_cast<uint64_t>(TimeUtil::StrToTimeStamp(timeStamp, "%Y/%m/%d-%H:%M:%S"));
     faultTime += DELAY_TIME;
     uint64_t currentTime = TimeUtil::GetMilliseconds() / MILLISEC_TO_SEC;
     if (currentTime >= (TRACE_OUT_OF_TIME + faultTime)) {
