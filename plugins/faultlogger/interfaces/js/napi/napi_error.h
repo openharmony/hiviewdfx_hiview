@@ -20,7 +20,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace NapiError {
 constexpr int ERR_INPUT_PARAM = 401; // invalid input parameter
-constexpr int ERR_SYSTEM_CAPABILITY = 801; // the specified SystemCapability name was not found
 constexpr int ERR_SERVICE_STATUS = 10600001; // service is not running or broken
 } // namespace NapiError
 } // namespace HiviewDFX

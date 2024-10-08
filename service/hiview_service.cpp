@@ -45,7 +45,7 @@ HiviewService::HiviewService()
 {
     traceCollector_ = UCollectUtil::TraceCollector::Create();
     cpuCollector_ = UCollectUtil::CpuCollector::Create();
-    memoryCollector_ = UCollectUtil::MemoryCollector::Create();
+    graphicMemoryCollector_ = UCollectUtil::GraphicMemoryCollector::Create();
 }
 
 void HiviewService::StartService()
@@ -508,7 +508,7 @@ CollectResult<int32_t> HiviewService::SetAppResourceLimit(UCollectClient::Memory
 
 CollectResult<int32_t> HiviewService::GetGraphicUsage(int32_t pid)
 {
-    return memoryCollector_->GetGraphicUsage(pid);
+    return graphicMemoryCollector_->GetGraphicUsage(pid);
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

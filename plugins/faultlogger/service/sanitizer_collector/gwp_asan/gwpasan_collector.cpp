@@ -44,7 +44,10 @@
 #undef LOG_TAG
 #define LOG_TAG "Sanitizer"
 
+namespace {
+constexpr unsigned BUF_SIZE = 128;
 static std::stringstream g_asanlog;
+}
 
 void WriteGwpAsanLog(char* buf, size_t sz)
 {

@@ -13,16 +13,15 @@
  * limitations under the License.
  */
 
-#include <cstddef>
-#include <cstdint>
 #include <string>
 
 #include "faultlogger_client.h"
-#include "faultlogger_client_fuzzer.h"
 #include "faultlogger_fuzzertest_common.h"
 
 namespace OHOS {
-const int FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH = 50;
+namespace {
+constexpr int FAULTLOGGER_FUZZTEST_MAX_STRING_LENGTH = 50;
+}
 
 void FuzzInterfaceAddFaultLog(const uint8_t* data, size_t size)
 {

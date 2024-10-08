@@ -73,8 +73,8 @@ ohos_source_set("hiview_core_for_test") {
 
   deps = [
     "$hiview_base:hiviewbase",
-    "param_update:hiview_param_update",
-    "platform_config:hiviewplatform_config",
+    "param_update:hiview_param_update_for_tdd",
+    "platform_config:hiviewplatform_config_for_tdd",
   ]
 
   external_deps = [

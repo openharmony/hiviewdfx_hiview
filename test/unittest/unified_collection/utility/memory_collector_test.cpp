@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,7 +46,7 @@ const std::regex ALL_PROC_MEM1("^\\d{1,}\\s{1,}[\\w\\.\\[\\]():/>-]*(\\s{1,}\\d{
 const std::regex ALL_PROC_MEM2("^\\d{1,}\\s{1,}\\w{1,}( \\w{1,}){1,}(\\s{1,}\\d{1,}){3}\\s{1,}-?\\d{1,}\\s{1,}-?[01]$");
 // eg: ab.cd    12  34  567  890  123   ef   gh   ijk
 //     Total dmabuf size of ab.cd: 12345 bytes
-const std::regex RAW_DMA1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}$");
+const std::regex RAW_DMA1("^[\\w\\.\\[\\]():/>-]{1,}(\\s{1,}\\d{1,}){5}(\\s{1,}\\w{1,}){3}(\\s{1,}\\d{1,}){0,2}$");
 const std::regex RAW_DMA2("^(Total dmabuf size of )[\\w\\.\\[\\]():/>-]{1,}(: )\\d{1,}( bytes)$");
 // eg: ab(cd):      12345 kB
 //     ab:              - kB
@@ -54,7 +54,7 @@ const std::regex RAW_MEM_INFO1("^[\\w()]{1,}:\\s{1,}\\d{1,}( kB)?$");
 const std::regex RAW_MEM_INFO2("^[\\w()]{1,}:\\s{1,}- kB$");
 // eg: ab-cd:       12345 kB
 //     ab-cd        12345 (0 in SwapPss) kB
-const std::regex RAW_MEM_VIEW_INFO1("^[\\w\\s-]{1,}:?\\s{1,}\\w{1,}( kB| \\%)?$");
+const std::regex RAW_MEM_VIEW_INFO1("^[\\w\\s()-]{1,}:?\\s{1,}\\w{1,}( kB| \\%)?$");
 const std::regex RAW_MEM_VIEW_INFO2("^\\w{1,}[-\\.]\\w{1,}(-\\w{1,})?\\s{1,}\\d{1,} \\(\\d{1,} in SwapPss\\) (kB)$");
 // eg: Node     0, zone     abc, type   def  0  0  0  0  0  0  0  0  0  0  0
 //     ab  cd  efg  hi    jk     lmn  opq     rst   uvw     xyz
@@ -71,6 +71,7 @@ const std::regex RAW_SLAB_INFO1(RAW_SLAB_STR1 + RAW_SLAB_STR2);
 const std::string RAW_SLAB_STR3("^(\\w{1,} - version: )[\\d\\.]{1,}|# ?name\\s{1,}");
 const std::string RAW_SLAB_STR4("( <\\w{1,}>){5} : tunables( <\\w{1,}>){3} : slabdata( <\\w{1,}>){3,5}$");
 const std::regex RAW_SLAB_INFO2(RAW_SLAB_STR3 + RAW_SLAB_STR4);
+const std::regex RAW_SLAB_INFO3("-{52}");
 
 bool HasValidAILibrary()
 {
@@ -79,7 +80,7 @@ bool HasValidAILibrary()
     return handle != nullptr;
 }
 
-bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std::regex &reg2, int cnt)
+bool CheckFormat(const std::string &fileName, const std::vector<std::regex>& regexs, int cnt)
 {
     std::ifstream file;
     file.open(fileName.c_str());
@@ -97,7 +98,15 @@ bool CheckFormat(const std::string &fileName, const std::regex &reg1, const std:
         if (line.size() == 0) {
             continue;
         }
-        if (!(regex_match(line, reg1) || regex_match(line, reg2))) {
+
+        bool isMatch = false;
+        for (const auto& reg : regexs) {
+            if (regex_match(line, reg)) {
+                isMatch = true;
+                break;
+            }
+        }
+        if (!isMatch) {
             file.close();
             return false;
         }
@@ -147,7 +156,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest003, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawMemInfo();
     std::cout << "collect raw memory info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-    bool flag = CheckFormat(data.data, RAW_MEM_INFO1, RAW_MEM_INFO2, 0);    // 0: don't skip the first line
+    bool flag = CheckFormat(data.data, {RAW_MEM_INFO1, RAW_MEM_INFO2}, 0); // 0: don't skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -175,7 +184,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest005, TestSize.Level1)
     CollectResult<std::string> data = collector->ExportAllProcessMemory();
     std::cout << "export all process memory result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-    bool flag = CheckFormat(data.data, ALL_PROC_MEM1, ALL_PROC_MEM2, 1);    // 1: skip the first line
+    bool flag = CheckFormat(data.data, {ALL_PROC_MEM1, ALL_PROC_MEM2}, 1); // 1: skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -190,7 +199,8 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest006, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawSlabInfo();
     std::cout << "collect raw slab info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-    bool flag = CheckFormat(data.data, RAW_SLAB_INFO1, RAW_SLAB_INFO2, 0);    // 0: don't skip the first line
+    bool flag = CheckFormat(data.data,
+        {RAW_SLAB_INFO1, RAW_SLAB_INFO2, RAW_SLAB_INFO3}, 0); // 0: don't skip the first line
     ASSERT_TRUE(flag);
 }
 
@@ -205,7 +215,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest007, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawPageTypeInfo();
     std::cout << "collect raw pagetype info result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-    bool flag = CheckFormat(data.data, RAW_PAGE_TYPE_INFO1, RAW_PAGE_TYPE_INFO2, 4);    // 4: skip the first four lines
+    bool flag = CheckFormat(data.data, {RAW_PAGE_TYPE_INFO1, RAW_PAGE_TYPE_INFO2}, 4); // 4: skip the first four lines
     ASSERT_TRUE(flag);
 }
 
@@ -220,7 +230,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest008, TestSize.Level1)
     CollectResult<std::string> data = collector->CollectRawDMA();
     std::cout << "collect raw DMA result" << data.retCode << std::endl;
     ASSERT_TRUE(data.retCode == UcError::SUCCESS);
-    bool flag = CheckFormat(data.data, RAW_DMA1, RAW_DMA2, 2);    // 2: skip the first two lines
+    bool flag = CheckFormat(data.data, {RAW_DMA1, RAW_DMA2}, 2); // 2: skip the first two lines
     ASSERT_TRUE(flag);
 }
 
@@ -322,7 +332,7 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest015, TestSize.Level1)
     std::cout << "collect raw memory view info result" << data.retCode << std::endl;
     if (FileUtil::FileExists("/proc/memview")) {
         ASSERT_EQ(data.retCode, UcError::SUCCESS);
-        bool flag = CheckFormat(data.data, RAW_MEM_VIEW_INFO1, RAW_MEM_VIEW_INFO2, 0); // 0: don't skip the first line
+        bool flag = CheckFormat(data.data, {RAW_MEM_VIEW_INFO1, RAW_MEM_VIEW_INFO2}, 0); // 0: don't skip the first line
         ASSERT_TRUE(flag);
     } else {
         ASSERT_EQ(data.retCode, UcError::UNSUPPORT);
@@ -345,39 +355,4 @@ HWTEST_F(MemoryCollectorTest, MemoryCollectorTest016, TestSize.Level1)
         ASSERT_EQ(data.retCode, UcError::SUCCESS);
         ASSERT_GT(data.data, 0);
     }
-}
-
-/**
- * @tc.name: MemoryCollectorTest017
- * @tc.desc: used to test MemoryCollector.GetGraphicUsage
- * @tc.type: FUNC
-*/
-HWTEST_F(MemoryCollectorTest, MemoryCollectorTest017, TestSize.Level1)
-{
-    const std::string SYSTEMUI_PROC_NAME = "com.ohos.systemui";
-    const std::string SCENEBOARD_RPOC_NAME = "com.ohos.sceneboard";
-    auto systemuiPid = CommonUtils::GetPidByName(SYSTEMUI_PROC_NAME);
-    auto launcherPid = CommonUtils::GetPidByName(SCENEBOARD_RPOC_NAME);
-    auto pid = static_cast<int32_t>(systemuiPid > 0 ? systemuiPid : launcherPid);
-    const std::string procName = systemuiPid > 0 ? SYSTEMUI_PROC_NAME : SCENEBOARD_RPOC_NAME;
-    if (pid <= 0) {
-        std::cout << "Get pid failed" << std::endl;
-        return;
-    }
-    std::shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
-    CollectResult<int32_t> data = collector->GetGraphicUsage(pid);
-    ASSERT_EQ(data.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] total result:" << data.data;
-    std::cout << std::endl;
-    ASSERT_GE(data.data, 0);
-    CollectResult<int32_t> glData = collector->GetGraphicUsage(pid, GraphicType::GL);
-    ASSERT_EQ(glData.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] gl result:" << glData.data;
-    std::cout << std::endl;
-    ASSERT_GE(glData.data, 0);
-    CollectResult<int32_t> graphicData = collector->GetGraphicUsage(pid, GraphicType::GRAPH);
-    ASSERT_EQ(graphicData.retCode, UcError::SUCCESS);
-    std::cout << "GetGraphicUsage [pid=" << pid <<", procName=" << procName << "] graphic result:" << graphicData.data;
-    std::cout << std::endl;
-    ASSERT_GE(graphicData.data, 0);
 }

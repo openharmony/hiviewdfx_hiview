@@ -30,40 +30,41 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace FaultLogger {
+namespace {
 constexpr int LOG_MAP_KEY = 0;
 constexpr int LOG_MAP_VALUE = 1;
-static const char *DEVICE_INFO[] = {"DEVICE_INFO", "Device info:"};
-static const char *BUILD_INFO[] = {"BUILD_INFO", "Build info:"};
-static const char *MODULE_NAME[] = {"MODULE", "Module name:"};
-static const char *PROCESS_NAME[] = {"PNAME", "Process name:"};
-static const char *MODULE_PID[] = {"PID", "Pid:"};
-static const char *MODULE_UID[] = {"UID", "Uid:"};
-static const char *MODULE_VERSION[] = {"VERSION", "Version:"};
-static const char *FAULT_TYPE[] = {"FAULT_TYPE", "Fault type:"};
-static const char *SYSVMTYPE[] = {"SYSVMTYPE", "SYSVMTYPE:"};
-static const char *APPVMTYPE[] = {"APPVMTYPE", "APPVMTYPE:"};
-static const char *FOREGROUND[] = {"FOREGROUND", "Foreground:"};
-static const char *LIFETIME[] = {"LIFETIME", "Up time:"};
-static const char *REASON[] = {"REASON", "Reason:"};
-static const char *FAULT_MESSAGE[] = {"FAULT_MESSAGE", "Fault message:"};
-static const char *STACKTRACE[] = {"TRUSTSTACK", "Selected stacktrace:\n"};
-static const char *ROOT_CAUSE[] = {"BINDERMAX", "Blocked chain:\n"};
-static const char *MSG_QUEUE_INFO[] = {"MSG_QUEUE_INFO", "Message queue info:\n"};
-static const char *BINDER_TRANSACTION_INFO[] = {"BINDER_TRANSACTION_INFO", "Binder transaction info:\n"};
-static const char *PROCESS_STACKTRACE[] = {"PROCESS_STACKTRACE", "Process stacktrace:\n"};
-static const char *OTHER_THREAD_INFO[] = {"OTHER_THREAD_INFO", "Other thread info:\n"};
-static const char *KEY_THREAD_INFO[] = {"KEY_THREAD_INFO", "Fault thread info:\n"};
-static const char *KEY_THREAD_REGISTERS[] = {"KEY_THREAD_REGISTERS", "Registers:\n"};
-static const char *MEMORY_USAGE[] = {"MEM_USAGE", "Memory Usage:\n"};
-static const char *CPU_USAGE[] = {"FAULTCPU", "CPU Usage:"};
-static const char *TRACE_ID[] = {"TRACEID", "Trace-Id:"};
-static const char *SUMMARY[] = {"SUMMARY", "Summary:\n"};
-static const char *TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
-static const char *MEMORY_NEAR_REGISTERS[] = {"MEMORY_NEAR_REGISTERS", "Memory near registers:\n"};
-static const char *PRE_INSTALL[] = {"PRE_INSTALL", "PreInstalled:"};
-static const char *VERSION_CODE[] = {"VERSION_CODE", "VersionCode:"};
-static const char *FINGERPRINT[] = {"fingerPrint", "Fingerprint:"};
-static const char *APPEND_ORIGIN_LOG[] = {"APPEND_ORIGIN_LOG", ""};
+constexpr const char* const DEVICE_INFO[] = {"DEVICE_INFO", "Device info:"};
+constexpr const char* const BUILD_INFO[] = {"BUILD_INFO", "Build info:"};
+constexpr const char* const MODULE_NAME[] = {"MODULE", "Module name:"};
+constexpr const char* const PROCESS_NAME[] = {"PNAME", "Process name:"};
+constexpr const char* const MODULE_PID[] = {"PID", "Pid:"};
+constexpr const char* const MODULE_UID[] = {"UID", "Uid:"};
+constexpr const char* const MODULE_VERSION[] = {"VERSION", "Version:"};
+constexpr const char* const FAULT_TYPE[] = {"FAULT_TYPE", "Fault type:"};
+constexpr const char* const SYSVMTYPE[] = {"SYSVMTYPE", "SYSVMTYPE:"};
+constexpr const char* const APPVMTYPE[] = {"APPVMTYPE", "APPVMTYPE:"};
+constexpr const char* const FOREGROUND[] = {"FOREGROUND", "Foreground:"};
+constexpr const char* const LIFETIME[] = {"LIFETIME", "Up time:"};
+constexpr const char* const REASON[] = {"REASON", "Reason:"};
+constexpr const char* const FAULT_MESSAGE[] = {"FAULT_MESSAGE", "Fault message:"};
+constexpr const char* const STACKTRACE[] = {"TRUSTSTACK", "Selected stacktrace:\n"};
+constexpr const char* const ROOT_CAUSE[] = {"BINDERMAX", "Blocked chain:\n"};
+constexpr const char* const MSG_QUEUE_INFO[] = {"MSG_QUEUE_INFO", "Message queue info:\n"};
+constexpr const char* const BINDER_TRANSACTION_INFO[] = {"BINDER_TRANSACTION_INFO", "Binder transaction info:\n"};
+constexpr const char* const PROCESS_STACKTRACE[] = {"PROCESS_STACKTRACE", "Process stacktrace:\n"};
+constexpr const char* const OTHER_THREAD_INFO[] = {"OTHER_THREAD_INFO", "Other thread info:\n"};
+constexpr const char* const KEY_THREAD_INFO[] = {"KEY_THREAD_INFO", "Fault thread info:\n"};
+constexpr const char* const KEY_THREAD_REGISTERS[] = {"KEY_THREAD_REGISTERS", "Registers:\n"};
+constexpr const char* const MEMORY_USAGE[] = {"MEM_USAGE", "Memory Usage:\n"};
+constexpr const char* const CPU_USAGE[] = {"FAULTCPU", "CPU Usage:"};
+constexpr const char* const TRACE_ID[] = {"TRACEID", "Trace-Id:"};
+constexpr const char* const SUMMARY[] = {"SUMMARY", "Summary:\n"};
+constexpr const char* const TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
+constexpr const char* const MEMORY_NEAR_REGISTERS[] = {"MEMORY_NEAR_REGISTERS", "Memory near registers:\n"};
+constexpr const char* const PRE_INSTALL[] = {"PRE_INSTALL", "PreInstalled:"};
+constexpr const char* const VERSION_CODE[] = {"VERSION_CODE", "VersionCode:"};
+constexpr const char* const FINGERPRINT[] = {"fingerPrint", "Fingerprint:"};
+constexpr const char* const APPEND_ORIGIN_LOG[] = {"APPEND_ORIGIN_LOG", ""};
 
 auto CPP_CRASH_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, FINGERPRINT, MODULE_NAME, MODULE_VERSION, VERSION_CODE,
@@ -101,15 +102,15 @@ auto SYS_WARNING_LOG_SEQUENCE = {
 
 auto RUST_PANIC_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
-    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
+    MODULE_UID, FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
 };
 
 auto ADDR_SANITIZER_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
-    MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
+    MODULE_UID, FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
 };
-
-std::list<const char **> GetLogParseList(int32_t logType)
+}
+std::list<const char* const*> GetLogParseList(int32_t logType)
 {
     switch (logType) {
         case FaultLogType::CPP_CRASH:
@@ -127,7 +128,7 @@ std::list<const char **> GetLogParseList(int32_t logType)
         case FaultLogType::ADDR_SANITIZER:
             return ADDR_SANITIZER_LOG_SEQUENCE;
         default:
-            return std::list<const char **>();
+            return {};
     }
 }
 
@@ -153,25 +154,26 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
     return summary;
 }
 
-bool ParseFaultLogLine(const std::list<const char **>& parseList, const std::string& line, const std::string& multline,
-    std::string& multlineName, FaultLogInfo& info)
+bool ParseFaultLogLine(const std::list<const char* const*>& parseList, const std::string& line,
+    const std::string& multline, std::string& multlineName, FaultLogInfo& info)
 {
     for (auto &item : parseList) {
         if (strlen(item[LOG_MAP_VALUE]) <= 1) {
             continue;
         }
         std::string sectionHead = std::string(item[LOG_MAP_VALUE], strlen(item[LOG_MAP_VALUE]) - 1);
-        if (line.find(sectionHead) != std::string::npos) {
-            if (!line.empty() && line.at(line.size() - 1) == ':') {
-                if ((item[LOG_MAP_KEY] != multlineName) && (!multline.empty())) {
-                    info.sectionMap[multlineName] = multline;
-                }
-                multlineName = item[LOG_MAP_KEY];
-            } else {
-                info.sectionMap[item[LOG_MAP_KEY]] = line.substr(line.find_first_of(":") + 1);
-            }
-            return false;
+        if (line.find(sectionHead) == std::string::npos) {
+            continue;
         }
+        if (!line.empty() && line.at(line.size() - 1) == ':') {
+            if ((item[LOG_MAP_KEY] != multlineName) && (!multline.empty())) {
+                info.sectionMap[multlineName] = multline;
+            }
+            multlineName = item[LOG_MAP_KEY];
+        } else {
+            info.sectionMap[item[LOG_MAP_KEY]] = line.substr(line.find_first_of(":") + 1);
+        }
+        return false;
     }
     return true;
 }
@@ -223,7 +225,7 @@ void WriteDfxLogToFile(int32_t fd)
 
 void WriteFaultLogToFile(int32_t fd, int32_t logType, std::map<std::string, std::string> sections)
 {
-    std::list<const char **> seq = GetLogParseList(logType);
+    auto seq = GetLogParseList(logType);
     for (auto &item : seq) {
         auto value = sections[item[LOG_MAP_KEY]];
         if (!value.empty()) {

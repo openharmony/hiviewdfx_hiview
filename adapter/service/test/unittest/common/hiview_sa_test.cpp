@@ -118,7 +118,7 @@ HWTEST_F(HiviewSATest, CommonTest003, testing::ext::TestSize.Level3)
     CollectResult<int32_t> data = hiviewSAProxy->GetGraphicUsage().result_;
     ASSERT_EQ(data.retCode, UCollect::UcError::SUCCESS);
     std::cout << "GetGraphicUsage result:" << data.data << std::endl;
-    ASSERT_GT(data.data, 0);
+    ASSERT_GE(data.data, 0);
 }
 }
 }

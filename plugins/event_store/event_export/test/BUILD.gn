@@ -99,7 +99,7 @@ ohos_unittest("EventExportMgrTest") {
   sources = [ "unittest/common/event_export_mgr_test.cpp" ]
 
   deps = [
-    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base:hiviewbase",
     "../../event_export:event_export_engine",
   ]
 

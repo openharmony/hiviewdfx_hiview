@@ -34,10 +34,12 @@
 DEFINE_LOG_LABEL(0xD002D11, "FaultloggerServiceOhos");
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
 constexpr int32_t UID_SHELL = 2000;
 constexpr int32_t UID_ROOT = 0;
 constexpr int32_t UID_HIDUMPER = 1212;
 constexpr int32_t UID_HIVIEW = 1201;
+}
 void FaultloggerServiceOhos::ClearQueryStub(int32_t uid)
 {
     std::lock_guard<std::mutex> lock(mutex_);

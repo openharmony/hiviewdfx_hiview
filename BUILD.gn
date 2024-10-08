@@ -126,6 +126,7 @@ group("hiview_package") {
     "$hiview_plugin/performance:xperformance",
     "$hiview_plugin/plugin_build:adft",
     "$hiview_plugin/plugin_build:bdfr",
+    "$hiview_root/utility/analysis_faultlog:analysis_faultlog",
   ]
 
   if (enable_hiview_usage_event_report_build) {

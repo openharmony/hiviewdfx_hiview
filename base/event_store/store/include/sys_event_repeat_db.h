@@ -43,10 +43,11 @@ public:
     void Clear(const int64_t happentime);
 
 private:
+    bool CheckDbStoreValid();
     void InitDbStore();
-    void CreateTable();
     void ClearHistory(const int64_t happentime);
     void RefreshDbCount();
+    void CheckAndRepairDbFile(const int32_t errCode);
 
 private:
     std::shared_ptr<NativeRdb::RdbStore> dbStore_;
