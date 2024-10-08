@@ -24,6 +24,7 @@
 #include "hisysevent.h"
 #include "hiview_logger.h"
 #include "panic_report_recovery.h"
+#include "panic_error_info_handle.h"
 #include "plugin_factory.h"
 #include "hisysevent_util.h"
 #include "smart_parser.h"
@@ -88,6 +89,12 @@ void BBoxDetectorPlugin::HandleBBoxEvent(std::shared_ptr<SysEvent> &sysEvent)
 {
     if (PanicReport::IsRecoveryPanicEvent(sysEvent)) {
         return;
+    }
+    string eventName = sysEvent->GetEventName();
+    if (eventName == "CUSTOM") {
+        std::string bboxTime = sysEvent->GetEventValue("BBOX_TIME");
+        std::string bboxSysreset = sysEvent->GetEventValue("BBOX_SYSRESET");
+        PanicErrorInfoHandle::RKTransData(bboxTime, bboxSysreset);
     }
     std::string event = sysEvent->GetEventValue("REASON");
     std::string module = sysEvent->GetEventValue("MODULE");
@@ -263,7 +270,6 @@ void BBoxDetectorPlugin::NotifyBootCompleted()
 void BBoxDetectorPlugin::InitPanicReporter()
 {
     if (!PanicReport::InitPanicReport()) {
-        HIVIEW_LOGE("Failed to init panic reporter");
         return;
     }
     AddDetectBootCompletedTask();
