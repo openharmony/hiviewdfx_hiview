@@ -17,6 +17,7 @@
 #define HIVIEW_PLUGINS_UNIFIED_COLLECTOR_STORAGE_INCLUDE_CPU_STORAGE_H
 
 #include <memory>
+#include <unordered_set>
 
 #include "resource/cpu.h"
 #include "rdb_helper.h"
@@ -41,7 +42,7 @@ public:
 private:
     void InitDbStorePath();
     void InitDbStore();
-    void StoreProcessData(const ProcessCpuStatInfo& cpuCollection);
+    void StoreProcessData(const ProcessCpuStatInfo& cpuCollection, const std::unordered_set<int32_t>& memcgProcs);
     void StoreThreadData(const ThreadCpuStatInfo& cpuCollection);
     bool NeedReport();
     void PrepareOldDbFilesBeforeReport();
