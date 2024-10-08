@@ -14,12 +14,11 @@
  */
 
 #include <climits>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <unistd.h>
 
-#include "cpu_collector.h"
-
-#include <gtest/gtest.h>
+#include "cpu_collector_client.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;

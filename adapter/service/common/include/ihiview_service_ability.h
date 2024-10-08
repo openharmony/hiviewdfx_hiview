@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,12 +18,12 @@
 
 #include <string>
 
-#include "hiview_file_info.h"
-#include "iremote_broker.h"
-#include "hiview_service_ipc_interface_code.h"
+#include "client/memory_collector_client.h"
+#include "client/trace_collector_client.h"
 #include "collect_result_pracelable.h"
-#include "client/trace_collector.h"
-#include "client/memory_collector.h"
+#include "hiview_file_info.h"
+#include "hiview_service_ipc_interface_code.h"
+#include "iremote_broker.h"
 
 namespace OHOS {
 namespace HiviewDFX {

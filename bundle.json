@@ -137,8 +137,8 @@
                     "header": {
                         "header_base": "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection",
                         "header_files": [
-                            "client/cpu_collector.h",
-                            "client/trace_collector.h"
+                            "client/cpu_collector_client.h",
+                            "client/trace_collector_client.h"
                         ]
                     }
                 },

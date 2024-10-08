@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "cpu_collector.h"
+#include "cpu_collector_client.h"
 #include "hiview_service_cpu_delegate.h"
 
 using namespace OHOS::HiviewDFX::UCollect;

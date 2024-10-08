@@ -15,7 +15,7 @@
 
 #include <gtest/gtest.h>
 
-#include "memory_collector.h"
+#include "memory_collector_client.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;

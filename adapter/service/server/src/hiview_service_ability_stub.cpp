@@ -20,8 +20,8 @@
 
 #include "accesstoken_kit.h"
 #include "ash_memory_utils.h"
-#include "client/trace_collector.h"
-#include "client/memory_collector.h"
+#include "client/trace_collector_client.h"
+#include "client/memory_collector_client.h"
 #include "errors.h"
 #include "hiview_err_code.h"
 #include "ipc_skeleton.h"
