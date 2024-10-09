@@ -29,6 +29,7 @@ ohos_source_set("bbox_detector") {
   sources = [
     "bbox_detector_plugin.cpp",
     "hisysevent_util.cpp",
+    "panic_error_info_handle.cpp",
     "panic_report_recovery.cpp",
   ]
 
@@ -61,6 +62,7 @@ ohos_source_set("bbox_detector_with_cfi") {
   sources = [
     "bbox_detector_plugin.cpp",
     "hisysevent_util.cpp",
+    "panic_error_info_handle.cpp",
     "panic_report_recovery.cpp",
   ]
 

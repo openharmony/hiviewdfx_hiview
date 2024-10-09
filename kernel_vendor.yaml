@@ -47,6 +47,20 @@ PANIC:
   SECOND_FRAME: {type: STRING, desc: second stack info}
   LAST_FRAME: {type: STRING, desc: last stack info}
 
+CUSTOM:
+  __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: kernel panic}
+  MSG: {type: STRING, desc: panic event message}
+  MODULE: {type: STRING, desc: module name}
+  REASON: {type: STRING, desc: fault reason}
+  HAPPEN_TIME: {type: INT64, desc: fault trigger time}
+  LOG_PATH: {type: STRING, desc: fault log dir}
+  FINGERPRINT: {type: STRING, desc: unique id for grouping same fault}
+  FIRST_FRAME: {type: STRING, desc: first stack info}
+  SECOND_FRAME: {type: STRING, desc: second stack info}
+  LAST_FRAME: {type: STRING, desc: last stack info}
+  BBOX_TIME: {type: STRING, desc: blackbox hisysevent report timestamp info}
+  BBOX_SYSRESET: {type: STRING, desc: blackbox hisysevent report sysreset info}
+
 BOOTFAIL:
   __BASE: {type: FAULT, level: CRITICAL, tag: STABILITY, desc: device reboot fail}
   MSG: {type: STRING, desc: bootFail event message}
