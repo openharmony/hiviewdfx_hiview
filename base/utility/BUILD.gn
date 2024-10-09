@@ -31,6 +31,7 @@ ohos_source_set("hiview_utility") {
     "common_utils.cpp",
     "dynamic_module.cpp",
     "file_util.cpp",
+    "focused_event_util.cpp",
     "freeze_json_util.cpp",
     "hiview_config_util.cpp",
     "hiview_db_util.cpp",

@@ -77,6 +77,7 @@ void EventWriteHandler::CopyTmpZipFilesToDest()
             HIVIEW_LOGE("failed to move %{public}s to %{public}s", StringUtil::HideDeviceIdInfo(item.first).c_str(),
                 StringUtil::HideDeviceIdInfo(item.second).c_str());
         }
+        HIVIEW_LOGI("zip file to export: %{public}s", StringUtil::HideDeviceIdInfo(item.second).c_str());
     });
     zippedExportFileMap_.clear();
 }

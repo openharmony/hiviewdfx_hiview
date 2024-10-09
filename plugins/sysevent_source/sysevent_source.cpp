@@ -23,6 +23,7 @@
 #include "defines.h"
 #include "raw_data_base_def.h"
 #include "file_util.h"
+#include "focused_event_util.h"
 #include "hiview_config_util.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
@@ -242,8 +243,13 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
-    HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
-        sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), sysEvent->GetEventSeq());
+    if (FocusedEventUtil::IsFocusedEvent(sysEvent->domain_, sysEvent->eventName_)) {
+        HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRIu64 "] is valid.",
+            sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), event->happenTime_);
+    } else {
+        HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRIu64 "] is valid.",
+            sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), event->happenTime_);
+    }
     sysEventStat_->AccumulateEvent();
     return true;
 }
