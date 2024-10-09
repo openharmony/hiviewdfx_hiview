@@ -21,6 +21,7 @@
 #include <sstream>
 
 #include "file_util.h"
+#include "focused_event_util.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "hiview_zip_util.h"
@@ -171,6 +172,10 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
     }
     for (const auto& event : events) {
         cJSON* eventItem = cJSON_Parse(event.second.c_str());
+        if (FocusedEventUtil::IsFocusedEvent(domain, event.first)) {
+            HIVIEW_LOGI("write event to json: [%{public}s|%{public}s]", domain.c_str(),
+                event.first.c_str());
+        }
         cJSON_AddItemToArray(dataJsonArray, eventItem);
     }
     cJSON* anonymousJsonObj = cJSON_CreateObject();
@@ -203,7 +208,6 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 
 bool ZipDbFile(const std::string& src, const std::string& dest)
 {
-    HIVIEW_LOGI("zip file: %{public}s to %{public}s", src.c_str(), StringUtil::HideDeviceIdInfo(dest).c_str());
     HiviewZipUnit zipUnit(dest);
     if (int32_t ret = zipUnit.AddFileInZip(src, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
         HIVIEW_LOGW("zip db failed, ret: %{public}d.", ret);
