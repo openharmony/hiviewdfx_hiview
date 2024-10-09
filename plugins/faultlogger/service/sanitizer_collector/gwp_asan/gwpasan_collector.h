@@ -51,6 +51,7 @@ struct GwpAsanCurrInfo {
     std::map<std::string, std::string> sectionMaps;
 };
 
+constexpr unsigned ASAN_LOG_SIZE = 350 * 1024;
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
 std::string GetNameByPid(int32_t pid);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
