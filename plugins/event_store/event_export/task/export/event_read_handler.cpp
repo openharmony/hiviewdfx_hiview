@@ -137,8 +137,8 @@ bool EventReadHandler::HandleQueryResult(EventStore::ResultSet& resultSet, Query
         auto item = std::make_shared<CachedEvent>(eventVersion, iter->domain_, iter->eventName_,
             currentEventStr);
         if (FocusedEventUtil::IsFocusedEvent(iter->domain_, iter->eventName_)) {
-            HIVIEW_LOGI("queried event: [%{public}s|%{public}s|%{public}" PRId64 "]", iter->domain_.c_str(),
-                iter->eventName_.c_str(), iter->GetEventSeq());
+            HIVIEW_LOGI("queried event: [%{public}s|%{public}s|%{public}" PRIu64 "]", iter->domain_.c_str(),
+                iter->eventName_.c_str(), iter->happenTime_);
         }
         cachedSysEvents_.emplace_back(item);
         totalQueryCnt--;
