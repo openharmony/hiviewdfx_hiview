@@ -99,7 +99,8 @@ void WriteGwpAsanLog(char* buf, size_t sz)
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType)
 {
     GwpAsanCurrInfo currInfo;
-    currInfo.description = gwpAsanBuffer;
+    currInfo.description = ((gwpAsanBuffer.size() > ASAN_LOG_SIZE) ? (gwpAsanBuffer.substr(0, ASAN_LOG_SIZE) +
+                                                                      "\nEnd Asan report") : gwpAsanBuffer);
     currInfo.pid = getpid();
     currInfo.uid = getuid();
     currInfo.errType = errType;
