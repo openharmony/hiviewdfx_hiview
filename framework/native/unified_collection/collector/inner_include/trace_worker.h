@@ -18,6 +18,8 @@
 #include <functional>
 #include <string>
 
+#include "ffrt.h"
+
 using UcollectionTask = std::function<void ()>;
 using UcollectionWorker = std::function<void (UcollectionTask)>;
 
@@ -34,6 +36,7 @@ private:
     TraceWorker() {};
     ~TraceWorker() {};
     static TraceWorker traceWorker_;
+    std::unique_ptr<ffrt::queue> ffrtQueue_ = std::make_unique<ffrt::queue>("dft_trace_worker");
 };
 } // HiViewDFX
 } // OHOS

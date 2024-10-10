@@ -467,6 +467,8 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, UCollect::TraceC
     for (const auto &tracePath : ret.outputFiles) {
         std::string traceFile = FileUtil::ExtractFileName(tracePath);
         const std::string destZipPath = UNIFIED_SHARE_PATH + StringUtil::ReplaceStr(traceFile, ".sys", ".zip");
+        // new empty file is used to restore tasks in queue
+        FileUtil::SaveStringToFile(UNIFIED_SHARE_TEMP_PATH + FileUtil::ExtractFileName(destZipPath), " ", true);
         // for zip
         UcollectionTask traceTask = [=]() {
             ZipTraceFile(tracePath, destZipPath);
