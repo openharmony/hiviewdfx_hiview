@@ -14,6 +14,12 @@ import("//base/hiviewdfx/hiview/hiview.gni")
 import("//build/ohos.gni")
 
 ohos_shared_library("faultlogger_napi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
   include_dirs = [
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits/include",
     "//base/hiviewdfx/hiview/base/include",
@@ -26,7 +32,7 @@ ohos_shared_library("faultlogger_napi") {
 
   deps = [
     "$hiview_base/utility:hiview_utility",
-    "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl",
+    "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl_with_cfi",
   ]
   external_deps = [
     "hilog:libhilog",

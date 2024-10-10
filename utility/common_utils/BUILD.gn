@@ -46,6 +46,35 @@ ohos_source_set("hiview_reliability_common_utils") {
   ]
 }
 
+ohos_source_set("hiview_reliability_common_utils_with_cfi") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+  part_name = "hiview"
+  subsystem_name = "hiviewdfx"
+  public_configs = [ ":hiview_reliability_common_utils_config" ]
+
+  sources = [
+    "calc_fingerprint.cpp",
+    "log_parse.cpp",
+    "tbox.cpp",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+    "openssl:libcrypto_shared",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_base/utility:hiview_utility",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = [ "test:unittest" ]
