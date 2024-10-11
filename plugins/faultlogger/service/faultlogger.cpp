@@ -911,7 +911,7 @@ int Faultlogger::DoGetHilogProcess(int32_t pid, int writeFd) const
     }
 
     int ret = -1;
-    ret = execl("/system/bin/hilog", "hilog", "-z", "2000", "-P", std::to_string(pid).c_str(), nullptr);
+    ret = execl("/system/bin/hilog", "hilog", "-z", "1000", "-P", std::to_string(pid).c_str(), nullptr);
     if (ret < 0) {
         HIVIEW_LOGE("execl %{public}d, errno: %{public}d", ret, errno);
         return ret;
