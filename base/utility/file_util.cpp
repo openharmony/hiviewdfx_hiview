@@ -278,7 +278,7 @@ int CreateFile(const std::string &path, mode_t mode)
         }
         fout.flush();
         fout.close();
-        if (ChangeMode(path, mode) != 0) {
+        if (!ChangeMode(path, mode)) {
             return -1;
         }
     }
