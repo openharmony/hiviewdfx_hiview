@@ -238,6 +238,15 @@ void FillJsErrorParams(std::string summary, Json::Value &params)
     exception["stack"] = stack;
     params["exception"] = exception;
 }
+
+static bool IsSystemProcess(const std::string &processName, int32_t uid)
+{
+    std::string sysBin = "/system/bin";
+    std::string venBin = "/vendor/bin";
+    return (uid < MIN_APP_USERID ||
+            (processName.compare(0, sysBin.length(), sysBin) == 0) ||
+            (processName.compare(0, venBin.length(), venBin) == 0));
+}
 } // namespace
 
 void Faultlogger::AddPublicInfo(FaultLogInfo &info)
@@ -295,6 +304,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     // parse fingerprint by summary or temp log for native crash
     AnalysisFaultlog(info, info.parsedLogInfo);
     info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+    info.parsedLogInfo.clear();
 }
 
 void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
@@ -496,7 +506,7 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     sysEvent->SetEventValue("FOREGROUND", info.sectionMap["FOREGROUND"]);
     std::map<std::string, std::string> eventInfos;
     if (AnalysisFaultlog(info, eventInfos)) {
-        sysEvent->SetEventValue("PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"]);
+        sysEvent->SetEventValue("PNAME", info.module.empty() ? "/" : info.module);
         sysEvent->SetEventValue("FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" :
                                 StringUtil::EscapeJsonStringValue(eventInfos["FIRST_FRAME"]));
         sysEvent->SetEventValue("SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" :
@@ -682,10 +692,14 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
     HIVIEW_LOGI("Start saving Faultlog of Process:%{public}d, Name:%{public}s, Reason:%{public}s.",
         info.pid, info.module.c_str(), info.reason.c_str());
-
-    std::string appName = GetApplicationNameById(info.id);
-    if (!appName.empty()) {
-        info.module = appName;
+    info.sectionMap["PROCESS_NAME"] = info.module; // save process name
+    // Non system processes use UID to pass events to applications
+    bool isSystemProcess = IsSystemProcess(info.module, info.id);
+    if (!isSystemProcess) {
+        std::string appName = GetApplicationNameById(info.id);
+        if (!appName.empty()) {
+            info.module = appName; // if bundle name is not empty, replace module name by it.
+        }
     }
 
     HIVIEW_LOGD("nameProc %{public}s", info.module.c_str());
@@ -716,12 +730,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
                 info.reason.c_str(),
                 info.summary.c_str());
 
-    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+    if (!isSystemProcess && info.faultLogType == FaultLogType::CPP_CRASH) {
         CheckFaultLogAsync(info);
         ReportCppCrashToAppEvent(info);
-    }
-
-    if (info.faultLogType == FaultLogType::APP_FREEZE) {
+    } else if (!isSystemProcess && info.faultLogType == FaultLogType::APP_FREEZE) {
         ReportAppFreezeToAppEvent(info);
     }
 

@@ -48,7 +48,8 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
         return false;
     }
     auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, rawData);
-    HIVIEW_LOGI("parse FaultLogInfo from %{public}s. 0", sysEvent->AsJsonStr().c_str());
+    constexpr string::size_type FIRST_200_BYTES = 200;
+    HIVIEW_LOGI("parse FaultLogInfo from %{public}s.", sysEvent->AsJsonStr().substr(0, FIRST_200_BYTES).c_str());
     constexpr int64_t DEFAULT_INT_VALUE = 0;
     info.time = static_cast<int64_t>(std::atoll(sysEvent->GetEventValue("HAPPEN_TIME").c_str()));
     if (info.time == DEFAULT_INT_VALUE) {
@@ -74,13 +75,18 @@ FaultLogDatabase::FaultLogDatabase(const std::shared_ptr<EventLoop>& eventLoop) 
 void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    std::map<std::string, std::string> eventInfos;
-    AnalysisFaultlog(info, eventInfos);
+    if (info.faultLogType == FaultLogType::SYS_FREEZE) {
+        AnalysisFaultlog(info, info.parsedLogInfo);
+        for (const auto& logInfo : info.parsedLogInfo) {
+            info.sectionMap[logInfo.first] = logInfo.second;
+        }
+        info.parsedLogInfo.clear();
+    }
     if (!eventLoop_) {
         HIVIEW_LOGE("eventLoop_ is not inited.");
         return;
     }
-    auto task = [info, eventInfos(std::move(eventInfos))] () mutable {
+    auto task = [info] () mutable {
         HiSysEventWrite(
             HiSysEvent::Domain::RELIABILITY,
             GetFaultNameByType(info.faultLogType, false),
@@ -100,12 +106,12 @@ void FaultLogDatabase::SaveFaultLogInfo(FaultLogInfo& info)
                             info.sectionMap.at("HITRACE_TIME") : "",
             "SYSRQ_TIME", info.sectionMap.find("SYSRQ_TIME") != info.sectionMap.end() ?
                           info.sectionMap.at("SYSRQ_TIME") : "",
-            "PNAME", eventInfos["PNAME"].empty() ? "/" : eventInfos["PNAME"],
-            "FIRST_FRAME", eventInfos["FIRST_FRAME"].empty() ? "/" : eventInfos["FIRST_FRAME"],
-            "SECOND_FRAME", eventInfos["SECOND_FRAME"].empty() ? "/" : eventInfos["SECOND_FRAME"],
-            "LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" : eventInfos["LAST_FRAME"],
-            "FINGERPRINT", eventInfos["fingerPrint"].empty() ? "/" : eventInfos["fingerPrint"],
-            "STACK", eventInfos["STACK"].empty() ? "" : eventInfos["STACK"]
+            "PNAME", info.sectionMap["PROCESS_NAME"].empty() ? "/" : info.sectionMap["PROCESS_NAME"],
+            "FIRST_FRAME", info.sectionMap["FIRST_FRAME"].empty() ? "/" : info.sectionMap["FIRST_FRAME"],
+            "SECOND_FRAME", info.sectionMap["SECOND_FRAME"].empty() ? "/" : info.sectionMap["SECOND_FRAME"],
+            "LAST_FRAME", info.sectionMap["LAST_FRAME"].empty() ? "/" : info.sectionMap["LAST_FRAME"],
+            "FINGERPRINT", info.sectionMap["fingerPrint"].empty() ? "/" : info.sectionMap["fingerPrint"],
+            "STACK", info.sectionMap["STACK"].empty() ? "" : info.sectionMap["STACK"]
         );
     };
     constexpr int delayTime = 2;
