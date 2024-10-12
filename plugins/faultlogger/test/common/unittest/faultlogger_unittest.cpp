@@ -44,6 +44,7 @@
 #include "log_analyzer.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
+#include "zip_helper.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
@@ -355,22 +356,16 @@ HWTEST_F(FaultloggerUnittest, DumpTest003, testing::ext::TestSize.Level3)
     }
 }
 
-/**
- * @tc.name: genCppCrashLogTest001
- * @tc.desc: create cpp crash event and send it to faultlogger
- *           check info which send to appevent
- * @tc.type: FUNC
- */
-HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
+static void GenCppCrashLogTestCommon(int32_t uid, bool ifFileExist)
 {
     int pipeFd[2] = {-1, -1};
     ASSERT_EQ(pipe(pipeFd), 0) << "create pipe failed";
     auto plugin = GetFaultloggerInstance();
     FaultLogInfo info;
-    info.time = 1607161163;
-    info.id = 0;
-    info.pid = 7496;
-    info.faultLogType = 2;
+    info.time = 1607161163; // 1607161163 : analog value of time
+    info.id = uid;
+    info.pid = 7496; // 7496 : analog value of pid
+    info.faultLogType = 2; // 2 : CPP_CRASH
     info.module = "com.example.myapplication";
     info.sectionMap["APPVERSION"] = "1.0";
     info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
@@ -396,17 +391,47 @@ HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Leve
     close(pipeFd[1]);
     plugin->AddFaultLog(info);
     std::string timeStr = GetFormatedTime(info.time);
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
+    std::string appName = GetApplicationNameById(info.id);
+    if (appName.size() == 0) {
+        appName = info.module;
+    }
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-" + appName + "-" +
+        std::to_string(info.id) + "-" + timeStr;
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
-    ASSERT_EQ(parsedInfo->module, "com.example.myapplication");
+    ASSERT_EQ(parsedInfo->module, appName);
     // check appevent json info
-    std::string appeventInfofileName = "/data/test_cppcrash_info_" + std::to_string(info.pid);
-    ASSERT_EQ(FileUtil::FileExists(appeventInfofileName), true);
+    ASSERT_EQ(FileUtil::FileExists("/data/test_cppcrash_info_7496"), ifFileExist);
+}
+
+/**
+ * @tc.name: genCppCrashLogTest001
+ * @tc.desc: create cpp crash event and send it to faultlogger
+ *           check info which send to appevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest001, testing::ext::TestSize.Level3)
+{
+    GenCppCrashLogTestCommon(10001, true); // 10001 : analog value of user uid
     string keywords[] = { "\"time\":", "\"pid\":", "\"exception\":", "\"threads\":", "\"thread_name\":", "\"tid\":" };
     int length = sizeof(keywords) / sizeof(keywords[0]);
-    ASSERT_EQ(CheckKeyWordsInFile(appeventInfofileName, keywords, length, false), length);
+    ASSERT_EQ(CheckKeyWordsInFile("/data/test_cppcrash_info_7496", keywords, length, false), length);
+    auto ret = remove("/data/test_cppcrash_info_7496");
+    if (ret == 0) {
+        GTEST_LOG_(INFO) << "remove /data/test_jsError_info failed";
+    }
+}
+
+/**
+ * @tc.name: genCppCrashLogTest002
+ * @tc.desc: create cpp crash event and send it to faultlogger
+ *           check info which send to appevent
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, GenCppCrashLogTest002, testing::ext::TestSize.Level3)
+{
+    GenCppCrashLogTestCommon(0, false); // 0 : analog value of system uid
 }
 
 /**
