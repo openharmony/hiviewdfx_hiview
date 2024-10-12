@@ -138,20 +138,20 @@ cJSON* CreateJsonObjectByVersion(const std::string& sysVersion)
     // add header
     auto headerObj = CreateHeaderJsonObj();
     if (headerObj != nullptr) {
-        cJSON_AddItemToObject(root, H_HEADER_KEY, headerObj);
+        cJSON_AddItemToObjectCS(root, H_HEADER_KEY, headerObj);
     }
     // add manufacturer
     auto manufacturerObj = CreateManufacturerJsonObj();
     if (manufacturerObj != nullptr) {
-        cJSON_AddItemToObject(root, H_MANUFACTURE_KEY, manufacturerObj);
+        cJSON_AddItemToObjectCS(root, H_MANUFACTURE_KEY, manufacturerObj);
     }
     auto deviceObj = CreateDeviceJsonObj();
     if (deviceObj != nullptr) {
-        cJSON_AddItemToObject(root, H_DEVICE_KEY, deviceObj);
+        cJSON_AddItemToObjectCS(root, H_DEVICE_KEY, deviceObj);
     }
     auto systemObj = CreateSystemObj(sysVersion);
     if (systemObj != nullptr) {
-        cJSON_AddItemToObject(root, H_SYSTEM_KEY, systemObj);
+        cJSON_AddItemToObjectCS(root, H_SYSTEM_KEY, systemObj);
     }
     return root;
 }
@@ -183,7 +183,7 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
         HIVIEW_LOGE("failed to create anonymousJsonObj json object");
         return nullptr;
     }
-    cJSON_AddItemToObject(anonymousJsonObj, DATA_KEY, dataJsonArray);
+    cJSON_AddItemToObjectCS(anonymousJsonObj, DATA_KEY, dataJsonArray);
     cJSON_AddItemToArray(eventsJsonArray, anonymousJsonObj);
     return eventsJsonArray;
 }
@@ -310,16 +310,16 @@ bool ExportJsonFileWriter::Write()
             continue;
         }
         cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, sysEvent.first.c_str());
-        cJSON_AddItemToObject(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
+        cJSON_AddItemToObjectCS(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
         cJSON* eventsJsonObj = CreateEventsJsonArray(sysEvent.first, sysEvent.second);
         if (eventsJsonObj == nullptr) {
             continue;
         }
-        cJSON_AddItemToObject(domainJsonObj, EVENTS_KEY, eventsJsonObj);
+        cJSON_AddItemToObjectCS(domainJsonObj, EVENTS_KEY, eventsJsonObj);
         cJSON_AddItemToArray(domainsJsonArray, domainJsonObj);
     }
     // add domains
-    cJSON_AddItemToObject(root, DOMAINS_KEY, domainsJsonArray);
+    cJSON_AddItemToObjectCS(root, DOMAINS_KEY, domainsJsonArray);
     // create export json file HiSysEvent.json
     auto packagedFile = GetHiSysEventJsonTempDir(moduleName_, eventVersion_).append(EXPORT_JSON_FILE_NAME);
     HIVIEW_LOGD("packagedFile: %{public}s", packagedFile.c_str());
