@@ -61,6 +61,8 @@ std::string GetFaultNameByType(int32_t faultType, bool asFileName)
             return asFileName ? "appfreeze" : "APP_FREEZE";
         case FaultLogType::SYS_FREEZE:
             return asFileName ? "sysfreeze" : "SYS_FREEZE";
+        case FaultLogType::SYS_WARNING:
+            return asFileName ? "syswarning" : "SYS_WARNING";
         case FaultLogType::RUST_PANIC:
             return asFileName ? "rustpanic" : "RUST_PANIC";
         case FaultLogType::ADDR_SANITIZER:
@@ -115,6 +117,8 @@ int32_t GetLogTypeByName(const std::string& type)
         return FaultLogType::APP_FREEZE;
     } else if (type == "sysfreeze") {
         return FaultLogType::SYS_FREEZE;
+    } else if (type == "syswarning") {
+        return FaultLogType::SYS_WARNING;
     } else if (type == "sanitizer") {
         return FaultLogType::ADDR_SANITIZER;
     } else if (type == "all" || type == "ALL") {
