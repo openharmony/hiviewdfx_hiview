@@ -25,6 +25,10 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static constexpr const char* const SYSWARNING = "syswarning";
+}
+
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const
 {
@@ -32,7 +36,8 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
     if (freezeCommon_ == nullptr) {
         return false;
     }
-    if (freezeCommon_->IsSystemResult(result) == false && freezeCommon_->IsApplicationResult(result) == false) {
+    if (!freezeCommon_->IsSystemResult(result) && !freezeCommon_->IsApplicationResult(result) &&
+        !freezeCommon_->IsSysWarningResult(result)) {
         list.clear();
         return false;
     }
@@ -54,6 +59,18 @@ bool Vendor::ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResu
         std::list<WatchPoint>::iterator watchPoint;
         for (watchPoint = list.begin(); watchPoint != list.end();) {
             if (freezeCommon_->IsApplicationEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
+                watchPoint++;
+            } else {
+                watchPoint = list.erase(watchPoint);
+            }
+        }
+    }
+
+    // erase if not sysWarning event
+    if (freezeCommon_->IsSysWarningResult(result)) {
+        std::list<WatchPoint>::iterator watchPoint;
+        for (watchPoint = list.begin(); watchPoint != list.end();) {
+            if (freezeCommon_->IsSysWarningEvent(watchPoint->GetDomain(), watchPoint->GetStringId())) {
                 watchPoint++;
             } else {
                 watchPoint = list.erase(watchPoint);
@@ -89,7 +106,8 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string stringId = watchPoint.GetStringId();
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        APPFREEZE : SYSFREEZE;
+        APPFREEZE : (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE :
+        SYSWARNING);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
@@ -101,8 +119,8 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
-    info.faultLogType = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        FaultLogType::APP_FREEZE : FaultLogType::SYS_FREEZE;
+    info.faultLogType = (type == APPFREEZE) ? FaultLogType::APP_FREEZE : ((type == SYSFREEZE) ?
+        FaultLogType::SYS_FREEZE : FaultLogType::SYS_WARNING);
     info.module = processName;
     info.reason = stringId;
     std::string disPlayPowerInfo = GetDisPlayPowerInfo();
@@ -193,8 +211,8 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
-    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId())
-        ? APPFREEZE : SYSFREEZE;
+    type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? APPFREEZE :
+        (freezeCommon_->IsSystemEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE : SYSWARNING);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
@@ -207,12 +225,18 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
         logPath = FREEZE_DETECTOR_PATH + APPFREEZE + HYPHEN + processName +
             HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = APPFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
-    } else {
+    } else if (freezeCommon_->IsSystemEvent(watchPoint.GetDomain(), watchPoint.GetStringId())) {
         retPath = FAULT_LOGGER_PATH + SYSFREEZE + HYPHEN + processName +
             HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
         logPath = FREEZE_DETECTOR_PATH + SYSFREEZE + HYPHEN + processName +
             HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
         logName = SYSFREEZE + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+    } else {
+        retPath = FAULT_LOGGER_PATH + SYSWARNING + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp;
+        logPath = FREEZE_DETECTOR_PATH + SYSWARNING + HYPHEN + processName +
+            HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
+        logName = SYSWARNING + HYPHEN + processName + HYPHEN + std::to_string(uid) + HYPHEN + timestamp + POSTFIX;
     }
 }
 

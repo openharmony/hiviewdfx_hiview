@@ -186,6 +186,7 @@ public:
     {
         return systemPairs_;
     }
+    std::map<std::string, std::pair<std::string, bool>> GetSysWarningPairs() const;
 
 private:
     static const inline std::string DEFAULT_RULE_FILE = "/system/etc/hiview/freeze_rules.xml";
@@ -215,6 +216,7 @@ private:
     std::map<std::string, FreezeRule> rules_;
     std::map<std::string, std::pair<std::string, bool>> applicationPairs_;
     std::map<std::string, std::pair<std::string, bool>> systemPairs_;
+    std::map<std::string, std::pair<std::string, bool>> sysWarningPairs_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

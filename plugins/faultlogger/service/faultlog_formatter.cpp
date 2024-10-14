@@ -92,6 +92,13 @@ auto SYS_FREEZE_LOG_SEQUENCE = {
     MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
 };
 
+auto SYS_WARNING_LOG_SEQUENCE = {
+    DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, FOREGROUND,
+    MODULE_PID, MODULE_UID, FAULT_TYPE, SYSVMTYPE, APPVMTYPE, REASON,
+    TRACE_ID, CPU_USAGE, MEMORY_USAGE, ROOT_CAUSE, STACKTRACE,
+    MSG_QUEUE_INFO, BINDER_TRANSACTION_INFO, PROCESS_STACKTRACE, SUMMARY
+};
+
 auto RUST_PANIC_LOG_SEQUENCE = {
     DEVICE_INFO, BUILD_INFO, FINGERPRINT, TIMESTAMP, MODULE_NAME, MODULE_VERSION, MODULE_PID,
     MODULE_UID,  FAULT_TYPE, FAULT_MESSAGE, APPVMTYPE, REASON, SUMMARY
@@ -113,6 +120,8 @@ std::list<const char **> GetLogParseList(int32_t logType)
             return APP_FREEZE_LOG_SEQUENCE;
         case FaultLogType::SYS_FREEZE:
             return SYS_FREEZE_LOG_SEQUENCE;
+        case FaultLogType::SYS_WARNING:
+            return SYS_WARNING_LOG_SEQUENCE;
         case FaultLogType::RUST_PANIC:
             return RUST_PANIC_LOG_SEQUENCE;
         case FaultLogType::ADDR_SANITIZER:
@@ -129,6 +138,7 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
         case FaultLogType::JS_CRASH:
         case FaultLogType::APP_FREEZE:
         case FaultLogType::SYS_FREEZE:
+        case FaultLogType::SYS_WARNING:
             summary = sections[STACKTRACE[LOG_MAP_KEY]];
             break;
         case FaultLogType::CPP_CRASH:

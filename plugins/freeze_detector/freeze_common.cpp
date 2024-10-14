@@ -18,6 +18,9 @@
 #include "hiview_logger.h"
 namespace OHOS {
 namespace HiviewDFX {
+namespace {
+    static const int SYSTEM_WARNING_RESULT_ID = 2;
+}
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 FreezeCommon::FreezeCommon()
 {
@@ -37,32 +40,47 @@ bool FreezeCommon::Init()
 
 bool FreezeCommon::IsFreezeEvent(const std::string& domain, const std::string& stringId) const
 {
-    return IsApplicationEvent(domain, stringId) || IsSystemEvent(domain, stringId);
+    return IsApplicationEvent(domain, stringId) || IsSystemEvent(domain, stringId) ||
+        IsSysWarningEvent(domain, stringId);
 }
 
 bool FreezeCommon::IsApplicationEvent(const std::string& domain, const std::string& stringId) const
 {
-    if (freezeRuleCluster_ == nullptr) {
-        HIVIEW_LOGW("freezeRuleCluster_ == nullptr.");
-        return false;
-    }
-    auto applicationPairs = freezeRuleCluster_->GetApplicationPairs();
-    for (auto const &pair : applicationPairs) {
-        if (stringId == pair.first && domain == pair.second.first) {
-            return true;
-        }
-    }
-    return false;
+    return IsAssignedEvent(domain, stringId, APPLICATION_RESULT_ID);
 }
 
 bool FreezeCommon::IsSystemEvent(const std::string& domain, const std::string& stringId) const
+{
+    return IsAssignedEvent(domain, stringId, SYSTEM_RESULT_ID);
+}
+
+bool FreezeCommon::IsSysWarningEvent(const std::string& domain, const std::string& stringId) const
+{
+    return IsAssignedEvent(domain, stringId, SYSTEM_WARNING_RESULT_ID);
+}
+
+bool FreezeCommon::IsAssignedEvent(const std::string& domain, const std::string& stringId, int freezeId) const
 {
     if (freezeRuleCluster_ == nullptr) {
         HIVIEW_LOGW("freezeRuleCluster_ == nullptr.");
         return false;
     }
-    auto systemPairs = freezeRuleCluster_->GetSystemPairs();
-    for (auto const &pair : systemPairs) {
+
+    std::map<std::string, std::pair<std::string, bool>> pairs;
+    switch (freezeId) {
+        case APPLICATION_RESULT_ID:
+            pairs = freezeRuleCluster_->GetApplicationPairs();
+            break;
+        case SYSTEM_RESULT_ID:
+            pairs = freezeRuleCluster_->GetSystemPairs();
+            break;
+        case SYSTEM_WARNING_RESULT_ID:
+            pairs = freezeRuleCluster_->GetSysWarningPairs();
+            break;
+        default:
+            return false;
+    }
+    for (auto const &pair : pairs) {
         if (stringId == pair.first && domain == pair.second.first) {
             return true;
         }
@@ -80,6 +98,11 @@ bool FreezeCommon::IsApplicationResult(const FreezeResult& result) const
     return result.GetId() == APPLICATION_RESULT_ID;
 }
 
+bool FreezeCommon::IsSysWarningResult(const FreezeResult& result) const
+{
+    return result.GetId() == SYSTEM_WARNING_RESULT_ID;
+}
+
 bool FreezeCommon::IsBetaVersion() const
 {
     return true;
@@ -94,12 +117,18 @@ std::set<std::string> FreezeCommon::GetPrincipalStringIds() const
     }
     auto applicationPairs = freezeRuleCluster_->GetApplicationPairs();
     auto systemPairs = freezeRuleCluster_->GetSystemPairs();
+    auto sysWarningPairs = freezeRuleCluster_->GetSysWarningPairs();
     for (auto const &pair : applicationPairs) {
         if (pair.second.second) {
             set.insert(pair.first);
         }
     }
     for (auto const &pair : systemPairs) {
+        if (pair.second.second) {
+            set.insert(pair.first);
+        }
+    }
+    for (auto const &pair : sysWarningPairs) {
         if (pair.second.second) {
             set.insert(pair.first);
         }
