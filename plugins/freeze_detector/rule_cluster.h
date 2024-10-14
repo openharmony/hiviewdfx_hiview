@@ -28,14 +28,12 @@ namespace OHOS {
 namespace HiviewDFX {
 class FreezeResult {
 public:
-    FreezeResult() : window_(0), code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), action_("and"),
-        ffrt_("") {};
+    FreezeResult() : window_(0), code_(0), scope_(""), samePackage_(""), domain_(""), stringId_(""), action_("and") {};
     FreezeResult(long window, const std::string& domain, const std::string& stringId)
         : window_(window), code_(0), scope_(""), samePackage_(""), domain_(domain), stringId_(stringId),
-        action_("and"), ffrt_("") {};
+        action_("and") {};
     FreezeResult(unsigned long code, const std::string& scope)
-        : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), action_("and"),
-        ffrt_("") {};
+        : window_(0), code_(code), scope_(scope), samePackage_(""), domain_(""), stringId_(""), action_("and") {};
     ~FreezeResult() {};
     std::string GetDomain() const;
     std::string GetStringId() const;
@@ -48,8 +46,6 @@ public:
     void SetSamePackage(const std::string& samePackage);
     std::string GetAction() const;
     void SetAction(const std::string& action);
-    std::string GetFfrt() const;
-    void SetFfrt(const std::string& ffrt);
 
 private:
     long window_;
@@ -59,7 +55,6 @@ private:
     std::string domain_;
     std::string stringId_;
     std::string action_;
-    std::string ffrt_;
 };
 
 class FreezeRule {

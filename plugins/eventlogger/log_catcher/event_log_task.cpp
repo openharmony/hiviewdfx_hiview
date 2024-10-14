@@ -20,6 +20,7 @@
 #include "binder_catcher.h"
 #include "common_utils.h"
 #include "dmesg_catcher.h"
+#include "ffrt_catcher.h"
 #include "hiview_logger.h"
 #include "memory_catcher.h"
 #include "open_stacktrace_catcher.h"
@@ -61,6 +62,7 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
     captureList_.insert(std::pair<std::string, capture>("s", [this] { this->AppStackCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("S", [this] { this->SystemStackCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("b", [this] { this->BinderLogCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("ffrt", [this] { this->FfrtCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:m", [this] { this->MemoryUsageCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:c", [this] { this->CpuUsageCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("cmd:w", [this] { this->WMSUsageCapture(); }));
@@ -263,6 +265,15 @@ void EventLogTask::BinderLogCapture()
     auto capture = std::make_shared<BinderCatcher>();
     capture->Initialize("", 0, 0);
     tasks_.push_back(capture);
+}
+
+void EventLogTask::FfrtCapture()
+{
+    if (pid_ > 0) {
+        auto capture = std::make_shared<FfrtCatcher>();
+        capture->Initialize("", pid_, 0);
+        tasks_.push_back(capture);
+    }
 }
 
 void EventLogTask::MemoryUsageCapture()

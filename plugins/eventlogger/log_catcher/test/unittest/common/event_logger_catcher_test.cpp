@@ -34,6 +34,7 @@
 #include "peer_binder_catcher.h"
 #undef private
 #include "binder_catcher.h"
+#include "ffrt_catcher.h"
 #include "memory_catcher.h"
 #include "event_logger.h"
 #include "event_log_catcher.h"
@@ -177,6 +178,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->DumpAppMapCapture();
     logTask->SCBWMSEVTCapture();
     logTask->SysrqCapture(true);
+    logTask->FfrtCapture();
     logTask->MemoryUsageCapture();
     logTask->DMSUsageCapture();
     logTask->CpuUsageCapture();
@@ -235,6 +237,32 @@ HWTEST_F(EventloggerCatcherTest, MemoryCatcherTest_001, TestSize.Level1)
     res = memoryCatcher->Catch(0, 1);
     EXPECT_EQ(res, 0);
     printf("memoryCatcher result: %d\n", res);
+    close(fd);
+}
+
+/**
+ * @tc.name: FfrtCatcherTest_001
+ * @tc.desc: add testcase code coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, FfrtCatcherTest_001, TestSize.Level1)
+{
+    auto fd = open("/data/test/FfrtCatcherFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    if (fd < 0) {
+        printf("Fail to create FfrtCatcherFile. errno: %d\n", errno);
+        FAIL();
+    }
+
+    auto ffrtCatcher = std::make_shared<FfrtCatcher>();
+    int pid = CommonUtils::GetPidByName("foundation");
+    if (pid > 0) {
+        bool res = ffrtCatcher->Initialize("", pid, 0);
+        EXPECT_TRUE(res);
+
+        int jsonFd = 1;
+        EXPECT_TRUE(ffrtCatcher->Catch(fd, jsonFd) > 0);
+    }
+    EXPECT_TRUE(true);
     close(fd);
 }
 
@@ -396,6 +424,7 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_001, TestSize.Level1)
     peerBinderCatcher->Initialize("", 0, pid);
     peerBinderCatcher->Initialize("foundation", 0, pid);
     peerBinderCatcher->Initialize("foundation", 1, pid);
+    peerBinderCatcher->CatcherFfrtStack(fd, pid);
     peerBinderCatcher->CatcherStacktrace(fd, pid);
     close(fd);
 }

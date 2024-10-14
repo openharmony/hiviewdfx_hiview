@@ -32,6 +32,7 @@ ohos_source_set("log_catcher") {
     "dmesg_catcher.cpp",
     "event_log_catcher.cpp",
     "event_log_task.cpp",
+    "ffrt_catcher.cpp",
     "memory_catcher.cpp",
     "open_stacktrace_catcher.cpp",
     "peer_binder_catcher.cpp",

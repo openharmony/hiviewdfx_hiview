@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,21 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef EVENTLOGGER_LOG_CATCHER_UTILS_H
-#define EVENTLOGGER_LOG_CATCHER_UTILS_H
+#ifndef EVENT_LOGGER_FFRT_CATCHER
+#define EVENT_LOGGER_FFRT_CATCHER
+
 #include <string>
 
+#include "event_log_catcher.h"
 namespace OHOS {
 namespace HiviewDFX {
-namespace LogCatcherUtils {
-static constexpr int WAIT_CHILD_PROCESS_COUNT = 200;
-
-int DumpStacktrace(int fd, int pid);
-int DumpStackFfrt(int fd, const std::string& pid);
-int WriteKernelStackToFd(int originFd, const std::string& msg, int pid);
-void FormatFileName(std::string& processName);
-void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
-}
+class FfrtCatcher : public EventLogCatcher {
+public:
+    explicit FfrtCatcher();
+    ~FfrtCatcher() override{};
+    bool Initialize(const std::string& strParam1, int intParam1, int intParam2) override;
+    int Catch(int fd, int jsonFd) override;
+private:
+    int pid_;
+};
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // EVENTLOGGER_STACK_UTILS_H
+#endif // EVENT_LOGGER_FFRT_CATCHER

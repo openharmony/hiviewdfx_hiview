@@ -81,12 +81,6 @@ namespace {
     static constexpr const char* const MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };
-    constexpr const char* DUMP_FFRT[] = {
-        "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
-        "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
-        "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
-        "BUSSINESS_THREAD_BLOCK_6S"
-    };
 #ifdef WINDOW_MANAGER_ENABLE
     static constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
     static constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
@@ -166,17 +160,15 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     sysEvent->OnPending();
-
-    bool isFfrt = std::find(std::begin(DUMP_FFRT), std::end(DUMP_FFRT), eventName) != std::end(DUMP_FFRT);
-    auto task = [this, sysEvent, isFfrt]() {
+    auto task = [this, sysEvent]() {
         HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
         }
-        if (isFfrt) {
-            this->StartFfrtDump(sysEvent);
-        }
+#ifdef WINDOW_MANAGER_ENABLE
+        this->StartFfrtDump(sysEvent);
+#endif
         this->StartLogCollect(sysEvent);
     };
     HIVIEW_LOGI("before submit event task to ffrt, eventName=%{public}s, pid=%{public}ld", eventName.c_str(), pid);
@@ -197,6 +189,7 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
     } else {
         logFile = "ffrt_" + std::to_string(pid) + "_" + formatTime;
     }
+
     if (FileUtil::FileExists(std::string(LOGGER_EVENT_LOG_PATH) + "/" + logFile)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", logFile.c_str());
         if (!isFfrt) {
@@ -209,22 +202,14 @@ int EventLogger::GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, 
 
 void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 {
-    LogCatcherUtils::FFRT_TYPE type = LogCatcherUtils::TOP;
-    long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
-#ifdef WINDOW_MANAGER_ENABLE
-    std::vector<Rosen::MainWindowInfo> windowInfos;
-#endif
-    if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
-#ifdef WINDOW_MANAGER_ENABLE
-        Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
-        if (windowInfos.size() == 0) {
-            return;
-        }
-#else
+    if (event->eventName_ != "GET_DISPLAY_SNAPSHOT" && event->eventName_ != "CREATE_VIRTUAL_SCREEN") {
         return;
-#endif
-    } else {
-        type = LogCatcherUtils::GetFfrtDumpType(pid);
+    }
+
+    std::vector<Rosen::MainWindowInfo> windowInfos;
+    Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
+    if (windowInfos.size() == 0) {
+        return;
     }
 
     std::string ffrtFile;
@@ -234,29 +219,20 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         return;
     }
 
-    int count = (type == LogCatcherUtils::TOP) ? LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO :
-        LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT;
-    if (type == LogCatcherUtils::TOP) {
-#ifdef WINDOW_MANAGER_ENABLE
-        FileUtil::SaveStringToFd(ffrtFd, "ffrt dump topWindowInfos, process infos:\n");
-        std::string cmdAms = "--ffrt ";
-        std::string cmdSam = "--ffrt ";
-        int size = static_cast<int>(windowInfos.size());
-        for (int i = 0; i < size ; i++) {
-            auto info = windowInfos[i];
-            FileUtil::SaveStringToFd(ffrtFd, "    " + std::to_string(info.pid_) + ":" + info.bundleName_ + "\n");
-            cmdAms += std::to_string(info.pid_) + (i < size -1 ? "," : "");
-            cmdSam += std::to_string(info.pid_) + (i < size -1 ? "|" : "");
-        }
-        LogCatcherUtils::ReadShellToFile(ffrtFd, "ApplicationManagerService", cmdAms, count);
-        if (count > LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
-            LogCatcherUtils::ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
-        }
-#endif
-    } else {
-        FileUtil::SaveStringToFd(ffrtFd, "ffrt dump info:\n");
-        std::string serviceName = (type == LogCatcherUtils::APP) ? "ApplicationManagerService" : "SystemAbilityManager";
-        LogCatcherUtils::ReadShellToFile(ffrtFd, serviceName, "--ffrt " + std::to_string(pid), count);
+    int count = LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO;
+    FileUtil::SaveStringToFd(ffrtFd, "ffrt dump topWindowInfos, process infos:\n");
+    std::string cmdAms = "--ffrt ";
+    std::string cmdSam = "--ffrt ";
+    int size = static_cast<int>(windowInfos.size());
+    for (int i = 0; i < size ; i++) {
+        auto info = windowInfos[i];
+        FileUtil::SaveStringToFd(ffrtFd, "    " + std::to_string(info.pid_) + ":" + info.bundleName_ + "\n");
+        cmdAms += std::to_string(info.pid_) + (i < size -1 ? "," : "");
+        cmdSam += std::to_string(info.pid_) + (i < size -1 ? "|" : "");
+    }
+    LogCatcherUtils::ReadShellToFile(ffrtFd, "ApplicationManagerService", cmdAms, count);
+    if (count > LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
+        LogCatcherUtils::ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
     }
     close(ffrtFd);
 }
@@ -337,13 +313,17 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     auto start = TimeUtil::GetMilliseconds();
     WriteStartTime(fd, start);
     WriteCommonHead(fd, event);
-    WriteFreezeJsonInfo(fd, jsonFd, event);
+    std::vector<std::string> binderPids;
+    WriteFreezeJsonInfo(fd, jsonFd, event, binderPids);
+    std::for_each(binderPids.begin(), binderPids.end(), [fd] (const std::string& binderPid) {
+        LogCatcherUtils::DumpStackFfrt(fd, binderPid);
+    });
+
     std::unique_ptr<EventLogTask> logTask = std::make_unique<EventLogTask>(fd, jsonFd, event);
-    std::string cmdStr = event->GetValue("eventLog_action");
     if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
-        std::string focusWindowId = DumpWindowInfo(fd);
-        logTask->SetFocusWindowId(focusWindowId);
+        logTask->SetFocusWindowId(DumpWindowInfo(fd));
     }
+    std::string cmdStr = event->GetValue("eventLog_action");
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmdStr, ",", cmdList);
     for (const std::string& cmd : cmdList) {
@@ -357,8 +337,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     CollectMemInfo(fd, event);
     FileUtil::SaveStringToFd(fd, StabilityGetTempFreqInfo());
     auto end = TimeUtil::GetMilliseconds();
-    std::string totalTime = "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n";
-    FileUtil::SaveStringToFd(fd, totalTime);
+    FileUtil::SaveStringToFd(fd, "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n");
     close(fd);
     if (jsonFd >= 0) {
         close(jsonFd);
@@ -697,7 +676,8 @@ void EventLogger::ParsePeerStack(std::string& binderInfo, std::string& binderPee
     binderInfo = oss.str();
 }
 
-bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
+bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event,
+    std::vector<std::string>& binderPids)
 {
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     std::string stack;
@@ -705,10 +685,13 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     if (FreezeJsonUtil::IsAppFreeze(event -> eventName_)) {
         std::string kernelStack = "";
         GetAppFreezeStack(jsonFd, event, stack, msg, kernelStack);
-        if (!binderInfo.empty() && jsonFd >= 0) {
+        size_t splitIndex = binderInfo.find(",");
+        if (splitIndex != std::string::npos && jsonFd >= 0) {
             HIVIEW_LOGI("Current binderInfo is? binderInfo:%{public}s", binderInfo.c_str());
-            if (FileUtil::FileExists(binderInfo)) {
-                binderInfo = GetAppFreezeFile(binderInfo);
+            StringUtil::SplitStr(binderInfo.substr(splitIndex + 1), " ", binderPids);
+            std::string binderPath = binderInfo.substr(0, splitIndex);
+            if (FileUtil::FileExists(binderPath)) {
+                binderInfo = GetAppFreezeFile(binderPath);
             }
             std::string binderInfoJsonStr;
             ParsePeerBinder(binderInfo, binderInfoJsonStr);
