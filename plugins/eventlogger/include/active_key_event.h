@@ -20,6 +20,7 @@
 
 #include "log_store_ex.h"
 #include "input_manager.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -41,6 +42,7 @@ private:
     void SysMemCapture(int fd);
     void DumpCapture(int fd);
 
+    mutable ffrt::mutex mutex_;
     const uint64_t initDelay_ = 5000;
     std::list<int32_t> subscribeIds_;
     std::shared_ptr<LogStoreEx> logStore_;

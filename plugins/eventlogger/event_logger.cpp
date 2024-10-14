@@ -31,6 +31,7 @@
 #include <vector>
 #include <iostream>
 #include <filesystem>
+#include <string_ex.h>
 
 #include "parameter.h"
 
@@ -46,9 +47,11 @@
 #include "sys_event.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
+#ifdef WINDOW_MANAGER_ENABLE
 #include "event_focus_listener.h"
 #include "window_manager_lite.h"
 #include "wm_common.h"
+#endif
 
 #include "event_log_task.h"
 #include "event_logger_config.h"
@@ -86,16 +89,19 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
         HIVIEW_LOGE("event == nullptr");
         return false;
     }
+#ifdef WINDOW_MANAGER_ENABLE
     EventFocusListener::RegisterFocusListener();
+#endif
     auto sysEvent = Event::DownCastTo<SysEvent>(onEvent);
 
-    long pid = sysEvent->GetEventIntValue("PID");
-    pid = pid ? pid : sysEvent->GetPid();
+    long pid = sysEvent->GetEventIntValue("PID") ? sysEvent->GetEventIntValue("PID") : sysEvent->GetPid();
     std::string eventName = sysEvent->eventName_;
     if (eventName == "GESTURE_NAVIGATION_BACK" || eventName == "FREQUENT_CLICK_WARNING") {
+#ifdef WINDOW_MANAGER_ENABLE
         if (EventFocusListener::registerState_ == EventFocusListener::REGISTERED) {
             ReportUserPanicWarning(sysEvent, pid);
         }
+#endif
         return true;
     }
     if (!IsHandleAppfreeze(sysEvent)) {
@@ -103,8 +109,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
     }
 
     std::string domain = sysEvent->domain_;
-    HIVIEW_LOGI("event: domain=%{public}s, eventName=%{public}s, pid=%{public}ld", domain.c_str(),
-        eventName.c_str(), pid);
+    HIVIEW_LOGI("domain=%{public}s, eventName=%{public}s, pid=%{public}ld", domain.c_str(), eventName.c_str(), pid);
 
     if (CheckProcessRepeatFreeze(eventName, pid)) {
         return true;
@@ -119,7 +124,7 @@ bool EventLogger::OnEvent(std::shared_ptr<Event> &onEvent)
 
     bool isFfrt = std::find(FFRT_VECTOR.begin(), FFRT_VECTOR.end(), eventName) != FFRT_VECTOR.end();
     auto task = [this, sysEvent, isFfrt] {
-        HIVIEW_LOGI("event time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
+        HIVIEW_LOGI("time:%{public}" PRIu64 " jsonExtraInfo is %{public}s", TimeUtil::GetMilliseconds(),
             sysEvent->AsJsonStr().c_str());
         if (!JudgmentRateLimiting(sysEvent)) {
             return;
@@ -162,24 +167,21 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 {
     int type = APP;
     long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+#ifdef WINDOW_MANAGER_ENABLE
     std::vector<Rosen::MainWindowInfo> windowInfos;
-
+#endif
     if (event->eventName_ == "GET_DISPLAY_SNAPSHOT" || event->eventName_ == "CREATE_VIRTUAL_SCREEN") {
+#ifdef WINDOW_MANAGER_ENABLE
         Rosen::WindowManagerLite::GetInstance().GetMainWindowInfos(TOP_WINDOW_NUM, windowInfos);
         if (windowInfos.size() == 0) {
             return;
         }
         type = TOP;
+#else
+        return;
+#endif
     } else {
-        std::list<SystemProcessInfo> systemProcessInfos;
-        sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        sam->GetRunningSystemProcess(systemProcessInfos);
-        if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
-            [pid](auto& systemProcessInfo) {
-            return pid == systemProcessInfo.pid;
-        })) {
-            type = SYS;
-        }
+        UpdateFfrtDumpType(pid, type);
     }
 
     std::string ffrtFile;
@@ -191,6 +193,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
 
     int count = (type == TOP) ? WAIT_CHILD_PROCESS_COUNT * DUMP_TIME_RATIO : WAIT_CHILD_PROCESS_COUNT;
     if (type == TOP) {
+#ifdef WINDOW_MANAGER_ENABLE
         int size = static_cast<int>(windowInfos.size());
         std::string cmdAms = "--ffrt ";
         std::string cmdSam = "--ffrt ";
@@ -205,12 +208,26 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         if (count > WAIT_CHILD_PROCESS_COUNT / DUMP_TIME_RATIO) {
             ReadShellToFile(ffrtFd, "SystemAbilityManager", cmdSam, count);
         }
+#endif
     } else {
         std::string cmd = "--ffrt " + std::to_string(pid);
         std::string serviceName = (type == APP) ? "ApplicationManagerService" : "SystemAbilityManager";
         ReadShellToFile(ffrtFd, serviceName, cmd, count);
     }
     close(ffrtFd);
+}
+
+void EventLogger::UpdateFfrtDumpType(int pid, int& type)
+{
+    std::list<SystemProcessInfo> systemProcessInfos;
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sam->GetRunningSystemProcess(systemProcessInfos);
+    if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
+        [pid](auto& systemProcessInfo) {
+        return pid == systemProcessInfo.pid;
+    })) {
+        type = SYS;
+    }
 }
 
 void EventLogger::ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)
@@ -257,6 +274,42 @@ void EventLogger::FfrtChildProcess(int fd, const std::string& serviceName, const
     execl("/system/bin/hidumper", "hidumper", "-s", serviceName.c_str(), "-a", cmd.c_str(), nullptr);
 }
 
+void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
+{
+    std::string content = event->GetEventValue("FREEZE_MEMORY");
+    if (!content.empty()) {
+        std::vector<std::string> vec;
+        OHOS::SplitStr(content, "\\n", vec);
+        FileUtil::SaveStringToFd(fd, "\nMemoryCatcher --\n");
+        for (const std::string& mem : vec) {
+            FileUtil::SaveStringToFd(fd, mem + "\n");
+        }
+    }
+}
+
+void EventLogger::SaveDbToFile(const std::shared_ptr<SysEvent>& event)
+{
+    std::string historyFile = LOGGER_EVENT_LOG_PATH + "/" + "history.log";
+    mode_t mode = 0644;
+    if (FileUtil::CreateFile(historyFile, mode) != 0 && !FileUtil::FileExists(historyFile)) {
+        HIVIEW_LOGE("failed to create file=%{public}s, errno=%{public}d", historyFile.c_str(), errno);
+        return;
+    }
+    std::vector<std::string> lines;
+    FileUtil::LoadLinesFromFile(historyFile, lines);
+    bool truncated = false;
+    if (lines.size() > HISTORY_EVENT_LIMIT) {
+        truncated = true;
+    }
+    auto time = TimeUtil::TimestampFormatToDate(event->happenTime_ / TimeUtil::SEC_TO_MILLISEC,
+        "%Y%m%d%H%M%S");
+    long pid = event->GetEventIntValue("PID") ? event->GetEventIntValue("PID") : event->GetPid();
+    long uid = event->GetEventIntValue("UID") ? event->GetEventIntValue("UID") : event->GetUid();
+    std::string str = "time[" + time + "], domain[" + event->domain_ + "], wpName[" +
+        event->eventName_ + "], pid: " + std::to_string(pid) + ", uid: " + std::to_string(uid) + "\n";
+    FileUtil::SaveStringToFile(historyFile, str, truncated);
+}
+
 void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
 {
     std::string logFile;
@@ -292,6 +345,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, startTimeStr.str());
     WriteCommonHead(fd, event);
     WriteFreezeJsonInfo(fd, jsonFd, event);
+    CollectMemInfo(fd, event);
     auto ret = logTask->StartCompose();
     if (ret != EventLogTask::TASK_SUCCESS) {
         HIVIEW_LOGE("capture fail %{public}d", ret);
@@ -304,6 +358,7 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
         close(jsonFd);
     }
     UpdateDB(event, logFile);
+    SaveDbToFile(event);
 
     constexpr int waitTime = 1;
     auto CheckFinishFun = [this, event] { this->CheckEventOnContinue(event); };
@@ -652,6 +707,7 @@ bool EventLogger::IsHandleAppfreeze(std::shared_ptr<SysEvent> event)
     return true;
 }
 
+#ifdef WINDOW_MANAGER_ENABLE
 void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid)
 {
     if (event->eventName_ == "FREQUENT_CLICK_WARNING") {
@@ -703,6 +759,7 @@ void EventLogger::ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long p
         userPanicEvent->OnContinue();
     }
 }
+#endif
 
 bool EventLogger::CheckProcessRepeatFreeze(const std::string& eventName, long pid)
 {
@@ -778,7 +835,9 @@ void EventLogger::OnLoad()
 void EventLogger::OnUnload()
 {
     HIVIEW_LOGD("called");
+#ifdef WINDOW_MANAGER_ENABLE
     EventFocusListener::UnRegisterFocusListener();
+#endif
 }
 
 std::string EventLogger::GetListenerName()

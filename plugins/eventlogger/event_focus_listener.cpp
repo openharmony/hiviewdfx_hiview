@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef WINDOW_MANAGER_ENABLE
 #include "event_focus_listener.h"
 
 #include "ffrt.h"
@@ -100,3 +101,4 @@ void EventFocusListener::OnUnfocused(const sptr<Rosen::FocusChangeInfo>& focusCh
 }
 } // namespace HiviewDFX
 } // namespace OHOS
+#endif // WINDOW_MANAGER_ENABLE

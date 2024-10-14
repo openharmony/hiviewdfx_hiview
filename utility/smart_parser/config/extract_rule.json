@@ -50,6 +50,8 @@
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)", "v_service_block":"Module name:SERVICE_BLOCK"},
             {"namespace":"BasicParam", "matchKey":"PID = ", "v_pid":"PID = (.*)"},
             {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
+            {"namespace":"BasicParam", "matchKey":"FfrtCallback: task(SERIAL_TASK_TIMEOUT:", "v_queue_name":"FfrtCallback: task\\(SERIAL_TASK_TIMEOUT:.*queue name \\[(sq_\\w+)_\\d+\\]"},
+            {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
     },

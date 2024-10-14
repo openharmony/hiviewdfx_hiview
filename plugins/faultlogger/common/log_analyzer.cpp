@@ -29,25 +29,13 @@ namespace HiviewDFX {
 static void GetFingerRawString(std::string& fingerRawString, const FaultLogInfo& info,
                                std::map<std::string, std::string>& eventInfos)
 {
-    if (info.reason.compare("SERVICE_BLOCK") == 0) {
-        static uint64_t serviceBlockNum = 0;
-        fingerRawString = std::to_string(++serviceBlockNum);
-        return;
+    if ((info.reason.compare("SERVICE_TIMEOUT") == 0 || info.reason.compare("APP_HICOLLIE") == 0) &&
+        !eventInfos["TIME_OUT"].empty()) {
+        eventInfos["LAST_FRAME"] = eventInfos["TIME_OUT"];
     }
 
-    if (info.reason.compare("SERVICE_TIMEOUT") == 0) {
-        auto it = info.sectionMap.find("MODULE_NAME");
-        if (it != info.sectionMap.end()) {
-            fingerRawString = it->second;
-            return;
-        }
-    }
-
-    if (info.reason.compare("APP_HICOLLIE") == 0) {
-        if (!eventInfos["TIME_OUT"].empty()) {
-            fingerRawString = eventInfos["TIME_OUT"];
-            return;
-        }
+    if (info.reason.compare("SERVICE_BLOCK") == 0 && !eventInfos["QUEUE_NAME"].empty()) {
+        eventInfos["LAST_FRAME"] = eventInfos["QUEUE_NAME"];
     }
 
     auto eventType = GetFaultNameByType(info.faultLogType, false);

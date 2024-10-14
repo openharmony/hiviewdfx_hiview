@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "event_log_task.h"
-#include "ffrt.h"
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "sys_event.h"
@@ -35,6 +34,7 @@ ActiveKeyEvent::ActiveKeyEvent()
 
 ActiveKeyEvent::~ActiveKeyEvent()
 {
+    std::unique_lock<ffrt::mutex> uniqueLock(mutex_);
     for (auto it = subscribeIds_.begin(); it != subscribeIds_.end(); it = subscribeIds_.erase(it)) {
         if (*it >= 0) {
             MMI::InputManager::GetInstance()->UnsubscribeKeyEvent(*it);
@@ -82,6 +82,7 @@ void ActiveKeyEvent::InitSubscribe(std::set<int32_t> preKeys, int32_t finalKey, 
         std::string taskName("InitSubscribe" + std::to_string(finalKey) + "_" + std::to_string(count));
         ffrt::submit(task, {}, {&taskOutDeps}, ffrt::task_attr().name(taskName.c_str()));
     }
+    std::unique_lock<ffrt::mutex> uniqueLock(mutex_);
     subscribeIds_.emplace_back(subscribeId);
     HIVIEW_LOGI("CombinationKeyInit finalKey: %{public}d subscribeId_: %{public}d",
         finalKey, subscribeId);
