@@ -3,10 +3,10 @@
         {
             "domain": "WINDOWMANAGER",
             "include": ["ANIMATION_CALLBACK_TIMEOUT", "WINDOW_ANIMATION_ABNORMAL", "NO_FOCUS_WINDOW", "GET_DISPLAY_SNAPSHOT",
-                        "CREATE_VIRTUAL_SCREEN", "REPEAT_SET_UI_NODE_ID"]
-        },{
+                        "CREATE_VIRTUAL_SCREEN", "REPEAT_SET_UI_NODE_ID", "WINDOW_EXCEPTION_DETECTION", "WINDOW_STATE_ERROR"]
+            },{
             "domain": "ACE",
-            "include": ["UI_BLOCK_6S", "UI_BLOCK_3S"]
+            "include": ["UI_BLOCK_6S", "UI_BLOCK_3S", "UIEXTENSION_TRANSPARENT_DETECTED"]
         },{
             "domain": "MULTIMODALINPUT",
             "include": ["APPLICATION_BLOCK_INPUT", "INPUT_EVENT_SOCKET_TIMEOUT"]
@@ -18,7 +18,7 @@
         },{
             "domain": "FRAMEWORK",
             "include": ["SERVICE_BLOCK", "SERVICE_WARNING", "SERVICE_TIMEOUT", "SERVICE_TIMEOUT_WARNING", "IPC_FULL",
-                        "HIT_EMPTY_WARNING", "APP_HICOLLIE", "FREQUENT_CLICK_WARNING", "USER_PANIC_WARNING"]
+                "HIT_EMPTY_WARNING", "APP_HICOLLIE", "FREQUENT_CLICK_WARNING", "USER_PANIC_WARNING"]
         },{
             "domain": "KERNEL_VENDOR",
             "include": ["SCREEN_ON", "HUNGTASK", "COM_LONG_PRESS", "DMD_TP_I2C", "DMD_TP_HP", "DMD_LCD_DDR",

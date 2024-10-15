@@ -341,6 +341,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_009, TestSize.Level3)
         eventLogger->backTimes_.push_back(curentTime);
         curentTime += 100;
     }
+
     std::shared_ptr<SysEvent> sysEvent2 = std::make_shared<SysEvent>("GESTURE_NAVIGATION_BACK",
         nullptr, jsonStr);
     sysEvent2->SetEventValue("PID", pid);
@@ -377,7 +378,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_010, TestSize.Level3)
     event->eventName_ = testName;
     event->SetEventValue("PID", pid);
 #ifdef WINDOW_MANAGER_ENABLE
-    EventFocusListener::lastChangedTime_ = 0; // test value
+    EventFocusListener::lastChangedTime_ = 900; // test value
     event->happenTime_ = 1000; // test value
     eventLogger->ReportUserPanicWarning(event, pid);
     EXPECT_TRUE(eventLogger->backTimes_.empty());
@@ -405,7 +406,7 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_011, TestSize.Level3)
     event->SetEventValue("PID", pid);
 #ifdef WINDOW_MANAGER_ENABLE
     EXPECT_TRUE(eventLogger->backTimes_.empty());
-    EventFocusListener::lastChangedTime_ = 900; // test value
+    EventFocusListener::lastChangedTime_ = 0; // test value
     event->happenTime_ = 3000; // test value
     eventLogger->ReportUserPanicWarning(event, pid);
     EXPECT_EQ(eventLogger->backTimes_.size(), 1);
@@ -429,15 +430,15 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_012, TestSize.Level3)
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"FORM_MANAGER\"}";
     long pid = getpid();
-#ifdef WINDOW_MANAGER_ENABLE
     std::string testName = "EventLoggerTest_012";
     std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
     event->eventName_ = testName;
     event->SetEventValue("PID", pid);
+#ifdef WINDOW_MANAGER_ENABLE
     EXPECT_TRUE(eventLogger->backTimes_.empty());
-    event->happenTime_ = 5000; // test value
     EventFocusListener::lastChangedTime_ = 0; // test value
+    event->happenTime_ = 5000; // test value
     while (eventLogger->backTimes_.size() < 5) {
         int count = 1000; // test value
         eventLogger->backTimes_.push_back(count++);
@@ -498,6 +499,100 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_014, TestSize.Level3)
     eventLogger->OnUnload();
     EXPECT_EQ(EventFocusListener::registerState_, EventFocusListener::UNREGISTERED);
 #endif
+}
+
+/**
+ * @tc.name: EventLoggerTest_015
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_015, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    std::string stack = "";
+    bool result = eventLogger->IsKernelStack(stack);
+    EXPECT_TRUE(!result);
+    stack = "Stack backtrace";
+    result = eventLogger->IsKernelStack(stack);
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: EventLoggerTest_016
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_016, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    std::string stack = "TEST\\nTEST\\nTEST";
+    std::string kernelStack = "";
+    std::string contentStack = "Test";
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_016";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->SetEventValue("PROCESS_NAME", testName);
+    sysEvent->SetEventValue("APP_RUNNING_UNIQUE_ID", "Test");
+    sysEvent->SetEventValue("STACK", stack);
+    sysEvent->SetEventValue("MSG", stack);
+    sysEvent->eventName_ = "UI_BLOCK_6S";
+    sysEvent->SetEventValue("BINDER_INFO", "async\\nEventLoggerTest");
+    eventLogger->GetAppFreezeStack(1, sysEvent, stack, "msg", kernelStack);
+    EXPECT_TRUE(kernelStack.empty());
+    eventLogger->GetNoJsonStack(stack, contentStack, kernelStack, false);
+    EXPECT_TRUE(kernelStack.empty());
+    stack = "Test:Stack backtrace";
+    sysEvent->SetEventValue("STACK", stack);
+    eventLogger->GetAppFreezeStack(1, sysEvent, stack, "msg", kernelStack);
+    EXPECT_TRUE(!kernelStack.empty());
+    eventLogger->GetNoJsonStack(stack, contentStack, kernelStack, false);
+    EXPECT_TRUE(!kernelStack.empty());
+}
+
+/**
+ * @tc.name: EventLoggerTest_017
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_017, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    std::string stack = "";
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_017";
+    std::shared_ptr<SysEvent> event = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    event->eventName_ = testName;
+    int testValue = 1; // test value
+    event->SetEventValue("PID", testValue);
+    event->happenTime_ = TimeUtil::GetMilliseconds();
+    std::string kernelStack = "";
+    eventLogger->WriteKernelStackToFile(event, testValue, kernelStack);
+    kernelStack = "Test";
+    EXPECT_TRUE(!kernelStack.empty());
+    eventLogger->WriteKernelStackToFile(event, testValue, kernelStack);
+}
+
+/**
+ * @tc.name: EventLoggerTest_018
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_018, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    std::string binderInfo = "";
+    std::string binderPeerStack = "";
+    eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
+    EXPECT_TRUE(binderPeerStack.empty());
+    binderInfo = "Test";
+    eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
+    EXPECT_TRUE(binderPeerStack.empty());
+    binderInfo = "PeerBinder catcher stacktrace for pid : 111\n Stack "
+        "backtrace: Test\n PeerBinder catcher stacktrace for pid : 112\n Test";
+    eventLogger->ParsePeerStack(binderInfo, binderPeerStack);
+    EXPECT_TRUE(!binderPeerStack.empty());
 }
 } // namespace HiviewDFX
 } // namespace OHOS
