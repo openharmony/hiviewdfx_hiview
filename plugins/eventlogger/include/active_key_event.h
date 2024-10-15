@@ -16,7 +16,6 @@
 #define HIVIEW_EVENT_LOG_ACTIVE_KEY_EVENT_H
 
 #include <memory>
-#include <mutex>
 #include <string>
 
 #include "log_store_ex.h"

@@ -761,6 +761,38 @@ HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_003, TestSize.Level3)
 }
 
 /**
+ * @tc.name: FreezeWatchPoint_004
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_004, TestSize.Level3)
+{
+    auto wp1 = std::make_unique<WatchPoint>();
+    ASSERT_EQ(wp1->GetSeq(), 0);
+}
+
+/**
+ * @tc.name: FreezeWatchPoint_005
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeWatchPoint_005, TestSize.Level3)
+{
+    WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
+        .InitDomain("KERNEL_VENDOR")
+        .InitStringId("SCREEN_ON")
+        .InitTimestamp(1687859103947)
+        .InitPid(1000)
+        .InitTid(1000)
+        .InitUid(1000)
+        .InitProcessName("processName")
+        .InitPackageName("com.package.name")
+        .InitHitraceTime("20230627")
+        .InitSysrqTime("20230627")
+        .Build();
+    auto wp1 = std::make_unique<WatchPoint>(watchPoint);
+    ASSERT_EQ(wp1->GetTid(), 1000);
+}
+
+/**
  * @tc.name: FreezeDBHelper_001
  * @tc.desc: FreezeDetector
  */
@@ -804,7 +836,7 @@ HWTEST_F(FreezeDetectorUnittest, FreezeDBHelper_002, TestSize.Level3)
     auto db = std::make_unique<DBHelper>(freezeCommon);
     ASSERT_NE(db, nullptr);
     std::string watchPackage = "com.package.name";
-    std::vector<WatchPoint> list;
+    std::vector <WatchPoint> list;
     WatchPoint watchPoint = OHOS::HiviewDFX::WatchPoint::Builder()
         .InitDomain("ACE")
         .InitStringId("UI_BLOCK_3S")

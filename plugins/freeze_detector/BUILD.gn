@@ -44,7 +44,6 @@ ohos_source_set("freeze_detector") {
 
   external_deps = [
     "c_utils:utils",
-    "display_manager:displaymgr",
     "ffrt:libffrt",
     "hilog:libhilog",
     "libxml2:libxml2",

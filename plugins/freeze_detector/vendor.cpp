@@ -15,7 +15,6 @@
 
 #include "vendor.h"
 
-#include "display_power_mgr_client.h"
 #include "faultlogger_client.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
@@ -371,11 +370,8 @@ bool Vendor::Init()
 std::string Vendor::GetDisPlayPowerInfo()
 {
     std::string disPlayPowerInfo;
-    uint32_t brightness = OHOS::DisplayPowerMgr::DisplayPowerMgrClient::GetInstance().GetDeviceBrightness();
-    disPlayPowerInfo =  "brightness:" + StringUtil::ToString(brightness);
-
     OHOS::PowerMgr::PowerState powerState = OHOS::PowerMgr::PowerMgrClient::GetInstance().GetState();
-    disPlayPowerInfo += ", powerState:" + GetPowerStateString(powerState) + "\n";
+    disPlayPowerInfo = "powerState:" + GetPowerStateString(powerState) + "\n";
     return disPlayPowerInfo;
 }
 
