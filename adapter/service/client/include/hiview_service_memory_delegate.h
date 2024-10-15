@@ -16,8 +16,8 @@
 #ifndef OHOS_HIVIEWDFX_ADAPTER_SERVICE_IDL_INCLUDE_MEMORY_DELEGATE_H
 #define OHOS_HIVIEWDFX_ADAPTER_SERVICE_IDL_INCLUDE_MEMORY_DELEGATE_H
 
+#include "client/memory_collector_client.h"
 #include "collect_result.h"
-#include "client/memory_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {

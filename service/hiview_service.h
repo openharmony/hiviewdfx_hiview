@@ -21,11 +21,11 @@
 #include <vector>
 
 #include "audit_log_parser.h"
-#include "utility/trace_collector.h"
+#include "client/memory_collector_client.h"
+#include "client/trace_collector_client.h"
 #include "utility/cpu_collector.h"
-#include "client/trace_collector.h"
-#include "client/memory_collector.h"
 #include "utility/graphic_memory_collector.h"
+#include "utility/trace_collector.h"
 
 namespace OHOS {
 namespace HiviewDFX {

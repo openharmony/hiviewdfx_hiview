@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 #include <chrono>
+#include <ctime>
+#include <gtest/gtest.h>
 #include <iostream>
+#include <unistd.h>
 
 #include "accesstoken_kit.h"
 #include "nativetoken_kit.h"
-#include "token_setproc.h"
-#include "trace_collector.h"
 #include "parameter_ex.h"
-
-#include <gtest/gtest.h>
-#include <unistd.h>
-#include <ctime>
+#include "token_setproc.h"
+#include "trace_collector_client.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;
