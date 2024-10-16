@@ -27,8 +27,8 @@ class EventFocusListener : public Rosen::IFocusChangedListener {
 public:
     enum REGISTER_STATE {
         UNREGISTERED,
-        REGISTERED,
-        REGISTERING
+        REGISTERING,
+        REGISTERED
     };
 
     static REGISTER_STATE registerState_;
