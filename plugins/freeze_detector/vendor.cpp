@@ -106,7 +106,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string stringId = watchPoint.GetStringId();
 
     std::string type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ?
-        APPFREEZE : (freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE :
+        APPFREEZE : (freezeCommon_->IsSystemEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE :
         SYSWARNING);
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {

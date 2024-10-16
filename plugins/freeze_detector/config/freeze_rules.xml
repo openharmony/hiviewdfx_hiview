@@ -195,5 +195,26 @@
         </event>
       </links>
     </rule>
+    <rule id="4" domain="WINDOWMANAGER" stringid="WINDOW_EXCEPTION_DETECTION">	<!-- WINDOW_EXCEPTION_DETECTION -->
+      <links type="watchpoint">
+        <event window="0" domain="WINDOWMANAGER" stringid="WINDOW_EXCEPTION_DETECTION">	<!-- WINDOW_EXCEPTION_DETECTION -->
+          <result code="2" scope="sysWarning"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="5" domain="WINDOWMANAGER" stringid="WINDOW_STATE_ERROR">	<!-- WINDOW_STATE_ERROR -->
+      <links type="watchpoint">
+        <event window="0" domain="WINDOWMANAGER" stringid="WINDOW_STATE_ERROR">	<!-- WINDOW_STATE_ERROR -->
+          <result code="2" scope="sysWarning"/>
+        </event>
+      </links>
+    </rule>
+    <rule id="6" domain="ACE" stringid="UIEXTENSION_TRANSPARENT_DETECTED">	<!-- UIEXTENSION_TRANSPARENT_DETECTED -->
+      <links type="watchpoint">
+        <event window="0" domain="ACE" stringid="UIEXTENSION_TRANSPARENT_DETECTED">	<!-- UIEXTENSION_TRANSPARENT_DETECTED -->
+          <result code="2" scope="sysWarning"/>
+        </event>
+      </links>
+    </rule>
   </rules>
 </freeze>
