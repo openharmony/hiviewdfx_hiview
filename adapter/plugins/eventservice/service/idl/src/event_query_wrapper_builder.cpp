@@ -61,7 +61,7 @@ bool ConditionParser::ParseCondition(const std::string& condStr, EventStore::Con
 
 bool ConditionParser::ParseJsonString(const Json::Value& root, const std::string& key, std::string& value)
 {
-    if (!root.isMember(key.c_str()) || !root[key.c_str()].isString()) {
+    if (!root.isObject() || !root.isMember(key.c_str()) || !root[key.c_str()].isString()) {
         return false;
     }
     value = root[key].asString();
