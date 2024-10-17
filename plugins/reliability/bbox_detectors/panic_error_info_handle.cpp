@@ -19,6 +19,7 @@
 #include "hiview_logger.h"
 #include "parameters.h"
 #include "string_util.h"
+#include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -136,7 +137,7 @@ void RKTransData(std::string bboxTime, std::string bboxSysreset)
 void SaveHistoryLog(string bboxTime, string bboxSysreset, ErrorInfo* info)
 {
     ofstream fout;
-    fout.open(HISTORY_LOG_PATH, ios::out);
+    fout.open(HISTORY_LOG_PATH, ios::out | ios::app);
     if (!fout.is_open()) {
         HIVIEW_LOGE("Failed to open file: %{public}s, error=%{public}d", HISTORY_LOG_PATH, errno);
         return;
@@ -160,9 +161,17 @@ void SaveHistoryLog(string bboxTime, string bboxSysreset, ErrorInfo* info)
 
 void CopyPstoreFileToHistoryLog(ifstream &fin)
 {
-    string targetPath = "/data/log/bbox/" + GetKmsgDate() + "history.log";
+    uint64_t startTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
+    string dirPath = "/data/log/bbox/" +
+        TimeUtil::TimestampFormatToDate(startTime, "%Y%m%d-%H%M%S") + "/";
+    constexpr mode_t defaultLogDirMode = 0770;
+    if (!FileUtil::FileExists(dirPath)) {
+        FileUtil::ForceCreateDirectory(dirPath);
+        FileUtil::ChangeModeDirectory(dirPath, defaultLogDirMode);
+    }
+    string targetPath = dirPath + "last_kmsg";
     ofstream fout;
-    fout.open(targetPath, ios::out);
+    fout.open(targetPath, ios::in | ios::out | ios::trunc);
     if (!fout.is_open()) {
         HIVIEW_LOGE("Failed to open file: %{public}s error=%{public}d", targetPath.c_str(), errno);
         return;
@@ -210,21 +219,6 @@ const char *GetCategory(const char *module, const char *event)
         return CATEGORY_SYSTEM_CUSTOM;
     }
     return CATEGORY_SUBSYSTEM_CUSTOM;
-}
-
-string GetKmsgDate()
-{
-    time_t timeStamp = time(nullptr);
-    tm tm;
-    const int timeLength = 64;
-    char stampStr[timeLength] = {0};
-    if (localtime_r(&timeStamp, &tm) == nullptr ||
-        strftime(stampStr, timeLength, "%Y%m%d-%H%M%S", &tm) == 0) {
-            HIVIEW_LOGE("Failed to get real time");
-            return "ErrorTimeFormat";
-    }
-    string pathParent = string(stampStr);
-    return pathParent;
 }
 }
 }
