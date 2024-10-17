@@ -1,4 +1,4 @@
-reason [SH_FAULT_RESUME], [00], time [20240126003148-00188858],2aa64, 2c109, 0, 0, 7ff6c33e, 7ff6c33e, 0, 0, dump_info[0x0]
-boot_stop [15], boot_stat [308]
-reason [SH_FAULT_RESUME], [01], time [20240226051254-00188858],2aa64, 2c109, 0, 0, 7ff6c33e, 7ff6c33e, 0, 0, dump_info[0x0]
-boot_stop [15], boot_stat [308]
+reason [CUSTOMIZED_ASYN_EXCEPTION], [04], time [20240802220940-00028358],5341a5c0, 5341a5c0, 47200000, 0, b0b0b0b, 80049f18, 2, 0, dump_info[0x0]
+boot_step [15], boot_stat [4]
+reason [CUSTOMIZED_ASYN_EXCEPTION], [05], time [20240805060442-00042111],5341a5c0, 5341a5c0, 47600000, 0, b0b0b0b, 80049f18, 2, 0, dump_info[0x0]
+boot_step [15], boot_stat [4]
