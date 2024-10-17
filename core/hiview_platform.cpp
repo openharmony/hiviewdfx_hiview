@@ -446,7 +446,6 @@ void HiviewPlatform::CreatePlugin(const PluginConfig::PluginInfo& pluginInfo)
     }
     // hold the global reference of the plugin
     pluginMap_[pluginInfo.name] = std::move(plugin);
-    HiviewEventReport::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_SUCCESS);
 }
 
 void HiviewPlatform::CreatePipeline(const PluginConfig::PipelineInfo& pipelineInfo)
@@ -529,8 +528,9 @@ void HiviewPlatform::InitPlugin(const PluginConfig& config __UNUSED, const Plugi
     }
 
     uint64_t endTime = TimeUtil::GenerateTimestamp();
-    uint64_t loadTime = endTime > beginTime ? (endTime - beginTime) : 0;
-    HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), loadTime);
+    uint64_t loadDuration = endTime > beginTime ? (endTime - beginTime) : 0;
+    HIVIEW_LOGI("Plugin %{public}s loadtime:%{public}" PRIu64 ".", pluginInfo.name.c_str(), loadDuration);
+    HiviewEventReport::ReportPluginLoad(pluginInfo.name, PluginEventSpace::LOAD_SUCCESS, loadDuration);
 }
 
 void HiviewPlatform::NotifyPluginReady()

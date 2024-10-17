@@ -17,11 +17,13 @@ PLUGIN_LOAD:
   __BASE: {type: BEHAVIOR, level: CRITICAL, tag: hiviewPlugin, desc: load hiview plugin}
   NAME: {type: STRING, desc: plugin name}
   RESULT: {type: UINT32, desc: result of plugin loading}
+  DURATION: {type: UINT32, desc: loading duration }
 
 PLUGIN_UNLOAD:
   __BASE: {type: BEHAVIOR, level: CRITICAL, tag: hiviewPlugin, desc: unload hiview plugin}
   NAME: {type: STRING, desc: plugin name}
   RESULT: {type: UINT32, desc: result of plugin unloading}
+  DURATION: {type: UINT32, desc: unloading duration } # Not supported, default value 0.
 
 PLUGIN_STATS:
   __BASE: {type: STATISTIC, level: CRITICAL, tag: hiviewPlugin, desc: statistics of events handled by plugins}

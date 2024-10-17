@@ -26,12 +26,13 @@
 namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_LABEL(LABEL_DOMAIN, "HiView-HiviewEventReport");
-void HiviewEventReport::ReportPluginLoad(const std::string &name, uint32_t result)
+void HiviewEventReport::ReportPluginLoad(const std::string &name, uint32_t result, uint32_t duration)
 {
     auto factory = std::make_unique<PluginLoadEventFactory>();
     auto event = factory->Create();
     event->Update(PluginEventSpace::KEY_OF_PLUGIN_NAME, name);
     event->Update(PluginEventSpace::KEY_OF_RESULT, result);
+    event->Update(PluginEventSpace::KEY_OF_DURATION, duration);
     event->Report();
     HIVIEW_LOGI("report plugin load event=%{public}s", event->ToJsonString().c_str());
 }
