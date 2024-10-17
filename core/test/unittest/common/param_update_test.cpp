@@ -95,12 +95,13 @@ HWTEST_F(ParamUpdateTest, ParamUpdateTest001, TestSize.Level1)
 {
     ParamManager::InitParam();
     ASSERT_FALSE(FileUtil::FileExists(TEST_CONFIG_FILE));
-    if (!FileUtil::FileExists(PUBKEY_PATH)) {
-        return;
-    }
     CreateEncFile();
     ParamManager::InitParam();
-    ASSERT_TRUE(FileUtil::FileExists(TEST_CONFIG_FILE));
+    if (!FileUtil::FileExists(PUBKEY_PATH)) {
+        ASSERT_FALSE(FileUtil::FileExists(TEST_CONFIG_FILE));
+    } else {
+        ASSERT_TRUE(FileUtil::FileExists(TEST_CONFIG_FILE));
+    }
     FileUtil::RemoveFile(TEST_CONFIG_FILE);
     FileUtil::SaveStringToFile(SOURCE_TEST_CONFIG_FILE, "1234");
     ParamManager::InitParam();
