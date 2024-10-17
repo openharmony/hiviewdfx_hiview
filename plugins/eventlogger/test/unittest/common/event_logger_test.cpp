@@ -180,13 +180,16 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_002, TestSize.Level3)
     EXPECT_EQ(eventLogger->WriteCommonHead(1, sysEvent), true);
     sysEvent->eventName_ = "UI_BLOCK_6S";
     sysEvent->SetEventValue("BINDER_INFO", "async\\nEventLoggerTest");
-    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent), true);
+    std::vector<std::string> binderPids;
+    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
     sysEvent->SetEventValue("BINDER_INFO", "context");
-    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent), true);
+    binderPids.clear();
+    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
     std::string binderInfo = "1:1\\n1:1\\n" + std::to_string(getpid()) +
         ":1\\n1:1\\n1:1\\n1:1\\n1:1";
     sysEvent->SetEventValue("BINDER_INFO", binderInfo);
-    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent), true);
+    binderPids.clear();
+    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
     eventLogger->IsInterestedPipelineEvent(sysEvent);
 }
 

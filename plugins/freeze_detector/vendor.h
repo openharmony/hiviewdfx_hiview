@@ -52,7 +52,6 @@ private:
     static void FormatProcessName(std::string& processName);
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath, const std::string& type) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
-    static void InitLogFfrt(const WatchPoint &watchPoint, std::ostringstream& ffrt);
     static std::string GetDisPlayPowerInfo();
     static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
 

@@ -73,6 +73,7 @@ private:
     void AppStackCapture();
     void SystemStackCapture();
     void BinderLogCapture();
+    void FfrtCapture();
     void MemoryUsageCapture();
     bool PeerBinderCapture(const std::string &cmd);
     void CpuUsageCapture();

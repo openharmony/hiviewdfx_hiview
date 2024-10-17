@@ -98,7 +98,8 @@ private:
     void ParsePeerStack(std::string& binderInfo, std::string& binderPeerStack);
     void WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int originFd,
         const std::string& kernelStack);
-    bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event);
+    bool WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEvent> event,
+        std::vector<std::string>& binderPids);
     bool UpdateDB(std::shared_ptr<SysEvent> event, std::string logFile);
     void CreateAndPublishEvent(std::string& dirPath, std::string& fileName);
     bool CheckProcessRepeatFreeze(const std::string& eventName, long pid);

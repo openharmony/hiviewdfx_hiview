@@ -154,18 +154,18 @@ int DumpStacktrace(int fd, int pid)
     return 0;
 }
 
-FFRT_TYPE GetFfrtDumpType(int pid)
+int DumpStackFfrt(int fd, const std::string& pid)
 {
     std::list<SystemProcessInfo> systemProcessInfos;
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sam->GetRunningSystemProcess(systemProcessInfos);
-    if (std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
-        [pid](auto& systemProcessInfo) {
-        return pid == systemProcessInfo.pid;
-    })) {
-        return SYS;
-    }
-    return APP;
+    std::string serviceName = std::any_of(systemProcessInfos.begin(), systemProcessInfos.end(),
+        [pid](auto& systemProcessInfo) { return pid == std::to_string(systemProcessInfo.pid); }) ?
+        "SystemAbilityManager" : "ApplicationManagerService";
+    int count = WAIT_CHILD_PROCESS_COUNT;
+
+    ReadShellToFile(fd, serviceName, "--ffrt " + pid, count);
+    return 0;
 }
 
 void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count)

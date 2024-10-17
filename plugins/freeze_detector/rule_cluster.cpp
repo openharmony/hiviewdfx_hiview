@@ -44,7 +44,6 @@ namespace {
     static constexpr const char* const ATTRIBUTE_SCOPE = "scope";
     static constexpr const char* const ATTRIBUTE_SAME_PACKAGE = "samePackage";
     static constexpr const char* const ATTRIBUTE_ACTION = "action";
-    static constexpr const char* const ATTRIBUTE_FFRT = "ffrt";
     static constexpr const char* const ATTRIBUTE_APPLICATION = "application";
     static constexpr const char* const ATTRIBUTE_SYSTEM = "system";
     static const int MAX_FILE_SIZE = 512 * 1024;
@@ -227,13 +226,11 @@ void FreezeRuleCluster::ParseTagResult(xmlNode* tag, FreezeResult& result)
     std::string scope = GetAttributeValue<std::string>(tag, ATTRIBUTE_SCOPE);
     std::string samePackage = GetAttributeValue<std::string>(tag, ATTRIBUTE_SAME_PACKAGE);
     std::string action = GetAttributeValue<std::string>(tag, ATTRIBUTE_ACTION);
-    std::string ffrt = GetAttributeValue<std::string>(tag, ATTRIBUTE_FFRT);
 
     result.SetId(code);
     result.SetScope(scope);
     result.SetSamePackage(samePackage);
     result.SetAction(action);
-    result.SetFfrt(ffrt);
 }
 
 template<typename T>
@@ -337,16 +334,6 @@ std::string FreezeResult::GetAction() const
 void FreezeResult::SetAction(const std::string& action)
 {
     action_ = action;
-}
-
-std::string FreezeResult::GetFfrt() const
-{
-    return ffrt_;
-}
-
-void FreezeResult::SetFfrt(const std::string& ffrt)
-{
-    ffrt_ = ffrt;
 }
 
 std::string FreezeRule::GetDomain() const

@@ -30,6 +30,7 @@
 #include "parameter_ex.h"
 #include "perf_collector.h"
 #include "string_util.h"
+
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
@@ -96,13 +97,16 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
 #endif
     std::string pidStr = "";
     for (auto pidTemp : pids) {
-        if (pidTemp != pid_ && (catchedPids_.count(pidTemp) == 0) && !IsAncoProc(pidTemp)) {
-            CatcherStacktrace(fd, pidTemp);
-            CatcherFfrtStack(fd, pidTemp);
-            pidStr += "," + std::to_string(pidTemp);
-        } else {
+        if (pidTemp == pid_ || IsAncoProc(pidTemp)) {
             HIVIEW_LOGI("Stack of pid %{public}d is catched.", pidTemp);
+            continue;
         }
+
+        if (catchedPids_.count(pidTemp) == 0) {
+            CatcherStacktrace(fd, pidTemp);
+            pidStr += "," + std::to_string(pidTemp);
+        }
+        CatcherFfrtStack(fd, pidTemp);
     }
 
     if (event_ != nullptr) {
@@ -292,10 +296,7 @@ void PeerBinderCatcher::CatcherFfrtStack(int fd, int pid) const
     std::string content =  "PeerBinderCatcher start catcher ffrt stack for pid : " + std::to_string(pid) + "\r\n";
     FileUtil::SaveStringToFd(fd, content);
 
-    std::string serviceName = (LogCatcherUtils::GetFfrtDumpType(pid) == LogCatcherUtils::APP) ?
-        "ApplicationManagerService" : "SystemAbilityManager";
-    int count = LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT;
-    LogCatcherUtils::ReadShellToFile(fd, serviceName, "--ffrt " + std::to_string(pid), count);
+    LogCatcherUtils::DumpStackFfrt(fd, std::to_string(pid));
 }
 
 void PeerBinderCatcher::CatcherStacktrace(int fd, int pid) const
