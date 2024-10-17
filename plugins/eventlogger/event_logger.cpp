@@ -607,7 +607,7 @@ void EventLogger::WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int or
     std::string idStr = event->eventName_.empty() ? std::to_string(event->eventId_) : event->eventName_;
     std::string logFile = idStr + "-" + std::to_string(pid) + "-" + formatTime + "-KernelStack-" +
         std::to_string(originFd) + ".log";
-    std::string path = std::string(LOGGER_EVENT_LOG_PATH) + "/" + logFile;
+    std::string path = LOGGER_EVENT_LOG_PATH + "/" + logFile;
     if (FileUtil::FileExists(path)) {
         HIVIEW_LOGI("Filename: %{public}s is existed.", logFile.c_str());
         return;
