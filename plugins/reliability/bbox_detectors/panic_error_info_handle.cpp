@@ -28,7 +28,7 @@ DEFINE_LOG_LABEL(0xD002D11, "PanicErrorInfoHandle");
 using namespace std;
 
 constexpr const char* HISTORY_LOG_PATH = "/data/log/bbox/history.log";
-constexpr const char* SYS_FS_PSTORE_PATH = "/data/local/tmp/blackbox-ramoops-0";
+constexpr const char* SYS_FS_PSTORE_PATH = "/sys/fs/pstore/blackbox-ramoops-0";
 
 /* fault category type */
 constexpr const char* CATEGORY_SYSTEM_REBOOT = "SYSREBOOT";
@@ -110,6 +110,10 @@ struct ErrorInfoToCategory g_errorInfoCategories[] = {
 
 void RKTransData(std::string bboxTime, std::string bboxSysreset)
 {
+    string deviceInfo = system::GetParameter("const.product.devicetype", "");
+    if (deviceInfo != "default") {
+        return;
+    }
     ifstream fin(SYS_FS_PSTORE_PATH);
     if (!fin.is_open()) {
         HIVIEW_LOGE("Failed to open file: %{public}s, error=%{public}d", SYS_FS_PSTORE_PATH, errno);
