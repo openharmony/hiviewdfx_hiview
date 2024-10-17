@@ -20,6 +20,8 @@ group("unittest") {
   deps = [
     ":SysEventBackupTest",
     ":SysEventDaoTest",
+    ":SysEventDatabaseTest",
+    ":SysEventDocTest",
     ":SysEventRepeatTest",
     ":SysEventSequenceMgrTest",
     ":SysEventStoreUtilityTest",
@@ -29,7 +31,10 @@ group("unittest") {
 config("sys_event_dao_config_test") {
   visibility = [ ":*" ]
 
-  include_dirs = [ "unittest/common" ]
+  include_dirs = [
+    "unittest/common",
+    "$hiview_base/event_store/store/include",
+  ]
 
   cflags = []
 }
@@ -62,12 +67,36 @@ ohos_unittest("SysEventRepeatTest") {
 
   sources = [ "unittest/common/sys_event_repeat_test.cpp" ]
 
-  deps = [ "$hiview_base:hiviewbase_static_lib_for_tdd" ]
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_store:event_store_source",
+  ]
 
   external_deps = [
     "googletest:gmock",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
+}
+
+ohos_unittest("SysEventDatabaseTest") {
+  module_out_path = module_output_path
+  configs = [ ":sys_event_dao_config_test" ]
+
+  sources = [ "unittest/common/sys_event_database_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_store:event_store_source",
+    "$hiview_base/event_store/utility:event_store_utility_source",
+  ]
+
+  external_deps = [
+    "googletest:gmock",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
   ]
 }
 
@@ -93,6 +122,28 @@ ohos_unittest("SysEventStoreUtilityTest") {
 
   external_deps = [
     "ffrt:libffrt",
+    "googletest:gmock",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+
+  resource_config_file =
+      "//base/hiviewdfx/hiview/base/event_store/test/resource/ohos_test.xml"
+}
+
+ohos_unittest("SysEventDocTest") {
+  module_out_path = module_output_path
+  configs = [ ":sys_event_dao_config_test" ]
+
+  sources = [ "unittest/common/sys_event_doc_test.cpp" ]
+
+  deps = [
+    "$hiview_base:hiviewbase_static_lib_for_tdd",
+    "$hiview_base/event_store:event_store_source",
+    "//base/hiviewdfx/hiview/base/event_store/utility:event_store_utility_source",
+  ]
+
+  external_deps = [
     "googletest:gmock",
     "googletest:gtest_main",
     "hilog:libhilog",
