@@ -26,8 +26,7 @@ using namespace OHOS::AppExecFwk;
 void UcAppStateObserver::OnProcessStateChanged(const AppExecFwk::ProcessData& processData)
 {
 #if !(PC_APP_STATE_COLLECT_ENABLE)
-    HIVIEW_LOGD("name=%{public}s, pid=%{public}d, state=%{public}d",
-        processData.bundleName.c_str(), processData.pid, processData.state);
+    HIVIEW_LOGD("pid=%{public}d, state=%{public}d", processData.pid, processData.state);
     if (processData.state == AppProcessState::APP_STATE_FOREGROUND) {
         ProcessStatus::GetInstance().NotifyProcessState(processData.pid, FOREGROUND);
     } else if (processData.state == AppProcessState::APP_STATE_BACKGROUND) {
