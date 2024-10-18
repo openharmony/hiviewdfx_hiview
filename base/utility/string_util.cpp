@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,9 +13,11 @@
  * limitations under the License.
  */
 #include "string_util.h"
+
 #include <climits>
 #include <iomanip>
 #include <iostream>
+#include <regex.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -469,6 +471,21 @@ bool EndWith(const std::string& str, const std::string& sub)
         return false;
     }
     return index + sub.size() == str.size();
+}
+
+bool IsValidRegex(const std::string& regStr)
+{
+    // ignore empty regx
+    if (regStr.empty()) {
+        return true;
+    }
+
+    int flags = REG_EXTENDED;
+    regex_t reg;
+    int status = regcomp(&reg, regStr.c_str(), flags);
+    // free regex
+    regfree(&reg);
+    return (status == REG_OK);
 }
 } // namespace StringUtil
 } // namespace HiviewDFX
