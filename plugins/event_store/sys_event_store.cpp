@@ -21,6 +21,7 @@
 #include "event.h"
 #include "event_export_engine.h"
 #include "file_util.h"
+#include "focused_event_util.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "hiview_platform.h"
@@ -107,6 +108,10 @@ bool SysEventStore::OnEvent(std::shared_ptr<Event>& event)
         // add seq to sys event and save it to local file
         int64_t eventSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
         sysEvent->SetEventSeq(eventSeq);
+        if (FocusedEventUtil::IsFocusedEvent(sysEvent->domain_, sysEvent->eventName_)) {
+            HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
+                sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), eventSeq);
+        }
         EventStore::SysEventSequenceManager::GetInstance().SetSequence(++eventSeq);
         sysEventDbMgr_->SaveToStore(sysEvent);
 

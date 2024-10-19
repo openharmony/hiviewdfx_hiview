@@ -57,10 +57,14 @@ public:
     bool PublishPipelineEvent(std::shared_ptr<PipelineEvent> event);
     void Dump(int fd, const std::vector<std::string>& cmds) override;
     void OnConfigUpdate(const std::string& localCfgPath, const std::string& cloudCfgPath) override;
+    void UpdateTestType(const std::string& testType);
 
 private:
     void InitController();
+    bool IsValidSysEvent(const std::shared_ptr<SysEvent> event);
     std::shared_ptr<SysEvent> Convert2SysEvent(std::shared_ptr<Event>& event);
+    void DecorateSysEvent(const std::shared_ptr<SysEvent> event, const BaseInfo& info, uint64_t id);
+    bool IsDuplicateEvent(const uint64_t eventId);
 
 private:
     EventServer eventServer_;
@@ -69,6 +73,8 @@ private:
     std::shared_ptr<EventJsonParser> sysEventParser_ = nullptr;
     std::shared_ptr<IController> controller_;
     std::atomic<bool> isConfigUpdated_ { false };
+    std::string testType_;
+    std::list<uint64_t> eventIdList_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

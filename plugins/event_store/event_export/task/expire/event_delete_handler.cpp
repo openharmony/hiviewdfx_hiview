@@ -22,6 +22,7 @@
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "hisysevent.h"
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -37,7 +38,7 @@ bool EventDeleteHandler::Delete(std::vector<std::string>& files, const std::stri
 {
     for (const auto& file : files) {
         // delete expired event file
-        HIVIEW_LOGI("%{private}s has been deleted", file.c_str());
+        HIVIEW_LOGI("%{public}s has been deleted", StringUtil::HideDeviceIdInfo(file).c_str());
         FileUtil::RemoveFile(file);
     }
     return true;

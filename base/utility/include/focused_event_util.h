@@ -13,22 +13,17 @@
  * limitations under the License.
  */
 
-#ifndef UTILITY_HIVIEW_CFG_UTIL_H
-#define UTILITY_HIVIEW_CFG_UTIL_H
+#ifndef HIVIEW_FOCUSED_EVENT_UTIL_H
+#define HIVIEW_FOCUSED_EVENT_UTIL_H
 
-#include <functional>
 #include <string>
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace HiViewConfigUtil {
-// fileHandleRet(srcConfigDir, destConfigDir, configFileName)
-using ConfigFileHandler = std::function<bool(const std::string&, const std::string&, const std::string&)>;
-
-std::string GetConfigFilePath(const std::string& configFileName);
-std::string GetConfigFilePath(const std::string& configZipFileName, const std::string& configDir,
-    const std::string& configFileName);
-};
+namespace FocusedEventUtil {
+bool IsFocusedEvent(const std::string& eventDomain, const std::string& eventName);
+} // namespace FocusedEventsUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // UTILITY_HIVIEW_CFG_UTIL_H
+
+#endif // HIVIEW_FOCUSED_EVENT_UTIL_H

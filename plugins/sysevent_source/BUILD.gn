@@ -46,7 +46,6 @@ ohos_source_set("sysevent_source") {
     cfi_vcall_icall_only = true
     debug = false
   }
-
   configs = [ ":sysevent_source_config" ]
 
   sources = [
@@ -74,6 +73,7 @@ ohos_source_set("sysevent_source") {
     "cJSON:cjson",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
     "relational_store:native_rdb",
     "zlib:shared_libz",

@@ -42,15 +42,6 @@ struct BaseInfo {
 using NAME_INFO_MAP = std::unordered_map<std::string, BaseInfo>;
 using DOMAIN_INFO_MAP = std::unordered_map<std::string, NAME_INFO_MAP>;
 using JSON_VALUE_LOOP_HANDLER = std::function<void(const std::string&, const Json::Value&)>;
-using FILTER_SIZE_TYPE = std::list<std::string>::size_type;
-
-class DuplicateIdFilter {
-public:
-    bool IsDuplicateEvent(const uint64_t sysEventId);
-
-private:
-    std::list<uint64_t> sysEventIds_;
-};
 
 class EventJsonParser {
 public:
@@ -61,16 +52,10 @@ public:
     std::string GetTagByDomainAndName(const std::string& domain, const std::string& name) const;
     int GetTypeByDomainAndName(const std::string& domain, const std::string& name) const;
     bool GetPreserveByDomainAndName(const std::string& domain, const std::string& name) const;
-    bool HandleEventJson(const std::shared_ptr<SysEvent>& event);
-    void UpdateTestType(const std::string& testType);
     void ReadDefFile(const std::string& defFilePath);
+    BaseInfo GetDefinedBaseInfoByDomainName(const std::string& domain, const std::string& name) const;
 
 private:
-    void AppendExtensiveInfo(std::shared_ptr<SysEvent> event) const;
-    bool CheckEvent(std::shared_ptr<SysEvent> event);
-    bool CheckBaseInfo(std::shared_ptr<SysEvent> event) const;
-    bool CheckDuplicate(std::shared_ptr<SysEvent> event);
-    BaseInfo GetDefinedBaseInfoByDomainName(const std::string& domain, const std::string& name) const;
     bool HasIntMember(const Json::Value& jsonObj, const std::string& name) const;
     bool HasStringMember(const Json::Value& jsonObj, const std::string& name) const;
     bool HasBoolMember(const Json::Value& jsonObj, const std::string& name) const;
@@ -82,8 +67,6 @@ private:
 
 private:
     std::shared_ptr<DOMAIN_INFO_MAP> hiSysEventDefMap_ = nullptr;
-    DuplicateIdFilter filter_;
-    std::string testType_;
 }; // EventJsonParser
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -21,11 +21,13 @@
 #include <sstream>
 
 #include "file_util.h"
+#include "focused_event_util.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "hiview_zip_util.h"
 #include "parameter.h"
 #include "parameter_ex.h"
+#include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -136,20 +138,20 @@ cJSON* CreateJsonObjectByVersion(const std::string& sysVersion)
     // add header
     auto headerObj = CreateHeaderJsonObj();
     if (headerObj != nullptr) {
-        cJSON_AddItemToObject(root, H_HEADER_KEY, headerObj);
+        cJSON_AddItemToObjectCS(root, H_HEADER_KEY, headerObj);
     }
     // add manufacturer
     auto manufacturerObj = CreateManufacturerJsonObj();
     if (manufacturerObj != nullptr) {
-        cJSON_AddItemToObject(root, H_MANUFACTURE_KEY, manufacturerObj);
+        cJSON_AddItemToObjectCS(root, H_MANUFACTURE_KEY, manufacturerObj);
     }
     auto deviceObj = CreateDeviceJsonObj();
     if (deviceObj != nullptr) {
-        cJSON_AddItemToObject(root, H_DEVICE_KEY, deviceObj);
+        cJSON_AddItemToObjectCS(root, H_DEVICE_KEY, deviceObj);
     }
     auto systemObj = CreateSystemObj(sysVersion);
     if (systemObj != nullptr) {
-        cJSON_AddItemToObject(root, H_SYSTEM_KEY, systemObj);
+        cJSON_AddItemToObjectCS(root, H_SYSTEM_KEY, systemObj);
     }
     return root;
 }
@@ -170,6 +172,10 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
     }
     for (const auto& event : events) {
         cJSON* eventItem = cJSON_Parse(event.second.c_str());
+        if (FocusedEventUtil::IsFocusedEvent(domain, event.first)) {
+            HIVIEW_LOGI("write event to json: [%{public}s|%{public}s]", domain.c_str(),
+                event.first.c_str());
+        }
         cJSON_AddItemToArray(dataJsonArray, eventItem);
     }
     cJSON* anonymousJsonObj = cJSON_CreateObject();
@@ -177,7 +183,7 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
         HIVIEW_LOGE("failed to create anonymousJsonObj json object");
         return nullptr;
     }
-    cJSON_AddItemToObject(anonymousJsonObj, DATA_KEY, dataJsonArray);
+    cJSON_AddItemToObjectCS(anonymousJsonObj, DATA_KEY, dataJsonArray);
     cJSON_AddItemToArray(eventsJsonArray, anonymousJsonObj);
     return eventsJsonArray;
 }
@@ -202,14 +208,13 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
 
 bool ZipDbFile(const std::string& src, const std::string& dest)
 {
-    HIVIEW_LOGI("zip file: %{public}s to %{private}s", src.c_str(), dest.c_str());
     HiviewZipUnit zipUnit(dest);
     if (int32_t ret = zipUnit.AddFileInZip(src, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
         HIVIEW_LOGW("zip db failed, ret: %{public}d.", ret);
         return false;
     }
     if (bool ret = FileUtil::ChangeModeFile(dest, EVENT_EXPORT_FILE_MODE); !ret) {
-        HIVIEW_LOGE("failed to chmod file %{private}s.", dest.c_str());
+        HIVIEW_LOGE("failed to chmod file %{public}s.", StringUtil::HideDeviceIdInfo(dest).c_str());
         return false;
     }
     // delete json file
@@ -305,16 +310,16 @@ bool ExportJsonFileWriter::Write()
             continue;
         }
         cJSON_AddStringToObject(domainInfoJsonObj, H_NAME_KEY, sysEvent.first.c_str());
-        cJSON_AddItemToObject(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
+        cJSON_AddItemToObjectCS(domainJsonObj, DOMAIN_INFO_KEY, domainInfoJsonObj);
         cJSON* eventsJsonObj = CreateEventsJsonArray(sysEvent.first, sysEvent.second);
         if (eventsJsonObj == nullptr) {
             continue;
         }
-        cJSON_AddItemToObject(domainJsonObj, EVENTS_KEY, eventsJsonObj);
+        cJSON_AddItemToObjectCS(domainJsonObj, EVENTS_KEY, eventsJsonObj);
         cJSON_AddItemToArray(domainsJsonArray, domainJsonObj);
     }
     // add domains
-    cJSON_AddItemToObject(root, DOMAINS_KEY, domainsJsonArray);
+    cJSON_AddItemToObjectCS(root, DOMAINS_KEY, domainsJsonArray);
     // create export json file HiSysEvent.json
     auto packagedFile = GetHiSysEventJsonTempDir(moduleName_, eventVersion_).append(EXPORT_JSON_FILE_NAME);
     HIVIEW_LOGD("packagedFile: %{public}s", packagedFile.c_str());
@@ -323,11 +328,12 @@ bool ExportJsonFileWriter::Write()
     // zip json file into a temporary zip file
     auto tmpZipFile = GetTmpZipFile(exportDir_, moduleName_, eventVersion_);
     if (!ZipDbFile(packagedFile, tmpZipFile)) {
-        HIVIEW_LOGE("failed to zip %{public}s to %{private}s", packagedFile.c_str(), tmpZipFile.c_str());
+        HIVIEW_LOGE("failed to zip %{public}s to %{public}s", packagedFile.c_str(),
+            StringUtil::HideDeviceIdInfo(tmpZipFile).c_str());
         return false;
     }
     auto zipFile = GetZipFile(exportDir_);
-    HIVIEW_LOGD("zipFile: %{private}s", zipFile.c_str());
+    HIVIEW_LOGD("zipFile: %{public}s", StringUtil::HideDeviceIdInfo(zipFile).c_str());
     if (exportJsonFileZippedListener_ != nullptr) {
         exportJsonFileZippedListener_(tmpZipFile, zipFile);
     }

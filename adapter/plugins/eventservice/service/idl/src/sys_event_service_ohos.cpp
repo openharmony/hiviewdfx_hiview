@@ -102,21 +102,6 @@ bool MatchRules(const SysEventRuleGroupOhos& rules, const string& domain, const 
     });
 }
 
-int32_t CheckEventListenerAddingValidity(const std::vector<SysEventRule>& rules, RegisteredListeners& listeners)
-{
-    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
-    if (rules.size() > watchRuleCntLimit) {
-        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
-        return ERR_TOO_MANY_WATCH_RULES;
-    }
-    size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
-    if (listeners.size() >= watcherTotalCntLimit) {
-        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
-        return ERR_TOO_MANY_WATCHERS;
-    }
-    return IPC_CALL_SUCCEED;
-}
-
 int32_t CheckEventSubscriberAddingValidity(const std::vector<std::string>& events)
 {
     size_t maxEventNum = 30;  // count of total events is limited to 30.
@@ -183,7 +168,11 @@ uint32_t SysEventServiceOhos::GetTypeByDomainAndName(const string& eventDomain, 
 
 void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>& event)
 {
-    lock_guard<mutex> lock(mutex_);
+    {
+        lock_guard<mutex> lock(publisherMutex_);
+        dataPublisher_->OnSysEvent(event);
+    }
+    lock_guard<mutex> lock(listenersMutex_);
     for (auto listener = registeredListeners_.begin(); listener != registeredListeners_.end(); ++listener) {
         SysEventCallbackPtrOhos callback = iface_cast<ISysEventCallback>(listener->first);
         if (callback == nullptr) {
@@ -199,7 +188,6 @@ void SysEventServiceOhos::OnSysEvent(std::shared_ptr<OHOS::HiviewDFX::SysEvent>&
                 static_cast<uint32_t>(event->eventType_), Str8ToStr16(event->AsJsonStr()));
         }
     }
-    dataPublisher_->OnSysEvent(event);
 }
 
 void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
@@ -213,7 +201,6 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
         HIVIEW_LOGE("object in remote is null.");
         return;
     }
-    lock_guard<mutex> lock(mutex_);
     if (debugModeCallback_ != nullptr) {
         CallbackObjectOhos callbackObject = debugModeCallback_->AsObject();
         if (callbackObject == remoteObject && isDebugMode_) {
@@ -225,6 +212,7 @@ void SysEventServiceOhos::OnRemoteDied(const wptr<IRemoteObject>& remote)
             isDebugMode_ = false;
         }
     }
+    lock_guard<mutex> lock(listenersMutex_);
     auto listener = registeredListeners_.find(remoteObject);
     if (listener != registeredListeners_.end()) {
         listener->first->RemoveDeathRecipient(deathRecipient_);
@@ -258,9 +246,16 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     if (!HasAccessPermission()) {
         return ERR_NO_PERMISSION;
     }
-    auto checkRet = CheckEventListenerAddingValidity(rules, registeredListeners_);
-    if (checkRet != IPC_CALL_SUCCEED) {
-        return checkRet;
+    size_t watchRuleCntLimit = 20; // count of listener rule for each watcher is limited to 20.
+    if (rules.size() > watchRuleCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchRules(rules);
+        return ERR_TOO_MANY_WATCH_RULES;
+    }
+    lock_guard<mutex> lock(listenersMutex_);
+    size_t watcherTotalCntLimit = 30; // count of total watches is limited to 30.
+    if (registeredListeners_.size() >= watcherTotalCntLimit) {
+        OHOS::HiviewDFX::RunningStatusLogUtil::LogTooManyWatchers(watcherTotalCntLimit);
+        return ERR_TOO_MANY_WATCHERS;
     }
     auto service = GetSysEventService();
     if (service == nullptr) {
@@ -278,7 +273,6 @@ int32_t SysEventServiceOhos::AddListener(const std::vector<SysEventRule>& rules,
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
-    lock_guard<mutex> lock(mutex_);
     pair<int32_t, SysEventRuleGroupOhos> rulesPair(pid, rules);
     if (registeredListeners_.find(callbackObject) != registeredListeners_.end()) {
         registeredListeners_[callbackObject] = rulesPair;
@@ -316,7 +310,7 @@ int32_t SysEventServiceOhos::RemoveListener(const SysEventCallbackPtrOhos& callb
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
-    lock_guard<mutex> lock(mutex_);
+    lock_guard<mutex> lock(listenersMutex_);
     if (registeredListeners_.empty()) {
         HIVIEW_LOGD("has no any listeners.");
         return ERR_LISTENERS_EMPTY;
@@ -482,7 +476,7 @@ int64_t SysEventServiceOhos::AddSubscriber(const SysEventQueryRuleGroupOhos &rul
         return checkRet;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    lock_guard<mutex> lock(mutex_);
+    lock_guard<mutex> lock(publisherMutex_);
     auto ret = dataPublisher_->AddSubscriber(uid, events);
     if (ret != IPC_CALL_SUCCEED) {
         return ret;
@@ -507,7 +501,7 @@ int32_t SysEventServiceOhos::RemoveSubscriber()
         return ERR_NO_PERMISSION;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    lock_guard<mutex> lock(mutex_);
+    lock_guard<mutex> lock(publisherMutex_);
     auto ret = dataPublisher_->RemoveSubscriber(uid);
     if (ret != IPC_CALL_SUCCEED) {
         return ret;
@@ -525,6 +519,7 @@ int64_t SysEventServiceOhos::Export(const QueryArgument &queryArgument, const Sy
         return checkRet;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
+    lock_guard<mutex> lock(publisherMutex_);
     auto lastTimeStamp = dataPublisher_->GetTimeStampByUid(uid);
     int64_t currentTime = static_cast<int64_t>(TimeUtil::GetMilliseconds());
     if (std::abs(currentTime - lastTimeStamp) < TimeUtil::SECONDS_PER_HOUR * TimeUtil::SEC_TO_MILLISEC) {
