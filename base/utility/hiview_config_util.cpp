@@ -112,7 +112,7 @@ std::string GetConfigFilePath(const std::string& configFileName)
 }
 
 std::string GetConfigFilePath(const std::string& configZipFileName, const std::string& configDir,
-    const std::string configFileName)
+    const std::string& configFileName)
 {
     std::string destConfigDir = FileUtil::IncludeTrailingPathDelimiter(GetUnZipConfigDir() + configDir);
     std::string destVer;
@@ -133,10 +133,14 @@ std::string GetConfigFilePath(const std::string& configZipFileName, const std::s
         HIVIEW_LOGI("succeed to do cloud update for %{public}s", configFileName.c_str());
         return destConfigFilePath;
     }
-    // do local update if local version is newer than clouad version or cloud update is failed
+    // do local update if local version is newer than cloud version or cloud update is failed
     if (UnZipConfigFile(LOCAL_CFG_PATH, configZipFileName, destConfigDir, configFileName) &&
         CopyConfigVersionFile(destConfigDir, true)) {
         HIVIEW_LOGI("succeed to do local update for %{public}s", configFileName.c_str());
+        return destConfigFilePath;
+    }
+    // return file path directly if dest config file exist
+    if (FileUtil::FileExists(destConfigFilePath)) {
         return destConfigFilePath;
     }
     return GetConfigFilePathByVersion(localVer, cloudVer, configFileName);

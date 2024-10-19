@@ -21,7 +21,9 @@
 #include "daily_controller.h"
 #include "decoded/decoded_event.h"
 #include "defines.h"
+#include "raw_data_base_def.h"
 #include "file_util.h"
+#include "focused_event_util.h"
 #include "hiview_config_util.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
@@ -29,6 +31,7 @@
 #include "sys_event.h"
 #include "hiview_platform.h"
 #include "param_const_common.h"
+#include "parameter.h"
 #include "sys_event_dao.h"
 #include "sys_event_service_adapter.h"
 
@@ -40,6 +43,48 @@ DEFINE_LOG_TAG("HiView-SysEventSource");
 constexpr char DEF_FILE_NAME[] = "hisysevent.def";
 constexpr char DEF_ZIP_NAME[] = "hisysevent.zip";
 constexpr char DEF_CFG_DIR[] = "sys_event_def";
+constexpr char TEST_TYPE_PARAM_KEY[] = "hiviewdfx.hiview.testtype";
+constexpr char TEST_TYPE_KEY[] = "test_type_";
+
+uint64_t GenerateHash(std::shared_ptr<SysEvent> event)
+{
+    if (event == nullptr) {
+        return 0;
+    }
+    constexpr size_t infoLenLimit = 256;
+    size_t infoLen = event->rawData_->GetDataLength();
+    size_t hashLen = (infoLen < infoLenLimit) ? infoLen : infoLenLimit;
+    const uint8_t* p = event->rawData_->GetData();
+    uint64_t ret { 0xCBF29CE484222325ULL }; // basis value
+    size_t i = 0;
+    while (i < hashLen) {
+        ret ^= *(p + i);
+        ret *= 0x100000001B3ULL; // prime value
+        i++;
+    }
+    return ret;
+}
+
+void ParameterWatchCallback(const char* key, const char* value, void* context)
+{
+    if (context == nullptr) {
+        HIVIEW_LOGE("context is null");
+        return;
+    }
+    auto eventSourcePlugin = reinterpret_cast<SysEventSource*>(context);
+    if (eventSourcePlugin == nullptr) {
+        HIVIEW_LOGE("eventsource plugin is null");
+        return;
+    }
+    size_t testTypeStrMaxLen = 256;
+    std::string testTypeStr(value);
+    if (testTypeStr.size() > testTypeStrMaxLen) {
+        HIVIEW_LOGE("length of the test type string set exceeds the limit");
+        return;
+    }
+    HIVIEW_LOGI("test_type is set to be \"%{public}s\"", testTypeStr.c_str());
+    eventSourcePlugin->UpdateTestType(testTypeStr);
+}
 }
 
 void SysEventReceiver::HandlerEvent(std::shared_ptr<EventRaw::RawData> rawData)
@@ -83,6 +128,11 @@ void SysEventSource::OnLoad()
         [this] (const std::string& domain, const std::string& name) {
             return this->sysEventParser_->GetTypeByDomainAndName(domain, name);
         });
+
+    // watch parameter
+    if (WatchParameter(TEST_TYPE_PARAM_KEY, ParameterWatchCallback, this) != 0) {
+        HIVIEW_LOGW("failed to watch the change of parameter %{public}s", TEST_TYPE_PARAM_KEY);
+    }
 }
 
 void SysEventSource::InitController()
@@ -169,12 +219,17 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
         return false;
     }
     EventStore::SysEventDao::CheckRepeat(sysEvent);
-    if (!sysEventParser_->HandleEventJson(sysEvent)) {
+    if (!IsValidSysEvent(sysEvent)) {
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
-    HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRId64 "] is valid.",
-        sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), sysEvent->GetEventSeq());
+    if (FocusedEventUtil::IsFocusedEvent(sysEvent->domain_, sysEvent->eventName_)) {
+        HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRIu64 "] is valid.",
+            sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), event->happenTime_);
+    } else {
+        HIVIEW_LOGD("event[%{public}s|%{public}s|%{public}" PRIu64 "] is valid.",
+            sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), event->happenTime_);
+    }
     sysEventStat_->AccumulateEvent();
     return true;
 }
@@ -225,6 +280,72 @@ void SysEventSource::Dump(int fd, const std::vector<std::string>& cmds)
 void SysEventSource::OnConfigUpdate(const std::string& localCfgPath, const std::string& cloudCfgPath)
 {
     this->isConfigUpdated_.store(true);
+}
+
+bool SysEventSource::IsValidSysEvent(const std::shared_ptr<SysEvent> event)
+{
+    if (event->domain_.empty() || event->eventName_.empty()) {
+        HIVIEW_LOGW("domain=%{public}s or name=%{public}s is empty.",
+            event->domain_.c_str(), event->eventName_.c_str());
+        return false;
+    }
+    auto baseInfo = sysEventParser_->GetDefinedBaseInfoByDomainName(event->domain_, event->eventName_);
+    if (baseInfo.type == INVALID_EVENT_TYPE) {
+        HIVIEW_LOGW("type defined for event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
+            event->domain_.c_str(), event->eventName_.c_str(), event->happenTime_);
+        return false;
+    }
+    if (event->GetEventType() != baseInfo.type) {
+        HIVIEW_LOGW("type=%{public}d of event[%{public}s|%{public}s|%{public}" PRIu64 "] is invalid.",
+            event->GetEventType(), event->domain_.c_str(), event->eventName_.c_str(), event->happenTime_);
+        return false;
+    }
+    // append id
+    auto eventId = GenerateHash(event);
+    if (IsDuplicateEvent(eventId)) {
+        HIVIEW_LOGW("ignore duplicate event[%{public}s|%{public}s|%{public}" PRIu64 "].",
+            event->domain_.c_str(), event->eventName_.c_str(), eventId);
+        return false;
+    }
+    DecorateSysEvent(event, baseInfo, eventId);
+    return true;
+}
+
+void SysEventSource::UpdateTestType(const std::string& testType)
+{
+    testType_ = testType;
+}
+
+void SysEventSource::DecorateSysEvent(const std::shared_ptr<SysEvent> event, const BaseInfo& baseInfo, uint64_t id)
+{
+    if (!baseInfo.level.empty()) {
+        event->SetLevel(baseInfo.level);
+    }
+    if (!baseInfo.tag.empty()) {
+        event->SetTag(baseInfo.tag);
+    }
+    event->SetPrivacy(baseInfo.privacy);
+    if (!testType_.empty()) {
+        event->SetEventValue(TEST_TYPE_KEY, testType_);
+    }
+    event->preserve_ = baseInfo.preserve;
+    // add hashcode id
+    event->SetId(id);
+}
+
+bool SysEventSource::IsDuplicateEvent(const uint64_t eventId)
+{
+    for (auto iter = eventIdList_.begin(); iter != eventIdList_.end(); iter++) {
+        if (*iter == eventId) {
+            return true;
+        }
+    }
+    std::list<std::string>::size_type maxSize { 5 }; // size of queue limit to 5
+    if (eventIdList_.size() >= maxSize) {
+        eventIdList_.pop_front();
+    }
+    eventIdList_.emplace_back(eventId);
+    return false;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

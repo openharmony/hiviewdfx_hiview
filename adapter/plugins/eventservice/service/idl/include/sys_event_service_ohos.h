@@ -95,14 +95,15 @@ private:
     void MergeEventList(const std::vector<SysEventQueryRule>& rules, std::vector<std::string>& events) const;
 
 private:
-    std::mutex mutex_;
     sptr<CallbackDeathRecipient> deathRecipient_;
+    std::mutex listenersMutex_;
     RegisteredListeners registeredListeners_;
     bool isDebugMode_;
     SysEventCallbackPtrOhos debugModeCallback_;
     GetTagByDomainNameFunc getTagFunc_;
     GetTypeByDomainNameFunc getTypeFunc_;
     static OHOS::HiviewDFX::NotifySysEvent gISysEventNotify_;
+    std::mutex publisherMutex_;
     std::shared_ptr<DataPublisher> dataPublisher_;
 
 private:

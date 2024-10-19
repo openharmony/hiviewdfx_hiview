@@ -21,6 +21,7 @@
 #include <mutex>
 #include <vector>
 
+#include "hisysevent.h"
 #include "hiview_global.h"
 #include "hiview_logger.h"
 #include "pipeline.h"
@@ -34,8 +35,8 @@ namespace HiviewDFX {
 DEFINE_LOG_TAG("HiView-Monitor");
 namespace {
 constexpr uint8_t SLEEP_TEN_SECONDS = 10;
-constexpr char EVENT_SERVICE_PLUGIN[] = "SysEventService";
 };
+
 void PlatformMonitor::AccumulateTimeInterval(uint64_t costTime, std::map<int8_t, uint32_t> &stat)
 {
     std::lock_guard<std::mutex> lock(statMutex_);
@@ -220,29 +221,21 @@ void PlatformMonitor::GetMaxSpeed(PerfMeasure &perfMeasure) const
     perfMeasure.maxSpeed = maxSpeed_;
 }
 
-std::shared_ptr<SysEvent> PlatformMonitor::CreateProfileReport(PerfMeasure &perfMeasure)
+void PlatformMonitor::ReportProfile(const PerfMeasure& perfMeasure)
 {
-    SysEventCreator eventCreator("HIVIEWDFX", "PROFILE_STAT", SysEventCreator::STATISTIC);
-    eventCreator.SetKeyValue("MAX_TOTAL_COUNT", perfMeasure.maxTotalCount);
-    eventCreator.SetKeyValue("MAX_TOTAL_SIZE", perfMeasure.maxTotalSize);
-    eventCreator.SetKeyValue("DOMAINS", perfMeasure.domains);
-    eventCreator.SetKeyValue("DOMAIN_DETAIL", perfMeasure.domainCounts);
-    eventCreator.SetKeyValue("TOTAL_COUNT", perfMeasure.totalCount);
-    eventCreator.SetKeyValue("TOTAL_SIZE", perfMeasure.totalSize);
-    eventCreator.SetKeyValue("BREAK_COUNT", perfMeasure.breakCount);
-    eventCreator.SetKeyValue("BREAK_DURATION", perfMeasure.breakDuration);
-    eventCreator.SetKeyValue("MIN_SPEED", perfMeasure.minSpeed);
-    eventCreator.SetKeyValue("MAX_SPEED", perfMeasure.maxSpeed);
-    eventCreator.SetKeyValue("REAL_COUNT", perfMeasure.realCounts);
-    eventCreator.SetKeyValue("PROCESS_COUNT", perfMeasure.processCounts);
-    eventCreator.SetKeyValue("WAIT_COUNT", perfMeasure.waitCounts);
-    eventCreator.SetKeyValue("FINISHED_COUNT", perfMeasure.finishedCount);
-    eventCreator.SetKeyValue("OVER_REAL_COUNT", perfMeasure.overRealTotalCount);
-    eventCreator.SetKeyValue("OVER_REAL_PCT", perfMeasure.realPercent);
-    eventCreator.SetKeyValue("OVER_PROC_COUNT", perfMeasure.overProcessTotalCount);
-    eventCreator.SetKeyValue("OVER_PROC_PCT", perfMeasure.processpercent);
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    return sysEvent;
+    int ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, "PROFILE_STAT", HiSysEvent::EventType::STATISTIC,
+        "MAX_TOTAL_COUNT", perfMeasure.maxTotalCount, "MAX_TOTAL_SIZE", perfMeasure.maxTotalSize,
+        "DOMAINS", perfMeasure.domains, "DOMAIN_DETAIL", perfMeasure.domainCounts,
+        "TOTAL_COUNT", perfMeasure.totalCount, "TOTAL_SIZE", perfMeasure.totalSize,
+        "BREAK_COUNT", perfMeasure.breakCount, "BREAK_DURATION", perfMeasure.breakDuration,
+        "MIN_SPEED", perfMeasure.minSpeed, "MAX_SPEED", perfMeasure.maxSpeed, "REAL_COUNT", perfMeasure.realCounts,
+        "PROCESS_COUNT", perfMeasure.processCounts, "WAIT_COUNT", perfMeasure.waitCounts,
+        "FINISHED_COUNT", perfMeasure.finishedCount, "OVER_REAL_COUNT", perfMeasure.overRealTotalCount,
+        "OVER_REAL_PCT", perfMeasure.realPercent, "OVER_PROC_COUNT", perfMeasure.overProcessTotalCount,
+        "OVER_PROC_PCT", perfMeasure.processpercent);
+    if (ret != SUCCESS) {
+        HIVIEW_LOGE("failed to write PROFILE_STAT event, ret is %{public}d", ret);
+    }
 }
 
 void PlatformMonitor::ReportCycleProfile()
@@ -267,13 +260,7 @@ void PlatformMonitor::ReportCycleProfile()
     // report percent and total number of over benchmark
     CalcOverBenckMarkPct(perfMeasure);
 
-    std::shared_ptr<SysEvent> sysEvent = CreateProfileReport(perfMeasure);
-    if (sysEvent == nullptr) {
-        return;
-    }
-    HIVIEW_LOGI("report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
-        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
-    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
+    ReportProfile(perfMeasure);
     HIVIEW_LOGI("report performance profile have done");
 }
 
@@ -357,34 +344,25 @@ void PlatformMonitor::ReportBreakProfile()
     std::vector<std::string> domains;
     std::vector<uint32_t> domainCounts;
     GetTopDomains(domains, domainCounts);
-    SysEventCreator eventCreator("HIVIEWDFX", "BREAK", SysEventCreator::BEHAVIOR);
-    eventCreator.SetKeyValue("TOTAL_COUNT", curTotalCount_);
-    eventCreator.SetKeyValue("TOTAL_SIZE", curTotalSize_);
-    eventCreator.SetKeyValue("REAL_SPEED", curRealSpeed);
-    eventCreator.SetKeyValue("PROC_SPEED", curProcessSpeed);
-    eventCreator.SetKeyValue("AVG_REAL_TIME", avgRealTime);
-    eventCreator.SetKeyValue("AVG_PROC_TIME", avgProcessTime);
-    eventCreator.SetKeyValue("AVG_WAIT_TIME", avgWaitTime);
-    eventCreator.SetKeyValue("TOP_EVENT", events);
-    eventCreator.SetKeyValue("TOP_EVENT_COUNT", eventCounts);
-    eventCreator.SetKeyValue("TOP_DOMAIN", domains);
-    eventCreator.SetKeyValue("TOP_DOMAIN_COUNT", domainCounts);
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
-        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
-    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
+    int ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, "BREAK", HiSysEvent::EventType::BEHAVIOR,
+        "TOTAL_COUNT", curTotalCount_, "TOTAL_SIZE", curTotalSize_, "REAL_SPEED", curRealSpeed,
+        "PROC_SPEED", curProcessSpeed, "AVG_REAL_TIME", avgRealTime, "AVG_PROC_TIME", avgProcessTime,
+        "AVG_WAIT_TIME", avgWaitTime, "TOP_EVENT", events, "TOP_EVENT_COUNT", eventCounts, "TOP_DOMAIN", domains,
+        "TOP_DOMAIN_COUNT", domainCounts);
+    if (ret != SUCCESS) {
+        HIVIEW_LOGE("failed to write BREAK event, ret is %{public}d", ret);
+    }
 }
 
 void PlatformMonitor::ReportRecoverProfile()
 {
     // report break duration when recovery
     int64_t duration = static_cast<int64_t>(recoverTimestamp_ - breakTimestamp_);
-    SysEventCreator eventCreator("HIVIEWDFX", "RECOVER", SysEventCreator::BEHAVIOR);
-    eventCreator.SetKeyValue("DURATION", duration);
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("", nullptr, eventCreator);
-    HIVIEW_LOGI("report event[%{public}s|%{public}s|%{public}" PRIu64 "].", sysEvent->domain_.c_str(),
-        sysEvent->eventName_.c_str(), sysEvent->GetEventUintValue("time_"));
-    HiviewGlobal::GetInstance()->PostSyncEventToTarget(EVENT_SERVICE_PLUGIN, sysEvent);
+    int ret = HiSysEventWrite(HiSysEvent::Domain::HIVIEWDFX, "RECOVER", HiSysEvent::EventType::BEHAVIOR,
+        "DURATION", duration);
+    if (ret != SUCCESS) {
+        HIVIEW_LOGE("failed to write RECOVER event, ret is %{public}d", ret);
+    }
 }
 
 void PlatformMonitor::Breaking()

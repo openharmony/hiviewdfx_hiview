@@ -67,7 +67,7 @@ public:
 private:
     void AccumulateTimeInterval(uint64_t costTime, std::map<int8_t, uint32_t> &stat);
     void CalcOverBenckMarkPct(PerfMeasure &perfMeasure);
-    std::shared_ptr<SysEvent> CreateProfileReport(PerfMeasure &perfMeasure);
+    void ReportProfile(const PerfMeasure& perfMeasure);
     void GetCostTimeInterval(PerfMeasure &perfMeasure);
     void GetDomainsStat(PerfMeasure &perfMeasure);
     void GetMaxSpeed(PerfMeasure &perfMeasure) const;

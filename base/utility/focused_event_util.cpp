@@ -13,22 +13,29 @@
  * limitations under the License.
  */
 
-#ifndef UTILITY_HIVIEW_CFG_UTIL_H
-#define UTILITY_HIVIEW_CFG_UTIL_H
+#include "focused_event_util.h"
 
-#include <functional>
-#include <string>
+#include <list>
+#include <unordered_map>
 
 namespace OHOS {
 namespace HiviewDFX {
-namespace HiViewConfigUtil {
-// fileHandleRet(srcConfigDir, destConfigDir, configFileName)
-using ConfigFileHandler = std::function<bool(const std::string&, const std::string&, const std::string&)>;
-
-std::string GetConfigFilePath(const std::string& configFileName);
-std::string GetConfigFilePath(const std::string& configZipFileName, const std::string& configDir,
-    const std::string& configFileName);
+namespace FocusedEventUtil {
+namespace {
+const std::unordered_map<std::string, std::list<std::string>> FOCUSED_EVENT_MAP {
+    {"HMOS_SVC_BROKER", {"CONTAINER_LIFECYCLE_EVENT"}},
 };
+}
+
+bool IsFocusedEvent(const std::string& eventDomain, const std::string& eventName)
+{
+    auto iter = FOCUSED_EVENT_MAP.find(eventDomain);
+    if (iter == FOCUSED_EVENT_MAP.end()) {
+        return false;
+    }
+    auto findRet = std::find(iter->second.begin(), iter->second.end(), eventName);
+    return findRet != iter->second.end();
+}
+} // namespace FocusedEventUtil
 } // namespace HiviewDFX
 } // namespace OHOS
-#endif // UTILITY_HIVIEW_CFG_UTIL_H
