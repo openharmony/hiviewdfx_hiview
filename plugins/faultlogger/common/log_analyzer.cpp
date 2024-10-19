@@ -69,13 +69,17 @@ bool AnalysisFaultlog(const FaultLogInfo& info, std::map<std::string, std::strin
     GetFingerRawString(fingerRawString, info, eventInfos);
     eventInfos["fingerPrint"] = Tbox::CalcFingerPrint(fingerRawString, 0, FP_BUFFER);
 
-    if (eventType == "APP_FREEZE" && !(eventInfos["TRACER_PID"].empty())) {
-        int32_t pid = 0;
-        if (sscanf_s(eventInfos["TRACER_PID"].c_str(), "%d", &pid) == 1 && pid > 0) {
-            eventInfos["LAST_FRAME"] += ("(Tracer Process Name:" + CommonUtils::GetProcNameByPid(pid) + ")");
+    if (eventType == "APP_FREEZE") {
+        if (!eventInfos["TRACER_PID"].empty()) {
+            int32_t pid = 0;
+            if (sscanf_s(eventInfos["TRACER_PID"].c_str(), "%d", &pid) == 1 && pid > 0) {
+                eventInfos["LAST_FRAME"] += ("(Tracer Process Name:" + CommonUtils::GetProcNameByPid(pid) + ")");
+            }
+        }
+        if (!eventInfos["DUMPCATCH_RESULT"].empty()) {
+            eventInfos["LAST_FRAME"] += eventInfos["DUMPCATCH_RESULT"];
         }
     }
-
     return true;
 }
 } // namespace HiviewDFX
