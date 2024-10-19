@@ -41,6 +41,7 @@ const std::string PARAM_PROPERTY = "params";
 const std::string LOG_OVER_LIMIT = "log_over_limit";
 const std::string EXTERNAL_LOG = "external_log";
 const std::string PID = "pid";
+const std::string IS_BUSINESS_JANK = "is_business_jank";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 300 * 1024 * 1024; // 300M
@@ -157,6 +158,28 @@ bool CheckInSandBoxLog(const std::string& externalLog, const std::string& sandBo
     return false;
 }
 
+std::string GetDesFileName(Json::Value& params, const std::string& eventName,
+    const ExternalLogInfo& externalLogInfo)
+{
+    std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
+    int pid = 0;
+    if (params.isMember(PID) && params[PID].isInt()) {
+        pid = params[PID].asInt();
+    }
+
+    std::string desFileName;
+    const std::string BUSINESS_JANK_PREFIX = "BUSINESS_THREAD_JANK";
+    if (params.isMember(IS_BUSINESS_JANK) && params[IS_BUSINESS_JANK].isBool() &&
+        params[IS_BUSINESS_JANK].asBool()) {
+        desFileName = BUSINESS_JANK_PREFIX + "_" + timeStr + "_" + std::to_string(pid)
+        + externalLogInfo.extensionType_;
+    } else {
+        desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
+        + externalLogInfo.extensionType_;
+    }
+    return desFileName;
+}
+
 void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sandBoxLogPath, Json::Value& params,
     const ExternalLogInfo &externalLogInfo)
 {
@@ -182,13 +205,7 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
         }
         uint64_t fileSize = FileUtil::GetFileSize(externalLog);
         if (dirSize + fileSize <= externalLogInfo.maxFileSize_) {
-            std::string timeStr = std::to_string(TimeUtil::GetMilliseconds());
-            int pid = 0;
-            if (params.isMember(PID) && params[PID].isInt()) {
-                pid = params[PID].asInt();
-            }
-            std::string desFileName = eventName + "_" + timeStr + "_" + std::to_string(pid)
-                + externalLogInfo.extensionType_;
+            std::string desFileName = GetDesFileName(params, eventName, externalLogInfo);
             std::string destPath;
             destPath.append(sandBoxLogPath).append("/").append(desFileName);
             if (CopyExternalLog(uid, externalLog, destPath)) {
@@ -207,8 +224,17 @@ void SendLogToSandBox(int32_t uid, const std::string& eventName, std::string& sa
     params[EXTERNAL_LOG] = externalLogJson;
 }
 
+void RemoveEventInternalField(Json::Value& eventJson)
+{
+    if (eventJson[PARAM_PROPERTY].isMember(IS_BUSINESS_JANK)) {
+        eventJson[PARAM_PROPERTY].removeMember(IS_BUSINESS_JANK);
+    }
+    return;
+}
+
 void WriteEventJson(Json::Value& eventJson, const std::string& filePath)
 {
+    RemoveEventInternalField(eventJson);
     std::string eventStr = Json::FastWriter().write(eventJson);
     if (!FileUtil::SaveStringToFile(filePath, eventStr, false)) {
         HIVIEW_LOGE("failed to save event, eventName=%{public}s", eventJson[NAME_PROPERTY].asString().c_str());

@@ -390,6 +390,7 @@ static std::shared_ptr<AppCallerEvent> InnerCreateAppCallerEvent(UCollectClient:
     std::shared_ptr<AppCallerEvent> appCallerEvent = std::make_shared<AppCallerEvent>("HiViewService");
     appCallerEvent->messageType_ = Event::MessageType::PLUGIN_MAINTENANCE;
     appCallerEvent->eventName_ = eventName;
+    appCallerEvent->isBusinessJank_ = appCaller.isBusinessJank;
     appCallerEvent->bundleName_ = appCaller.bundleName;
     appCallerEvent->bundleVersion_ = appCaller.bundleVersion;
     appCallerEvent->uid_ = appCaller.uid;
