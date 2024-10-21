@@ -408,7 +408,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
 
     for (auto lineIt = lines.begin(); lineIt != lines.end(); lineIt++) {
         std::string line = *lineIt;
-        if (line.empty() || line.find("async") != std::string::npos) {
+        if (line.empty() || line.find("async\t") != std::string::npos) {
             continue;
         }
 
