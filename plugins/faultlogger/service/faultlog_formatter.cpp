@@ -329,6 +329,9 @@ bool WriteLogToFile(int32_t fd, const std::string& path)
     std::ifstream logFile(path);
     bool hasFindFirstLine = false;
     while (std::getline(logFile, line)) {
+        if (logFile.eof()) {
+            break;
+        }
         if (!logFile.good()) {
             return false;
         }
