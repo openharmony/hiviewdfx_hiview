@@ -464,6 +464,11 @@ static bool ReadAppCallerExternal(MessageParcel& data, UCollectClient::AppCaller
         errField = "endTime";
         return false;
     }
+
+    if (!data.ReadBool(appCaller.isBusinessJank)) {
+        errField = "isBusinessJank";
+        return false;
+    }
     return true;
 }
 
