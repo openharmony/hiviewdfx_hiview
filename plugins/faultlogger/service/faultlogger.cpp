@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 #include "accesstoken_kit.h"
+#include "asan_collector.h"
 #include "bundle_mgr_client.h"
 #include "common_utils.h"
 #include "constants.h"
@@ -62,6 +63,9 @@
 #include "parameter_ex.h"
 #include "plugin_factory.h"
 #include "process_status.h"
+#include "reporter.h"
+#include "sanitizerd_collector.h"
+#include "sanitizerd_monitor.h"
 #include "securec.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
@@ -76,6 +80,10 @@ REGISTER(Faultlogger);
 DEFINE_LOG_LABEL(0xD002D11, "Faultlogger");
 using namespace FaultLogger;
 using namespace OHOS::AppExecFwk;
+#ifndef UNIT_TEST
+static std::unordered_map<std::string, std::string> g_stacks;
+static AsanCollector g_collector(g_stacks);
+#endif
 namespace {
 constexpr char FILE_SEPERATOR[] = "******";
 constexpr uint32_t DUMP_MAX_NUM = 100;
@@ -88,6 +96,10 @@ constexpr int DUMP_START_PARSE_MODULE_NAME = 3;
 constexpr uint32_t MAX_NAME_LENGTH = 4096;
 constexpr char TEMP_LOG_PATH[] = "/data/log/faultlog/temp";
 constexpr time_t FORTYEIGHT_HOURS = 48 * 60 * 60;
+#ifndef UNIT_TEST
+constexpr int RETRY_COUNT = 10;
+constexpr int RETRY_DELAY = 10;
+#endif
 constexpr int READ_HILOG_BUFFER_SIZE = 1024;
 constexpr char APP_CRASH_TYPE[] = "APP_CRASH";
 constexpr char APP_FREEZE_TYPE[] = "APP_FREEZE";
@@ -611,7 +623,65 @@ void Faultlogger::OnLoad()
         workLoop_->AddTimerEvent(nullptr, nullptr, task, 10, false); // delay 10 seconds
     }
 #endif
+#ifndef UNIT_TEST
+    ffrt::submit([&] {
+        Faultlogger::RunSanitizerd();
+        }, {}, {});
+#endif
 }
+
+#ifndef UNIT_TEST
+void Faultlogger::HandleNotify(int32_t type, const std::string& fname)
+{
+    HIVIEW_LOGE("HandleNotify file:[%{public}s]\n", fname.c_str());
+    // start sanitizerd work thread if log ready
+    std::thread collector([fname] {
+        g_collector.Collect(fname);
+    });
+    collector.detach();
+    // Work done.
+}
+
+int Faultlogger::RunSanitizerd()
+{
+    SanitizerdMonitor sanMonitor;
+
+    // Init the monitor first.
+    bool ready = false;
+    int rcount = RETRY_COUNT;
+    for (; rcount > 0; rcount--) {
+        if (sanMonitor.Init(&Faultlogger::HandleNotify) != 0) {
+            sleep(RETRY_DELAY); // 10s
+            continue;
+        } else {
+            ready = true;
+            break;
+        }
+    }
+
+    if (!ready) {
+        HIVIEW_LOGE("sanitizerd: failed to initialize monitor");
+        return -1;
+    }
+
+    // Waits on notify callback and resume the collector.
+    HIVIEW_LOGE("sanitizerd: starting\n");
+
+    // Waiting for notify event.
+    while (true) {
+        std::string rfile;
+        // Let the monitor check if log ready.
+        if (sanMonitor.RunMonitor(&rfile, -1) == 0) {
+            HIVIEW_LOGE("sanitizerd ready file:[%s]\n", rfile.c_str());
+        } else {
+            break;
+        }
+    }
+
+    sanMonitor.Uninit();
+    return 0;
+}
+#endif
 
 void Faultlogger::AddFaultLog(FaultLogInfo& info)
 {
