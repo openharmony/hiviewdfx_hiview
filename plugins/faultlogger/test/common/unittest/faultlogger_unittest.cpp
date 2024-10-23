@@ -26,6 +26,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "bundle_mgr_client.h"
 #include "event.h"
 #include "faultlog_util.h"
 #include "faultlog_database.h"
@@ -41,6 +42,7 @@
 #include "hisysevent_manager.h"
 #include "hiview_global.h"
 #include "hiview_platform.h"
+#include "ipc_skeleton.h"
 #include "json/json.h"
 #include "log_analyzer.h"
 #include "asan_collector.h"
@@ -1484,7 +1486,6 @@ HWTEST_F(FaultloggerUnittest, ReportJsErrorToAppEventTest009, testing::ext::Test
     }
 }
 
-
 /**
  * @tc.name: SanitizerdCollectorTest001
  * @tc.desc: Test calling SanitizerdCollector Func
@@ -1498,7 +1499,7 @@ HWTEST_F(FaultloggerUnittest, SanitizerdCollectorTest001, testing::ext::TestSize
     SanitizerdCollector sanitizerd(map);
     sanitizerd.Collect(str);
     bool ret = sanitizerd.IsDuplicate(str);
-    ASSERT_TRUE(!ret);
+    ASSERT_TRUE(ret);
 }
 
 /**
@@ -1524,6 +1525,32 @@ HWTEST_F(FaultloggerUnittest, AsanCollectorTest001, testing::ext::TestSize.Level
     asancollector.SetHappenTime();
     ret = asancollector.ComputeStackSignature(asanDump, asanSignature, printDiagnostics);
     ASSERT_TRUE(!ret);
+}
+
+/**
+ * @tc.name: AsanCollectorTest002
+ * @tc.desc: Test calling AsanCollector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, AsanCollectorTest002, testing::ext::TestSize.Level3)
+{
+    int ret = g_collector.UpdateCollectedData("", "");
+    ASSERT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: AsanCollectorTest003
+ * @tc.desc: Test calling AsanCollector Func
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, AsanCollectorTest003, testing::ext::TestSize.Level3)
+{
+    std::string *filename = nullptr;
+    SanitizerdMonitor monitor;
+    int ret = monitor.ReadNotify(filename, -1);
+    ASSERT_EQ(ret, 1);
+    ret = monitor.ReadNotify(filename, 1);
+    ASSERT_EQ(ret, 1);
 }
 
 bool SendSysEvent(SysEventCreator sysEventCreator)
