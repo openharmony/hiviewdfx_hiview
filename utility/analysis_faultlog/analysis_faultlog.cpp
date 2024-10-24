@@ -27,7 +27,7 @@ DEFINE_LOG_TAG("SmartParser");
 
 static const char* const SMART_PARSER_PATH = "/system/etc/hiview/";
 
-static void PrintEventInfo(std::map<std::string, std::string> eventInfo, std::string msg)
+static void PrintEventInfo(const std::map<std::string, std::string>& eventInfo, const std::string& msg)
 {
     HIVIEW_LOGI("%{public}s >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", msg.c_str());
     HIVIEW_LOGI("eventInfo size : %{public}s", std::to_string(eventInfo.size()).c_str());

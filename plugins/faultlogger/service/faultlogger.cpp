@@ -719,7 +719,7 @@ void Faultlogger::RemoveHilogFromFaultlog(const std::string &logPath, int32_t fa
             HIVIEW_LOGW("No Hilog Found In Crash Log");
             return;
         }
-        readContent = readContent.substr(0, pos);
+        readContent.resize(pos);
     } else if (faultType == FaultLogType::APP_FREEZE) {
         size_t posStart = readContent.find("catcher cmd: hilog");
         size_t posEnd = readContent.find("catcher cmd: hidumper --cpuusage", posStart);
