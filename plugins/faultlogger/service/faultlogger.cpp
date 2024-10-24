@@ -773,12 +773,10 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     }
     HIVIEW_LOGI("\nSave Faultlog of Process:%{public}d\n"
                 "ModuleName:%{public}s\n"
-                "Reason:%{public}s\n"
-                "Summary:%{public}s\n",
+                "Reason:%{public}s\n",
                 info.pid,
                 info.module.c_str(),
-                info.reason.c_str(),
-                info.summary.c_str());
+                info.reason.c_str());
 
     if (!isSystemProcess && info.faultLogType == FaultLogType::CPP_CRASH) {
         CheckFaultLogAsync(info);
