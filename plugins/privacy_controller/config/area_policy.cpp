@@ -41,7 +41,7 @@ void AreaPolicy::Parse(const std::string& configPath)
         HIVIEW_LOGW("failed to parse config file=%{public}s", configPath.c_str());
         return;
     }
-    std::string version = Parameter::GetVersionTypeStr();
+    std::string version = Parameter::GetVersionStr();
     auto config = CJsonUtil::GetArrayValue(root, version);
     if (config == nullptr) {
         HIVIEW_LOGW("failed to parse config file=%{public}s, version=%{public}s",
