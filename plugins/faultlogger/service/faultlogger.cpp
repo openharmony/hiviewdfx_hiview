@@ -709,7 +709,7 @@ std::unique_ptr<FaultLogQueryResultInner> Faultlogger::QuerySelfFaultLog(int32_t
     return std::make_unique<FaultLogQueryResultInner>(mgr_->GetFaultInfoList(name, id, faultType, maxNum));
 }
 
-void Faultlogger::RemoveHilogFromFaultlog(const std::string &logPath, int32_t faultType) const
+void Faultlogger::FaultlogLimit(const std::string &logPath, int32_t faultType) const
 {
     std::ifstream logReadFile(logPath);
     std::string readContent(std::istreambuf_iterator<char>(logReadFile), (std::istreambuf_iterator<char>()));
@@ -720,6 +720,12 @@ void Faultlogger::RemoveHilogFromFaultlog(const std::string &logPath, int32_t fa
             return;
         }
         readContent = readContent.substr(0, pos);
+        // The CppCrash file size is limited to 512 KB after reporting CppCrash to AppEvent
+        constexpr size_t maxLogSize = 512 * 1024;
+        if (readContent.length() > maxLogSize) {
+            readContent = readContent.substr(0, maxLogSize -1);
+            readContent += "\ncpp crash log is limit output.\n";
+        }
     } else if (faultType == FaultLogType::APP_FREEZE) {
         size_t posStart = readContent.find("catcher cmd: hilog");
         size_t posEnd = readContent.find("catcher cmd: hidumper --cpuusage", posStart);
@@ -787,8 +793,9 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         ReportAppFreezeToAppEvent(info);
     }
 
-    if (IsFaultLogLimit()) {
-        RemoveHilogFromFaultlog(info.logPath, info.faultLogType);
+    if (((info.faultLogType == FaultLogType::CPP_CRASH) || (info.faultLogType == FaultLogType::APP_FREEZE)) &&
+        IsFaultLogLimit()) {
+        FaultlogLimit(info.logPath, info.faultLogType);
     }
 }
 
