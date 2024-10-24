@@ -25,14 +25,12 @@ config("ucollection_client_config") {
 }
 
 ohos_shared_library("libucollection_client") {
+  branch_protector_ret = "pac_ret"
   public_configs = [ ":ucollection_client_config" ]
 
   sources = []
 
-  deps = [
-    "$hiview_adapter/service/client:hiview_service_impl_for_unified_collection",
-    "$hiview_interfaces/inner_api/unified_collection/client/src:ucollection_client_source",
-  ]
+  deps = [ "$hiview_interfaces/inner_api/unified_collection/client/src:ucollection_client_source" ]
 
   external_deps = [ "hilog:libhilog" ]
 
