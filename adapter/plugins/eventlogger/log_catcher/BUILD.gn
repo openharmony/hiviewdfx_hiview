@@ -30,5 +30,6 @@ ohos_source_set("eventlogger_adapter_logcatcher") {
     "faultloggerd:libdfx_dumpcatcher",
     "faultloggerd:libjson_stack_formatter",
     "hilog:libhilog",
+    "samgr:samgr_proxy",
   ]
 }

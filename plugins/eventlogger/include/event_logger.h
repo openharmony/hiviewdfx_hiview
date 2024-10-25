@@ -56,8 +56,6 @@ public:
     void OnUnorderedEvent(const Event& msg) override;
     std::string GetAppFreezeFile(std::string& stackPath);
 private:
-    enum {APP, SYS, TOP};
-
     static const inline std::string LOGGER_EVENT_LOG_PATH = "/data/log/eventlog";
     static const inline std::string MONITOR_STACK_LOG_PATH = "/data/log/faultlog/temp";
     static const inline std::string LONG_PRESS = "LONG_PRESS";
@@ -75,7 +73,7 @@ private:
     static const inline std::string MONITOR_LOG_PATH[] = {
         MONITOR_STACK_LOG_PATH,
     };
-    static const inline std::vector<std::string> FFRT_VECTOR = {
+    static const inline std::vector<std::string> DUMP_FFRT = {
         "THREAD_BLOCK_6S", "UI_BLOCK_6S", "APP_INPUT_BLOCK",
         "LIFECYCLE_TIMEOUT", "SERVICE_BLOCK",
         "GET_DISPLAY_SNAPSHOT", "CREATE_VIRTUAL_SCREEN",
@@ -92,10 +90,7 @@ private:
     static constexpr int EVENT_MAX_ID = 1000000;
     static constexpr int MAX_FILE_NUM = 500;
     static constexpr int MAX_FOLDER_SIZE = 500 * 1024 * 1024;
-    static constexpr int MAX_RETRY_COUNT = 20;
     static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
-    static constexpr int WAIT_CHILD_PROCESS_INTERVAL = 5 * 1000;
-    static constexpr int WAIT_CHILD_PROCESS_COUNT = 300;
     static constexpr int HISTORY_EVENT_LIMIT = 500;
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
 
@@ -123,9 +118,6 @@ private:
     void ReportUserPanicWarning(std::shared_ptr<SysEvent> event, long pid);
 #endif
     void StartFfrtDump(std::shared_ptr<SysEvent> event);
-    void UpdateFfrtDumpType(int pid, int& type);
-    void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
-    void FfrtChildProcess(int fd, const std::string& serviceName, const std::string& cmd) const;
     void CollectMemInfo(int fd, std::shared_ptr<SysEvent> event);
     void SaveDbToFile(const std::shared_ptr<SysEvent>& event);
     void StartLogCollect(std::shared_ptr<SysEvent> event);
