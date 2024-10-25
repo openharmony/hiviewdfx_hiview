@@ -362,7 +362,7 @@ void LimitCppCrashLog(int32_t fd, int32_t logType)
     }
     // The CppCrash file size is limited to 4 MB before reporting CppCrash to AppEvent
     constexpr int maxLogSize = 4 * 1024 * 1024;
-    off_t  endPos = lseek(fd, 0, SEEK_END);
+    off_t endPos = lseek(fd, 0, SEEK_END);
     if ((endPos == -1) || (endPos <= maxLogSize)) {
         return;
     }

@@ -713,31 +713,38 @@ void Faultlogger::FaultlogLimit(const std::string &logPath, int32_t faultType) c
 {
     std::ifstream logReadFile(logPath);
     std::string readContent(std::istreambuf_iterator<char>(logReadFile), (std::istreambuf_iterator<char>()));
+    bool modified = false;
     if (faultType == FaultLogType::CPP_CRASH) {
         size_t pos = readContent.find("HiLog:");
         if (pos == std::string::npos) {
             HIVIEW_LOGW("No Hilog Found In Crash Log");
-            return;
+        } else {
+            readContent.resize(pos);
+            modified = true;
         }
-        readContent = readContent.substr(0, pos);
         // The CppCrash file size is limited to 512 KB after reporting CppCrash to AppEvent
         constexpr size_t maxLogSize = 512 * 1024;
         if (readContent.length() > maxLogSize) {
-            readContent = readContent.substr(0, maxLogSize -1);
+            readContent.resize(maxLogSize);
             readContent += "\ncpp crash log is limit output.\n";
+            modified = true;
         }
     } else if (faultType == FaultLogType::APP_FREEZE) {
         size_t posStart = readContent.find("catcher cmd: hilog");
         size_t posEnd = readContent.find("catcher cmd: hidumper --cpuusage", posStart);
         if (posStart == std::string::npos || posEnd == std::string::npos) {
             HIVIEW_LOGW("No Hilog Found In Freeze Log");
-            return;
+        } else {
+            readContent.erase(posStart, posEnd - posStart);
+            modified = true;
         }
-        readContent.erase(posStart, posEnd - posStart);
     }
-    std::ofstream logWriteFile(logPath);
-    logWriteFile << readContent;
-    logWriteFile.close();
+
+    if (modified) {
+        std::ofstream logWriteFile(logPath);
+        logWriteFile << readContent;
+        logWriteFile.close();
+    }
 }
 
 void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> event)
