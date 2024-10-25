@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -357,6 +357,17 @@ HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest016, testing::ext::TestSize.Lev
     originStr1 = "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422ABCDEF_V";
     ret = StringUtil::HideDeviceIdInfo(originStr1);
     ASSERT_EQ(ret, "TEST_VAL_ABBBBB123BBBDASDDASDASDASDASDASDASDSADASDSDSADSASAD333444422ABCDEF_V");
+}
+
+/**
+ * @tc.name: BaseUtilityUnitTest017
+ * @tc.desc: Test IsValidRegex defined in namespace StringUtil
+ * @tc.type: FUNC
+ * @tc.require: issueIAWMX3
+ */
+HWTEST_F(BaseUtilityUnitTest, BaseUtilityUnitTest017, testing::ext::TestSize.Level3)
+{
+    ASSERT_TRUE(!StringUtil::IsValidRegex("[a-z]+("));
 }
 } // namespace HiviewDFX
 } // namespace OHOS

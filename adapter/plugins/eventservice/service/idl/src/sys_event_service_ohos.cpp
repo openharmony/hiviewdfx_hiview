@@ -29,6 +29,7 @@
 #include "ret_code.h"
 #include "running_status_log_util.h"
 #include "string_ex.h"
+#include "string_util.h"
 #include "system_ability_definition.h"
 #include "sys_event_sequence_mgr.h"
 #include "time_util.h"
@@ -47,6 +48,20 @@ const std::vector<int> EVENT_TYPES = {1, 2, 3, 4}; // FAULT = 1, STATISTIC = 2 S
 constexpr uint32_t INVALID_EVENT_TYPE = 0;
 const string READ_DFX_SYSEVENT_PERMISSION = "ohos.permission.READ_DFX_SYSEVENT";
 const string DFX_DUMP_PERMISSION = "ohos.permission.DUMP";
+constexpr size_t REGEX_LEN_LIMIT = 32; // max(domainLen, nameLen, tagLen)
+
+bool IsMatchedWithRegex(const string& rule, const string& match)
+{
+    if (rule.empty()) {
+        return true;
+    }
+    if ((rule.length() > REGEX_LEN_LIMIT) || !StringUtil::IsValidRegex(rule)) {
+        return false;
+    }
+    smatch result;
+    const regex pattern(rule);
+    return regex_search(match, result, pattern);
+}
 
 bool MatchContent(int type, const string& rule, const string& match)
 {
@@ -58,11 +73,8 @@ bool MatchContent(int type, const string& rule, const string& match)
             return rule.empty() || match.compare(rule) == 0;
         case RuleType::PREFIX:
             return rule.empty() || match.find(rule) == 0;
-        case RuleType::REGULAR: {
-                smatch result;
-                const regex pattern(rule);
-                return rule.empty() || regex_search(match, result, pattern);
-            }
+        case RuleType::REGULAR:
+            return IsMatchedWithRegex(rule, match);
         default:
             HIVIEW_LOGE("invalid rule type %{public}d.", type);
             return false;
