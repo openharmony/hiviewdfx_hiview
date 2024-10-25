@@ -510,7 +510,11 @@ static void UpdateSysEvent(SysEvent &sysEvent, FaultLogInfo &info)
         sysEvent.SetEventValue("LAST_FRAME", eventInfos["LAST_FRAME"].empty() ? "/" :
                                 StringUtil::EscapeJsonStringValue(eventInfos["LAST_FRAME"]));
     }
-    if (info.faultLogType != FaultLogType::ADDR_SANITIZER) {
+    std::string fingerPrint;
+    if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
+        fingerPrint = sysEvent.GetEventValue("FINGERPRINT");
+    }
+    if (fingerPrint.empty()) {
         sysEvent.SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
     }
 }
