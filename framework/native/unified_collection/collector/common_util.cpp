@@ -30,6 +30,7 @@ DEFINE_LOG_TAG("UCollectUtil-CommonUtil");
 const std::string EXPORT_FILE_REGEX = "[0-9]{14}(.*)";
 const std::string UNDERLINE = "_";
 }
+
 template <typename T> bool CommonUtil::StrToNum(const std::string &sString, T &tX)
 {
     std::istringstream iStream(sString);

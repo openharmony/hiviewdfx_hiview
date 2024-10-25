@@ -62,7 +62,7 @@ bool DailyConfig::ParseCommonThreshold(const cJSON* config)
         return false;
     }
 
-    const std::unordered_map<std::string, int32_t> configMap = {
+    const std::map<std::string, int32_t> configMap = {
         {"FAULT", TYPE_FAULT}, {"STATISTIC", TYPE_STATISTIC},
         {"SECURITY", TYPE_SECURITY}, {"BEHAVIOR", TYPE_BEHAVIOR}
     };

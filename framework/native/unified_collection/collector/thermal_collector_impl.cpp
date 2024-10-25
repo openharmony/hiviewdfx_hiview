@@ -16,7 +16,7 @@
 #include "thermal_collector_impl.h"
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 #include "common_util.h"
 #include "file_util.h"
@@ -55,7 +55,7 @@ int32_t GetThermalValue(const std::string& thermalZone)
 
 std::string GetZoneTypeStr(ThermalZone thermalZone)
 {
-    const std::unordered_map<ThermalZone, std::string> thermalZoneMap = {
+    const std::map<ThermalZone, std::string> thermalZoneMap = {
         {SHELL_FRONT, "shell_front"},
         {SHELL_FRAME, "shell_frame"},
         {SHELL_BACK, "shell_back"},

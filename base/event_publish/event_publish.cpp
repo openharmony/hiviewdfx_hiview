@@ -30,24 +30,24 @@ namespace {
 DEFINE_LOG_TAG("HiView-EventPublish");
 constexpr int VALUE_MOD = 200000;
 constexpr int DELAY_TIME = 30;
-const std::string PATH_DIR = "/data/log/hiview/system_event_db/events/temp";
-const std::string SANDBOX_DIR = "/data/storage/el2/log";
-const std::string FILE_PREFIX = "/hiappevent_";
-const std::string FILE_SUFFIX = ".evt";
-const std::string DOMAIN_PROPERTY = "domain";
-const std::string NAME_PROPERTY = "name";
-const std::string EVENT_TYPE_PROPERTY = "eventType";
-const std::string PARAM_PROPERTY = "params";
-const std::string LOG_OVER_LIMIT = "log_over_limit";
-const std::string EXTERNAL_LOG = "external_log";
-const std::string PID = "pid";
-const std::string IS_BUSINESS_JANK = "is_business_jank";
+constexpr const char* const PATH_DIR = "/data/log/hiview/system_event_db/events/temp";
+constexpr const char* const SANDBOX_DIR = "/data/storage/el2/log";
+constexpr const char* const FILE_PREFIX = "/hiappevent_";
+constexpr const char* const FILE_SUFFIX = ".evt";
+constexpr const char* const DOMAIN_PROPERTY = "domain";
+constexpr const char* const NAME_PROPERTY = "name";
+constexpr const char* const EVENT_TYPE_PROPERTY = "eventType";
+constexpr const char* const PARAM_PROPERTY = "params";
+constexpr const char* const LOG_OVER_LIMIT = "log_over_limit";
+constexpr const char* const EXTERNAL_LOG = "external_log";
+constexpr const char* const PID = "pid";
+constexpr const char* const IS_BUSINESS_JANK = "is_business_jank";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 2048ull * 1024 * 1024; // 2G
-const std::string XATTR_NAME = "user.appevent";
+constexpr const char* const XATTR_NAME = "user.appevent";
 constexpr uint64_t BIT_MASK = 1;
-const std::unordered_map<std::string, uint8_t> OS_EVENT_POS_INFOS = {
+const std::map<std::string, uint8_t> OS_EVENT_POS_INFOS = {
     { EVENT_APP_CRASH, 0 },
     { EVENT_APP_FREEZE, 1 },
     { EVENT_APP_LAUNCH, 2 },
@@ -400,8 +400,8 @@ void EventPublish::PushEvent(int32_t uid, const std::string& eventName, HiSysEve
         return;
     }
     eventJson[PARAM_PROPERTY] = params;
-    const std::unordered_set<std::string> immediateEvents = {"APP_CRASH", "APP_FREEZE", "ADDRESS_SANITIZER",
-        "APP_LAUNCH", "CPU_USAGE_HIGH", EVENT_MAIN_THREAD_JANK};
+    const std::set<std::string> immediateEvents = {EVENT_APP_CRASH, EVENT_APP_FREEZE, EVENT_ADDRESS_SANITIZER,
+        EVENT_APP_LAUNCH, EVENT_CPU_USAGE_HIGH, EVENT_MAIN_THREAD_JANK};
     if (immediateEvents.find(eventName) != immediateEvents.end()) {
         SaveEventAndLogToSandBox(uid, eventName, bundleName, eventJson);
     } else if (eventName == EVENT_RESOURCE_OVERLIMIT) {

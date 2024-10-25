@@ -30,7 +30,7 @@ CollectResult<int32_t> GraphicMemoryDecorator::GetGraphicUsage(int32_t pid, Grap
 void GraphicMemoryDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
-    std::vector<std::string> formattedStatInfo;
+    std::list<std::string> formattedStatInfo;
     for (const auto& record : statInfo) {
         formattedStatInfo.push_back(record.second.ToString());
     }

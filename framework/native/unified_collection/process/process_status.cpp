@@ -14,8 +14,6 @@
  */
 #include "process_status.h"
 
-#include <unordered_map>
-
 #include "common_utils.h"
 #include "file_util.h"
 #include "hiview_logger.h"

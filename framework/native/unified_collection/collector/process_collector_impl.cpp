@@ -16,7 +16,6 @@
 #include "process_collector_impl.h"
 
 #include <dlfcn.h>
-#include <fstream>
 
 #include "common_util.h"
 #include "file_util.h"
@@ -115,17 +114,16 @@ CollectResult<std::string> ProcessCollectorImpl::ExportMemCgProcesses()
         filePath = CommonUtil::CreateExportFile(PROCESS_COLLECTOT_DIR, MAX_FILE_NUM, PREFIX, SUFFIX);
     }
 
-    std::ofstream file;
-    file.open(filePath.c_str(), std::ios::out | std::ios::trunc);
-    if (!file.is_open()) {
+    FILE* fp = fopen(filePath.c_str(), "w");
+    if (fp == nullptr) {
         HIVIEW_LOGW("open %{public}s failed.",  FileUtil::ExtractFileName(filePath).c_str());
         result.retCode = UcError::WRITE_FAILED;
         return result;
     }
     for (const auto& proc : memCgProcsResult.data) {
-        file << proc << std::endl;
+        (void)fprintf(fp, "%d\n", proc);
     }
-    file.close();
+    (void)fclose(fp);
 
     result.data = filePath;
     result.retCode = UcError::SUCCESS;

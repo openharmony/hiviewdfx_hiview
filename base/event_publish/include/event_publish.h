@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,18 +27,18 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace HiAppEvent {
-const std::string DOMAIN_OS = "OS";
-const std::string EVENT_APP_CRASH = "APP_CRASH";
-const std::string EVENT_APP_FREEZE = "APP_FREEZE";
-const std::string EVENT_APP_LAUNCH = "APP_LAUNCH";
-const std::string EVENT_SCROLL_JANK = "SCROLL_JANK";
-const std::string EVENT_CPU_USAGE_HIGH = "CPU_USAGE_HIGH";
-const std::string EVENT_BATTERY_USAGE = "BATTERY_USAGE";
-const std::string EVENT_RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
-const std::string EVENT_ADDRESS_SANITIZER = "ADDRESS_SANITIZER";
-const std::string EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
-const std::string EVENT_APP_START = "APP_START";
-} // namespace HiAppEvent
+constexpr const char* const DOMAIN_OS = "OS";
+constexpr const char* const EVENT_APP_CRASH = "APP_CRASH";
+constexpr const char* const EVENT_APP_FREEZE = "APP_FREEZE";
+constexpr const char* const EVENT_APP_LAUNCH = "APP_LAUNCH";
+constexpr const char* const EVENT_SCROLL_JANK = "SCROLL_JANK";
+constexpr const char* const EVENT_CPU_USAGE_HIGH = "CPU_USAGE_HIGH";
+constexpr const char* const EVENT_BATTERY_USAGE = "BATTERY_USAGE";
+constexpr const char* const EVENT_RESOURCE_OVERLIMIT = "RESOURCE_OVERLIMIT";
+constexpr const char* const EVENT_ADDRESS_SANITIZER = "ADDRESS_SANITIZER";
+constexpr const char* const EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
+constexpr const char* const EVENT_APP_START = "APP_START";
+}
 class EventPublish : public OHOS::DelayedRefSingleton<EventPublish> {
 public:
     EventPublish() {};

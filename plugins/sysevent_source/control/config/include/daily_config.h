@@ -15,6 +15,7 @@
 #ifndef HIVIEW_PLUGINS_SYS_EVENT_SOURCE_CONTROL_CONFIG_INCLUDE_DAILY_CONFIG_H
 #define HIVIEW_PLUGINS_SYS_EVENT_SOURCE_CONTROL_CONFIG_INCLUDE_DAILY_CONFIG_H
 
+#include <map>
 #include <unordered_map>
 
 #include "cjson_util.h"
@@ -47,7 +48,7 @@ private:
 
     bool isValid_ = false;
     /* <type, threshold> */
-    std::unordered_map<int32_t, int32_t> commonThresholds_;
+    std::map<int32_t, int32_t> commonThresholds_;
     /* <<domain, name>, threshold> */
     std::unordered_map<std::pair<std::string, std::string>, int32_t, EventPairHash> customThresholds_;
 };

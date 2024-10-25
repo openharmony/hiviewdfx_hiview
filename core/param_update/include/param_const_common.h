@@ -21,12 +21,13 @@
 
 namespace OHOS {
 namespace HiviewDFX {
-    const std::string CONFIG_TYPE = "HIVIEWPARA";
-    const std::string CONFIG_UPDATED_ACTION = "usual.event.DUE_SA_CFG_UPDATED";
-    const std::string CFG_PATH = "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/";
-    const std::string PUBKEY_PATH = "/system/etc/hiview/hwkey_param_upgrade_hiviewdfx_v1.pem";
-    const std::string LOCAL_CFG_PATH = "/system/etc/hiview/";
-    const std::string CLOUD_CFG_PATH = "/data/system/hiview/";
+    constexpr const char* const CONFIG_TYPE = "HIVIEWPARA";
+    constexpr const char* const CONFIG_UPDATED_ACTION = "usual.event.DUE_SA_CFG_UPDATED";
+    constexpr const char* const CFG_PATH =
+        "/data/service/el1/public/update/param_service/install/system/etc/HIVIEWPARA/DEFAULT/";
+    constexpr const char* const PUBKEY_PATH = "/system/etc/hiview/hwkey_param_upgrade_hiviewdfx_v1.pem";
+    constexpr const char* const LOCAL_CFG_PATH = "/system/etc/hiview/";
+    constexpr const char* const CLOUD_CFG_PATH = "/data/system/hiview/";
 }
 }
 #endif

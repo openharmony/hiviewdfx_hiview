@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +18,6 @@
 #include <csignal>
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <fstream>
 #include <map>
 #include <mutex>
 #include <regex>
@@ -65,15 +64,15 @@ static std::string GetSavePath(const std::string& preFix, const std::string& ext
     std::lock_guard<std::mutex> lock(g_memMutex);   // lock when get save path
     if ((!FileUtil::FileExists(MEMINFO_SAVE_DIR)) &&
         (!FileUtil::ForceCreateDirectory(MEMINFO_SAVE_DIR, FileUtil::FILE_PERM_755))) {
-        HIVIEW_LOGE("create %{public}s dir failed.", MEMINFO_SAVE_DIR.c_str());
+        HIVIEW_LOGE("create %{public}s dir failed.", MEMINFO_SAVE_DIR);
         return "";
     }
     std::string timeStamp = GetCurrTimestamp();
-    std::string savePath = MEMINFO_SAVE_DIR + "/" + preFix + timeStamp + ext;
+    std::string savePath = std::string(MEMINFO_SAVE_DIR) + "/" + preFix + timeStamp + ext;
     int suffix = 0;
     while (FileUtil::FileExists(savePath)) {
         std::stringstream ss;
-        ss << MEMINFO_SAVE_DIR << "/" << preFix << timeStamp << "_" << suffix << ext;
+        ss << std::string(MEMINFO_SAVE_DIR) << "/" << preFix << timeStamp << "_" << suffix << ext;
         suffix++;
         savePath = ss.str();
     }
@@ -88,22 +87,18 @@ static std::string GetSavePath(const std::string& preFix, const std::string& ext
 
 static bool WriteProcessMemoryToFile(std::string& filePath, const std::vector<ProcessMemory>& processMems)
 {
-    std::ofstream file;
-    file.open(filePath.c_str(), std::ios::out | std::ios::trunc);
-    if (!file.is_open()) {
-        HIVIEW_LOGE("open %{public}s failed.", filePath.c_str());
+    FILE* fp = fopen(filePath.c_str(), "w");
+    if (fp == nullptr) {
+        HIVIEW_LOGE("open %{public}s failed.", FileUtil::ExtractFileName(filePath).c_str());
         return false;
     }
+    (void)fprintf(fp, "pid\tpname\trss(KB)\tpss(KB)\tswapPss(KB)\tadj\tprocState\n");
 
-    file << "pid" << '\t' << "pname" << '\t' << "rss(KB)" << '\t' <<
-            "pss(KB)" << '\t' << "swapPss(KB)"<< '\t' << "adj" << '\t' <<
-            "procState" << std::endl;
     for (auto& processMem : processMems) {
-        file << processMem.pid << '\t' << processMem.name << '\t' << processMem.rss << '\t' <<
-                processMem.pss << '\t' << processMem.swapPss << '\t' << processMem.adj << '\t' <<
-                processMem.procState << std::endl;
+        (void)fprintf(fp, "%d\t%s\t%d\t%d\t%d\t%d\t%d\n", processMem.pid, processMem.name.c_str(), processMem.rss,
+            processMem.pss, processMem.swapPss, processMem.adj, processMem.procState);
     }
-    file.close();
+    (void)fclose(fp);
     return true;
 }
 
@@ -244,7 +239,7 @@ static CollectResult<std::string> CollectRawInfo(const std::string& filePath, co
 
 static void SetValueOfProcessMemory(ProcessMemory& processMemory, const std::string& attrName, int32_t value)
 {
-    static std::unordered_map<std::string, std::function<void(ProcessMemory&, int32_t)>> assignFuncMap = {
+    static std::map<std::string, std::function<void(ProcessMemory&, int32_t)>> assignFuncMap = {
         {"Rss", [] (ProcessMemory& memory, int32_t value) {
             memory.rss = value;
         }},
@@ -332,7 +327,7 @@ static bool InitProcessMemory(int32_t pid, ProcessMemory& memory)
 
 static void SetValueOfSysMemory(SysMemory& sysMemory, const std::string& attrName, int32_t value)
 {
-    static std::unordered_map<std::string, std::function<void(SysMemory&, int32_t)>> assignFuncMap = {
+    static std::map<std::string, std::function<void(SysMemory&, int32_t)>> assignFuncMap = {
         {"MemTotal", [] (SysMemory& memory, int32_t value) {
             memory.memTotal = value;
         }},

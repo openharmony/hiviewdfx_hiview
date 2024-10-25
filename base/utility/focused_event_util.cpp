@@ -16,13 +16,13 @@
 #include "focused_event_util.h"
 
 #include <list>
-#include <unordered_map>
+#include <map>
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace FocusedEventUtil {
 namespace {
-const std::unordered_map<std::string, std::list<std::string>> FOCUSED_EVENT_MAP {
+const std::map<std::string, std::list<std::string>> FOCUSED_EVENT_MAP {
     {"HMOS_SVC_BROKER", {"CONTAINER_LIFECYCLE_EVENT"}},
 };
 }

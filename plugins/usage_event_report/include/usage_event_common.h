@@ -71,21 +71,13 @@ namespace FoldEventId {
 namespace AppEventSpace {
     const std::string FOREGROUND_EVENT_NAME = "APP_FOREGROUND";
     const std::string BACKGROUND_EVENT_NAME = "APP_BACKGROUND";
-    const std::string KEY_OF_PROCESS_NAME = "PROCESS_NAME";
     const std::string KEY_OF_VERSION_NAME = "VERSION_NAME";
-    const std::string KEY_OF_CALLER_BUNDLENAME = "CALLER_BUNDLENAME";
-    const std::string KEY_OF_BUNDLE_TYPE = "BUNDLE_TYPE";
-    const std::string KEY_OF_VERSION_CODE = "VERSION_CODE";
     const std::string KEY_OF_BUNDLE_NAME = "BUNDLE_NAME";
-    const std::string KEY_OF_APP_PID = "APP_PID";
-    const std::string KEY_OF_PROCESS_TYPE = "PROCESS_TYPE";
 }
 
 namespace FoldStateChangeEventSpace {
     const std::string EVENT_NAME = "NOTIFY_FOLD_STATE_CHANGE";
-    const std::string KEY_OF_CURRENT_STATUS = "CURRENT_FOLD_STATUS";
     const std::string KEY_OF_NEXT_STATUS = "NEXT_FOLD_STATUS";
-    const std::string KEY_OF_SENSOR_POSTURE = "SENSOR_POSTURE";
 }
 
 namespace VhModeChangeEventSpace {

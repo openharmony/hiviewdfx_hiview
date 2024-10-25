@@ -14,7 +14,7 @@
 */
 #include "doc_query.h"
 
-#include <unordered_set>
+#include <set>
 
 #include "decoded/decoded_event.h"
 #include "hiview_logger.h"
@@ -40,7 +40,7 @@ void DocQuery::And(const Cond& cond)
 
 bool DocQuery::IsInnerCond(const Cond& cond) const
 {
-    const std::unordered_set<std::string> innerFields = {
+    const std::set<std::string> innerFields = {
         EventCol::SEQ, EventCol::TS, EventCol::TZ,
         EventCol::PID, EventCol::TID, EventCol::UID,
     };

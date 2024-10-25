@@ -14,7 +14,7 @@
  */
 #include "area_policy.h"
 
-#include <unordered_map>
+#include <map>
 
 #include "hiview_logger.h"
 #include "parameter_ex.h"
@@ -24,7 +24,7 @@ namespace OHOS {
 namespace HiviewDFX {
 DEFINE_LOG_TAG("AreaPolicy");
 namespace {
-const std::unordered_map<std::string, uint8_t> EVENT_LEVELS = {
+const std::map<std::string, uint8_t> EVENT_LEVELS = {
     {"DEBUG", 1}, {"INFO", 2}, {"MINOR", 3}, {"MAJOR", 4}, {"CRITICAL", 5}
 };
 }

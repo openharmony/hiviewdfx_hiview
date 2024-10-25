@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 #ifndef HIVIEW_SERVICE_ABILITY_STUB_H
 #define HIVIEW_SERVICE_ABILITY_STUB_H
+
+#include <map>
 
 #include "ihiview_service_ability.h"
 #include "iremote_stub.h"
@@ -58,10 +60,10 @@ private:
 
     bool IsPermissionGranted(uint32_t code);
     RequestHandler GetRequestHandler(uint32_t code);
-    std::unordered_map<uint32_t, RequestHandler> GetRequestHandlers();
-    std::unordered_map<uint32_t, RequestHandler> GetTraceRequestHandlers();
-    std::unordered_map<uint32_t, RequestHandler> GetCpuRequestHandlers();
-    std::unordered_map<uint32_t, RequestHandler> GetMemoryRequestHandlers();
+    std::map<uint32_t, RequestHandler> GetRequestHandlers();
+    std::map<uint32_t, RequestHandler> GetTraceRequestHandlers();
+    std::map<uint32_t, RequestHandler> GetCpuRequestHandlers();
+    std::map<uint32_t, RequestHandler> GetMemoryRequestHandlers();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

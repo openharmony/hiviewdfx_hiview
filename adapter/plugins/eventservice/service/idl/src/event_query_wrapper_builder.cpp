@@ -70,7 +70,7 @@ bool ConditionParser::ParseJsonString(const Json::Value& root, const std::string
 
 EventStore::Op ConditionParser::GetOpEnum(const std::string& op)
 {
-    const std::unordered_map<std::string, EventStore::Op> opMap = {
+    const std::map<std::string, EventStore::Op> opMap = {
         { "=", EventStore::Op::EQ },
         { "<", EventStore::Op::LT },
         { ">", EventStore::Op::GT },
