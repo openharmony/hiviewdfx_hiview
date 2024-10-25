@@ -32,7 +32,7 @@ struct TraceStatItem {
     uint32_t latency = 0;
 };
 
-const std::unordered_map<UCollect::TraceCaller, std::string> CallerMap {
+const std::map<UCollect::TraceCaller, std::string> CallerMap {
     {UCollect::RELIABILITY, "RELIABILITY"},
     {UCollect::XPERF, "XPERF"},
     {UCollect::XPOWER, "XPOWER"},

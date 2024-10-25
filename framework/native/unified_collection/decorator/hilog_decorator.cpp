@@ -29,7 +29,7 @@ CollectResult<std::string> HilogDecorator::CollectLastLog(uint32_t pid, uint32_t
 void HilogDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
-    std::vector<std::string> formattedStatInfo;
+    std::list<std::string> formattedStatInfo;
     for (const auto& record : statInfo) {
         formattedStatInfo.push_back(record.second.ToString());
     }

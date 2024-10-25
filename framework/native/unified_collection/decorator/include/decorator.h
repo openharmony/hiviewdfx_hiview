@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,10 @@
 #ifndef HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_DECORATOR_H
 #define HIVIEW_FRAMEWORK_NATIVE_UNIFIED_COLLECTION_DECORATOR_H
 
+#include <list>
 #include <map>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 
 #include "collect_result.h"
 #include "time_util.h"
@@ -27,8 +27,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
-const std::string UC_STAT_LOG_PATH = "/data/log/hiview/unified_collection/ucollection_stat_detail.log";
-const std::string UC_SEPARATOR = "::";
+extern const std::string UC_STAT_LOG_PATH;
+extern const std::string UC_SEPARATOR;
 
 struct StatInfo {
     std::string name;
@@ -83,7 +83,7 @@ public:
     }
 
 public:
-    static void WriteLinesToFile(const std::vector<std::string>& stats, bool addBlankLine);
+    static void WriteLinesToFile(const std::list<std::string>& stats, bool addBlankLine);
 };
 } // namespace UCollectUtil
 } // namespace HiviewDFX

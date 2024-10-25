@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-#include <fstream>
-
 #include "decorator.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
+const std::string UC_STAT_LOG_PATH = "/data/log/hiview/unified_collection/ucollection_stat_detail.log";
+const std::string UC_SEPARATOR = "::";
+
 void StatInfoWrapper::UpdateStatInfo(uint64_t startTime, uint64_t endTime, const std::string& funcName, bool isCallSucc)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -59,20 +60,19 @@ void StatInfoWrapper::ResetStatInfo()
     statInfos_.clear();
 }
 
-void UCDecorator::WriteLinesToFile(const std::vector<std::string>& stats, bool addBlankLine)
+void UCDecorator::WriteLinesToFile(const std::list<std::string>& stats, bool addBlankLine)
 {
-    std::ofstream statFilesStream;
-    statFilesStream.open(UC_STAT_LOG_PATH, std::ios::app);
-    if (!statFilesStream.is_open()) {
+    FILE* fp = fopen(UC_STAT_LOG_PATH.c_str(), "a");
+    if (fp == nullptr) {
         return;
     }
     for (const auto& record : stats) {
-        statFilesStream << record << std::endl;
+        (void)fprintf(fp, "%s\n", record.c_str());
     }
     if (addBlankLine) {
-        statFilesStream << std::endl; // write a blank line to separate content
+        (void)fprintf(fp, "\n"); // write a blank line to separate content
     }
-    statFilesStream.close();
+    (void)fclose(fp);
 }
 } // namespace UCollectUtil
 } // namespace HiviewDFX

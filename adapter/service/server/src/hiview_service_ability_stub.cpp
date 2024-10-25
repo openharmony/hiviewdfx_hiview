@@ -15,7 +15,6 @@
 
 #include "hiview_service_ability_stub.h"
 
-#include <unordered_map>
 #include <vector>
 
 #include "accesstoken_kit.h"
@@ -35,7 +34,7 @@ DEFINE_LOG_TAG("HiViewSA-HiViewServiceAbilityStub");
 const std::string ASH_MEM_NAME = "HiviewLogLibrary SharedMemory";
 constexpr uint32_t ASH_MEM_SIZE = 107 * 5000; // 535k
 
-const std::unordered_map<uint32_t, std::string> ALL_PERMISSION_MAP = {
+const std::map<uint32_t, std::string> ALL_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
         "ohos.permission.READ_HIVIEW_SYSTEM"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_COPY),
@@ -60,7 +59,7 @@ const std::unordered_map<uint32_t, std::string> ALL_PERMISSION_MAP = {
         "ohos.permission.WRITE_HIVIEW_SYSTEM"}
 };
 
-const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
+const std::map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
         "ohos.permission.DUMP"},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_DUMP_SNAPSHOT_TRACE),
@@ -78,16 +77,16 @@ const std::unordered_map<uint32_t, std::string> TRACE_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_APP_TRACE), ""},
 };
 
-const std::unordered_map<uint32_t, std::string> CPU_PERMISSION_MAP = {
+const std::map<uint32_t, std::string> CPU_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE), ""}
 };
 
-const std::unordered_map<uint32_t, std::string> MEMORY_PERMISSION_MAP = {
+const std::map<uint32_t, std::string> MEMORY_PERMISSION_MAP = {
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT), ""},
     {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_GRAPHIC_USAGE), ""}
 };
 
-bool HasAccessPermission(uint32_t code, const std::unordered_map<uint32_t, std::string>& permissions)
+bool HasAccessPermission(uint32_t code, const std::map<uint32_t, std::string>& permissions)
 {
     using namespace Security::AccessToken;
     auto iter = permissions.find(code);
@@ -141,9 +140,9 @@ bool HiviewServiceAbilityStub::IsPermissionGranted(uint32_t code)
         HasAccessPermission(code, CPU_PERMISSION_MAP) || HasAccessPermission(code, MEMORY_PERMISSION_MAP);
 }
 
-std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
+std::map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetRequestHandlers()
 {
-    static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
+    static std::map<uint32_t, RequestHandler> requestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_LIST),
             [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
                 return this->HandleListRequest(data, reply, option);
@@ -168,9 +167,9 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetReques
     return requestHandlers;
 }
 
-std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceRequestHandlers()
+std::map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceRequestHandlers()
 {
-    static std::unordered_map<uint32_t, RequestHandler> requestHandlers = {
+    static std::map<uint32_t, RequestHandler> requestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_OPEN_SNAPSHOT_TRACE),
             [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
                 return this->HandleOpenSnapshotTraceRequest(data, reply, option);
@@ -215,9 +214,9 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetTraceR
     return requestHandlers;
 }
 
-std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuRequestHandlers()
+std::map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuRequestHandlers()
 {
-    static std::unordered_map<uint32_t, RequestHandler> cpuRequestHandlers = {
+    static std::map<uint32_t, RequestHandler> cpuRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_GET_SYSTEM_CPU_USAGE),
          [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
                 return HandleGetSysCpuUsageRequest(data, reply, option);
@@ -227,9 +226,9 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetCpuReq
     return cpuRequestHandlers;
 }
 
-std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemoryRequestHandlers()
+std::map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemoryRequestHandlers()
 {
-    static std::unordered_map<uint32_t, RequestHandler> memoryRequestHandlers = {
+    static std::map<uint32_t, RequestHandler> memoryRequestHandlers = {
         {static_cast<uint32_t>(HiviewServiceInterfaceCode::HIVIEW_SERVICE_ID_SET_APPRESOURCE_LIMIT),
             [this] (MessageParcel& data, MessageParcel& reply, MessageOption& option) {
                 return HandleSetAppResourceLimitRequest(data, reply, option);
@@ -246,7 +245,7 @@ std::unordered_map<uint32_t, RequestHandler> HiviewServiceAbilityStub::GetMemory
 
 RequestHandler HiviewServiceAbilityStub::GetRequestHandler(uint32_t code)
 {
-    std::vector<std::unordered_map<uint32_t, RequestHandler>> allHandlerMaps = {
+    std::vector<std::map<uint32_t, RequestHandler>> allHandlerMaps = {
         GetRequestHandlers(),
         GetTraceRequestHandlers(),
         GetCpuRequestHandlers(),

@@ -63,17 +63,17 @@ void TraceDecorator::SaveStatSpecialInfo()
 {
     WriteLinesToFile({""}, false); // a blank line after common stat info
     std::map<std::string, TraceStatInfo> traceStatInfo = traceStatWrapper_.GetTraceStatInfo();
-    std::vector<std::string> traceFormattedStatInfo = {UC_HITRACE_API_STAT_TITLE, UC_HITRACE_API_STAT_ITEM};
+    std::list<std::string> traceFormattedStatInfo = {UC_HITRACE_API_STAT_TITLE, UC_HITRACE_API_STAT_ITEM};
     for (const auto& record : traceStatInfo) {
         traceFormattedStatInfo.push_back(record.second.ToString());
     }
     WriteLinesToFile(traceFormattedStatInfo, true);
 
-    std::vector<std::string> compressRatio = {UC_HITRACE_COMPRESS_RATIO, std::to_string(TRACE_COMPRESS_RATIO)};
+    std::list<std::string> compressRatio = {UC_HITRACE_COMPRESS_RATIO, std::to_string(TRACE_COMPRESS_RATIO)};
     WriteLinesToFile(compressRatio, true);
     
     std::map<std::string, std::vector<std::string>> traceTrafficInfo = traceStatWrapper_.GetTrafficStatInfo();
-    std::vector<std::string> trafficFormattedInfo = {UC_HITRACE_TRAFFIC_STAT_TITLE, UC_HITRACE_TRAFFIC_STAT_ITEM};
+    std::list<std::string> trafficFormattedInfo = {UC_HITRACE_TRAFFIC_STAT_TITLE, UC_HITRACE_TRAFFIC_STAT_ITEM};
     for (const auto& record : traceTrafficInfo) {
         trafficFormattedInfo.insert(trafficFormattedInfo.end(), record.second.begin(), record.second.end());
     }
@@ -83,7 +83,7 @@ void TraceDecorator::SaveStatSpecialInfo()
 void TraceDecorator::SaveStatCommonInfo()
 {
     std::map<std::string, StatInfo> statInfo = statInfoWrapper_.GetStatInfo();
-    std::vector<std::string> formattedStatInfo;
+    std::list<std::string> formattedStatInfo;
     for (const auto& record : statInfo) {
         formattedStatInfo.push_back(record.second.ToString());
     }

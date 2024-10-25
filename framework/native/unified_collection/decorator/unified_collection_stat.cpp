@@ -43,9 +43,9 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace UCollectUtil {
 DEFINE_LOG_TAG("UCollectUtil-UCStat");
-const std::string UC_STAT_DATE = "Date:";
-const std::string UC_API_STAT_TITLE = "API statistics:";
-const std::string UC_API_STAT_ITEM =
+constexpr const char* const UC_STAT_DATE = "Date:";
+constexpr const char* const UC_API_STAT_TITLE = "API statistics:";
+constexpr const char* const UC_API_STAT_ITEM =
     "API TotalCall FailCall AvgLatency(us) MaxLatency(us) TotalTimeSpent(us)";
 
 namespace {

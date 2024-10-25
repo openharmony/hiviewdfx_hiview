@@ -64,7 +64,7 @@
       "OHOS::HiviewDFX::UCollectUtil::TraceDecorator::SaveStatCommonInfo()";
       "OHOS::HiviewDFX::UCollectUtil::WmDecorator::SaveStatCommonInfo()";
       "OHOS::HiviewDFX::UCollectUtil::TraceDecorator::SaveStatSpecialInfo()";
-      "OHOS::HiviewDFX::UCollectUtil::UCDecorator::WriteLinesToFile(std::__h::vector<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, bool)";
+      "OHOS::HiviewDFX::UCollectUtil::UCDecorator::WriteLinesToFile(std::__h::list<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>, std::__h::allocator<std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>>>> const&, bool)";
     };
   local:
     *;

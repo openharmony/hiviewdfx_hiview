@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,6 @@
 #include "io_collector_impl.h"
 
 #include <regex>
-#include <unordered_map>
 
 #include <fcntl.h>
 #include <securec.h>
@@ -501,9 +500,9 @@ void IoCollectorImpl::GetProcIoStats(std::vector<ProcessIoStats>& allProcIoStats
 
 void IoCollectorImpl::CalculateAllProcIoStats(uint64_t period, bool isUpdate)
 {
-    DIR *dir = opendir(PROC.c_str());
+    DIR *dir = opendir(PROC);
     if (dir == nullptr) {
-        HIVIEW_LOGE("open dir=%{public}s failed.", PROC.c_str());
+        HIVIEW_LOGE("open dir=%{public}s failed.", PROC);
         return;
     }
 

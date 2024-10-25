@@ -25,7 +25,7 @@ using namespace OHOS::HiviewDFX::UCollectUtil;
 
 ProcessState GetProcessState(int32_t state)
 {
-    const std::unordered_map<int32_t, ProcessState> renderStates = {
+    const std::map<int32_t, ProcessState> renderStates = {
         {0, FOREGROUND},
         {1, BACKGROUND},
     };

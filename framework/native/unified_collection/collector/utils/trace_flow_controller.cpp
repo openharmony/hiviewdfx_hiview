@@ -16,7 +16,7 @@
 #include <cinttypes>
 #include <ctime>
 #include <sys/stat.h>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include "app_caller_event.h"
@@ -50,7 +50,7 @@ int64_t GetActualReliabilitySize()
     return  Parameter::IsLaboratoryMode() ? RELIABILITY_SIZE * 5 : RELIABILITY_SIZE; // 5 : laboratory largen 5 times
 }
 
-const std::unordered_map<UCollect::TraceCaller, std::pair<std::string, int64_t>> TRACE_QUOTA = {
+const std::map<UCollect::TraceCaller, std::pair<std::string, int64_t>> TRACE_QUOTA = {
     {UCollect::TraceCaller::XPERF, {"xperf", XPERF_SIZE}},
     {UCollect::TraceCaller::XPOWER, {"xpower", XPOWER_SIZE}},
     {UCollect::TraceCaller::RELIABILITY, {"reliability", GetActualReliabilitySize()}},

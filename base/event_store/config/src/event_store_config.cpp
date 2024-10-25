@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ const char KEY_PAGE_SIZE[] = "PageSize";
 const char KEY_MAX_SIZE[] = "MaxSize";
 const char KEY_MAX_FILE_NUM[] = "MaxFileNum";
 const char KEY_MAX_FILE_SIZE[] = "MaxFileSize";
-const std::unordered_map<std::string, int> EVENT_TYPE_MAP = {
+const std::map<std::string, int> EVENT_TYPE_MAP = {
     {"FAULT", 1}, {"STATISTIC", 2}, {"SECURITY", 3}, {"BEHAVIOR", 4}
 };
 

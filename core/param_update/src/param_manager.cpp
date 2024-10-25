@@ -74,7 +74,7 @@ bool ParamManager::CopyConfigFiles(const std::vector<std::string>& files)
 {
     for (const std::string& file : files) {
         std::string dstFile(file);
-        dstFile.replace(0, CFG_PATH.length(), CLOUD_CFG_PATH);
+        dstFile.replace(0, strlen(CFG_PATH), CLOUD_CFG_PATH);
         if (!CopyFile(file, dstFile)) {
             HIVIEW_LOGI("copy file failed: %{public}s", file.c_str());
         }
@@ -91,7 +91,7 @@ void ParamManager::GetValidFiles(std::vector<std::string>& validFiles)
         if (IsFileNeedIgnore(fileName)) {
             continue;
         }
-        std::string relativedPath(file.substr(CFG_PATH.length()));
+        std::string relativedPath(file.substr(strlen(CFG_PATH)));
         if (!ParamReader::VerifyParamFile(relativedPath)) {
             HIVIEW_LOGE("verify file failed: %{public}s", fileName.c_str());
             validFiles.clear();

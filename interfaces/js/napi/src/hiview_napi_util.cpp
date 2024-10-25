@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 
 #include "hiview_napi_util.h"
+
+#include <map>
 
 #include "hiview_err_code.h"
 #include "hiview_logger.h"
@@ -73,7 +75,7 @@ void HiviewNapiUtil::CreateErrorByRet(napi_env env, const int32_t retCode, napi_
 std::pair<int32_t, std::string> HiviewNapiUtil::GetErrorDetailByRet(napi_env env, const int32_t retCode)
 {
     HIVIEW_LOGI("origin result code is %{public}d.", retCode);
-    const std::unordered_map<int32_t, std::pair<int32_t, std::string>> errMap = {
+    const std::map<int32_t, std::pair<int32_t, std::string>> errMap = {
         {HiviewNapiErrCode::ERR_PERMISSION_CHECK, {HiviewNapiErrCode::ERR_PERMISSION_CHECK,
             "Permission denied. The app does not have the necessary permissions."}},
         {HiviewNapiErrCode::ERR_INNER_INVALID_LOGTYPE,
