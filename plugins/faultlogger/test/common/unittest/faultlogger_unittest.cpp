@@ -53,7 +53,6 @@ using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace HiviewDFX {
 static std::shared_ptr<FaultEventListener> faultEventListener = nullptr;
-static std::unordered_map<std::string, std::string> g_stacks;
 static std::map<int, std::string> fileNames_ = {};
 
 static HiviewContext& InitHiviewContext()
