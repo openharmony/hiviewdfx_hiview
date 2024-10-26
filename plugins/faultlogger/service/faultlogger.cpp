@@ -519,7 +519,9 @@ bool Faultlogger::OnEvent(std::shared_ptr<Event> &event)
     if (isJsError) {
         ReportJsErrorToAppEvent(sysEvent);
     }
-    if (info.faultLogType == FaultLogType::ADDR_SANITIZER) {
+    // DEBUG FD is used for debugging and is not reported to the application.
+    // The kernel writes a special reason field to prevent reporting.
+    if (info.faultLogType == FaultLogType::ADDR_SANITIZER && info.reason != "DEBUG SIGNAL(BADFD)") {
         ReportSanitizerToAppEvent(sysEvent);
     }
     return true;
