@@ -355,12 +355,12 @@ void SysEventSource::DecorateSysEvent(const std::shared_ptr<SysEvent> event, con
 
 bool SysEventSource::IsDuplicateEvent(const uint64_t eventId)
 {
-    for (auto iter = eventIdList_.begin(); iter != eventIdList_.end(); iter++) {
+    for (auto iter = eventIdList_.rbegin(); iter != eventIdList_.rend(); ++iter) {
         if (*iter == eventId) {
             return true;
         }
     }
-    std::list<std::string>::size_type maxSize { 5 }; // size of queue limit to 5
+    std::list<uint64_t>::size_type maxSize { 25 }; // size of queue limit to 25
     if (eventIdList_.size() >= maxSize) {
         eventIdList_.pop_front();
     }
