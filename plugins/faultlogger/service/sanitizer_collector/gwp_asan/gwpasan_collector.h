@@ -57,9 +57,6 @@ constexpr int MIN_APP_UID = 10000;
 constexpr unsigned ASAN_LOG_SIZE = 350 * 1024;
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
 std::string GetNameByPid(int32_t pid);
-void WriteCollectedData(const GwpAsanCurrInfo &currInfo);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
-bool WriteNewFile(const int32_t fd, const GwpAsanCurrInfo &currInfo);
-int32_t CreateLogFile(const std::string& name);
 
 #endif // GWPASAN_COLLECTOR_H
