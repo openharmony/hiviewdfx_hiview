@@ -66,7 +66,6 @@ private:
     static const inline std::string DOMAIN_LONGPRESS = "KERNEL_VENDOR";
     static const inline std::string STRINGID_LONGPRESS = "COM_LONG_PRESS";
     static const inline std::string LONGPRESS_LEVEL = "CRITICAL";
-    static const inline std::string FFRT_HEADER = "=== ffrt info ===\n";
     static const inline std::string MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };

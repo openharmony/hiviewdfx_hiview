@@ -188,7 +188,7 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
         LogCatcherUtils::WAIT_CHILD_PROCESS_COUNT;
     if (type == LogCatcherUtils::TOP) {
 #ifdef WINDOW_MANAGER_ENABLE
-        FileUtil::SaveStringToFd(ffrtFd, "ffrt dump topWindowInfos, process infos:\n");
+        FileUtil::SaveStringToFd(ffrtFd, "dump topWindowInfos, process infos:\n");
         std::string cmdAms = "--ffrt ";
         std::string cmdSam = "--ffrt ";
         int size = static_cast<int>(windowInfos.size());
