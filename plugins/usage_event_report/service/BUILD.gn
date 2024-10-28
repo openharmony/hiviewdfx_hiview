@@ -59,6 +59,7 @@ ohos_executable("usage_report") {
     "jsoncpp:jsoncpp",
     "os_account:os_account_innerkits",
     "relational_store:native_rdb",
+    "samgr:samgr_proxy",
     "time_service:time_client",
   ]
 

@@ -39,6 +39,7 @@ ohos_shared_library("loglibrary_napi") {
     "bundle_framework:appexecfwk_core",
     "hilog:libhilog",
     "napi:ace_napi",
+    "samgr:samgr_proxy",
     "storage_service:storage_manager_acl",
   ]
 
