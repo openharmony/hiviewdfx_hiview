@@ -428,13 +428,14 @@ void EventLogTask::HitraceCapture()
     std::string timeStamp = event_->GetEventValue("MSG");
     std::smatch match;
     timeStamp = std::regex_search(timeStamp, match, reg) ? match[1].str() : "";
-    uint64_t faultTime = timeStamp.empty() ? (event_->happenTime_) :
+    uint64_t faultTime = timeStamp.empty() ? (event_->happenTime_ / MILLISEC_TO_SEC) :
         static_cast<uint64_t>(TimeUtil::StrToTimeStamp(timeStamp, "%Y/%m/%d-%H:%M:%S"));
     faultTime += DELAY_TIME;
     uint64_t currentTime = TimeUtil::GetMilliseconds() / MILLISEC_TO_SEC;
     if (currentTime >= (TRACE_OUT_OF_TIME + faultTime)) {
         faultTime = currentTime - DELAY_OUT_OF_TIME;
     }
+    HIVIEW_LOGI("get hitrace start, faultTime: %{public}" PRIu64, faultTime);
     auto result = collector->DumpTraceWithDuration(caller, MAX_DUMP_TRACE_LIMIT, faultTime);
     if (result.retCode != 0) {
         HIVIEW_LOGE("get hitrace fail! error code : %{public}d", result.retCode);
