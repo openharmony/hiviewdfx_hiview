@@ -640,7 +640,7 @@ void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) 
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportSanitizerAppEvent: uid:%{public}d, json:%{public}s.",
         sysEvent->GetUid(), paramsStr.c_str());
-    EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), "ADDR_SANITIZER",
+    EventPublish::GetInstance().PushEvent(sysEvent->GetUid(), "ADDRESS_SANITIZER",
         HiSysEvent::EventType::FAULT, paramsStr);
 }
 
