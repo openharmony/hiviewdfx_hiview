@@ -39,6 +39,7 @@
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper: (.*):"},
             {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
+            {"namespace":"BasicParam", "matchKey":"Result: pid", "v_dumpcatch_result":"Result: pid\\(\\d+\\) (process .*)\\."},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
     },
@@ -141,6 +142,7 @@
             {"namespace":"BasicParam", "matchKey":"TracerPid:", "v_tracer":"TracerPid:(.*)"},
             {"namespace":"BasicParam", "matchKey":"hidumper: No such process", "v_exit":"hidumper:(.*):"},
             {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
+            {"namespace":"BasicParam", "matchKey":"Result: pid", "v_dumpcatch_result":"Result: pid\\(\\d+\\) (process .*)\\."},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)|at (.*)"}
         ]
     },
