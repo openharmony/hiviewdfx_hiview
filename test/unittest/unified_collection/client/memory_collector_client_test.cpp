@@ -31,7 +31,9 @@ bool IsXpowerPluginExist()
         return false;
     }
     char buffer[256];
-    return fgets(buffer, sizeof(buffer), fp) != nullptr ? true : false;
+    bool res = (fgets(buffer, sizeof(buffer), fp) != nullptr);
+    pclose(fp);
+    return res;
 }
 
 class MemoryCollectorClientTest : public testing::Test {
