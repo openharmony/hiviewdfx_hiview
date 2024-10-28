@@ -109,6 +109,7 @@ ohos_executable("hiview") {
     "ffrt:libffrt",
     "hidumper:hidumperservice_cpu_source",
     "hilog:libhilog",
+    "samgr:samgr_proxy",
   ]
 
   part_name = "hiview"
