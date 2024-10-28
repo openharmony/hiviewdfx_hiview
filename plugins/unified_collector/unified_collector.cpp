@@ -152,6 +152,34 @@ void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* cont
     HIVIEW_LOGI("dynamic trace change to:%{public}d as trace recorder state", AppCallerEvent::enableDynamicTrace_);
 }
 
+void LoadHitraceService()
+{
+    std::lock_guard<std::mutex> lock(g_traceLock);
+    HIVIEW_LOGI("start to load hitrace service.");
+    uint8_t mode = GetTraceMode();
+    if (mode != TraceMode::CLOSE) {
+        HIVIEW_LOGE("service is running, mode=%{public}u.", mode);
+        return;
+    }
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    TraceErrorCode ret = OpenTrace(tagGroups);
+    if (ret != TraceErrorCode::SUCCESS) {
+        HIVIEW_LOGE("OpenTrace fail.");
+    }
+}
+
+void ExitHitraceService()
+{
+    std::lock_guard<std::mutex> lock(g_traceLock);
+    HIVIEW_LOGI("exit hitrace service.");
+    uint8_t mode = GetTraceMode();
+    if (mode == TraceMode::CLOSE) {
+        HIVIEW_LOGE("service is close mode.");
+        return;
+    }
+    CloseTrace();
+}
+
 void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* context)
 {
     OnHiViewTraceRecorderChanged(key, value, context);
@@ -189,6 +217,9 @@ void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* c
         int32_t resultCloseTrace = traceManager.CloseTrace();
         if (resultCloseTrace != 0) {
             HIVIEW_LOGE("failed to stop trace service");
+        }
+        if (Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn()) {
+            LoadHitraceService();
         }
     }
 }
@@ -369,7 +400,7 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
         unifiedCollectorPtr->RunCpuCollectionTask();
         unifiedCollectorPtr->RunIoCollectionTask();
         unifiedCollectorPtr->RunUCollectionStatTask();
-        unifiedCollectorPtr->LoadHitraceService();
+        LoadHitraceService();
     } else {
         isUCollectionSwitchOn = false;
         if (!Parameter::IsDeveloperMode()) {
@@ -379,7 +410,7 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
             unifiedCollectorPtr->workLoop_->RemoveEvent(it);
         }
         unifiedCollectorPtr->taskList_.clear();
-        unifiedCollectorPtr->ExitHitraceService();
+        ExitHitraceService();
         unifiedCollectorPtr->CleanDataFiles();
     }
 
@@ -389,34 +420,6 @@ void UnifiedCollector::OnSwitchStateChanged(const char* key, const char* value, 
     bool isTestAppTraceOn = Parameter::IsTestAppTraceOn();
     AppCallerEvent::enableDynamicTrace_ = CHECK_DYNAMIC_TRACE_FSM[isDeveloperMode][isTestAppTraceOn] &&
         DYNAMIC_TRACE_FSM[COML_STATE][isUCollectionSwitchOn][isTraceCollectionSwitchOn];
-}
-
-void UnifiedCollector::LoadHitraceService()
-{
-    std::lock_guard<std::mutex> lock(g_traceLock);
-    HIVIEW_LOGI("start to load hitrace service.");
-    uint8_t mode = GetTraceMode();
-    if (mode != TraceMode::CLOSE) {
-        HIVIEW_LOGE("service is running, mode=%{public}u.", mode);
-        return;
-    }
-    const std::vector<std::string> tagGroups = {"scene_performance"};
-    TraceErrorCode ret = OpenTrace(tagGroups);
-    if (ret != TraceErrorCode::SUCCESS) {
-        HIVIEW_LOGE("OpenTrace fail.");
-    }
-}
-
-void UnifiedCollector::ExitHitraceService()
-{
-    std::lock_guard<std::mutex> lock(g_traceLock);
-    HIVIEW_LOGI("exit hitrace service.");
-    uint8_t mode = GetTraceMode();
-    if (mode == TraceMode::CLOSE) {
-        HIVIEW_LOGE("service is close mode.");
-        return;
-    }
-    CloseTrace();
 }
 
 void UnifiedCollector::InitWorkLoop()

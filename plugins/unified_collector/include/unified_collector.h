@@ -48,8 +48,6 @@ private:
     void IoCollectionTask();
     void UCollectionStatTask();
     void CleanDataFiles();
-    void LoadHitraceService();
-    void ExitHitraceService();
     void OnMainThreadJank(SysEvent& sysEvent);
     bool OnStartAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent);
     bool OnStopAppTrace(std::shared_ptr<AppCallerEvent> appCallerEvent);
