@@ -93,7 +93,7 @@ private:
     bool CheckFaultLog(FaultLogInfo info);
     void CheckFaultLogAsync(const FaultLogInfo& info);
     void FillHilog(const std::string &hilogStr, Json::Value &hilog) const;
-    void RemoveHilogFromFaultlog(const std::string &logPath, int32_t faultType) const;
+    void FaultlogLimit(const std::string &logPath, int32_t faultType) const;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS
