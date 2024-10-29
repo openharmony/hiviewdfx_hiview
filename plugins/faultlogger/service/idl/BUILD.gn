@@ -35,7 +35,10 @@ ohos_source_set("faultlogger_service_ohos_common") {
 
   public_configs = [ ":faultlogger_service_impl_config" ]
 
-  deps = [ "$hiview_plugin/faultlogger/common:faultlogger_common" ]
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger/common:faultlogger_common",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -65,7 +68,10 @@ ohos_source_set("faultlogger_service_ohos_common_with_cfi") {
 
   public_configs = [ ":faultlogger_service_impl_config" ]
 
-  deps = [ "$hiview_plugin/faultlogger/common:faultlogger_common_with_cfi" ]
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger/common:faultlogger_common_with_cfi",
+  ]
 
   external_deps = [
     "c_utils:utils",

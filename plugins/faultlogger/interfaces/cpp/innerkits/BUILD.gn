@@ -33,6 +33,7 @@ ohos_source_set("faultlogger_client_impl") {
   ]
 
   deps = [
+    "$hiview_base:hiviewbase",
     "$hiview_plugin/faultlogger/service/idl:faultlogger_service_ohos_common",
   ]
 
@@ -64,7 +65,10 @@ ohos_source_set("faultlogger_client_impl_with_cfi") {
     "impl/faultlogger_client.cpp",
   ]
 
-  deps = [ "$hiview_plugin/faultlogger/service/idl:faultlogger_service_ohos_common_with_cfi" ]
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger/service/idl:faultlogger_service_ohos_common_with_cfi",
+  ]
 
   external_deps = [
     "hilog:libhilog",
