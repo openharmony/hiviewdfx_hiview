@@ -103,7 +103,16 @@ ohos_unittest("SysEventDatabaseTest") {
 config("sys_event_store_utility_test_config_test") {
   visibility = [ ":*" ]
 
-  include_dirs = [ "unittest/common" ]
+  include_dirs = [
+    "unittest/common",
+    "$hiview_base/event_raw/include",
+    "$hiview_base/event_store/include",
+    "$hiview_base/utility/include",
+    "$hiview_base/include",
+    "$hiview_root/include",
+    "$hiview_base/event_store/utility/reader/include",
+    "$hiview_base/event_store/utility/writer/include",
+  ]
 
   cflags = []
 }
@@ -117,7 +126,6 @@ ohos_unittest("SysEventStoreUtilityTest") {
   deps = [
     "$hiview_base:hiviewbase_static_lib_for_tdd",
     "$hiview_core:hiview_core",
-    "//base/hiviewdfx/hiview/base/event_store/utility:event_store_utility_source",
   ]
 
   external_deps = [

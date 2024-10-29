@@ -75,6 +75,7 @@ ohos_unittest("UsageEventReportCacheTest") {
   sources = [ "usage_event_report_cache_test.cpp" ]
 
   deps = [
+    "$hiview_base:hiviewbase",
     "$hiview_base/event_report:hiview_event_report",
     "$hiview_plugin/usage_event_report:usage_event_report_for_test",
   ]
@@ -94,7 +95,10 @@ ohos_unittest("FoldAppUsageTest") {
 
   sources = [ "fold_app_usage_test.cpp" ]
 
-  deps = [ "$hiview_plugin/usage_event_report:usage_event_report_for_test" ]
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_plugin/usage_event_report:usage_event_report_for_test",
+  ]
 
   external_deps = [
     "ability_runtime:app_manager",
