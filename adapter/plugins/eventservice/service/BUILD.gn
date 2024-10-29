@@ -40,6 +40,7 @@ ohos_shared_library("sys_event_service_adapter") {
 
   deps = [
     "$hiview_adapter/plugins/eventservice/service/idl:sys_event_service_ohos",
+    "$hiview_base:hiviewbase",
   ]
 
   external_deps = [
