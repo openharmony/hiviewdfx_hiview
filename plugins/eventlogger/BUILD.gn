@@ -44,6 +44,7 @@ ohos_source_set("eventlogger") {
     "hilog:libhilog",
     "init:libbegetutil",
     "input:libmmi-client",
+    "libxml2:libxml2",
   ]
 
   defines = []
