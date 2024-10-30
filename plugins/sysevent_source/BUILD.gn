@@ -78,6 +78,7 @@ ohos_source_set("sysevent_source") {
     "init:libbegetutil",
     "jsoncpp:jsoncpp",
     "relational_store:native_rdb",
+    "safwk:system_ability_fwk",
     "zlib:shared_libz",
   ]
 
