@@ -47,6 +47,12 @@ void InitSeLinuxEnabled()
         FileUtil::ForceCreateDirectory(path);
         FileUtil::ChangeModeDirectory(path, defaultLogDirMode);
     }
+    constexpr mode_t defaultLogFileMode = 0644;
+    std::string filePath = "/data/test/log/test.txt";
+    if (!FileUtil::FileExists(filePath)) {
+        FileUtil::CreateFile(filePath, defaultLogFileMode);
+        FileUtil::SaveStringToFile(filePath, "[Test]", false);
+    }
 }
 
 void CancelSeLinuxEnabled()

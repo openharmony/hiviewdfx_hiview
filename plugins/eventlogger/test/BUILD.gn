@@ -106,6 +106,7 @@ ohos_unittest("EventLoggerTest") {
     "ffrt:libffrt",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "init:libbegetutil",
     "input:libmmi-client",
     "jsoncpp:jsoncpp",
   ]
