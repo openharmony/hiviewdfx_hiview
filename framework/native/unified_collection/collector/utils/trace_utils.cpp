@@ -161,7 +161,7 @@ public:
 protected:
     bool IsMine(const std::string &fileName) override
     {
-        if (fileName.find("/"+APP) != std::string::npos) {
+        if (fileName.find("/" + APP) != std::string::npos) {
             return true;
         }
         return false;
@@ -181,7 +181,7 @@ public:
 protected:
     bool IsMine(const std::string &fileName) override
     {
-        if (fileName.find("/"+APP) != std::string::npos) {
+        if (fileName.find("/" + APP) != std::string::npos) {
             return true;
         }
         return false;
@@ -467,14 +467,17 @@ std::vector<std::string> GetUnifiedShareFiles(TraceRetInfo ret, UCollect::TraceC
     for (const auto &tracePath : ret.outputFiles) {
         std::string traceFile = FileUtil::ExtractFileName(tracePath);
         const std::string destZipPath = UNIFIED_SHARE_PATH + StringUtil::ReplaceStr(traceFile, ".sys", ".zip");
-        // new empty file is used to restore tasks in queue
-        FileUtil::SaveStringToFile(UNIFIED_SHARE_TEMP_PATH + FileUtil::ExtractFileName(destZipPath), " ", true);
-        // for zip
-        UcollectionTask traceTask = [=]() {
-            ZipTraceFile(tracePath, destZipPath);
-        };
-        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
-        std::string destZipPathWithVersion = AddVersionInfoToZipName(destZipPath);
+        const std::string tempDestZipPath = UNIFIED_SHARE_TEMP_PATH + FileUtil::ExtractFileName(destZipPath);
+        const std::string destZipPathWithVersion = AddVersionInfoToZipName(destZipPath);
+        // for zip if the file has not been compressed
+        if (!FileUtil::FileExists(destZipPathWithVersion) && !FileUtil::FileExists(tempDestZipPath)) {
+            // new empty file is used to restore tasks in queue
+            FileUtil::SaveStringToFile(tempDestZipPath, " ", true);
+            UcollectionTask traceTask = [=]() {
+                ZipTraceFile(tracePath, destZipPath);
+            };
+            TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+        }
         files.push_back(destZipPathWithVersion);
         HIVIEW_LOGI("trace file : %{public}s.", destZipPathWithVersion.c_str());
     }
@@ -508,12 +511,13 @@ std::vector<std::string> GetUnifiedSpecialFiles(TraceRetInfo ret, UCollect::Trac
     for (const auto &trace : ret.outputFiles) {
         std::string traceFile = FileUtil::ExtractFileName(trace);
         const std::string dst = UNIFIED_SPECIAL_PATH + EnumToString(caller) + "_" + traceFile;
-
-        // for copy
-        UcollectionTask traceTask = [=]() {
-            CopyFile(trace, dst);
-        };
-        TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+        // for copy if the file has not been copied
+        if (!FileUtil::FileExists(dst)) {
+            UcollectionTask traceTask = [=]() {
+                CopyFile(trace, dst);
+            };
+            TraceWorker::GetInstance().HandleUcollectionTask(traceTask);
+        }
         files.push_back(dst);
         HIVIEW_LOGI("trace file : %{public}s.", dst.c_str());
     }
