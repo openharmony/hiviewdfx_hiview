@@ -29,6 +29,7 @@ ohos_source_set("log_analyzer") {
 
   deps = [
     ":faultlogger_common",
+    "$hiview_base:hiviewbase",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
@@ -60,6 +61,7 @@ ohos_source_set("log_analyzer_with_cfi") {
 
   deps = [
     ":faultlogger_common_with_cfi",
+    "$hiview_base:hiviewbase",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils_with_cfi",
     "$hiview_root/utility/smart_parser:smart_parser_with_cfi",
   ]
