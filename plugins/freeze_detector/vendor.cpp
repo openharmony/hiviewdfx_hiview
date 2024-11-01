@@ -272,7 +272,7 @@ std::string Vendor::MergeEventLog(
 
     std::string type;
     std::string pubLogPathName;
-    std::strng processName;
+    std::string processName;
     std::string isScbPro;
     InitLogInfo(watchPoint, type, pubLogPathName, processName, isScbPro);
     std::string retPath = std::string(FAULT_LOGGER_PATH) + pubLogPathName;
