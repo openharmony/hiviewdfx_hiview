@@ -704,9 +704,6 @@ HWTEST_F(EventloggerCatcherTest, LogCatcherUtilsTest_001, TestSize.Level1)
     EXPECT_EQ(ret, 0);
     ret = LogCatcherUtils::WriteKernelStackToFd(200, "Test\n", getprocpid());
     EXPECT_EQ(ret, 0);
-    std::string procName = "Test?Test:Test";
-    LogCatcherUtils::FormatFileName(procName);
-    printf("FormatFileName procName: %s\n", procName.c_str());
 }
 } // namespace HiviewDFX
 } // namespace OHOS

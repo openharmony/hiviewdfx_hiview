@@ -764,7 +764,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
     info.sectionMap["PROCESS_NAME"] = info.module; // save process name
     // Non system processes use UID to pass events to applications
     bool isSystemProcess = IsSystemProcess(info.module, info.id);
-    if (!isSystemProcess) {
+    if (!isSystemProcess && info.sectionMap["SCBPROCESS"] != "Yes") {
         std::string appName = GetApplicationNameById(info.id);
         if (!appName.empty()) {
             info.module = appName; // if bundle name is not empty, replace module name by it.
