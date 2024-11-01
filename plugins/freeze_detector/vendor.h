@@ -39,8 +39,8 @@ public:
     bool Init();
     std::string GetTimeString(unsigned long long timestamp) const;
     void DumpEventInfo(std::ostringstream& oss, const std::string& header, const WatchPoint& watchPoint) const;
-    void InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
-        std::string& tmpLogPath, std::string& tmpLogName) const;
+    void InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& pubLogPathName,
+        std::string& processName, std::string& isScbPro) const;
     void InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
         bool& isFileExists) const;
     std::string MergeEventLog(
@@ -49,7 +49,8 @@ public:
     bool ReduceRelevanceEvents(std::list<WatchPoint>& list, const FreezeResult& result) const;
 
 private:
-    std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath, const std::string& type) const;
+    std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath, const std::string& type,
+        const std::string& processName, const std::string& isScbPro) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
     static std::string GetDisPlayPowerInfo();
     static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
