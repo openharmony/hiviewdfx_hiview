@@ -27,6 +27,7 @@
 #include <time_util.h>
 #include <unistd.h>
 #include <vector>
+#include <regex>
 
 #include "bundle_mgr_client.h"
 #include "event_publish.h"
@@ -44,7 +45,14 @@
 #undef LOG_TAG
 #define LOG_TAG "Sanitizer"
 
+namespace {
+constexpr unsigned ASAN_LOG_SIZE = 350 * 1024;
+constexpr unsigned BUF_SIZE = 128;
+constexpr unsigned ERRTYPE_FIELD = 4;
 static std::stringstream g_asanlog;
+const std::string ASAN_RECORD_REGEX =
+    "==([0-9a-zA-Z_.]+)==(\\d+)==ERROR: (AddressSanitizer|LeakSanitizer): (\\S+)";
+}
 
 void WriteGwpAsanLog(char* buf, size_t sz)
 {
@@ -89,11 +97,26 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         g_asanlog.str("");
     } else if (asanOutput) {
         std::string asanlog = g_asanlog.str();
-        std::string errType = "ASAN";
+        std::string errType = GetErrorTypeFromAsanLog(asanlog);
         ReadGwpAsanRecord(asanlog, errType);
         // clear buffer
         g_asanlog.str("");
     }
+}
+
+std::string GetErrorTypeFromAsanLog(const std::string& gwpAsanBuffer)
+{
+    std::string errType = "";
+    std::smatch captured;
+    static const std::regex RECORD_RE(ASAN_RECORD_REGEX);
+    if (std::regex_search(gwpAsanBuffer, captured, RECORD_RE)) {
+        errType = captured[ERRTYPE_FIELD].str();
+        HILOG_INFO(LOG_CORE, "ASAN errType is %{public}s.", errType.c_str());
+    } else {
+        HILOG_INFO(LOG_CORE, "ASAN Regex not match, set default type.");
+        errType = "ASAN";
+    }
+    return errType;
 }
 
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType)
