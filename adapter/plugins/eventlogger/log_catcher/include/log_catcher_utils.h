@@ -24,7 +24,6 @@ static constexpr int WAIT_CHILD_PROCESS_COUNT = 200;
 int DumpStacktrace(int fd, int pid);
 int DumpStackFfrt(int fd, const std::string& pid);
 int WriteKernelStackToFd(int originFd, const std::string& msg, int pid);
-void FormatFileName(std::string& processName);
 void ReadShellToFile(int fd, const std::string& serviceName, const std::string& cmd, int& count);
 }
 } // namespace HiviewDFX

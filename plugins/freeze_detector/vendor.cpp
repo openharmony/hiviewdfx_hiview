@@ -46,6 +46,8 @@ namespace {
     static constexpr const char* const EVENT_TIMESTAMP = "TIMESTAMP";
     static constexpr const char* const DISPLAY_POWER_INFO = "DisplayPowerInfo:";
     static constexpr const char* const FORE_GROUND = "FOREGROUND";
+    static constexpr const char* const SCB_PROCESS = "SCBPROCESS";
+    static constexpr const char* const SCB_PRO_PREFIX = "ohos.sceneboard:";
 }
 
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
@@ -124,13 +126,14 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
+
+    FaultLogInfoInner info;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
     } else {
-        FormatProcessName(processName);
+        info.sectionMaps[SCB_PROCESS] = IsScbProName(processName);
+        StringUtil::FormatProcessName(processName);
     }
-
-    FaultLogInfoInner info;
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
@@ -207,17 +210,6 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
-void Vendor::FormatProcessName(std::string& processName)
-{
-    std::regex regExpress("[\\/:*?\"<>|]");
-    bool isLegal = !std::regex_search(processName, regExpress);
-    if (isLegal) {
-        return;
-    }
-    processName = std::regex_replace(processName, regExpress, "_");
-    HIVIEW_LOGD("FormatProcessName processName=%{public}s", processName.c_str());
-}
-
 void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
     std::string& tmpLogPath, std::string& tmpLogName) const
 {
@@ -230,7 +222,7 @@ void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::s
     if (stringId == "SCREEN_ON") {
         processName = stringId;
     } else {
-        FormatProcessName(processName);
+        StringUtil::FormatProcessName(processName);
     }
     type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? APPFREEZE :
         (freezeCommon_->IsSystemEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE : SYSWARNING);
@@ -373,6 +365,26 @@ std::string Vendor::GetPowerStateString(OHOS::PowerMgr::PowerState state)
             break;
     }
     return std::string("UNKNOWN");
+}
+
+std::string Vendor::IsScbProName(std::string& processName)
+{
+    std::string isScb = "No";
+    size_t scbIndex = processName.find(SCB_PRO_PREFIX);
+    if (scbIndex != std::string::npos) {
+        isScb = "Yes";
+        processName = processName.substr(scbIndex + std::strlen(SCB_PRO_PREFIX));
+        size_t colonIndex = processName.rfind(":");
+        if (colonIndex != std::string::npos) {
+            std::string pNameEndStr = processName.substr(colonIndex + std::strlen(":"));
+            if (std::all_of(pNameEndStr.begin(), pNameEndStr.end(), [] (const char& c) {
+                return isdigit(c);
+            })) {
+                processName = processName.substr(0, colonIndex);
+            }
+        }
+    }
+    return isScb;
 }
 } // namespace HiviewDFX
 } // namespace OHOS

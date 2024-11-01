@@ -441,7 +441,7 @@ void ParsePeerBinder(const std::string& binderInfo, std::string& binderInfoJsonS
             if (cmdLineFile) {
                 std::getline(cmdLineFile, processName);
                 cmdLineFile.close();
-                processName = StringUtil::FormatCmdLine(processName);
+                StringUtil::FormatProcessName(processName);
                 processNameMap[pidStr] = processName;
             } else {
                 HIVIEW_LOGE("Fail to open /proc/%{public}s/cmdline", pidStr.c_str());
