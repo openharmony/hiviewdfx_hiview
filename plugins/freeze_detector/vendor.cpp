@@ -117,23 +117,14 @@ std::string Vendor::GetTimeString(unsigned long long timestamp) const
 }
 
 std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath,
-    const std::string& type) const
+    const std::string& type, const std::string& processName, const std::string& isScbPro) const
 {
     if (freezeCommon_ == nullptr) {
         return "";
     }
-    std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
-    std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     std::string stringId = watchPoint.GetStringId();
-    processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
 
     FaultLogInfoInner info;
-    if (stringId == "SCREEN_ON") {
-        processName = stringId;
-    } else {
-        info.sectionMaps[SCB_PROCESS] = IsScbProName(processName);
-        StringUtil::FormatProcessName(processName);
-    }
     info.time = watchPoint.GetTimestamp();
     info.id = watchPoint.GetUid();
     info.pid = watchPoint.GetPid();
@@ -149,6 +140,7 @@ std::string Vendor::SendFaultLog(const WatchPoint &watchPoint, const std::string
     info.sectionMaps[FreezeCommon::HIREACE_TIME] = watchPoint.GetHitraceTime();
     info.sectionMaps[FreezeCommon::SYSRQ_TIME] = watchPoint.GetSysrqTime();
     info.sectionMaps[FORE_GROUND] = watchPoint.GetForeGround();
+    info.sectionMaps[SCB_PROCESS] = isScbPro;
     AddFaultLog(info);
     return logPath;
 }
@@ -210,27 +202,25 @@ void Vendor::MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector
     HIVIEW_LOGI("success to merge FreezeJsonFiles!");
 }
 
-void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& retPath,
-    std::string& tmpLogPath, std::string& tmpLogName) const
+void Vendor::InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& pubLogPathName,
+    std::string& processName, std::string& isScbPro) const
 {
     std::string stringId = watchPoint.GetStringId();
     std::string timestamp = GetTimeString(watchPoint.GetTimestamp());
     long uid = watchPoint.GetUid();
     std::string packageName = StringUtil::TrimStr(watchPoint.GetPackageName());
-    std::string processName = StringUtil::TrimStr(watchPoint.GetProcessName());
+    processName = StringUtil::TrimStr(watchPoint.GetProcessName());
     processName = processName.empty() ? (packageName.empty() ? stringId : packageName) : processName;
     if (stringId == "SCREEN_ON") {
         processName = stringId;
     } else {
+        isScbPro = IsScbProName(processName);
         StringUtil::FormatProcessName(processName);
     }
     type = freezeCommon_->IsApplicationEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? APPFREEZE :
         (freezeCommon_->IsSystemEvent(watchPoint.GetDomain(), watchPoint.GetStringId()) ? SYSFREEZE : SYSWARNING);
-    std::string pubLogPathName = type + std::string(HYPHEN) + processName + std::string(HYPHEN) + std::to_string(uid) +
+    pubLogPathName = type + std::string(HYPHEN) + processName + std::string(HYPHEN) + std::to_string(uid) +
         std::string(HYPHEN) + timestamp;
-    retPath = std::string(FAULT_LOGGER_PATH) + pubLogPathName;
-    tmpLogName = pubLogPathName + std::string(POSTFIX);
-    tmpLogPath = std::string(FREEZE_DETECTOR_PATH) + tmpLogName;
 }
 
 void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
@@ -281,10 +271,13 @@ std::string Vendor::MergeEventLog(
     }
 
     std::string type;
-    std::string retPath;
-    std::string tmpLogPath;
-    std::string tmpLogName;
-    InitLogInfo(watchPoint, type, retPath, tmpLogPath, tmpLogName);
+    std::string pubLogPathName;
+    std::string processName;
+    std::string isScbPro;
+    InitLogInfo(watchPoint, type, pubLogPathName, processName, isScbPro);
+    std::string retPath = std::string(FAULT_LOGGER_PATH) + pubLogPathName;
+    std::string tmpLogName = pubLogPathName + std::string(POSTFIX);
+    std::string tmpLogPath = std::string(FREEZE_DETECTOR_PATH) + tmpLogName;
 
     if (FileUtil::FileExists(retPath)) {
         HIVIEW_LOGW("filename: %{public}s is existed, direct use.", retPath.c_str());
@@ -317,7 +310,7 @@ std::string Vendor::MergeEventLog(
     FileUtil::SaveStringToFd(fd, header.str());
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
-    return SendFaultLog(watchPoint, tmpLogPath, type);
+    return SendFaultLog(watchPoint, tmpLogPath, type, processName, isScbPro);
 }
 
 bool Vendor::Init()
