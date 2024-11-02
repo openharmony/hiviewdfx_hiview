@@ -161,7 +161,8 @@ bool ParseFaultLogLine(const std::list<const char* const*>& parseList, const std
         if (strlen(item[LOG_MAP_VALUE]) <= 1) {
             continue;
         }
-        std::string sectionHead = std::string(item[LOG_MAP_VALUE], strlen(item[LOG_MAP_VALUE]) - 1);
+        std::string sectionHead = item[LOG_MAP_VALUE];
+        sectionHead = sectionHead.back() == '\n' ? sectionHead.substr(0, sectionHead.size() - 1) : sectionHead;
         if (line.find(sectionHead) == std::string::npos) {
             continue;
         }
