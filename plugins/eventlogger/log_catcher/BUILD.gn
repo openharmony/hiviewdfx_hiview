@@ -45,7 +45,10 @@ ohos_source_set("log_catcher") {
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
   ]
 
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "ffrt:libffrt",
+    "hilog:libhilog",
+  ]
 
   if (has_hiperf) {
     cflags = [ "-DHAS_HIPERF" ]
