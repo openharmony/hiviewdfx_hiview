@@ -23,6 +23,7 @@
 
 #include "common_utils.h"
 #include "file_util.h"
+#include "ffrt.h"
 #include "freeze_json_util.h"
 #include "hiview_logger.h"
 #include "log_catcher_utils.h"
@@ -349,8 +350,8 @@ void PeerBinderCatcher::ForkToDumpHiperf(const std::set<int>& pids)
         return;
     }
 
-    static std::mutex lock;
-    std::unique_lock<std::mutex> mlock(lock);
+    static ffrt::mutex lock;
+    std::unique_lock<ffrt::mutex> mlock(lock);
     std::string fileName = "hiperf-" + std::to_string(pid_) + ".data";
     std::string fullPath = std::string(EVENT_LOG_PATH) + "/" + fileName;
     constexpr int perfLogExPireTime = 60;
