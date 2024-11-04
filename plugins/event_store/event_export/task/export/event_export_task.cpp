@@ -59,23 +59,21 @@ void EventExportTask::OnTaskRun()
     // init read handler
     auto readHandler = std::make_shared<EventReadHandler>();
     readHandler->SetEventExportedListener([this] (int64_t beginSeq, int64_t endSeq) {
-        HIVIEW_LOGW("export end sequence is updated with %{public}" PRId64 "", endSeq);
-        curBeginSeqInQuery_ = beginSeq;
-        curEndSeqInQuery_ = endSeq;
+        HIVIEW_LOGW("finished exporting events in range [%{public}" PRId64 ", %{public}" PRId64 ")",
+            beginSeq, endSeq);
+        // sync export progress to db
+        dbMgr_->HandleExportTaskFinished(config_->moduleName, endSeq);
     });
     // init handler chain
     readHandler->SetNextHandler(writeHandler);
     // start handler chain
     if (!readHandler->HandleRequest(readReq)) {
-        HIVIEW_LOGE("failed to export events in range [%{public}" PRId64 ",%{public}" PRId64 ")",
-            curBeginSeqInQuery_, curEndSeqInQuery_);
-        // record export progress
-        dbMgr_->HandleExportTaskFinished(config_->moduleName, curEndSeqInQuery_);
+        HIVIEW_LOGE("failed to export all events in range [%{public}" PRId64 ",%{public}" PRId64 ")",
+            readReq->beginSeq, readReq->endSeq);
         return;
     }
     // record export progress
-    dbMgr_->HandleExportTaskFinished(config_->moduleName, readReq->endSeq);
-    HIVIEW_LOGI("succeed to export events in range [%{public}" PRId64 ",%{public}" PRId64 ")", readReq->beginSeq,
+    HIVIEW_LOGI("succeed to export all events in range [%{public}" PRId64 ",%{public}" PRId64 ")", readReq->beginSeq,
         readReq->endSeq);
 }
 
