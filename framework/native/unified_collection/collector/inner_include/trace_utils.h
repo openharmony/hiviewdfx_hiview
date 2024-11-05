@@ -37,8 +37,12 @@ const std::map<TraceErrorCode, UcError> CODE_MAP = {
     {TraceErrorCode::TAG_ERROR, UcError::TRACE_TAG_ERROR},
     {TraceErrorCode::FILE_ERROR, UcError::TRACE_FILE_ERROR},
     {TraceErrorCode::WRITE_TRACE_INFO_ERROR, UcError::TRACE_WRITE_ERROR},
-    {TraceErrorCode::CALL_ERROR, UcError::TRACE_CALL_ERROR},
+    {TraceErrorCode::WRONG_TRACE_MODE, UcError::TRACE_WRONG_MODE},
     {TraceErrorCode::OUT_OF_TIME, UcError::TRACE_OUT_OF_TIME},
+    {TraceErrorCode::FORK_ERROR, UcError::TRACE_FORK_ERROR},
+    {TraceErrorCode::EPOLL_WAIT_ERROR, UcError::TRACE_EPOLL_WAIT_ERROR},
+    {TraceErrorCode::PIPE_CREATE_ERROR, UcError::TRACE_PIPE_CREATE_ERROR},
+    {TraceErrorCode::SYSINFO_READ_FAILURE, UcError::TRACE_SYSINFO_READ_FAILURE},
 };
 }
 

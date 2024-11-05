@@ -52,7 +52,7 @@ int32_t TraceManager::OpenSnapshotTrace(const std::vector<std::string> &tagGroup
     if (OHOS::HiviewDFX::Hitrace::GetTraceMode() ==
         OHOS::HiviewDFX::Hitrace::TraceMode::SERVICE_MODE) {
         HIVIEW_LOGE("now is snapshot status, open snapshot failed.");
-        return UcError::TRACE_CALL_ERROR;
+        return UcError::TRACE_WRONG_MODE;
     }
 
     // recording mode
