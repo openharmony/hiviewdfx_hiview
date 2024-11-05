@@ -45,6 +45,7 @@
 #define LOG_TAG "Sanitizer"
 
 namespace {
+constexpr unsigned ASAN_LOG_SIZE = 350 * 1024;
 constexpr unsigned BUF_SIZE = 128;
 static std::stringstream g_asanlog;
 }
