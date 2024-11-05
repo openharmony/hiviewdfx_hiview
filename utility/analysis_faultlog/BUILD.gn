@@ -29,6 +29,7 @@ ohos_executable("analysis_faultlog") {
   configs = [ "$hiview_root/utility/smart_parser:smart_parser_config" ]
 
   deps = [
+    "$hiview_base:hiviewbase",
     "$hiview_root/utility/common_utils:hiview_reliability_common_utils",
     "$hiview_root/utility/smart_parser:smart_parser",
   ]
