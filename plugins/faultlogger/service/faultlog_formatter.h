@@ -29,6 +29,7 @@ std::string GetSummaryByType(int32_t logType, std::map<std::string, std::string>
 bool WriteLogToFile(int32_t fd, const std::string& path);
 bool IsFaultLogLimit();
 void LimitCppCrashLog(int32_t fd, int32_t logType);
+void AddPublicInfo(FaultLogInfo &info);
 }  // namespace FaultLogger
 }  // namespace HiviewDFX
 }  // namespace OHOS

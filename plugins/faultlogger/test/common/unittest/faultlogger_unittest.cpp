@@ -493,7 +493,7 @@ HWTEST_F(FaultloggerUnittest, AddPublicInfoTest001, testing::ext::TestSize.Level
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    plugin->AddPublicInfo(info);
+    FaultLogger::AddPublicInfo(info);
     std::string timeStr = GetFormatedTime(info.time);
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
