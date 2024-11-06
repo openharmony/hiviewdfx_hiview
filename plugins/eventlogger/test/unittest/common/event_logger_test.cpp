@@ -109,10 +109,11 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_003, TestSize.Level3)
 {
     auto eventLogger = std::make_shared<EventLogger>();
     auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
-    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>("EventLoggerTest_001",
+    std::string testName = "EventLoggerTest_OnEvent_003";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
         nullptr, jsonStr);
     EXPECT_EQ(eventLogger->IsHandleAppfreeze(sysEvent), true);
-    sysEvent->SetEventValue("PACKAGE_NAME", "EventLoggerTest");
+    sysEvent->SetEventValue("PACKAGE_NAME", testName);
     sysEvent->SetEventValue("PID", 0);
     sysEvent->SetEventValue("eventLog_action", "");
     std::shared_ptr<OHOS::HiviewDFX::Event> event = std::static_pointer_cast<Event>(sysEvent);
@@ -121,6 +122,11 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_OnEvent_003, TestSize.Level3)
     event = std::static_pointer_cast<Event>(sysEvent);
     sysEvent->SetValue("eventLog_action", "pb:1");
     EXPECT_EQ(eventLogger->OnEvent(event), true);
+    OHOS::system::SetParameter("hiviewdfx.appfreeze.filter_bundle_name", testName);
+    EXPECT_FALSE(eventLogger->IsHandleAppfreeze(sysEvent));
+    event = std::static_pointer_cast<Event>(sysEvent);
+    EXPECT_EQ(eventLogger->OnEvent(event), true);
+    OHOS::system::SetParameter("hiviewdfx.appfreeze.filter_bundle_name", "test");
 }
 
 /**
@@ -303,6 +309,27 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_WriteFreezeJsonInfo_002, TestSize.Leve
     sysEvent->SetEventValue("BINDER_INFO", TEST_PATH + ", "
         "async\\tEventLoggerTest\\n 1:2 2:3 3:4 3:4 context");
     EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
+    sysEvent->eventName_ = "LIFECYCLE_TIMEOUT";
+    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
+    sysEvent->SetEventValue("BINDER_INFO", TEST_PATH + ", "
+        "22000:22000 to 12001:12001 code 9 wait:1 s test");
+    EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
+}
+
+/**
+ * @tc.name: EventLoggerTest_WriteFreezeJsonInfo_003
+ * @tc.desc: add testcase coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_WriteFreezeJsonInfo_003, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_WriteFreezeJsonInfo_003";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    std::vector<std::string> binderPids;
+    EXPECT_TRUE(FileUtil::FileExists("/data/test/log/test.txt"));
     sysEvent->eventName_ = "LIFECYCLE_TIMEOUT";
     EXPECT_EQ(eventLogger->WriteFreezeJsonInfo(1, 1, sysEvent, binderPids), true);
 }
@@ -783,6 +810,10 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_GetAppFreezeStack_001, TestSize.Level3
     sysEvent->SetEventValue("APP_RUNNING_UNIQUE_ID", "Test");
     sysEvent->SetEventValue("STACK", "/data/test/log/test.txt");
     eventLogger->GetAppFreezeStack(1, sysEvent, stack, "msg", kernelStack);
+    EXPECT_TRUE(!kernelStack.empty());
+    std::string msg = "Fault time:Test\nmainHandler dump is:\n Test\nEvent "
+        "{Test}\nLow priority event queue information:test\nTotal size of Low events : 10\n";
+    eventLogger->GetAppFreezeStack(1, sysEvent, stack, msg, kernelStack);
     EXPECT_TRUE(!kernelStack.empty());
 }
 
