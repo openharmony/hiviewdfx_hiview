@@ -467,7 +467,7 @@ bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
 static FaultLogInfo FillFaultLogInfo(SysEvent &sysEvent)
 {
     FaultLogInfo info;
-    info.time = sysEvent.happenTime_;
+    info.time = static_cast<int64_t>(sysEvent.happenTime_);
     info.id = sysEvent.GetUid();
     info.pid = sysEvent.GetPid();
     if (sysEvent.eventName_ == "JS_ERROR") {
