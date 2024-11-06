@@ -267,6 +267,29 @@ HWTEST_F(EventloggerCatcherTest, FfrtCatcherTest_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: FfrtCatcherTest_002
+ * @tc.desc: add testcase code coverage
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventloggerCatcherTest, FfrtCatcherTest_002, TestSize.Level1)
+{
+    auto ffrtCatcher = std::make_shared<FfrtCatcher>();
+    bool ret = ffrtCatcher->Initialize("test", 1, 2);
+    EXPECT_EQ(ret, true);
+    auto fd = open("/data/test/catcherFile", O_CREAT | O_WRONLY | O_TRUNC, DEFAULT_MODE);
+    if (fd < 0) {
+        printf("Fail to create catcherFile. errno: %d\n", errno);
+        FAIL();
+    }
+    int res = ffrtCatcher->Catch(fd, 1);
+    EXPECT_TRUE(res > 0);
+    res = ffrtCatcher->Catch(0, 1);
+    EXPECT_EQ(res, 0);
+    printf("ffrtCatcher result: %d\n", res);
+    close(fd);
+}
+
+/**
  * @tc.name: DmesgCatcherTest_001
  * @tc.desc: add testcase code coverage
  * @tc.type: FUNC
