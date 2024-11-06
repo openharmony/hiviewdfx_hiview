@@ -515,7 +515,7 @@ static void UpdateSysEvent(SysEvent &sysEvent, FaultLogInfo &info)
         fingerPrint = sysEvent.GetEventValue("FINGERPRINT");
     }
     if (fingerPrint.empty()) {
-        sysEvent.SetEventValue("FINGERPRINT", eventInfos["fingerPrint"]);
+        sysEvent.SetEventValue("FINGERPRINT", eventInfos["FINGERPRINT"]);
     }
 }
 

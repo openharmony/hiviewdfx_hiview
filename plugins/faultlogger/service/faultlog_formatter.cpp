@@ -63,7 +63,7 @@ constexpr const char* const TIMESTAMP[] = {"TIMESTAMP", "Timestamp:"};
 constexpr const char* const MEMORY_NEAR_REGISTERS[] = {"MEMORY_NEAR_REGISTERS", "Memory near registers:\n"};
 constexpr const char* const PRE_INSTALL[] = {"PRE_INSTALL", "PreInstalled:"};
 constexpr const char* const VERSION_CODE[] = {"VERSION_CODE", "VersionCode:"};
-constexpr const char* const FINGERPRINT[] = {"fingerPrint", "Fingerprint:"};
+constexpr const char* const FINGERPRINT[] = {"FINGERPRINT", "Fingerprint:"};
 constexpr const char* const APPEND_ORIGIN_LOG[] = {"APPEND_ORIGIN_LOG", ""};
 
 auto CPP_CRASH_LOG_SEQUENCE = {
