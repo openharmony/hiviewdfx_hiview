@@ -50,13 +50,10 @@ struct GwpAsanCurrInfo {
     /** information about faultlog using <key,value> */
     std::map<std::string, std::string> sectionMaps;
 };
-constexpr unsigned BUF_SIZE = 128;
-constexpr unsigned MAX_PROCESS_PATH = 1024;
-constexpr int MIN_APP_UID = 10000;
 
-constexpr unsigned ASAN_LOG_SIZE = 350 * 1024;
 void ReadGwpAsanRecord(const std::string& gwpAsanBuffer, const std::string& errType);
 std::string GetNameByPid(int32_t pid);
 std::string CalcCollectedLogName(const GwpAsanCurrInfo &currInfo);
+std::string GetErrorTypeFromAsanLog(const std::string& gwpAsanBuffer);
 
 #endif // GWPASAN_COLLECTOR_H

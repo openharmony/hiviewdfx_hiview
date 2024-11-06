@@ -600,7 +600,7 @@ void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) 
     HIVIEW_LOGD("ReportSanitizerAppEvent:summary:%{public}s.", summary.c_str());
 
     Json::Value params;
-    params["time"] = sysEvent->GetEventValue("HAPPEN_TIME");
+    params["time"] = sysEvent->happenTime_;
     params["type"] = sysEvent->GetEventValue("REASON");
     Json::Value externalLog(Json::arrayValue);
     std::string logPath = sysEvent->GetEventValue("LOG_PATH");
@@ -612,7 +612,6 @@ void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) 
     params["bundle_name"] = sysEvent->GetEventValue("MODULE");
     params["pid"] = sysEvent->GetPid();
     params["uid"] = sysEvent->GetUid();
-    FillJsErrorParams(summary, params);
     std::string paramsStr = Json::FastWriter().write(params);
     HIVIEW_LOGD("ReportSanitizerAppEvent: uid:%{public}d, json:%{public}s.",
         sysEvent->GetUid(), paramsStr.c_str());
