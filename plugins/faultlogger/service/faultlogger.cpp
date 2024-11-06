@@ -170,28 +170,6 @@ bool FillDumpRequest(DumpRequest &request, int status, const std::string &item)
     return true;
 }
 
-std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, std::string>& maps)
-{
-    std::string key = "";
-    switch (type) {
-        case CPP_CRASH:
-            key = "KEY_THREAD_INFO";
-            break;
-        default:
-            break;
-    }
-
-    if (key.empty()) {
-        return "";
-    }
-
-    auto value = maps.find(key);
-    if (value == maps.end()) {
-        return "";
-    }
-    return value->second;
-}
-
 void ParseJsErrorSummary(std::string& summary, std::string& name, std::string& message, std::string& stack)
 {
     std::string leftStr = StringUtil::GetLeftSubstr(summary, "Error message:");
@@ -248,64 +226,6 @@ static bool IsSystemProcess(const std::string &processName, int32_t uid)
             (processName.compare(0, venBin.length(), venBin) == 0));
 }
 } // namespace
-
-void Faultlogger::AddPublicInfo(FaultLogInfo &info)
-{
-    info.sectionMap["DEVICE_INFO"] = Parameter::GetString("const.product.name", "Unknown");
-    if (info.sectionMap.find("BUILD_INFO") == info.sectionMap.end()) {
-        info.sectionMap["BUILD_INFO"] = Parameter::GetString("const.product.software.version", "Unknown");
-    }
-    info.sectionMap["UID"] = std::to_string(info.id);
-    info.sectionMap["PID"] = std::to_string(info.pid);
-    info.module = RegulateModuleNameIfNeed(info.module);
-    info.sectionMap["MODULE"] = info.module;
-    DfxBundleInfo bundleInfo;
-    if (info.id >= MIN_APP_USERID && GetDfxBundleInfo(info.module, bundleInfo)) {
-        if (!bundleInfo.versionName.empty()) {
-            info.sectionMap["VERSION"] = bundleInfo.versionName;
-            info.sectionMap["VERSION_CODE"] = std::to_string(bundleInfo.versionCode);
-        }
-
-        if (bundleInfo.isPreInstalled) {
-            info.sectionMap["PRE_INSTALL"] = "Yes";
-        } else {
-            info.sectionMap["PRE_INSTALL"] = "No";
-        }
-    }
-
-    if (info.sectionMap["FOREGROUND"].empty() && info.id >= MIN_APP_USERID) {
-        if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
-            UCollectUtil::FOREGROUND) {
-            info.sectionMap["FOREGROUND"] = "Yes";
-        } else if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
-            UCollectUtil::BACKGROUND) {
-            int64_t lastFgTime = static_cast<int64_t>(UCollectUtil::ProcessStatus::GetInstance()
-                .GetProcessLastForegroundTime(info.pid));
-            if (lastFgTime > info.time) {
-                info.sectionMap["FOREGROUND"] = "Yes";
-            } else {
-                info.sectionMap["FOREGROUND"] = "No";
-            }
-        }
-    }
-
-    if (info.reason.empty()) {
-        info.reason = info.sectionMap["REASON"];
-    } else {
-        info.sectionMap["REASON"] = info.reason;
-    }
-
-    if (info.summary.empty()) {
-        info.summary = GetSummaryFromSectionMap(info.faultLogType, info.sectionMap);
-    } else {
-        info.sectionMap["SUMMARY"] = info.summary;
-    }
-
-    // parse fingerprint by summary or temp log for native crash
-    AnalysisFaultlog(info, info.parsedLogInfo);
-    info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
-    info.parsedLogInfo.clear();
-}
 
 void Faultlogger::AddCppCrashInfo(FaultLogInfo& info)
 {
@@ -467,7 +387,7 @@ bool Faultlogger::IsInterestedPipelineEvent(std::shared_ptr<Event> event)
 static FaultLogInfo FillFaultLogInfo(SysEvent &sysEvent)
 {
     FaultLogInfo info;
-    info.time = sysEvent.happenTime_;
+    info.time = static_cast<int64_t>(sysEvent.happenTime_);
     info.id = sysEvent.GetUid();
     info.pid = sysEvent.GetPid();
     if (sysEvent.eventName_ == "JS_ERROR") {
@@ -757,7 +677,7 @@ void Faultlogger::AddFaultLogIfNeed(FaultLogInfo& info, std::shared_ptr<Event> e
         HIVIEW_LOGW("Invalid module name %{public}s", info.module.c_str());
         return;
     }
-    AddPublicInfo(info);
+    FaultLogger::AddPublicInfo(info);
     // Internal reserved fields, avoid illegal privilege escalation to access files
     info.sectionMap.erase("APPEND_ORIGIN_LOG");
     if (info.faultLogType == FaultLogType::CPP_CRASH) {

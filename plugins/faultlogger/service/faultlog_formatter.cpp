@@ -25,7 +25,11 @@
 #include "faultlog_info.h"
 #include "faultlog_util.h"
 #include "file_util.h"
+#include "log_analyzer.h"
+#include "parameter_ex.h"
+#include "process_status.h"
 #include "string_util.h"
+#include "zip_helper.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -370,6 +374,86 @@ void LimitCppCrashLog(int32_t fd, int32_t logType)
     if (endPos != -1) {
         FileUtil::SaveStringToFd(fd, "\ncpp crash log is limit output.\n");
     }
+}
+
+std::string GetSummaryFromSectionMap(int32_t type, const std::map<std::string, std::string>& maps)
+{
+    std::string key = "";
+    switch (type) {
+        case CPP_CRASH:
+            key = "KEY_THREAD_INFO";
+            break;
+        default:
+            break;
+    }
+
+    if (key.empty()) {
+        return "";
+    }
+
+    auto value = maps.find(key);
+    if (value == maps.end()) {
+        return "";
+    }
+    return value->second;
+}
+
+void AddPublicInfo(FaultLogInfo &info)
+{
+    info.sectionMap["DEVICE_INFO"] = Parameter::GetString("const.product.name", "Unknown");
+    if (info.sectionMap.find("BUILD_INFO") == info.sectionMap.end()) {
+        info.sectionMap["BUILD_INFO"] = Parameter::GetString("const.product.software.version", "Unknown");
+    }
+    info.sectionMap["UID"] = std::to_string(info.id);
+    info.sectionMap["PID"] = std::to_string(info.pid);
+    info.module = RegulateModuleNameIfNeed(info.module);
+    info.sectionMap["MODULE"] = info.module;
+    DfxBundleInfo bundleInfo;
+    if (info.id >= MIN_APP_USERID && GetDfxBundleInfo(info.module, bundleInfo)) {
+        if (!bundleInfo.versionName.empty()) {
+            info.sectionMap["VERSION"] = bundleInfo.versionName;
+            info.sectionMap["VERSION_CODE"] = std::to_string(bundleInfo.versionCode);
+        }
+
+        if (bundleInfo.isPreInstalled) {
+            info.sectionMap["PRE_INSTALL"] = "Yes";
+        } else {
+            info.sectionMap["PRE_INSTALL"] = "No";
+        }
+    }
+
+    if (info.sectionMap["FOREGROUND"].empty() && info.id >= MIN_APP_USERID) {
+        if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
+            UCollectUtil::FOREGROUND) {
+            info.sectionMap["FOREGROUND"] = "Yes";
+        } else if (UCollectUtil::ProcessStatus::GetInstance().GetProcessState(info.pid) ==
+            UCollectUtil::BACKGROUND) {
+            int64_t lastFgTime = static_cast<int64_t>(UCollectUtil::ProcessStatus::GetInstance()
+                .GetProcessLastForegroundTime(info.pid));
+            if (lastFgTime > info.time) {
+                info.sectionMap["FOREGROUND"] = "Yes";
+            } else {
+                info.sectionMap["FOREGROUND"] = "No";
+            }
+        }
+    }
+
+    if (info.reason.empty()) {
+        info.reason = info.sectionMap["REASON"];
+    } else {
+        info.sectionMap["REASON"] = info.reason;
+    }
+
+    if (info.summary.empty()) {
+        info.summary = GetSummaryFromSectionMap(info.faultLogType, info.sectionMap);
+    } else {
+        info.sectionMap["SUMMARY"] = info.summary;
+    }
+
+    // parse fingerprint by summary or temp log for native crash
+    AnalysisFaultlog(info, info.parsedLogInfo);
+    info.sectionMap.insert(info.parsedLogInfo.begin(), info.parsedLogInfo.end());
+    info.parsedLogInfo.clear();
 }
 } // namespace FaultLogger
 } // namespace HiviewDFX
