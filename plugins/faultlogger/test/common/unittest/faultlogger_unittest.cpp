@@ -363,6 +363,57 @@ HWTEST_F(FaultloggerUnittest, DumpTest003, testing::ext::TestSize.Level3)
     }
 }
 
+/**
+ * @tc.name: DumpTest004
+ * @tc.desc: dump with cmds, check the result
+ * @tc.type: FUNC
+ */
+HWTEST_F(FaultloggerUnittest, DumpTest004, testing::ext::TestSize.Level3)
+{
+    /**
+     * @tc.steps: step1. add multiple cmds to faultlogger
+     * @tc.expected: check the content size of the dump function
+     */
+
+    auto plugin = GetFaultloggerInstance();
+    FaultLogInfo info;
+    info.time = 1607161163; // 1607161163 : analog value of time
+    info.id = 10001;
+    info.pid = 7496; // 7496 : analog value of pid
+    info.faultLogType = 2; // 2 : CPP_CRASH
+    info.module = "com.example.myapplication";
+    plugin->AddFaultLog(info);
+    std::string timeStr = GetFormatedTimeWithMillsec(info.time);
+    std::string appName = GetApplicationNameById(info.id);
+    if (appName.size() == 0) {
+        appName = info.module;
+    }
+    std::string fileName = "cppcrash-" + appName + "-" + std::to_string(info.id) + "-" + timeStr + ".log";
+    ASSERT_EQ(FileUtil::FileExists(fileName), true);
+
+    int fd = TEMP_FAILURE_RETRY(open("/data/test/testFile", O_CREAT | O_WRONLY | O_TRUNC, 770));
+    bool isSuccess = fd >= 0;
+    if (!isSuccess) {
+        ASSERT_FALSE(isSuccess);
+        printf("Fail to create test result file.\n");
+        return;
+    }
+    std::vector<std::vector<std::string>> cmds = {
+        {"-LogSuffixWithMs", ""},
+        {"-f", fileName}
+    };
+
+    for (auto& cmd : cmds) {
+        plugin->Dump(fd, cmd);
+    }
+
+    close(fd);
+    fd = -1;
+    std::string keywords[] = { "Device info", "Build info", "Fingerprint", "Moudle name" };
+    int length = sizeof(keywords) / sizeof(keywords[0]);
+    ASSERT_EQ(CheckKeyWordsInFile("/data/test/testFile", keywords, length, false), length);
+}
+
 static void GenCppCrashLogTestCommon(int32_t uid, bool ifFileExist)
 {
     int pipeFd[2] = {-1, -1};
@@ -397,13 +448,13 @@ static void GenCppCrashLogTestCommon(int32_t uid, bool ifFileExist)
     TEMP_FAILURE_RETRY(write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size()));
     close(pipeFd[1]);
     plugin->AddFaultLog(info);
-    std::string timeStr = GetFormatedTime(info.time);
+    std::string timeStr = GetFormatedTimeWithMillsec(info.time);
     std::string appName = GetApplicationNameById(info.id);
     if (appName.size() == 0) {
         appName = info.module;
     }
     std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-" + appName + "-" +
-        std::to_string(info.id) + "-" + timeStr;
+        std::to_string(info.id) + "-" + timeStr + ".log";
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto parsedInfo = plugin->GetFaultLogInfo(fileName);
@@ -467,8 +518,8 @@ HWTEST_F(FaultloggerUnittest, AddFaultLogTest001, testing::ext::TestSize.Level3)
     info.time = 1607161163;
     info.pid = 7496;
     plugin->AddFaultLog(info);
-    std::string timeStr = GetFormatedTime(info.time);
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
+    std::string timeStr = GetFormatedTimeWithMillsec(info.time);
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr + ".log";
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
 }
 
@@ -494,8 +545,8 @@ HWTEST_F(FaultloggerUnittest, AddPublicInfoTest001, testing::ext::TestSize.Level
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
     FaultLogger::AddPublicInfo(info);
-    std::string timeStr = GetFormatedTime(info.time);
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr;
+    std::string timeStr = GetFormatedTimeWithMillsec(info.time);
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr + ".log";
     ASSERT_EQ(FileUtil::FileExists(fileName), true);
 }
 
@@ -808,7 +859,7 @@ std::string getTargetFileName(int32_t faultLogType, int64_t time)
         {8, "sanitizer"}, // 8 : faultLogType to sanitizer
     };
     std::string fileName = fileNames_[faultLogType];
-    return fileName + "-FaultloggerUnittest1111-0-" + GetFormatedTime(time);
+    return fileName + "-FaultloggerUnittest1111-0-" + GetFormatedTimeWithMillsec(time) + ".log";
 }
 
 /**
@@ -1175,14 +1226,14 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest001, testing::ext::TestSize.Level3)
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
     faultEventListener->SetKeyWords(keyWords);
-    std::string timeStr = GetFormatedTime(now);
+    std::string timeStr = GetFormatedTimeWithMillsec(now);
     std::string content = "Pid:101\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
         "Fault thread info:\nTid:101, Name:BootScanUnittest\n#00 xxxxxxx\n#01 xxxxxxx\n";
     ASSERT_TRUE(FileUtil::SaveStringToFile("/data/log/faultlog/temp/cppcrash-101-" + std::to_string(now), content));
     auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
     //check faultlog file content
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr + ".log";
     ASSERT_TRUE(FileUtil::FileExists(fileName));
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     ASSERT_EQ(plugin->GetFaultLogInfo(fileName)->module, "BootScanUnittest");
@@ -1202,7 +1253,6 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest002, testing::ext::TestSize.Level3)
     std::vector<std::string> keyWords = { "BootScanUnittest" };
     faultEventListener->SetKeyWords(keyWords);
     time_t now = time(nullptr);
-    std::string timeStr = GetFormatedTime(now);
     std::string content = "Pid:102\nUid:0\nProcess name:BootScanUnittest\nReason:unittest for StartBootScan\n"
         "Fault thread info:\nTid:102, Name:BootScanUnittest\n";
     std::string fileName = "/data/log/faultlog/temp/cppcrash-102-" + std::to_string(now);
@@ -1226,7 +1276,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
     faultEventListener->SetKeyWords(keyWords);
-    std::string timeStr = GetFormatedTime(now);
+    std::string timeStr = GetFormatedTimeWithMillsec(now);
     std::string regs = "r0:00000019 r1:0097cd3c\nr4:f787fd2c\nfp:f787fd18 ip:7fffffff pc:0097c982\n";
     std::string otherThreadInfo =
         "Tid:1336, Name:BootScanUnittes\n#00 xxxxxx\nTid:1337, Name:BootScanUnittes\n#00 xx\n";
@@ -1242,7 +1292,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest003, testing::ext::TestSize.Level3)
     plugin->StartBootScan();
 
     //check faultlog file content
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr + ".log";
     ASSERT_TRUE(FileUtil::FileExists(fileName));
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
     auto info = plugin->GetFaultLogInfo(fileName);
@@ -1269,7 +1319,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     time_t now = time(nullptr);
     std::vector<std::string> keyWords = { std::to_string(now) };
     faultEventListener->SetKeyWords(keyWords);
-    std::string timeStr = GetFormatedTime(now);
+    std::string timeStr = GetFormatedTimeWithMillsec(now);
     std::string fillMapsContent = "96e000-978000 r--p 00000000 /data/xxxxx\n978000-9a6000 r-xp 00009000 /data/xxxx\n";
     std::string regs = "r0:00000019 r1:0097cd3c\nr4:f787fd2c\nfp:f787fd18 ip:7fffffff pc:0097c982\n";
     std::string otherThreadInfo =
@@ -1290,7 +1340,7 @@ HWTEST_F(FaultloggerUnittest, FaultloggerTest004, testing::ext::TestSize.Level3)
     auto plugin = GetFaultloggerInstance();
     plugin->StartBootScan();
     // check faultlog file content
-    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr;
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-BootScanUnittest-0-" + timeStr + ".log";
     GTEST_LOG_(INFO) << "========fileName:" << fileName;
     ASSERT_TRUE(FileUtil::FileExists(fileName));
     ASSERT_GT(FileUtil::GetFileSize(fileName), 0ul);
@@ -1580,16 +1630,16 @@ HWTEST_F(FaultloggerUnittest, FaultlogUtilUnittest001, testing::ext::TestSize.Le
     info.faultLogType = FaultLogType::ADDR_SANITIZER;
     info.reason = "TSAN";
     std::string str = GetFaultLogName(info);
-    ASSERT_EQ(str, "tsan-test-0-19700101080000");
+    ASSERT_EQ(str, "tsan-test-0-19700101080000000.log");
     info.reason = "UBSAN";
     str = GetFaultLogName(info);
-    ASSERT_EQ(str, "ubsan-test-0-19700101080000");
+    ASSERT_EQ(str, "ubsan-test-0-19700101080000000.log");
     info.reason = "GWP-ASAN";
     str = GetFaultLogName(info);
-    ASSERT_EQ(str, "gwpasan-test-0-19700101080000");
+    ASSERT_EQ(str, "gwpasan-test-0-19700101080000000.log");
     info.reason = "GWP-ASANS";
     str = GetFaultLogName(info);
-    ASSERT_EQ(str, "sanitizer-test-0-19700101080000");
+    ASSERT_EQ(str, "sanitizer-test-0-19700101080000000.log");
 
     str = RegulateModuleNameIfNeed("");
     ASSERT_EQ(str, "");
