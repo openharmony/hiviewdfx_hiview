@@ -189,7 +189,8 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     }
 
     int32_t pid = sysEvent->GetEventIntValue("PID");
-    if (sysEvent->eventName_ == "CPP_CRASH_EXCEPTION" && sysEvent->GetEventIntValue("ERROR_CODE") == 206) { // error code
+    if (sysEvent->eventName_ == "CPP_CRASH_EXCEPTION" &&
+        sysEvent->GetEventIntValue("ERROR_CODE") == 206) { // 206: error code
         FaultLogInfoInner info;
         info.time = sysEvent->GetEventUintValue("HAPPEN_TIME");
         info.id = sysEvent->GetUid();
