@@ -397,3 +397,20 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest017, TestSize.Level1)
     ASSERT_TRUE(resultDumpTrace.data.size() >= 0);
     ASSERT_TRUE(g_traceManager.CloseTrace() == 0);
 }
+
+/**
+ * @tc.name: TraceCollectorTest018
+ * @tc.desc: used to test abnormal scene about trace operations
+ * @tc.type: FUNC
+*/
+HWTEST_F(TraceCollectorTest, TraceCollectorTest018, TestSize.Level1)
+{
+    const std::vector<std::string> tagGroups = {"scene_performance"};
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), UcError::SUCCESS);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), UcError::TRACE_WRONG_MODE);
+    const std::string args = "tags:sched clockType:boot bufferSize:1024 overwrite:1";
+    ASSERT_EQ(g_traceManager.OpenRecordingTrace(args), UcError::SUCCESS);
+    ASSERT_EQ(g_traceManager.OpenRecordingTrace(args), UcError::TRACE_IS_OCCUPIED);
+    ASSERT_EQ(g_traceManager.OpenSnapshotTrace(tagGroups), UcError::TRACE_IS_OCCUPIED);
+    ASSERT_EQ(g_traceManager.CloseTrace(), UcError::SUCCESS);
+}
