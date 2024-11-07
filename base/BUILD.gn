@@ -18,13 +18,13 @@ config("hiview_base_config") {
 
   include_dirs = [
     "$hiview_root/include",
-    "event_publish/include",
-    "event_raw/include",
-    "event_store/include",
-    "include",
-    "logstore/include",
-    "running_status_logger/include",
-    "utility/include",
+    "$hiview_base/event_publish/include",
+    "$hiview_base/event_raw/include",
+    "$hiview_base/event_store/include",
+    "$hiview_base/include",
+    "$hiview_base/logstore/include",
+    "$hiview_base/running_status_logger/include",
+    "$hiview_base/utility/include",
   ]
 
   cflags_cc = [ "-D__HIVIEW_OHOS__" ]
@@ -96,7 +96,6 @@ ohos_source_set("hiview_base") {
 }
 
 ohos_shared_library("hiviewbase") {
-  all_dependent_configs = [ ":hiview_base_config" ]
   public_configs = [ ":hiview_base_config" ]
   public_configs += [ "event_report:hiview_event_report_config" ]
 
@@ -110,7 +109,6 @@ ohos_shared_library("hiviewbase") {
 }
 
 ohos_static_library("hiviewbase_static_lib_for_tdd") {
-  all_dependent_configs = [ ":hiview_base_config" ]
   public_configs = [ ":hiview_base_config" ]
   public_configs += [ "event_report:hiview_event_report_config" ]
 

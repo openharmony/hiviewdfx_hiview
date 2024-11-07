@@ -163,6 +163,7 @@ ohos_unittest("TraceStateChangeTest") {
   ]
 
   deps = [
+    "$hiview_base:hiviewbase",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_graphic",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
   ]
