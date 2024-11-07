@@ -1,0 +1,176 @@
+diff --git a/frameworks/localhandler/BUILD.gn b/frameworks/localhandler/BUILD.gn
+index 38abc656da3e4f9a5b6812237af5e2e0e7d1ce01..3008c19876f58aa33dd83e02cc1f54e5f7b162ab 100644
+--- a/frameworks/localhandler/BUILD.gn
++++ b/frameworks/localhandler/BUILD.gn
+@@ -27,6 +27,7 @@ if (!defined(ohos_lite)) {
+       "$faultloggerd_interfaces_path/common",
+       "$faultloggerd_path/common/cutil",
+       "$faultloggerd_path/common/dfxlog",
++      "$faultloggerd_path/common/dfx_util",
+       "$faultloggerd_interfaces_path/innerkits/unwinder",
+       "$faultloggerd_interfaces_path/innerkits/signal_handler/include",
+     ]
+@@ -40,6 +41,7 @@ if (!defined(ohos_lite)) {
+     sources += [ "$faultloggerd_interfaces_path/innerkits/signal_handler/dfx_signalhandler_exception.c" ]
+     deps = [
+       "$faultloggerd_common_path/cutil:dfx_cutil",
++      "$faultloggerd_common_path/dfxutil:dfx_util",
+       "$faultloggerd_frameworks_path/allocator:dfx_allocator_src",
+       "$faultloggerd_interfaces_path/innerkits/faultloggerd_client:libfaultloggerd",
+       "$faultloggerd_interfaces_path/innerkits/unwinder:libunwinder",
+@@ -49,6 +51,7 @@ if (!defined(ohos_lite)) {
+     external_deps = [
+       "c_utils:utils",
+       "hilog:libhilog_base",
++      "hisysevent:libhisysevent",
+     ]
+     part_name = "faultloggerd"
+     subsystem_name = "hiviewdfx"
+diff --git a/frameworks/localhandler/dfx_crash_local_handler.cpp b/frameworks/localhandler/dfx_crash_local_handler.cpp
+index c1b8d29469e99cbea65dd0171c1e357c99514433..f85285bc072e06654e038173d96af81f1f9e4b22 100644
+--- a/frameworks/localhandler/dfx_crash_local_handler.cpp
++++ b/frameworks/localhandler/dfx_crash_local_handler.cpp
+@@ -26,6 +26,8 @@
+ #include "dfx_cutil.h"
+ #include "dfx_signalhandler_exception.h"
+ #include "faultloggerd_client.h"
++#include "hisysevent.h"
++#include "string_printf.h"
+ #include "unwinder.h"
+ 
+ #ifdef LOG_DOMAIN
+@@ -77,15 +79,18 @@ static __attribute__((noinline)) void PrintLog(int fd, const char *format, ...)
+     }
+ }
+ 
+-__attribute__((noinline)) void CrashLocalUnwind(const int fd, const ucontext_t* uc)
++__attribute__((noinline)) void CrashLocalUnwind(const int fd, const struct ProcessDumpRequest* request, std::string& errMessage)
+ {
+-    if (uc == nullptr) {
++    if (request == nullptr) {
+         return;
+     }
++    std::string logContext = OHOS::HiviewDFX::StringPrintf("Tid:%d, Name:%s\n", request->tid, request->threadName);
+     OHOS::HiviewDFX::Unwinder unwind;
+-    unwind.UnwindLocalWithContext(*uc);
+-    auto regs = OHOS::HiviewDFX::DfxRegs::CreateFromUcontext(*uc);
+-    std::string logContext = unwind.GetFramesStr(unwind.GetFrames()) + regs->PrintRegs();
++    unwind.UnwindLocalWithContext(request->context);
++    logContext.append(unwind.GetFramesStr(unwind.GetFrames()));
++    errMessage += logContext;
++    auto regs = OHOS::HiviewDFX::DfxRegs::CreateFromUcontext(request->context);
++    logContext.append(regs->PrintRegs());
+     logContext.append("\nMaps:\n");
+     for (const auto &map : unwind.GetMaps()->GetMaps()) {
+         logContext.append(map->ToString());
+@@ -106,9 +111,9 @@ void CrashLocalHandler(const struct ProcessDumpRequest* request)
+     }
+ }
+ 
+-static void PrintTimeStamp(const int fd)
++static void PrintTimeStamp(const int fd, const struct ProcessDumpRequest* request)
+ {
+-    uint64_t currentTime = GetTimeMilliseconds();
++    uint64_t currentTime = request->timeStamp;
+     char secBuf[BUF_SZ] = {0};
+     char printBuf[BUF_SZ] = {0};
+     time_t sec = static_cast<time_t>(currentTime / TIME_DIV);
+@@ -126,43 +131,33 @@ static void PrintTimeStamp(const int fd)
+     PrintLog(fd, "Timestamp:%s", printBuf);
+ }
+ 
+-static void ReportToHiview(const char* logPath, const struct ProcessDumpRequest* request)
+-{
+-    struct CrashDumpException exception;
+-    (void)memset_s(&exception, sizeof(struct CrashDumpException), 0, sizeof(struct CrashDumpException));
+-    exception.pid = request->pid;
+-    exception.uid = request->uid;
+-    exception.error = CRASH_DUMP_LOCAL_REPORT;
+-    exception.time = static_cast<int64_t>(GetTimeMilliseconds());
+-    if (strncpy_s(exception.message, sizeof(exception.message) - 1, logPath, strlen(logPath)) != 0) {
+-        DFXLOGE("strcpy exception msg fail");
+-        return;
+-    }
+-    ReportException(exception);
+-}
+-
+ void CrashLocalHandlerFd(const int fd, const struct ProcessDumpRequest* request)
+ {
+     if (request == nullptr) {
+         return;
+     }
+-    PrintTimeStamp(fd);
++    PrintTimeStamp(fd, request);
+     PrintLog(fd, "Pid:%d\n", request->pid);
+     PrintLog(fd, "Uid:%d\n", request->uid);
+     PrintLog(fd, "Process name:%s\n", request->processName);
++    std::string reason;
+ #if defined(__LP64__)
+-    PrintLog(fd, "Reason:Signal(%d)@%018p\n", request->siginfo.si_signo, request->siginfo.si_addr);
++    reason = OHOS::HiviewDFX::StringPrintf("Reason:Signal(%d)@%18p\n", request->siginfo.si_signo, request->siginfo.si_addr);
+ #else
+-    PrintLog(fd, "Reason:Signal(%d)@%010p\n", request->siginfo.si_signo, request->siginfo.si_addr);
++    reason = OHOS::HiviewDFX::StringPrintf("Reason:Signal(%d)@%10p\n", request->siginfo.si_signo, request->siginfo.si_addr);
+ #endif
++    std::string errMessage = reason;
++    PrintLog(fd, reason.c_str());
+     PrintLog(fd, "Fault thread info:\n");
+-    PrintLog(fd, "Tid:%d, Name:%s\n", request->tid, request->threadName);
+-    CrashLocalUnwind(fd, &(request->context));
+-    char logFileName[BUF_SZ] = {0};
+-    if (snprintf_s(logFileName, sizeof(logFileName), sizeof(logFileName) - 1,
+-        "/data/log/faultlog/temp/cppcrash-%d-%llu", request->pid, request->timeStamp + 1) < 0) {
+-        DFXLOGE("snprintf logFileName fail");
+-        return;
+-    }
+-    ReportToHiview(logFileName, request);
++    CrashLocalUnwind(fd, request, errMessage);
++    HiSysEventWrite(
++        OHOS::HiviewDFX::HiSysEvent::Domain::RELIABILITY,
++        "CPP_CRASH_EXCEPTION",
++        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
++        "PROCESS_NAME", request->processName,
++        "PID", request->pid,
++        "UID", request->uid,
++        "HAPPEN_TIME", request->timeStamp + 1,
++        "ERROR_CODE", CRASH_DUMP_LOCAL_REPORT,
++        "ERROR_MSG", errMessage);
+ }
+diff --git a/services/fault_logger_daemon.cpp b/services/fault_logger_daemon.cpp
+index c45ca42b5fefd02cb4eaf64cd87b9ce2e5961893..0959c88c1fd91137c488fb5c6d00a5891041e0e7 100644
+--- a/services/fault_logger_daemon.cpp
++++ b/services/fault_logger_daemon.cpp
+@@ -116,24 +116,6 @@ static bool CheckCallerUID(uint32_t callerUid)
+ static void ReportExceptionToSysEvent(CrashDumpException& exception)
+ {
+ #ifndef HISYSEVENT_DISABLE
+-    std::string errMessage;
+-    if (exception.error == CRASH_DUMP_LOCAL_REPORT) {
+-        std::ifstream rfile;
+-        if (strlen(exception.message) == 0) {
+-            return;
+-        }
+-        rfile.open(exception.message, std::ios::binary | std::ios::ate);
+-        if (!rfile.is_open()) {
+-            return;
+-        }
+-        std::streamsize size = rfile.tellg();
+-        rfile.seekg(0, std::ios::beg);
+-        std::vector<char> buf(size);
+-        rfile.read(buf.data(), size);
+-        errMessage = std::string(buf.begin(), buf.end());
+-    } else {
+-        errMessage = exception.message;
+-    }
+     HiSysEventWrite(
+         HiSysEvent::Domain::RELIABILITY,
+         "CPP_CRASH_EXCEPTION",
+@@ -142,7 +124,7 @@ static void ReportExceptionToSysEvent(CrashDumpException& exception)
+         "UID", exception.uid,
+         "HAPPEN_TIME", exception.time,
+         "ERROR_CODE", exception.error,
+-        "ERROR_MSG", errMessage);
++        "ERROR_MSG", exception.message);
+ #endif
+ }
+ 
