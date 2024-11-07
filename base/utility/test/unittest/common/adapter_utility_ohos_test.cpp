@@ -644,11 +644,7 @@ HWTEST_F(AdapterUtilityOhosTest, HiViewConfigUtilTest001, testing::ext::TestSize
         ASSERT_EQ(configPath, "/data/system/hiview/test_file_name");
     }
     auto ret = HiViewConfigUtil::GetConfigFilePath("test_file_name", "/data/test/", "test_file_name");
-    if (localVer >= cloudVer) {
-        ASSERT_EQ(ret, "/system/etc/hiview/test_file_name");
-    } else {
-        ASSERT_EQ(ret, "/data/system/hiview/test_file_name");
-    }
+    ASSERT_EQ(ret, "/data/system/hiview/unzip_configs//data/test/test_file_name");
 }
 } // namespace HiviewDFX
 } // namespace OHOS
