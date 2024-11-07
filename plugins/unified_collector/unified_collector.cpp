@@ -73,24 +73,6 @@ const bool CHECK_DYNAMIC_TRACE_FSM[STATE_COUNT][STATE_COUNT] = {
     {true, true}, {false, true}
 };
 
-#if PC_APP_STATE_COLLECT_ENABLE
-const std::string RSS_APP_STATE_EVENT = "APP_CGROUP_CHANGE";
-const int NAP_BACKGROUND_GROUP = 11;
-
-ProcessState GetProcessStateByGroup(SysEvent& sysEvent)
-{
-    if (sysEvent.GetEventName() != RSS_APP_STATE_EVENT) {
-        return INVALID;
-    }
-    int32_t procGroup = sysEvent.GetEventIntValue("PROCESS_NEWGROUP");
-    if (procGroup == NAP_BACKGROUND_GROUP) {
-        return BACKGROUND;
-    }
-    // else - The app is in the foreground group
-    return FOREGROUND;
-}
-#endif // PC_APP_STATE_COLLECT_ENABLE
-
 void OnTestAppTraceStateChanged(const char* key, const char* value, void* context)
 {
     if (key == nullptr || value == nullptr) {
@@ -297,19 +279,6 @@ void UnifiedCollector::OnEventListeningCallback(const Event& event)
         OnMainThreadJank(sysEvent);
         return;
     }
-#if PC_APP_STATE_COLLECT_ENABLE
-    int32_t procId = sysEvent.GetEventIntValue("APP_PID");
-    if (procId <= 0) {
-        HIVIEW_LOGW("invalid process id=%{public}d", procId);
-        return;
-    }
-    ProcessState procState = GetProcessStateByGroup(sysEvent);
-    if (procState == INVALID) {
-        HIVIEW_LOGD("invalid process state=%{public}d", procState);
-        return;
-    }
-    ProcessStatus::GetInstance().NotifyProcessState(procId, procState);
-#endif // PC_APP_STATE_COLLECT_ENABLE
 }
 
 void UnifiedCollector::Dump(int fd, const std::vector<std::string>& cmds)

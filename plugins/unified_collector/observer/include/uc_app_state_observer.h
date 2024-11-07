@@ -27,6 +27,8 @@ public:
     void OnProcessStateChanged(const AppExecFwk::ProcessData& processData) override;
     void OnProcessCreated(const AppExecFwk::ProcessData& processData) override;
     void OnProcessDied(const AppExecFwk::ProcessData& processData) override;
+    void OnWindowShow(const AppExecFwk::ProcessData& processData) override;
+    void OnWindowHidden(const AppExecFwk::ProcessData& processData) override;
 }; // UcAppStateObserver
 } // namespace HiviewDFX
 } // namespace OHOS
