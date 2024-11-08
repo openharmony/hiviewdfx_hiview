@@ -13,19 +13,18 @@
  * limitations under the License.
  */
  
-#include "content_reader_version_3.h"
+#include "content_reader_version_4.h"
 
 #include "base_def.h"
 #include "content_reader_factory.h"
 #include "base/raw_data_base_def.h"
 #include "hiview_logger.h"
-#include "securec.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-DEFINE_LOG_TAG("HiView-ContentReaderVersion3");
-REGISTER_CONTENT_READER(EventStore::EVENT_DATA_FORMATE_VERSION::VERSION3, ContentReaderVersion3);
-int ContentReaderVersion3::ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
+DEFINE_LOG_TAG("HiView-ContentReaderVersion4");
+REGISTER_CONTENT_READER(EventStore::EVENT_DATA_FORMATE_VERSION::VERSION4, ContentReaderVersion4);
+int ContentReaderVersion4::ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
     uint64_t& docHeaderSize, HeadExtraInfo& headExtra)
 {
     if (!docStream.is_open()) {
@@ -37,29 +36,15 @@ int ContentReaderVersion3::ReadDocDetails(std::ifstream& docStream, EventStore::
         HIVIEW_LOGE("system version invalid.");
         return DOC_STORE_ERROR_INVALID;
     }
-    HIVIEW_LOGD("version read from db:%{public}s", headExtra.sysVersion.c_str());
+
+    if (!GetDataString(docStream, headExtra.patchVersion)) {
+        HIVIEW_LOGE("patch version invalid.");
+        return DOC_STORE_ERROR_INVALID;
+    }
+    HIVIEW_LOGD("systemVersion:%{public}s, patchVersion:%{public}s",
+        headExtra.sysVersion.c_str(), headExtra.patchVersion.c_str());
     docHeaderSize = header.blockSize + sizeof(header.magicNum);
     return DOC_STORE_SUCCESS;
-}
-
-bool ContentReaderVersion3::IsValidMagicNum(const uint64_t magicNum)
-{
-    return magicNum == MAGIC_NUM_VERSION3;
-}
-
-int ContentReaderVersion3::GetContentHeader(uint8_t* content, EventStore::ContentHeader& header)
-{
-    if (content == nullptr) {
-        return DOC_STORE_ERROR_NULL;
-    }
-
-    header = *(reinterpret_cast<EventStore::ContentHeader*>(content + HIVIEW_BLOCK_SIZE));
-    return DOC_STORE_SUCCESS;
-}
-
-size_t ContentReaderVersion3::GetContentHeaderSize()
-{
-    return sizeof(EventStore::ContentHeader);
 }
 } // HiviewDFX
 } // OHOS

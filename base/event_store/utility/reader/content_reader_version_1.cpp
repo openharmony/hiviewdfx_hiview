@@ -79,7 +79,7 @@ struct ContentHeaderVersion1 {
 }
 
 int ContentReaderVersion1::ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
-    uint64_t& docHeaderSize, std::string& sysVersion)
+    uint64_t& docHeaderSize, HeadExtraInfo& headExtra)
 {
     if (!docStream.is_open()) {
         return DOC_STORE_ERROR_IO;
@@ -97,7 +97,7 @@ int ContentReaderVersion1::ReadDocDetails(std::ifstream& docStream, EventStore::
         return DOC_STORE_ERROR_MEMORY;
     }
     
-    sysVersion = "";  // system version was not stored in doc header in version 1
+    headExtra.sysVersion = "";  // system version was not stored in doc header in version 1
     return DOC_STORE_SUCCESS;
 }
 

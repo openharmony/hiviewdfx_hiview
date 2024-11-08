@@ -24,6 +24,7 @@ namespace HiviewDFX {
 namespace Parameter {
 namespace {
 constexpr char DEFAULT_DES[] = "unknown";
+constexpr char PATCH_VERSION[] = "ro.patchversion";
 }
 std::string GetString(const std::string& key, const std::string& defaultValue)
 {
@@ -182,6 +183,11 @@ int32_t GetRegionCode()
 {
     constexpr int32_t defaultCode = 156;
     return defaultCode;
+}
+
+std::string GetPatchVersionStr()
+{
+    return GetString(PATCH_VERSION, "");
 }
 } // namespace Parameter
 } // namespace HiviewDFX

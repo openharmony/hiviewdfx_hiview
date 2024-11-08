@@ -179,5 +179,20 @@ int ContentReader::AppendSeq(std::shared_ptr<RawData> rawData, int64_t seq)
     }
     return DOC_STORE_SUCCESS;
 }
+
+bool ContentReader::GetDataString(std::ifstream& docStream, std::string& value)
+{
+    uint32_t valueSize = 0;
+    docStream.read(reinterpret_cast<char*>(&valueSize), sizeof(uint32_t));
+    if (valueSize > (MAX_VERSION_LENG + 1) || valueSize == 0) { // end with '\0'
+        HIVIEW_LOGE("version size is invalid, size=%{public}" PRIu32 "", valueSize);
+        return false;
+    }
+
+    char valueStr[valueSize];
+    docStream.read(valueStr, valueSize);
+    value = std::string(valueStr);
+    return true;
+}
 } // HiviewDFX
 } // OHOS

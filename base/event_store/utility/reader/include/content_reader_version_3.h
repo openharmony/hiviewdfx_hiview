@@ -33,7 +33,7 @@ namespace HiviewDFX {
 class ContentReaderVersion3 : public ContentReader {
 public:
     int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header, uint64_t& docHeaderSize,
-        std::string& sysVersion) override;
+        HeadExtraInfo& headExtra) override;
     bool IsValidMagicNum(const uint64_t magicNum) override;
 
 protected:

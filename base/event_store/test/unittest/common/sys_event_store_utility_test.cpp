@@ -40,13 +40,13 @@ const std::string TEST_DB_VERSION3_FILE = "/data/test/TEST_DOMAIN/TEST_VERSION3-
 class ContentReaderVersionTest : public ContentReader {
 public:
     int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
-        uint64_t& docHeaderSize, std::string& sysVersion) override
+        uint64_t& docHeaderSize, HeadExtraInfo& headExtra) override
     {
         if (!docStream.is_open()) {
             return DOC_STORE_ERROR_IO;
         }
         docHeaderSize = 0;
-        sysVersion = "";
+        headExtra.sysVersion = "";
         return DOC_STORE_SUCCESS;
     }
 
@@ -106,9 +106,9 @@ void TestSystemVersionOfDocReader(const std::string& path, bool isVersionEmpty =
 {
     SysEventDocReader reader(path);
     DocHeader header;
-    std::string sysVersion;
-    ASSERT_EQ(reader.ReadHeader(header, sysVersion), DOC_STORE_SUCCESS);
-    ASSERT_EQ(sysVersion.empty(), isVersionEmpty);
+    HeadExtraInfo headExtra;
+    ASSERT_EQ(reader.ReadHeader(header, headExtra), DOC_STORE_SUCCESS);
+    ASSERT_EQ(headExtra.sysVersion.empty(), isVersionEmpty);
 }
 
 void CheckEvent(SysEvent& event)
@@ -207,10 +207,10 @@ HWTEST_F(SysEventStoreUtilityTest, SysEventStoreUtilityTest002, testing::ext::Te
     ASSERT_TRUE(reader->IsValidMagicNum(MAGIC_NUM_VERSION1));
     EventStore::DocHeader header;
     uint64_t docHeaderSize;
-    std::string sysVersion;
-    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, sysVersion);
+    HeadExtraInfo headExtra;
+    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, headExtra);
     ASSERT_EQ(header.version, EventStore::EVENT_DATA_FORMATE_VERSION::VERSION1);
-    ASSERT_EQ(sysVersion.size(), 0);
+    ASSERT_EQ(headExtra.sysVersion.size(), 0);
     dbFileStream.close();
     dbFileStream.open(TEST_DB_VERSION2_FILE, std::ios::binary);
     ASSERT_TRUE(dbFileStream.is_open());
@@ -219,9 +219,9 @@ HWTEST_F(SysEventStoreUtilityTest, SysEventStoreUtilityTest002, testing::ext::Te
     reader = ContentReaderFactory::GetInstance().Get(version);
     ASSERT_NE(reader, nullptr);
     ASSERT_TRUE(reader->IsValidMagicNum(MAGIC_NUM_VERSION2));
-    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, sysVersion);
+    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, headExtra);
     ASSERT_EQ(header.version, EventStore::EVENT_DATA_FORMATE_VERSION::VERSION2);
-    ASSERT_EQ(sysVersion.size(), 0);
+    ASSERT_EQ(headExtra.sysVersion.size(), 0);
     dbFileStream.close();
 }
 
@@ -243,9 +243,10 @@ HWTEST_F(SysEventStoreUtilityTest, SysEventStoreUtilityTest003, testing::ext::Te
     EventStore::DocHeader header;
     uint64_t docHeaderSize = 0;
     std::string sysVersion;
-    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, sysVersion);
+    HeadExtraInfo headExtra;
+    reader->ReadDocDetails(dbFileStream, header, docHeaderSize, headExtra);
     ASSERT_EQ(header.version, EventStore::EVENT_DATA_FORMATE_VERSION::VERSION3);
-    ASSERT_GT(sysVersion.size(), 0);
+    ASSERT_GT(headExtra.sysVersion.size(), 0);
     uint8_t content[TEST_EVENT_SIZE] = {0};
     dbFileStream.seekg(docHeaderSize, std::ios::beg);
     dbFileStream.read(reinterpret_cast<char*>(&content), TEST_EVENT_SIZE);

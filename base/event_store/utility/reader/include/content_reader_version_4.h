@@ -13,26 +13,21 @@
  * limitations under the License.
  */
  
-#ifndef CONTENT_READER_VERSION_2_H
-#define CONTENT_READER_VERSION_2_H
+#ifndef CONTENT_READER_VERSION_4_H
+#define CONTENT_READER_VERSION_4_H
 
 #include <string>
 
-#include "content_reader.h"
+#include "content_reader_version_3.h"
 
 namespace OHOS {
 namespace HiviewDFX {
-#define MAGIC_NUM_VERSION2 0x894556454E541a0a
-class ContentReaderVersion2 : public ContentReader {
+
+class ContentReaderVersion4 : public ContentReaderVersion3 {
 public:
     int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header, uint64_t& docHeaderSize,
         HeadExtraInfo& headExtra) override;
-    bool IsValidMagicNum(const uint64_t magicNum) override;
-
-protected:
-    virtual int GetContentHeader(uint8_t* content, EventStore::ContentHeader& header) override;
-    virtual size_t GetContentHeaderSize() override;
 };
 } // HiviewDFX
 } // OHOS
-#endif // CONTENT_READER_VERSION_2_H
+#endif // CONTENT_READER_VERSION_4_H

@@ -36,6 +36,7 @@ ohos_source_set("event_store_utility_source") {
     "reader/content_reader_version_1.cpp",
     "reader/content_reader_version_2.cpp",
     "reader/content_reader_version_3.cpp",
+    "reader/content_reader_version_4.cpp",
     "reader/sys_event_doc_reader.cpp",
     "writer/sys_event_doc_writer.cpp",
   ]
