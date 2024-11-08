@@ -20,9 +20,11 @@
 #include <memory>
 #include <set>
 
+#include "faultlogger_client.h"
 #include "hisysevent.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
+#include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
@@ -187,6 +189,23 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     }
 
     int32_t pid = sysEvent->GetEventIntValue("PID");
+    if (sysEvent->eventName_ == "CPP_CRASH_EXCEPTION" &&
+        sysEvent->GetEventIntValue("ERROR_CODE") == 206) { // 206: error code
+        FaultLogInfoInner info;
+        info.time = sysEvent->GetEventUintValue("HAPPEN_TIME");
+        info.id = sysEvent->GetUid();
+        info.pid = sysEvent->GetPid();
+        info.faultLogType = CPP_CRASH;
+        info.module = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("PROCESS_NAME"));
+        auto msg = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("ERROR_MSG"));
+        auto pos = msg.find_first_of("\n");
+        if (pos < msg.size() - 1) {
+            info.reason = msg.substr(0, pos);
+            msg = msg.substr(pos + 1);
+        }
+        info.summary = msg;
+        AddFaultLog(info);
+    }
     AddEventToMap(pid, sysEvent);
     if (sysEvent->eventName_ == "PROCESS_EXIT") {
         workLoop_->AddTimerEvent(nullptr, nullptr, [this, pid] {
