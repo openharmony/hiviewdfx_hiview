@@ -160,13 +160,13 @@ int SysEventDocReader::ReadHeader(DocHeader& header)
         HIVIEW_LOGE("reader is nullptr, version:%{public}d", dataFmtVersion_);
         return DOC_STORE_ERROR_IO;
     }
-    return reader->ReadDocDetails(in_, header, docHeaderSize_, sysVersion_);
+    return reader->ReadDocDetails(in_, header, docHeaderSize_, headExtra_);
 }
 
-int SysEventDocReader::ReadHeader(DocHeader& header, std::string& sysVersion)
+int SysEventDocReader::ReadHeader(DocHeader& header, HeadExtraInfo& headExtra)
 {
     ReadHeader(header);
-    sysVersion = sysVersion_;
+    headExtra = headExtra_;
     return DOC_STORE_SUCCESS;
 }
 
@@ -319,7 +319,7 @@ void SysEventDocReader::TryToAddEntry(uint8_t* content, uint32_t contentSize, co
     }
     // add to entry queue
     num++;
-    entries.emplace(info_.seq, info_.timestamp, rawData, sysVersion_);
+    entries.emplace(info_.seq, info_.timestamp, rawData, headExtra_.sysVersion, headExtra_.patchVersion);
 }
 
 bool SysEventDocReader::CheckEventInfo(uint8_t* content)

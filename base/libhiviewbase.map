@@ -294,6 +294,7 @@
         "OHOS::HiviewDFX::TraceFlowController::HasCallOnceToday(int, unsigned long)";
         "OHOS::HiviewDFX::TraceFlowController::TraceFlowController()";
         "OHOS::HiviewDFX::SysEvent::GetSysVersion()";
+        "OHOS::HiviewDFX::SysEvent::GetPatchVersion()";
         "OHOS::HiviewDFX::SysEvent::SysEvent(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, OHOS::HiviewDFX::PipelineEventProducer*, std::__h::shared_ptr<OHOS::HiviewDFX::EventRaw::RawData>, long long, std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::EventRaw::RawDataEncoder::EncodedTag(unsigned char)";
         "OHOS::HiviewDFX::EventRaw::RawData::Append(unsigned char*, unsigned long)";

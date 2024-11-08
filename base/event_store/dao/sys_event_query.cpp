@@ -506,7 +506,7 @@ ResultSet SysEventQuery::Execute(int limit, DbQueryTag tag, QueryProcessInfo cal
     }
     while (!entries.empty() && resultNum >= 0) {
         auto& entry = entries.top();
-        resultSet.eventRecords_.emplace_back("", nullptr, entry.data, entry.id, entry.sysVersion);
+        resultSet.eventRecords_.emplace_back("", nullptr, entry.data, entry.id, entry.sysVersion, entry.patchVersion);
         entries.pop();
         resultNum--;
     }

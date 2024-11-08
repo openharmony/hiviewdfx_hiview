@@ -54,6 +54,7 @@ constexpr char H_MODEL_KEY[] = "MODEL";
 constexpr char H_CATEGORY_KEY[] = "CATEGORY";
 constexpr char H_SYSTEM_KEY[] = "SYSTEM";
 constexpr char H_OHOS_VER_KEY[] = "OHOS_VER";
+constexpr char H_PATCH_VER_KEY[] = "PATCH_VER";
 constexpr char DOMAINS_KEY[] = "DOMAINS";
 constexpr char DOMAIN_INFO_KEY[] = "DOMAIN_INFO";
 constexpr char EVENTS_KEY[] = "EVENTS";
@@ -116,19 +117,20 @@ cJSON* CreateDeviceJsonObj()
     return device;
 }
 
-cJSON* CreateSystemObj(const std::string& sysVersion)
+cJSON* CreateSystemObj(const EventVersion& eventVersion)
 {
     cJSON* system = cJSON_CreateObject();
     if (system == nullptr) {
         HIVIEW_LOGE("failed to create system json object");
         return nullptr;
     }
-    cJSON_AddStringToObject(system, H_VERSION_KEY, sysVersion.c_str());
+    cJSON_AddStringToObject(system, H_VERSION_KEY, eventVersion.systemVersion.c_str());
     cJSON_AddStringToObject(system, H_OHOS_VER_KEY, Parameter::GetSysVersionDetailsStr().c_str());
+    cJSON_AddStringToObject(system, H_PATCH_VER_KEY, eventVersion.patchVersion.c_str());
     return system;
 }
 
-cJSON* CreateJsonObjectByVersion(const std::string& sysVersion)
+cJSON* CreateJsonObjectByVersion(const EventVersion& eventVersion)
 {
     cJSON* root = cJSON_CreateObject();
     if (root == nullptr) {
@@ -149,7 +151,7 @@ cJSON* CreateJsonObjectByVersion(const std::string& sysVersion)
     if (deviceObj != nullptr) {
         cJSON_AddItemToObjectCS(root, H_DEVICE_KEY, deviceObj);
     }
-    auto systemObj = CreateSystemObj(sysVersion);
+    auto systemObj = CreateSystemObj(eventVersion);
     if (systemObj != nullptr) {
         cJSON_AddItemToObjectCS(root, H_SYSTEM_KEY, systemObj);
     }
@@ -188,7 +190,7 @@ cJSON* CreateEventsJsonArray(const std::string& domain,
     return eventsJsonArray;
 }
 
-std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::string& version)
+std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const EventVersion& version)
 {
     auto& context = HiviewGlobal::GetInstance();
     if (context == nullptr) {
@@ -198,7 +200,7 @@ std::string GetHiSysEventJsonTempDir(const std::string& moduleName, const std::s
     tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(SYSEVENT_EXPORT_DIR));
     tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(SYSEVENT_EXPORT_TMP_DIR));
     tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(moduleName));
-    tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(version));
+    tmpDir = FileUtil::IncludeTrailingPathDelimiter(tmpDir.append(version.systemVersion));
     if (!FileUtil::IsDirectory(tmpDir) && !FileUtil::ForceCreateDirectory(tmpDir)) {
         HIVIEW_LOGE("failed to init directory %{public}s.", tmpDir.c_str());
         return "";
@@ -233,12 +235,12 @@ void AppendZipFile(std::string& dir)
 }
 
 std::string GetTmpZipFile(const std::string& baseDir, const std::string& moduleName,
-    const std::string& version)
+    const EventVersion& version)
 {
     std::string dir = FileUtil::IncludeTrailingPathDelimiter(baseDir);
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(SYSEVENT_EXPORT_TMP_DIR));
     dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(moduleName));
-    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(version));
+    dir = FileUtil::IncludeTrailingPathDelimiter(dir.append(version.systemVersion));
     if (!FileUtil::IsDirectory(dir) && !FileUtil::ForceCreateDirectory(dir)) {
         HIVIEW_LOGE("failed to init directory %{public}s.", dir.c_str());
         return "";
@@ -342,7 +344,7 @@ bool ExportJsonFileWriter::Write()
     return true;
 }
 
-ExportJsonFileWriter::ExportJsonFileWriter(const std::string& moduleName, const std::string& eventVersion,
+ExportJsonFileWriter::ExportJsonFileWriter(const std::string& moduleName, const EventVersion& eventVersion,
     const std::string& exportDir, int64_t maxFileSize)
 {
     moduleName_ = moduleName;
