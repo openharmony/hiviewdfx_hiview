@@ -45,5 +45,21 @@ void UcAppStateObserver::OnProcessDied(const ProcessData& processData)
 {
     HIVIEW_LOGD("process=%{public}d died", processData.pid);
 }
+
+void UcAppStateObserver::OnWindowShow(const AppExecFwk::ProcessData& processData)
+{
+#if PC_APP_STATE_COLLECT_ENABLE
+    HIVIEW_LOGD("pid=%{public}d, show", processData.pid);
+    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, FOREGROUND);
+#endif
+}
+
+void UcAppStateObserver::OnWindowHidden(const AppExecFwk::ProcessData& processData)
+{
+#if PC_APP_STATE_COLLECT_ENABLE
+    HIVIEW_LOGD("pid=%{public}d, hidden", processData.pid);
+    ProcessStatus::GetInstance().NotifyProcessState(processData.pid, BACKGROUND);
+#endif
+}
 }  // namespace HiviewDFX
 }  // namespace OHOS
