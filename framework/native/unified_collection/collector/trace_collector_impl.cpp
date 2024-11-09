@@ -20,7 +20,6 @@
 #include <mutex>
 
 #include "hiview_logger.h"
-#include "parameter_ex.h"
 #include "trace_decorator.h"
 #include "trace_flow_controller.h"
 #include "trace_manager.h"
@@ -65,7 +64,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::StartDumpTrace(UColl
 {
     HIVIEW_LOGI("trace caller is %{public}s.", EnumToString(caller).c_str());
     CollectResult<std::vector<std::string>> result;
-    if (!Parameter::IsBetaVersion() && !Parameter::IsUCollectionSwitchOn()) {
+    if (OHOS::HiviewDFX::Hitrace::GetTraceMode() != OHOS::HiviewDFX::Hitrace::TraceMode::SERVICE_MODE) {
         result.retCode = UcError::UNSUPPORT;
         HIVIEW_LOGI("hitrace service not permitted to load on current version");
         return result;
