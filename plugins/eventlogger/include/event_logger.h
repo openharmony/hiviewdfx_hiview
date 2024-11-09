@@ -85,6 +85,7 @@ private:
     void CollectMemInfo(int fd, std::shared_ptr<SysEvent> event);
     void SaveDbToFile(const std::shared_ptr<SysEvent>& event);
     std::string StabilityGetTempFreqInfo();
+    void WriteInfoToLog(std::shared_ptr<SysEvent> event, int fd, int jsonFd);
     void StartLogCollect(std::shared_ptr<SysEvent> event);
     int GetFile(std::shared_ptr<SysEvent> event, std::string& logFile, bool isFfrt);
     bool JudgmentRateLimiting(std::shared_ptr<SysEvent> event);
