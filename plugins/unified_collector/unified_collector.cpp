@@ -207,7 +207,7 @@ void OnFreezeDetectorParamChanged(const char* key, const char* value, void* cont
         return;
     }
     if (strncmp(key, KEY_FREEZE_DETECTOR_STATE, strlen(KEY_FREEZE_DETECTOR_STATE)) != 0) {
-        HIVIEW_LOGE("key is not wanted, key: %{public}s", key);
+        HIVIEW_LOGW("key is not wanted, key: %{public}s", key);
         return;
     }
     HIVIEW_LOGI("freeze detector param changed, value: %{public}s", value);
