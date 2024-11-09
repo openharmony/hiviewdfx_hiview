@@ -57,6 +57,7 @@ const std::string HIVIEW_UCOLLECTION_STATE_FALSE = "false";
 const std::string DEVELOP_TRACE_RECORDER_TRUE = "true";
 const std::string DEVELOP_TRACE_RECORDER_FALSE = "false";
 const std::string HIVIEW_UCOLLECTION_TEST_APP_TRACE_STATE_TRUE = "true";
+constexpr char KEY_FREEZE_DETECTOR_STATE[] = "persist.hiview.freeze_detector";
 
 const int8_t STATE_COUNT = 2;
 const int8_t COML_STATE = 0;
@@ -113,16 +114,8 @@ void InitDynamicTrace()
     HIVIEW_LOGI("add ucollection test app trace param watcher ret: %{public}d", ret);
 }
 
-void OnHiViewTraceRecorderChanged(const char* key, const char* value, void* context)
+void OnHiViewTraceRecorderChanged(const char* key, const char* value)
 {
-    if (key == nullptr || value == nullptr) {
-        return;
-    }
-
-    if (!(std::string(DEVELOP_HIVIEW_TRACE_RECORDER) == key)) {
-        return;
-    }
-
     bool isBetaVersion = Parameter::IsBetaVersion();
     bool isUCollectionSwitchOn = Parameter::IsUCollectionSwitchOn();
     bool isTraceCollectionSwitchOn = std::string(DEVELOP_TRACE_RECORDER_TRUE) == value;
@@ -164,8 +157,6 @@ void ExitHitraceService()
 
 void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* context)
 {
-    OnHiViewTraceRecorderChanged(key, value, context);
-    HIVIEW_LOGI("record trace state changed, ret: %{public}s", value);
     if (key == nullptr || value == nullptr) {
         HIVIEW_LOGE("record trace switch input ptr null");
         return;
@@ -174,6 +165,8 @@ void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* c
         HIVIEW_LOGE("record trace switch param key error");
         return;
     }
+    HIVIEW_LOGI("record trace state changed, value: %{public}s", value);
+    OnHiViewTraceRecorderChanged(key, value);
 
     if (UnifiedCollector::IsEnableRecordTrace() == false && strncmp(value, "true", strlen("true")) == 0) {
         UnifiedCollector::SetRecordTraceStatus(true);
@@ -200,8 +193,31 @@ void OnSwitchRecordTraceStateChanged(const char* key, const char* value, void* c
         if (resultCloseTrace != 0) {
             HIVIEW_LOGE("failed to stop trace service");
         }
-        if (Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn()) {
+        if (Parameter::IsBetaVersion() || Parameter::IsUCollectionSwitchOn()
+            || Parameter::GetBoolean(KEY_FREEZE_DETECTOR_STATE, false)) {
             LoadHitraceService();
+        }
+    }
+}
+
+void OnFreezeDetectorParamChanged(const char* key, const char* value, void* context)
+{
+    if (key == nullptr || value == nullptr) {
+        HIVIEW_LOGW("key or value is null");
+        return;
+    }
+    if (strncmp(key, KEY_FREEZE_DETECTOR_STATE, strlen(KEY_FREEZE_DETECTOR_STATE)) != 0) {
+        HIVIEW_LOGW("key is not wanted, key: %{public}s", key);
+        return;
+    }
+    HIVIEW_LOGI("freeze detector param changed, value: %{public}s", value);
+    if (strncmp(value, "true", strlen("true")) == 0) {
+        LoadHitraceService();
+    } else {
+        if (Parameter::IsUCollectionSwitchOn() || Parameter::IsTraceCollectionSwitchOn()) {
+            HIVIEW_LOGI("in remote mode or trace recording, no need to close trace");
+        } else {
+            ExitHitraceService();
         }
     }
 }
@@ -321,8 +337,10 @@ void UnifiedCollector::Init()
         RunCpuCollectionTask();
     }
     if (!Parameter::IsBetaVersion()) {
-        int ret = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
-        HIVIEW_LOGI("add ucollection switch param watcher ret: %{public}d", ret);
+        int watchUcollectionRet = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
+        int watchFreezeRet = 
+            Parameter::WatchParamChange(KEY_FREEZE_DETECTOR_STATE, OnFreezeDetectorParamChanged, nullptr);
+        HIVIEW_LOGI("watchUcollectionRet:%{public}d, watchFreezeRet:%{public}d", watchUcollectionRet, watchFreezeRet);
     }
     UcObserverManager::GetInstance().RegisterObservers();
 
