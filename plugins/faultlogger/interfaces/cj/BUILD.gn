@@ -17,6 +17,7 @@ ohos_shared_library("cj_faultlogger_ffi") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
 
@@ -24,9 +25,6 @@ ohos_shared_library("cj_faultlogger_ffi") {
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits/include",
     "$hiview_plugin/faultlogger/interfaces/cpp/innerkits/impl",
     "$hiview_base/include",
-    "$hiview_base/event_raw/include/encoded",
-    "$hiview_base/event_raw/include/decoded",
-    "$hiview_base/event_raw/include/base",
   ]
 
   sources = [ "faultlogger_ffi.cpp" ]
@@ -37,11 +35,8 @@ ohos_shared_library("cj_faultlogger_ffi") {
   }
 
   deps = [
-    "$hiview_base/event_raw:hiview_event_raw_base",
-    "$hiview_base/event_raw:hiview_event_raw_decode",
-    "$hiview_base/event_raw:hiview_event_raw_encode",
     "$hiview_base/utility:hiview_utility",
-    "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl",
+    "$hiview_plugin/faultlogger/interfaces/cpp/innerkits:faultlogger_client_impl_with_cfi",
   ]
   external_deps = [
     "hilog:libhilog",
