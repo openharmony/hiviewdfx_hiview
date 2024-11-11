@@ -97,7 +97,7 @@ void WriteGwpAsanLog(char* buf, size_t sz)
         g_asanlog.str("");
     } else if (asanOutput) {
         std::string asanlog = g_asanlog.str();
-        std::string errType = GetErrorTypeFromAsanLog(asanlog);
+        std::string errType = "ASAN_" + GetErrorTypeFromAsanLog(asanlog);
         ReadGwpAsanRecord(asanlog, errType);
         // clear buffer
         g_asanlog.str("");
