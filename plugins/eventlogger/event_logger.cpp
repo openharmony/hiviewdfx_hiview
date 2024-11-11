@@ -78,6 +78,7 @@ namespace {
     static constexpr const char* const DOMAIN_LONGPRESS = "KERNEL_VENDOR";
     static constexpr const char* const STRINGID_LONGPRESS = "COM_LONG_PRESS";
     static constexpr const char* const LONGPRESS_LEVEL = "CRITICAL";
+    static constexpr const char* const EXPECTION_FLAG = "notifyAppFault exception";
     static constexpr const char* const MONITOR_STACK_FLIE_NAME[] = {
         "jsstack",
     };
@@ -294,22 +295,8 @@ std::string EventLogger::StabilityGetTempFreqInfo()
     return tempInfo;
 }
 
-void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
+void EventLogger::WriteInfoToLog(std::shared_ptr<SysEvent> event, int fd, int jsonFd)
 {
-    std::string logFile;
-    int fd = GetFile(event, logFile, false);
-    if (fd < 0) {
-        HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
-        return;
-    }
-
-    int jsonFd = -1;
-    if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
-        std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
-            event->GetEventIntValue("UID"), event->happenTime_);
-        jsonFd = FreezeJsonUtil::GetFd(jsonFilePath);
-    }
-
     auto start = TimeUtil::GetMilliseconds();
     WriteStartTime(fd, start);
     WriteCommonHead(fd, event);
@@ -326,6 +313,9 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     std::string cmdStr = event->GetValue("eventLog_action");
     std::vector<std::string> cmdList;
     StringUtil::SplitStr(cmdStr, ",", cmdList);
+    if (event->GetEventValue("MSG").find(EXPECTION_FLAG) != std::string::npos) {
+        logTask->AddLog("S");
+    }
     for (const std::string& cmd : cmdList) {
         logTask->AddLog(cmd);
     }
@@ -338,6 +328,25 @@ void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
     FileUtil::SaveStringToFd(fd, StabilityGetTempFreqInfo());
     auto end = TimeUtil::GetMilliseconds();
     FileUtil::SaveStringToFd(fd, "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n");
+}
+
+void EventLogger::StartLogCollect(std::shared_ptr<SysEvent> event)
+{
+    std::string logFile;
+    int fd = GetFile(event, logFile, false);
+    if (fd < 0) {
+        HIVIEW_LOGE("create log file %{public}s failed, %{public}d", logFile.c_str(), fd);
+        return;
+    }
+
+    int jsonFd = -1;
+    if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
+        std::string jsonFilePath = FreezeJsonUtil::GetFilePath(event->GetEventIntValue("PID"),
+            event->GetEventIntValue("UID"), event->happenTime_);
+        jsonFd = FreezeJsonUtil::GetFd(jsonFilePath);
+    }
+
+    WriteInfoToLog(event, fd, jsonFd);
     close(fd);
     if (jsonFd >= 0) {
         close(jsonFd);

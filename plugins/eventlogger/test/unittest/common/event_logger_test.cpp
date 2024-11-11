@@ -384,6 +384,9 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_StartLogCollect_001, TestSize.Level3)
     sysEvent->eventName_ = "THREAD_BLOCK_6S";
     eventLogger->StartLogCollect(sysEvent);
     EXPECT_TRUE(sysEvent != nullptr);
+    sysEvent->SetEventValue("MSG", "Test\nnotifyAppFault exception\n");
+    eventLogger->StartLogCollect(sysEvent);
+    EXPECT_TRUE(sysEvent != nullptr);
 }
 
 /**
