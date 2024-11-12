@@ -238,11 +238,11 @@ bool SysEventSource::CheckEvent(std::shared_ptr<Event> event)
         sysEventStat_->AccumulateEvent(false);
         return false;
     }
-    EventStore::SysEventDao::CheckRepeat(sysEvent);
     if (!IsValidSysEvent(sysEvent)) {
         sysEventStat_->AccumulateEvent(sysEvent->domain_, sysEvent->eventName_, false);
         return false;
     }
+    EventStore::SysEventDao::CheckRepeat(sysEvent);
     if (FocusedEventUtil::IsFocusedEvent(sysEvent->domain_, sysEvent->eventName_)) {
         HIVIEW_LOGI("event[%{public}s|%{public}s|%{public}" PRIu64 "] is valid.",
             sysEvent->domain_.c_str(), sysEvent->eventName_.c_str(), event->happenTime_);
