@@ -292,7 +292,7 @@ void Faultlogger::AddPublicInfo(FaultLogInfo &info)
     if (info.reason.empty()) {
         info.reason = info.sectionMap["REASON"];
     } else {
-        info.sectionMap["REASON"] = info.reason;
+        info.sectionMap["REASON"] = GetSanitizerReason(info.faultLogType, info.reason);
     }
 
     if (info.summary.empty()) {
@@ -618,6 +618,17 @@ void Faultlogger::ReportJsErrorToAppEvent(std::shared_ptr<SysEvent> sysEvent) co
 #endif
 }
 
+std::string Faultlogger::GetSanitizerReason(const int32_t faultLogType, const std::string &reason) const
+{
+    const std::string prefix = "ASAN_";
+    const size_t pos = reason.find(prefix);
+    if (faultLogType != FaultLogType::ADDR_SANITIZER || pos == std::string::npos ||
+        pos + prefix.length() >= reason.length()) {
+            return reason;
+    }
+    return reason.substr(pos + prefix.length());
+}
+
 void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) const
 {
     std::string summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
@@ -625,7 +636,8 @@ void Faultlogger::ReportSanitizerToAppEvent(std::shared_ptr<SysEvent> sysEvent) 
 
     Json::Value params;
     params["time"] = sysEvent->happenTime_;
-    params["type"] = sysEvent->GetEventValue("REASON");
+    std::string reason = sysEvent->GetEventValue("REASON");
+    params["type"] = GetSanitizerReason(FaultLogType::ADDR_SANITIZER, reason);
     Json::Value externalLog(Json::arrayValue);
     std::string logPath = sysEvent->GetEventValue("LOG_PATH");
     if (!logPath.empty()) {
