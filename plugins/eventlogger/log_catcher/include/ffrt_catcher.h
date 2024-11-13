@@ -27,7 +27,7 @@ public:
     bool Initialize(const std::string& strParam1, int intParam1, int intParam2) override;
     int Catch(int fd, int jsonFd) override;
 private:
-    int pid_;
+    int pid_ = -1;
 };
 } // namespace HiviewDFX
 } // namespace OHOS
