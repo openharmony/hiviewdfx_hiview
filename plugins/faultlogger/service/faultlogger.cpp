@@ -739,11 +739,13 @@ void Faultlogger::FaultlogLimit(const std::string &logPath, int32_t faultType) c
             readContent.resize(pos);
             modified = true;
         }
-        // The CppCrash file size is limited to 512 KB after reporting CppCrash to AppEvent
-        constexpr size_t maxLogSize = 512 * 1024;
-        if (readContent.length() > maxLogSize) {
+        // The CppCrash file size is limited to 1 MB after reporting CppCrash to AppEvent
+        constexpr size_t maxLogSize = 1024 * 1024;
+        auto fileLen = readContent.length();
+        if (fileLen > maxLogSize) {
             readContent.resize(maxLogSize);
-            readContent += "\ncpp crash log is limit output.\n";
+            readContent += "\nThe cpp crash log length is " + std::to_string(fileLen) +
+                ", which exceeesd the limit of " + std::to_string(maxLogSize) + " and is truncated.\n";
             modified = true;
         }
     } else if (faultType == FaultLogType::APP_FREEZE) {
