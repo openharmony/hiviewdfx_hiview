@@ -43,6 +43,11 @@ struct EventInfo {
 };
 using EventInfo = struct EventInfo;
 
+struct HeadExtraInfo {
+    std::string sysVersion;
+    std::string patchVersion;
+};
+
 class ContentReader {
 public:
     virtual ~ContentReader() {};
@@ -51,7 +56,7 @@ public:
     static uint8_t ReadFmtVersion(std::ifstream& docStream);
     std::shared_ptr<RawData> ReadRawData(const EventInfo& eventInfo, uint8_t* content, uint32_t contentSize);
     virtual int ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
-        uint64_t& docHeaderSize, std::string& sysVersion) = 0;
+        uint64_t& docHeaderSize, HeadExtraInfo& headExtra) = 0;
     virtual bool IsValidMagicNum(const uint64_t magicNum) = 0;
 
 protected:
@@ -65,6 +70,7 @@ protected:
     int AppendTag(std::shared_ptr<RawData> rawData, const std::string& tag);
     int AppendLevel(std::shared_ptr<RawData> rawData, const std::string& level);
     int AppendSeq(std::shared_ptr<RawData> rawData, int64_t seq);
+    bool GetDataString(std::ifstream& docStream, std::string& value);
 };
 } // HiviewDFX
 } // OHOS

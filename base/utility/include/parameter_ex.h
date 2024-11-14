@@ -54,6 +54,7 @@ std::string GetProductModelStr();
 std::string GetSysVersionDetailsStr();
 std::string GetVersionStr();
 int32_t GetRegionCode();
+std::string GetPatchVersionStr();
 };
 } // namespace HiviewDFX
 } // namespace OHOS

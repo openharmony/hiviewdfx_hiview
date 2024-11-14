@@ -29,7 +29,7 @@ namespace OHOS {
 namespace HiviewDFX {
 struct CachedEvent {
     // event version
-    std::string version;
+    EventVersion version;
 
     // event domain
     std::string domain;
@@ -40,7 +40,7 @@ struct CachedEvent {
     // event json string
     std::string eventStr;
 
-    CachedEvent(std::string& version, std::string& domain, std::string& name, std::string& eventStr)
+    CachedEvent(EventVersion& version, std::string& domain, std::string& name, std::string& eventStr)
         : version(version), domain(domain), name(name), eventStr(eventStr) {}
 };
 
@@ -71,14 +71,14 @@ public:
     bool HandleRequest(RequestPtr req) override;
 
 private:
-    std::shared_ptr<ExportJsonFileWriter> GetEventWriter(const std::string& sysVersion,
+    std::shared_ptr<ExportJsonFileWriter> GetEventWriter(const EventVersion& eventVersion,
         std::shared_ptr<EventWriteRequest> writeReq);
     void CopyTmpZipFilesToDest();
     void Rollback();
 
 private:
-    // <key: <module name, system version>, value: writer>
-    std::map<std::pair<std::string, std::string>, std::shared_ptr<ExportJsonFileWriter>> allJsonFileWriters_;
+    // <key: <module name, event version>, value: writer>
+    std::map<std::pair<std::string, EventVersion>, std::shared_ptr<ExportJsonFileWriter>> allJsonFileWriters_;
     // <tmpZipFilePath, destZipFilePath>
     std::unordered_map<std::string, std::string> zippedExportFileMap_;
 };

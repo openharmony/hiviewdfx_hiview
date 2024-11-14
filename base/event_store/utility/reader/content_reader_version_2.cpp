@@ -82,7 +82,7 @@ struct ContentHeaderVersion2 {
 }
 
 int ContentReaderVersion2::ReadDocDetails(std::ifstream& docStream, EventStore::DocHeader& header,
-    uint64_t& docHeaderSize, std::string& sysVersion)
+    uint64_t& docHeaderSize, HeadExtraInfo& headExtra)
 {
     if (!docStream.is_open()) {
         return DOC_STORE_ERROR_IO;
@@ -99,7 +99,7 @@ int ContentReaderVersion2::ReadDocDetails(std::ifstream& docStream, EventStore::
         HIVIEW_LOGE("failed to copy tag to doc header");
         return DOC_STORE_ERROR_MEMORY;
     }
-    sysVersion = "";  // system version was not stored in doc header with version 2
+    headExtra.sysVersion = "";  // system version was not stored in doc header with version 2
     return DOC_STORE_SUCCESS;
 }
 

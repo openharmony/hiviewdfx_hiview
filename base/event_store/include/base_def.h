@@ -64,7 +64,8 @@ enum EVENT_DATA_FORMATE_VERSION {
     VERSION1 = 0x1,
     VERSION2 = 0x2,    // add log label into event header
     VERSION3 = 0x3,    // remove crc and append system version into file header
-    CURRENT = VERSION3,
+    VERSION4 = 0x4,    // append patch version into file header
+    CURRENT = VERSION4,
 };
 
 #pragma pack(1)

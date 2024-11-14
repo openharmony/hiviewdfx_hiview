@@ -27,9 +27,22 @@
 
 namespace OHOS {
 namespace HiviewDFX {
+struct EventVersion {
+    // system version
+    std::string systemVersion;
+
+    // patch version
+    std::string patchVersion;
+
+    bool operator<(const EventVersion& other) const
+    {
+        return systemVersion < other.systemVersion && patchVersion < other.patchVersion;
+    }
+};
+
 class ExportJsonFileWriter {
 public:
-    ExportJsonFileWriter(const std::string& moduleName, const std::string& eventVersion, const std::string& exportDir,
+    ExportJsonFileWriter(const std::string& moduleName, const EventVersion& eventVersion, const std::string& exportDir,
         int64_t maxFileSize);
 
 public:
@@ -44,7 +57,7 @@ public:
 
 private:
     std::string moduleName_;
-    std::string eventVersion_;
+    EventVersion eventVersion_;
     std::string exportDir_;
     int64_t maxFileSize_ = 0;
     int64_t totalJsonStrSize_ = 0;
