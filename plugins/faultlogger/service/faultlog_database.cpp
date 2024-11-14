@@ -61,7 +61,7 @@ bool ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, Fault
 
     info.id = sysEvent->GetEventIntValue("UID") != DEFAULT_INT_VALUE ?
               sysEvent->GetEventIntValue("UID") : sysEvent->GetEventIntValue("uid_");
-    info.faultLogType = std::atoi(sysEvent->GetEventValue("FAULT_TYPE").c_str());
+    info.faultLogType = static_cast<int32_t>(std::stoi(sysEvent->GetEventValue("FAULT_TYPE").c_str()));
     info.module = sysEvent->GetEventValue("MODULE");
     info.reason = sysEvent->GetEventValue("REASON");
     info.summary = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("SUMMARY"));
