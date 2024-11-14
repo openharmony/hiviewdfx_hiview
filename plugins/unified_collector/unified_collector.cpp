@@ -338,7 +338,7 @@ void UnifiedCollector::Init()
     }
     if (!Parameter::IsBetaVersion()) {
         int watchUcollectionRet = Parameter::WatchParamChange(HIVIEW_UCOLLECTION_STATE, OnSwitchStateChanged, this);
-        int watchFreezeRet = 
+        int watchFreezeRet =
             Parameter::WatchParamChange(KEY_FREEZE_DETECTOR_STATE, OnFreezeDetectorParamChanged, nullptr);
         HIVIEW_LOGI("watchUcollectionRet:%{public}d, watchFreezeRet:%{public}d", watchUcollectionRet, watchFreezeRet);
     }
