@@ -21,11 +21,20 @@ napi_value NapiUtil::CreateErrorMessage(napi_env env, std::string msg)
 {
     napi_value result = nullptr;
     napi_value message = nullptr;
-    napi_create_string_utf8(env, msg.c_str(), msg.length(), &message);
+    if (napi_create_string_utf8(env, msg.c_str(), msg.length(), &message) != napi_ok) {
+        HIVIEW_LOGE("failed to create string");
+        return nullptr;
+    }
     napi_value codeValue = nullptr;
     std::string errCode = std::to_string(-1);
-    napi_create_string_utf8(env, errCode.c_str(), errCode.length(), &codeValue);
-    napi_create_error(env, codeValue, message, &result);
+    if (napi_create_string_utf8(env, errCode.c_str(), errCode.length(), &codeValue) != napi_ok) {
+        HIVIEW_LOGE("failed to create string");
+        return nullptr;
+    }
+    if (napi_create_error(env, codeValue, message, &result) != napi_ok) {
+        HIVIEW_LOGE("failed to create error");
+        return nullptr;
+    }
     return result;
 }
 
@@ -39,21 +48,30 @@ napi_value NapiUtil::CreateUndefined(napi_env env)
 void NapiUtil::SetPropertyInt32(napi_env env, napi_value object, std::string name, int32_t value)
 {
     napi_value propertyValue = nullptr;
-    napi_create_int32(env, value, &propertyValue);
+    if (napi_create_int32(env, value, &propertyValue) != napi_ok) {
+        HIVIEW_LOGE("failed to create int32");
+        return;
+    }
     napi_set_named_property(env, object, name.c_str(), propertyValue);
 }
 
 void NapiUtil::SetPropertyInt64(napi_env env, napi_value object, std::string name, int64_t value)
 {
     napi_value propertyValue = nullptr;
-    napi_create_int64(env, value, &propertyValue);
+    if (napi_create_int64(env, value, &propertyValue) != napi_ok) {
+        HIVIEW_LOGE("failed to create int64");
+        return;
+    }
     napi_set_named_property(env, object, name.c_str(), propertyValue);
 }
 
 void NapiUtil::SetPropertyStringUtf8(napi_env env, napi_value object, std::string name, std::string value)
 {
     napi_value propertyValue = nullptr;
-    napi_create_string_utf8(env, value.c_str(), value.length(), &propertyValue);
+    if (napi_create_string_utf8(env, value.c_str(), value.length(), &propertyValue) != napi_ok) {
+        HIVIEW_LOGE("failed to create string");
+        return;
+    }
     napi_set_named_property(env, object, name.c_str(), propertyValue);
 }
 
