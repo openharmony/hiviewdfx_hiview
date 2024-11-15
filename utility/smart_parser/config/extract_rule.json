@@ -184,5 +184,13 @@
             {"namespace":"BasicParam", "matchKey":"timeout: ", "v_timeout":"timeout: (.*)"},
             {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}@{BasicParam.v_tid}@", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
         ]
+    },
+    "Rule18":{
+        "DirOrFile":"/data/log/faultlog/temp/",
+        "Subcatalog":"stacktrace-\\d+-\\d+",
+        "featureId":"64_ADDR_SANITIZER_01",
+        "rules":[
+            {"namespace":"MainCallTrace", "matchKey":"@R@(Tid:){1}\\d+, Name:", "v_trace":"@T@#\\d+ pc [0-9a-zA-Z]+ (.*)"}
+        ]
     }
 }
