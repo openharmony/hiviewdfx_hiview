@@ -37,6 +37,7 @@ constexpr int WAIT_EXIT_MILLS = 100;
 constexpr int FINAL_TIME = 3000;
 constexpr int PREPARE_TIME = 10;
 constexpr int PREPARE_THRESH = 2000;
+constexpr int ONLY_NMD_TYPE = 2;
 
 int MemProfilerCollectorImpl::Prepare()
 {
@@ -83,7 +84,11 @@ int MemProfilerCollectorImpl::StartPrintNmd(int fd, int pid, int type)
         HIVIEW_LOGE("native daemon process not started");
         return RET_FAIL;
     }
-    return NativeMemoryProfilerSaClientManager::GetMallocStats(fd, pid, type);
+    bool printNmdOnly = false;
+    if (type == ONLY_NMD_TYPE) {
+        printNmdOnly = true;
+    }
+    return NativeMemoryProfilerSaClientManager::GetMallocStats(fd, pid, type, printNmdOnly);
 }
 
 int MemProfilerCollectorImpl::Stop(int pid)
