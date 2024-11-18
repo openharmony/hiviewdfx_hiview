@@ -141,6 +141,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_002, TestSize.Level3)
     ret = logTask->StartCompose();
     EXPECT_EQ(ret, 1);
     EXPECT_EQ(logTask->GetLogSize(), 0);
+    logTask->GetThermalInfo(fd);
     close(fd);
 }
 

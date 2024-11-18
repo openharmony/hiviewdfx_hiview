@@ -50,6 +50,8 @@ public:
     bool IsApplicationResult(const FreezeResult& result) const;
     std::set<std::string> GetPrincipalStringIds() const;
     std::shared_ptr<FreezeRuleCluster> GetFreezeRuleCluster() const;
+    static void WriteStartInfoToFd(int fd, const std::string& msg);
+    static void WriteEndInfoToFd(int fd, const std::string& msg);
 
 private:
     std::shared_ptr<FreezeRuleCluster> freezeRuleCluster_;

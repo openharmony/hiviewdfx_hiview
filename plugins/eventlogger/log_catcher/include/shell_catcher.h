@@ -69,6 +69,7 @@ private:
     int CaDoInChildProcesscatcher(int writeFd);
     void DoChildProcess(int writeFd);
     bool ReadShellToFile(int fd, const std::string& cmd);
+    void GetCpuCoreFreqInfo(int fd) const;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

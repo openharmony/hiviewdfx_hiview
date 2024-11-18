@@ -99,6 +99,7 @@ private:
     void SCBWMSEVTCapture();
     void DumpAppMapCapture();
     void InputHilogCapture();
+    void GetThermalInfo(int fd);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

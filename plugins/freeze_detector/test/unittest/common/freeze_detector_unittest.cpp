@@ -698,6 +698,18 @@ HWTEST_F(FreezeDetectorUnittest, FreezeCommon_007, TestSize.Level3)
 }
 
 /**
+ * @tc.name: FreezeCommon_008
+ * @tc.desc: FreezeDetector
+ */
+HWTEST_F(FreezeDetectorUnittest, FreezeCommon_008, TestSize.Level3)
+{
+    auto freezeCommon = std::make_unique<FreezeCommon>();
+    freezeCommon->WriteStartInfoToFd(0, "FreezeCommon_008 test");
+    freezeCommon->WriteEndInfoToFd(0, "FreezeCommon_008 test");
+    ASSERT_TRUE(freezeCommon != nullptr);
+}
+
+/**
  * @tc.name: FreezeWatchPoint_001
  * @tc.desc: FreezeDetector
  */
