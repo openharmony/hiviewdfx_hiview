@@ -18,6 +18,7 @@
 #include "file_util.h"
 #include "hiview_logger.h"
 #include "sys_event_database.h"
+#include "sys_event_sequence_mgr.h"
 
 namespace OHOS::HiviewDFX {
 namespace EventStore {
@@ -112,7 +113,7 @@ bool SysEventBackup::CheckBackupFile()
     FileUtil::RemoveFile(backupTmpFile_);
     FileUtil::RemoveFile(backupBakFile_);
 
-    std::string seqFilePath(SysEventDatabase::GetInstance().GetDatabaseDir() + "event_sequence");
+    std::string seqFilePath(SysEventDatabase::GetInstance().GetDatabaseDir() + SEQ_PERSISTS_FILE_NAME);
     if (FileUtil::FileExists(seqFilePath)) {
         HIVIEW_LOGI("seq id file exists, no need restore.");
         return false;
