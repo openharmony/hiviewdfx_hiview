@@ -25,6 +25,7 @@
 #include "hiview_zip_util.h"
 #include "string_util.h"
 #include "sys_event_dao.h"
+#include "sys_event_sequence_mgr.h"
 #include "sys_event_repeat_guard.h"
 
 namespace OHOS {
@@ -143,7 +144,7 @@ bool SysEventDatabase::Backup(const std::string& zipFilePath)
         HIVIEW_LOGI("no event files exist.");
         return false;
     }
-    std::string seqFilePath(dbDir + "event_sequence");
+    std::string seqFilePath(dbDir + SEQ_PERSISTS_FILE_NAME);
     if (!FileUtil::FileExists(seqFilePath)) {
         HIVIEW_LOGW("seq id file not exist.");
         return false;
@@ -152,6 +153,12 @@ bool SysEventDatabase::Backup(const std::string& zipFilePath)
     HiviewZipUnit zipUnit(zipFilePath);
     if (int32_t ret = zipUnit.AddFileInZip(seqFilePath, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
         HIVIEW_LOGW("zip seq id file failed, ret: %{public}d.", ret);
+        return false;
+    }
+
+    std::string seqBackupFilePath(dbDir + SEQ_PERSISTS_BACKUP_FILE_NAME);
+    if (int32_t ret = zipUnit.AddFileInZip(seqBackupFilePath, ZipFileLevel::KEEP_NONE_PARENT_PATH); ret != 0) {
+        HIVIEW_LOGW("zip seq id backup file failed, ret: %{public}d.", ret);
         return false;
     }
 
@@ -184,7 +191,7 @@ bool SysEventDatabase::Restore(const std::string& zipFilePath, const std::string
         return false;
     }
 
-    std::string seqFilePath(restoreDir + "event_sequence");
+    std::string seqFilePath(restoreDir + SEQ_PERSISTS_FILE_NAME);
     if (!FileUtil::FileExists(seqFilePath)) {
         HIVIEW_LOGW("seq id file not exist in zip file.");
         return false;

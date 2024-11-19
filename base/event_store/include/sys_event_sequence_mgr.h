@@ -21,6 +21,9 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace EventStore {
+constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
+constexpr char SEQ_PERSISTS_BACKUP_FILE_NAME[] = "event_sequence_backup";
+
 class SysEventSequenceManager {
 public:
     static SysEventSequenceManager& GetInstance();

@@ -26,7 +26,6 @@ namespace HiviewDFX {
 namespace EventStore {
 namespace {
 DEFINE_LOG_TAG("HiView-SysEventSeqMgr");
-constexpr char SEQ_PERSISTS_FILE_NAME[] = "event_sequence";
 
 bool SaveStringToFile(const std::string& filePath, const std::string& content)
 {
@@ -43,6 +42,28 @@ bool SaveStringToFile(const std::string& filePath, const std::string& content)
     bool ret = !file.fail();
     file.close();
     return ret;
+}
+
+std::string GetSequenceBackupFile()
+{
+    return EventStore::SysEventDao::GetDatabaseDir() + SEQ_PERSISTS_BACKUP_FILE_NAME;
+}
+
+void WriteEventSeqToFile(int64_t seq, const std::string& file)
+{
+    std::string content(std::to_string(seq));
+    if (!SaveStringToFile(file, content)) {
+        HIVIEW_LOGE("failed to write sequence %{public}s to %{public}s.", content.c_str(), file.c_str());
+    }
+}
+
+void ReadEventSeqFromFile(int64_t& seq, const std::string& file)
+{
+    std::string content;
+    if (!FileUtil::LoadStringFromFile(file, content)) {
+        HIVIEW_LOGE("failed to read sequence value from %{public}s.", file.c_str());
+    }
+    seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
 }
 }
 
@@ -75,23 +96,26 @@ int64_t SysEventSequenceManager::GetSequence()
 
 void SysEventSequenceManager::WriteSeqToFile(int64_t seq)
 {
-    std::string seqFile(GetSequenceFile());
-    std::string content(std::to_string(seq));
-    if (!SaveStringToFile(seqFile, content)) {
-        HIVIEW_LOGE("failed to write sequence %{public}s.", content.c_str());
-    }
+    WriteEventSeqToFile(seq, GetSequenceFile());
+    WriteEventSeqToFile(seq, GetSequenceBackupFile());
 }
 
 void SysEventSequenceManager::ReadSeqFromFile(int64_t& seq)
 {
-    std::string content;
-    std::string seqFile = GetSequenceFile();
-    if (!FileUtil::LoadStringFromFile(seqFile, content)) {
-        HIVIEW_LOGE("failed to read sequence value from %{public}s.", seqFile.c_str());
+    ReadEventSeqFromFile(seq, GetSequenceFile());
+    int64_t seqBackup = 0;
+    ReadEventSeqFromFile(seqBackup, GetSequenceBackupFile());
+    if (seq == seqBackup) {
+        HIVIEW_LOGI("succeed to read event sequence, value is %{public}" PRId64 ".", seq);
         return;
     }
-    seq = static_cast<int64_t>(strtoll(content.c_str(), nullptr, 0));
-    HIVIEW_LOGI("read sequence successful, value is %{public}" PRId64 ".", seq);
+    HIVIEW_LOGW("seq[%{public}" PRId64 "] is different with backup seq[%{public}" PRId64 "].", seq, seqBackup);
+    if (seq > seqBackup) {
+        WriteEventSeqToFile(seq, GetSequenceBackupFile());
+    } else {
+        seq = seqBackup;
+        WriteEventSeqToFile(seq, GetSequenceFile());
+    }
 }
 
 std::string SysEventSequenceManager::GetSequenceFile() const
