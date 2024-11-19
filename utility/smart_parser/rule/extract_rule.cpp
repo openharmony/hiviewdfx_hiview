@@ -29,6 +29,10 @@ DEFINE_LOG_TAG("ExtractRule");
 void ExtractRule::ParseExtractRule(const string& eventType, const string& config, const string& path)
 {
     std::ifstream fin(config, std::ifstream::binary);
+    if (!fin.is_open()) {
+        HIVIEW_LOGW("Failed to open file, path: %{public}s.", config.c_str());
+        return;
+    }
 #ifdef JSONCPP_VERSION_STRING
     Json::CharReaderBuilder builder;
     Json::CharReaderBuilder::strictMode(&builder.settings_);
