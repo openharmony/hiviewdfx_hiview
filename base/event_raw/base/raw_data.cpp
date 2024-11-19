@@ -163,6 +163,10 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
         return false;
     }
     std::lock_guard<std::mutex> lock(mutex_);
+    if (data_ == nullptr) {
+        HIVIEW_LOGE("data_ is null");
+        return false;
+    }
     auto ret = EOK;
     if ((pos + len) > capacity_) {
         size_t expandedSize = (len > EXPAND_BUF_SIZE) ? len : EXPAND_BUF_SIZE;
@@ -177,9 +181,7 @@ bool RawData::Update(uint8_t* data, size_t len, size_t pos)
             return false;
         }
         capacity_ += expandedSize;
-        if (data_ != nullptr) {
-            delete[] data_;
-        }
+        delete[] data_;
         data_ = resizedData;
     }
     // append new data
