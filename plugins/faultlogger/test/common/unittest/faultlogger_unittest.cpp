@@ -46,7 +46,7 @@
 #include "log_analyzer.h"
 #include "sys_event.h"
 #include "sys_event_dao.h"
-#include "zip_helper.h"
+#include "dfx_bundle_util.h"
 
 using namespace testing::ext;
 using namespace OHOS::HiviewDFX;

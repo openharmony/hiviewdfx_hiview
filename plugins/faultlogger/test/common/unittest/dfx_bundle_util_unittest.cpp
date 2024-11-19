@@ -15,19 +15,19 @@
 #include <gtest/gtest.h>
 #include <unistd.h>
 
-#include "zip_helper.h"
+#include "dfx_bundle_util.h"
 
 using namespace testing::ext;
 namespace OHOS {
 namespace HiviewDFX {
-class ZipHeloerUnittest : public testing::Test {};
+class DfxBundleUtilUnittest : public testing::Test {};
 
 /**
  * @tc.name: IsModuleNameValidTest001
  * @tc.desc: Test IsModuleNameValid error branch
  * @tc.type: FUNC
  */
-HWTEST_F(ZipHeloerUnittest, IsModuleNameValidTest001, testing::ext::TestSize.Level1)
+HWTEST_F(DfxBundleUtilUnittest, IsModuleNameValidTest001, testing::ext::TestSize.Level1)
 {
     std::string name;
     auto result = IsModuleNameValid(name);

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "zip_helper.h"
+#include "dfx_bundle_util.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -42,10 +42,10 @@
 #include "parameter_ex.h"
 
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD002D12
+#define LOG_DOMAIN 0xD002D11
 
 #undef LOG_TAG
-#define LOG_TAG "Sanitizer"
+#define LOG_TAG "DfxBundleUtil"
 
 namespace OHOS {
 namespace HiviewDFX {

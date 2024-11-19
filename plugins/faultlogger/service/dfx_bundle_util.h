@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SANITIZERD_ZIPHELPER_H
-#define SANITIZERD_ZIPHELPER_H
+#ifndef DFX_BUNDLE_UTIL_H
+#define DFX_BUNDLE_UTIL_H
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -40,5 +40,5 @@ bool GetDfxBundleInfo(const std::string& bundleName, DfxBundleInfo& bundleInfo);
 } // namespace HiviewDFX
 } // namespace OHOS
 
-#endif // SANITIZERD_ZIPHELPER_H
+#endif // DFX_BUNDLE_UTIL_H
 
