@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,12 +37,9 @@ private:
     std::string GenerateNewestFileName(const std::string& suffix);
     std::string GetLogDir();
     std::string GetLogWroteDestFile(const std::string& content);
-    void ImmediateWrite(bool needPop = false);
 
 private:
-    std::atomic<bool> inWriting = false;
-    std::mutex writingMutex;
-    std::queue<LogWritingTask> logWritingTasks;
+    std::mutex writeMutex_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

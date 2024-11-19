@@ -50,7 +50,6 @@ private:
     // <eventType, <totalFileSize, fileQueue that is normal, fileQueue that is over limit>>
     using ClearFilesMap = std::unordered_map<int, std::tuple<uint64_t, FileQueue, FileQueue>>;
 
-    void InitQuotaMap();
     void UpdateClearMap();
     void ClearCache();
     uint32_t GetMaxFileNum(int type);

@@ -89,7 +89,7 @@ std::shared_ptr<RawData> RawDataBuilder::Build()
         return nullptr;
     }
     // append parameter count
-    int32_t paramCnt = static_cast<int32_t>(allParams_.size());
+    int32_t paramCnt = static_cast<int32_t>(GetParamCnt());
     if (!rawData->Append(reinterpret_cast<uint8_t*>(&paramCnt), sizeof(int32_t))) {
         HIVIEW_LOGE("Parameter count copy failed.");
         return rawData;
@@ -294,6 +294,7 @@ int RawDataBuilder::GetEventType()
 
 size_t RawDataBuilder::GetParamCnt()
 {
+    std::lock_guard<std::mutex> lock(paramsOptMtx_);
     return allParams_.size();
 }
 

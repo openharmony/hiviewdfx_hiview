@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,23 +35,14 @@ char errMsg[BUF_SIZE] = { 0 };
 
 void RunningStatusLogger::Log(const std::string& logInfo)
 {
-    {
-        std::lock_guard<std::mutex> lock(writingMutex);
-        logWritingTasks.emplace(logInfo, [this] (const std::string& logInfo) {
-            std::string destFile = this->GetLogWroteDestFile(logInfo);
-            HIVIEW_LOGD("writing \"%{public}s\" into %{public}s.", logInfo.c_str(), destFile.c_str());
-            if (!FileUtil::SaveStringToFile(destFile, logInfo + "\n", false)) {
-                strerror_r(errno, errMsg, BUF_SIZE);
-                HIVIEW_LOGE("failed to persist log to file, error=%{public}d, msg=%{public}s",
-                    errno, errMsg);
-            }
-            this->ImmediateWrite(true);
-        });
-        if (inWriting.load(std::memory_order_acquire)) {
-            return;
-        }
+    std::lock_guard<std::mutex> lock(writeMutex_);
+    std::string destFile = GetLogWroteDestFile(logInfo);
+    HIVIEW_LOGD("writing \"%{public}s\" into %{public}s.", logInfo.c_str(), destFile.c_str());
+    if (!FileUtil::SaveStringToFile(destFile, logInfo + "\n", false)) {
+        strerror_r(errno, errMsg, BUF_SIZE);
+        HIVIEW_LOGE("failed to persist log to file, error=%{public}d, msg=%{public}s",
+            errno, errMsg);
     }
-    ImmediateWrite();
 }
 
 std::string RunningStatusLogger::FormatTimeStamp(bool simpleMode)
@@ -125,24 +116,6 @@ std::string RunningStatusLogger::GetLogWroteDestFile(const std::string& content)
             errno, errMsg);
     }
     return GenerateNewestFileName(std::string(((index < decimal) ? "_0" : "_")).append(std::to_string(index)));
-}
-
-void RunningStatusLogger::ImmediateWrite(bool needPop)
-{
-    this->inWriting = true;
-    LogWritingTask curTask;
-    {
-        std::lock_guard<std::mutex> lock(writingMutex);
-        if (needPop && !logWritingTasks.empty()) {
-            logWritingTasks.pop();
-        }
-        if (logWritingTasks.empty()) {
-            this->inWriting = false;
-            return;
-        }
-        curTask = logWritingTasks.front();
-    }
-    curTask.second(curTask.first);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

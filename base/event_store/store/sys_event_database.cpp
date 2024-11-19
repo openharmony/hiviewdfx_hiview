@@ -195,11 +195,6 @@ bool SysEventDatabase::Restore(const std::string& zipFilePath, const std::string
 
 void SysEventDatabase::Clear()
 {
-    if (quotaMap_.empty()) {
-        // init the quota for clearing each type of events
-        InitQuotaMap();
-    }
-
     std::unique_lock<std::shared_mutex> lock(mutex_);
     UpdateClearMap();
     if (!clearMap_.empty()) {
@@ -257,16 +252,6 @@ int SysEventDatabase::Query(SysEventQuery& sysEventQuery, EntryQueue& entries)
     return QueryByFiles(sysEventQuery, entries, queryFiles);
 }
 
-void SysEventDatabase::InitQuotaMap()
-{
-    const int eventTypes[] = { 1, 2, 3, 4 }; // for fault, statistic, security and behavior event
-    for (auto eventType : eventTypes) {
-        auto maxSize = EventStoreConfig::GetInstance().GetMaxSize(eventType) * NUM_OF_BYTES_IN_MB;
-        auto maxFileNum = EventStoreConfig::GetInstance().GetMaxFileNum(eventType);
-        quotaMap_.insert({eventType, {maxSize, maxFileNum}});
-    }
-}
-
 void SysEventDatabase::UpdateClearMap()
 {
     // clear the map
@@ -319,18 +304,12 @@ void SysEventDatabase::ClearCache()
 
 uint32_t SysEventDatabase::GetMaxFileNum(int type)
 {
-    if (quotaMap_.empty() || quotaMap_.find(type) == quotaMap_.end()) {
-        return 0;
-    }
-    return quotaMap_.at(type).second;
+    return EventStoreConfig::GetInstance().GetMaxFileNum(type);
 }
 
 uint64_t SysEventDatabase::GetMaxSize(int type)
 {
-    if (quotaMap_.empty() || quotaMap_.find(type) == quotaMap_.end()) {
-        return 0;
-    }
-    return quotaMap_.at(type).first;
+    return EventStoreConfig::GetInstance().GetMaxSize(type) * NUM_OF_BYTES_IN_MB;
 }
 
 void SysEventDatabase::GetQueryFiles(const SysEventQueryArg& queryArg, FileQueue& queryFiles)
