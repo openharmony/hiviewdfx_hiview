@@ -20,6 +20,7 @@
 #include "hiview_platform.h"
 #include "sys_event_backup.h"
 #include "sys_event_dao.h"
+#include "sys_event_sequence_mgr.h"
 
 namespace OHOS::HiviewDFX {
 namespace EventStore {
@@ -85,10 +86,12 @@ HWTEST_F(SysEventBackupTest, SysEventBackupTest002, TestSize.Level1)
     // seq id file not exists
     ASSERT_FALSE(backup.Backup());
 
-    // seq id exists, but no event db files
+    // seq id file exists, but no event db files
     std::string databaseDir(SysEventDao::GetDatabaseDir());
     ASSERT_TRUE(!databaseDir.empty() && FileUtil::FileExists(databaseDir));
-    FileUtil::CreateFile(databaseDir + "event_sequence");
+    FileUtil::CreateFile(databaseDir + SEQ_PERSISTS_FILE_NAME);
+    ASSERT_FALSE(backup.Backup());
+    FileUtil::CreateFile(databaseDir + SEQ_PERSISTS_BACKUP_FILE_NAME);
     ASSERT_FALSE(backup.Backup());
 
     FileUtil::ForceCreateDirectory(databaseDir + "RELIABILITY");
@@ -103,13 +106,15 @@ HWTEST_F(SysEventBackupTest, SysEventBackupTest002, TestSize.Level1)
     ASSERT_FALSE(backup.Restore(RESTORE_DIR));
 
     // backup file exists, but restore dir not exists
-    FileUtil::RemoveFile(databaseDir + "event_sequence");
+    FileUtil::RemoveFile(databaseDir + SEQ_PERSISTS_FILE_NAME);
+    FileUtil::RemoveFile(databaseDir + SEQ_PERSISTS_BACKUP_FILE_NAME);
     ASSERT_FALSE(backup.Restore(RESTORE_DIR));
 
     // backup file and restore dir both exist
     FileUtil::ForceCreateDirectory(RESTORE_DIR);
     ASSERT_TRUE(backup.Restore(RESTORE_DIR));
-    ASSERT_TRUE(FileUtil::FileExists(RESTORE_DIR + "event_sequence"));
+    ASSERT_TRUE(FileUtil::FileExists(RESTORE_DIR + SEQ_PERSISTS_FILE_NAME));
+    ASSERT_TRUE(FileUtil::FileExists(RESTORE_DIR + SEQ_PERSISTS_BACKUP_FILE_NAME));
 }
 }
 }
