@@ -1028,11 +1028,13 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         HIVIEW_LOGI("/proc/%{public}ld/statm : %{public}s", pid, statmLine.c_str());
         statmStream.close();
         std::list<std::string> numStrArr = GetDightStrArr(statmLine);
-        auto it = numStrArr.begin();
-        unsigned long long multiples = 4;
-        vss = multiples * std::stoull(*it);
-        it++;
-        rss = multiples * std::stoull(*it);
+        if (numStrArr.size() > 1) {
+            auto it = numStrArr.begin();
+            unsigned long long multiples = 4;
+            vss = multiples * std::atoll(it->c_str());
+            it++;
+            rss = multiples * std::atoll(it->c_str());
+        }
         HIVIEW_LOGI("GET FreezeJson rss=%{public}llu, vss=%{public}llu.", rss, vss);
     } else {
         HIVIEW_LOGE("Fail to open /proc/%{public}ld/statm", pid);
@@ -1054,13 +1056,8 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         HIVIEW_LOGE("Fail to open /proc/meminfo");
     }
 
-    FreezeJsonMemory freezeJsonMemory = FreezeJsonMemory::Builder()
-        .InitRss(rss)
-        .InitVss(vss)
-        .InitSysFreeMem(sysFreeMem)
-        .InitSysAvailMem(sysAvailMem)
-        .InitSysTotalMem(sysTotalMem)
-        .Build();
+    FreezeJsonMemory freezeJsonMemory = FreezeJsonMemory::Builder().InitRss(rss).InitVss(vss).
+        InitSysFreeMem(sysFreeMem).InitSysAvailMem(sysAvailMem).InitSysTotalMem(sysTotalMem).Build();
     return freezeJsonMemory.JsonStr();
 }
 
