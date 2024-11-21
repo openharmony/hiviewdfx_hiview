@@ -38,7 +38,7 @@ namespace {
     static constexpr const char* const APPFREEZE = "appfreeze";
     static constexpr const char* const SYSFREEZE = "sysfreeze";
     static constexpr const char* const SYSWARNING = "syswarning";
-    static constexpr const char* const FREEZE_DETECTOR_PATH = "/data/log/faultlog/";
+    static constexpr const char* const FREEZE_DETECTOR_PATH = "/data/log/faultlog/freeze/";
     static constexpr const char* const FAULT_LOGGER_PATH = "/data/log/faultlog/faultlogger/";
     static constexpr const char* const COLON = ":";
     static constexpr const char* const EVENT_DOMAIN = "DOMAIN";
