@@ -154,10 +154,6 @@ void ExportDbStorage::QueryExportDetailRecord(const std::string& moduleName, Exp
 
 void ExportDbStorage::InitDbStore(const std::string& dbStoreDir)
 {
-    if (dbStore_ == nullptr) {
-        HIVIEW_LOGE("dbStore_ is null");
-        return;
-    }
     std::string dbStorePath = FileUtil::IncludeTrailingPathDelimiter(dbStoreDir);
     if (!FileUtil::IsDirectory(dbStorePath) && !FileUtil::ForceCreateDirectory(dbStorePath)) {
         HIVIEW_LOGE("failed to create dir=%{public}s.", dbStorePath.c_str());
