@@ -66,7 +66,7 @@
 #include "string_util.h"
 #include "sys_event_dao.h"
 #include "time_util.h"
-#include "zip_helper.h"
+#include "dfx_bundle_util.h"
 #include "freeze_json_generator.h"
 #include "freeze_json_util.h"
 
