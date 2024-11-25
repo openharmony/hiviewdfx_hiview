@@ -125,10 +125,6 @@ bool EventReadHandler::HandleQueryResult(EventStore::ResultSet& resultSet, Query
     EventStore::ResultSet::RecordIter iter;
     while (resultSet.HasNext() && totalQueryCnt > 0) {
         iter = resultSet.Next();
-        // Hide uid for the event with BEHAVIOR type
-        if (iter->GetEventType() == SysEventCreator::EventType::BEHAVIOR) {
-            iter->SetEventValue("uid_", static_cast<uint8_t>(0));
-        }
         auto currentEventStr = iter->AsJsonStr();
         if (currentEventStr.empty()) {
             continue;
