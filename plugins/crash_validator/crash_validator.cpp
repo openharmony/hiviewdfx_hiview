@@ -20,14 +20,17 @@
 #include <memory>
 #include <set>
 
+#include "faultlogger_client.h"
 #include "hisysevent.h"
 #include "hiview_logger.h"
 #include "plugin_factory.h"
+#include "string_util.h"
 #include "time_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 static const int CHECK_TIME = 15;
+static const int CRASH_DUMP_LOCAL_REPORT = 206;
 
 REGISTER(CrashValidator);
 DEFINE_LOG_LABEL(0xD002D11, "HiView-CrashValidator");
@@ -187,6 +190,24 @@ bool CrashValidator::OnEvent(std::shared_ptr<Event>& event)
     }
 
     int32_t pid = sysEvent->GetEventIntValue("PID");
+    if (sysEvent->eventName_ == "CPP_CRASH_EXCEPTION" &&
+        sysEvent->GetEventIntValue("ERROR_CODE") == CRASH_DUMP_LOCAL_REPORT) {
+        FaultLogInfoInner info;
+        info.time = sysEvent->GetEventUintValue("HAPPEN_TIME");
+        info.id = sysEvent->GetEventUintValue("UID");
+        info.pid = pid;
+        info.faultLogType = CPP_CRASH;
+        info.module = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("PROCESS_NAME"));
+        auto msg = StringUtil::UnescapeJsonStringValue(sysEvent->GetEventValue("ERROR_MSG"));
+        auto pos = msg.find_first_of("\n");
+        if (pos < msg.size() - 1) {
+            info.reason = msg.substr(0, pos);
+            msg = msg.substr(pos + 1);
+        }
+        info.summary = msg;
+        AddFaultLog(info);
+        return true;  // report local crash to hiview through it, do not validate CRASH_DUMP_LOCAL_REPORT
+    }
     AddEventToMap(pid, sysEvent);
     if (sysEvent->eventName_ == "PROCESS_EXIT") {
         workLoop_->AddTimerEvent(nullptr, nullptr, [this, pid] {
