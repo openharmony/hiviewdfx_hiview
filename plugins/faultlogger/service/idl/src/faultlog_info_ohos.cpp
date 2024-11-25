@@ -107,7 +107,7 @@ sptr<FaultLogInfoOhos> FaultLogInfoOhos::Unmarshalling(Parcel& parcel)
             }
             ret->sectionMaps[key] = value;
         }
-    } while (false)
+    } while (false);
     return ret;
 }
 }  // namespace hiview
