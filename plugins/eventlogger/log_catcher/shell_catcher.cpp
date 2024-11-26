@@ -18,6 +18,7 @@
 #include <sys/wait.h>
 #include "hiview_logger.h"
 #include "common_utils.h"
+#include "cpu_collector.h"
 #include "log_catcher_utils.h"
 #include "securec.h"
 #include "time_util.h"
@@ -142,6 +143,7 @@ void ShellCatcher::DoChildProcess(int writeFd)
             ret = execl("/system/bin/hidumper", "hidumper", "-s", "WindowManagerService", "-a", "-a", nullptr);
             break;
         case CATCHER_CPU:
+            GetCpuCoreFreqInfo(writeFd);
             ret = execl("/system/bin/hidumper", "hidumper", "--cpuusage", nullptr);
             break;
         case CATCHER_PMS:
@@ -203,6 +205,36 @@ int ShellCatcher::Catch(int fd, int jsonFd)
     ReadShellToFile(fd, catcherCmd_);
     logSize_ = GetFdSize(fd) - originSize;
     return logSize_;
+}
+
+void ShellCatcher::GetCpuCoreFreqInfo(int fd) const
+{
+    std::shared_ptr<UCollectUtil::CpuCollector> collector =
+        UCollectUtil::CpuCollector::Create();
+    CollectResult<SysCpuUsage> resultInfo = collector->CollectSysCpuUsage(true);
+    if (resultInfo.retCode != UCollect::UcError::SUCCESS) {
+        FileUtil::SaveStringToFd(fd, "\n Get each cpu info failed.\n");
+        return;
+    }
+
+    const SysCpuUsage& sysCpuUsage = resultInfo.data;
+    CollectResult<std::vector<CpuFreq>> resultCpuFreq = collector->CollectCpuFrequency();
+    if (resultCpuFreq.retCode != UCollect::UcError::SUCCESS) {
+        FileUtil::SaveStringToFd(fd, "\n Get each cpu freq failed.\n");
+        return;
+    }
+
+    const std::vector<CpuFreq>& cpuFreqs = resultCpuFreq.data;
+    std::string temp = "";
+    for (auto i = 0; i < sysCpuUsage.cpuInfos.size(); i++) {
+        temp = "\n" + sysCpuUsage.cpuInfos[i].cpuId +
+            ", userUsage=" + std::to_string(sysCpuUsage.cpuInfos[i].userUsage) +
+            ", cpuFreq=" + std::to_string(cpuFreqs[i].curFreq) +
+            ", minFreq=" + std::to_string(cpuFreqs[i].minFreq) +
+            ", maxFreq=" + std::to_string(cpuFreqs[i].maxFreq) + "\n";
+        FileUtil::SaveStringToFd(fd, temp);
+        temp = "";
+    }
 }
 } // namespace HiviewDFX
 } // namespace OHOS

@@ -244,10 +244,12 @@ void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
     if (!content.empty()) {
         std::vector<std::string> vec;
         OHOS::SplitStr(content, "\\n", vec);
+        FreezeCommon::WriteStartInfoToFd(fd, "start collect meminfo: ");
         FileUtil::SaveStringToFd(fd, "\nMemoryCatcher --\n");
         for (const std::string& mem : vec) {
             FileUtil::SaveStringToFd(fd, mem + "\n");
         }
+        FreezeCommon::WriteEndInfoToFd(fd, "\nend collect meminfo: ");
     }
 }
 
@@ -325,8 +327,10 @@ void EventLogger::WriteInfoToLog(std::shared_ptr<SysEvent> event, int fd, int js
         HIVIEW_LOGE("capture fail %{public}d", ret);
     }
     CollectMemInfo(fd, event);
+    FreezeCommon::WriteStartInfoToFd(fd, "start collect ctabilityGetTempFreqInfo: ");
     FileUtil::SaveStringToFd(fd, StabilityGetTempFreqInfo());
     auto end = TimeUtil::GetMilliseconds();
+    FreezeCommon::WriteStartInfoToFd(fd, "start collect ctabilityGetTempFreqInfo: ");
     FileUtil::SaveStringToFd(fd, "\n\nCatcher log total time is " + std::to_string(end - start) + "ms\n");
 }
 
