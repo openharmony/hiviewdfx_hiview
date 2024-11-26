@@ -398,7 +398,11 @@ void EventLogTask::Screenshot()
 void EventLogTask::HilogCapture()
 {
     auto capture = std::make_shared<ShellCatcher>();
-    capture->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    if (event_->eventName_ == "SCREEN_ON") {
+        capture->Initialize("hilog -x", ShellCatcher::CATCHER_TAGHILOG, 0);
+    } else {
+        capture->Initialize("hilog -x", ShellCatcher::CATCHER_HILOG, 0);
+    }
     tasks_.push_back(capture);
 }
 
