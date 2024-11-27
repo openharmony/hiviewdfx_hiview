@@ -98,6 +98,8 @@ EventLogTask::EventLogTask(int fd, int jsonFd, std::shared_ptr<SysEvent> event)
         [this] { this->DumpAppMapCapture(); }));
     captureList_.insert(std::pair<std::string, capture>("t:input",
         [this] { this->InputHilogCapture(); }));
+    captureList_.insert(std::pair<std::string, capture>("cmd:remoteS",
+        [this] { this->RemoteStackCapture(); }));
 }
 
 void EventLogTask::AddLog(const std::string &cmd)
@@ -525,6 +527,14 @@ void EventLogTask::GetThermalInfo(int fd)
     int tempNum = static_cast<int>(temp);
     FileUtil::SaveStringToFd(fd, "\n ThermalMgrClient info: " + std::to_string(tempNum) + "\n");
     FreezeCommon::WriteEndInfoToFd(fd, "\nend collect hotInfo: ");
+}
+
+void EventLogTask::RemoteStackCapture()
+{
+    auto capture = std::make_shared<OpenStacktraceCatcher>();
+    int32_t remotePid = event_->GetEventIntValue("REMOTE_PID");
+    capture->Initialize(event_->GetEventValue("PACKAGE_NAME"), remotePid, 0);
+    tasks_.push_back(capture);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

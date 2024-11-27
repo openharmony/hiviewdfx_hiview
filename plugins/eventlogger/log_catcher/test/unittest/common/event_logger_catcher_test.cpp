@@ -187,6 +187,7 @@ HWTEST_F(EventloggerCatcherTest, EventlogTask_003, TestSize.Level3)
     logTask->HitraceCapture();
     logTask->SCBWMSEVTCapture();
     logTask->InputHilogCapture();
+    logTask->RemoteStackCapture();
     logTask->AddLog("Test");
     logTask->AddLog("cmd:w");
     logTask->status_ = EventLogTask::Status::TASK_RUNNING;
