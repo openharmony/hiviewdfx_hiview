@@ -47,6 +47,7 @@ ohos_shared_library("libcrashvalidator") {
   deps = [
     ":crashvalidator_plugin_config",
     "$hiview_base:hiviewbase",
+    "$hiview_plugin/faultlogger:libfaultlogger",
   ]
 
   external_deps = [
