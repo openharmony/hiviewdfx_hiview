@@ -356,8 +356,9 @@ void LimitCppCrashLog(int32_t fd, int32_t logType)
     if ((fd < 0) || (logType != FaultLogType::CPP_CRASH) || !IsFaultLogLimit()) {
         return;
     }
-    constexpr int maxLogSize = 512 * 1024;
-    off_t  endPos = lseek(fd, 0, SEEK_END);
+    // The CppCrash file size is limited to 1 MB before reporting CppCrash to AppEvent
+    constexpr int maxLogSize = 1 * 1024 * 1024;
+    off_t endPos = lseek(fd, 0, SEEK_END);
     if ((endPos == -1) || (endPos <= maxLogSize)) {
         return;
     }
@@ -367,7 +368,9 @@ void LimitCppCrashLog(int32_t fd, int32_t logType)
     }
     endPos = lseek(fd, maxLogSize, SEEK_SET);
     if (endPos != -1) {
-        FileUtil::SaveStringToFd(fd, "\ncpp crash log is limit output.\n");
+        std::string limitOutStr = "\nThe cpp crash log length is " + std::to_string(endPos) +
+            ", which exceeesd the limit of " + std::to_string(maxLogSize) + " and is truncated.\n";
+        FileUtil::SaveStringToFd(fd, limitOutStr);
     }
 }
 } // namespace FaultLogger
