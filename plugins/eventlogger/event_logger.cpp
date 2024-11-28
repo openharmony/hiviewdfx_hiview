@@ -70,6 +70,12 @@ namespace {
         "/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
     static constexpr const char* const SUSTAINABLE_POWER =
         "/sys/class/thermal/thermal_zone1/sustainable_power";
+    static constexpr const char* const ASHMEM_PATH = "/proc/ashmem_process_info";
+    static constexpr const char* const DMAHEAP_PATH = "/proc/dmaheap_process_info";
+    static constexpr const char* const GPUMEM_PATH = "/proc/gpumem_process_info";
+    static constexpr const char* const ASHMEM = "AshmemUsed";
+    static constexpr const char* const DMAHEAP = "DmaHeapTotalUsed";
+    static constexpr const char* const GPUMEM = "GpuTotalUsed";
     static constexpr const char* const LONG_PRESS = "LONG_PRESS";
     static constexpr const char* const AP_S_PRESS6S = "AP_S_PRESS6S";
     static constexpr const char* const REBOOT_REASON = "reboot_reason";
@@ -96,6 +102,8 @@ namespace {
     static constexpr int QUERY_PROCESS_KILL_INTERVAL = 10000;
     static constexpr int HISTORY_EVENT_LIMIT = 500;
     static constexpr uint8_t LONGPRESS_PRIVACY = 1;
+    static constexpr int OVER_MEM_SIZE = 2 * 1024 * 1024;
+    static constexpr int DECIMEL = 10;
 }
 
 REGISTER(EventLogger);
@@ -238,9 +246,42 @@ void EventLogger::StartFfrtDump(std::shared_ptr<SysEvent> event)
     close(ffrtFd);
 }
 
+std::string EventLogger::GetStringFromFile(const std::string path)
+{
+    std::string content;
+    FileUtil::LoadStringFromFile(path, content);
+    return content;
+}
+
+int EventLogger::GetNumFromString(const std::string &mem)
+{
+    int num = 0;
+    for (const char &c : mem) {
+        if (isdigit(c)) {
+            num += num * DECIMEL + (c - '0');
+        }
+        if (num > INT_MAX) {
+            return INT_MAX;
+        }
+    }
+    return num;
+}
+
+void EventLogger::CheckString(
+    int fd, const std::string &mem, std::string &data, const std::string key, const std::string path)
+{
+    if (mem.find(key) != std::string::npos) {
+        int memsize = GetNumFromString(mem);
+        if (memsize > OVER_MEM_SIZE) {
+            data += GetStringFromFile(path);
+        }
+    }
+}
+
 void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
 {
     std::string content = event->GetEventValue("FREEZE_MEMORY");
+    std::string data = "";
     if (!content.empty()) {
         std::vector<std::string> vec;
         OHOS::SplitStr(content, "\\n", vec);
@@ -248,8 +289,18 @@ void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
         FileUtil::SaveStringToFd(fd, "\nMemoryCatcher --\n");
         for (const std::string& mem : vec) {
             FileUtil::SaveStringToFd(fd, mem + "\n");
+            CheckString(fd, mem, data, ASHMEM, ASHMEM_PATH);
+            CheckString(fd, mem, data, DMAHEAP, DMAHEAP_PATH);
+            CheckString(fd, mem, data, GPUMEM, GPUMEM_PATH);
         }
         FreezeCommon::WriteEndInfoToFd(fd, "\nend collect meminfo: ");
+    }
+    if (!data.empty()) {
+        FreezeCommon::WriteStartInfoToFd(fd, "start collect ashmem dmaheap gpumem");
+        FileUtil::SaveStringToFd(fd, data);
+        FreezeCommon::WriteEndInfoToFd(fd, "\n end collect ashmem dmaheap gpumem");
+    } else {
+        FileUtil::SaveStringToFd(fd, "don't collect ashmem dmaheap gpumem");
     }
 }
 
