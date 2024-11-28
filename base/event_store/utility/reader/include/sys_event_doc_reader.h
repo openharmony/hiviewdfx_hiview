@@ -35,7 +35,7 @@ public:
     int ReadFileSize();
     int ReadPageSize(uint32_t& pageSize);
     int ReadHeader(DocHeader& header);
-    int ReadHeader(DocHeader& header, std::string& sysVersion);
+    int ReadHeader(DocHeader& header, HeadExtraInfo& headExtra);
 
 private:
     void Init(const std::string& path);
@@ -58,7 +58,7 @@ private:
     uint32_t pageSize_ = 0;
     uint8_t dataFmtVersion_ = 0;
     uint64_t docHeaderSize_ = 0;
-    std::string sysVersion_;
+    HeadExtraInfo headExtra_;
     EventInfo info_;
 }; // EventDocWriter
 } // EventStore

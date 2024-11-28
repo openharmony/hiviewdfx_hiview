@@ -69,11 +69,12 @@ int SysEventDocWriter::Write(const std::shared_ptr<SysEvent>& sysEvent)
     }
 
     DocHeader header;
-    std::string sysVersion;
-    reader.ReadHeader(header, sysVersion);
+    HeadExtraInfo headExtra;
+    reader.ReadHeader(header, headExtra);
     headerSize_ = header.blockSize + sizeof(header.magicNum); // for GetCurrPageRemainSize
     if (header.version != EventStore::EVENT_DATA_FORMATE_VERSION::CURRENT ||
-        sysVersion != Parameter::GetSysVersionStr()) {
+        headExtra.sysVersion != Parameter::GetSysVersionStr() ||
+        headExtra.patchVersion != Parameter::GetPatchVersionStr()) {
         return DOC_STORE_NEW_FILE;
     }
 
@@ -158,12 +159,17 @@ int SysEventDocWriter::WriteHeader(const std::shared_ptr<SysEvent>& sysEvent, ui
     }
     auto sysVersion = Parameter::GetSysVersionStr();
     uint32_t sysVersionSize = sysVersion.length() + 1; // reserve one byte for '\0'
+    auto patchVersion = Parameter::GetPatchVersionStr();
+    uint32_t patchVersionSize = patchVersion.length() + 1; // reserve one byte for '\0'
     header.blockSize = sizeof(DocHeader) - sizeof(header.magicNum)
-        + sizeof(sysVersionSize) + sysVersionSize;
+        + sizeof(sysVersionSize) + sysVersionSize
+        + sizeof(patchVersionSize) + patchVersionSize;
     headerSize_ = header.blockSize + sizeof(header.magicNum);
     out_.write(reinterpret_cast<char*>(&header), sizeof(DocHeader));
     out_.write(reinterpret_cast<char*>(&sysVersionSize), sizeof(uint32_t)); // append size of system version string
     out_.write(sysVersion.c_str(), sysVersionSize); // append system version
+    out_.write(reinterpret_cast<char*>(&patchVersionSize), sizeof(uint32_t)); // append size of patch version string
+    out_.write(patchVersion.c_str(), patchVersionSize); // append patch version
     return DOC_STORE_SUCCESS;
 }
 

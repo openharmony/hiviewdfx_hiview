@@ -50,14 +50,15 @@ bool EventWriteHandler::HandleRequest(RequestPtr req)
     return true;
 }
 
-std::shared_ptr<ExportJsonFileWriter> EventWriteHandler::GetEventWriter(const std::string& sysVersion,
+std::shared_ptr<ExportJsonFileWriter> EventWriteHandler::GetEventWriter(const EventVersion& eventVersion,
     std::shared_ptr<EventWriteRequest> writeReq)
 {
-    auto writerKey = std::make_pair(writeReq->moduleName, sysVersion);
+    auto writerKey = std::make_pair(writeReq->moduleName, eventVersion);
     auto iter = allJsonFileWriters_.find(writerKey);
     if (iter == allJsonFileWriters_.end()) {
-        HIVIEW_LOGI("create json file writer with version %{public}s", sysVersion.c_str());
-        auto jsonFileWriter = std::make_shared<ExportJsonFileWriter>(writeReq->moduleName, sysVersion,
+        HIVIEW_LOGI("create json file writer with system version[%{public}s] and patch version[%{public}s]",
+            eventVersion.systemVersion.c_str(), eventVersion.patchVersion.c_str());
+        auto jsonFileWriter = std::make_shared<ExportJsonFileWriter>(writeReq->moduleName, eventVersion,
             writeReq->exportDir, writeReq->maxSingleFileSize);
         jsonFileWriter->SetExportJsonFileZippedListener([this] (const std::string& srcPath,
             const std::string& destPath) {

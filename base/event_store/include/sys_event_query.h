@@ -47,11 +47,14 @@ struct Entry {
 
     std::string sysVersion;
 
+    std::string patchVersion;
+
     Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data)
         : id(id), ts(ts), data(data), sysVersion("") {}
 
-    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data, std::string& sysVersion)
-        : id(id), ts(ts), data(data), sysVersion(sysVersion) {}
+    Entry(int64_t id, int64_t ts, std::shared_ptr<EventRaw::RawData> data,
+        std::string& sysVersion, std::string& patchVersion)
+        : id(id), ts(ts), data(data), sysVersion(sysVersion), patchVersion(patchVersion) {}
 };
 using CompareFunc = bool(*)(const Entry&, const Entry&);
 using EntryQueue = std::priority_queue<Entry, std::vector<Entry>, CompareFunc>;

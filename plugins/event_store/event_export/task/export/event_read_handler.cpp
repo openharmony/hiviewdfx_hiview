@@ -133,7 +133,10 @@ bool EventReadHandler::HandleQueryResult(EventStore::ResultSet& resultSet, Query
             HIVIEW_LOGE("failed to do query callback when handle query result");
             return false;
         }
-        auto eventVersion = iter->GetSysVersion();
+        EventVersion eventVersion {
+            .systemVersion = iter->GetSysVersion(),
+            .patchVersion = iter->GetPatchVersion()
+        };
         auto item = std::make_shared<CachedEvent>(eventVersion, iter->domain_, iter->eventName_,
             currentEventStr);
         if (FocusedEventUtil::IsFocusedEvent(iter->domain_, iter->eventName_)) {
