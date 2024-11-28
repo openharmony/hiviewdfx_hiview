@@ -1031,9 +1031,9 @@ std::string Faultlogger::GetMemoryStrByPid(long pid) const
         if (numStrArr.size() > 1) {
             auto it = numStrArr.begin();
             unsigned long long multiples = 4;
-            vss = multiples * std::atoll(it->c_str());
+            vss = multiples * static_cast<unsigned long long>(std::atoll(it->c_str()));
             it++;
-            rss = multiples * std::atoll(it->c_str());
+            rss = multiples * static_cast<unsigned long long>(std::atoll(it->c_str()));
         }
         HIVIEW_LOGI("GET FreezeJson rss=%{public}llu, vss=%{public}llu.", rss, vss);
     } else {
