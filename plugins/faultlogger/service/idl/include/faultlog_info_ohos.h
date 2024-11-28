@@ -42,7 +42,7 @@ public:
 
     bool Marshalling(Parcel &parcel) const override;
     static sptr<FaultLogInfoOhos> Unmarshalling(Parcel &parcel);
-    static bool FaultLogReadString(Parcel& parcel, std::string strItem, std::string& strValue);
+    static bool ReadString(Parcel& parcel, std::string strItem, std::string& strValue);
 
     FaultLogInfoOhos(){};
     ~FaultLogInfoOhos() {};
