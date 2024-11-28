@@ -536,7 +536,8 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_004, TestSize.Level1)
         FAIL();
     }
     auto peerBinderCatcher = std::make_shared<PeerBinderCatcher>();
-    std::set<int> pids = peerBinderCatcher->GetBinderPeerPids(fd, 1);
+    std::set<int> asyncPids;
+    std::set<int> pids = peerBinderCatcher->GetBinderPeerPids(fd, 1, asyncPids);
     EXPECT_TRUE(pids.empty());
 }
 
@@ -598,10 +599,11 @@ HWTEST_F(EventloggerCatcherTest, PeerBinderCatcherTest_006, TestSize.Level1)
         printf("Fail to create peerTestFile. errno: %d\n", errno);
         FAIL();
     }
-    peerBinderCatcher->BinderInfoParser(fin, fd1, 1);
-    std::set<int> pids = peerBinderCatcher->GetBinderPeerPids(fd, 1);
+    std::set<int> asyncPids;
+    peerBinderCatcher->BinderInfoParser(fin, fd1, 1, asyncPids);
+    std::set<int> pids = peerBinderCatcher->GetBinderPeerPids(fd, 1, asyncPids);
     EXPECT_TRUE(pids.empty());
-    pids = peerBinderCatcher->GetBinderPeerPids(-1, 1);
+    pids = peerBinderCatcher->GetBinderPeerPids(-1, 1, asyncPids);
     EXPECT_TRUE(pids.empty());
     fin.close();
 }
