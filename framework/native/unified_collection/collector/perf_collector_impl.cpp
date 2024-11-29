@@ -22,6 +22,7 @@
 #include "hiperf_client.h"
 #include "hiview_logger.h"
 #include "perf_decorator.h"
+#include "parameter_ex.h"
 
 using namespace OHOS::HiviewDFX::UCollect;
 using namespace OHOS::Developtools::HiPerf::HiperfClient;
@@ -128,7 +129,15 @@ CollectResult<bool> PerfCollectorImpl::CheckUseCount()
 
 CollectResult<bool> PerfCollectorImpl::StartPerf(const std::string &logDir)
 {
-    CollectResult<bool> result = CheckUseCount();
+    CollectResult<bool> result;
+    std::string deviceType = Parameter::GetDeviceTypeStr();
+    if (deviceType == "wearable") {
+        HIVIEW_LOGI("device not support");
+        result.data = false;
+        result.retCode = UcError::PERF_COLLECT_UNSUPPORT;
+        return result;
+    }
+    result = CheckUseCount();
     if (result.retCode != UCollect::UcError::SUCCESS) {
         return result;
     }
