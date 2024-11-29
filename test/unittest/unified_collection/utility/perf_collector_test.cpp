@@ -15,8 +15,9 @@
 #ifdef HAS_HIPERF
 #include <iostream>
 
-#include "perf_collector.h"
 #include "file_util.h"
+#include "parameter_ex.h"
+#include "perf_collector.h"
 #include "time_util.h"
 
 #include <gtest/gtest.h>
