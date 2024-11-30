@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <iomanip>
 
 #include "freeze_common.h"
 
@@ -24,6 +25,7 @@ namespace {
     static const int APPLICATION_RESULT_ID = 0;
     static const int SYSTEM_RESULT_ID = 1;
     static const int SYSTEM_WARNING_RESULT_ID = 2;
+    static const uint32_t PLACEHOLDER = 3;
 }
 DEFINE_LOG_LABEL(0xD002D01, "FreezeDetector");
 FreezeCommon::FreezeCommon()
@@ -148,19 +150,25 @@ std::shared_ptr<FreezeRuleCluster> FreezeCommon::GetFreezeRuleCluster() const
 
 void FreezeCommon::WriteStartInfoToFd(int fd, const std::string& msg)
 {
-    uint64_t logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
-    std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y/%m/%d-%H:%M:%S");
     FileUtil::SaveStringToFd(fd, "\n---------------------------------------------------\n");
-    std::string description = msg + formatTime + "\n";
-    FileUtil::SaveStringToFd(fd, description);
+    auto start = TimeUtil::GetMilliseconds();
+    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
+    std::ostringstream startTimeStr;
+    startTimeStr << msg << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << ":" << std::setw(PLACEHOLDER) << std::setfill('0') <<
+        std::to_string(start % TimeUtil::SEC_TO_MILLISEC) << std::endl;
+    FileUtil::SaveStringToFd(fd, startTimeStr.str());
 }
 
 void FreezeCommon::WriteEndInfoToFd(int fd, const std::string& msg)
 {
-    uint64_t logTime = TimeUtil::GetMilliseconds() / TimeUtil::SEC_TO_MILLISEC;
-    std::string formatTime = TimeUtil::TimestampFormatToDate(logTime, "%Y/%m/%d-%H:%M:%S");
-    std::string description = msg + formatTime + "\n";
-    FileUtil::SaveStringToFd(fd, description);
+    auto start = TimeUtil::GetMilliseconds();
+    uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
+    std::ostringstream startTimeStr;
+    startTimeStr << msg << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << ":" << std::setw(PLACEHOLDER) << std::setfill('0') <<
+        std::to_string(start % TimeUtil::SEC_TO_MILLISEC) << std::endl;
+    FileUtil::SaveStringToFd(fd, startTimeStr.str());
     FileUtil::SaveStringToFd(fd, "---------------------------------------------------\n");
 }
 }  // namespace HiviewDFX
