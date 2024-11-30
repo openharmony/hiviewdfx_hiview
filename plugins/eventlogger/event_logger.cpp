@@ -497,7 +497,8 @@ bool EventLogger::WriteStartTime(int fd, uint64_t start)
     const uint32_t placeholder = 3;
     uint64_t startTime = start / TimeUtil::SEC_TO_MILLISEC;
     std::ostringstream startTimeStr;
-    startTimeStr << "start time: " << TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
+    startTimeStr << "start time to collect fault info: " <<
+        TimeUtil::TimestampFormatToDate(startTime, "%Y/%m/%d-%H:%M:%S");
     startTimeStr << ":" << std::setw(placeholder) << std::setfill('0') <<
         std::to_string(start % TimeUtil::SEC_TO_MILLISEC);
     startTimeStr << std::endl;
@@ -514,7 +515,7 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     uint64_t logTime = event->happenTime_ / TimeUtil::SEC_TO_MILLISEC;
     uint64_t logTimeMs = event->happenTime_ % TimeUtil::SEC_TO_MILLISEC;
     std::string happenTime = TimeUtil::TimestampFormatToDate(logTime, "%Y/%m/%d-%H:%M:%S");
-    headerStream << "TIMESTAMP = " << happenTime << ":" << logTimeMs << std::endl;
+    headerStream << "HISYSEVENT SEND TO HIVIEW TIME: " << happenTime << ":" << logTimeMs << std::endl;
     long pid = event->GetEventIntValue("PID");
     pid = pid ? pid : event->GetPid();
     headerStream << "PID = " << pid << std::endl;
