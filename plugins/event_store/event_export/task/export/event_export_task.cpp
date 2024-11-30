@@ -17,6 +17,7 @@
 
 #include "file_util.h"
 #include "hiview_logger.h"
+#include "setting_observer_manager.h"
 #include "sys_event_sequence_mgr.h"
 
 namespace OHOS {
@@ -36,12 +37,36 @@ std::shared_ptr<ExportEventListParser> GetParser(ExportEventListParsers& parsers
     }
     return iter->second;
 }
+
+bool IsExportSwitchOff(std::shared_ptr<ExportConfig> config, std::shared_ptr<ExportDbManager> dbMgr)
+{
+    bool isSwitchOff = (SettingObserverManager::GetInstance()->GetStringValue(config->exportSwitchParam.name) !=
+        config->exportSwitchParam.enabledVal);
+    if (isSwitchOff) {
+        HIVIEW_LOGI("export switch for module %{public}s is off", config->moduleName.c_str());
+        int64_t enabledSeq = dbMgr->GetExportEnabledSeq(config->moduleName);
+        if (enabledSeq != INVALID_SEQ_VAL && enabledSeq != 0) { // handle setting parameter listening error
+            dbMgr->HandleExportSwitchChanged(config->moduleName, INVALID_SEQ_VAL);
+        }
+        return true;
+    }
+    HIVIEW_LOGI("export switch for module %{public}s is on", config->moduleName.c_str());
+    int64_t enabledSeq = dbMgr->GetExportEnabledSeq(config->moduleName);
+    if (enabledSeq == INVALID_SEQ_VAL) { // handle setting parameter listening error
+        enabledSeq = EventStore::SysEventSequenceManager::GetInstance().GetSequence();
+        dbMgr->HandleExportSwitchChanged(config->moduleName, enabledSeq);
+    }
+    return false;
+}
 }
 
 void EventExportTask::OnTaskRun()
 {
     if (config_ == nullptr || dbMgr_ == nullptr) {
         HIVIEW_LOGE("config manager or db manager is invalid");
+        return;
+    }
+    if (IsExportSwitchOff(config_, dbMgr_)) {
         return;
     }
     if (FileUtil::GetFolderSize(config_->exportDir) >= static_cast<uint64_t>(config_->maxCapcity * BYTE_TO_MB)) {
