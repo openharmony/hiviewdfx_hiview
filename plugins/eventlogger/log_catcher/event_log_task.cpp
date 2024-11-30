@@ -424,7 +424,7 @@ void EventLogTask::HitraceCapture()
 {
     std::shared_ptr<UCollectUtil::TraceCollector> collector = UCollectUtil::TraceCollector::Create();
     UCollect::TraceCaller caller = UCollect::TraceCaller::RELIABILITY;
-    std::regex reg("Fault time:(\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2})");
+    std::regex reg("Timestamp: (\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2})");
     std::string timeStamp = event_->GetEventValue("MSG");
     std::smatch match;
     timeStamp = std::regex_search(timeStamp, match, reg) ? match[1].str() : "";
