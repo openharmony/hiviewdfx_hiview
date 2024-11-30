@@ -147,12 +147,11 @@ EventLogTask::Status EventLogTask::StartCompose()
             return TASK_FAIL;
         }
 
-        FreezeCommon::WriteStartInfoToFd(dupedFd, "start time: ");
-        AddSeparator(dupedFd, catcher);
+        FreezeCommon::WriteStartInfoToFd(dupedFd, catcher->GetDescription() + "start time: ");
         int curLogSize = catcher->Catch(dupedFd, dupedJsonFd);
         HIVIEW_LOGI("finish catcher: %{public}s, curLogSize: %{public}d", catcher->GetDescription().c_str(),
             curLogSize);
-        FreezeCommon::WriteEndInfoToFd(dupedFd, "end time: ");
+        FreezeCommon::WriteEndInfoToFd(dupedFd, catcher->GetDescription() + "end time: ");
         if (ShouldStopLogTask(dupedFd, catcherIndex, curLogSize, catcher)) {
             break;
         }

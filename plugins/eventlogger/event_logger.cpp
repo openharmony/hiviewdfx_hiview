@@ -296,9 +296,9 @@ void EventLogger::CollectMemInfo(int fd, std::shared_ptr<SysEvent> event)
         FreezeCommon::WriteEndInfoToFd(fd, "\nend collect meminfo: ");
     }
     if (!data.empty()) {
-        FreezeCommon::WriteStartInfoToFd(fd, "start collect ashmem dmaheap gpumem");
+        FreezeCommon::WriteStartInfoToFd(fd, "start collect ashmem dmaheap gpumem： ");
         FileUtil::SaveStringToFd(fd, data);
-        FreezeCommon::WriteEndInfoToFd(fd, "\n end collect ashmem dmaheap gpumem");
+        FreezeCommon::WriteEndInfoToFd(fd, "\n end collect ashmem dmaheap gpumem： ");
     } else {
         FileUtil::SaveStringToFd(fd, "don't collect ashmem dmaheap gpumem");
     }
