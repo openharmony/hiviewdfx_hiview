@@ -35,6 +35,10 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+    static constexpr uint8_t ARR_SIZE = 7;
+    static constexpr uint8_t DECIMAL = 10;
+    static constexpr uint8_t FREE_ASYNC_INDEX = 6;
+    static constexpr uint16_t FREE_ASYNC_MAX = 1000;
     static constexpr const char* const LOGGER_EVENT_PEERBINDER = "PeerBinder";
     enum {
         LOGGER_BINDER_STACK_ONE = 0,
@@ -87,14 +91,17 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
         FileUtil::SaveStringToFd(fd, content);
         return -1;
     }
-
-    std::set<int> pids = GetBinderPeerPids(fd, jsonFd);
+    std::set<int> asyncPids;
+    std::set<int> syncPids = GetBinderPeerPids(fd, jsonFd, asyncPids);
+    std::set<int> pids;
+    pids.insert(syncPids.begin(), syncPids.end());
+    pids.insert(asyncPids.begin(), asyncPids.end());
     if (pids.empty()) {
         std::string content = "PeerBinder pids is empty\r\n";
         FileUtil::SaveStringToFd(fd, content);
     }
 #ifdef HAS_HIPERF
-    ForkToDumpHiperf(pids);
+    ForkToDumpHiperf(syncPids);
 #endif
     std::string pidStr = "";
     for (auto pidTemp : pids) {
@@ -107,7 +114,9 @@ int PeerBinderCatcher::Catch(int fd, int jsonFd)
             CatcherStacktrace(fd, pidTemp);
             pidStr += "," + std::to_string(pidTemp);
         }
-        CatcherFfrtStack(fd, pidTemp);
+        if (syncPids.find(pidTemp) != syncPids.end()) {
+            CatcherFfrtStack(fd, pidTemp);
+        }
     }
 
     if (event_ != nullptr) {
@@ -159,13 +168,13 @@ void PeerBinderCatcher::AddBinderJsonInfo(std::list<OutputBinderInfo> outputBind
 }
 
 std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::BinderInfoParser(
-    std::ifstream& fin, int fd, int jsonFd) const
+    std::ifstream& fin, int fd, int jsonFd, std::set<int>& asyncPids) const
 {
     std::map<int, std::list<BinderInfo>> manager;
     FileUtil::SaveStringToFd(fd, "\nBinderCatcher --\n\n");
     std::list<OutputBinderInfo> outputBinderInfoList;
 
-    BinderInfoParser(fin, fd, manager, outputBinderInfoList);
+    BinderInfoParser(fin, fd, manager, outputBinderInfoList, asyncPids);
     AddBinderJsonInfo(outputBinderInfoList, jsonFd);
 
     FileUtil::SaveStringToFd(fd, "\n\nPeerBinder Stacktrace --\n\n");
@@ -173,54 +182,85 @@ std::map<int, std::list<PeerBinderCatcher::BinderInfo>> PeerBinderCatcher::Binde
     return manager;
 }
 
-void PeerBinderCatcher::GetFileToList(std::string line,
-    std::vector<std::string>& strList) const
+std::vector<std::string> PeerBinderCatcher::GetFileToList(std::string line) const
 {
+    std::vector<std::string> strList;
     std::istringstream lineStream(line);
     std::string tmpstr;
     while (lineStream >> tmpstr) {
         strList.push_back(tmpstr);
     }
     HIVIEW_LOGD("strList size: %{public}zu", strList.size());
+    return strList;
 }
 
 void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
     std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
-    std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList) const
+    std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList, std::set<int>& asyncPids) const
 {
-    const int DECIMAL = 10;
+    std::map<uint32_t, uint32_t> asyncBinderMap;
+    std::vector<std::pair<uint32_t, uint64_t>> freeAsyncSpacePairs;
+    BinderInfoLineParser(fin, fd, manager, outputBinderInfoList, asyncBinderMap, freeAsyncSpacePairs);
+
+    std::sort(freeAsyncSpacePairs.begin(), freeAsyncSpacePairs.end(),
+        [] (const auto& pairOne, const auto& pairTwo) { return pairOne.second < pairTwo.second; });
+    std::vector<std::pair<uint32_t, uint32_t>> asyncBinderPairs(asyncBinderMap.begin(), asyncBinderMap.end());
+    std::sort(asyncBinderPairs.begin(), asyncBinderPairs.end(),
+        [] (const auto& pairOne, const auto& pairTwo) { return pairOne.second > pairTwo.second; });
+
+    int freeAsyncSpaceSize = freeAsyncSpacePairs.size();
+    int asyncBinderSize = asyncBinderPairs.size();
+    int individualMaxSize = 2;
+    for (int i = 0; i < individualMaxSize; i++) {
+        if (freeAsyncSpaceSize > 0 && i < freeAsyncSpaceSize) {
+            asyncPids.insert(freeAsyncSpacePairs[i].first);
+        }
+        if (asyncBinderSize > 0 && i < asyncBinderSize) {
+            asyncPids.insert(asyncBinderPairs[i].first);
+        }
+    }
+}
+
+void PeerBinderCatcher::BinderInfoLineParser(std::ifstream& fin, int fd,
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>>& manager,
+    std::list<PeerBinderCatcher::OutputBinderInfo>& outputBinderInfoList,
+    std::map<uint32_t, uint32_t>& asyncBinderMap,
+    std::vector<std::pair<uint32_t, uint64_t>>& freeAsyncSpacePairs) const
+{
     std::string line;
-    bool findBinderHeader = false;
+    bool isBinderMatchup = false;
     while (getline(fin, line)) {
         FileUtil::SaveStringToFd(fd, line + "\n");
-        if (findBinderHeader) {
-            continue;
-        }
-
-        if (line.find("async\t") != std::string::npos) {
-            continue;
-        }
-
-        std::vector<std::string> strList;
-        GetFileToList(line, strList);
-        auto stringSplit = [](const std::string& str, uint16_t index) -> std::string {
+        isBinderMatchup = (!isBinderMatchup && line.find("free_async_space") != line.npos) ? true : isBinderMatchup;
+        std::vector<std::string> strList = GetFileToList(line);
+        auto strSplit = [](const std::string& str, uint16_t index) -> std::string {
             std::vector<std::string> strings;
             StringUtil::SplitStr(str, ":", strings);
-            if (index < strings.size()) {
-                return strings[index];
-            }
-            return "";
+            return index < strings.size() ? strings[index] : "";
         };
 
-        if (strList.size() >= 7) { // 7: valid array size
+        if (isBinderMatchup) {
+            if (line.find("free_async_space") == line.npos && strList.size() == ARR_SIZE &&
+                std::atoll(strList[FREE_ASYNC_INDEX].c_str()) < FREE_ASYNC_MAX) {
+                freeAsyncSpacePairs.emplace_back(
+                    std::atoi(strList[0].c_str()),
+                    std::atoll(strList[FREE_ASYNC_INDEX].c_str()));
+            }
+        } else if (line.find("async\t") != std::string::npos && strList.size() > ARR_SIZE) {
+            std::string serverPid = strSplit(strList[3], 0);
+            std::string serverTid = strSplit(strList[3], 1);
+            if (serverPid != "" && serverTid != "" && std::atoi(serverTid.c_str()) == 0) {
+                asyncBinderMap[std::atoi(serverPid.c_str())]++;
+            }
+        } else if (strList.size() >= ARR_SIZE) { // 7: valid array size
             BinderInfo info = {0};
             OutputBinderInfo outputInfo;
             // 2: binder peer id,
-            std::string server = stringSplit(strList[2], 0);
+            std::string server = strSplit(strList[2], 0);
             // 0: binder local id,
-            std::string client = stringSplit(strList[0], 0);
+            std::string client = strSplit(strList[0], 0);
             // 5: binder wait time, s
-            std::string wait = stringSplit(strList[5], 1);
+            std::string wait = strSplit(strList[5], 1);
             if (server == "" || client == "" || wait == "") {
                 HIVIEW_LOGI("server:%{public}s, client:%{public}s, wait:%{public}s",
                     server.c_str(), client.c_str(), wait.c_str());
@@ -237,13 +277,10 @@ void PeerBinderCatcher::BinderInfoParser(std::ifstream& fin, int fd,
         } else {
             HIVIEW_LOGI("strList size: %{public}zu, line: %{public}s", strList.size(), line.c_str());
         }
-        if (line.find("context") != line.npos) {
-            findBinderHeader = true;
-        }
     }
 }
 
-std::set<int> PeerBinderCatcher::GetBinderPeerPids(int fd, int jsonFd) const
+std::set<int> PeerBinderCatcher::GetBinderPeerPids(int fd, int jsonFd, std::set<int>& asyncPids) const
 {
     std::set<int> pids;
     std::ifstream fin;
@@ -256,7 +293,7 @@ std::set<int> PeerBinderCatcher::GetBinderPeerPids(int fd, int jsonFd) const
         return pids;
     }
 
-    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> manager = BinderInfoParser(fin, fd, jsonFd);
+    std::map<int, std::list<PeerBinderCatcher::BinderInfo>> manager = BinderInfoParser(fin, fd, jsonFd, asyncPids);
     fin.close();
 
     if (manager.size() == 0 || manager.find(pid_) == manager.end()) {
