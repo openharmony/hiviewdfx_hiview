@@ -52,6 +52,7 @@ enum UcError {
     // for perf call
     USAGE_EXCEED_LIMIT = 2000,
     PERF_COLLECT_FAILED = 2001,
+    PERF_COLLECT_UNSUPPORT = 2002,
 };
 } // UCollect
 
