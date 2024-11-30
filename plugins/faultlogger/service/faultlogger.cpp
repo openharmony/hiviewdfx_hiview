@@ -724,15 +724,6 @@ void Faultlogger::FaultlogLimit(const std::string &logPath, int32_t faultType) c
                 ", which exceeesd the limit of " + std::to_string(maxLogSize) + " and is truncated.\n";
             modified = true;
         }
-    } else if (faultType == FaultLogType::APP_FREEZE) {
-        size_t posStart = readContent.find("catcher cmd: hilog");
-        size_t posEnd = readContent.find("catcher cmd: hidumper --cpuusage", posStart);
-        if (posStart == std::string::npos || posEnd == std::string::npos) {
-            HIVIEW_LOGW("No Hilog Found In Freeze Log");
-        } else {
-            readContent.erase(posStart, posEnd - posStart);
-            modified = true;
-        }
     }
 
     if (modified) {
