@@ -78,6 +78,7 @@ using namespace FaultLogger;
 using namespace OHOS::AppExecFwk;
 namespace {
 constexpr char FILE_SEPERATOR[] = "******";
+constexpr uint32_t MAX_TIMESTR_LEN = 256;
 constexpr uint32_t DUMP_MAX_NUM = 100;
 constexpr int32_t MAX_QUERY_NUM = 100;
 constexpr int MIN_APP_UID = 10000;
@@ -529,7 +530,16 @@ FaultLogInfo Faultlogger::FillFaultLogInfo(SysEvent &sysEvent) const
     auto summary = sysEvent.GetEventValue("SUMMARY");
     info.summary = StringUtil::UnescapeJsonStringValue(summary);
     info.sectionMap = sysEvent.GetKeyValuePairs();
-
+    uint64_t secTime = sysEvent.happenTime_ / TimeUtil::SEC_TO_MILLISEC;
+    char strBuff[MAX_TIMESTR_LEN] = {0};
+    if (snprintf_s(strBuff, sizeof(strBuff), sizeof(strBuff) - 1, "%s.%03lu",
+            TimeUtil::TimestampFormatToDate(secTime, "%Y-%m-%d %H:%M:%S").c_str(),
+            sysEvent.happenTime_ % TimeUtil::SEC_TO_MILLISEC) < 0) {
+        HIVIEW_LOGE("fill faultlog info timestamp snprintf fail!");
+        info.sectionMap["TIMESTAMP"] = "1970-01-01 00:00:00.000";
+    } else {
+        info.sectionMap["TIMESTAMP"] = std::string(strBuff);
+    }
     return info;
 }
 
