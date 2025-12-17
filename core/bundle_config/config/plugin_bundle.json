@@ -3,12 +3,14 @@
         "adft",
         "bdfr",
         "crashvalidator",
-        "eventloggerso"
+        "eventloggerso",
+        "xperformance"
     ],
     "Commercial": [
         "adft",
         "bdfr",
         "crashvalidator",
-        "eventloggerso"
+        "eventloggerso",
+        "xperformance"
     ]
 }
