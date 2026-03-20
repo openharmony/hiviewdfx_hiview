@@ -25,6 +25,13 @@
             <option name="push" value="SmartParserLpm3ExceptionTest001/fastboot_log -> /data/test/test_data/SmartParser/SmartParserLpm3ExceptionTest001/19700101000000-00000007/ap_log" src="res"/>
             <option name="push" value="SmartParserLpm3ExceptionTest002/fastboot_log -> /data/test/test_data/SmartParser/SmartParserLpm3ExceptionTest002/19700101000000-00000007/ap_log" src="res"/>
             <option name="push" value="SmartParserIOM3ExceptionTest001/history.log -> /data/test/test_data/SmartParser/SmartParserIOM3ExceptionTest001" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest001/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest001" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest002/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest002" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest003/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest003" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest004/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest004" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest005/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest005" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest006/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest006" src="res"/>
+            <option name="push" value="SmartParserRgmManagerSysfreezeTest007/sysfreeze-rgm_manager-5002-20250710185758-1752145078457.tmp -> /data/test/test_data/SmartParser/SmartParserRgmManagerSysfreezeTest007" src="res"/>
         </preparer>
     </target>
 </configuration>
