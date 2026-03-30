@@ -30,7 +30,7 @@ CollectResult<std::vector<std::string>> TraceCollectorEmptyImpl::DumpTraceWithDu
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorEmptyImpl::DumpTrace(const std::string& callName,
-    bool isNeedFlowControl)
+    bool isNeedFlowControl, const std::string& outputPath)
 {
     return {UCollect::UcError::FEATURE_CLOSED};
 }

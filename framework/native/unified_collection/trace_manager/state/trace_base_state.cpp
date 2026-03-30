@@ -54,10 +54,7 @@ TraceRet TraceBaseState::OpenTrace(const Scenario& scenario)
         TraceStateMachine::GetInstance().TransToCommonState();
     }
     if (scenario.name == ScenarioName::COMMON_DROP) {
-        const auto& outputPath = TraceStateMachine::GetInstance().GetOutputPath();
-        if (!outputPath.empty()) {
-            HIVIEW_LOGI("OpenTrace COMMON_DROP, RecordTraceOn outputPath:%{public}s", outputPath.c_str());
-        }
+        const std::string& outputPath = scenario.outputPath;
         if (auto retTraceOn = Hitrace::RecordTraceOn(outputPath); retTraceOn != TraceErrorCode::SUCCESS) {
             HIVIEW_LOGE("RecordTraceOn error:%{public}d", retTraceOn);
             return TraceRet(retTraceOn);
@@ -113,7 +110,7 @@ TraceRet TraceBaseState::SetCacheParams(int32_t totalFileSize, int32_t sliceMaxD
 }
 
 TraceRet TraceBaseState::DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-    TraceRetInfo &info)
+    TraceRetInfo &info, const std::string&)
 {
     HIVIEW_LOGW("state:%{public}s, scenario:%{public}s is fail", GetStateScenario().c_str(), scenarioName.c_str());
     return TraceRet(TraceStateCode::FAIL);
@@ -126,7 +123,7 @@ TraceRet TraceBaseState::DumpTraceAsync(const DumpTraceArgs &args, int64_t fileS
     return TraceRet(TraceStateCode::FAIL);
 }
 
-TraceRet TraceBaseState::TraceDropOn(const std::string& scenarioName)
+TraceRet TraceBaseState::TraceDropOn(const std::string& scenarioName, const std::string&)
 {
     HIVIEW_LOGW("state:%{public}s, scenario:%{public}s is fail", GetStateScenario().c_str(), scenarioName.c_str());
     return TraceRet(TraceStateCode::FAIL);
@@ -138,7 +135,8 @@ TraceRet TraceBaseState::TraceDropOff(const std::string& scenarioName, TraceRetI
     return TraceRet(TraceStateCode::FAIL);
 }
 
-TraceRet TraceBaseState::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info)
+TraceRet TraceBaseState::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+    const std::string&)
 {
     HIVIEW_LOGW("state:%{public}s is fail", GetStateScenario().c_str());
     return TraceRet(TraceStateCode::FAIL);

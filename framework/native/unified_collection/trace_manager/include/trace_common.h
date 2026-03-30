@@ -93,6 +93,7 @@ struct Scenario {
     uint8_t level = 0;
     TraceArgs args;
     TelemetryPolicy tracePolicy = TelemetryPolicy::DEFAULT;
+    std::string outputPath;
 };
 
 struct DumpTraceArgs {

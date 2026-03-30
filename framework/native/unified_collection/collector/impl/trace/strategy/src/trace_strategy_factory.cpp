@@ -66,9 +66,9 @@ auto TraceStrategyFactory::CreateTraceStrategy(UCollect::TraceCaller caller, uin
 }
 
 auto TraceStrategyFactory::CreateTraceStrategy(const std::string& callName, uint32_t maxDuration, uint64_t happenTime,
-    bool isNeedFlowControl)->std::shared_ptr<TraceStrategy>
+    bool isNeedFlowControl, const std::string& outputPath)->std::shared_ptr<TraceStrategy>
 {
-    StrategyParam strategyParam {maxDuration, happenTime, callName, DB_PATH, CONFIG_PATH};
+    StrategyParam strategyParam {maxDuration, happenTime, callName, DB_PATH, CONFIG_PATH, outputPath};
     if (callName == CallerName::COMMAND) {
         return std::make_shared<TraceStrategy>(strategyParam, ScenarioName::COMMAND);
     }
