@@ -17,7 +17,6 @@
 #include <hitrace_option/hitrace_option.h>
 
 #include "hiview_logger.h"
-#include "trace_state_machine.h"
 
 namespace OHOS::HiviewDFX {
 namespace {
@@ -37,17 +36,14 @@ bool TelemetryState::RegisterTelemetryCallback(std::shared_ptr<TelemetryCallback
     return true;
 }
 
-TraceRet TelemetryState::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info)
+TraceRet TelemetryState::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+    const std::string& outputPath)
 {
     if (policy_ != TelemetryPolicy::DEFAULT) {
         if (innerStateMachine_ != nullptr && !innerStateMachine_->IsTraceOn()) {
             HIVIEW_LOGW("TelemetryState: IsTraceOn false");
             return TraceRet(TraceStateCode::FAIL);
         }
-    }
-    const auto& outputPath = TraceStateMachine::GetInstance().GetOutputPath();
-    if (!outputPath.empty()) {
-        HIVIEW_LOGI("TelemetryState, DumpTrace outputPath:%{public}s", outputPath.c_str());
     }
     info = Hitrace::DumpTrace(maxDuration, happenTime, outputPath);
     HIVIEW_LOGI("TelemetryState, result:%{public}d", info.errorCode);

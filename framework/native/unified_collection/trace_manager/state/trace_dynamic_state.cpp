@@ -14,7 +14,6 @@
  */
 #include "trace_dynamic_state.h"
 
-#include "trace_state_machine.h"
 #include "hiview_logger.h"
 
 namespace OHOS::HiviewDFX {
@@ -23,15 +22,11 @@ DEFINE_LOG_TAG("TraceStateMachine");
 }
 
 TraceRet DynamicState::DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-    TraceRetInfo &info)
+    TraceRetInfo &info, const std::string& outputPath)
 {
     if (scenarioName != ScenarioName::APP_DYNAMIC) {
         HIVIEW_LOGW("DynamicState scenario:%{public}s is fail", scenarioName.c_str());
         return TraceRet(TraceStateCode::FAIL);
-    }
-    const auto& outputPath = TraceStateMachine::GetInstance().GetOutputPath();
-    if (!outputPath.empty()) {
-        HIVIEW_LOGI("DynamicState, DumpTrace outputPath:%{public}s", outputPath.c_str());
     }
     info = Hitrace::DumpTrace(maxDuration, happenTime, outputPath);
     HIVIEW_LOGI("DynamicState DumpTrace result:%{public}d", info.errorCode);

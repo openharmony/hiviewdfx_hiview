@@ -33,7 +33,8 @@ public:
     CollectResult<std::vector<std::string>> DumpTrace(TraceCaller caller) override;
     CollectResult<std::vector<std::string>> DumpTraceWithDuration(
         TraceCaller caller, uint32_t maxDuration, uint64_t happenTime) override;
-    CollectResult<std::vector<std::string>> DumpTrace(const std::string& callName, bool isNeedFlowControl) override;
+    CollectResult<std::vector<std::string>> DumpTrace(const std::string& callName, bool isNeedFlowControl,
+        const std::string& outputPath = "") override;
     CollectResult<std::string> DumpAppTrace(const UCollectClient::AppCaller& appCaller) override;
     CollectResult<std::vector<std::string>> DumpTraceWithFilter(TeleModule module,
         uint32_t maxDuration, uint64_t happenTime) override;

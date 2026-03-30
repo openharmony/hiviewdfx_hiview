@@ -117,13 +117,16 @@ TraceRet TraceStrategy::DumpTrace(DumpEvent &dumpEvent, TraceRetInfo &traceRetIn
 {
     InitDumpEvent(dumpEvent, caller_, maxDuration_, happenTime_);
 #ifndef TRACE_STRATEGY_UNITTEST
-    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(scenarioName, maxDuration_, happenTime_, traceRetInfo);
+    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(scenarioName, maxDuration_, happenTime_, traceRetInfo,
+        outputPath_);
 #else
     TraceRet ret(traceRetInfo.errorCode);
 #endif
     if (!ret.IsSuccess()) {
-        HIVIEW_LOGW("scenario_:%{public}s, stateError:%{public}d, codeError:%{public}d", scenarioName.c_str(),
-            static_cast<int>(ret.stateError_), ret.codeError_);
+        HIVIEW_LOGW(
+            "scenario_:%{public}s, stateError:%{public}d, codeError:%{public}d, flowError:%{public}d",
+            scenarioName.c_str(), static_cast<int>(ret.stateError_), static_cast<int>(ret.codeError_),
+            static_cast<int>(ret.flowError_));
     }
     UpdateDumpEvent(dumpEvent, ret, traceRetInfo);
     return ret;
@@ -218,7 +221,8 @@ TraceRet TelemetryStrategy::DoDump(std::vector<std::string> &outputFiles, TraceR
         return TraceRet(TraceStateCode::FAIL);
     }
 #ifndef TRACE_STRATEGY_UNITTEST
-    if (auto ret = TraceStateMachine::GetInstance().DumpTraceWithFilter(maxDuration_, happenTime_, traceRetInfo);
+    if (auto ret = TraceStateMachine::GetInstance().DumpTraceWithFilter(maxDuration_, happenTime_, traceRetInfo,
+        outputPath_);
 #else
     if (TraceRet ret(traceRetInfo.errorCode);
 #endif
@@ -334,7 +338,7 @@ TraceRet TraceAppStrategy::DoDump(const UCollectClient::AppCaller& appCaller, Tr
         return TraceRet(TraceFlowCode::TRACE_HAS_CAPTURED_TRACE);
     }
 #ifndef TRACE_STRATEGY_UNITTEST
-    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(ScenarioName::APP_DYNAMIC, 0, 0, traceRetInfo);
+    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(ScenarioName::APP_DYNAMIC, 0, 0, traceRetInfo, "");
 #else
     TraceRet ret(traceRetInfo.errorCode);
 #endif

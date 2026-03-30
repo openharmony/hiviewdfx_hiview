@@ -30,11 +30,13 @@ class TraceStateMachine : public OHOS::DelayedRefSingleton<TraceStateMachine> {
 public:
     TraceStateMachine();
     TraceRet OpenTrace(const Scenario& scenario);
-    TraceRet DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info);
+    TraceRet DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+        const std::string& outputPath = "");
     TraceRet DumpTraceAsync(const DumpTraceArgs &args, int64_t fileSizeLimit,
         TraceRetInfo &info, DumpTraceCallback callback);
-    TraceRet DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info);
-    TraceRet TraceDropOn(const std::string& scenarioName);
+    TraceRet DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+        const std::string& outputPath = "");
+    TraceRet TraceDropOn(const std::string& scenarioName, const std::string& outputPath = "");
     TraceRet TraceDropOff(const std::string& scenarioName, TraceRetInfo &info);
     TraceRet CloseTrace(const std::string& scenarioName);
     TraceRet TraceCacheOn();
@@ -133,17 +135,6 @@ public:
         RefreshState();
     }
 
-    void SetOutputPath(const std::string& outputPath)
-    {
-        std::lock_guard<ffrt::mutex> lock(traceMutex_);
-        outputPath_ = outputPath;
-    }
-
-    const std::string& GetOutputPath() const
-    {
-        return outputPath_;
-    }
-
     void SetCommandState(bool isCommandState)
     {
         isCommandState_ = isCommandState;
@@ -164,7 +155,6 @@ private:
     uint8_t traceSwitchState_ = 0;
     bool isCommandState_ = false;
     bool isCachSwitchOn_ = false;
-    std::string outputPath_;
     ffrt::mutex traceMutex_;
 };
 }
