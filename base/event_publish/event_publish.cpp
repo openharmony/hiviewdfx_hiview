@@ -77,6 +77,7 @@ const std::map<std::string, uint8_t> OS_EVENT_POS_INFOS = {
     { EVENT_APP_HICOLLIE, 10 },
     { EVENT_APP_KILLED, 11 },
     { EVENT_AUDIO_JANK_FRAME, 12 },
+    { EVENT_APP_FREEZE_WARNING, 14 }
 };
 
 struct ExternalLogInfo {

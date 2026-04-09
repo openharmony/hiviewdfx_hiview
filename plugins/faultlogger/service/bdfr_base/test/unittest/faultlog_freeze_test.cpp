@@ -86,6 +86,25 @@ HWTEST(FaultLogFreezeTest, AddFaultLog001, testing::ext::TestSize.Level3)
 }
 
 /**
+ * @tc.name: AddFaultLog002
+ * @tc.desc: test AddFaultLog
+ * @tc.type: FUNC
+ */
+HWTEST(FaultLogFreezeTest, AddFaultLog002, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 20010039;
+    info.pid = 7497;
+    info.faultLogType = FaultLogType::APPFREEZE_WARNING;
+    info.module = "com.example.jsinject";
+    info.logPath = "/proc/self/status";
+    FaultLogFreeze faultAppFreezeWarning;
+    faultAppFreezeWarning.AddFaultLog(info);
+    ASSERT_TRUE(info.sectionMap.empty());
+}
+
+/**
  * @tc.name: AppFreezeCrashLogTest001
  * @tc.desc: test AddFaultLog, check F1/F2/F3
  * @tc.type: FUNC

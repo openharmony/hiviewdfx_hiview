@@ -109,6 +109,7 @@ struct FreezeJsonCollector {
     std::string memory = "{}";
     std::string thermal_Level = "";
     std::string external_callback_log = "";
+    std::string version_code = "";
 };
 
 bool IsAppFreeze(const std::string& eventName);
