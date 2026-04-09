@@ -77,6 +77,7 @@ HWTEST(FreezeJsonGeneratorTest, FreezeJsonGeneratorTest_003, testing::ext::TestS
     std::string stringId = "";
     bool foreground = false;
     std::string version = "unknown";
+    std::string version_code = "";
     std::string packageName = "";
     std::string processName = "";
     std::string message = "";
@@ -95,6 +96,7 @@ HWTEST(FreezeJsonGeneratorTest, FreezeJsonGeneratorTest_003, testing::ext::TestS
         .InitFreezeType("AppFreeze")
         .InitForeground(foreground)
         .InitBundleVersion(version)
+        .InitBundleVersionCode(version_code)
         .InitBundleName(packageName)
         .InitProcessName(processName)
         .InitExternalLog(externalLog)

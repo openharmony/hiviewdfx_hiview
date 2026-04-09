@@ -415,7 +415,7 @@ std::string Vendor::MergeEventLog(WatchPoint &watchPoint, const std::vector<Watc
         return "";
     }
 
-    if (type == APPFREEZE || FreezeJsonUtil::IsAppHicollie(watchPoint.GetStringId())) {
+    if (type == APPFREEZE || FreezeJsonUtil::IsAppHicollie(watchPoint.GetStringId()) || type == APPFREEZEWARNING) {
         MergeFreezeJsonFile(watchPoint, list);
     }
 
