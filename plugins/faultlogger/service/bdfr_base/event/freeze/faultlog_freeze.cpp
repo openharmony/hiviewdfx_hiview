@@ -70,17 +70,18 @@ void FaultLogFreeze::ReportAppFreezeToAppEvent(const FaultLogInfo& info, bool is
         externalLogList.push_back(freezeExtPath);
     }
     std::string externalLog = FreezeJsonUtil::GetStrByList(externalLogList);
-
-    FreezeJsonParams freezeJsonParams = FreezeJsonParams::Builder()
+    FaultLogType faultLogType = static_cast<FaultLogType>(info.faultLogType);
+    std::string freezeType = GetFreezeType(faultLogType, isAppHicollie);
+    std::string eventType = GetEventType(faultLogType, isAppHicollie);
+    FreezeJsonParams::Builder builder = FreezeJsonParams::Builder()
         .InitTime(collector.timestamp)
         .InitUuid(collector.uuid)
-        .InitFreezeType(isAppHicollie ? "AppHicollie" : "AppFreeze")
+        .InitFreezeType(freezeType)
         .InitForeground(collector.foreground)
         .InitBundleVersion(collector.version)
         .InitBundleName(collector.package_name)
         .InitProcessName(collector.process_name)
         .InitProcessLifeTime(processLifeTime)
-        .InitExternalLog(externalLog)
         .InitCpuAbi(collector.cpuAbi)
         .InitReleaseType(collector.releaseType)
         .InitPid(collector.pid)
@@ -95,11 +96,42 @@ void FaultLogFreeze::ReportAppFreezeToAppEvent(const FaultLogInfo& info, bool is
         .InitThreads(collector.stack)
         .InitMemory(collector.memory)
         .InitThermalLevel(collector.thermal_Level)
-        .InitExternalCallbackLog(collector.external_callback_log)
-        .Build();
-    EventPublish::GetInstance().PushEvent(info.id, isAppHicollie ? APP_HICOLLIE_TYPE : APP_FREEZE_TYPE,
+        .InitExternalCallbackLog(collector.external_callback_log);
+        if (freezeType == "AppFreezeWarning") {
+            builder.InitBundleVersionCode(collector.version_code);
+        } else {
+            builder.InitExternalLog(externalLog);
+        }
+        FreezeJsonParams freezeJsonParams = builder.Build();
+    EventPublish::GetInstance().PushEvent(info.id, eventType,
         HiSysEvent::EventType::FAULT, freezeJsonParams.JsonStr());
     HIVIEW_LOGI("Report FreezeJson Successfully!");
+}
+
+std::string FaultLogFreeze::GetFreezeType(FaultLogType faultLogType, bool isAppHicollie) const
+{
+    if (isAppHicollie) {
+        return "AppHicollie";
+    }
+    switch (faultLogType) {
+        case FaultLogType::APP_FREEZE:
+            return "AppFreeze";
+        case FaultLogType::APPFREEZE_WARNING:
+            return "AppFreezeWarning";
+        default:
+            return "";
+    }
+}
+
+std::string FaultLogFreeze::GetEventType(FaultLogType faultLogType, bool isAppHicollie) const
+{
+    if (isAppHicollie) {
+        return APP_HICOLLIE_TYPE;
+    }
+    if (faultLogType == FaultLogType::APPFREEZE_WARNING) {
+        return APP_FREEZE_WARNING_TYPE;
+    }
+    return APP_FREEZE_TYPE;
 }
 
 std::string FaultLogFreeze::GetException(const std::string& name, const std::string& message)
@@ -129,6 +161,7 @@ FreezeJsonUtil::FreezeJsonCollector FaultLogFreeze::GetFreezeJsonCollector(const
     collector.cpuAbi = GetStrValFromMap(info.sectionMap, FaultKey::CPU_ABI);
     collector.releaseType = GetStrValFromMap(info.sectionMap, FaultKey::RELEASE_TYPE);
     collector.version = GetStrValFromMap(info.sectionMap, FaultKey::MODULE_VERSION);
+    collector.version_code = GetStrValFromMap(info.sectionMap, FaultKey::VERSION_CODE);
     collector.uuid = GetStrValFromMap(info.sectionMap, FaultKey::FINGERPRINT);
     collector.thermal_Level = GetStrValFromMap(info.sectionMap, FaultKey::THERMAL_LEVEL);
     collector.external_callback_log = GetStrValFromMap(info.sectionMap, FaultKey::EXTERNAL_CALLBACK_LOG);
@@ -163,12 +196,15 @@ bool FaultLogFreeze::ReportEventToAppEvent() const
         ReportAppFreezeToAppEvent(info_);
         FaultLogExtConnManager::GetInstance().OnFault(info_);
     }
+    if (info_.faultLogType == FaultLogType::APPFREEZE_WARNING) {
+        ReportAppFreezeToAppEvent(info_);
+    }
     return true;
 }
 
 void FaultLogFreeze::UpdateFaultLogInfo()
 {
-    if (info_.faultLogType == FaultLogType::APP_FREEZE) {
+    if (info_.faultLogType == FaultLogType::APP_FREEZE || info_.faultLogType == FaultLogType::APPFREEZE_WARNING) {
         GetProcMemInfo(info_);
         rss_ = GetProcessInfo(info_.sectionMap, FaultKey::PROCESS_RSS_MEMINFO);
         info_.sectionMap[FaultKey::PROCESS_RSS_MEMINFO] = "Process Memory(kB): " + std::to_string(rss_) + "(Rss)";

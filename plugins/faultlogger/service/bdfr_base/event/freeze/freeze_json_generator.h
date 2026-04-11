@@ -111,6 +111,7 @@ public:
         Builder& InitFreezeType(const std::string& freezeType);
         Builder& InitForeground(bool foreground);
         Builder& InitBundleVersion(const std::string& bundleVersion);
+        Builder& InitBundleVersionCode(const std::string& bundleVersionCode);
         Builder& InitBundleName(const std::string& bundleName);
         Builder& InitProcessName(const std::string& processName);
         Builder& InitProcessLifeTime(const uint64_t& processLifeTime);
@@ -138,6 +139,7 @@ public:
         std::string freezeType_ = "";
         bool foreground_ = false;
         std::string bundleVersion_ = "";
+        std::string bundleVersionCode_ = "";
         std::string bundleName_ = "";
         std::string processName_ = "";
         uint64_t processLifeTime_ = 0;
@@ -170,6 +172,7 @@ private:
     static constexpr const char* const jsonParamsFreezeType = "freeze_type";
     static constexpr const char* const jsonParamsForeground = "foreground";
     static constexpr const char* const jsonParamsBundleVersion = "bundle_version";
+    static constexpr const char* const jsonParamsBundleVersionCode = "bundle_version_code";
     static constexpr const char* const jsonParamsBundleName = "bundle_name";
     static constexpr const char* const jsonParamsProcessName = "process_name";
     static constexpr const char* const jsonParamsProcessLifeTime = "process_life_time";
@@ -195,6 +198,7 @@ private:
     std::string freezeType_;
     bool foreground_;
     std::string bundleVersion_;
+    std::string bundleVersionCode_;
     std::string bundleName_;
     std::string processName_;
     uint64_t processLifeTime_ = 0;

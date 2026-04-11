@@ -471,8 +471,7 @@ void EventLogTask::HilogTagCapture()
 void EventLogTask::LightHilogCapture()
 {
     auto capture = std::make_shared<LightHilogCatcher>();
-    bool writeToJsFd = (event_->eventName_ == "THREAD_BLOCK_3S") ? false: true;
-    capture->Initialize("hilog -z 1000 -P", writeToJsFd, pid_);
+    capture->Initialize("hilog -z 1000 -P", true, pid_);
     tasks_.push_back(capture);
 }
 
