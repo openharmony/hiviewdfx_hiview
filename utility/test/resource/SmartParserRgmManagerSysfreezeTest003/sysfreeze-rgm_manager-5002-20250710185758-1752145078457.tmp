@@ -1,0 +1,34 @@
+Device info:MatePad Pro
+Build info:OpenHarmony 3.2.3.5
+Module name:rgm_manager
+Pid:5415
+Uid:5002
+Reason:SERVICE_TIMEOUT
+sysfreeze: rgm_manager SERVICE_TIMEOUT at 19700324235211
+DisplayPowerInfo:powerState:AWAKE
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+DOMAIN:FRAMEWORK
+STRINGID:SERVICE_TIMEOUT
+TIMESTAMP:1970/03/24-23:52:11:000
+PID:5415
+UID:5002
+PACKAGE_NAME:
+PROCESS_NAME:rgm_manager
+*******************************************
+start time: 1970/03/24-23:53:01:000
+DOMAIN = FRAMEWORK
+EVENTNAME = SERVICE_TIMEOUT
+TIMESTAMP = 1970/03/24-23:52:11:000
+PID = 5415
+UID = 5002
+TID = 5415
+MODULE_NAME = rgm_manager
+PROCESS_NAME = rgm_manager
+eventLog_action = tr,pb:1:a,k:SysRqFile
+eventLog_interval = 0
+MSG = CONTAINER_START FAIL, phase = 101
+
+
+SysrqCatcher -- fullPath:/data/log/eventlog/sysrq-19700324235211
+
+--------------------------------------------------------------

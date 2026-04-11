@@ -45,7 +45,7 @@
     },
     "Rule5":{
         "DirOrFile":"/data/log/faultlog/faultlogger/",
-        "Subcatalog":"sysfreeze-(?!HUNGTASK).*-\\d+-\\d+\\.log",
+        "Subcatalog":"sysfreeze-(?!HUNGTASK|rgm_manager).*-\\d+-\\d+\\.log",
         "featureId":"63_SYS_FREEZE_01",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
@@ -208,9 +208,7 @@
         "featureId":"63_SYS_FREEZE_02",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
-            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
-            {"namespace":"MainCallTrace", "depend":"BasicParam.v_tid", "matchKey":"name=", "v_start":"(tid=@{BasicParam.v_tid}@, state=BLOCKED)"},
-            {"namespace":"MainCallTrace", "depend":"MainCallTrace.v_start", "v_trace":"@T@(<[_a-zA-Z0-9]+\\+0x[0-9a-fA-F]+/0x[0-9a-fA-F]+> \\(.*\\))"}
+            {"namespace":"BasicParam", "matchKey":"MSG = process ", "v_first":"MSG = process (\\S{1,32}), task "}
         ]
     },
     "Rule19":{
@@ -223,7 +221,7 @@
     },
     "Rule20":{
         "DirOrFile":"/data/log/faultlog/freeze/",
-        "Subcatalog":"sysfreeze-(?!HUNGTASK).*-\\d+-\\d+\\.tmp",
+        "Subcatalog":"sysfreeze-(?!HUNGTASK|rgm_manager).*-\\d+-\\d+\\.tmp",
         "featureId":"63_SYS_FREEZE_01",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
@@ -241,9 +239,7 @@
         "featureId":"63_SYS_FREEZE_02",
         "rules":[
             {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"Module name:(.*)"},
-            {"namespace":"BasicParam", "matchKey":"TID = ", "v_tid":"TID = (.*)"},
-            {"namespace":"MainCallTrace", "depend":"BasicParam.v_tid", "matchKey":"name=", "v_start":"(tid=@{BasicParam.v_tid}@, state=BLOCKED)"},
-            {"namespace":"MainCallTrace", "depend":"MainCallTrace.v_start", "v_trace":"@T@(<[_a-zA-Z0-9]+\\+0x[0-9a-fA-F]+/0x[0-9a-fA-F]+> \\(.*\\))"}
+            {"namespace":"BasicParam", "matchKey":"MSG = process ", "v_first":"MSG = process (\\S{1,32}), task "}
         ]
     },
     "Rule22":{
@@ -276,6 +272,15 @@
             {"namespace":"BasicParam", "matchKey":"get_record_exce_type", "v_first":"get pmu reg is ([0-9a-fA-F]+)"},
             {"namespace":"BasicParam", "matchKey":"get_record_subtype", "v_second":"get pmu reg is ([0-9a-fA-F]+)"},
             {"namespace":"BasicParam", "matchKey":"no_module", "v_last":"(sr position:.*)"}
+        ]
+    },
+    "Rule25":{
+        "DirOrFile":"/data/log/faultlog/freeze/",
+        "Subcatalog":"sysfreeze-rgm_manager-\\d+-\\d+-\\d+\\.tmp",
+        "featureId":"63_SYS_FREEZE_02",
+        "rules":[
+            {"namespace":"BasicParam", "matchKey":"Module name:", "v_process":"^Module name:(\\S{1,32})"},
+            {"namespace":"BasicParam", "matchKey":"MSG = CONTAINER_START FAIL,", "v_first":"^MSG = CONTAINER_START FAIL, phase = (\\d{1,4})"}
         ]
     }
 }
