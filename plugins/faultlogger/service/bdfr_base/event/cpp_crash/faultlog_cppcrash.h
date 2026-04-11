@@ -43,6 +43,7 @@ private:
     static void WriteLogFile(const std::string& logPath, const std::string& content);
     static int TruncateAppCrashLog(const std::string& logPath, const std::string& target);
     static long FindTargetOffset(FILE* fp, const std::string& target);
+    static std::string GetMinidumpPath(const FaultLogInfo& info, uint32_t timeOutUs);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

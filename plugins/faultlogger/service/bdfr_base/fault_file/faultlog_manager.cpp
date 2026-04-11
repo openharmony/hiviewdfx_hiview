@@ -37,6 +37,7 @@ namespace HiviewDFX {
 using namespace FaultLogger;
 namespace {
 constexpr int32_t MAX_FAULT_LOG_PER_HAP = 10;
+constexpr int32_t MAX_MINIDUMP_LOG_PER_HAP = 5;
 constexpr uint32_t WARNING_LOG_MAX_SIZE = 3 * 1024 * 1024;
 constexpr uint32_t WARNING_LOG_MIN_KEEP_NUM = 15;
 constexpr uint32_t FAULT_LOG_MAX_SIZE = 20 * 1024 * 1024;
@@ -172,6 +173,10 @@ void FaultLogManager::RemoveOldFile(FaultLogInfo& info) const
     }
     store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, info.faultLogType, info.module),
         MAX_FAULT_LOG_PER_HAP);
+    if (info.faultLogType == FaultLogType::CPP_CRASH) {
+        store_->ClearSameLogFilesIfNeeded(CreateLogFileFilter(0, info.id, FaultLogType::MINIDUMP, info.module),
+                                          MAX_MINIDUMP_LOG_PER_HAP);
+    }
 }
 
 void FaultLogManager::ReduceLogFileListSize(std::list<std::string>& infoVec, int32_t maxNum) const

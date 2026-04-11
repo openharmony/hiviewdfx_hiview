@@ -322,5 +322,77 @@ HWTEST(FaultloggerCppCrashTest, ReportProcessKillEvent002, testing::ext::TestSiz
     EXPECT_EQ(FaultLogCppCrash::ReadLogFile(""), "");
     EXPECT_EQ(FaultLogCppCrash::ReadLogFile("test"), "");
 }
+
+/**
+ * @tc.name: GetMinidumpPath001
+ * @tc.desc: Test find minidump path
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, GetMinidumpPath001, testing::ext::TestSize.Level3)
+{
+    GTEST_LOG_(INFO) << "GetMinidumpPath001: start.";
+    FaultLogCppCrash faultCppCrash;
+    FaultLogInfo info;
+    info.pid = 99999999;
+    info.sectionMap["ENABLE_MINIDUMP"] = "true";
+
+    EXPECT_EQ(FaultLogCppCrash::GetMinidumpPath(info, 100), "");
+
+    std::string filePath = "/data/log/faultlog/temp/minidump-99999999-1775713225880";
+    std::string content = "minidump";
+    EXPECT_TRUE(FileUtil::SaveStringToFile(filePath, content));
+    EXPECT_EQ(FaultLogCppCrash::GetMinidumpPath(info, 1 * 1000 * 1000), "");
+    EXPECT_TRUE(FileUtil::RemoveFile(filePath));
+
+    filePath += ".dmp";
+    EXPECT_TRUE(FileUtil::SaveStringToFile(filePath, content));
+    EXPECT_EQ(FaultLogCppCrash::GetMinidumpPath(info, 1 * 1000 * 1000), filePath);
+    EXPECT_TRUE(FileUtil::RemoveFile(filePath));
+    GTEST_LOG_(INFO) << "GetMinidumpPath001: end.";
+}
+
+/**
+ * @tc.name: FillStackInfo001
+ * @tc.desc: test FillStackInfo has minidump
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, FillStackInfo001, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 0;
+    info.pid = 999999;
+    info.faultLogType = 1;
+    info.module = "com.example.myapplication";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    info.sectionMap["ENABLE_MINIDUMP"] = "true";
+    FaultLogCppCrash faultAddFault;
+    faultAddFault.AddFaultLog(info);
+    std::string timeStr = GetFormatedTimeWithMillsec(info.time);
+    std::string fileName = "/data/log/faultlog/faultlogger/cppcrash-com.example.myapplication-0-" + timeStr + ".log";
+    EXPECT_TRUE(FileUtil::FileExists(fileName));
+    EXPECT_TRUE(FileUtil::RemoveFile(fileName));
+}
+
+/**
+ * @tc.name: ReportCppCrashToAppEvent001
+ * @tc.desc: test ReportCppCrashToAppEvent; Func
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, ReportCppCrashToAppEvent001, testing::ext::TestSize.Level3)
+{
+    FaultLogCppCrash faultCppCrash;
+    FaultLogInfo info;
+    FaultLogCppCrash::ReportCppCrashToAppEvent(info);
+    info.sectionMap["ENABLE_MINIDUMP"] = "true";
+    FaultLogCppCrash::ReportCppCrashToAppEvent(info);
+    info.pid = 99999999;
+    EXPECT_EQ(FaultLogCppCrash::GetMinidumpPath(info, 100), "");
+}
 } // namespace HiviewDFX
 } // namespace OHOS
