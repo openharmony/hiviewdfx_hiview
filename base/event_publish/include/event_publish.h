@@ -36,6 +36,7 @@ constexpr const char* const EVENT_MAIN_THREAD_JANK = "MAIN_THREAD_JANK";
 constexpr const char* const EVENT_APP_HICOLLIE = "APP_HICOLLIE";
 constexpr const char* const EVENT_APP_KILLED = "APP_KILLED";
 constexpr const char* const EVENT_AUDIO_JANK_FRAME = "AUDIO_JANK_FRAME";
+constexpr const char* const EVENT_APP_FREEZE_WARNING = "APPFREEZE_WARNING";
 }
 
 class EventPublish {

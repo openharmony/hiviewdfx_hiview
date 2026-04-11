@@ -33,6 +33,8 @@ private:
     static std::string GetException(const std::string& name, const std::string& message);
 
     uint64_t rss_ = 0;
+    std::string GetEventType(FaultLogType faultLogType, bool isAppHicollie) const;
+    std::string GetFreezeType(FaultLogType faultLogType, bool isAppHicollie) const;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

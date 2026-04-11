@@ -154,6 +154,7 @@ FreezeJsonParams::FreezeJsonParams(const FreezeJsonParams::Builder& builder)
     freezeType_(builder.freezeType_),
     foreground_(builder.foreground_),
     bundleVersion_(builder.bundleVersion_),
+    bundleVersionCode_(builder.bundleVersionCode_),
     bundleName_(builder.bundleName_),
     processName_(builder.processName_),
     processLifeTime_(builder.processLifeTime_),
@@ -203,6 +204,12 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitForeground(bool foregr
 FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersion(const std::string& bundleVersion)
 {
     bundleVersion_ = bundleVersion;
+    return *this;
+}
+
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersionCode(const std::string& bundleVersionCode)
+{
+    bundleVersionCode_ = bundleVersionCode;
     return *this;
 }
 
@@ -321,6 +328,7 @@ std::string FreezeJsonParams::JsonStr() const
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsUuid, uuid_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsForeground, foreground_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersion, bundleVersion_),
+        FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersionCode, bundleVersionCode_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleName, bundleName_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsProcessName, processName_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsProcessLifeTime, processLifeTime_),

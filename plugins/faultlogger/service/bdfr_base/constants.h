@@ -21,6 +21,7 @@ namespace FaultLogger {
 constexpr const char * const APP_CRASH_TYPE = "APP_CRASH";
 constexpr const char * const APP_FREEZE_TYPE = "APP_FREEZE";
 constexpr const char * const APP_HICOLLIE_TYPE = "APP_HICOLLIE";
+constexpr const char * const APP_FREEZE_WARNING_TYPE = "APPFREEZE_WARNING";
 
 constexpr int REPORT_HILOG_LINE = 100;
 constexpr int DECIMAL_BASE = 10;
