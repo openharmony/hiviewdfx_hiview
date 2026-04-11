@@ -1,0 +1,58 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//base/hiviewdfx/hiview/hiretrieval/hiretrieval.gni")
+import("//build/ohos.gni")
+
+config("hiretrieval_napi_config") {
+  visibility = [ "*:*" ]
+
+  include_dirs = [ "include" ]
+}
+
+ohos_shared_library("libhiretrieval_napi") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+  }
+
+  configs = [ ":hiretrieval_napi_config" ]
+
+  public_configs = [ ":hiretrieval_napi_config" ]
+
+  sources = [
+    "src/hiretrieval_napi.cpp",
+    "src/hiretrieval_napi_util.cpp",
+  ]
+
+  deps = [
+    "$hiretrieval_frameworks:libhiretrieval",
+    "$hiretrieval_interfaces/common:hiretrieval_common_set",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "napi:ace_napi",
+  ]
+
+  relative_install_dir = "module/hiviewdfx"
+
+  part_name = "hiview"
+
+  subsystem_name = "hiviewdfx"
+}
