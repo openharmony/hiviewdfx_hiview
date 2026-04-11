@@ -104,6 +104,7 @@ constexpr const char * const IS_SIG_ACTION = "IS_SIG_ACTION";
 constexpr const char * const EXTERNAL_CALLBACK_LOG = "EXTERNAL_LOG";
 constexpr const char * const ERRORMANAGER_CAPTURE = "ERRORMANAGER_CAPTURE";
 constexpr const char * const IS_UNCATCH_FAULT = "IS_UNCATCH_FAULT";
+constexpr const char * const ENABLE_MINIDUMP = "ENABLE_MINIDUMP";
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS
