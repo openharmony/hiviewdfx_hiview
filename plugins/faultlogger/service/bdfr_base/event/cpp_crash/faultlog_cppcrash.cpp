@@ -25,11 +25,15 @@
 #include "faultlog_formatter.h"
 #include "faultlog_hilog_helper.h"
 #include "faultlog_util.h"
+#include "ffrt.h"
 #include "file_util.h"
 #include "hisysevent_c.h"
 #include "hiview_logger.h"
 #include "log_analyzer.h"
 #include "parameter_ex.h"
+#include <filesystem>
+
+#include "string_util.h"
 
 namespace OHOS {
 namespace HiviewDFX {
@@ -42,6 +46,7 @@ namespace {
     const int DFX_HILOG_TIMESTAMP_MILLISEC_NUM = 3;
     const int DFX_HILOG_TIMESTAMP_DECIMAL = 10;
     const int64_t DFX_HILOG_TIMESTAMP_THOUSAND = 1000;
+    constexpr uint32_t MINIDUMP_MAX_TIMEOUT_US = 5 * 1000 * 1000;
 }
 
 int64_t FaultLogCppCrash::GetLastLineHilogTime(const std::string& lastLineHilog)
@@ -129,6 +134,37 @@ std::string FaultLogCppCrash::ReadStackFromPipe(const FaultLogInfo& info)
     return std::string(buffer.data(), nread);
 }
 
+std::string FaultLogCppCrash::GetMinidumpPath(const FaultLogInfo& info, uint32_t timeOutUs)
+{
+    if (GetStrValFromMap(info.sectionMap, FaultKey::ENABLE_MINIDUMP) != "true") {
+        return "";
+    }
+
+    constexpr uint32_t stepUs = 5 * 100 * 1000; // 500ms
+    uint32_t maxCnt = std::max(timeOutUs / stepUs, 1u);
+
+    std::string dir = FAULTLOG_TEMP_FOLDER;
+    if (!std::filesystem::exists(dir) || !std::filesystem::is_directory(dir)) {
+        return "";
+    }
+
+    std::string prefix = "minidump-" + std::to_string(info.pid);
+    for (uint32_t cnt = 0; cnt < maxCnt; ++cnt) {
+        for (auto& entry : std::filesystem::directory_iterator(dir)) {
+            auto fileName = entry.path().filename().string();
+            if (StringUtil::StartWith(fileName, prefix) && StringUtil::EndWith(fileName, ".dmp")) {
+                HIVIEW_LOGI("Found minidump file: %{public}s", fileName.c_str());
+                return dir + fileName;
+            }
+        }
+        if (cnt < maxCnt - 1) {
+            ffrt_usleep(stepUs);
+        }
+    }
+    HIVIEW_LOGW("Minidump file not found within timeout for pid: %{public}d", info.pid);
+    return "";
+}
+
 Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::string& stackInfoOriginal)
 {
     Json::Reader reader;
@@ -140,6 +176,20 @@ Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::strin
     stackInfoObj["bundle_name"] = info.module;
     Json::Value externalLog;
     externalLog.append(info.logPath);
+
+    std::string minidumpSourcePath = GetMinidumpPath(info, MINIDUMP_MAX_TIMEOUT_US);
+    if (!minidumpSourcePath.empty()) {
+        std::string minidumpDestPath = "/data/log/faultlog/faultlogger/minidump-" + info.module + "-" +
+            std::to_string(info.id) + "-" + GetFormatedTimeWithMillsec(info.time) + ".dmp";
+        if (FileUtil::CopyFile(minidumpSourcePath, minidumpDestPath) == 0) {
+            externalLog.append(minidumpDestPath);
+            HIVIEW_LOGI("Minidump copied to: %{public}s", minidumpDestPath.c_str());
+        } else {
+            HIVIEW_LOGE("Failed to copy minidump from %{private}s to %{private}s",
+                minidumpSourcePath.c_str(), minidumpDestPath.c_str());
+        }
+    }
+
     stackInfoObj["external_log"] = externalLog;
 
     stackInfoObj["process_life_time"] = GetProcessInfo(info.sectionMap, FaultKey::PROCESS_LIFETIME);
@@ -170,22 +220,31 @@ std::string FaultLogCppCrash::GetStackInfo(const FaultLogInfo& info)
 
 void FaultLogCppCrash::ReportCppCrashToAppEvent(const FaultLogInfo& info)
 {
-    std::string stackInfo = GetStackInfo(info);
-    if (stackInfo.empty()) {
-        HIVIEW_LOGE("stackInfo is empty");
-        return;
-    }
-    HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}zu", info.pid, stackInfo.length());
+    auto task = [info]() {
+        std::string stackInfo = GetStackInfo(info);
+        if (stackInfo.empty()) {
+            HIVIEW_LOGE("stackInfo is empty");
+            return;
+        }
+        HIVIEW_LOGI("report cppcrash to appevent, pid:%{public}d len:%{public}zu", info.pid, stackInfo.length());
 #ifdef UNIT_TEST
-    std::string outputFilePath = "/data/test_cppcrash_info_" + std::to_string(info.pid);
-    std::ofstream testFile(outputFilePath);
-    if (testFile.is_open()) {
-        testFile.close();
-    }
-    WriteLogFile(outputFilePath, stackInfo + "\n");
+        std::string outputFilePath = "/data/test_cppcrash_info_" + std::to_string(info.pid);
+        std::ofstream testFile(outputFilePath);
+        if (testFile.is_open()) {
+            testFile.close();
+        }
+        WriteLogFile(outputFilePath, stackInfo + "\n");
 #endif
-    EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo,
-        info.logFileCutoffSizeBytes);
+        EventPublish::GetInstance().PushEvent(info.id, APP_CRASH_TYPE, HiSysEvent::EventType::FAULT, stackInfo,
+            info.logFileCutoffSizeBytes);
+    };
+
+    std::string enableMinidump = GetStrValFromMap(info.sectionMap, FaultKey::ENABLE_MINIDUMP);
+    if (enableMinidump == "true") {
+        ffrt::submit(task, ffrt::task_attr().name("cppcrash_wait_minidump"));
+    } else {
+        task();
+    }
 }
 
 void FaultLogCppCrash::AddCppCrashInfo(FaultLogInfo& info)
@@ -274,7 +333,6 @@ int FaultLogCppCrash::TruncateAppCrashLog(const std::string& logPath, const std:
     HIVIEW_LOGI("Truncate log success at offset: %{public}ld", offset);
     return 0;
 }
-
 
 long FaultLogCppCrash::FindTargetOffset(FILE* fp, const std::string& target)
 {

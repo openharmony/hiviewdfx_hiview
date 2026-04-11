@@ -157,6 +157,8 @@ int32_t GetLogTypeByName(const std::string& type)
         return FaultLogType::ADDR_SANITIZER;
     } else if (type == "cjerror") {
         return FaultLogType::CJ_ERROR;
+    } else if (type == "minidump") {
+        return FaultLogType::MINIDUMP;
     } else if (type == "all" || type == "ALL") {
         return FaultLogType::ALL;
     } else {
