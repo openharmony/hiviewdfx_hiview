@@ -153,6 +153,7 @@ HWTEST(FaultloggerUtilsUnittest, GetLogTypeByNameTest001, testing::ext::TestSize
     ASSERT_EQ(GetLogTypeByName("appfreezewarning"), FaultLogType::APPFREEZE_WARNING);
     ASSERT_EQ(GetLogTypeByName("sanitizer"), FaultLogType::ADDR_SANITIZER);
     ASSERT_EQ(GetLogTypeByName("cjerror"), FaultLogType::CJ_ERROR);
+    ASSERT_EQ(GetLogTypeByName("minidump"), FaultLogType::MINIDUMP);
     ASSERT_EQ(GetLogTypeByName("all"), FaultLogType::ALL);
     ASSERT_EQ(GetLogTypeByName("ALL"), FaultLogType::ALL);
     ASSERT_EQ(GetLogTypeByName("Unknown"), -1);
