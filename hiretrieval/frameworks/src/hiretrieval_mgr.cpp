@@ -43,12 +43,16 @@ inline void SubOverLimitStr(std::string& str)
     }
 }
 
-inline std::string GetPreferenceFilePath()
+std::string GetPreferenceFilePath()
 {
     auto ctx = OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (ctx == nullptr) {
+        HILOG_ERROR(LOG_CORE, "context is invalid");
+        return "";
+    }
     std::string preferenceDir = ctx->GetPreferencesDir();
-    if (!ctx || preferenceDir.empty()) {
-        HILOG_ERROR(LOG_CORE, "context is invalid or preference dir is empty");
+    if (preferenceDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "preference dir is empty");
         return "";
     }
     return preferenceDir + "/hiretrieval_cfg.xml";
