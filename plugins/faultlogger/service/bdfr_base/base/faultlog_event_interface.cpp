@@ -90,7 +90,7 @@ bool FaultLogEventInterface::VerifyModule()
     }
 
     if (IsRenderUid(info_.id)) {
-        info_.module = "com.huawei.hmos.arkwebcore";
+        info_.module = Parameter::GetString("persist.arkwebcore.package_name", "Unknown");
         return true;
     }
 
