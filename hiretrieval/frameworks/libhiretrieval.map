@@ -1,0 +1,21 @@
+{
+  global:
+    extern "C++" {
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::HiRetrievalDynamicLoader()";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Participate(HiRetrievalConfig)";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Quit()";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Run()";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Init()";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::~HiRetrievalDynamicLoader()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::GetInstance()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::Participate(OHOS::HiviewDFX::HiRetrievalMgr::Config&)";
+      "OHOS::HiviewDFX::HiRetrievalMgr::Quit()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::Run()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::Init()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::IsParticipant()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::GetLastParticipationTs()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::GetCurrentConfig()";
+    };
+  local:
+    *;
+};
