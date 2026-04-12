@@ -151,12 +151,9 @@ void HiRetrievalNapiUtil::ThrowParamMandatoryError(const napi_env env, const std
 void HiRetrievalNapiUtil::ParseJsHiRetrievalConfig(const napi_env env, const napi_value& jsVal,
     HiRetrievalMgr::Config& cfg)
 {
-    cfg.userType = GetStrTypeAttr(env, jsVal, CommonDef::USER_TYPE_ATTR_NAME,
-        CommonUtil::GetDefaultUserType());
-    cfg.deviceType = GetStrTypeAttr(env, jsVal, CommonDef::DEVICE_TYPE_ATTR_NAME,
-        CommonUtil::GetDefaultDeviceType());
-    cfg.deviceModel = GetStrTypeAttr(env, jsVal, CommonDef::DEVICE_MODEL_ATTR_NAME,
-        CommonUtil::GetDefaultDeviceModel());
+    cfg.userType = GetStrTypeAttr(env, jsVal, CommonDef::USER_TYPE_ATTR_NAME, "");
+    cfg.deviceType = GetStrTypeAttr(env, jsVal, CommonDef::DEVICE_TYPE_ATTR_NAME, "");
+    cfg.deviceModel = GetStrTypeAttr(env, jsVal, CommonDef::DEVICE_MODEL_ATTR_NAME, "");
 }
 
 void HiRetrievalNapiUtil::CreateJsBoolValue(const napi_env env, bool boolVal, napi_value& jsVal)

@@ -21,6 +21,7 @@
 
 #include "application_context.h"
 #include "hilog/log.h"
+#include "hiretrieval_base_util.h"
 #include "preferences_helper.h"
 
 #undef LOG_DOMAIN
@@ -90,14 +91,14 @@ std::string ReadParticipationInfo(const std::string& key)
     return val;
 }
 
-long long GetCurrentTs()
+inline long long GetCurrentTs()
 {
     auto now = std::chrono::system_clock::now();
     auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     return millisecs.count();
 }
 
-void PersistConfig(const HiRetrievalMgr::Config& cfg)
+inline void PersistConfig(const HiRetrievalMgr::Config& cfg)
 {
     std::unordered_map<std::string, std::string> infos;
     infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, cfg.userType);
@@ -108,7 +109,7 @@ void PersistConfig(const HiRetrievalMgr::Config& cfg)
     UpdateParticipationInfo(infos);
 }
 
-void ClearConfigCache()
+inline void ClearConfigCache()
 {
     std::unordered_map<std::string, std::string> infos;
     infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, "");
@@ -118,7 +119,7 @@ void ClearConfigCache()
     UpdateParticipationInfo(infos);
 }
 
-void ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
+inline void ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
 {
     cfg.userType = ReadParticipationInfo(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME);
     SubOverLimitStr(cfg.userType);
@@ -127,6 +128,13 @@ void ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
     cfg.deviceModel = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME);
     SubOverLimitStr(cfg.deviceModel);
 }
+
+inline bool IsSameConfig(HiRetrievalMgr::Config& src, HiRetrievalMgr::Config& dest)
+{
+    return src.userType == dest.userType && src.deviceType == dest.deviceType &&
+        src.deviceModel == dest.deviceModel;
+}
+
 }
 
 HiRetrievalMgr& HiRetrievalMgr::GetInstance()
@@ -151,12 +159,18 @@ int32_t HiRetrievalMgr::Init()
 
 int32_t HiRetrievalMgr::Participate(HiRetrievalMgr::Config& cfg)
 {
-    HiRetrievalMgr::Config currentCfg = GetCurrentConfig();
-    if (currentCfg.userType == cfg.userType &&
-        currentCfg.deviceType == cfg.deviceType &&
-        currentCfg.deviceModel == cfg.deviceModel) {
+    if (HiRetrievalMgr::Config curCfg = GetCurrentConfig();
+        IsParticipant() && IsSameConfig(curCfg, cfg)) {
+        HILOG_INFO(LOG_CORE, "participation with same cfg isn't permitted");
         return HiRetrieval::NativeErrorCode::SUCC;
     }
+    if (cfg.deviceType.empty()) {
+        cfg.deviceType = HiRetrievalBaseUtil::GetDefaultDeviceType();
+    }
+    if (cfg.deviceModel.empty()) {
+        cfg.deviceModel = HiRetrievalBaseUtil::GetDefaultDeviceModel();
+    }
+    PersistConfig(cfg);
     HiRetrievalConfig config;
     config.userType = cfg.userType.c_str();
     config.deviceType = cfg.deviceType.c_str();
@@ -166,7 +180,6 @@ int32_t HiRetrievalMgr::Participate(HiRetrievalMgr::Config& cfg)
         HILOG_ERROR(LOG_CORE, "failed to participate, ret is %{public}d", ret);
         return ret;
     }
-    PersistConfig(cfg);
     return ret;
 }
 
