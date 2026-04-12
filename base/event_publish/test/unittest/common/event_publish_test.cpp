@@ -376,15 +376,20 @@ HWTEST_F(EventPublishTest, EventPublishTest010, TestSize.Level1)
         std::string filePath = "/data/unittest_eventpublishtest010.txt";
         std::vector<std::string> lines;
         int srcSize = FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH);
-        if (FileUtil::LoadLinesFromFile(filePath, lines) && lines.size() == 2) {
+        if (FileUtil::LoadLinesFromFile(filePath, lines) && lines.size() == 3) {
             EventPublish::GetInstance().PushEvent(testUid, "APP_CRASH", HiSysEvent::EventType::FAULT, lines[0]);
             sleep(2 * DELAY_TIME_FOR_WRITE);
-            int curSize = FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH);  // Normal
-            EXPECT_GT(curSize, srcSize);
+            int curSize1 = FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH);  // Normal
+            EXPECT_GT(curSize1, srcSize);
 
             EventPublish::GetInstance().PushEvent(testUid, "APP_CRASH", HiSysEvent::EventType::FAULT, lines[1]);
             sleep(2 * DELAY_TIME_FOR_WRITE);
-            EXPECT_EQ(FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH), curSize);  // path is illegal
+            int curSize2 = FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH);  // Normal with dmp log
+            EXPECT_GT(curSize2, curSize1);
+
+            EventPublish::GetInstance().PushEvent(testUid, "APP_CRASH", HiSysEvent::EventType::FAULT, lines[1]);
+            sleep(2 * DELAY_TIME_FOR_WRITE);
+            EXPECT_EQ(FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH), curSize2);  // path is illegal
         }
     }
 }

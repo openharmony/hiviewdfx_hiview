@@ -59,6 +59,9 @@ constexpr const char* const CRASH_TYPE = "crash_type";
 constexpr const char* const PID = "pid";
 constexpr const char* const IS_BUSINESS_JANK = "is_business_jank";
 constexpr uint64_t MAX_FILE_SIZE = 5 * 1024 * 1024; // 5M
+constexpr uint64_t DMP_MAX_FILE_SIZE = 35 * 1024 * 1024; // 35M
+const std::string DMP_LOG_CONFIG_NAME = "minidump_config.txt";
+const std::string DMP_CONFIG_TRUE = "{collectMinidump:true}";
 constexpr uint64_t WATCHDOG_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10M
 constexpr uint64_t RESOURCE_OVERLIMIT_MAX_FILE_SIZE = 2048uLL * 1024 * 1024; // 2G
 constexpr const char* const XATTR_NAME = "user.appevent";
@@ -86,7 +89,8 @@ struct ExternalLogInfo {
     uint64_t maxFileSize;
 };
 
-void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalLogInfo)
+void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalLogInfo, int32_t uid,
+    const std::string& pathHolder)
 {
     if (eventName == EVENT_MAIN_THREAD_JANK) {
         externalLogInfo.extensionType = ".trace";
@@ -100,6 +104,17 @@ void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalL
         externalLogInfo.extensionType = ".log";
         externalLogInfo.subPath = "hiappevent";
         externalLogInfo.maxFileSize = MAX_FILE_SIZE;
+        std::string sandBoxLogPath = BundleUtil::GetSandBoxPath(uid, "log", pathHolder, "hiappevent");
+        std::string realPath;
+        if (!FileUtil::PathToRealPath(sandBoxLogPath, realPath)) {
+            HIVIEW_LOGE("sandbox real fullPath failed.");
+            return;
+        }
+        std::string content;
+        FileUtil::LoadStringFromFile(realPath + "/" + DMP_LOG_CONFIG_NAME, content);
+        if (content == DMP_CONFIG_TRUE) {
+            externalLogInfo.maxFileSize = DMP_MAX_FILE_SIZE;
+        }
     }
 }
 
@@ -220,6 +235,11 @@ bool CopyExternalLog(int32_t uid, const std::string& curLogPath, const std::stri
     return false;
 }
 
+bool IsDmpFile(const std::string& dmpPath)
+{
+    return StringUtil::EndWith(dmpPath, ".dmp");
+}
+
 bool CheckInSandBoxLog(const std::string& curLogPath, const std::string& sandBoxLogPath,
     Json::Value& externalLogJson, bool& logOverLimit)
 {
@@ -273,7 +293,7 @@ void SaveLogToSandBox(int32_t uid, const std::string& pathHolder, Json::Value& e
     }
 
     ExternalLogInfo externalLogInfo;
-    GetExternalLogInfo(eventJson[NAME_PROPERTY].asString(), externalLogInfo);
+    GetExternalLogInfo(eventJson[NAME_PROPERTY].asString(), externalLogInfo, uid, pathHolder);
     std::string sandBoxLogPath = BundleUtil::GetSandBoxPath(uid, "log", pathHolder, externalLogInfo.subPath);
     uint64_t dirSize = FileUtil::GetFolderSize(sandBoxLogPath);
     bool logOverLimit = false;
@@ -294,6 +314,9 @@ void SaveLogToSandBox(int32_t uid, const std::string& pathHolder, Json::Value& e
         if (dirSize + fileSize <= externalLogInfo.maxFileSize) {
             std::string desFileName = GetDesFileName(eventJson[PARAM_PROPERTY], eventJson[NAME_PROPERTY].asString(),
                 externalLogInfo);
+            if (IsDmpFile(curLogPath)) {
+                desFileName = StringUtil::ReplaceStr(desFileName, ".log", ".dmp");
+            }
             std::string destPath = sandBoxLogPath + "/" + desFileName;
             if (CopyExternalLog(uid, curLogPath, destPath, maxFileSizeBytes)) {
                 dirSize += fileSize;
