@@ -39,9 +39,6 @@ static constexpr int32_t ERR_NOT_INIT = 36000001;
 class CommonUtil {
 public:
     static std::pair<int32_t, std::string> GetErrorDetailByRet(const int32_t retCode);
-    static std::string GetDefaultUserType();
-    static std::string GetDefaultDeviceType();
-    static std::string GetDefaultDeviceModel();
 };
 } // namespace OHOS::HiviewDFX::HiRetrieval
 

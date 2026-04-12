@@ -145,11 +145,9 @@ void HiRetrievalAniUtil::CheckRetAndThrowError(ani_env* env, int32_t retCode)
 
 void HiRetrievalAniUtil::ParseJsHiRetrievalConfig(ani_env* env, ani_object& aniVal, HiRetrievalMgr::Config& cfg)
 {
-    cfg.userType = GetStrTypeAttr(env, aniVal, CommonDef::USER_TYPE_ATTR_NAME, CommonUtil::GetDefaultUserType());
-    cfg.deviceType = GetStrTypeAttr(env, aniVal, CommonDef::DEVICE_TYPE_ATTR_NAME,
-        CommonUtil::GetDefaultDeviceType());
-    cfg.deviceModel = GetStrTypeAttr(env, aniVal, CommonDef::DEVICE_MODEL_ATTR_NAME,
-        CommonUtil::GetDefaultDeviceModel());
+    cfg.userType = GetStrTypeAttr(env, aniVal, CommonDef::USER_TYPE_ATTR_NAME, "");
+    cfg.deviceType = GetStrTypeAttr(env, aniVal, CommonDef::DEVICE_TYPE_ATTR_NAME, "");
+    cfg.deviceModel = GetStrTypeAttr(env, aniVal, CommonDef::DEVICE_MODEL_ATTR_NAME, "");
 }
 
 void HiRetrievalAniUtil::CreateJsHiRetrievalConfig(ani_env* env, const HiRetrievalMgr::Config& cfg, ani_object& cfgObj)

@@ -18,8 +18,6 @@
 #include <unordered_map>
 
 #include "hiretrieval_base_def.h"
-#include "parameter.h"
-#include "parameters.h"
 
 namespace OHOS::HiviewDFX::HiRetrieval {
 namespace {
@@ -38,25 +36,5 @@ std::pair<int32_t, std::string> CommonUtil::GetErrorDetailByRet(const int32_t re
     } else {
         return ret->second;
     }
-}
-
-std::string CommonUtil::GetDefaultUserType()
-{
-    return "";
-}
-
-std::string CommonUtil::GetDefaultDeviceType()
-{
-    static std::string deviceType = OHOS::system::GetDeviceType();
-    return deviceType;
-}
-
-std::string CommonUtil::GetDefaultDeviceModel()
-{
-    const char* model = GetProductModel();
-    if (model == nullptr) {
-        return "";
-    }
-    return std::string(model);
 }
 } // namespace OHOS::HiviewDFX::HiRetrieval
