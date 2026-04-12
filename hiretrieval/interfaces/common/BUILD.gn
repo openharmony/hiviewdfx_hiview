@@ -39,10 +39,7 @@ ohos_source_set("hiretrieval_common_set") {
 
   deps = [ "$hiretrieval_frameworks:libhiretrieval" ]
 
-  external_deps = [
-    "c_utils:utils",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "c_utils:utils" ]
 
   part_name = "hiview"
 
