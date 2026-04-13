@@ -163,16 +163,16 @@ int32_t HiRetrievalMgr::Init()
 
 int32_t HiRetrievalMgr::Participate(HiRetrievalMgr::Config& cfg)
 {
-    if (HiRetrievalMgr::Config curCfg = GetCurrentConfig();
-        IsParticipant() && IsSameConfig(curCfg, cfg)) {
-        HILOG_INFO(LOG_CORE, "participation with same cfg isn't permitted");
-        return HiRetrieval::NativeErrorCode::SUCC;
-    }
     if (cfg.deviceType.empty()) {
         cfg.deviceType = HiRetrievalBaseUtil::GetDefaultDeviceType();
     }
     if (cfg.deviceModel.empty()) {
         cfg.deviceModel = HiRetrievalBaseUtil::GetDefaultDeviceModel();
+    }
+    if (HiRetrievalMgr::Config curCfg = GetCurrentConfig();
+        IsParticipant() && IsSameConfig(curCfg, cfg)) {
+        HILOG_INFO(LOG_CORE, "participation with same cfg isn't permitted");
+        return HiRetrieval::NativeErrorCode::SUCC;
     }
     PersistConfig(cfg);
     HiRetrievalConfig config;
