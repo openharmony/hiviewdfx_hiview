@@ -89,7 +89,7 @@ bool FaultLogEventInterface::VerifyModule()
         }
     }
 
-    if (IsRenderUid(info_.id)) {
+    if (info_.faultLogType == FaultLogType::CPP_CRASH && IsRenderUid(info_.id)) {
         info_.module = Parameter::GetString("persist.arkwebcore.package_name", "Unknown");
         return true;
     }
