@@ -19,6 +19,10 @@
                 /data/log/faultlog/faultlogger/" src="res"/>
             <option name="push" value="testdata/jscrash-com.example.tstest-20010045-20250718202951568.log ->
                 /data/" src="res"/>
+            <option name="push" value="testdata/cppcrash-com.example.dmpzxq-20020211-20260414111946669.log ->
+                /data/log/faultlog/faultlogger/" src="res"/>
+            <option name="push" value="testdata/minidump-com.example.dmpzxq-20020211-20260414111946669.dmp ->
+                /data/log/faultlog/faultlogger/" src="res"/>
             <option name="push" value="testdata/unittest_eventpublishtest005.txt -> /data/" src="res"/>
             <option name="push" value="testdata/unittest_eventpublishtest010.txt -> /data/" src="res"/>
             <option name="push" value="tests/unittest/hiview/event_publish/EventPublishJsTest.hap -> /data/" src="out"/>
@@ -26,6 +30,10 @@
         <cleaner>
             <option name="shell" value=
                 "rm -rf /data/log/faultlog/faultlogger/jscrash-com.example.tstest-20010045-20250718202951568.log"/>
+            <option name="shell" value=
+                "rm -rf /data/log/faultlog/faultlogger/cppcrash-com.example.dmpzxq-20020211-20260414111946669.log"/>
+            <option name="shell" value=
+                "rm -rf /data/log/faultlog/faultlogger/minidump-com.example.dmpzxq-20020211-20260414111946669.dmp"/>
             <option name="shell" value=
                 "rm -rf /data/jscrash-com.example.tstest-20010045-20250718202951568.log"/>
             <option name="shell" value="rm -rf /data/app/el2/100/log/com.example.myapplication/hiappevent/*"/>
