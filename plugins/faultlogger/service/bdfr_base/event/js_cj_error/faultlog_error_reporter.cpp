@@ -94,9 +94,9 @@ void JsErrorAddparams(Json::Value& params, std::shared_ptr<SysEvent> sysEvent,
     auto memory = GetMemoryJsonValue(sectionMap);
     memory["rss"] = rss; // rss is transmitted through sysEvent
     params["memory"] = memory;
-    params["exception"]["errormanager_capture"] =
+    params["exception"]["caught_by_errormanager"] =
         sysEvent->GetEventIntValue(FaultKey::ERRORMANAGER_CAPTURE) ? true : false;
-    params["exception"]["is_uncatch_fault"] = sysEvent->GetEventIntValue(FaultKey::IS_UNCATCH_FAULT) ? true : false;
+    params["exception"]["uncatchable_fault"] = sysEvent->GetEventIntValue(FaultKey::IS_UNCATCH_FAULT) ? true : false;
 }
 } // namespace
 
