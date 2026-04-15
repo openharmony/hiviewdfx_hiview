@@ -32,11 +32,7 @@ public:
     std::list<FaultLogInfo> QuerySelfFaultLog(int32_t uid, int32_t pid, int32_t faultType, int32_t maxNum) override;
     void StartFaultLogBootScan() override;
     void SanitizerHandleUnorderedEvent(const Event& msg) override;
-    bool EnableGwpAsanGrayscale(bool alwaysEnabled,
-                                double sampleRate,
-                                double maxSimutaneousAllocations,
-                                int32_t duration,
-                                int32_t uid) override;
+    bool EnableGwpAsanGrayscale(GwpAsanParams gwpAsanParams, int32_t uid) override;
     void DisableGwpAsanGrayscale(int32_t uid) override;
     uint32_t GetGwpAsanGrayscaleState(int32_t uid) override;
     uint64_t GetExtensionDelayTime() override;
