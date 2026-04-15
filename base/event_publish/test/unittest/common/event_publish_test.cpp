@@ -387,7 +387,7 @@ HWTEST_F(EventPublishTest, EventPublishTest010, TestSize.Level1)
             int curSize2 = FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH);  // Normal with dmp log
             EXPECT_GT(curSize2, curSize1);
 
-            EventPublish::GetInstance().PushEvent(testUid, "APP_CRASH", HiSysEvent::EventType::FAULT, lines[1]);
+            EventPublish::GetInstance().PushEvent(testUid, "APP_CRASH", HiSysEvent::EventType::FAULT, lines[2]);
             sleep(2 * DELAY_TIME_FOR_WRITE);
             EXPECT_EQ(FileUtil::GetFolderSize(TEST_EXTERNAL_LOG_PATH), curSize2);  // path is illegal
         }
