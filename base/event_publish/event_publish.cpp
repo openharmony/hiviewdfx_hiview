@@ -104,10 +104,10 @@ void GetExternalLogInfo(const std::string &eventName, ExternalLogInfo &externalL
         externalLogInfo.extensionType = ".log";
         externalLogInfo.subPath = "hiappevent";
         externalLogInfo.maxFileSize = MAX_FILE_SIZE;
-        std::string sandBoxLogPath = BundleUtil::GetSandBoxPath(uid, "log", pathHolder, "hiappevent");
+        std::string sandBoxInfoPath = BundleUtil::GetSandBoxPath(uid, "log", pathHolder, "hiappevent") + "/info";
         std::string realPath;
-        if (!FileUtil::PathToRealPath(sandBoxLogPath, realPath)) {
-            HIVIEW_LOGE("sandbox real fullPath failed.");
+        if (!FileUtil::PathToRealPath(sandBoxInfoPath, realPath)) {
+            HIVIEW_LOGI("sandBoxInfoPath real fullPath failed.");
             return;
         }
         std::string content;
