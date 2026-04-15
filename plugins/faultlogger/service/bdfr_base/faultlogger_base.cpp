@@ -115,10 +115,7 @@ void FaultloggerBase::SanitizerHandleUnorderedEvent(const Event& msg)
     sanitizerTelemetry.OnUnorderedEvent(msg);
 }
 
-bool FaultloggerBase::EnableGwpAsanGrayscale(bool alwaysEnabled,
-                                             double sampleRate,
-                                             double maxSimutaneousAllocations,
-                                             int32_t duration,
+bool FaultloggerBase::EnableGwpAsanGrayscale(GwpAsanParams gwpAsanParams,
                                              int32_t uid)
 {
     std::string bundleName = GetApplicationNameById(uid);
@@ -127,8 +124,10 @@ bool FaultloggerBase::EnableGwpAsanGrayscale(bool alwaysEnabled,
         return false;
     }
     HIVIEW_LOGD("EnableGwpAsanGrayscale success, bundleName: %{public}s, alwaysEnabled: %{public}d "
-        ", sampleRate: %{public}f, maxSimutaneousAllocations: %{public}f, duration: %{public}d",
-        bundleName.c_str(), alwaysEnabled, sampleRate, maxSimutaneousAllocations, duration);
+        ", sampleRate: %{public}f, maxSimutaneousAllocations: %{public}f "
+        ", duration: %{public}d, isRecover: %{public}d",
+        bundleName.c_str(), gwpAsanParams.alwaysEnabled, gwpAsanParams.sampleRate,
+        gwpAsanParams.maxSimutaneousAllocations, gwpAsanParams.duration, gwpAsanParams.isRecover);
     std::string isEnable = system::GetParameter("gwp_asan.enable.app." + bundleName, "");
     std::string appNumStr = system::GetParameter("gwp_asan.app_num", "0");
     int appNum = 0;
@@ -144,15 +143,16 @@ bool FaultloggerBase::EnableGwpAsanGrayscale(bool alwaysEnabled,
     if (isEnable.empty()) {
         system::SetParameter("gwp_asan.app_num", std::to_string(appNum + 1));
     }
-    int sampleRateInt = static_cast<int>(std::ceil(sampleRate));
-    int slotInt = static_cast<int>(std::ceil(maxSimutaneousAllocations));
+    int sampleRateInt = static_cast<int>(std::ceil(gwpAsanParams.sampleRate));
+    int slotInt = static_cast<int>(std::ceil(gwpAsanParams.maxSimutaneousAllocations));
     std::string sample = std::to_string(sampleRateInt) + ":" + std::to_string(slotInt);
-    system::SetParameter("gwp_asan.enable.app." + bundleName, alwaysEnabled ? "true" : "false");
+    system::SetParameter("gwp_asan.enable.app." + bundleName, gwpAsanParams.alwaysEnabled ? "true" : "false");
+    system::SetParameter("gwp_asan.recoverable.app." + bundleName, gwpAsanParams.isRecover ? "true" : "false");
     system::SetParameter("gwp_asan.sample.app." + bundleName, sample);
 
     uint64_t beginTime = static_cast<uint64_t>(std::time(nullptr));
     system::SetParameter("gwp_asan.gray_begin.app." + bundleName, std::to_string(beginTime));
-    system::SetParameter("gwp_asan.gray_days.app." + bundleName, std::to_string(duration));
+    system::SetParameter("gwp_asan.gray_days.app." + bundleName, std::to_string(gwpAsanParams.duration));
     return true;
 }
 
@@ -167,6 +167,7 @@ void FaultloggerBase::DisableGwpAsanGrayscale(int32_t uid)
     system::SetParameter("gwp_asan.gray_days.app." + bundleName, "");
     system::SetParameter("gwp_asan.enable.app." + bundleName, "");
     system::SetParameter("gwp_asan.sample.app." + bundleName, "");
+    system::SetParameter("gwp_asan.recoverable.app." + bundleName, "");
 }
 
 uint32_t FaultloggerBase::GetGwpAsanGrayscaleState(int32_t uid)

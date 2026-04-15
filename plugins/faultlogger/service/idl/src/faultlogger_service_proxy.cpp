@@ -93,7 +93,7 @@ sptr<IRemoteObject> FaultLoggerServiceProxy::QuerySelfFaultLog(int32_t faultType
 }
 
 bool FaultLoggerServiceProxy::EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
-    double maxSimutaneousAllocations, int32_t duration)
+    double maxSimutaneousAllocations, int32_t duration, bool isRecover)
 {
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
@@ -120,6 +120,10 @@ bool FaultLoggerServiceProxy::EnableGwpAsanGrayscale(bool alwaysEnabled, double 
     }
 
     if (!data.WriteInt32(duration)) {
+        return false;
+    }
+
+    if (!data.WriteBool(isRecover)) {
         return false;
     }
 
