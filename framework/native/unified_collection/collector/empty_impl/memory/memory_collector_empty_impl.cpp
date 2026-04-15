@@ -48,11 +48,6 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorEmptyImpl::CollectAllPr
     return CollectResult<std::vector<ProcessMemory>>(UCollect::UcError::FEATURE_CLOSED);
 }
 
-CollectResult<std::string> MemoryCollectorEmptyImpl::ExportAllProcessMemory()
-{
-    return CollectResult<std::string>(UCollect::UcError::FEATURE_CLOSED);
-}
-
 CollectResult<std::string> MemoryCollectorEmptyImpl::CollectRawSlabInfo()
 {
     return CollectResult<std::string>(UCollect::UcError::FEATURE_CLOSED);

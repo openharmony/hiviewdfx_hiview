@@ -51,11 +51,6 @@ CollectResult<std::vector<ProcessMemory>> MemoryDecorator::CollectAllProcessMemo
     auto task = [this] { return memoryCollector_->CollectAllProcessMemory(); };
     return Invoke(task, statInfoWrapper_, std::string(MEM_COLLECTOR_NAME) + UC_SEPARATOR + __func__);
 }
-CollectResult<std::string> MemoryDecorator::ExportAllProcessMemory()
-{
-    auto task = [this] { return memoryCollector_->ExportAllProcessMemory(); };
-    return Invoke(task, statInfoWrapper_, std::string(MEM_COLLECTOR_NAME) + UC_SEPARATOR + __func__);
-}
 
 CollectResult<std::string> MemoryDecorator::CollectRawSlabInfo()
 {

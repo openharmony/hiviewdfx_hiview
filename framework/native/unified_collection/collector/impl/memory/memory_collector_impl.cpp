@@ -343,29 +343,6 @@ CollectResult<std::vector<ProcessMemory>> MemoryCollectorImpl::CollectAllProcess
     return result;
 }
 
-CollectResult<std::string> MemoryCollectorImpl::ExportAllProcessMemory()
-{
-    CollectResult<std::string> result;
-    CollectResult<std::vector<ProcessMemory>> processMemory = this->CollectAllProcessMemory();
-    if (processMemory.retCode != UcError::SUCCESS) {
-        result.retCode = processMemory.retCode;
-        return result;
-    }
-
-    std::string savePath = GetSavePath("all_processes_mem_", ".txt");
-    if (savePath.empty()) {
-        result.retCode = UcError::WRITE_FAILED;
-        return result;
-    }
-    if (!WriteProcessMemoryToFile(savePath, processMemory.data)) {
-        result.retCode = UcError::WRITE_FAILED;
-        return result;
-    }
-    result.data = savePath;
-    result.retCode = UcError::SUCCESS;
-    return result;
-}
-
 CollectResult<std::string> MemoryCollectorImpl::CollectRawSlabInfo()
 {
     return CollectRawInfo("/proc/slabinfo", "proc_slabinfo_");
