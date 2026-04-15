@@ -17,6 +17,7 @@
 #include "faultlog_manager.h"
 #include "faultlog_formatter.h"
 #include "faultlog_util.h"
+#include "log_store_ex.h"
 
 using namespace testing::ext;
 namespace OHOS {
@@ -215,5 +216,40 @@ HWTEST(FaultLogManagerTest, GetFaultLogFileFdTest001, testing::ext::TestSize.Lev
     close(faultLogFileFd);
 }
 
+/**
+ * @tc.name: FaultLogManager::CreateLogFileFilter001
+ * @tc.desc: Test calling CreateLogFileFilter Func
+ * @tc.type: FUNC
+ */
+HWTEST(FaultLogManagerTest, CreateLogFileFilter001, testing::ext::TestSize.Level3)
+{
+    LogFile file("/data/log/faultlog/faultlogger/cppcrash-com.test.app-10001-20201205101630.log");
+    file.name_ = "cppcrash-com.test.app-10001-20201205101630.log";
+    file.path_ = "/data/log/faultlog/faultlogger/cppcrash-com.test.app-10001-20201205101630.log";
+
+    auto filter1 = FaultLogManager::CreateLogFileFilter(0, -1, 0, "");
+    EXPECT_TRUE(filter1(file));
+
+    auto filter2 = FaultLogManager::CreateLogFileFilter(1700000000, -1, 0, "");
+    EXPECT_FALSE(filter2(file));
+
+    auto filter3 = FaultLogManager::CreateLogFileFilter(0, 10001, 0, "");
+    EXPECT_TRUE(filter3(file));
+
+    auto filter4 = FaultLogManager::CreateLogFileFilter(0, 99999, 0, "");
+    EXPECT_FALSE(filter4(file));
+
+    auto filter5 = FaultLogManager::CreateLogFileFilter(0, -1, FaultLogType::CPP_CRASH, "");
+    EXPECT_TRUE(filter5(file));
+
+    auto filter6 = FaultLogManager::CreateLogFileFilter(0, -1, FaultLogType::JS_CRASH, "");
+    EXPECT_FALSE(filter6(file));
+
+    auto filter7 = FaultLogManager::CreateLogFileFilter(0, -1, 0, "com.test.app");
+    EXPECT_TRUE(filter7(file));
+
+    auto filter8 = FaultLogManager::CreateLogFileFilter(0, -1, 0, "com.test.other");
+    EXPECT_FALSE(filter8(file));
+}
 } // namespace HiviewDFX
 } // namespace OHOS
