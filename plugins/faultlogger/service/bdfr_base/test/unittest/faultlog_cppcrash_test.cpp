@@ -204,7 +204,8 @@ HWTEST(FaultloggerCppCrashTest, FaultlogLimit001, testing::ext::TestSize.Level3)
 
     FaultLogInfo info;
     std::string stack = "adad";
-    faultCppCrash.FillStackInfo(info, stack);
+    std::string minidumpPath = "";
+    faultCppCrash.FillStackInfo(info, stack, minidumpPath);
 
     std::string tempCont = "adbc";
     faultCppCrash.TruncateLogIfExceedsLimit(tempCont);
@@ -394,5 +395,125 @@ HWTEST(FaultloggerCppCrashTest, ReportCppCrashToAppEvent001, testing::ext::TestS
     info.pid = 99999999;
     EXPECT_EQ(FaultLogCppCrash::GetMinidumpPath(info, 100), "");
 }
+
+/**
+ * @tc.name: DealMiniDumpEvent002
+ * @tc.desc: Test DealMiniDumpEvent copies minidump and returns dest path
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, DealMiniDumpEvent002, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.pid = 88888888;
+    info.id = 10001;
+    info.time = 1607161163;
+    info.module = "com.test.minidump";
+    info.sectionMap["ENABLE_MINIDUMP"] = "true";
+
+    std::string tempDir = "/data/log/faultlog/temp/";
+    std::string srcPath = tempDir + "minidump-88888888-1607161163000.dmp";
+    ASSERT_TRUE(FileUtil::SaveStringToFile(srcPath, "minidump_content"));
+
+    std::string result = FaultLogCppCrash::DealMiniDumpEvent(info);
+    EXPECT_FALSE(result.empty());
+    EXPECT_NE(result.find("minidump-"), std::string::npos);
+    EXPECT_TRUE(FileUtil::FileExists(result));
+
+    FileUtil::RemoveFile(srcPath);
+    if (!result.empty()) {
+        FileUtil::RemoveFile(result);
+    }
+}
+
+/**
+ * @tc.name: DealMiniDumpEvent003
+ * @tc.desc: Test DealMiniDumpEvent with copy failure
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, DealMiniDumpEvent003, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.pid = 77777777;
+    info.id = 10001;
+    info.time = 1607161163;
+    info.module = "com.test.minidump";
+
+    std::string tempDir = "/data/log/faultlog/temp/";
+    std::string srcPath = tempDir + "minidump-77777777-1607161163000";
+    ASSERT_TRUE(FileUtil::SaveStringToFile(srcPath, "minidump_no_ext"));
+
+    EXPECT_EQ(FaultLogCppCrash::DealMiniDumpEvent(info), "");
+
+    FileUtil::RemoveFile(srcPath);
+}
+
+/**
+ * @tc.name: FillStackInfoWithMinidumpPath001
+ * @tc.desc: Test FillStackInfo with non-empty minidumpPath
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, FillStackInfoWithMinidumpPath001, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 10001;
+    info.pid = 7496;
+    info.faultLogType = FaultLogType::CPP_CRASH;
+    info.module = "com.example.myapplication";
+    info.logPath = "/data/log/faultlog/faultlogger/cppcrash-test.log";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    info.sectionMap["PROCESS_LIFETIME"] = "100";
+
+    std::string stackInfoOriginal = R"~({"crash_type":"NativeCrash", "exception":{"frames":
+        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"}],
+        "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605},
+        "pid":1605, "time":1701863741296, "uid":20010043, "uuid":""})~";
+
+    std::string minidumpPath = "/data/log/faultlog/faultlogger/minidump-test.dmp";
+    auto result = FaultLogCppCrash::FillStackInfo(info, stackInfoOriginal, minidumpPath);
+    EXPECT_TRUE(result.isMember("external_log"));
+    EXPECT_EQ(result["external_log"].size(), 2u);
+    EXPECT_EQ(result["external_log"][1u].asString(), minidumpPath);
+}
+
+/**
+ * @tc.name: FillStackInfoWithMinidumpPath002
+ * @tc.desc: Test FillStackInfo with empty minidumpPath
+ * @tc.type: FUNC
+ */
+HWTEST(FaultloggerCppCrashTest, FillStackInfoWithMinidumpPath002, testing::ext::TestSize.Level3)
+{
+    FaultLogInfo info;
+    info.time = 1607161163;
+    info.id = 10001;
+    info.pid = 7496;
+    info.faultLogType = FaultLogType::CPP_CRASH;
+    info.module = "com.example.myapplication";
+    info.logPath = "/data/log/faultlog/faultlogger/cppcrash-test.log";
+    info.sectionMap["APPVERSION"] = "1.0";
+    info.sectionMap["FAULT_MESSAGE"] = "Nullpointer";
+    info.sectionMap["TRACEID"] = "0x1646145645646";
+    info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
+    info.sectionMap["REASON"] = "TestReason";
+    info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
+    info.sectionMap["PROCESS_LIFETIME"] = "100";
+
+    std::string stackInfoOriginal = R"~({"crash_type":"NativeCrash", "exception":{"frames":
+        [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"}],
+        "message":"", "signal":{"code":0, "signo":6}, "thread_name":"e.myapplication", "tid":1605},
+        "pid":1605, "time":1701863741296, "uid":20010043, "uuid":""})~";
+
+    std::string emptyMinidumpPath = "";
+    auto result = FaultLogCppCrash::FillStackInfo(info, stackInfoOriginal, emptyMinidumpPath);
+    EXPECT_TRUE(result.isMember("external_log"));
+    EXPECT_EQ(result["external_log"].size(), 1u);
+    EXPECT_EQ(result["external_log"][0u].asString(), info.logPath);
+}
+
 } // namespace HiviewDFX
 } // namespace OHOS

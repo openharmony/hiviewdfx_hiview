@@ -36,7 +36,9 @@ public:
                                                int32_t maxNum) const;
     std::string SaveFaultLogToFile(FaultLogInfo& info) const;
     void RemoveOldFile(FaultLogInfo& info) const;
-
+    static std::unique_ptr<LogStoreEx> CreateFaultLogStore();
+    static LogStoreEx::LogFileFilter CreateLogFileFilter(time_t time, int32_t id, int32_t faultLogType,
+        const std::string& module);
 private:
     void InitWarningLogStore();
     std::string GetFaultLogFilePath(int32_t faultLogType, const std::string& fileName) const;
