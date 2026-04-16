@@ -35,10 +35,6 @@ CpuCollectionTask::CpuCollectionTask(const std::string& workPath) : workPath_(wo
     if (Parameter::IsBetaVersion()) {
         InitCpuStorage();
     }
-#ifdef HAS_HIPERF
-    InitCpuPerfDump();
-#endif
-
 #ifdef CATCH_TRACE_FOR_CPU_HIGH_LOAD
     InitDumpTraceController();
 #endif
@@ -68,13 +64,6 @@ void CpuCollectionTask::InitCpuStorage()
     cpuStorage_ = std::make_shared<CpuStorage>(workPath_);
 }
 
-#ifdef HAS_HIPERF
-void CpuCollectionTask::InitCpuPerfDump()
-{
-    cpuPerfDump_ = std::make_shared<CpuPerfDump>();
-}
-#endif
-
 void CpuCollectionTask::ReportCpuCollectionEvent()
 {
     cpuStorage_->Report();
@@ -101,10 +90,6 @@ void CpuCollectionTask::CollectCpuData()
         if (Parameter::IsBetaVersion()) {
             cpuStorage_->StoreProcessDatas(cpuCollectionsResult.data);
         }
-
-#ifdef HAS_HIPERF
-        cpuPerfDump_->CheckAndDumpPerfData(cpuCollectionsResult.data);
-#endif
     }
     if (threadCpuCollector_ != nullptr) {
         auto threadCpuCollectResult = threadCpuCollector_ ->CollectThreadStatInfos(true);
