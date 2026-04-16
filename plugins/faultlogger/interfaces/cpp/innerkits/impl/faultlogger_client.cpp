@@ -142,7 +142,7 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
 }
 
 bool EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
-    double maxSimutaneousAllocations, int32_t duration)
+    double maxSimutaneousAllocations, int32_t duration, bool isRecover)
 {
     auto service = GetFaultloggerService();
     if (service == nullptr) {
@@ -151,7 +151,7 @@ bool EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
     }
 
     auto result = service->EnableGwpAsanGrayscale(alwaysEnabled, sampleRate,
-        maxSimutaneousAllocations, duration);
+        maxSimutaneousAllocations, duration, isRecover);
     if (!result) {
         HIVIEW_LOGE("Fail to enable the GWP-ASAN grayscale of your application.");
     }
@@ -196,9 +196,10 @@ void ReportCppCrashEvent(const FaultLogInfoInner &info)
 }  // namespace HiviewDFX
 }  // namespace OHOS
 
-__attribute__((visibility ("default"))) void AddFaultLog(FaultLogInfoInner* info)
+__attribute__((visibility ("default"))) void AddFaultLog(void* info)
 {
-    OHOS::HiviewDFX::AddFaultLog(*info);
+    FaultLogInfoInner* infoInner = (FaultLogInfoInner*)info;
+    OHOS::HiviewDFX::AddFaultLog(*infoInner);
 }
 
 __attribute__((visibility ("default"))) void ReportCppCrashEvent(FaultLogInfoInner* info)

@@ -57,6 +57,9 @@ public:
         Builder& InitLastProcessEventId(const std::string& lastProcessEventId);
         Builder& InitLastMarkedEventId(const std::string& lastMarkedEventId);
         Builder& InitThermalLevel(const std::string& thermalLevel);
+        Builder& InitExternalLog(const std::string& externalLog);
+        Builder& InitIsHicollie(bool isHicollie);
+        Builder& InitReportLifecycleAsAppfreeze(bool reportLifecycleToFreeze);
         WatchPoint Build() const;
 
     private:
@@ -90,6 +93,9 @@ public:
         std::string lastProcessEventId_;
         std::string lastMarkedEventId_;
         std::string thermalLevel_;
+        std::string externalLog_;
+        bool isHicollie_;
+        bool reportLifecycleToFreeze_;
         friend class WatchPoint;
     };
 
@@ -127,6 +133,9 @@ public:
     std::string GetLastProcessEventId() const;
     std::string GetLastMarkedEventId() const;
     std::string GetThermalLevel() const;
+    std::string GetExternalLog() const;
+    bool GetIsHicollie() const;
+    bool GetReportLifeCycleAsAppfreeze() const;
     void SetLogPath(const std::string& logPath);
     void SetTerminalThreadStack(const std::string& terminalThreadStack);
     void SetSeq(long seq);
@@ -136,6 +145,8 @@ public:
     void SetLastProcessEventId(const std::string& lastProcessEventId);
     void SetLastMarkedEventId(const std::string& lastMarkedEventId);
     void SetThermalLevel(const std::string& thermalLevel);
+    void SetExternalLog(const std::string& externalLog);
+    void SetIsHicollie(bool isHicollie);
     bool operator<(const WatchPoint& node) const;
     bool operator==(const WatchPoint& node) const;
 
@@ -170,6 +181,9 @@ private:
     std::string lastProcessEventId_;
     std::string lastMarkedEventId_;
     std::string thermalLevel_;
+    std::string externalLog_;
+    bool isHicollie_;
+    bool reportLifecycleToFreeze_;
 };
 } // namespace HiviewDFX
 } // namespace OHOS

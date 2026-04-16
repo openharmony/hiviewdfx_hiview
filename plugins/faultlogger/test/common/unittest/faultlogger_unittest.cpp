@@ -350,7 +350,7 @@ public:
     }
 
     bool EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
-        double maxSimutaneousAllocations, int32_t duration)
+        double maxSimutaneousAllocations, int32_t duration, bool isRecover)
     {
         return false;
     }

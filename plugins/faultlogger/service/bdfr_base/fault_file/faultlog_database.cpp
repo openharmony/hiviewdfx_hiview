@@ -21,6 +21,7 @@
 #include "faultlog_info_inner.h"
 #include "faultlog_util.h"
 #include "ffrt.h"
+#include "file_util.h"
 #include "hisysevent.h"
 #include "hitrace/hitracechainc.h"
 #include "hiview_logger.h"
@@ -45,6 +46,61 @@ static const std::vector<std::string> QUERY_ITEMS = {
     "time_", "name_", "uid_", "pid_", FaultKey::MODULE_NAME, FaultKey::REASON, FaultKey::SUMMARY, FaultKey::LOG_PATH,
     FaultKey::FAULT_TYPE
 };
+const int64_t KILO = 1000;
+const int64_t MAX_DIFF_TIME = 10000;
+const int QUERY_LIMIT_MAX = 100;
+}
+
+std::string FaultLogDatabase::GetAppFreezeExtInfoFromFileName(const std::string& fileName)
+{
+    std::string path = FAULTLOG_FAULT_LOGGER_FOLDER + fileName;
+    std::vector<std::string> faultName = {"APP_FREEZE"};
+    FaultLogInfo inputInfo = ExtractInfoFromFileName(fileName);
+    inputInfo.time *= KILO;
+    auto query = EventStore::SysEventDao::BuildQuery(HiSysEvent::Domain::RELIABILITY, faultName);
+    if (query == nullptr) {
+        return "";
+    }
+    EventStore::Cond uidCond("UID", EventStore::Op::EQ, inputInfo.id);
+    query->And(uidCond);
+    EventStore::Cond timeUpperCond("HAPPEN_TIME", EventStore::Op::LE, inputInfo.time + MAX_DIFF_TIME);
+    query->And(timeUpperCond);
+    EventStore::Cond timeLowerCond("HAPPEN_TIME", EventStore::Op::GE, inputInfo.time - MAX_DIFF_TIME);
+    query->And(timeLowerCond);
+    EventStore::ResultSet resultSet = query->Execute(QUERY_LIMIT_MAX);
+    std::list<FaultLogDataBaseExtInfo> queryResult;
+    while (resultSet.HasNext()) {
+        auto it = resultSet.Next();
+        auto sysEvent = std::make_unique<SysEvent>("FaultLogDatabase", nullptr, it->rawData_);
+        if (sysEvent->GetEventValue(FaultKey::LOG_PATH) == path) {
+            std::string freezeInfoPath = sysEvent->GetEventValue(FaultKey::FREEZE_INFO_PATH);
+            if (!freezeInfoPath.empty() && FileUtil::FileExists(freezeInfoPath)) {
+                return freezeInfoPath;
+            }
+        }
+        int64_t eventTime = static_cast<int64_t>
+            (strtoll(sysEvent->GetEventValue(FaultKey::HAPPEN_TIME).c_str(), nullptr, DECIMAL_BASE));
+        if (eventTime == 0) {
+            eventTime = sysEvent->GetEventIntValue(FaultKey::HAPPEN_TIME) != 0 ?
+                        sysEvent->GetEventIntValue(FaultKey::HAPPEN_TIME) : sysEvent->GetEventIntValue("time_");
+        }
+        FaultLogDataBaseExtInfo extInfo;
+        extInfo.happenDiffTime = eventTime >= inputInfo.time ? eventTime - inputInfo.time : inputInfo.time - eventTime;
+        extInfo.extFilePath = sysEvent->GetEventValue(FaultKey::FREEZE_INFO_PATH);
+        if (!extInfo.extFilePath.empty() && FileUtil::FileExists(extInfo.extFilePath)) {
+            queryResult.push_back(extInfo);
+        }
+    }
+    if (queryResult.empty()) {
+        return "";
+    }
+    if (queryResult.size() > 1) {
+        queryResult.sort(
+            [](const FaultLogDataBaseExtInfo& a, FaultLogDataBaseExtInfo& b) {
+            return a.happenDiffTime < b.happenDiffTime;
+        });
+    }
+    return queryResult.front().extFilePath;
 }
 
 bool FaultLogDatabase::ParseFaultLogInfoFromJson(std::shared_ptr<EventRaw::RawData> rawData, FaultLogInfo& info)
@@ -215,6 +271,20 @@ void FaultLogDatabase::FillInfoDefault(FaultLogInfo& info)
     setDefault(FaultKey::FINGERPRINT);
 }
 
+int32_t FaultLogDatabase::UpdateFGParam(FaultLogInfo& info)
+{
+    int32_t fgNum = info.sectionMap[FaultKey::IS_SIG_ACTION] == "Yes" ? 1 : 0;
+    if (info.faultLogType == FaultLogType::CPP_CRASH && info.reason.find("SIGABRT") != std::string::npos) {
+        bool hasLastFatalMsg = (!info.summary.empty() && info.summary.find("LastFatalMessage") != std::string::npos);
+        HIVIEW_LOGI("WriteEvent abort cppcrash(pid=%{public}d) has lastfatalmessage in summary: %{public}s", info.pid,
+            hasLastFatalMsg ? "true" : "false");
+        if (hasLastFatalMsg) {
+            fgNum += (1 << 1); // second bit use for mark fatalmessage existence, 2 means fatalmessage exists.
+        }
+    }
+    return fgNum;
+}
+
 void FaultLogDatabase::WriteEvent(FaultLogInfo& info)
 {
     std::string eventName = GetFaultNameByType(info.faultLogType, false);
@@ -237,8 +307,7 @@ void FaultLogDatabase::WriteEvent(FaultLogInfo& info)
         EVENT_PARAM_CTOR("HAPPEN_TIME", HISYSEVENT_INT64, i64, info.time, 0),
         EVENT_PARAM_CTOR("HITRACE_TIME", HISYSEVENT_STRING, s, info.sectionMap["HITRACE_TIME"].data(), 0),
         EVENT_PARAM_CTOR("SYSRQ_TIME", HISYSEVENT_STRING, s, info.sectionMap["SYSRQ_TIME"].data(), 0),
-        EVENT_PARAM_CTOR("FG", HISYSEVENT_INT32, i32,
-            info.sectionMap[FaultKey::IS_SIG_ACTION] == "Yes" ? 1 : 0, 0),
+        EVENT_PARAM_CTOR("FG", HISYSEVENT_INT32, i32, UpdateFGParam(info), 0),
         EVENT_PARAM_CTOR("PNAME", HISYSEVENT_STRING, s, info.sectionMap["PROCESS_NAME"].data(), 0),
         EVENT_PARAM_CTOR("FIRST_FRAME", HISYSEVENT_STRING, s, info.sectionMap[FaultKey::FIRST_FRAME].data(), 0),
         EVENT_PARAM_CTOR("SECOND_FRAME", HISYSEVENT_STRING, s, info.sectionMap[FaultKey::SECOND_FRAME].data(), 0),
@@ -253,6 +322,9 @@ void FaultLogDatabase::WriteEvent(FaultLogInfo& info)
             info.sectionMap[FaultKey::APP_RUNNING_UNIQUE_ID].data(), 0),
         EVENT_PARAM_CTOR("TASK_NAME", HISYSEVENT_STRING, s, info.sectionMap[FaultKey::TASK_NAME].data(), 0),
         EVENT_PARAM_CTOR("THERMAL_LEVEL", HISYSEVENT_STRING, s, info.sectionMap[FaultKey::THERMAL_LEVEL].data(), 0),
+        EVENT_PARAM_CTOR("FREEZE_INFO_PATH", HISYSEVENT_STRING, s,
+            info.sectionMap[FaultKey::FREEZE_INFO_PATH].data(), 0),
+        EVENT_PARAM_CTOR("LOG_SOURCE", HISYSEVENT_STRING, s, info.sectionMap["LOG_SOURCE"].data(), 0),
     };
     int result = OH_HiSysEvent_Write(HiSysEvent::Domain::RELIABILITY, eventName.data(), HISYSEVENT_FAULT,
         params, sizeof(params) / sizeof(HiSysEventParam));

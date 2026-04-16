@@ -14,10 +14,12 @@
  */
 #include "event_logger_test.h"
 
+#include <cstdlib>
 #include <fcntl.h>
 #include "common_utils.h"
 #include "hisysevent.h"
 #include "hiview_platform.h"
+#include "get_ratio_utils.h"
 
 #define private public
 #include "event_logger.h"
@@ -1314,6 +1316,176 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_GetRebootReason_001, TestSize.Level3)
 }
 
 /**
+ * @tc.name: EventLoggerTest_GetBlockedTime_001
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_001, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_001";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "";
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    EXPECT_EQ("", result);
+    sysEvent->eventName_ = "THREAD_BLOCK_3S";
+    result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 3000 * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_002
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_002, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_002";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "THREAD_BLOCK_6S";
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 6000 * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_003
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_003, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_003";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "APP_INPUT_BLOCK";
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 8000 * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_004
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_004, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_004";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "foreground timeout");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 5000 * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_005
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_005, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_005";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "load timeout");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 10000 * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_006
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_006, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_006";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    EXPECT_EQ("", result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_007
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_007, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_007";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_HALF_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "foreground timeout");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 2500 * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_008
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_008, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_008";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_HALF_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "load timeout");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    float blockedTime = 5000 * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+    EXPECT_EQ(std::to_string(static_cast<int>(blockedTime)), result);
+}
+ 
+/**
+ * @tc.name: EventLoggerTest_GetBlockedTime_009
+ * @tc.desc: Test GetBlockedTime
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_GetBlockedTime_009, TestSize.Level3)
+{
+    auto eventLogger = std::make_shared<EventLogger>();
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string testName = "EventLoggerTest_GetBlockedTime_009";
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(testName,
+        nullptr, jsonStr);
+    sysEvent->eventName_ = "LIFECYCLE_HALF_TIMEOUT";
+    sysEvent->SetEventValue("MSG", "abc");
+    std::string result = eventLogger->GetBlockedTime(sysEvent);
+    EXPECT_EQ("", result);
+}
+
+
+/**
  * @tc.name: EventLoggerTest_TestLogMerge001
  * @tc.desc: Loging aging test
  * @tc.type: FUNC
@@ -1345,5 +1517,38 @@ HWTEST_F(EventLoggerTest, EventLoggerTest_TestLogMerge001, TestSize.Level3)
     sleep(2);
 }
 
+/**
+ * @tc.name: EventLoggerTest_CheckContinueReport_001
+ * @tc.desc: Test GetRebootReason
+ * @tc.type: FUNC
+ */
+HWTEST_F(EventLoggerTest, EventLoggerTest_CheckContinueReport_001, TestSize.Level3)
+{
+    auto jsonStr = "{\"domain_\":\"RELIABILITY\"}";
+    std::string eventName = "FREEZE_HALF_HIVIEW_LOG";
+    std::string action = "eventLog_action"; // test value
+    std::shared_ptr<SysEvent> sysEvent = std::make_shared<SysEvent>(eventName,
+        nullptr, jsonStr);
+    sysEvent->SetEventValue("PROCESS_NAME", eventName);
+    sysEvent->eventName_ = eventName;
+    sysEvent->SetEventValue(action, "test");
+    auto eventLogger = std::make_shared<EventLogger>();
+    int pid = getpid();
+    auto result = eventLogger->CheckContinueReport(sysEvent, pid, eventName);
+    EXPECT_EQ(false, result);
+    eventName = "EventLoggerTest_CheckContinueReport_001";
+    result = eventLogger->CheckContinueReport(sysEvent, pid, eventName);
+    EXPECT_EQ(true, result);
+    eventName = "GESTURE_NAVIGATION_BACK";
+    result = eventLogger->CheckContinueReport(sysEvent, pid, eventName);
+    EXPECT_EQ(false, result);
+    eventName = "FREQUENT_CLICK_WARNING";
+    sysEvent->SetEventValue(action, "tr");
+    result = eventLogger->CheckContinueReport(sysEvent, pid, eventName);
+    EXPECT_EQ(false, result);
+    sysEvent->SetEventValue(action, "trace");
+    result = eventLogger->CheckContinueReport(sysEvent, pid, eventName);
+    EXPECT_EQ(false, result);
+}
 } // namespace HiviewDFX
 } // namespace OHOS

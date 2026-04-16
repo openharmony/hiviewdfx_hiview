@@ -45,6 +45,13 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitThermalLevel(const std
     thermalLevel_ = thermalLevel;
     return *this;
 }
+
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitExternalCallbackLog(const std::string& externalCallbackLog)
+{
+    externalCallbackLog_ = externalCallbackLog;
+    return *this;
+}
+
 FreezeJsonException FreezeJsonException::Builder::Build() const
 {
     FreezeJsonException freezeJsonException = FreezeJsonException(*this);
@@ -147,6 +154,7 @@ FreezeJsonParams::FreezeJsonParams(const FreezeJsonParams::Builder& builder)
     freezeType_(builder.freezeType_),
     foreground_(builder.foreground_),
     bundleVersion_(builder.bundleVersion_),
+    bundleVersionCode_(builder.bundleVersionCode_),
     bundleName_(builder.bundleName_),
     processName_(builder.processName_),
     processLifeTime_(builder.processLifeTime_),
@@ -164,7 +172,8 @@ FreezeJsonParams::FreezeJsonParams(const FreezeJsonParams::Builder& builder)
     peerBinder_(builder.peerBinder_),
     threads_(builder.threads_),
     memory_(builder.memory_),
-    thermalLevel_(builder.thermalLevel_)
+    thermalLevel_(builder.thermalLevel_),
+    externalCallbackLog_(builder.externalCallbackLog_)
 {
 }
 
@@ -195,6 +204,12 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitForeground(bool foregr
 FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersion(const std::string& bundleVersion)
 {
     bundleVersion_ = bundleVersion;
+    return *this;
+}
+
+FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersionCode(const std::string& bundleVersionCode)
+{
+    bundleVersionCode_ = bundleVersionCode;
     return *this;
 }
 
@@ -313,6 +328,7 @@ std::string FreezeJsonParams::JsonStr() const
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsUuid, uuid_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsForeground, foreground_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersion, bundleVersion_),
+        FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleVersionCode, bundleVersionCode_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsBundleName, bundleName_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsProcessName, processName_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsProcessLifeTime, processLifeTime_),
@@ -330,7 +346,8 @@ std::string FreezeJsonParams::JsonStr() const
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsPeerBinder, peerBinder_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsThreads, threads_),
         FreezeJsonUtil::GetStrByKeyValue(jsonParamsMemory, memory_),
-        FreezeJsonUtil::GetStrByKeyValue(jsonParamsThermalLevel, thermalLevel_)
+        FreezeJsonUtil::GetStrByKeyValue(jsonParamsThermalLevel, thermalLevel_),
+        FreezeJsonUtil::GetStrByKeyValue(jsonParamsExternalCallbackLog, externalCallbackLog_)
     };
     return FreezeJsonUtil::MergeKeyValueList(list);
 }

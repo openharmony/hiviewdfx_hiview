@@ -70,12 +70,6 @@ config("ucollection_source_config") {
     include_dirs += [ "collector/empty_impl/cpu" ]
   }
 
-  if (has_hiprofiler && hiview_unified_collector_mem_profiler_enable) {
-    include_dirs += [ "collector/impl/mem_profiler" ]
-  } else {
-    include_dirs += [ "collector/empty_impl/mem_profiler" ]
-  }
-
   if (hiview_unified_collector_io_enable) {
     include_dirs += [
       "collector/impl/io",
@@ -164,6 +158,8 @@ ohos_source_set("ucollection_source") {
     "decorator/decorator_util.cpp",
     "decorator/unified_collection_stat.cpp",
     "process/process_status.cpp",
+    "$hiview_interfaces/inner_api/unified_collection/utility/src/memory_collector.cpp",
+    "$hiview_interfaces/inner_api/unified_collection/utility/src/io_collector.cpp",
   ]
 
   deps = [ "$hiview_base:hiviewbase" ]
@@ -177,6 +173,7 @@ ohos_source_set("ucollection_source") {
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
+    "ffrt:libffrt",
   ]
 
   defines = []
@@ -313,23 +310,14 @@ ohos_source_set("ucollection_source") {
       "cJSON:cjson",
       "jsoncpp:jsoncpp",
       "zlib:libz",
+      "hitrace:hitrace_dump",
+      "relational_store:native_rdb",
     ]
   } else {
     sources += [ "collector/empty_impl/trace/trace_collector_empty_impl.cpp" ]
   }
 
   cflags = []
-  if (has_hiprofiler && hiview_unified_collector_mem_profiler_enable) {
-    sources += [
-      "collector/impl/mem_profiler/mem_profiler_collector_impl.cpp",
-      "decorator/mem_profiler_decorator.cpp",
-    ]
-    cflags += [ "-DHAS_HIPROFILER" ]
-    external_deps += [
-      "hiprofiler:libnative_daemon_client",
-      "init:libbegetutil",
-    ]
-  }
 
   if (has_hiperf && hiview_unified_collector_perf_enable) {
     sources += [
@@ -412,6 +400,7 @@ group("unittest") {
       "collector/impl/trace/test:TraceUtilsTest",
       "collector/impl/trace/test:TraceStrategyTest",
       "collector/impl/trace/test:TraceStrategyExTest",
+      "collector/impl/trace/test:TraceImplTest",
       "trace_manager/test:TraceManagerTest",
     ]
   }

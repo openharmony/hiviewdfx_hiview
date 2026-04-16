@@ -39,10 +39,12 @@ namespace {
 constexpr int32_t MAX_FAULT_LOG_PER_HAP = 10;
 constexpr uint32_t WARNING_LOG_MAX_SIZE = 3 * 1024 * 1024;
 constexpr uint32_t WARNING_LOG_MIN_KEEP_NUM = 15;
+constexpr uint32_t FAULT_LOG_MAX_SIZE = 20 * 1024 * 1024;
 }
 
 DEFINE_LOG_LABEL(0xD002D11, "FaultLogManager");
-LogStoreEx::LogFileFilter CreateLogFileFilter(time_t time, int32_t id, int32_t faultLogType, const std::string& module)
+LogStoreEx::LogFileFilter FaultLogManager::CreateLogFileFilter(time_t time, int32_t id, int32_t faultLogType,
+    const std::string& module)
 {
     LogStoreEx::LogFileFilter filter = [time, id, faultLogType, module](const LogFile &file) {
         FaultLogInfo info = ExtractInfoFromFileName(file.name_);
@@ -78,16 +80,23 @@ int32_t FaultLogManager::CreateTempFaultLogFile(time_t time, int32_t id, int32_t
     return store_->CreateLogFile(fileName);
 }
 
-void FaultLogManager::Init()
+std::unique_ptr<LogStoreEx> FaultLogManager::CreateFaultLogStore()
 {
-    store_ = std::make_unique<LogStoreEx>(FAULTLOG_FAULT_LOGGER_FOLDER, true);
+    auto store = std::make_unique<LogStoreEx>(FAULTLOG_FAULT_LOGGER_FOLDER, true);
+    store->SetMaxSize(FAULT_LOG_MAX_SIZE);
     LogStoreEx::LogFileComparator comparator = [](const LogFile &lhs, const LogFile &rhs) {
         FaultLogInfo lhsInfo = ExtractInfoFromFileName(lhs.name_);
         FaultLogInfo rhsInfo = ExtractInfoFromFileName(rhs.name_);
         return lhsInfo.time > rhsInfo.time;
     };
-    store_->SetLogFileComparator(comparator);
-    store_->Init(false);
+    store->SetLogFileComparator(comparator);
+    store->Init(false);
+    return store;
+}
+
+void FaultLogManager::Init()
+{
+    store_ = CreateFaultLogStore();
     InitWarningLogStore();
 }
 
@@ -131,6 +140,12 @@ std::string FaultLogManager::SaveFaultLogToFile(FaultLogInfo& info) const
     if (info.sectionMap.count(FaultKey::HILOG) == 1) {
         FileUtil::SaveStringToFd(fd, "\nHiLog:\n");
         FileUtil::SaveStringToFd(fd, info.sectionMap[FaultKey::HILOG]);
+    }
+
+    if (info.sectionMap.count("MERGE_LOG") == 1) {
+        FileUtil::SaveStringToFd(fd, "\nMergeLog:\n");
+        FileUtil::SaveStringToFd(fd, info.sectionMap["MERGE_LOG"]);
+        HIVIEW_LOGI("WriteMergeLogToFile");
     }
     fdsan_close_with_tag(fd, ownerTag);
 

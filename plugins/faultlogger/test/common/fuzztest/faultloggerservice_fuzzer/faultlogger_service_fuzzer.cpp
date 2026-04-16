@@ -143,6 +143,9 @@ void FuzzServiceInterfaceAddFaultLog(const uint8_t* data, size_t size)
 
 void FuzzServiceInterfaceOnEvent(const uint8_t* data, size_t size)
 {
+    // Assign a value to the hiview link before creating the connection
+    HiviewTestContext hiviewTestContext;
+    HiviewGlobal::CreateInstance(hiviewTestContext);
     auto service = CreateFaultloggerInstance();
 
     int32_t pid;
@@ -191,9 +194,6 @@ void FuzzServiceInterfaceOnEvent(const uint8_t* data, size_t size)
 
 void FuzzServiceInterfaceGwpAsanGrayscale(const uint8_t* data, size_t size)
 {
-    HiviewTestContext hiviewTestContext;
-    HiviewGlobal::CreateInstance(hiviewTestContext);
-
     FaultloggerServiceOhos serviceOhos;
     FaultloggerServiceOhos::StartService();
     bool alwaysEnabled;
@@ -211,7 +211,7 @@ void FuzzServiceInterfaceGwpAsanGrayscale(const uint8_t* data, size_t size)
     STREAM_TO_VALUEINFO(data, maxSimutaneousAllocations);
     STREAM_TO_VALUEINFO(data, duration);
 
-    serviceOhos.EnableGwpAsanGrayscale(1, 1000, 2000, 5); // 1000 - 2000 is test value, 5 is test duration
+    serviceOhos.EnableGwpAsanGrayscale(1, 1000, 2000, 5, 1); // 1000 - 2000 is test value, 5 is test duration
     serviceOhos.DisableGwpAsanGrayscale();
     serviceOhos.GetGwpAsanGrayscaleState();
 }

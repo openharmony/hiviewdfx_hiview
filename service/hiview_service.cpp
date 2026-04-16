@@ -46,6 +46,7 @@ namespace {
 constexpr int MIN_SUPPORT_CMD_SIZE = 1;
 constexpr int32_t ERR_DEFAULT = -1;
 constexpr int32_t APP_TRACE_STOP_TIME = 10 * 1000 * 1000; // 10S
+constexpr int32_t OOM_FORK_SLEEP_TIME = 300; // 300ms
 
 void ShareAppEvent(const UCollectClient::AppCaller &appCaller, const std::string& externalLog)
 {
@@ -259,8 +260,9 @@ CollectResult<int32_t> HiviewService::OpenTrace(const std::vector<std::string> &
 #ifndef UNIFIED_COLLECTOR_TRACE_ENABLE
     return {UcError::FEATURE_CLOSED};
 #else
-    ScenarioInfo commandSecnario {
-        .scenario = TraceScenario::TRACE_COMMAND,
+    Scenario commandScenario {
+        .name = ScenarioName::COMMAND,
+        .level = ScenarioLevel::COMMAND,
         .args = {
             .tags = tags,
             .clockType = param.clockType,
@@ -269,27 +271,31 @@ CollectResult<int32_t> HiviewService::OpenTrace(const std::vector<std::string> &
             .filterPids = filterPids
         }
     };
-    TraceRet openRet = TraceStateMachine::GetInstance().OpenTrace(commandSecnario);
+    TraceRet openRet = TraceStateMachine::GetInstance().OpenTrace(commandScenario);
     return {GetUcError(openRet)};
 #endif
 }
 
 CollectResult<std::vector<std::string>> HiviewService::DumpSnapshotTrace(const std::string& callerName,
-    bool isNeedFlowControl)
+    bool isNeedFlowControl, const std::string& outputPath)
 {
 #ifndef UNIFIED_COLLECTOR_TRACE_ENABLE
     return {UcError::FEATURE_CLOSED};
 #else
-    return UCollectUtil::TraceCollector::Create()->DumpTrace(callerName, isNeedFlowControl);
+    TraceStateMachine::GetInstance().SetOutputPath(outputPath);
+    auto result = UCollectUtil::TraceCollector::Create()->DumpTrace(callerName, isNeedFlowControl);
+    TraceStateMachine::GetInstance().SetOutputPath("");
+    return result;
 #endif
 }
 
-CollectResult<int32_t> HiviewService::RecordingTraceOn()
+CollectResult<int32_t> HiviewService::RecordingTraceOn(const std::string& outputPath)
 {
 #ifndef UNIFIED_COLLECTOR_TRACE_ENABLE
     return {UcError::FEATURE_CLOSED};
 #else
-    TraceRet ret = TraceStateMachine::GetInstance().TraceDropOn(TraceScenario::TRACE_COMMAND);
+    TraceStateMachine::GetInstance().SetOutputPath(outputPath);
+    TraceRet ret = TraceStateMachine::GetInstance().TraceDropOn(ScenarioName::COMMAND);
     return {GetUcError(ret)};
 #endif
 }
@@ -300,7 +306,7 @@ CollectResult<std::vector<std::string>> HiviewService::RecordingTraceOff()
     return {UcError::FEATURE_CLOSED};
 #else
     TraceRetInfo traceRetInfo;
-    TraceRet ret = TraceStateMachine::GetInstance().TraceDropOff(TraceScenario::TRACE_COMMAND, traceRetInfo);
+    TraceRet ret = TraceStateMachine::GetInstance().TraceDropOff(ScenarioName::COMMAND_DROP, traceRetInfo);
     CollectResult<std::vector<std::string>> result(GetUcError(ret));
     result.data = traceRetInfo.outputFiles;
     return result;
@@ -312,7 +318,7 @@ CollectResult<int32_t> HiviewService::CloseTrace()
 #ifndef UNIFIED_COLLECTOR_TRACE_ENABLE
     return {UcError::FEATURE_CLOSED};
 #else
-    TraceRet ret = TraceStateMachine::GetInstance().CloseTrace(TraceScenario::TRACE_COMMAND);
+    TraceRet ret = TraceStateMachine::GetInstance().CloseTrace(ScenarioName::COMMAND);
     return {GetUcError(ret)};
 #endif
 }
@@ -330,8 +336,9 @@ CollectResult<int32_t> HiviewService::InnerResponseStartAppTrace(const UCollectC
         HIVIEW_LOGW("deny: already capture trace uid=%{public}d pid=%{public}d", appCaller.uid, appCaller.pid);
         return {UCollect::UcError::HAD_CAPTURED_TRACE};
     }
-    ScenarioInfo appInfo {
-        .scenario = TraceScenario::TRACE_DYNAMIC,
+    Scenario appInfo {
+        .name = ScenarioName::APP_DYNAMIC,
+        .level = ScenarioLevel::APP_DYNAMIC,
         .args = {
             .tags = {"graphic", "ace", "app"},
             .bufferSize = 10240,  // app trace buffer size
@@ -344,7 +351,7 @@ CollectResult<int32_t> HiviewService::InnerResponseStartAppTrace(const UCollectC
         return {GetUcError(ret)};
     }
     auto task = [] {
-        auto ret = TraceStateMachine::GetInstance().CloseTrace(TraceScenario::TRACE_DYNAMIC);
+        auto ret = TraceStateMachine::GetInstance().CloseTrace(ScenarioName::APP_DYNAMIC);
         if (!ret.IsSuccess()) {
             HIVIEW_LOGW("CloseTrace app trace fail");
         }
@@ -441,6 +448,20 @@ CollectResult<UCollectClient::GraphicUsage> HiviewService::GetGraphicUsage(int32
     result.data.gl = glRet.data;
     result.data.graph = graphRet.data;
     return result;
+}
+
+CollectResult<int32_t> HiviewService::SetForkDumpService(
+    const std::string& packageName, int32_t mainProcPid, int32_t subProcPid)
+{
+    std::string eventName = "FORK_DUMP_SERVICE";
+    SysEventCreator sysEventCreator("HIVIEWDFX", eventName, SysEventCreator::FAULT);
+    sysEventCreator.SetKeyValue("MAIN_PID", mainProcPid);
+    sysEventCreator.SetKeyValue("SUB_PID", subProcPid);
+    auto sysEvent = std::make_shared<SysEvent>(eventName, nullptr, sysEventCreator);
+    std::shared_ptr<Event> event = std::dynamic_pointer_cast<Event>(sysEvent);
+    HiviewPlatform::GetInstance().PostAsyncEventToTarget(nullptr, "XPower", event);
+    std::this_thread::sleep_for(std::chrono::milliseconds(OOM_FORK_SLEEP_TIME));
+    return {UCollect::UcError::SUCCESS};
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

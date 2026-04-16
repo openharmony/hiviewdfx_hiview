@@ -13,18 +13,21 @@
  * limitations under the License.
  */
 
-#include "animator_monitor.h"
-#include "jank_frame_monitor.h"
 #include "perf_reporter.h"
+ 
+#include "animator_monitor.h"
+#include "hisysevent.h"
+#include "hiview_logger.h"
+#include "jank_frame_monitor.h"
 #include "perf_trace.h"
 #include "perf_utils.h"
+#include "render_service_client/core/transaction/rs_interfaces.h"
 #include "scene_monitor.h"
 #include "xperf_event_builder.h"
 #include "xperf_event_reporter.h"
+#include "xperf_service_action_type.h"
+#include "xperf_service_client.h"
 
-#include "hisysevent.h"
-#include "render_service_client/core/transaction/rs_interfaces.h"
-#include "hiview_logger.h"
 
 #ifdef RESOURCE_SCHEDULE_SERVICE_ENABLE
 #include "res_sched_client.h"
@@ -73,6 +76,7 @@ namespace {
     constexpr char EVENT_KEY_SUBHEALTH_REASON[] = "SUB_HEALTH_REASON";
     constexpr char EVENT_KEY_SUBHEALTH_TIME[] = "SUB_HEALTH_TIME";
     constexpr char EVENT_KEY_VSYNC_TIME[] = "VSYNC_TIME";
+    constexpr char EVENT_KEY_JANK_COUNT[] = "JANK_COUNT";
     constexpr char STATISTIC_DURATION[] = "DURATION";
     constexpr char KEY_SCROLL_START_TIME[] = "SCROLL_START_TIME";
     constexpr char KEY_SCROLL_END_TIME[] = "SCROLL_END_TIME";
@@ -389,6 +393,7 @@ void EventReporter::ReportEventJankFrame(DataBase& data)
     ConvertRealtimeToSystime(data.beginVsyncTime, startTime);
     const auto& durition = (data.endVsyncTime - data.beginVsyncTime) / NS_TO_MS;
     const auto& maxFrameTime = data.maxFrameTime / NS_TO_MS;
+    std::string jankStr = nlohmann::json(data.jankCount).dump();
     XperfEventBuilder builder;
     XperfEvent event = builder.EventName(eventName)
         .EventType(HISYSEVENT_BEHAVIOR)
@@ -411,12 +416,13 @@ void EventReporter::ReportEventJankFrame(DataBase& data)
         .Param(EVENT_KEY_SUBHEALTH_INFO, data.baseInfo.subHealthInfo.info)
         .Param(EVENT_KEY_SUBHEALTH_REASON, data.baseInfo.subHealthInfo.subHealthReason)
         .Param(EVENT_KEY_SUBHEALTH_TIME, static_cast<int32_t>(data.baseInfo.subHealthInfo.subHealthTime))
+        .Param(EVENT_KEY_JANK_COUNT, jankStr)
         .Build();
     XperfEventReporter reporter;
     reporter.Report(ACE_DOMAIN, event);
     XPERF_TRACE_SCOPED("INTERACTION_APP_JANK: sceneId =%s, startTime=%lld(ms),"
-        "maxFrameTime=%lld(ms), pageName=%s", data.sceneId.c_str(), static_cast<long long>(startTime),
-        static_cast<long long>(maxFrameTime), data.baseInfo.pageName.c_str());
+        "maxFrameTime=%lld(ms), pageName=%s, jankCount=%s", data.sceneId.c_str(), static_cast<long long>(startTime),
+        static_cast<long long>(maxFrameTime), data.baseInfo.pageName.c_str(), jankStr.c_str());
 #ifdef RESOURCE_SCHEDULE_SERVICE_ENABLE
     if (data.isDisplayAnimator && maxFrameTime > MAX_JANK_FRAME_TIME) {
         ReportAppFrameDropToRss(true, data.baseInfo.bundleName, maxFrameTime);
@@ -576,5 +582,24 @@ void EventReporter::ReportSurfaceInfo(const SurfaceInfo& surface)
     XperfEventReporter reporter;
     reporter.Report(ACE_DOMAIN, event);
 }
+
+void EventReporter::ReportLoadCompleteEvent(const LoadCompleteInfo& eventInfo)
+{
+    // 构建消息字符串
+    std::stringstream ss;
+    ss << "#EVENT_NAME:LOAD_COMPLETE#LAST_COMPONENT:" << std::to_string(eventInfo.lastComponent)
+        << "#BUNDLE_NAME:" << eventInfo.bundleName
+        << "#ABILITY_NAME:" << eventInfo.abilityName
+        << "#IS_LAUNCH:" << std::to_string(eventInfo.isLaunch);
+ 
+    // 通过 XperfService 发送消息
+    // 使用 eventId 6001 (PERF_LOAD_COMPLETE)
+    XperfServiceClient::GetInstance().NotifyToXperf(
+        static_cast<int32_t>(DomainId::PERFMONITOR),
+        static_cast<int32_t>(PerfEventCode::LOAD_COMPLETE),
+        ss.str()
+    );
+}
+
 }
 }

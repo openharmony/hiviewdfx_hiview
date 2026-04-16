@@ -34,6 +34,7 @@
 #include "event_source.h"
 #include "file_util.h"
 #include "freeze_json_util.h"
+#include "get_ratio_utils.h"
 #include "log_catcher_utils.h"
 #include "parameter_ex.h"
 #include "plugin_factory.h"
@@ -74,6 +75,7 @@ namespace {
     constexpr const char* TASK_TIMEOUT = "CONGESTION";
     constexpr const char* SCENARIO = "SCENARIO";
     constexpr const char* TRIGGER_ESCAPE = "Trigger_Escape";
+    constexpr const char* DUMP_TRACE_FLAG = "trace";
 #ifdef WINDOW_MANAGER_ENABLE
     constexpr int BACK_FREEZE_TIME_LIMIT = 2000;
     constexpr int BACK_FREEZE_COUNT_LIMIT = 5;
@@ -92,6 +94,16 @@ namespace {
     constexpr int DFX_SUBMIT_TRACE_TASK_MAX_CONCURRENCY_NUM = 2;
     constexpr int BOOT_SCAN_SECONDS = 60;
     constexpr mode_t DEFAULT_LOG_FILE_MODE = 0644;
+    /* AppFreeze blocked time */
+    constexpr int DFX_THREAD_BLOCK_3S = 3000;
+    constexpr int DFX_THREAD_BLOCK_6S = 6000;
+    constexpr int DFX_APP_INPUT_BLOCK_8S = 8000;
+    constexpr int DFX_FOREGROUND_TIMEOUT_2S5 = 2500;
+    constexpr int DFX_FOREGROUND_TIMEOUT_5S = 5000;
+    constexpr int DFX_LOAD_TIMEOUT_5S = 5000;
+    constexpr int DFX_LOAD_TIMEOUT_10S = 10000;
+    constexpr int ARKWEB_UID_START = 20100000;
+    constexpr int ARKWEB_UID_END = 20109999;
 }
 
 REGISTER(EventLogger);
@@ -151,7 +163,8 @@ bool EventLogger::CheckContinueReport(const std::shared_ptr<SysEvent> &sysEvent,
     const std::string &eventName)
 {
 #ifdef HITRACE_CATCHER_ENABLE
-    if (eventName == "FREEZE_HALF_HIVIEW_LOG") {
+    if (eventName == "FREEZE_HALF_HIVIEW_LOG" ||
+        (sysEvent->GetValue("eventLog_action").find(DUMP_TRACE_FLAG) != std::string::npos)) {
         HandleFreezeHalfHiview(sysEvent, Parameter::IsBetaVersion());
         return false;
     }
@@ -360,7 +373,7 @@ void EventLogger::HandleEventLoggerCmd(const std::string& cmd, std::shared_ptr<S
     std::shared_ptr<EventLogTask> logTask)
 {
     if (cmd == "tr") {
-        if (event->GetEventValue("NOT_DUMP_TRACE") != "Yes") {
+        if (!Parameter::IsBetaVersion() || event->GetEventValue("NOT_DUMP_TRACE") != "Yes") {
             SubmitTraceTask(cmd, logTask);
         }
         return;
@@ -682,6 +695,9 @@ bool EventLogger::WriteCommonHead(int fd, std::shared_ptr<SysEvent> event)
     headerStream << "PROCESS_NAME = " << event->GetEventValue("PROCESS_NAME") << std::endl;
     headerStream << "eventLog_action = " << event->GetValue("eventLog_action") << std::endl;
     headerStream << "eventLog_interval = " << event->GetValue("eventLog_interval") << std::endl;
+    if (GetBlockedTime(event) != "") {
+        headerStream << "this thread has blocked " + GetBlockedTime(event) + "ms." << std::endl;
+    }
     if (event->eventName_ == TASK_TIMEOUT) {
         headerStream << "SCENARIO = " << event->GetEventValue(SCENARIO) << std::endl;
         headerStream << "QNAME = " << event->GetEventValue(FreezeCommon::QNAME) << std::endl;
@@ -715,7 +731,7 @@ bool EventLogger::IsKernelStack(const std::string& stack)
 }
 
 void EventLogger::GetNoJsonStack(std::string& stack, std::string& contentStack,
-    std::string& kernelStack, bool isFormat, std::string bundleName)
+    std::string& kernelStack, bool isFormat, std::string bundleName, const std::string& mainStack)
 {
     if (!IsKernelStack(contentStack)) {
         stack = contentStack;
@@ -730,7 +746,7 @@ void EventLogger::GetNoJsonStack(std::string& stack, std::string& contentStack,
         contentStack = contentStack.substr(kernelStackIndex + kernelStackTag.size());
     }
     kernelStack = contentStack;
-    if (DfxJsonFormatter::FormatKernelStack(contentStack, stack, isFormat, true, bundleName)) {
+    if (DfxJsonFormatter::FormatKernelStack(contentStack, stack, isFormat, true, bundleName, mainStack)) {
         contentStack = stack;
         if (isFormat) {
             stack = "";
@@ -743,9 +759,58 @@ void EventLogger::GetNoJsonStack(std::string& stack, std::string& contentStack,
     stack = kernelStackStart + stack;
 }
 
-void EventLogger::GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
-    std::string& stack, const std::string& msg, std::string& kernelStack)
+void EventLogger::FormatHicollieStack(std::string& jsonstack, std::string& textStack, int pid,
+                                      std::string& bundleName, int errcode)
 {
+    bool ret = false;
+    if (errcode == 0) {
+        ret = DfxJsonFormatter::FormatJsonStack(jsonstack, textStack, true, bundleName);
+        if (!ret) {
+            HIVIEW_LOGE("format stack failed, pid:%{public}d", pid);
+        }
+    } else if (errcode == 1) {
+        ret = DfxJsonFormatter::FormatKernelStack(jsonstack, textStack, false, true, bundleName);
+        if (!ret) {
+            HIVIEW_LOGE("format kernel stack failed, pid:%{public}d", pid);
+        }
+    } else {
+        HIVIEW_LOGE("catch stack failed, pid:%{public}d", pid);
+    }
+}
+
+bool EventLogger::GetHicollieStack(std::shared_ptr<SysEvent> event, std::string& jsonStack, std::string& stack)
+{
+    int pid = event->GetEventIntValue("PID");
+    int uid = event->GetEventIntValue("UID");
+    std::string allStack;
+    std::string bundleName = CommonUtils::GetProcFullNameByPid(pid);
+    std::string stackStr;
+    int ret = LogCatcherUtils::DumpStacktraceJsonFast(pid, jsonStack);
+    std::string jsonStack1 = jsonStack;
+    FormatHicollieStack(jsonStack1, stackStr, pid, bundleName, ret);
+    allStack += stackStr;
+    if (uid >= ARKWEB_UID_START && uid <= ARKWEB_UID_END) {
+        std::string procName = CommonUtils::GetProcFullNameByPid(pid);
+        size_t len = std::char_traits<char>::length(":render");
+        if (procName.find(":render") != std::string::npos) {
+            std::string appName = procName.substr(0, procName.size() - len);
+            int pidOfApp = CommonUtils::GetPidByName(appName);
+            std::string appStackStr;
+            ret = LogCatcherUtils::DumpStacktraceJsonFast(pidOfApp, appStackStr);
+            std::string stackApp;
+            FormatHicollieStack(appStackStr, stackApp, pidOfApp, appName, ret);
+            allStack += "\nApp Process:\n";
+            allStack += stackApp;
+        }
+    }
+    stack = allStack;
+    return true;
+}
+
+void EventLogger::GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
+    std::string& stack, const std::string& msg, std::string& kernelStack, const std::string& mainStack)
+{
+    int isHicollie = event->GetEventIntValue("IS_HICOLLIE");
     std::string message;
     std::string eventHandlerStr;
     ParseMsgForMessageAndEventHandler(msg, message, eventHandlerStr);
@@ -753,26 +818,30 @@ void EventLogger::GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
 
     std::string jsonStack = event->GetEventValue("STACK");
     std::string bundleName = event->GetEventValue("PACKAGE_NAME");
-    HIVIEW_LOGI("Current jsonStack is? jsonStack:%{public}s", jsonStack.c_str());
-    if (FileUtil::FileExists(jsonStack)) {
-        jsonStack = FreezeManager::GetAppFreezeFile(jsonStack);
-    }
-
-    if (!jsonStack.empty() &&
-        (jsonStack[0] == '{' || jsonStack[0] == '[')) { // json stack info should start with '{' or '['
-        jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
-        if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack, true, bundleName)) {
-            stack = jsonStack;
-        }
+    if (isHicollie) {
+        GetHicollieStack(event, jsonStack, stack);
     } else {
-        auto task = [this, &stack, &jsonStack, &kernelStack, bundleName, jsonFd]() {
-            this->GetNoJsonStack(stack, jsonStack, kernelStack, true, bundleName);
-        };
-        if (!stackQueue_) {
-            return;
+        HIVIEW_LOGI("Current jsonStack is? jsonStack:%{public}s", jsonStack.c_str());
+        if (FileUtil::FileExists(jsonStack)) {
+            jsonStack = FreezeManager::GetAppFreezeFile(jsonStack);
         }
-        ffrt::task_handle handle = stackQueue_->submit_h(task, ffrt::task_attr().name("appfreeze dump stack"));
-        stackQueue_->wait(handle);
+
+        if (!jsonStack.empty() &&
+            (jsonStack[0] == '{' || jsonStack[0] == '[')) { // json stack info should start with '{' or '['
+            jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
+            if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack, true, bundleName)) {
+                stack = jsonStack;
+            }
+        } else {
+            auto task = [this, &stack, &jsonStack, &kernelStack, bundleName, jsonFd, &mainStack]() {
+                this->GetNoJsonStack(stack, jsonStack, kernelStack, true, bundleName, mainStack);
+            };
+            if (!stackQueue_) {
+                return;
+            }
+            ffrt::task_handle handle = stackQueue_->submit_h(task, ffrt::task_attr().name("appfreeze dump stack"));
+            stackQueue_->wait(handle);
+        }
     }
 
     GetFailedDumpStackMsg(stack, event);
@@ -850,10 +919,12 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     std::string msg = StringUtil::ReplaceStr(event->GetEventValue("MSG"), "\\n", "\n");
     std::string stack;
     std::string kernelStack;
-    std::string binderInfo = event -> GetEventValue("BINDER_INFO");
+    std::string binderInfo = event->GetEventValue("BINDER_INFO");
     std::string bundleName = event->GetEventValue("PACKAGE_NAME");
+    std::string mainStack = "";
     if (FreezeJsonUtil::IsAppFreeze(event->eventName_)) {
-        GetAppFreezeStack(jsonFd, event, stack, msg, kernelStack);
+        mainStack = StringUtil::UnescapeJsonStringValue(event->GetEventValue("MAIN_STACK"));
+        GetAppFreezeStack(jsonFd, event, stack, msg, kernelStack, mainStack);
         WriteBinderInfo(jsonFd, binderInfo, binderPids, threadStack, kernelStack, bundleName);
     } else if (FreezeJsonUtil::IsAppHicollie(event->eventName_)) {
         GetAppFreezeStack(jsonFd, event, stack, msg, kernelStack);
@@ -883,6 +954,7 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
         oss << StringUtil::UnescapeJsonStringValue(stack) << std::endl;
     }
     oss << endTimeStamp << std::endl;
+    oss << mainStack << std::endl;
     if (!binderInfo.empty()) {
         oss << (Parameter::IsOversea() ? "binder info is not saved in oversea version":
             StringUtil::UnescapeJsonStringValue(binderInfo)) << std::endl;
@@ -890,6 +962,41 @@ bool EventLogger::WriteFreezeJsonInfo(int fd, int jsonFd, std::shared_ptr<SysEve
     FileUtil::SaveStringToFd(fd, oss.str());
     WriteCallStack(event, fd);
     return true;
+}
+
+std::string EventLogger::GetBlockedTime(std::shared_ptr<SysEvent> event)
+{
+    float blockedTime = 0.0f;
+ 
+    if (event->eventName_.empty()) {
+        return "";
+    }
+ 
+    if (event->eventName_ == "THREAD_BLOCK_3S") {
+        blockedTime = DFX_THREAD_BLOCK_3S * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    } else if (event->eventName_ == "THREAD_BLOCK_6S") {
+        blockedTime = DFX_THREAD_BLOCK_6S * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    } else if (event->eventName_ == "APP_INPUT_BLOCK") {
+        blockedTime = DFX_APP_INPUT_BLOCK_8S * FreezeGetRatio::GetInstance()->GetAppfreezeTimeoutRatio();
+    } else if (event->eventName_ == "LIFECYCLE_TIMEOUT") {
+        if (event->GetEventValue("MSG").find("foreground timeout") != std::string::npos) {
+            blockedTime = DFX_FOREGROUND_TIMEOUT_5S * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+        } else if (event->GetEventValue("MSG").find("load timeout") != std::string::npos) {
+            blockedTime = DFX_LOAD_TIMEOUT_10S * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+        } else {
+            return "";
+        }
+    } else if (event->eventName_ == "LIFECYCLE_HALF_TIMEOUT") {
+        if (event->GetEventValue("MSG").find("foreground timeout") != std::string::npos) {
+            blockedTime = DFX_FOREGROUND_TIMEOUT_2S5 * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+        } else if (event->GetEventValue("MSG").find("load timeout") != std::string::npos) {
+            blockedTime = DFX_LOAD_TIMEOUT_5S * FreezeGetRatio::GetInstance()->GetAbilitymsTimeoutRatio();
+        } else {
+            return "";
+        }
+    }
+ 
+    return std::to_string(((int)blockedTime));
 }
 
 void EventLogger::HandleMsgStr(std::string& msg, std::string& endTimeStamp, std::shared_ptr<SysEvent>& event)

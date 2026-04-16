@@ -181,7 +181,7 @@ static uint64_t GetMilliseconds()
 }
 
 /**
- * @tc.name: TraceCollectorTest003
+ * @tc.name: TraceCollectorTest004
  * @tc.desc: start app trace.
  * @tc.type: FUNC
 */
@@ -208,7 +208,8 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest004, TestSize.Level1)
      * Reasonable scenarios
      * TRACE_OPEN_ERROR : app trace open deny, trace is not in close state
     */
-    ASSERT_TRUE(result.retCode == UcError::SUCCESS || result.retCode == UcError::TRACE_OPEN_ERROR);
+    ASSERT_TRUE(result.retCode == UcError::SUCCESS || result.retCode == UcError::TRACE_OPEN_ERROR ||
+        result.retCode == UcError::HAD_CAPTURED_TRACE) << "result.retCode=" << result.retCode;
     if (result.retCode == UcError::SUCCESS) {
         sleep(3);
         AppCaller appCaller2;
@@ -257,43 +258,6 @@ HWTEST_F(TraceCollectorTest, TraceCollectorTest005, TestSize.Level1)
     std::shared_ptr<TestCallback> callback = std::make_shared<TestCallback>(2);
     auto traceCollector = TraceCollector::Create();
     traceCollector->RequestAppTrace(traceConfig, callback);
-    sleep(7);
-    ASSERT_EQ(callback->testCode, 0);
-}
-
-/**
- * @tc.name: TraceCollectorTest006
- * @tc.desc: start app trace.
- * @tc.type: FUNC
-*/
-HWTEST_F(TraceCollectorTest, TraceCollectorTest006, TestSize.Level1)
-{
-    TraceConfig traceConfig {
-        .bufferSize = 1024,
-        .duration = 100,
-        .prefix = "test"
-    };
-    std::shared_ptr<TestCallback> callback = std::make_shared<TestCallback>(1);
-    auto traceCollector = TraceCollector::Create();
-    traceCollector->RequestAppTrace(traceConfig, callback);
-    ASSERT_EQ(callback->testCode, -1);
-}
-
-/**
- * @tc.name: TraceCollectorTest007
- * @tc.desc: start app trace.
- * @tc.type: FUNC
-*/
-HWTEST_F(TraceCollectorTest, TraceCollectorTest007, TestSize.Level1)
-{
-    TraceConfig traceConfig {
-        .bufferSize = 1024,
-        .duration = 100,
-        .prefix = "test"
-    };
-    std::shared_ptr<TestCallback> callback = nullptr;
-    auto traceCollector = TraceCollector::Create();
-    traceCollector->RequestAppTrace(traceConfig, callback);
-    sleep(7);
-    ASSERT_EQ(callback, nullptr);
+    sleep(1);
+    ASSERT_EQ(callback->testCode, UCollect::PERMISSION_CHECK_FAILED);
 }

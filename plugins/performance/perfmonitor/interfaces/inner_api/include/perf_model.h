@@ -69,6 +69,7 @@ struct BaseInfo {
     std::string processName {""};
     std::string abilityName {""};
     std::string pageUrl {""};
+    std::string prePageName {""};
     std::string pageName {""};
     std::string note {""};
     SubHealthInfo subHealthInfo;
@@ -86,6 +87,8 @@ struct DataBase {
     int64_t maxFrameTimeSinceStart {0};
     int64_t maxHitchTime {0};
     int64_t maxHitchTimeSinceStart {0};
+    // 数组从第一个元素开始分别统计丢1帧、丢2帧、丢3帧....丢8帧及以上
+    std::vector<int> jankCount {0, 0, 0, 0, 0, 0, 0, 0};
     bool needReportRs {false};
     bool isDisplayAnimator {false};
     PerfSourceType sourceType {UNKNOWN_SOURCE};
@@ -143,6 +146,13 @@ struct AppWhiteInfo {
     std::string pageName;
 };
 
+struct LoadCompleteInfo {
+    int64_t lastComponent{0};
+    std::string bundleName;
+    std::string abilityName;
+    bool isLaunch{false};
+};
+
 class AnimatorRecord {
 public:
     void InitRecord(const std::string& sId, PerfActionType aType, PerfSourceType sType, const std::string& nt,
@@ -165,6 +175,7 @@ public:
     int32_t totalMissed {0};
     int32_t totalFrames {0};
     int32_t seqMissFrames {0};
+    std::vector<int> jankCount {0, 0, 0, 0, 0, 0, 0, 0};
     bool isSuccessive {false};
     bool isFirstFrame {false};
     bool needReportRs {false};
