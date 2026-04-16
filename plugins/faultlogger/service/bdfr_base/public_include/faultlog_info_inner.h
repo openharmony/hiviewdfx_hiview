@@ -55,7 +55,16 @@ enum FaultLogType {
     CJ_ERROR = 9,
     ADDR_SANITIZER = 10,
     PROCESS_PAGE_INFO = 11,
+    MINIDUMP = 12,
     MAX_TYPE,
+};
+
+struct GwpAsanParams {
+    bool alwaysEnabled = false;
+    bool isRecover = false;
+    double sampleRate = 2500;
+    double maxSimutaneousAllocations = 1000;
+    int32_t duration = 7;
 };
 }  // namespace HiviewDFX
 }  // namespace OHOS

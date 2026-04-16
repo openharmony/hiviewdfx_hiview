@@ -15,6 +15,7 @@
 
 #include "scene_monitor.h"
 #include "jank_frame_monitor.h"
+#include "load_complete_monitor.h"
 #include "perf_reporter.h"
 #include "perf_trace.h"
 #include "perf_utils.h"
@@ -217,6 +218,9 @@ void SceneMonitor::OnAnimatorStop(const std::string& sceneId, bool isRsRender)
     if (IsScrollJank(sceneId)) {
         WhiteBlockMonitor::GetInstance().EndScroll();
     }
+    if (SceneMonitor::GetInstance().GetCurrentSceneId() == sceneId) {
+        SceneMonitor::GetInstance().SetCurrentSceneId("");
+    }
     SetAppGCStatus(sceneId, 1);
     NotifyScbJankStatsBegin(sceneId);
 }
@@ -287,6 +291,10 @@ std::string SceneMonitor::GetPageUrl()
 void SceneMonitor::SetPageName(const std::string& pageName)
 {
     std::lock_guard<std::mutex> Lock(mMutex);
+    if (baseInfo.pageName == pageName) {
+        return;
+    }
+    baseInfo.prePageName = baseInfo.pageName;
     baseInfo.pageName = pageName;
 }
 
@@ -304,6 +312,11 @@ int32_t SceneMonitor::GetPid()
 
 void SceneMonitor::SetAppForeground(bool isShow)
 {
+    if (isShow) {
+        LoadCompleteMonitor::GetInstance().StartCollectForLaunch();
+    } else {
+        LoadCompleteMonitor::GetInstance().StopCollect();
+    }
     if (GetBaseInfo().bundleName == BUNDLE_NAME_SCENE_BOARD) {
         HIVIEW_LOGD("The sceneBoard needs to be excluded.");
         return;
@@ -535,6 +548,12 @@ void SceneMonitor::FlushSubHealthInfo()
         baseInfo.subHealthInfo = subHealthInfo;
         isSubHealthScene = false;
     }
+}
+
+void SceneMonitor::OnLastUpInputEvent()
+{
+    OnSceneChanged(SceneType::APP_RESPONSE, true, GetCurrentSceneId());
+    LoadCompleteMonitor::GetInstance().StopCollect();
 }
 
 }

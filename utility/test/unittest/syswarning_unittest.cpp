@@ -80,7 +80,7 @@ HWTEST(SmartParserSysWarningTest, SmartParserSysWarningTest001, testing::ext::Te
     secondFrame += "std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l> > > const&, ";
     secondFrame += "std::__1::unique_lock<std::__1::mutex>&)+96";
     ASSERT_EQ(eventInfos["SECOND_FRAME"], secondFrame);
-    ASSERT_EQ(eventInfos["LAST_FRAME"], "/system/bin/appspawn");
+    ASSERT_EQ(eventInfos["LAST_FRAME"], "000000000001053c /system/bin/appspawn");
 }
 } // namespace HiviewDFX
 } // namespace OHOS

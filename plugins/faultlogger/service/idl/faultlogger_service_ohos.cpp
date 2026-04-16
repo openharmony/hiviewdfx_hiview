@@ -167,7 +167,7 @@ sptr<IRemoteObject> FaultloggerServiceOhos::QuerySelfFaultLog(int32_t faultType,
 }
 
 bool FaultloggerServiceOhos::EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
-    double maxSimutaneousAllocations, int32_t duration)
+    double maxSimutaneousAllocations, int32_t duration, bool isRecover)
 {
     if (sampleRate <= 0 || maxSimutaneousAllocations <= 0 || duration <= 0) {
         HIVIEW_LOGE("failed to enable gwp asan grayscale, sampleRate: %{public}f"
@@ -180,8 +180,13 @@ bool FaultloggerServiceOhos::EnableGwpAsanGrayscale(bool alwaysEnabled, double s
         return false;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    bool result = instance->EnableGwpAsanGrayscale(alwaysEnabled, sampleRate,
-        maxSimutaneousAllocations, duration, uid);
+    GwpAsanParams gwpAsanParams;
+    gwpAsanParams.alwaysEnabled = alwaysEnabled;
+    gwpAsanParams.isRecover = isRecover;
+    gwpAsanParams.maxSimutaneousAllocations = maxSimutaneousAllocations;
+    gwpAsanParams.sampleRate = sampleRate;
+    gwpAsanParams.duration = duration;
+    bool result = instance->EnableGwpAsanGrayscale(gwpAsanParams, uid);
     return result;
 }
 

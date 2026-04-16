@@ -16,8 +16,9 @@
 #include "app_event_handler.h"
 
 #include <sstream>
+#include <unordered_set>
 
-#include "bundle_mgr_client.h"
+#include "bundle_util.h"
 #include "event_publish.h"
 #include "hiview_logger.h"
 #include "time_util.h"
@@ -26,19 +27,6 @@ namespace OHOS {
 namespace HiviewDFX {
 namespace {
 DEFINE_LOG_TAG("HiView-AppEventHandler");
-
-int32_t GetUidByBundleName(const std::string& bundleName)
-{
-    AppExecFwk::BundleInfo info;
-    AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
-        AppExecFwk::Constants::ALL_USERID)) {
-        HIVIEW_LOGE("Failed to query uid from bms.");
-    } else {
-        HIVIEW_LOGD("bundleName of uid=%{public}d", info.uid);
-    }
-    return info.uid;
-}
 
 template <typename T>
 void AddVectorToJsonString(const std::string& key, const std::vector<T>& vec, std::stringstream& jsonStr,
@@ -102,7 +90,7 @@ int AppEventHandler::PostEvent(const AppLaunchInfo& event)
         HIVIEW_LOGW("bundleName empty.");
         return -1;
     }
-    int32_t uid = GetUidByBundleName(event.bundleName);
+    int32_t uid = BundleUtil::GetUidByBundleName(event.bundleName);
     std::stringstream jsonStr;
     jsonStr << "{";
     AddTimeToJsonString(jsonStr);
@@ -131,7 +119,7 @@ int AppEventHandler::PostEvent(const ScrollJankInfo& event)
         HIVIEW_LOGW("bundleName empty.");
         return -1;
     }
-    int32_t uid = GetUidByBundleName(event.bundleName);
+    int32_t uid = BundleUtil::GetUidByBundleName(event.bundleName);
     std::stringstream jsonStr;
     jsonStr << "{";
     AddTimeToJsonString(jsonStr);
@@ -169,8 +157,10 @@ int AppEventHandler::PostEvent(const ResourceOverLimitInfo& event)
     AddValueToJsonString("uid", event.uid, jsonStr);
     AddValueToJsonString("resource_type", event.resourceType, jsonStr);
     AddValueToJsonString("app_running_unique_id", event.appRunningUniqueId, jsonStr);
-    if (event.resourceType == "pss_memory" || event.resourceType == "ion_memory" ||
-        event.resourceType == "gpu_memory") {
+    AddValueToJsonString("level", event.level, jsonStr);
+    std::unordered_set<std::string> validResourceTypes = { "pss_memory", "ion_memory",
+        "gpu_memory", "rss_memory", "ashmem_memory" };
+    if (validResourceTypes.find(event.resourceType) != validResourceTypes.end()) {
         AddObjectToJsonString("memory", jsonStr);
         AddValueToJsonString("pss", event.pss, jsonStr);
         AddValueToJsonString("rss", event.rss, jsonStr);
@@ -211,7 +201,7 @@ int AppEventHandler::PostEvent(const CpuUsageHighInfo& event)
         HIVIEW_LOGW("bundleName empty");
         return -1;
     }
-    int32_t uid = GetUidByBundleName(event.bundleName);
+    int32_t uid = BundleUtil::GetUidByBundleName(event.bundleName);
     std::stringstream jsonStr;
     jsonStr << "{";
     AddTimeToJsonString(jsonStr);
@@ -235,7 +225,7 @@ int AppEventHandler::PostEvent(const BatteryUsageInfo& event)
         HIVIEW_LOGW("bundleName empty");
         return -1;
     }
-    int32_t uid = GetUidByBundleName(event.bundleName);
+    int32_t uid = BundleUtil::GetUidByBundleName(event.bundleName);
     std::stringstream jsonStr;
     jsonStr << "{";
     AddTimeToJsonString(jsonStr);
@@ -281,7 +271,7 @@ int AppEventHandler::PostEvent(const AppKilledInfo& event)
     if (event.uid != 0) {
         uid = event.uid;
     } else {
-        uid = GetUidByBundleName(event.bundleName);
+        uid = BundleUtil::GetUidByBundleName(event.bundleName);
         HIVIEW_LOGI("get uid: %{public}d by bundleName: %{public}s", uid, event.bundleName.c_str());
     }
 
@@ -304,7 +294,7 @@ int AppEventHandler::PostEvent(const AudioJankFrameInfo& event)
         HIVIEW_LOGW("bundleName empty.");
         return -1;
     }
-    int32_t uid = GetUidByBundleName(event.bundleName);
+    int32_t uid = BundleUtil::GetUidByBundleName(event.bundleName);
     std::stringstream jsonStr;
     jsonStr << "{";
     AddTimeToJsonString(jsonStr);

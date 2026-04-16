@@ -97,6 +97,7 @@ ohos_source_set("faultlogger_service_fuzz_src") {
     "dynamic_library_management/dynamic_library_manager.cpp",
     "extension_manager/src/faultlog_ext_conn_manager.cpp",
     "extension_manager/src/faultlog_ext_connection.cpp",
+    "faultlog_bootscan_listener.cpp",
     "faultlogger.cpp",
     "page_history/page_history_manager.cpp",
     "page_history/page_history_recorder.cpp",
@@ -107,7 +108,7 @@ ohos_source_set("faultlogger_service_fuzz_src") {
   deps = [
     "$hiview_base:hiviewbase",
     "$hiview_interfaces/inner_api/unified_collection/utility:libucollection_utility",
-    "$hiview_plugin/faultlogger/framework/native/extension/zidl:faultlog_ext_zidl_proxy",
+    "$hiview_plugin/faultlogger/framework/native/extension/zidl:faultlog_ext_zidl_proxy_for_test",
     "idl:faultlogger_service_impl",
   ]
 

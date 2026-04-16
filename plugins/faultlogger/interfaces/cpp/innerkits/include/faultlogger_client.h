@@ -30,7 +30,7 @@ extern "C" {
  *
  * @param info  structure containing information about fault
 */
-void AddFaultLog(FaultLogInfoInner* info);
+void AddFaultLog(void* info);
 /**
  * @brief report cpp crash event to Hiview
  *
@@ -123,10 +123,11 @@ std::unique_ptr<FaultLogQueryResult> QuerySelfFaultLog(FaultLogType faultType, i
  * @param sampleRate - sample rate of GWP-ASAN.
  * @param maxSimutaneousAllocations - the max simutaneous allocations of GWP-ASAN.
  * @param duration - The duration days of GWP-ASAN grayscale.
+ * @param isRecover - Control whether to enable recoverable mode.
  * @return true - enable success, false - enable falied
 */
 bool EnableGwpAsanGrayscale(bool alwaysEnabled, double sampleRate,
-    double maxSimutaneousAllocations, int32_t duration);
+    double maxSimutaneousAllocations, int32_t duration, bool isRecover);
 
 /**
  * @brief disable the GWP-ASAN grayscale of your application.

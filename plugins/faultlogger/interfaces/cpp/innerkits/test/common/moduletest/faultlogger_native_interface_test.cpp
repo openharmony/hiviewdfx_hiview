@@ -303,7 +303,7 @@ HWTEST_F(FaultloggerNativeInterfaceTest, FaultlogInfoTest001, testing::ext::Test
  */
 HWTEST_F(FaultloggerNativeInterfaceTest, GwpAsanGrayscaleFaultLogTest001, testing::ext::TestSize.Level3)
 {
-    EnableGwpAsanGrayscale(false, 1000, 2000, 5);
+    EnableGwpAsanGrayscale(false, 1000, 2000, 5, false);
     DisableGwpAsanGrayscale();
     auto result2 = GetGwpAsanGrayscaleState();
     ASSERT_TRUE(result2 >= 0);

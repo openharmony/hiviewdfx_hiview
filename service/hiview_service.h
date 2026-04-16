@@ -42,10 +42,11 @@ public:
     int32_t Remove(const std::string& filePath);
 
     // Trace interfaces
-    CollectResult<std::vector<std::string>> DumpSnapshotTrace(const std::string& callerName, bool isNeedFlowControl);
+    CollectResult<std::vector<std::string>> DumpSnapshotTrace(const std::string& callerName, bool isNeedFlowControl,
+        const std::string& outputPath = "");
     CollectResult<int32_t> OpenTrace(const std::vector<std::string>& tags, const UCollectClient::TraceParam& param,
         const std::vector<int32_t>& filterPids);
-    CollectResult<int32_t> RecordingTraceOn();
+    CollectResult<int32_t> RecordingTraceOn(const std::string& outputPath = "");
     CollectResult<std::vector<std::string>> RecordingTraceOff();
     CollectResult<int32_t> CloseTrace();
     CollectResult<int32_t> CaptureDurationTrace(UCollectClient::AppCaller &appCaller);
@@ -53,6 +54,7 @@ public:
     CollectResult<int32_t> SetAppResourceLimit(UCollectClient::MemoryCaller& memoryCaller);
     CollectResult<UCollectClient::GraphicUsage> GetGraphicUsage(int32_t pid);
     CollectResult<int32_t> SetSplitMemoryValue(std::vector<UCollectClient::MemoryCaller>& memList);
+    CollectResult<int32_t> SetForkDumpService(const std::string& packageName, int32_t mainProcPid, int32_t subProcPid);
 
 private:
     void DumpPluginInfo(int fd, const std::vector<std::string>& cmds) const;

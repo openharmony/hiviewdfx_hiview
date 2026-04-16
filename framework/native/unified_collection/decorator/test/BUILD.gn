@@ -46,6 +46,8 @@ ohos_unittest("DecoratorUnitTest") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
   ]
 
   defines = []
@@ -87,10 +89,5 @@ ohos_unittest("DecoratorUnitTest") {
 
   if (hiview_unified_collector_wm_enable) {
     defines += [ "UNIFIED_COLLECTOR_WM_ENABLE" ]
-  }
-
-  if (has_hiprofiler && hiview_unified_collector_mem_profiler_enable) {
-    defines += [ "HAS_HIPROFILER" ]
-    external_deps += [ "hiprofiler:libnative_daemon_client" ]
   }
 }

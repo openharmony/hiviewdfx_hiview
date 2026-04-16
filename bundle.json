@@ -14,7 +14,8 @@
         "subsystem": "hiviewdfx",
         "syscap": [
             "SystemCapability.HiviewDFX.Hiview.FaultLogger",
-            "SystemCapability.HiviewDFX.Hiview.LogLibrary"
+            "SystemCapability.HiviewDFX.Hiview.LogLibrary",
+            "SystemCapability.HiviewDFX.HiRetrieval"
         ],
         "adapted_system_type": [
             "standard"
@@ -83,6 +84,7 @@
                 "data_share",
                 "device_usage_statistics",
                 "drivers_interface_memorytracker",
+                "ets_frontend",
                 "ets_runtime",
                 "faultloggerd",
                 "ffrt",
@@ -100,6 +102,7 @@
                 "openssl",
                 "os_account",
                 "power_manager",
+                "preferences",
                 "relational_store",
                 "safwk",
                 "samgr",
@@ -129,7 +132,8 @@
                 "//base/hiviewdfx/hiview/interfaces/inner_api/unified_collection/utility:libucollection_utility",
                 "//base/hiviewdfx/hiview/framework/native/unified_collection/graphic_memory:libgraphic_memory",
                 "//base/hiviewdfx/hiview/framework/native/unified_collection/trace_manager:libtrace_manager",
-                "//base/hiviewdfx/hiview/interfaces/ets/ani:ani_loglibrary_package"
+                "//base/hiviewdfx/hiview/interfaces/ets/ani:ani_loglibrary_package",
+                "//base/hiviewdfx/hiview/hiretrieval:hiretrieval_packages"
             ],
             "group_type": {
                 "fwk_group" : [
@@ -202,7 +206,6 @@
                             "utility/cpu_collector.h",
                             "utility/gpu_collector.h",
                             "utility/io_collector.h",
-                            "utility/mem_profiler_collector.h",
                             "utility/memory_collector.h",
                             "utility/network_collector.h",
                             "utility/thermal_collector.h",

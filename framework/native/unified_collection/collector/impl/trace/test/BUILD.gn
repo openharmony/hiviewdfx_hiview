@@ -53,6 +53,8 @@ ohos_unittest("TraceUtilsTest") {
     "hilog:libhilog",
     "ffrt:libffrt",
     "c_utils:utils",
+    "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
   ]
 }
 
@@ -86,6 +88,8 @@ ohos_unittest("TraceStrategyTest") {
     "zlib:libz",
     "hisysevent:libhisysevent",
     "c_utils:utils",
+    "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
   ]
 
   defines = [
@@ -125,10 +129,55 @@ ohos_unittest("TraceStrategyExTest") {
     "zlib:libz",
     "hisysevent:libhisysevent",
     "c_utils:utils",
+    "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
   ]
 
   defines = [
     "TRACE_STRATEGY_UNITTEST",
+  ]
+
+  resource_config_file = "$hiview_framework/native/unified_collection/collector/impl/trace/test/resource/ohos_test.xml"
+}
+
+ohos_unittest("TraceImplTest") {
+  module_out_path = hiview_module + "/ucollection/trace"
+
+  configs = [ ":trace_unified_collection_test_config" ]
+
+  sources = [
+    "trace_impl_test.cpp",
+    "$hiview_framework/native/unified_collection/collector/impl/trace/strategy/src/trace_handler.cpp",
+    "$hiview_framework/native/unified_collection/collector/impl/trace/strategy/src/trace_strategy.cpp",
+    "$hiview_framework/native/unified_collection/collector/impl/trace/strategy/src/trace_strategy_factory.cpp",
+    "$hiview_framework/native/unified_collection/collector/impl/trace/trace_collector_impl.cpp",
+    "$hiview_framework/native/unified_collection/collector/impl/trace/trace_utils.cpp",
+    "$hiview_framework/native/unified_collection/decorator/trace_decorator.cpp",
+    "$hiview_framework/native/unified_collection/decorator/decorator_util.cpp",
+    "$hiview_framework/native/unified_collection/decorator/decorator.cpp",
+  ]
+
+  deps = [
+    "$hiview_base:hiviewbase",
+    "$hiview_framework/native/unified_collection/trace_manager:libtrace_manager",
+    "$hiview_interfaces/inner_api/unified_collection/utility:trace_strategy_for_tdd",
+  ]
+
+  external_deps = [
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ffrt:libffrt",
+    "cJSON:cjson",
+    "jsoncpp:jsoncpp",
+    "zlib:libz",
+    "hisysevent:libhisysevent",
+    "c_utils:utils",
+    "hitrace:hitrace_dump",
+    "relational_store:native_rdb",
+  ]
+
+  defines = [
+    "TRACE_IMPL_UNITTEST",
   ]
 
   resource_config_file = "$hiview_framework/native/unified_collection/collector/impl/trace/test/resource/ohos_test.xml"

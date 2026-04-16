@@ -21,6 +21,7 @@ namespace FaultLogger {
 constexpr const char * const APP_CRASH_TYPE = "APP_CRASH";
 constexpr const char * const APP_FREEZE_TYPE = "APP_FREEZE";
 constexpr const char * const APP_HICOLLIE_TYPE = "APP_HICOLLIE";
+constexpr const char * const APP_FREEZE_WARNING_TYPE = "APPFREEZE_WARNING";
 
 constexpr int REPORT_HILOG_LINE = 100;
 constexpr int DECIMAL_BASE = 10;
@@ -54,6 +55,7 @@ constexpr const char * const FOREGROUND = "FOREGROUND";
 constexpr const char * const LIFETIME = "LIFETIME";
 constexpr const char * const REASON = "REASON";
 constexpr const char * const FAULT_MESSAGE = "FAULT_MESSAGE";
+constexpr const char * const LAST_FATAL_MESSAGE = "LAST_FATAL_MESSAGE";
 constexpr const char * const STACKTRACE = "TRUSTSTACK";
 constexpr const char * const ROOT_CAUSE = "BINDERMAX";
 constexpr const char * const MSG_QUEUE_INFO = "MSG_QUEUE_INFO";
@@ -100,6 +102,10 @@ constexpr const char * const RELEASE_TYPE = "RELEASE_TYPE";
 constexpr const char * const THERMAL_LEVEL = "THERMAL_LEVEL";
 constexpr const char * const CLUSTER_RAW = "CLUSTER_RAW";
 constexpr const char * const IS_SIG_ACTION = "IS_SIG_ACTION";
+constexpr const char * const EXTERNAL_CALLBACK_LOG = "EXTERNAL_LOG";
+constexpr const char * const ERRORMANAGER_CAPTURE = "ERRORMANAGER_CAPTURE";
+constexpr const char * const IS_UNCATCH_FAULT = "IS_UNCATCH_FAULT";
+constexpr const char * const ENABLE_MINIDUMP = "ENABLE_MINIDUMP";
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

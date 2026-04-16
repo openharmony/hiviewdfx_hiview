@@ -94,11 +94,14 @@ private:
     WindowIdInfo DumpWindowInfo(int fd);
     std::string GetWindowIdFromLine(const std::string& line);
     bool WriteCommonHead(int fd, std::shared_ptr<SysEvent> event);
+    void FormatHicollieStack(std::string& jsonstack, std::string& textStack, int pid,
+                             std::string& bundleName, int errcode);
+    bool GetHicollieStack(std::shared_ptr<SysEvent> event, std::string& jsonStack, std::string& stack);
     void GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
-        std::string& stack, const std::string& msg, std::string& kernelStack);
+        std::string& stack, const std::string& msg, std::string& kernelStack, const std::string& mainStack = "");
     bool IsKernelStack(const std::string& stack);
     void GetNoJsonStack(std::string& stack, std::string& contentStack, std::string& kernelStack, bool isFormat,
-        std::string bundleName);
+        std::string bundleName, const std::string& mainStack = "");
     void ParsePeerStack(std::string& binderInfo, std::string& binderPeerStack, std::string bundleName);
     void WriteKernelStackToFile(std::shared_ptr<SysEvent> event, int originFd,
         const std::string& kernelStack);
@@ -131,6 +134,7 @@ private:
     void SubmitTraceTask(const std::string& cmd, std::shared_ptr<EventLogTask>& logTask);
     void SubmitEventlogTask(const std::string& cmd, std::shared_ptr<EventLogTask>& logTask);
     void InitQueue();
+    std::string GetBlockedTime(std::shared_ptr<SysEvent> event);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

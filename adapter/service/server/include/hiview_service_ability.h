@@ -51,8 +51,9 @@ public:
     ErrCode Remove(const std::string& logType, const std::string& logName) override;
     ErrCode OpenTrace(const std::vector<std::string>& tags, const TraceParamParcelable& traceParam,
         const std::vector<int32_t>& filterPids, int32_t& errNo, int32_t& retData) override;
-    ErrCode DumpSnapshotTrace(int32_t client, int32_t& errNo, std::vector<std::string>& files) override;
-    ErrCode RecordingTraceOn(int32_t& errNo, int32_t& ret) override;
+    ErrCode DumpSnapshotTrace(int32_t client, const std::string& outputPath,
+        int32_t& errNo, std::vector<std::string>& files) override;
+    ErrCode RecordingTraceOn(const std::string& outputPath, int32_t& errNo, int32_t& ret) override;
     ErrCode RecordingTraceOff(int32_t& errNo, std::vector<std::string>& files) override;
     ErrCode CloseTrace(int32_t& errNo, int32_t& ret) override;
     ErrCode CaptureDurationTrace(const AppCallerParcelable& appCaller, int32_t& errNo, int32_t& ret) override;
@@ -63,6 +64,8 @@ public:
     ErrCode SetSplitMemoryValue(
         const std::vector<MemoryCallerParcelable>& memCallerParcelableList, int32_t& errNo, int32_t& ret) override;
     ErrCode GetGraphicUsage(int32_t& errNo, GraphicUsageParcelable& graphicUsageParcelable) override;
+    ErrCode IsolateSubProcess(const std::string& packageName, int32_t mainProcPid, int32_t subProcPid,
+                              int32_t& errNo, int32_t& ret) override;
 
 protected:
     void OnDump() override;
@@ -82,7 +85,21 @@ private:
         }
     }
 
+    template<typename T>
+    bool IsCallbackNull(const sptr<T> &callback)
+    {
+        if (callback == nullptr) {
+            return true;
+        }
+        OHOS::sptr<OHOS::IRemoteObject> callbackObject = callback->AsObject();
+        if (callbackObject == nullptr) {
+            return true;
+        }
+        return false;
+    }
 private:
+    bool CheckIdentity(int32_t uid, std::string& packageName, std::string& sandboxTracePath,
+        const sptr<IRequestTraceCallback> &callback);
     void GetFileInfoUnderDir(const std::string& dirPath, std::vector<HiviewFileInfo>& fileInfos);
     ErrCode CopyOrMoveFile(
         const std::string& logType, const std::string& logName, const std::string& dest, bool isMove);
