@@ -29,7 +29,8 @@ private:
     bool ReportEventToAppEvent() const override;
     void DoFaultLogLimit(const std::string& logPath) const override;
     void UpdateFaultLogInfo() override;
-    static Json::Value FillStackInfo(const FaultLogInfo& info, std::string& stackInfoOriginal);
+    static Json::Value FillStackInfo(const FaultLogInfo& info, std::string& stackInfoOriginal,
+        std::string& minidumpPath);
     static bool CheckFaultLog(const FaultLogInfo& info);
     static bool ReportProcessKillEvent(const FaultLogInfo& info);
     static bool TruncateLogIfExceedsLimit(std::string& readContent);
@@ -44,6 +45,7 @@ private:
     static int TruncateAppCrashLog(const std::string& logPath, const std::string& target);
     static long FindTargetOffset(FILE* fp, const std::string& target);
     static std::string GetMinidumpPath(const FaultLogInfo& info, uint32_t timeOutUs);
+    static std::string DealMiniDumpEvent(const FaultLogInfo& info);
 };
 } // namespace HiviewDFX
 } // namespace OHOS
