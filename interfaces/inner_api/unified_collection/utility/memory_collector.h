@@ -34,7 +34,6 @@ public:
     virtual CollectResult<std::string> CollectRawMemInfo() = 0;
     virtual CollectResult<std::string> ExportMemView() = 0;
     virtual CollectResult<std::vector<ProcessMemory>> CollectAllProcessMemory() = 0;
-    virtual CollectResult<std::string> ExportAllProcessMemory() = 0;
     virtual CollectResult<std::string> CollectRawSlabInfo() = 0;
     virtual CollectResult<std::string> CollectRawPageTypeInfo() = 0;
     virtual CollectResult<std::string> CollectRawDMA() = 0;
