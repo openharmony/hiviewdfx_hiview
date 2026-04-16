@@ -47,6 +47,7 @@ namespace {
     const int DFX_HILOG_TIMESTAMP_DECIMAL = 10;
     const int64_t DFX_HILOG_TIMESTAMP_THOUSAND = 1000;
     constexpr uint32_t MINIDUMP_MAX_TIMEOUT_US = 5 * 1000 * 1000;
+    constexpr int32_t MAX_MINIDUMP_LOG_PER_HAP = 5;
 }
 
 int64_t FaultLogCppCrash::GetLastLineHilogTime(const std::string& lastLineHilog)
@@ -165,7 +166,28 @@ std::string FaultLogCppCrash::GetMinidumpPath(const FaultLogInfo& info, uint32_t
     return "";
 }
 
-Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::string& stackInfoOriginal)
+std::string FaultLogCppCrash::DealMiniDumpEvent(const FaultLogInfo& info)
+{
+    std::string minidumpSourcePath = GetMinidumpPath(info, MINIDUMP_MAX_TIMEOUT_US);
+    if (!minidumpSourcePath.empty()) {
+        std::string minidumpDestPath = "/data/log/faultlog/faultlogger/minidump-" + info.module + "-" +
+            std::to_string(info.id) + "-" + GetFormatedTimeWithMillsec(info.time) + ".dmp";
+        if (FileUtil::CopyFile(minidumpSourcePath, minidumpDestPath) == 0) {
+            HIVIEW_LOGI("Minidump copied to: %{public}s", minidumpDestPath.c_str());
+            auto store = FaultLogManager::CreateFaultLogStore();
+            auto filter = FaultLogManager::CreateLogFileFilter(0, info.id, FaultLogType::MINIDUMP, info.module);
+            store->ClearSameLogFilesIfNeeded(filter, MAX_MINIDUMP_LOG_PER_HAP);
+            return minidumpDestPath;
+        } else {
+            HIVIEW_LOGE("Failed to copy minidump from %{private}s to %{private}s",
+                minidumpSourcePath.c_str(), minidumpDestPath.c_str());
+        }
+    }
+    return "";
+}
+
+Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::string& stackInfoOriginal,
+    std::string& minidumpPath)
 {
     Json::Reader reader;
     Json::Value stackInfoObj;
@@ -176,20 +198,9 @@ Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::strin
     stackInfoObj["bundle_name"] = info.module;
     Json::Value externalLog;
     externalLog.append(info.logPath);
-
-    std::string minidumpSourcePath = GetMinidumpPath(info, MINIDUMP_MAX_TIMEOUT_US);
-    if (!minidumpSourcePath.empty()) {
-        std::string minidumpDestPath = "/data/log/faultlog/faultlogger/minidump-" + info.module + "-" +
-            std::to_string(info.id) + "-" + GetFormatedTimeWithMillsec(info.time) + ".dmp";
-        if (FileUtil::CopyFile(minidumpSourcePath, minidumpDestPath) == 0) {
-            externalLog.append(minidumpDestPath);
-            HIVIEW_LOGI("Minidump copied to: %{public}s", minidumpDestPath.c_str());
-        } else {
-            HIVIEW_LOGE("Failed to copy minidump from %{private}s to %{private}s",
-                minidumpSourcePath.c_str(), minidumpDestPath.c_str());
-        }
+    if (!minidumpPath.empty()) {
+        externalLog.append(minidumpPath);
     }
-
     stackInfoObj["external_log"] = externalLog;
 
     stackInfoObj["process_life_time"] = GetProcessInfo(info.sectionMap, FaultKey::PROCESS_LIFETIME);
@@ -209,12 +220,13 @@ Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::strin
 std::string FaultLogCppCrash::GetStackInfo(const FaultLogInfo& info)
 {
     std::string stackInfoOriginal = ReadStackFromPipe(info);
+    std::string minidumpPath = DealMiniDumpEvent(info); // maybe copy minidump
     if (stackInfoOriginal.empty()) {
         HIVIEW_LOGE("read stack from pipe failed");
         return "";
     }
 
-    auto stackInfoObj = FillStackInfo(info, stackInfoOriginal);
+    auto stackInfoObj = FillStackInfo(info, stackInfoOriginal, minidumpPath);
     return Json::FastWriter().write(stackInfoObj);
 }
 
