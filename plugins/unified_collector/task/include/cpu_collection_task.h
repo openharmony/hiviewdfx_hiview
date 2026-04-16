@@ -20,7 +20,6 @@
 
 #include "cpu_collector.h"
 #include "cpu_storage.h"
-#include "cpu_perf_dump.h"
 #include "dump_trace_controller.h"
 
 namespace OHOS {
@@ -34,9 +33,6 @@ public:
 private:
     void InitCpuCollector();
     void InitCpuStorage();
-#ifdef HAS_HIPERF
-    void InitCpuPerfDump();
-#endif
     void ReportCpuCollectionEvent();
     void CollectCpuData();
 #ifdef CATCH_TRACE_FOR_CPU_HIGH_LOAD
@@ -49,9 +45,6 @@ private:
     std::shared_ptr<UCollectUtil::CpuCollector> cpuCollector_;
     std::shared_ptr<UCollectUtil::ThreadCpuCollector> threadCpuCollector_;
     std::shared_ptr<CpuStorage> cpuStorage_;
-#ifdef HAS_HIPERF
-    std::shared_ptr<CpuPerfDump> cpuPerfDump_;
-#endif
 }; // CpuCollectionTask
 } // namespace HiviewDFX
 } // namespace OHOS
