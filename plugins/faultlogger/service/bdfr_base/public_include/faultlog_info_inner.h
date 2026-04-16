@@ -58,6 +58,14 @@ enum FaultLogType {
     MINIDUMP = 12,
     MAX_TYPE,
 };
+
+struct GwpAsanParams {
+    bool alwaysEnabled = false;
+    bool isRecover = false;
+    double sampleRate = 2500;
+    double maxSimutaneousAllocations = 1000;
+    int32_t duration = 7;
+};
 }  // namespace HiviewDFX
 }  // namespace OHOS
 #endif  // HIVIEW_FAULT_LOG_INFO_H

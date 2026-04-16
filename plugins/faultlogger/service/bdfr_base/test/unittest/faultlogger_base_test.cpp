@@ -45,8 +45,22 @@ HWTEST(FaultloggerBaseTest, QuerySelfFaultLog001, testing::ext::TestSize.Level3)
 HWTEST(FaultloggerBaseTest, GetGwpAsanGrayscaleState001, testing::ext::TestSize.Level3)
 {
     FaultloggerBase faultloggerBase;
-    faultloggerBase.EnableGwpAsanGrayscale(false, 1000, 2000, 5, static_cast<int64_t>(getuid()));
-    faultloggerBase.EnableGwpAsanGrayscale(true, 2523, 2000, 5, static_cast<int64_t>(getuid()));
+    GwpAsanParams params1 {
+        .alwaysEnabled = false,
+        .sampleRate = 1000,
+        .maxSimutaneousAllocations = 2000,
+        .duration = 5,
+        .isRecover = false,
+    };
+    GwpAsanParams params2 {
+        .alwaysEnabled = true,
+        .sampleRate = 2523,
+        .maxSimutaneousAllocations = 2000,
+        .duration = 5,
+        .isRecover = true,
+    };
+    faultloggerBase.EnableGwpAsanGrayscale(params1, static_cast<int64_t>(getuid()));
+    faultloggerBase.EnableGwpAsanGrayscale(params2, static_cast<int64_t>(getuid()));
     faultloggerBase.DisableGwpAsanGrayscale(static_cast<int64_t>(getuid()));
     ASSERT_TRUE(faultloggerBase.GetGwpAsanGrayscaleState(static_cast<int64_t>(getuid())) >= 0);
 }
