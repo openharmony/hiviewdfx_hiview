@@ -48,7 +48,6 @@ ohos_source_set("unified_collector") {
     "observer/uc_system_ability_listener.cpp",
     "storage/cpu_storage.cpp",
     "task/cpu_collection_task.cpp",
-    "task/cpu_perf_dump.cpp",
     "unified_collector.cpp",
   ]
 
