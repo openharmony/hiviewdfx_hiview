@@ -33,11 +33,7 @@ public:
     virtual std::list<FaultLogInfo> QuerySelfFaultLog(int32_t uid, int32_t pid, int32_t faultType, int32_t maxNum) = 0;
     virtual void StartFaultLogBootScan() = 0;
     virtual void SanitizerHandleUnorderedEvent(const Event& msg) = 0;
-    virtual bool EnableGwpAsanGrayscale(bool alwaysEnabled,
-                                        double sampleRate,
-                                        double maxSimutaneousAllocations,
-                                        int32_t duration,
-                                        int32_t uid) = 0;
+    virtual bool EnableGwpAsanGrayscale(GwpAsanParams gwpAsanParams, int32_t uid) = 0;
     virtual void DisableGwpAsanGrayscale(int32_t uid) = 0;
     virtual uint32_t GetGwpAsanGrayscaleState(int32_t uid) = 0;
     virtual uint64_t GetExtensionDelayTime() = 0;
