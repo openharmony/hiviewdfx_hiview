@@ -209,7 +209,11 @@ FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersion(const st
 
 FreezeJsonParams::Builder& FreezeJsonParams::Builder::InitBundleVersionCode(const std::string& bundleVersionCode)
 {
-    bundleVersionCode_ = bundleVersionCode;
+    errno = 0;
+    char* endptr = nullptr;
+    constexpr int decimalBase  = 10;
+    long val = std::strtol(bundleVersionCode.c_str(), &endptr, decimalBase);
+    bundleVersionCode_ = (errno == 0 && endptr == bundleVersionCode.c_str() + bundleVersionCode.size()) ? val : 0;
     return *this;
 }
 
