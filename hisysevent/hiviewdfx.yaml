@@ -35,6 +35,15 @@ APP_EVENT_SEND:
   RUNNINGID: {type: STRING, desc: running ID}
   CRASH_TYPE: {type: STRING, desc: crash type}
 
+FW_MEM_ANOMALY:
+  __BASE: {type: STATISTIC, level: CRITICAL, desc: The VM of the three_party framework reports high memory usage, preserve: true}
+  PROCESS_NAME: {type: STRING, desc: bundle name}
+  FW_TYPE: {type: STRING, desc: framework VM type}
+  FW_VER: {type: STRING, desc: framework version}
+  APP_VER: {type: STRING, desc: application version}
+  RUNNING_ID: {type: STRING, desc: running id}
+  DESCRIPTION: {type: STRING, desc: description}
+
 PLUGIN_LOAD:
   __BASE: {type: BEHAVIOR, level: CRITICAL, tag: hiviewPlugin, desc: load hiview plugin}
   NAME: {type: STRING, desc: plugin name}
