@@ -102,6 +102,7 @@ namespace {
     constexpr int DFX_FOREGROUND_TIMEOUT_5S = 5000;
     constexpr int DFX_LOAD_TIMEOUT_5S = 5000;
     constexpr int DFX_LOAD_TIMEOUT_10S = 10000;
+    constexpr float FLOAT_EPSILON = 0.01f;
     constexpr int ARKWEB_UID_START = 20100000;
     constexpr int ARKWEB_UID_END = 20109999;
 }
@@ -995,8 +996,8 @@ std::string EventLogger::GetBlockedTime(std::shared_ptr<SysEvent> event)
             return "";
         }
     }
- 
-    return std::to_string(((int)blockedTime));
+
+    return blockedTime < FLOAT_EPSILON ? "" : std::to_string(((int)blockedTime));
 }
 
 void EventLogger::HandleMsgStr(std::string& msg, std::string& endTimeStamp, std::shared_ptr<SysEvent>& event)
