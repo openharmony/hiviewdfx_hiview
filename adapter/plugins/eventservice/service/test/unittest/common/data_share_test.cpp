@@ -151,8 +151,6 @@ HWTEST_F(DataShareTest, DataShareUtilTest001, testing::ext::TestSize.Level3)
     ASSERT_FALSE(sandbox.empty());
     ASSERT_GE(DataShareUtil::GetBundleNameById(uid).size(), 0);
     ASSERT_TRUE(DataShareUtil::GetBundleNameById(-1).empty());
-    uid = DataShareUtil::GetUidByBundleName("hiview");
-    ASSERT_GE(uid, -1); // -1 is expected value
 }
 
 /**

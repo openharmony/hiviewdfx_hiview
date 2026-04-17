@@ -39,8 +39,8 @@ std::string GetAppVersion(const std::string& bundleName)
 {
     AppExecFwk::BundleInfo info;
     AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info,
-        AppExecFwk::Constants::ALL_USERID)) {
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_INFO_EXCLUDE_EXT,
+        info, AppExecFwk::Constants::ALL_USERID)) {
         HIVIEW_LOGE("Failed to get the version of the bundle=%{public}s", bundleName.c_str());
         return "";
     }

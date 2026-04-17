@@ -32,8 +32,8 @@ bool IsPreInstallApp(const std::string& bundleName)
 {
     AppExecFwk::BundleInfo info;
     AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, info,
-        AppExecFwk::Constants::ALL_USERID)) {
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_INFO_EXCLUDE_EXT,
+        info, AppExecFwk::Constants::ALL_USERID)) {
         return false;
     }
     return info.isPreInstallApp;
