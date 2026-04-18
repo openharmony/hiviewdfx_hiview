@@ -139,7 +139,7 @@ public:
         std::string freezeType_ = "";
         bool foreground_ = false;
         std::string bundleVersion_ = "";
-        std::string bundleVersionCode_ = "";
+        long bundleVersionCode_ = 0;
         std::string bundleName_ = "";
         std::string processName_ = "";
         uint64_t processLifeTime_ = 0;
@@ -198,7 +198,7 @@ private:
     std::string freezeType_;
     bool foreground_;
     std::string bundleVersion_;
-    std::string bundleVersionCode_;
+    long bundleVersionCode_ = 0;
     std::string bundleName_;
     std::string processName_;
     uint64_t processLifeTime_ = 0;
