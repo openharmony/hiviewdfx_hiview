@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,14 +15,14 @@
 
 #include "data_share_util.h"
 
-#include "bundle_mgr_client.h"
 #include <cstdio>
-#include <iostream>
 #include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
+#include <iostream>
 #include <sys/sendfile.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include "bundle_mgr_client.h"
 #include "file_util.h"
 #include "hiview_logger.h"
 
@@ -93,19 +93,6 @@ std::string DataShareUtil::GetBundleNameById(int32_t uid)
         HIVIEW_LOGE("Succ to get bundleName of uid:%{public}d", uid);
     }
     return bundleName;
-}
-
-int32_t DataShareUtil::GetUidByBundleName(const std::string& bundleName)
-{
-    AppExecFwk::BundleInfo info;
-    AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::GET_BUNDLE_DEFAULT, info,
-        AppExecFwk::Constants::ALL_USERID)) {
-        HIVIEW_LOGE("Failed to query uid from bms");
-    } else {
-        HIVIEW_LOGD("Succ to get uid=%{public}d", info.uid);
-    }
-    return info.uid;
 }
 }  // namespace HiviewDFX
 }  // namespace OHOS

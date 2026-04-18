@@ -77,7 +77,8 @@ std::string GetPathPlaceHolder(int32_t uid)
     }
     AppExecFwk::BundleInfo bundleInfo;
     AppExecFwk::BundleMgrClient client;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT, bundleInfo, uid / VALUE_MOD)) {
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_INFO_EXCLUDE_EXT,
+        bundleInfo, uid / VALUE_MOD)) {
         HIVIEW_LOGE("failed get bundleInfo");
         return "";
     }
@@ -142,7 +143,7 @@ bool IsDebugHap(const int32_t uid)
     std::string bundleName = GetApplicationNameById(uid);
     AppExecFwk::BundleMgrClient client;
     AppExecFwk::BundleInfo info;
-    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_DEFAULT,
+    if (!client.GetBundleInfo(bundleName, AppExecFwk::BundleFlag::GET_BUNDLE_INFO_EXCLUDE_EXT,
         info, AppExecFwk::Constants::ALL_USERID)) {
         HIVIEW_LOGE("Failed to query BundleInfo from bms, bundle:%{public}s.", bundleName.c_str());
         return false;
