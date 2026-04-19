@@ -176,7 +176,7 @@ void NoDetectCollectStrategy::CompleteComponent(int32_t componentId)
 
 CollectResult NoDetectCollectStrategy::CalculateResult(int64_t beginTime)
 {
-    // 不检测策略：返回完成的结果，不会上报
+    // 不检测策略：返回不完成的结果，不会上报
     CollectResult result = {0, 0, false};
     return result;
 }
