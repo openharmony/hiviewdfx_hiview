@@ -57,6 +57,5 @@ std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy
     }
     return std::make_unique<NonPreloadCollectStrategy>();
 }
-
 } // namespace HiviewDFX
 } // namespace OHOS
