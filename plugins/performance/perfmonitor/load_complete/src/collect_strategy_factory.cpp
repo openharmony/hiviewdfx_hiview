@@ -51,7 +51,6 @@ std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy
 
     auto it = bundleConfigs.find(bundleName);
     bool usePreload = (it != bundleConfigs.end()) ? it->second : false;
-    
     if (usePreload) {
         return std::make_unique<PreloadCollectStrategy>();
     }
