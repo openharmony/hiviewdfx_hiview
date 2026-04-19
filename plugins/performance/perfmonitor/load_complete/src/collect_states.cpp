@@ -22,14 +22,16 @@ namespace OHOS {
 namespace HiviewDFX {
  
 // ==================== InitState 实现 ====================
-void InitState::StartCollectForLaunch() {
+void InitState::StartCollectForLaunch()
+{
     XPERF_TRACE_SCOPED("[LoadCompleteMonitor] StartCollectForLaunch currentTime:%lld",
         static_cast<long long>(GetCurrentSystimeMs()));
     LoadCompleteMonitor::GetInstance().StartCollectCommon(true);
     LoadCompleteMonitor::GetInstance().SetState(std::make_unique<CollectingState>());
 }
  
-void InitState::StartCollectForAnimation(const std::string& sceneId) {
+void InitState::StartCollectForAnimation(const std::string& sceneId)
+{
     if (sceneId == PerfConstants::ABILITY_OR_PAGE_SWITCH) {
         XPERF_TRACE_SCOPED("[LoadCompleteMonitor] StartCollectForAnimation currentTime:%lld",
             static_cast<long long>(GetCurrentSystimeMs()));
