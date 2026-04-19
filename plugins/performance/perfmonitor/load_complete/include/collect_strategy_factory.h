@@ -36,9 +36,7 @@ public:
      * @return 组件收集策略指针
      */
     static std::unique_ptr<ComponentCollectStrategy> CreateStrategy(
-        const std::string& bundleName, 
-        bool isLaunch
-    );
+        const std::string& bundleName, bool isLaunch);
 };
 
 } // namespace HiviewDFX
