@@ -21,9 +21,8 @@ namespace OHOS {
 namespace HiviewDFX {
 
 std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy(
-    const std::string& bundleName, 
-    bool isLaunch
-) {
+    const std::string& bundleName, bool isLaunch)
+{
     // 非启动场景使用非预加载模式
     if (!isLaunch) {
         return std::make_unique<NonPreloadCollectStrategy>();
