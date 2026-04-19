@@ -23,6 +23,7 @@ if (hiview_enable_xperf_perfmonitor) {
       "common",
       "common/event_builder",
       "include",
+      "load_complete/include",
     ]
 
     cflags_cc = [
@@ -66,7 +67,9 @@ ohos_shared_library("libperfmonitor") {
       "src/white_block_monitor.cpp",
       "src/surface_monitor.cpp",
       "src/load_complete_monitor.cpp",
-      "src/collect_states.cpp",
+      "load_complete/src/collect_states.cpp",
+      "load_complete/src/collect_strategy.cpp",
+      "load_complete/src/collect_strategy_factory.cpp",
     ]
 
     configs = [ ":xperf_perfmonitor_config" ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,19 +24,11 @@
  
 #include "collect_state.h"
 #include "collect_states.h"
- 
+#include "collect_strategy.h"
+
 namespace OHOS {
 namespace HiviewDFX {
- 
-struct LoadCompleteCfg {
-    double ignorableRatio {0.0};
-    int64_t intraGroupGapTime {3000};
-    int64_t stopCollectTimeWait {3000};
-    int32_t maxGroupNum {1};
-    int32_t maxCompleteTimes {1};
-    bool haveLaunchSwitch {false};
-};
- 
+
 /**
  * @brief 页面加载完成监控器
  *
@@ -74,21 +66,21 @@ public:
  
     /**
      * @brief 添加加载组件（状态模式接口）
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    void AddLoadComponent(int32_t nodeId);
- 
+    void AddLoadComponent(int32_t componentId);
+
     /**
      * @brief 删除加载组件（状态模式接口）
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    void DeleteLoadComponent(int32_t nodeId);
- 
+    void DeleteLoadComponent(int32_t componentId);
+
     /**
      * @brief 完成加载组件（状态模式接口）
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    void CompleteLoadComponent(int32_t nodeId);
+    void CompleteLoadComponent(int32_t componentId);
  
     // ========== 动效开始和结束的回调接口 ==========
     void OnAnimatorStart(const std::string& sceneId, PerfActionType type, const std::string& note) override;
@@ -99,53 +91,31 @@ public:
     // 状态转换方法
     void SetState(std::unique_ptr<ICollectState> newState);
     
-    // 数据访问方法
-    const LoadCompleteCfg& GetConfig() const { return config_; }
-    int64_t GetLastAddTime() const { return lastAddTime; }
-    int32_t GetGroupNum() const { return groupNum; }
-    int64_t GetLastLoadComponent() const { return lastLoadComponent; }
-    int32_t GetNodeNum() const { return nodeNum_; }
-    bool GetIsLaunch() const { return isLaunch_; }
-    
-    // 数据修改方法
-    void SetLastAddTime(int64_t time) { lastAddTime = time; }
-    void SetLastLoadComponent(int64_t time) { lastLoadComponent = time; }
-    void IncrementGroupNum() { groupNum++; }
-    void IncrementNodeNum() { nodeNum_++; }
-    void SetHaveLaunchSwitch(bool flag) { config_.haveLaunchSwitch = flag; }
-    
-    // 监控节点管理
-    void AddMonitoredNode(int32_t nodeId, int32_t count) { monitoredNodes_[nodeId] = count; }
-    
     // 内部方法
     void FinishCollectTask();
-    void ResetManagerStatus();
-    void DeleteLoadComponentInternal(int32_t nodeId);
-    void CompleteLoadComponentInternal(int32_t nodeId);
+    void DeleteLoadComponentInternal(int32_t componentId);
+    void CompleteLoadComponentInternal(int32_t componentId);
     void StartCollectCommon(bool isLaunch);
+    void AddComponentInternal(int32_t componentId);
  
 private:
     LoadCompleteMonitor();
     ~LoadCompleteMonitor();
- 
-    void SetLoadCompleteCfg();
+
     void PostTimeoutTask();
- 
+
     // 成员变量
     int64_t beginTime_ = 0;
-    int64_t lastLoadComponent = 0;
-    int64_t lastAddTime = 0;
-    int32_t groupNum = 0;
-    int32_t nodeNum_ = 0;
-    LoadCompleteCfg config_;
     std::string bundleName_;
     std::string abilityName_;
-    std::unordered_map<int32_t, int32_t> monitoredNodes_;
     bool isLaunch_ {false};
- 
+
+    // 策略模式相关
+    std::unique_ptr<ComponentCollectStrategy> collectStrategy_;
+
     // 状态模式相关
     std::unique_ptr<ICollectState> currentState_;
- 
+
     // 多线程任务相关
     std::shared_ptr<std::atomic<bool>> currentTaskFlag_;
     mutable std::mutex mutex_;
