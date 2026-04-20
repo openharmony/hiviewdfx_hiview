@@ -37,7 +37,6 @@ std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy
         std::string(PerfConstants::APP_NAME_UGC_AWEME),
         std::string(PerfConstants::APP_NAME_KUAISHOU)
     };
-    
     if (noDetectApps.find(bundleName) != noDetectApps.end()) {
         return std::make_unique<NoDetectCollectStrategy>();
     }
