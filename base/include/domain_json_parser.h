@@ -39,7 +39,7 @@ class DomainJsonParser {
         std::shared_ptr<DOMAIN_LOCATION_MAP> GetDomainLocationMap();
 
     private:
-        std::shared_ptr<DOMAIN_LOCATION_MAP> domainLocationMap_ = nullptr;;
+        std::shared_ptr<DOMAIN_LOCATION_MAP> domainLocationMap_ = nullptr;
         std::string defFilePath_;
         mutable ffrt::mutex domainMtx_;
 };
