@@ -210,6 +210,7 @@ int AppEventHandler::PostEvent(const CpuUsageHighInfo& event)
     AddValueToJsonString("usage", event.usage, jsonStr);
     AddValueToJsonString("begin_time", event.beginTime, jsonStr);
     AddValueToJsonString("fault_type", event.faultType, jsonStr);
+    AddValueToJsonString("app_running_unique_id", event.appRunningUniqueId, jsonStr);
     AddValueToJsonString("end_time", event.endTime, jsonStr);
     AddVectorToJsonString("threads", event.threads, jsonStr);
     AddVectorToJsonString("external_log", event.externalLog, jsonStr);
