@@ -79,7 +79,7 @@ struct BaseInfo {
 };
 #pragma pack(pop)
 
-using NAME_INFO_MAP = std::unordered_map<std::string, BaseInfo>;
+using NAME_INFO_MAP = std::unordered_map<std::string, std::optional<BaseInfo>>;
 using DOMAIN_INFO_MAP = std::unordered_map<std::string, NAME_INFO_MAP>;
 using JSON_VALUE_LOOP_HANDLER = std::function<void(const std::string&, const Json::Value&)>;
 using ExportEventList = std::map<std::string, std::vector<std::string>>; // <domain, names>
