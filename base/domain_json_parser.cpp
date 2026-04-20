@@ -71,14 +71,12 @@ bool DomainJsonParser::ParseDomainJsonFromFile(const std::string& domainName,
     std::ifstream file(defFilePath_, std::ifstream::binary);
     if (!file.is_open()) {
         HIVIEW_LOGE("open json file failed, please check the style of json file: %{public}s", defFilePath_.c_str());
-        file.close();
         return false;
     }
     file.seekg(domainIter->second.startPos, std::ifstream::beg);
     if (!file) {
         HIVIEW_LOGE("seekg sysEvent def json file failed, file: %{public}s, statPos: %{public}d",
             defFilePath_.c_str(), domainIter->second.startPos);
-        file.close();
         return false;
     }
 
@@ -88,7 +86,6 @@ bool DomainJsonParser::ParseDomainJsonFromFile(const std::string& domainName,
     if (!file) {
         HIVIEW_LOGE("read part of sysEvent file failed, startPos: %{public}d, length: %{public}d",
             domainIter->second.startPos, domainIter->second.length);
-        file.close();
         return false;
     }
     Json::CharReaderBuilder reader;
@@ -97,10 +94,8 @@ bool DomainJsonParser::ParseDomainJsonFromFile(const std::string& domainName,
     if (!charReader->parse(jsonStr.c_str(), jsonStr.c_str() + jsonStr.size(), &outDomainJson, &errors)) {
         HIVIEW_LOGE("parse part of sysEvent file failed, domain: %{public}s, startPos: %{public}d, length: %{public}d",
             domainName.c_str(), domainIter->second.startPos, domainIter->second.length);
-        file.close();
         return false;
     }
-    file.close();
     return true;
 }
 
