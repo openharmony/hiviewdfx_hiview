@@ -115,6 +115,7 @@ public:
         std::vector<LogInfo> externalLog;
         bool logOverLimit = false;
         int32_t faultType = 0;
+        std::string appRunningUniqueId = "";
     };
 
     struct UsageStatInfo {
