@@ -49,21 +49,21 @@ public:
     /**
      * @brief 添加加载组件
      * @param monitor 监控器引用
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    virtual void AddComponent(int32_t nodeId) = 0;
+    virtual void AddComponent(int32_t componentId) = 0;
 
     /**
      * @brief 删除加载组件
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    virtual void DeleteComponent(int32_t nodeId) = 0;
-    
+    virtual void DeleteComponent(int32_t componentId) = 0;
+
     /**
      * @brief 完成加载组件
-     * @param nodeId 组件节点ID
+     * @param componentId 组件ID
      */
-    virtual void CompleteComponent(int32_t nodeId) = 0;
+    virtual void CompleteComponent(int32_t componentId) = 0;
     
     /**
      * @brief 停止收集
