@@ -141,7 +141,7 @@ std::string FaultLogCppCrash::GetMinidumpPath(const FaultLogInfo& info, uint32_t
         return "";
     }
 
-    constexpr uint32_t stepUs = 5 * 100 * 1000; // 500ms
+    constexpr uint32_t stepUs = 2 * 100 * 1000; // 200ms
     uint32_t maxCnt = std::max(timeOutUs / stepUs, 1u);
 
     std::string dir = FAULTLOG_TEMP_FOLDER;
