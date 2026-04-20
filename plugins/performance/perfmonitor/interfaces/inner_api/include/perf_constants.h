@@ -552,6 +552,22 @@ public:
     static constexpr char SAVE_COMBINATION[] = "SAVE_COMBINATION";
 
     static constexpr char START_COMBINATION[] = "START_COMBINATION";
+
+    static constexpr char APP_NAME_UGC_AWEME[] = "com.ss.hm.ugc.aweme";
+
+    static constexpr char APP_NAME_KUAISHOU[] = "com.kuaishou.hmapp";
+
+    static constexpr char APP_NAME_DANMAKU_BILI[] = "yylx.danmaku.bili";
+
+    static constexpr char APP_NAME_MEITUAN[] = "com.sankuai.hmeituan";
+
+    static constexpr char APP_NAME_XHS[] = "com.xingin.xhs_hos";
+
+    static constexpr char APP_NAME_JD_MALL[] = "com.jd.hm.mall";
+
+    static constexpr char APP_NAME_WECHAT[] = "com.tencent.wechat";
+
+    static constexpr char APP_NAME_ALIPAY[] = "com.alipay.mobile.client";
 };
 } // namespace OHOS
 } // namespace HiviewDFX

@@ -33,22 +33,17 @@ public:
     
     /**
      * @brief 启动应用启动场景的收集
-     * @param pageUrl 页面URL
-     * @param bundleName 应用包名
      */
     virtual void StartCollectForLaunch() = 0;
  
     /**
      * @brief 启动动效场景的收集
-     * @param pageUrl 页面URL
-     * @param bundleName 应用包名
      * @param sceneId 场景ID
      */
     virtual void StartCollectForAnimation(const std::string& sceneId) = 0;
  
     /**
      * @brief 添加加载组件
-     * @param monitor 监控器引用
      * @param componentId 组件ID
      */
     virtual void AddComponent(int32_t componentId) = 0;
