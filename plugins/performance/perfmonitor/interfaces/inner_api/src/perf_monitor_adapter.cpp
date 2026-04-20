@@ -192,19 +192,19 @@ void PerfMonitorAdapter::ReportSurface(const int64_t& uniqueId, const std::strin
     SurfaceMonitor::GetInstance().ReportSurface(uniqueId, surfaceName, componentName, bundleName, pid);
 }
 
-void PerfMonitorAdapter::AddLoadComponent(int32_t nodeId)
+void PerfMonitorAdapter::AddLoadComponent(int32_t componentId)
 {
-    LoadCompleteMonitor::GetInstance().AddLoadComponent(nodeId);
+    LoadCompleteMonitor::GetInstance().AddLoadComponent(componentId);
 }
  
-void PerfMonitorAdapter::DeleteLoadComponent(int32_t nodeId)
+void PerfMonitorAdapter::DeleteLoadComponent(int32_t componentId)
 {
-    LoadCompleteMonitor::GetInstance().DeleteLoadComponent(nodeId);
+    LoadCompleteMonitor::GetInstance().DeleteLoadComponent(componentId);
 }
  
-void PerfMonitorAdapter::CompleteLoadComponent(int32_t nodeId)
+void PerfMonitorAdapter::CompleteLoadComponent(int32_t componentId)
 {
-    LoadCompleteMonitor::GetInstance().CompleteLoadComponent(nodeId);
+    LoadCompleteMonitor::GetInstance().CompleteLoadComponent(componentId);
 }
 
 }

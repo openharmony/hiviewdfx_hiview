@@ -32,14 +32,14 @@ class InitState : public ICollectState {
 public:
     void StartCollectForLaunch() override;
     void StartCollectForAnimation(const std::string& sceneId) override;
-    void AddComponent(int32_t nodeId) override;
-    void DeleteComponent(int32_t nodeId) override;
-    void CompleteComponent(int32_t nodeId) override;
+    void AddComponent(int32_t componentId) override;
+    void DeleteComponent(int32_t componentId) override;
+    void CompleteComponent(int32_t componentId) override;
     void StopCollect() override;
-    
+
     const char* GetStateName() const override { return "INIT"; }
 };
- 
+
 /**
  * @brief 收集状态
  *
@@ -49,46 +49,12 @@ class CollectingState : public ICollectState {
 public:
 void StartCollectForLaunch() override;
     void StartCollectForAnimation(const std::string& sceneId) override;
-    void AddComponent(int32_t nodeId) override;
-    void DeleteComponent(int32_t nodeId) override;
-    void CompleteComponent(int32_t nodeId) override;
+    void AddComponent(int32_t componentId) override;
+    void DeleteComponent(int32_t componentId) override;
+    void CompleteComponent(int32_t componentId) override;
     void StopCollect() override;
-    
+
     const char* GetStateName() const override { return "COLLECTING"; }
-};
- 
-/**
- * @brief 分析状态
- *
- * 收集完成，不接受增加新的组件操作
- */
-class AnalysisState : public ICollectState {
-public:
-    void StartCollectForLaunch() override;
-    void StartCollectForAnimation(const std::string& sceneId) override;
-    void AddComponent(int32_t nodeId) override;
-    void DeleteComponent(int32_t nodeId) override;
-    void CompleteComponent(int32_t nodeId) override;
-    void StopCollect() override;
-    
-    const char* GetStateName() const override { return "ANALYSIS"; }
-};
- 
-/**
- * @brief 完成状态
- *
- * 收集和分析全部完成的状态，不接受任何组件操作
- */
-class CompleteState : public ICollectState {
-public:
-    void StartCollectForLaunch() override;
-    void StartCollectForAnimation(const std::string& sceneId) override;
-    void AddComponent(int32_t nodeId) override;
-    void DeleteComponent(int32_t nodeId) override;
-    void CompleteComponent(int32_t nodeId) override;
-    void StopCollect() override;
-    
-    const char* GetStateName() const override { return "COMPLETE"; }
 };
  
 } // namespace HiviewDFX

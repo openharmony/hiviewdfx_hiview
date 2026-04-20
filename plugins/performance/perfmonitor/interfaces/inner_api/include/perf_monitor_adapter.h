@@ -67,9 +67,9 @@ public:
     void ReportSurface(const int64_t& uniqueId, const std::string& surfaceName, const std::string& componentName,
         const std::string& bundleName, const int32_t& pid);
     
-    void AddLoadComponent(int32_t nodeId);
-    void DeleteLoadComponent(int32_t nodeId);
-    void CompleteLoadComponent(int32_t nodeId);
+    void AddLoadComponent(int32_t componentId);
+    void DeleteLoadComponent(int32_t componentId);
+    void CompleteLoadComponent(int32_t componentId);
 };
 }
 }
