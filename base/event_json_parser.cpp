@@ -383,7 +383,7 @@ void EventJsonParser::GetAllCollectEvents(ExportEventList& list, int16_t reportI
             std::string eventName = it->first;
             std::optional<BaseInfo> baseInfo = it->second;
             if (baseInfo.has_value()) {
-                AddEventToExportList(list, domainName, eventName, baseInfo, reportInterval);
+                AddEventToExportList(list, domainName, eventName, baseInfo.value(), reportInterval);
             }
         }
     }
