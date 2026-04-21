@@ -126,6 +126,24 @@ int32_t XperfServiceClient::UnregisterVideoJank(const std::string& caller)
     return client->UnregisterVideoJank(caller);
 }
 
+int32_t XperfServiceClient::RegisterVideoState(const std::string& caller, const sptr<IVideoStateCallback>& cb)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    if (!CheckClientValid()) {
+        return XPERF_SERVICE_ERR;
+    }
+    return client->RegisterVideoState(caller, cb);
+}
+
+int32_t XperfServiceClient::UnregisterVideoState(const std::string& caller)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    if (!CheckClientValid()) {
+        return XPERF_SERVICE_ERR;
+    }
+    return client->UnregisterVideoState(caller);
+}
+
 int32_t XperfServiceClient::RegisterAudioJank(const std::string& caller, const sptr<IAudioJankCallback>& cb)
 {
     std::lock_guard<std::mutex> lock(mutex);

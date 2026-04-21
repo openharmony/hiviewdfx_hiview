@@ -41,7 +41,7 @@ OhosXperfEvent* ParseAvcodecVideoJankEventMsg(const std::string& msg)
 //#REPORT_INTERVAL:100";
 OhosXperfEvent* ParseAvcodecFirstFrame(const std::string& msg)
 {
-    AvcodecFirstFrame* event = new AvcodecFirstFrame();
+    AvcodecFrame* event = new AvcodecFrame();
     ExtractStrToLong(msg, event->uniqueId, TAG_UNIQUE_ID, TAG_PID, 0);
     ExtractStrToInt(msg, event->pid, TAG_PID, TAG_BUNDLE_NAME, 0);
     ExtractStrToStr(msg, event->bundleName, TAG_BUNDLE_NAME, TAG_SURFACE_NAME, "NA");
