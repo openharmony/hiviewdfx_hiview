@@ -89,5 +89,23 @@ int32_t XperfServiceServer::UnregisterAudioJank(const std::string& caller)
     return XPERF_SERVICE_OK;
 }
 
+int32_t XperfServiceServer::RegisterVideoState(const std::string& caller, const sptr<IVideoStateCallback>& cb)
+{
+    LOGD("XperfServiceServer_RegisterVideoState caller:%{public}s", caller.c_str());
+    auto timerId = HiviewDFX::XCollie::GetInstance().SetTimer("XPerfIPC_RegisterVideoState", XPERF_IPC_XCOLLIE_TIMEOUT,
+        nullptr, nullptr, HiviewDFX::XCOLLIE_FLAG_LOG | HiviewDFX::XCOLLIE_FLAG_RECOVERY);
+    int32_t res = XperfRegisterManager::GetInstance().RegisterVideoState(caller, cb);
+    HiviewDFX::XCollie::GetInstance().CancelTimer(timerId);
+    return res;
+}
+
+int32_t XperfServiceServer::UnregisterVideoState(const std::string& caller)
+{
+    auto timerId = HiviewDFX::XCollie::GetInstance().SetTimer("XPerfIPC_UnregisterVideoState",
+        XPERF_IPC_XCOLLIE_TIMEOUT, nullptr, nullptr, HiviewDFX::XCOLLIE_FLAG_LOG | HiviewDFX::XCOLLIE_FLAG_RECOVERY);
+    XperfRegisterManager::GetInstance().UnregisterVideoState(caller);
+    HiviewDFX::XCollie::GetInstance().CancelTimer(timerId);
+    return XPERF_SERVICE_OK;
+}
 } // namespace HiviewDFX
 } // namespace OHOS

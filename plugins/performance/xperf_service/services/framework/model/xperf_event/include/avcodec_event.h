@@ -35,7 +35,7 @@ struct AvcodecJankEvent : public OhosXperfEvent {
 
 //4000 "#UNIQUEID:7095285973044#PID:1453#BUNDLE_NAME:douyin.com#SURFACE_NAME:399542385184Surface#FPS:60
 // #REPORT_INTERVAL:100";
-struct AvcodecFirstFrame : public OhosXperfEvent {
+struct AvcodecFrame : public OhosXperfEvent {
     int32_t pid{0};
     int32_t fps{0};
     int32_t reportInterval{0};
