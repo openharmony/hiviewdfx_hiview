@@ -559,15 +559,9 @@ public:
 
     static constexpr char APP_NAME_DANMAKU_BILI[] = "yylx.danmaku.bili";
 
-    static constexpr char APP_NAME_MEITUAN[] = "com.sankuai.hmeituan";
-
     static constexpr char APP_NAME_XHS[] = "com.xingin.xhs_hos";
 
     static constexpr char APP_NAME_JD_MALL[] = "com.jd.hm.mall";
-
-    static constexpr char APP_NAME_WECHAT[] = "com.tencent.wechat";
-
-    static constexpr char APP_NAME_ALIPAY[] = "com.alipay.mobile.client";
 };
 } // namespace OHOS
 } // namespace HiviewDFX
