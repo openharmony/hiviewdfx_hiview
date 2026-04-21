@@ -19,6 +19,7 @@ idl_gen_interface("xperf_service_interface") {
   sources = [
     "IAudioJankCallback.idl",
     "IVideoJankCallback.idl",
+    "IVideoStateCallback.idl",
     "IXperfService.idl",
   ]
   log_domainid = "0xD002D66"

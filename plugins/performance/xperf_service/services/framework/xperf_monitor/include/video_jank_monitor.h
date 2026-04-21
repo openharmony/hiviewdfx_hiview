@@ -55,9 +55,10 @@ private:
 
     AudioStateEvent audioStateEvt;
     PlayState playState{PlayState::INIT};
-    std::list<AvcodecFirstFrame> firstFrameList;
+    std::list<AvcodecFrame> firstFrameList;
+    AvcodecFrame secondFrame;
 
-    void AddToList(const AvcodecFirstFrame& firstFrame);
+    void AddToList(const AvcodecFrame& firstFrame);
 
     void MonitorStart();
     void MonitorStop();
@@ -65,8 +66,12 @@ private:
     void OnAudioStart(OhosXperfEvent* event);
     void OnAudioStop(OhosXperfEvent* event);
     void OnFirstFrame(OhosXperfEvent* event);
+    void OnSecondFrame(OhosXperfEvent* event);
 
     bool IsUserAction(const AudioStateEvent& audioStop);
+
+    void BroadcastVideoStart(const std::string& msg);
+    void BroadcastVideoStop(const std::string& msg);
 };
 } // namespace HiviewDFX
 } // namespace OHOS

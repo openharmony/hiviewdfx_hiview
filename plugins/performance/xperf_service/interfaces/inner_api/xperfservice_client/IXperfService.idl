@@ -14,6 +14,7 @@
  */
 
 import IVideoJankCallback;
+import IVideoStateCallback;
 import IAudioJankCallback;
 
 interface OHOS.HiviewDFX.IXperfService {
@@ -22,4 +23,6 @@ interface OHOS.HiviewDFX.IXperfService {
     void UnregisterVideoJank([in] String caller);
     void RegisterAudioJank([in] String caller, [in] IAudioJankCallback cb);
     void UnregisterAudioJank([in] String caller);
+    void RegisterVideoState([in] String caller, [in] IVideoStateCallback cb);
+    void UnregisterVideoState([in] String caller);
 }

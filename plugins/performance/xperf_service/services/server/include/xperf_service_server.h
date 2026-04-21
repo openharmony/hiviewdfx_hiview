@@ -31,6 +31,8 @@ DECLARE_DELAYED_SINGLETON(XperfServiceServer);
 public:
     XperfServiceServer(int32_t systemAbilityId, bool runOnCreate);
 
+    void Start();
+
     ErrCode NotifyToXperf(int32_t domainId, int32_t eventId, const std::string& msg) override;
 
     int32_t RegisterVideoJank(const std::string& caller, const sptr<IVideoJankCallback>& cb) override;
@@ -39,7 +41,8 @@ public:
     int32_t RegisterAudioJank(const std::string& caller, const sptr<IAudioJankCallback>& cb) override;
     int32_t UnregisterAudioJank(const std::string& caller) override;
 
-    void Start();
+    int32_t RegisterVideoState(const std::string& caller, const sptr<IVideoStateCallback>& cb) override;
+    int32_t UnregisterVideoState(const std::string& caller) override;
 };
 }
 }

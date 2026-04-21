@@ -42,6 +42,10 @@ namespace XperfConstants {
     // #REPORT_INTERVAL:100";
     const int32_t AVCODEC_FIRST_FRAME_START = 4000; //avcodec上报首帧
 
+    const int32_t AVCODEC_SECOND_FRAME = 4004; //avcodec上报第二帧
+
+    const int32_t AVCODEC_FRAME_STATS = 4005; //avcodec上报解码统计信息
+
     // "#UNIQUEID:6670084210789#PID:11283#BUNDLE_NAME:com.kuaishou.hmapp"
     // "#SURFACE_NAME:be89e1dc-7cc0-4b79-8023-b2d63bb75f78Surface#FAULT_ID:4#FAULT_CODE:3"
     // "#JANK_REASON:omx hold input too more";

@@ -50,8 +50,11 @@ enum AudioEventCode {
 enum AvcodecEventCode {
     AVCODEC_FIRST_FRAME_START,
     AVCODEC_JANK_REPORT,
-    AVCODEC_CREATE,
-    AVCODEC_DESTROY,
+    AVCODEC_INIT,
+    AVCODEC_RELEASE,
+    AVCODEC_JANK,
+    AVCODEC_SECOND_FRAME,
+    AVCODEC_FRAME_STATS,
 };
 
 enum RsEventCode {

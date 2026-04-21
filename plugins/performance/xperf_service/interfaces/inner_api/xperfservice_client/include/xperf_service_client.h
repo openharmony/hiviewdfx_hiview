@@ -40,6 +40,10 @@ public:
 
     int32_t UnregisterAudioJank(const std::string& caller);
 
+    int32_t RegisterVideoState(const std::string& caller, const sptr<IVideoStateCallback>& cb);
+
+    int32_t UnregisterVideoState(const std::string& caller);
+
 private:
     XperfServiceClient();
     ~XperfServiceClient();
