@@ -27,8 +27,6 @@ namespace OHOS {
 namespace HiviewDFX {
 
 static constexpr uint32_t MAX_FRAME_NUM = 4;
-static constexpr uint32_t fps = 3;
-static constexpr uint64_t interval = 300;
 static constexpr int64_t MANUAL_THRESHOLD = 650;
 static constexpr int STOP_DELAY_MS = 150;
 static constexpr const char* const WECHAT = "com.tencent.wechat";
