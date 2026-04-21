@@ -15,7 +15,6 @@
 
 #include "collect_strategy_factory.h"
 
-#include <unordered_map>
 #include <unordered_set>
 
 #include "perf_constants.h"
@@ -37,23 +36,17 @@ std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy
         std::string(PerfConstants::APP_NAME_UGC_AWEME),
         std::string(PerfConstants::APP_NAME_KUAISHOU)
     };
-    if (noDetectApps.find(bundleName) != noDetectApps.end()) {
+    if (noDetectApps.find(appName) != noDetectApps.end()) {
         return std::make_unique<NoDetectCollectStrategy>();
     }
     
     // 启动场景的应用是否预加载
-    static const std::unordered_map<std::string, bool> appConfigs = {
-        {std::string(PerfConstants::APP_NAME_DANMAKU_BILI), true},
-        {std::string(PerfConstants::APP_NAME_MEITUAN), false},
-        {std::string(PerfConstants::APP_NAME_XHS), true},
-        {std::string(PerfConstants::APP_NAME_JD_MALL), true},
-        {std::string(PerfConstants::APP_NAME_WECHAT), false},
-        {std::string(PerfConstants::APP_NAME_ALIPAY), false}
+    static const std::unordered_set<std::string> preLoadApps = {
+        std::string(PerfConstants::APP_NAME_DANMAKU_BILI),
+        std::string(PerfConstants::APP_NAME_XHS),
+        std::string(PerfConstants::APP_NAME_JD_MALL)
     };
-
-    auto it = appConfigs.find(appName);
-    bool usePreload = (it != appConfigs.end()) ? it->second : false;
-    if (usePreload) {
+    if (preLoadApps.find(appName) != preLoadApps.end()) {
         return std::make_unique<PreloadCollectStrategy>();
     }
     return std::make_unique<NonPreloadCollectStrategy>();
