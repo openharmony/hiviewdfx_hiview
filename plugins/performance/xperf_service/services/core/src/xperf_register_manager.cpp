@@ -135,7 +135,6 @@ void XperfRegisterManager::NotifyVideoJankEvent(const std::string &msg)
             callback->OnVideoJankEvent(msg);
         }
     }
-
 }
 
 void XperfRegisterManager::NotifyAudioJankEvent(const std::string &msg)
