@@ -50,6 +50,7 @@ void XperfMonitorManager::InitPlayStateMonitor()
     RegisterMonitorByLogID(XperfConstants::AUDIO_RENDER_PAUSE_STOP, monitor);
     RegisterMonitorByLogID(XperfConstants::AUDIO_RENDER_RELEASE, monitor);
     RegisterMonitorByLogID(XperfConstants::AVCODEC_FIRST_FRAME_START, monitor);
+    RegisterMonitorByLogID(XperfConstants::AVCODEC_SECOND_FRAME, monitor);
 }
 
 void XperfMonitorManager::InitVideoMonitor()

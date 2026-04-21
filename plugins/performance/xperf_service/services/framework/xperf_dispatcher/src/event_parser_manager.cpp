@@ -39,6 +39,7 @@ void EventParserManager::InitParser()
     RegisterParserByLogID(XperfConstants::AUDIO_RENDER_PAUSE_STOP, &ParseAudioState); //3001
     RegisterParserByLogID(XperfConstants::AUDIO_RENDER_RELEASE, &ParseAudioState); //3002
     RegisterParserByLogID(XperfConstants::AVCODEC_FIRST_FRAME_START, &ParseAvcodecFirstFrame); //4000
+    RegisterParserByLogID(XperfConstants::AVCODEC_SECOND_FRAME, &ParseAvcodecFirstFrame); //4004
     RegisterParserByLogID(XperfConstants::AVCODEC_JANK_REPORT, &ParseAvcodecVideoJankEventMsg); //4001
     RegisterParserByLogID(XperfConstants::NETWORK_JANK_REPORT, &ParseNetworkFaultMsg); //1000
     RegisterParserByLogID(XperfConstants::VIDEO_JANK_FRAME, &ParseRsVideoJankEventMsg); //5000
