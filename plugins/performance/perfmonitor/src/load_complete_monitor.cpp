@@ -121,7 +121,7 @@ void LoadCompleteMonitor::FinishCollectTask()
     // 使用策略计算结果
     auto result = collectStrategy_->CalculateResult(beginTime_);
 
-    XPERF_TRACE_SCOPED("[LoadCompleteMonitor] FinishCollectTask" 
+    XPERF_TRACE_SCOPED("[LoadCompleteMonitor] FinishCollectTask"
         "lastLoadComponent:%lld,monitoredNum:%d,incompleteNum:%d",
         static_cast<long long>(result.lastLoadComponent), result.monitoredNum, result.incompleteNum);
 

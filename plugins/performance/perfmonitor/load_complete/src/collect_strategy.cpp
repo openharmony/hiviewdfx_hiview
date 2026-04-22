@@ -97,7 +97,7 @@ CollectResult PreloadCollectStrategy::CalculateResult(int64_t beginTime)
     }
     
     result.monitoredNum = endIdx + 1;
-    result.isCompleted = (result.incompleteNum <= static_cast<int32_t>(MAX_UNCOMPLETE_COMPONENT_RATIO * 
+    result.isCompleted = (result.incompleteNum <= static_cast<int32_t>(MAX_UNCOMPLETE_COMPONENT_RATIO *
         result.monitoredNum));
     return result;
 }
