@@ -121,8 +121,9 @@ void LoadCompleteMonitor::FinishCollectTask()
     // 使用策略计算结果
     auto result = collectStrategy_->CalculateResult(beginTime_);
 
-    XPERF_TRACE_SCOPED("[LoadCompleteMonitor] FinishCollectTask lastLoadComponent:%lld,incompleteNum:%d",
-        static_cast<long long>(result.lastLoadComponent), result.incompleteNum);
+    XPERF_TRACE_SCOPED("[LoadCompleteMonitor] FinishCollectTask" 
+        "lastLoadComponent:%lld,monitoredNum:%d,incompleteNum:%d",
+        static_cast<long long>(result.lastLoadComponent), result.monitoredNum, result.incompleteNum);
 
     int64_t loadCost = result.isCompleted ? result.lastLoadComponent - beginTime_ : -1;
     if (loadCost == -1 || loadCost > PAGE_LOAD_TIME_THRESHOLD) {
