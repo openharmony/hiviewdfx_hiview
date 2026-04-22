@@ -20,8 +20,7 @@
 
 namespace {
 constexpr int32_t MAX_COMPLETE_TIMES = 3;
-constexpr int32_t MAX_UNCOMPLETE_COMPONENT_NUM_PRE_LOAD = 12;
-constexpr int32_t MAX_UNCOMPLETE_COMPONENT_NUM_NON_PRE_LOAD = 5;
+constexpr double MAX_UNCOMPLETE_COMPONENT_RATIO = 0.25;
 constexpr double MAX_COMPLETE_RATE = 0.7;
 constexpr double MIN_COMPLETE_RATE = 0.5;
 constexpr int64_t MAX_INTRA_GROUP_GAP = 100;
@@ -60,7 +59,7 @@ void PreloadCollectStrategy::CompleteComponent(int32_t componentId)
 
 CollectResult PreloadCollectStrategy::CalculateResult(int64_t beginTime)
 {
-    CollectResult result = {0, 0, false};
+    CollectResult result = {0, 0, 0, false};
     
     if (addComponentInfos_.empty()) {
         result.isCompleted = true;
@@ -97,7 +96,9 @@ CollectResult PreloadCollectStrategy::CalculateResult(int64_t beginTime)
         }
     }
     
-    result.isCompleted = (result.incompleteNum <= MAX_UNCOMPLETE_COMPONENT_NUM_PRE_LOAD);
+    result.monitoredNum = endIdx + 1;
+    result.isCompleted = (result.incompleteNum <= static_cast<int32_t>(MAX_UNCOMPLETE_COMPONENT_RATIO * 
+        result.monitoredNum));
     return result;
 }
 
@@ -138,7 +139,7 @@ void NonPreloadCollectStrategy::CompleteComponent(int32_t componentId)
 
 CollectResult NonPreloadCollectStrategy::CalculateResult(int64_t beginTime)
 {
-    CollectResult result = {0, 0, false};
+    CollectResult result = {0, 0, 0, false};
     
     result.incompleteNum = std::count_if(
         monitoredComponents_.begin(),
@@ -146,7 +147,9 @@ CollectResult NonPreloadCollectStrategy::CalculateResult(int64_t beginTime)
         [](const auto& pair) { return pair.second == MAX_COMPLETE_TIMES; }
     );
     result.lastLoadComponent = lastCompleteTime_;
-    result.isCompleted = (result.incompleteNum <= MAX_UNCOMPLETE_COMPONENT_NUM_NON_PRE_LOAD);
+    result.monitoredNum = monitoredComponents_.size();
+    result.isCompleted = (result.incompleteNum <= static_cast<int32_t>(MAX_UNCOMPLETE_COMPONENT_RATIO *
+        result.monitoredNum));
     
     return result;
 }
@@ -177,7 +180,7 @@ void NoDetectCollectStrategy::CompleteComponent(int32_t componentId)
 CollectResult NoDetectCollectStrategy::CalculateResult(int64_t beginTime)
 {
     // 不检测策略：返回不完成的结果，不会上报
-    CollectResult result = {0, 0, false};
+    CollectResult result = {0, 0, 0, false};
     return result;
 }
 
