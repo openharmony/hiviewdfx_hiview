@@ -14,14 +14,16 @@
  */
 
 #include "collect_strategy_factory.h"
-#include <unordered_map>
+
 #include <unordered_set>
+
+#include "perf_constants.h"
 
 namespace OHOS {
 namespace HiviewDFX {
 
 std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy(
-    const std::string& bundleName, bool isLaunch)
+    const std::string& appName, bool isLaunch)
 {
     // 非启动场景使用非预加载模式
     if (!isLaunch) {
@@ -29,29 +31,22 @@ std::unique_ptr<ComponentCollectStrategy> CollectStrategyFactory::CreateStrategy
     }
     
     // 不检测的应用（直接结束不上报）
-    // 抖音和快手 采用起播作为加载完成的标志
+    // 这两个应用 采用起播作为加载完成的标志
     static const std::unordered_set<std::string> noDetectApps = {
-        "com.ss.hm.ugc.aweme",  // 抖音
-        "com.kuaishou.hmapp"    // 快手
+        std::string(PerfConstants::APP_NAME_UGC_AWEME),
+        std::string(PerfConstants::APP_NAME_KUAISHOU)
     };
-    
-    if (noDetectApps.find(bundleName) != noDetectApps.end()) {
+    if (noDetectApps.find(appName) != noDetectApps.end()) {
         return std::make_unique<NoDetectCollectStrategy>();
     }
     
     // 启动场景的应用是否预加载
-    static const std::unordered_map<std::string, bool> bundleConfigs = {
-        {"yylx.danmaku.bili", true},
-        {"com.sankuai.hmeituan", false},
-        {"com.xingin.xhs_hos", true},
-        {"com.jd.hm.mall", true},
-        {"com.tencent.wechat", false},
-        {"com.alipay.mobile.client", false}
+    static const std::unordered_set<std::string> preLoadApps = {
+        std::string(PerfConstants::APP_NAME_DANMAKU_BILI),
+        std::string(PerfConstants::APP_NAME_XHS),
+        std::string(PerfConstants::APP_NAME_JD_MALL)
     };
-
-    auto it = bundleConfigs.find(bundleName);
-    bool usePreload = (it != bundleConfigs.end()) ? it->second : false;
-    if (usePreload) {
+    if (preLoadApps.find(appName) != preLoadApps.end()) {
         return std::make_unique<PreloadCollectStrategy>();
     }
     return std::make_unique<NonPreloadCollectStrategy>();
