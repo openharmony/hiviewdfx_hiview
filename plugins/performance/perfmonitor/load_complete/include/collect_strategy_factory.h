@@ -31,12 +31,12 @@ class CollectStrategyFactory {
 public:
     /**
      * @brief 创建组件收集策略
-     * @param bundleName 应用包名
+     * @param appName 应用包名
      * @param isLaunch 是否为启动场景
      * @return 组件收集策略指针
      */
     static std::unique_ptr<ComponentCollectStrategy> CreateStrategy(
-        const std::string& bundleName, bool isLaunch);
+        const std::string& appName, bool isLaunch);
 };
 
 } // namespace HiviewDFX
