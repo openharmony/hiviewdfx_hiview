@@ -180,7 +180,7 @@ void Vendor::DumpEventInfo(std::ostringstream& oss, const std::string& header, c
     }
 }
 
-std::string Vendor::MergeFreezeExtFile(const WatchPoint &watchPoint) const
+std::string Vendor::MergeFreezeExtFile(const WatchPoint &watchPoint, const std::string& halfFreezeExtFile) const
 {
     std::string stackFile;
     std::string cpuFile;
@@ -191,7 +191,8 @@ std::string Vendor::MergeFreezeExtFile(const WatchPoint &watchPoint) const
     StringUtil::SplitStr(watchPoint.GetFreezeExtFile(), ",", fileList);
     HIVIEW_LOGI("start to get freeze cpu and stack file, fileList size:%{public}zu.", fileList.size());
     if (fileList.size() == FREEZE_EXT_FILE_SIZE) {
-        stackFile = fileList[0];
+        std::string freezeExtFile = fileList[0];
+        stackFile = freezeExtFile.empty() ? halfFreezeExtFile : freezeExtFile;
         cpuFile = fileList[FREEZE_CPU_INDEX];
     }
     if (stackFile.empty() && cpuFile.empty()) {
@@ -297,8 +298,17 @@ bool Vendor::GetIfStreamByFilePath(std::string& filePath, std::ifstream& ifs, st
     return true;
 }
 
+void Vendor::InitHalfFreezeExtFile(WatchPoint node, const std::string name, std::string& halfFreezeExtFile) const
+{
+    if (name != "THREAD_BLOCK_3S" && name != "LIFECYCLE_TIMEOUT") {
+        return;
+    }
+    halfFreezeExtFile = node.GetFreezeExtFile();
+    HIVIEW_LOGI("get half file:[%{public}s, %{public}s]", halfFreezeExtFile.c_str(), name.c_str());
+}
+
 void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
-    bool& isFileExists, WatchPoint &watchPoint) const
+    bool& isFileExists, WatchPoint &watchPoint, std::string& halfFreezeExtFile) const
 {
     HIVIEW_LOGI("merging list size %{public}zu", list.size());
     std::string mergedLog;
@@ -306,6 +316,7 @@ void Vendor::InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream
         std::string log = node.GetExternalLog();
         std::string name = node.GetStringId();
         mergedLog = mergedLog + name + ":" + log + "\n";
+        InitHalfFreezeExtFile(node, name, halfFreezeExtFile);
         std::string filePath = node.GetLogPath();
         if (filePath == "nolog" || filePath == "") {
             HIVIEW_LOGI("only header, no content:[%{public}s, %{public}s]",
@@ -406,7 +417,8 @@ std::string Vendor::MergeEventLog(WatchPoint &watchPoint, const std::vector<Watc
 
     std::ostringstream body;
     bool isFileExists = true;
-    InitLogBody(list, body, isFileExists, watchPoint);
+    std::string halfFreezeExtFile = "";
+    InitLogBody(list, body, isFileExists, watchPoint, halfFreezeExtFile);
     HIVIEW_LOGI("After Init --body size: %{public}zu, pid: %{public}ld, processName: %{public}s ",
         body.str().size(), watchPoint.GetPid(), processName.c_str());
 
@@ -421,8 +433,7 @@ std::string Vendor::MergeEventLog(WatchPoint &watchPoint, const std::vector<Watc
 
     int fd = FreezeManager::GetInstance()->GetFreezeLogFd(FreezeLogType::FREEZE_DETECTOR, tmpLogName);
     if (fd < 0) {
-        HIVIEW_LOGE("failed to create tmp log file %{public}s, errno:%{public}d.",
-            tmpLogPath.c_str(), errno);
+        HIVIEW_LOGE("failed to create tmp log file %{public}s, errno:%{public}d.", tmpLogPath.c_str(), errno);
         return "";
     }
 
@@ -430,7 +441,7 @@ std::string Vendor::MergeEventLog(WatchPoint &watchPoint, const std::vector<Watc
     FileUtil::SaveStringToFd(fd, body.str());
     close(fd);
 
-    watchPoint.SetFreezeExtFile(MergeFreezeExtFile(watchPoint));
+    watchPoint.SetFreezeExtFile(MergeFreezeExtFile(watchPoint, halfFreezeExtFile));
     return SendFaultLog(watchPoint, tmpLogPath, type, processName, isScbPro);
 }
 

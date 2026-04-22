@@ -42,7 +42,7 @@ public:
     void InitLogInfo(const WatchPoint& watchPoint, std::string& type, std::string& pubLogPathName,
         std::string& processName, std::string& isScbPro) const;
     void InitLogBody(const std::vector<WatchPoint>& list, std::ostringstream& body,
-        bool& isFileExists, WatchPoint &watchPoint) const;
+        bool& isFileExists, WatchPoint &watchPoint, std::string& halfFreezeExtFile) const;
     bool JudgeSysWarningEvent(const std::string& stringId, std::string& type, const std::string& processName,
         const std::vector<WatchPoint>& list, const std::vector<FreezeResult>& result) const;
     void CovertHighLoadToWarning(std::string& type, WatchPoint& watchPoint) const;
@@ -53,7 +53,7 @@ private:
     std::string SendFaultLog(const WatchPoint &watchPoint, const std::string& logPath, const std::string& type,
         const std::string& processName, const std::string& isScbPro) const;
     void MergeFreezeJsonFile(const WatchPoint &watchPoint, const std::vector<WatchPoint>& list) const;
-    std::string MergeFreezeExtFile(const WatchPoint &watchPoint) const;
+    std::string MergeFreezeExtFile(const WatchPoint &watchPoint, const std::string& halfFreezeExtFile) const;
     static std::string GetDisPlayPowerInfo();
     static std::string GetPowerStateString(OHOS::PowerMgr::PowerState state);
     static void CheckProcessName(std::string& processName, std::string& isScbPro);
@@ -65,6 +65,7 @@ private:
     void FillSummaryInfo(FaultLogInfoInner &info, const WatchPoint& watchPoint, const std::string& logPath,
                          const std::string& type, const std::string& processName) const;
     void FillSectionMaps(FaultLogInfoInner &info, const WatchPoint& watchPoint, const std::string& isScbPro) const;
+    void InitHalfFreezeExtFile(WatchPoint node, const std::string name, std::string& halfFreezeExtFile) const;
 
     std::shared_ptr<FreezeCommon> freezeCommon_ = nullptr;
 };
