@@ -28,9 +28,10 @@ namespace HiviewDFX {
  * @brief 组件收集结果数据结构
  */
 struct CollectResult {
-    int32_t incompleteNum;
-    int64_t lastLoadComponent;
-    bool isCompleted;
+    int32_t monitoredNum{0};
+    int32_t incompleteNum{0};
+    int64_t lastLoadComponent{0};
+    bool isCompleted{true};
 };
 
 /**
