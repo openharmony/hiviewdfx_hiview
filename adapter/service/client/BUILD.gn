@@ -51,7 +51,7 @@ ohos_source_set("hiview_service_stub_inner") {
   ]
 
   output_values = get_target_outputs(":hiview_service_idl_interface")
-  sources = filter_include(output_values, [ "*hiview_service_ability_stub.cpp" ])
+  sources = filter_include(output_values, [ "*hiview_service_ability_stub.cpp", "*request_trace_callback_proxy.cpp" ])
 
   deps = [ ":hiview_service_idl_interface" ]
 
