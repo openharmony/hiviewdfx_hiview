@@ -27,7 +27,7 @@ private:
     void UpdateFaultLogInfo() override;
 
     FreezeJsonUtil::FreezeJsonCollector GetFreezeJsonCollector(const FaultLogInfo& info) const;
-    std::string GetMemoryStrByPid(const std::map<std::string, std::string>& sectionMap) const;
+    std::string GetMemoryStrByPid(const std::map<std::string, std::string>& sectionMap, bool includePss) const;
     void ReportAppFreezeToAppEvent(const FaultLogInfo& info, bool isAppHicollie = false) const;
     void UpdateTerminalThreadStack();
     static std::string GetException(const std::string& name, const std::string& message);

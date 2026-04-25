@@ -138,13 +138,15 @@ std::string FreezeJsonMemory::JsonStr() const
     std::map<std::string, uint64_t> memoryMap = {
         {jsonMemoryRss, rss_},
         {jsonMemoryVss, vss_},
-        {jsonMemoryPss, pss_},
         {jsonMemorySysFreeMem, sysFreeMem_},
         {jsonMemorySysAvailMem, sysAvailMem_},
         {jsonMemorySysTotalMem, sysTotalMem_},
         {jsonMemoryVmHeapTotalSize, vmHeapTotalSize_},
         {jsonMemoryVmHeapUsedSize, vmHeapUsedSize_}
     };
+    if (pss_ != UINT64_MAX) {
+        memoryMap[jsonMemoryPss] = pss_;
+    }
     return FreezeJsonUtil::GetStrByMap(memoryMap);
 }
 
