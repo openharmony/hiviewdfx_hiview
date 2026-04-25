@@ -23,8 +23,8 @@ namespace OHOS::HiviewDFX {
 class CommandState : public TraceBaseState {
 public:
     TraceRet DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-        TraceRetInfo &info) override;
-    TraceRet TraceDropOn(const std::string& scenarioName) override;
+        TraceRetInfo &info, const std::string& outputPath) override;
+    TraceRet TraceDropOn(const std::string& scenarioName, const std::string& outputPath) override;
     TraceRet CloseTrace(const std::string& scenarioName) override;
 
 protected:

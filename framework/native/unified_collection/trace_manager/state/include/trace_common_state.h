@@ -23,7 +23,7 @@ class CommonState : public TraceBaseState {
 public:
     explicit CommonState(bool isCachOn, int32_t totalFileSize, int32_t sliceMaxDuration);
     TraceRet DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-        TraceRetInfo &info) override;
+        TraceRetInfo &info, const std::string& outputPath) override;
     TraceRet DumpTraceAsync(const DumpTraceArgs &args, int64_t fileSizeLimit,
         TraceRetInfo &info, DumpTraceCallback callback) override;
     TraceRet TraceCacheOn() override;

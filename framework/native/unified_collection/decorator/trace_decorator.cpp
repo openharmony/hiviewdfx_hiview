@@ -56,10 +56,11 @@ CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(UCollect::Trac
     return Invoke(task, caller);
 }
 
-CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(const std::string& callName, bool isNeedFlowControl)
+CollectResult<std::vector<std::string>> TraceDecorator::DumpTrace(const std::string& callName, bool isNeedFlowControl,
+    const std::string& outputPath)
 {
-    auto task = [this, &callName, isNeedFlowControl] {
-        return traceCollector_->DumpTrace(callName, isNeedFlowControl);
+    auto task = [this, &callName, isNeedFlowControl, &outputPath] {
+        return traceCollector_->DumpTrace(callName, isNeedFlowControl, outputPath);
     };
     return Invoke(task, callName);
 }

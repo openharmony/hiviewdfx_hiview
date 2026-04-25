@@ -30,6 +30,9 @@ bool TraceParamParcelable::Marshalling(Parcel& outParcel) const
     if (!outParcel.WriteBool(traceParam_.isOverWrite)) {
         return false;
     }
+    if (!outParcel.WriteInt64(traceParam_.totalSize)) {
+        return false;
+    }
     return true;
 }
 
@@ -46,6 +49,9 @@ TraceParamParcelable* TraceParamParcelable::Unmarshalling(Parcel& inParcel)
         return nullptr;
     }
     if (!inParcel.ReadBool(traceParam.isOverWrite)) {
+        return nullptr;
+    }
+    if (!inParcel.ReadInt64(traceParam.totalSize)) {
         return nullptr;
     }
     return new(std::nothrow) TraceParamParcelable(traceParam);

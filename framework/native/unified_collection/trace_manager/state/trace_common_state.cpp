@@ -31,13 +31,9 @@ CommonState::CommonState(bool isCachOn, int32_t totalFileSize, int32_t sliceMaxD
 }
 
 TraceRet CommonState::DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-    TraceRetInfo &info)
+    TraceRetInfo &info, const std::string& outputPath)
 {
     if (scenarioName == ScenarioName::COMMON_BETA || scenarioName == ScenarioName::COMMAND) {
-        const auto& outputPath = TraceStateMachine::GetInstance().GetOutputPath();
-        if (!outputPath.empty()) {
-            HIVIEW_LOGI("CommonState, DumpTrace outputPath:%{public}s", outputPath.c_str());
-        }
         info = Hitrace::DumpTrace(maxDuration, happenTime, outputPath);
         HIVIEW_LOGI("CommonState, DumpTrace result:%{public}d", info.errorCode);
         return TraceRet(info.errorCode);

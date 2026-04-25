@@ -14,7 +14,6 @@
  */
 #include "trace_app_state.h"
 
-#include "trace_state_machine.h"
 #include "hiview_logger.h"
 
 namespace OHOS::HiviewDFX {
@@ -23,15 +22,11 @@ namespace {
 }
 
 TraceRet AppSystemState::DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-    TraceRetInfo &info)
+    TraceRetInfo &info, const std::string& outputPath)
 {
     if (scenarioName != ScenarioName::APP_SYSTEM) {
         HIVIEW_LOGW("AppSystemState scenario:%{public}s is fail", scenarioName.c_str());
         return TraceRet(TraceStateCode::FAIL);
-    }
-    const auto& outputPath = TraceStateMachine::GetInstance().GetOutputPath();
-    if (!outputPath.empty()) {
-        HIVIEW_LOGI("AppSystemState, DumpTrace outputPath:%{public}s", outputPath.c_str());
     }
     info = Hitrace::DumpTrace(maxDuration, happenTime, outputPath);
     HIVIEW_LOGI("AppSystemState DumpTrace result:%{public}d", info.errorCode);
