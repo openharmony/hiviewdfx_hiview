@@ -156,7 +156,8 @@ FreezeJsonUtil::FreezeJsonCollector FaultLogFreeze::GetFreezeJsonCollector(const
     FreezeJsonUtil::DelFile(jsonFilePath);
 
     collector.exception = GetException(collector.stringId, collector.message);
-    collector.memory = GetMemoryStrByPid(info.sectionMap);
+    bool includePss = (static_cast<FaultLogType>(info.faultLogType) != FaultLogType::APPFREEZE_WARNING);
+    collector.memory = GetMemoryStrByPid(info.sectionMap, includePss);
     collector.foreground = GetStrValFromMap(info.sectionMap, FaultKey::FOREGROUND) == "Yes";
     collector.cpuAbi = GetStrValFromMap(info.sectionMap, FaultKey::CPU_ABI);
     collector.releaseType = GetStrValFromMap(info.sectionMap, FaultKey::RELEASE_TYPE);
@@ -168,7 +169,8 @@ FreezeJsonUtil::FreezeJsonCollector FaultLogFreeze::GetFreezeJsonCollector(const
     return collector;
 }
 
-std::string FaultLogFreeze::GetMemoryStrByPid(const std::map<std::string, std::string>& sectionMap) const
+std::string FaultLogFreeze::GetMemoryStrByPid(
+    const std::map<std::string, std::string>& sectionMap, bool includePss) const
 {
     uint64_t rss = rss_;
     uint64_t vss = GetProcessInfo(sectionMap, FaultKey::PROCESS_VSS_MEMINFO);
@@ -178,9 +180,18 @@ std::string FaultLogFreeze::GetMemoryStrByPid(const std::map<std::string, std::s
     uint64_t vmHeapTotalSize = GetProcessInfo(sectionMap, FaultKey::HEAP_TOTAL_SIZE);
     uint64_t vmHeapUsedSize = GetProcessInfo(sectionMap, FaultKey::HEAP_OBJECT_SIZE);
 
-    FreezeJsonMemory freezeJsonMemory = FreezeJsonMemory::Builder().InitRss(rss).InitVss(vss).
-        InitSysFreeMem(sysFreeMem).InitSysAvailMem(sysAvailMem).InitSysTotalMem(sysTotalMem).
-        InitVmHeapTotalSize(vmHeapTotalSize).InitVmHeapUsedSize(vmHeapUsedSize).Build();
+    auto builder = FreezeJsonMemory::Builder()
+        .InitRss(rss)
+        .InitVss(vss)
+        .InitSysFreeMem(sysFreeMem)
+        .InitSysAvailMem(sysAvailMem)
+        .InitSysTotalMem(sysTotalMem)
+        .InitVmHeapTotalSize(vmHeapTotalSize)
+        .InitVmHeapUsedSize(vmHeapUsedSize);
+    if (!includePss) {
+        builder.InitPss(UINT64_MAX);
+    }
+    FreezeJsonMemory freezeJsonMemory = builder.Build();
     return freezeJsonMemory.JsonStr();
 }
 
