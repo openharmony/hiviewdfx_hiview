@@ -33,6 +33,7 @@ struct TraceParam {
     std::string clockType;
     bool isOverWrite = true;
     uint32_t fileSizeLimit = 0;
+    int64_t totalSize = 0;
 };
 
 struct TraceConfig {

@@ -48,6 +48,7 @@ struct StrategyParam {
     std::string caller;
     std::string dbPath;
     std::string configPath;
+    std::string outputPath;
 };
 
 class TraceStrategy {
@@ -58,6 +59,7 @@ public:
           caller_(strategyParam.caller),
           dbPath_(strategyParam.dbPath),
           configPath_(strategyParam.configPath),
+          outputPath_(std::move(strategyParam.outputPath)),
           traceHandler_(traceHandler),
           scenarioName_(ScenarioName::COMMON_BETA) {}
 
@@ -67,6 +69,7 @@ public:
           caller_(strategyParam.caller),
           dbPath_(strategyParam.dbPath),
           configPath_(strategyParam.configPath),
+          outputPath_(std::move(strategyParam.outputPath)),
           scenarioName_(scenarioName) {}
 
     virtual ~TraceStrategy() = default;
@@ -80,6 +83,7 @@ protected:
     std::string caller_;
     std::string dbPath_;
     std::string configPath_;
+    std::string outputPath_;
     std::shared_ptr<TraceHandler> traceHandler_;
     std::shared_ptr<TraceFlowController> traceFlowController_;
 

@@ -23,7 +23,7 @@ public:
         ->std::shared_ptr<TraceStrategy>;
 
     static auto CreateTraceStrategy(const std::string& callName, uint32_t maxDuration, uint64_t happenTime,
-        bool isNeedFlowControl) ->std::shared_ptr<TraceStrategy>;
+        bool isNeedFlowControl, const std::string& outputPath = "") ->std::shared_ptr<TraceStrategy>;
 
     static auto CreateStrategy(UCollect::TeleModule module, uint32_t maxDuration, uint64_t happenTime)
         -> std::shared_ptr<TelemetryStrategy>;

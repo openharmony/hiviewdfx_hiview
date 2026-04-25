@@ -35,7 +35,8 @@ public:
 
     bool RegisterTelemetryCallback(std::shared_ptr<TelemetryCallback> stateCallback) override;
 
-    TraceRet DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info) override;
+    TraceRet DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+        const std::string& outputPath) override;
     TraceRet PowerTelemetryOn() override;
     TraceRet PowerTelemetryOff() override;
     TraceRet TraceTelemetryOn() override;

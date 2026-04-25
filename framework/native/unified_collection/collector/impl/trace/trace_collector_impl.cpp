@@ -89,7 +89,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTraceWithDuratio
 }
 
 CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(const std::string& callName,
-    bool isNeedFlowControl)
+    bool isNeedFlowControl, const std::string& outputPath)
 {
     if (auto uid = getuid(); uid != HIVIEW_UID) {
         HIVIEW_LOGE("Do not allow uid:%{public}d to dump trace except in hiview process", uid);
@@ -99,7 +99,7 @@ CollectResult<std::vector<std::string>> TraceCollectorImpl::DumpTrace(const std:
     std::lock_guard<std::mutex> lock(dumpMutex_);
     CollectResult<std::vector<std::string>> result;
     auto traceStrategy = TraceStrategyFactory::CreateTraceStrategy(callName, 0, static_cast<uint64_t>(0),
-        isNeedFlowControl);
+        isNeedFlowControl, outputPath);
     if (traceStrategy == nullptr) {
         HIVIEW_LOGE("Create traceStrategy error client:%{public}s", callName.c_str());
         return {UcError::UNSUPPORT};
@@ -242,7 +242,7 @@ CollectResult<std::string> TraceCollectorImpl::DumpAppSystemTrace(const std::str
     }
     TraceRetInfo traceInfo;
 #ifndef TRACE_IMPL_UNITTEST
-    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(ScenarioName::APP_SYSTEM, 0, 0, traceInfo);
+    TraceRet ret = TraceStateMachine::GetInstance().DumpTrace(ScenarioName::APP_SYSTEM, 0, 0, traceInfo, "");
     TraceStateMachine::GetInstance().CloseTrace(ScenarioName::APP_SYSTEM);
 #else
     TraceRet ret = MockTraceStateMachine::GetInstance().DumpTrace(traceInfo);

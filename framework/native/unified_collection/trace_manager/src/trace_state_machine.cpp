@@ -72,11 +72,10 @@ TraceStateMachine::TraceStateMachine()
 }
 
 TraceRet TraceStateMachine::DumpTrace(const std::string& scenarioName, uint32_t maxDuration, uint64_t happenTime,
-    TraceRetInfo &info)
+    TraceRetInfo &info, const std::string& outputPath)
 {
     std::lock_guard<ffrt::mutex> lock(traceMutex_);
-    auto ret = currentState_->DumpTrace(scenarioName, maxDuration, happenTime, info);
-    outputPath_.clear();
+    auto ret = currentState_->DumpTrace(scenarioName, maxDuration, happenTime, info, outputPath);
     if (ret.GetCodeError() == TraceErrorCode::TRACE_IS_OCCUPIED ||
         ret.GetCodeError() == TraceErrorCode::WRONG_TRACE_MODE) {
         RefreshState();
@@ -96,10 +95,11 @@ TraceRet TraceStateMachine::DumpTraceAsync(const DumpTraceArgs &args, int64_t fi
     return ret;
 }
 
-TraceRet TraceStateMachine::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info)
+TraceRet TraceStateMachine::DumpTraceWithFilter(uint32_t maxDuration, uint64_t happenTime, TraceRetInfo &info,
+    const std::string& outputPath)
 {
     std::lock_guard<ffrt::mutex> lock(traceMutex_);
-    return currentState_->DumpTraceWithFilter(maxDuration, happenTime, info);
+    return currentState_->DumpTraceWithFilter(maxDuration, happenTime, info, outputPath);
 }
 
 TraceRet TraceStateMachine::OpenTrace(const Scenario& scenario)
@@ -109,12 +109,10 @@ TraceRet TraceStateMachine::OpenTrace(const Scenario& scenario)
     return currentState_->OpenTrace(scenario);
 }
 
-TraceRet TraceStateMachine::TraceDropOn(const std::string& scenarioName)
+TraceRet TraceStateMachine::TraceDropOn(const std::string& scenarioName, const std::string& outputPath)
 {
     std::lock_guard<ffrt::mutex> lock(traceMutex_);
-    auto ret = currentState_->TraceDropOn(scenarioName);
-    outputPath_.clear();
-    return ret;
+    return currentState_->TraceDropOn(scenarioName, outputPath);
 }
 
 TraceRet TraceStateMachine::TraceDropOff(const std::string& scenarioName, TraceRetInfo &info)
