@@ -25,6 +25,7 @@ constexpr const char * const APP_FREEZE_WARNING_TYPE = "APPFREEZE_WARNING";
 
 constexpr int REPORT_HILOG_LINE = 100;
 constexpr int DECIMAL_BASE = 10;
+constexpr int HEX_BASE = 16;
 
 constexpr const char * const FAULTLOG_BASE_FOLDER = "/data/log/faultlog/";
 constexpr const char * const FAULTLOG_TEMP_FOLDER = "/data/log/faultlog/temp/";
