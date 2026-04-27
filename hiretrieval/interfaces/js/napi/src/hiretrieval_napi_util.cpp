@@ -167,7 +167,11 @@ void HiRetrievalNapiUtil::CreateJsBoolValue(const napi_env env, bool boolVal, na
 void HiRetrievalNapiUtil::CreateJsHiRetrievalConfig(const napi_env env, const HiRetrievalMgr::Config& cfg,
     napi_value& jsVal)
 {
-    napi_create_object(env, &jsVal);
+    napi_status status = napi_create_object(env, &jsVal);
+    if (status != napi_ok) {
+        HILOG_ERROR(LOG_CORE, "failed to get create napi value of hiRetrieval config.");
+        return;
+    }
     SetStrPropertyByName(env, jsVal, CommonDef::USER_TYPE_ATTR_NAME, cfg.userType);
     SetStrPropertyByName(env, jsVal, CommonDef::DEVICE_TYPE_ATTR_NAME, cfg.deviceType);
     SetStrPropertyByName(env, jsVal, CommonDef::DEVICE_MODEL_ATTR_NAME, cfg.deviceModel);

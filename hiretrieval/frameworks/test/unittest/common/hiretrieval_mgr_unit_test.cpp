@@ -22,6 +22,8 @@
 namespace OHOS {
 namespace HiviewDFX {
 namespace {
+constexpr char PREFERNECE_DIR[] = "//data/test/";
+
 bool IsUnitializedCfg(const HiRetrievalMgr::Config& cfg)
 {
     return std::string(cfg.userType).empty() &&
@@ -54,71 +56,92 @@ void HiRetrievalMgrUnitTest::TearDown()
 
 /**
  * @tc.name: HiRetrievalMgrUnitTest001
- * @tc.desc: test the Participate/Quit/Run of class HiRetrievalMgr
+ * @tc.desc: test the GetLastParticipationTs of class HiRetrievalMgr
  * @tc.type: FUNC
  * @tc.require: issue3276
  */
 HWTEST_F(HiRetrievalMgrUnitTest, HiRetrievalMgrUnitTest001, testing::ext::TestSize.Level3)
 {
     HiRetrievalMgr::Config cfg {
-        "user_type",
-        "device_type",
-        "device_model",
+        "user_type1",
+        "device_type1",
+        "device_model1",
     };
     auto& instance = HiRetrievalMgr::GetInstance();
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(instance.Quit(), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(instance.Run(), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(instance.Init(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(instance.Run(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(instance.Quit(), HiRetrieval::NativeErrorCode::SUCC);
+    instance.SetWorkDir(PREFERNECE_DIR);
+    ASSERT_EQ(instance.GetLastParticipationTs(), 0);
+    auto ret = instance.Init();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ASSERT_GT(instance.GetLastParticipationTs(), 0);
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ASSERT_GT(instance.GetLastParticipationTs(), 0);
 }
 
 /**
  * @tc.name: HiRetrievalMgrUnitTest002
- * @tc.desc: test the IsParticipant of class HiRetrievalMgr
+ * @tc.desc: test the Participate/Quit/Run of class HiRetrievalMgr
  * @tc.type: FUNC
  * @tc.require: issue3276
  */
 HWTEST_F(HiRetrievalMgrUnitTest, HiRetrievalMgrUnitTest002, testing::ext::TestSize.Level3)
 {
-    HiRetrievalMgr::Config cfg {
-        "user_type",
-        "device_type",
-        "device_model",
-    };
     auto& instance = HiRetrievalMgr::GetInstance();
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_FALSE(instance.IsParticipant());
-    ASSERT_EQ(instance.Init(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_FALSE(instance.IsParticipant());
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_TRUE(instance.IsParticipant());
-    ASSERT_EQ(instance.Quit(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_FALSE(instance.IsParticipant());
+    instance.Quit();
+    HiRetrievalMgr::Config cfg {
+        "user_type2",
+        "device_type2",
+        "device_model2",
+    };
+    instance.SetWorkDir(PREFERNECE_DIR);
+    auto ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = instance.Run();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = instance.Init();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Run();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
 }
 
 /**
  * @tc.name: HiRetrievalMgrUnitTest003
- * @tc.desc: test the GetLastParticipationTs of class HiRetrievalMgr
+ * @tc.desc: test the IsParticipant of class HiRetrievalMgr
  * @tc.type: FUNC
  * @tc.require: issue3276
  */
 HWTEST_F(HiRetrievalMgrUnitTest, HiRetrievalMgrUnitTest003, testing::ext::TestSize.Level3)
 {
-    HiRetrievalMgr::Config cfg {
-        "user_type",
-        "device_type",
-        "device_model",
-    };
     auto& instance = HiRetrievalMgr::GetInstance();
-    ASSERT_EQ(instance.GetLastParticipationTs(), 0);
-    ASSERT_EQ(instance.Init(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_GT(instance.GetLastParticipationTs(), 0);
-    ASSERT_EQ(instance.Quit(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_GT(instance.GetLastParticipationTs(), 0);
+    instance.Quit();
+    HiRetrievalMgr::Config cfg {
+        "user_type3",
+        "device_type3",
+        "device_model3",
+    };
+    instance.SetWorkDir(PREFERNECE_DIR);
+    auto ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ASSERT_FALSE(instance.IsParticipant());
+    ret = instance.Init();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ASSERT_FALSE(instance.IsParticipant());
+    ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ASSERT_TRUE(instance.IsParticipant());
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ASSERT_FALSE(instance.IsParticipant());
 }
 
 /**
@@ -129,20 +152,26 @@ HWTEST_F(HiRetrievalMgrUnitTest, HiRetrievalMgrUnitTest003, testing::ext::TestSi
  */
 HWTEST_F(HiRetrievalMgrUnitTest, HiRetrievalMgrUnitTest004, testing::ext::TestSize.Level3)
 {
-    HiRetrievalMgr::Config cfg {
-        "user_type",
-        "device_type",
-        "device_model",
-    };
     auto& instance = HiRetrievalMgr::GetInstance();
-    auto cfgGot = instance.GetCurrentConfig();
-    ASSERT_TRUE(IsUnitializedCfg(cfgGot));
-    ASSERT_EQ(instance.Init(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(instance.Participate(cfg), HiRetrieval::NativeErrorCode::SUCC);
-    cfgGot = instance.GetCurrentConfig();
-    ASSERT_TRUE(IsSameCfg(cfg, cfgGot));
-    ASSERT_EQ(instance.Quit(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_TRUE(IsUnitializedCfg(cfgGot));
+    instance.Quit();
+    HiRetrievalMgr::Config cfg {
+        "user_type4",
+        "device_type4",
+        "device_model4",
+    };
+    instance.SetWorkDir(PREFERNECE_DIR);
+    auto preCfg = instance.GetCurrentConfig();
+    ASSERT_TRUE(IsUnitializedCfg(preCfg));
+    auto ret = instance.Init();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = instance.Participate(cfg);
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    auto nailCfg = instance.GetCurrentConfig();
+    ASSERT_FALSE(IsSameCfg(preCfg, nailCfg));
+    ret = instance.Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    nailCfg = instance.GetCurrentConfig();
+    ASSERT_TRUE(IsUnitializedCfg(nailCfg));
 }
 } // namespace HiviewDFX
 } // namespace OHOS

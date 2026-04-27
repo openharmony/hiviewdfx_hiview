@@ -44,26 +44,11 @@ inline void SubOverLimitStr(std::string& str)
     }
 }
 
-std::string GetPreferenceFilePath()
+void UpdateParticipationInfo(std::unordered_map<std::string, std::string>& infos,
+    const std::string& preferenceFile)
 {
-    auto ctx = OHOS::AbilityRuntime::Context::GetApplicationContext();
-    if (ctx == nullptr) {
-        HILOG_ERROR(LOG_CORE, "context is invalid");
-        return "";
-    }
-    std::string preferenceDir = ctx->GetPreferencesDir();
-    if (preferenceDir.empty()) {
-        HILOG_ERROR(LOG_CORE, "preference dir is empty");
-        return "";
-    }
-    return preferenceDir + "/hiretrieval_cfg.xml";
-}
-
-void UpdateParticipationInfo(std::unordered_map<std::string, std::string>& infos)
-{
-    std::string path = GetPreferenceFilePath();
     int32_t err = 0;
-    auto pref = NativePreferences::PreferencesHelper::GetPreferences(path, err);
+    auto pref = NativePreferences::PreferencesHelper::GetPreferences(preferenceFile, err);
     if (pref == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to get preference");
         return;
@@ -78,20 +63,19 @@ void UpdateParticipationInfo(std::unordered_map<std::string, std::string>& infos
         HILOG_ERROR(LOG_CORE, "failed to flush preference file");
         return;
     }
-    NativePreferences::PreferencesHelper::RemovePreferencesFromCache(path);
+    NativePreferences::PreferencesHelper::RemovePreferencesFromCache(preferenceFile);
 }
 
-std::string ReadParticipationInfo(const std::string& key)
+std::string ReadParticipationInfo(const std::string& key, const std::string& preferenceFile)
 {
-    std::string path = GetPreferenceFilePath();
     int32_t err = 0;
-    auto pref = NativePreferences::PreferencesHelper::GetPreferences(path, err);
+    auto pref = NativePreferences::PreferencesHelper::GetPreferences(preferenceFile, err);
     if (pref == nullptr) {
         HILOG_ERROR(LOG_CORE, "failed to get preference");
         return "";
     }
     std::string val = pref->GetString(key, "");
-    NativePreferences::PreferencesHelper::RemovePreferencesFromCache(path);
+    NativePreferences::PreferencesHelper::RemovePreferencesFromCache(preferenceFile);
     return val;
 }
 
@@ -102,43 +86,11 @@ inline long long GetCurrentTs()
     return millisecs.count();
 }
 
-inline void PersistConfig(const HiRetrievalMgr::Config& cfg)
-{
-    std::unordered_map<std::string, std::string> infos;
-    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, cfg.userType);
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, cfg.deviceType);
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, cfg.deviceModel);
-    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_TS_KEY, std::to_string(GetCurrentTs()));
-    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, PARTICIPATED_STATUS);
-    UpdateParticipationInfo(infos);
-}
-
-inline void ClearConfigCache()
-{
-    std::unordered_map<std::string, std::string> infos;
-    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, "");
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, "");
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, "");
-    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, QUIT_STATUS);
-    UpdateParticipationInfo(infos);
-}
-
-inline void ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
-{
-    cfg.userType = ReadParticipationInfo(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME);
-    SubOverLimitStr(cfg.userType);
-    cfg.deviceType = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME);
-    SubOverLimitStr(cfg.deviceType);
-    cfg.deviceModel = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME);
-    SubOverLimitStr(cfg.deviceModel);
-}
-
 inline bool IsSameConfig(HiRetrievalMgr::Config& src, HiRetrievalMgr::Config& dest)
 {
     return src.userType == dest.userType && src.deviceType == dest.deviceType &&
         src.deviceModel == dest.deviceModel;
 }
-
 }
 
 HiRetrievalMgr& HiRetrievalMgr::GetInstance()
@@ -154,15 +106,28 @@ HiRetrievalMgr::HiRetrievalMgr()
 
 int32_t HiRetrievalMgr::Init()
 {
-    auto ret = dllLoader_->Init();
-    if (ret != HiRetrieval::NativeErrorCode::SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to init, ret is %{public}d", ret);
+    std::lock_guard<std::mutex> lock(mgrMutex_);
+    if (isInit_) {
+        HILOG_INFO(LOG_CORE, "hiretrieval module has been initialized");
+        return HiRetrieval::NativeErrorCode::SUCC;
     }
+    auto ret = dllLoader_->Init();
+    if (ret == HiRetrieval::NativeErrorCode::SUCC ||
+        ret == HiRetrieval::NativeErrorCode::DLL_FAILED) {
+        isInit_ = true;
+        return ret;
+    }
+    HILOG_ERROR(LOG_CORE, "failed to init, ret is %{public}d", ret);
     return ret;
 }
 
 int32_t HiRetrievalMgr::Participate(HiRetrievalMgr::Config& cfg)
 {
+    std::lock_guard<std::mutex> lock(mgrMutex_);
+    if (!isInit_) {
+        HILOG_ERROR(LOG_CORE, "module not init");
+        return HiRetrieval::NativeErrorCode::NOT_INIT;
+    }
     if (cfg.deviceType.empty()) {
         cfg.deviceType = HiRetrievalBaseUtil::GetDefaultDeviceType();
     }
@@ -175,38 +140,47 @@ int32_t HiRetrievalMgr::Participate(HiRetrievalMgr::Config& cfg)
         return HiRetrieval::NativeErrorCode::SUCC;
     }
     PersistConfig(cfg);
-    HiRetrievalConfig config;
-    config.userType = cfg.userType.c_str();
-    config.deviceType = cfg.deviceType.c_str();
-    config.deviceModel = cfg.deviceModel.c_str();
-    auto ret = dllLoader_->Participate(config);
-    if (ret != HiRetrieval::NativeErrorCode::SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to participate, ret is %{public}d", ret);
+    auto ret = dllLoader_->Participate();
+    if (ret == HiRetrieval::NativeErrorCode::SUCC ||
+        ret == HiRetrieval::NativeErrorCode::DLL_FAILED) {
         return ret;
     }
+    HILOG_ERROR(LOG_CORE, "failed to participate, ret is %{public}d", ret);
     return ret;
 }
 
 int32_t HiRetrievalMgr::Quit()
 {
+    std::lock_guard<std::mutex> lock(mgrMutex_);
+    if (!isInit_) {
+        HILOG_ERROR(LOG_CORE, "module not init");
+        return HiRetrieval::NativeErrorCode::NOT_INIT;
+    }
+    if (!IsParticipant()) {
+        HILOG_INFO(LOG_CORE, "no need to quit without participation");
+        isInit_ = false;
+        return HiRetrieval::NativeErrorCode::SUCC;
+    }
     auto ret =  dllLoader_->Quit();
-    if (ret != HiRetrieval::NativeErrorCode::SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to quit, ret is %{public}d", ret);
+    if (ret == HiRetrieval::NativeErrorCode::SUCC ||
+        ret == HiRetrieval::NativeErrorCode::DLL_FAILED) {
+        ClearConfigCache();
+        isInit_ = false;
         return ret;
     }
-    ClearConfigCache();
+    HILOG_ERROR(LOG_CORE, "failed to quit, ret is %{public}d", ret);
     return ret;
 }
 
 bool HiRetrievalMgr::IsParticipant()
 {
-    auto status = ReadParticipationInfo(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY);
+    auto status = ReadParticipationInfo(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, GetPreferenceFile());
     return status == PARTICIPATED_STATUS;
 }
 
 long long HiRetrievalMgr::GetLastParticipationTs()
 {
-    std::string ts = ReadParticipationInfo(HiRetrieval::CommonDef::PARTICIPATION_TS_KEY);
+    std::string ts = ReadParticipationInfo(HiRetrieval::CommonDef::PARTICIPATION_TS_KEY, GetPreferenceFile());
     long long ret = DEFAULT_PARTICIPATION_TS;
     auto parseRet = std::from_chars(ts.c_str(), ts.c_str() + ts.size(), ret);
     return (parseRet.ec != std::errc()) ? DEFAULT_PARTICIPATION_TS : ret;
@@ -214,10 +188,17 @@ long long HiRetrievalMgr::GetLastParticipationTs()
 
 int32_t HiRetrievalMgr::Run()
 {
-    auto ret = dllLoader_->Run();
-    if (ret != HiRetrieval::NativeErrorCode::SUCC) {
-        HILOG_ERROR(LOG_CORE, "failed to run, ret is %{public}d", ret);
+    std::lock_guard<std::mutex> lock(mgrMutex_);
+    if (!isInit_) {
+        HILOG_ERROR(LOG_CORE, "module not init");
+        return HiRetrieval::NativeErrorCode::NOT_INIT;
     }
+    auto ret = dllLoader_->Run();
+    if (ret == HiRetrieval::NativeErrorCode::SUCC ||
+        ret == HiRetrieval::NativeErrorCode::DLL_FAILED) {
+        return ret;
+    }
+    HILOG_ERROR(LOG_CORE, "failed to run, ret is %{public}d", ret);
     return ret;
 }
 
@@ -226,5 +207,59 @@ HiRetrievalMgr::Config HiRetrievalMgr::GetCurrentConfig()
     Config cfg;
     ReadPersistedConfig(cfg);
     return cfg;
+}
+
+void HiRetrievalMgr::SetWorkDir(const std::string& dir)
+{
+    workDir_ = dir;
+}
+
+std::string HiRetrievalMgr::GetPreferenceFile()
+{
+    if (!workDir_.empty()) {
+        return workDir_ + "/hiretrieval_cfg.xml";
+    }
+    auto ctx = OHOS::AbilityRuntime::Context::GetApplicationContext();
+    if (ctx == nullptr) {
+        HILOG_ERROR(LOG_CORE, "context is invalid");
+        return "";
+    }
+    std::string preferenceDir = ctx->GetPreferencesDir();
+    if (preferenceDir.empty()) {
+        HILOG_ERROR(LOG_CORE, "preference dir is empty");
+        return "";
+    }
+    return preferenceDir + "/hiretrieval_cfg.xml";
+}
+
+void HiRetrievalMgr::PersistConfig(const HiRetrievalMgr::Config& cfg)
+{
+    std::unordered_map<std::string, std::string> infos;
+    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, cfg.userType);
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, cfg.deviceType);
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, cfg.deviceModel);
+    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_TS_KEY, std::to_string(GetCurrentTs()));
+    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, PARTICIPATED_STATUS);
+    UpdateParticipationInfo(infos, GetPreferenceFile());
+}
+
+void HiRetrievalMgr::ClearConfigCache()
+{
+    std::unordered_map<std::string, std::string> infos;
+    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, "");
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, "");
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, "");
+    infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, QUIT_STATUS);
+    UpdateParticipationInfo(infos, GetPreferenceFile());
+}
+
+void HiRetrievalMgr::ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
+{
+    cfg.userType = ReadParticipationInfo(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, GetPreferenceFile());
+    SubOverLimitStr(cfg.userType);
+    cfg.deviceType = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, GetPreferenceFile());
+    SubOverLimitStr(cfg.deviceType);
+    cfg.deviceModel = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, GetPreferenceFile());
+    SubOverLimitStr(cfg.deviceModel);
 }
 } // namespace OHOS::HiviewDFX
