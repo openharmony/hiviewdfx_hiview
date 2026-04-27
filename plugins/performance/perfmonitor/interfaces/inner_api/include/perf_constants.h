@@ -382,8 +382,6 @@ public:
 
     static constexpr char FORMSTACK_SWITCH_CARD[] = "FORMSTACK_SWITCH_CARD";
 
-    static constexpr char FORM_MANAGER_CREATE_FORM[] = "FORM_MANAGER_CREATE_FORM";
-
     static constexpr char INTO_LV_ANIM[] = "INTO_LV_ANIM";
 
     static constexpr char EXIT_LV_ANIM[] = "EXIT_LV_ANIM";
@@ -471,6 +469,26 @@ public:
     static constexpr char WINDOW_DO_SCALE_ANIMATION[] = "WINDOW_DO_SCALE_ANIMATION";
 
     static constexpr char AUTO_APP_SWIPER_FLING[] = "AUTO_APP_SWIPER_FLING";
+
+    static constexpr char GESTURE_NETER_TO_SWITCH[] = "GESTURE_NETER_TO_SWITCH";
+  
+    static constexpr char FORM_MANAGER_CREATE_FORM[] = "FORM_MANAGER_CREATE_FORM";
+  
+    static constexpr char FORM_MANAGER_DELETE_FORM[] = "FORM_MANAGER_DELETE_FORM";
+  
+    static constexpr char FORM_STACK_DELETE_FORM[] = "FORM_STACK_DELETE_FORM";
+  
+    static constexpr char LOCKSCREEN_WIDGET_LAUNCH[] = "LOCKSCREEN_WIDGET_LAUNCH";
+  
+    static constexpr char LOCKSCREEN_WIDGET_EXIT[] = "LOCKSCREEN_WIDGET_EXIT";
+  
+    static constexpr char LOCKSCREEN_CAMERA_LAUNCH[] = "LOCKSCREEN_CAMERA_LAUNCH";
+  
+    static constexpr char LOCKSCREEN_CAMERA_EXIT[] = "LOCKSCREEN_CAMERA_EXIT";
+  
+    static constexpr char LOCKSCREEN_WIDGET_EXPAND[] = "LOCKSCREEN_WIDGET_EXPAND";
+  
+    static constexpr char LOCKSCREEN_WIDGET_COLLAPSE[] = "LOCKSCREEN_WIDGET_COLLAPSE";
 
     // only for watch
     static constexpr char WATCH_SCROLL_CARD_LIST_ANI[] = "WATCH_SCROLL_CARD_LIST_ANI";
