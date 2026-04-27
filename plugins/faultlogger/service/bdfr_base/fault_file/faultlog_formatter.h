@@ -15,6 +15,7 @@
 #ifndef FAULTLOG_FORMATTER_H
 #define FAULTLOG_FORMATTER_H
 #include <string>
+#include <cstdint>
 #include "faultlog_info_inner.h"
 namespace OHOS {
 namespace HiviewDFX {
@@ -25,6 +26,13 @@ FaultLogInfo ParseCppCrashFromFile(const std::string& path);
 bool WriteStackTraceFromLog(int32_t fd, const std::string& pidStr, const std::string& path);
 bool WriteLogToFile(int32_t fd, const std::string& path, const std::map<std::string, std::string>& sections);
 bool IsFaultLogLimit();
+
+bool ShouldParseSandBoxPath(const std::string& line);
+uintptr_t ExtractPcAddr(const std::string& line);
+bool ConvertPathFromOriginLine(const std::string& line, std::string& pathPrefix, const std::string& bundleName);
+std::string ProcessArkTsLine(const std::string& line, const std::string& packageName);
+bool ParserArkTsStackInfo(const std::string& moduleName, int32_t logType, const std::string& path);
+bool ForkProcessParseArkTsStackInfo(const std::string& moduleName, int32_t logType, const std::string& path);
 
 void JumpBuildInfo(int32_t fd, std::ifstream& logFile);
 }  // namespace FaultLogger
