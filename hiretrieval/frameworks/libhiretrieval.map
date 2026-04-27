@@ -2,10 +2,11 @@
   global:
     extern "C++" {
       "OHOS::HiviewDFX::HiRetrievalDynamicLoader::HiRetrievalDynamicLoader()";
-      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Participate(HiRetrievalConfig)";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Participate()";
       "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Quit()";
       "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Run()";
       "OHOS::HiviewDFX::HiRetrievalDynamicLoader::Init()";
+      "OHOS::HiviewDFX::HiRetrievalDynamicLoader::IsInvalid()";
       "OHOS::HiviewDFX::HiRetrievalDynamicLoader::~HiRetrievalDynamicLoader()";
       "OHOS::HiviewDFX::HiRetrievalMgr::GetInstance()";
       "OHOS::HiviewDFX::HiRetrievalMgr::Participate(OHOS::HiviewDFX::HiRetrievalMgr::Config&)";
@@ -15,6 +16,7 @@
       "OHOS::HiviewDFX::HiRetrievalMgr::IsParticipant()";
       "OHOS::HiviewDFX::HiRetrievalMgr::GetLastParticipationTs()";
       "OHOS::HiviewDFX::HiRetrievalMgr::GetCurrentConfig()";
+      "OHOS::HiviewDFX::HiRetrievalMgr::SetWorkDir(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
     };
   local:
     *;

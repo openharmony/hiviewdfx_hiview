@@ -39,7 +39,7 @@ public:
     ~HiRetrievalDynamicLoader();
 
     int32_t Init();
-    int32_t Participate(HiRetrievalConfig config);
+    int32_t Participate();
     int32_t Quit();
     int32_t Run();
 

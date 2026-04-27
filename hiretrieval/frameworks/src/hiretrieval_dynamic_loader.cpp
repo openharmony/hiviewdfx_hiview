@@ -60,18 +60,19 @@ void LogDllErrInfo(const std::string& formatMsg)
     HILOG_ERROR(LOG_CORE, "%{public}s: errno=%{public}d, msg=%{public}s", formatMsg.c_str(), errno, errMsg);
 }
 
-int32_t CallDllFunc(void* module, const char* funcName, std::function<int32_t(DllModule)> caller)
+int32_t CallDllFunc(void* module, const std::string& funcName)
 {
     if (module == INVALID_DLL_MODULE) {
         LogDllErrInfo("failed to load hiretrieval_ext module:");
         return HiRetrieval::NativeErrorCode::DLL_FAILED;
     }
-    DllModule loadFunc = dlsym(module, funcName);
+    DllModule loadFunc = dlsym(module, funcName.c_str());
     if (loadFunc == INVALID_DLL_MODULE) {
         LogDllErrInfo("failed to load func:");
         return HiRetrieval::NativeErrorCode::DLL_FAILED;
     }
-    return caller(loadFunc);
+    auto callFunc = reinterpret_cast<ReturnIntEmptyParamFunc>(loadFunc);
+    return callFunc();
 }
 }
 
@@ -88,38 +89,21 @@ HiRetrievalDynamicLoader::~HiRetrievalDynamicLoader()
 
 int32_t HiRetrievalDynamicLoader::Init()
 {
-    return CallDllFunc(loadModule_, "Init",
-        [] (DllModule func) {
-            ReturnIntEmptyParamFunc transFunc = reinterpret_cast<ReturnIntEmptyParamFunc>(func);
-            return transFunc();
-        });
+    return CallDllFunc(loadModule_, "Init");
 }
 
-int32_t HiRetrievalDynamicLoader::Participate(HiRetrievalConfig config)
+int32_t HiRetrievalDynamicLoader::Participate()
 {
-    return CallDllFunc(loadModule_, "Participate",
-        [&config] (DllModule func) {
-            int32_t(*transFunc)(HiRetrievalConfig)
-                = reinterpret_cast<int32_t(*)(HiRetrievalConfig)>(func);
-            return transFunc(config);
-        });
+    return CallDllFunc(loadModule_, "Participate");
 }
 
 int32_t HiRetrievalDynamicLoader::Quit()
 {
-    return CallDllFunc(loadModule_, "Quit",
-        [] (DllModule func) {
-            ReturnIntEmptyParamFunc transFunc = reinterpret_cast<ReturnIntEmptyParamFunc>(func);
-            return transFunc();
-        });
+    return CallDllFunc(loadModule_, "Quit");
 }
 
 int32_t HiRetrievalDynamicLoader::Run()
 {
-    return CallDllFunc(loadModule_, "Run",
-        [] (DllModule func) {
-            ReturnIntEmptyParamFunc transFunc = reinterpret_cast<ReturnIntEmptyParamFunc>(func);
-            return transFunc();
-        });
+    return CallDllFunc(loadModule_, "Run");
 }
 } // namespace OHOS::HiviewDFX
