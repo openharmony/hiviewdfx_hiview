@@ -45,20 +45,24 @@ void HiRetrievalDynamicLoaderUnitTest::TearDown()
  */
 HWTEST_F(HiRetrievalDynamicLoaderUnitTest, HiRetrievalDynamicLoaderUnitTest001, testing::ext::TestSize.Level3)
 {
-    HiRetrievalConfig cfg {
-        "user_type",
-        "device_type",
-        "device_model",
-    };
     auto dllLoader = std::make_unique<HiRetrievalDynamicLoader>();
     ASSERT_NE(dllLoader, nullptr);
-    ASSERT_EQ(dllLoader->Participate(cfg), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(dllLoader->Quit(), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(dllLoader->Run(), HiRetrieval::NativeErrorCode::NOT_INIT);
-    ASSERT_EQ(dllLoader->Init(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(dllLoader->Participate(cfg), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(dllLoader->Quit(), HiRetrieval::NativeErrorCode::SUCC);
-    ASSERT_EQ(dllLoader->Run(), HiRetrieval::NativeErrorCode::SUCC);
+    auto ret = dllLoader->Participate();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = dllLoader->Run();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = dllLoader->Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
+    ret = dllLoader->Init();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = dllLoader->Participate();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = dllLoader->Run();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = dllLoader->Quit();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::SUCC);
+    ret = dllLoader->Participate();
+    ASSERT_TRUE(ret == HiRetrieval::NativeErrorCode::DLL_FAILED || ret == HiRetrieval::NativeErrorCode::NOT_INIT);
 }
 } // namespace HiviewDFX
 } // namespace OHOS

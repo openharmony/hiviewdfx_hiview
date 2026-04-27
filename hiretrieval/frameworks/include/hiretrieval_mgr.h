@@ -19,6 +19,7 @@
 #include "hiretrieval_dynamic_loader.h"
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace OHOS::HiviewDFX {
@@ -39,12 +40,21 @@ public:
     long long GetLastParticipationTs();
     int32_t Run();
     Config GetCurrentConfig();
+    void SetWorkDir(const std::string& dir);
 
 private:
     HiRetrievalMgr();
     ~HiRetrievalMgr() = default;
 
+    std::string GetPreferenceFile();
+    void PersistConfig(const Config& cfg);
+    void ClearConfigCache();
+    void ReadPersistedConfig(Config& cfg);
+
+    bool isInit_ = false;
     std::unique_ptr<HiRetrievalDynamicLoader> dllLoader_;
+    std::mutex mgrMutex_;
+    std::string workDir_;
 };
 } // namespace OHOS::HiviewDFX
 
