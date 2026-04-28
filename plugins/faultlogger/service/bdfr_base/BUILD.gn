@@ -110,6 +110,7 @@ ohos_shared_library("bdfr_base") {
     "c_utils:utils",
     "faultloggerd:crash_exception",
     "faultloggerd:libdfx_procinfo",
+    "faultloggerd:libunwinder",
     "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
