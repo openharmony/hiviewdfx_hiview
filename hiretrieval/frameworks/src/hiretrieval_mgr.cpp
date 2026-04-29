@@ -37,11 +37,12 @@ constexpr size_t CONFIG_PARAM_MAX_LEN = 128;
 constexpr char PARTICIPATED_STATUS[] = "participated";
 constexpr char QUIT_STATUS[] = "quit";
 
-inline void SubOverLimitStr(std::string& str)
+inline std::string SubOverLimitStr(const std::string& str)
 {
     if (str.length() > CONFIG_PARAM_MAX_LEN) {
-        str = str.substr(0, CONFIG_PARAM_MAX_LEN);
+        return str.substr(0, CONFIG_PARAM_MAX_LEN);
     }
+    return str;
 }
 
 void UpdateParticipationInfo(std::unordered_map<std::string, std::string>& infos,
@@ -235,9 +236,9 @@ std::string HiRetrievalMgr::GetPreferenceFile()
 void HiRetrievalMgr::PersistConfig(const HiRetrievalMgr::Config& cfg)
 {
     std::unordered_map<std::string, std::string> infos;
-    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, cfg.userType);
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, cfg.deviceType);
-    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, cfg.deviceModel);
+    infos.emplace(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, SubOverLimitStr(cfg.userType));
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, SubOverLimitStr(cfg.deviceType));
+    infos.emplace(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, SubOverLimitStr(cfg.deviceModel));
     infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_TS_KEY, std::to_string(GetCurrentTs()));
     infos.emplace(HiRetrieval::CommonDef::PARTICIPATION_STATUS_KEY, PARTICIPATED_STATUS);
     UpdateParticipationInfo(infos, GetPreferenceFile());
@@ -256,10 +257,7 @@ void HiRetrievalMgr::ClearConfigCache()
 void HiRetrievalMgr::ReadPersistedConfig(HiRetrievalMgr::Config& cfg)
 {
     cfg.userType = ReadParticipationInfo(HiRetrieval::CommonDef::USER_TYPE_ATTR_NAME, GetPreferenceFile());
-    SubOverLimitStr(cfg.userType);
     cfg.deviceType = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_TYPE_ATTR_NAME, GetPreferenceFile());
-    SubOverLimitStr(cfg.deviceType);
     cfg.deviceModel = ReadParticipationInfo(HiRetrieval::CommonDef::DEVICE_MODEL_ATTR_NAME, GetPreferenceFile());
-    SubOverLimitStr(cfg.deviceModel);
 }
 } // namespace OHOS::HiviewDFX
