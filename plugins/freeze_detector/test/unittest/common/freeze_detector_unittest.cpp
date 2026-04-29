@@ -568,9 +568,13 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_010, TestSize.Level3)
         .InitTimestamp(TimeUtil::GetMilliseconds())
         .InitProcessName("processName")
         .InitPackageName("com.package.name")
+        .InitFreezeExtFile("")
         .InitMsg("msg")
         .Build();
-    std::string ret = vendor->MergeFreezeExtFile(watchPoint1);
+    std::string halfFreezeExtFile = "";
+    std::string name = "";
+    vendor->InitHalfFreezeExtFile(watchPoint1, name, halfFreezeExtFile);
+    std::string ret = vendor->MergeFreezeExtFile(watchPoint1, halfFreezeExtFile);
     EXPECT_EQ(ret, "");
 
     std::string freezeExtFile = "/data/test";
@@ -583,7 +587,11 @@ HWTEST_F(FreezeDetectorUnittest, FreezeVender_010, TestSize.Level3)
         .InitPackageName(testName)
         .InitFreezeExtFile(freezeExtFile)
         .Build();
-    vendor->MergeFreezeExtFile(watchPoint2);
+    name = "THREAD_BLOCK_3S";
+    vendor->InitHalfFreezeExtFile(watchPoint2, name, halfFreezeExtFile);
+    vendor->MergeFreezeExtFile(watchPoint2, halfFreezeExtFile);
+    name = "LIFECYCLE_TIMEOUT";
+    vendor->InitHalfFreezeExtFile(watchPoint2, name, halfFreezeExtFile);
 }
 
 /**
