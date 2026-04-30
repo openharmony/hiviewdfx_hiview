@@ -394,7 +394,7 @@ void EventLoop::Run()
     }
 
     if (isHighPriority_) {
-        int ret = setpriority(PRIO_PROCESS, 0, -20) != 0); // nice:-20
+        int ret = setpriority(PRIO_PROCESS, 0, -20); // nice:-20
         HIVIEW_LOGI("setpriority, name: %{public}s, ret: %{public}d", name_.c_str(), ret);
     }
 
