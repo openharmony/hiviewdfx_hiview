@@ -53,7 +53,7 @@
         "OHOS::HiviewDFX::Plugin::SetName(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
         "OHOS::HiviewDFX::EventSource::AddPipeline(std::__h::shared_ptr<OHOS::HiviewDFX::Pipeline>)";
         "OHOS::HiviewDFX::PluginProxy::LoadPluginIfNeed()";
-        "OHOS::HiviewDFX::EventLoop::EventLoop(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&)";
+        "OHOS::HiviewDFX::EventLoop::EventLoop(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, bool)";
         "OHOS::HiviewDFX::EventDispatchQueue::Enqueue(std::__h::shared_ptr<OHOS::HiviewDFX::Event>)";
         "OHOS::HiviewDFX::EventLoop::AddEventForResult(std::__h::shared_ptr<OHOS::HiviewDFX::EventHandler>, std::__h::shared_ptr<OHOS::HiviewDFX::Event>)";
         "OHOS::HiviewDFX::HiviewEventReport::ReportPluginUnload(std::__h::basic_string<char, std::__h::char_traits<char>, std::__h::allocator<char>> const&, unsigned int)";
