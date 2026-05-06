@@ -829,7 +829,6 @@ void EventLogger::GetAppFreezeStack(int jsonFd, std::shared_ptr<SysEvent> event,
 
         if (!jsonStack.empty() &&
             (jsonStack[0] == '{' || jsonStack[0] == '[')) { // json stack info should start with '{' or '['
-            jsonStack = StringUtil::UnescapeJsonStringValue(jsonStack);
             if (!DfxJsonFormatter::FormatJsonStack(jsonStack, stack, true, bundleName)) {
                 stack = jsonStack;
             }
