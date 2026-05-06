@@ -42,12 +42,7 @@ static void GenCppCrashLogTestCommon(int32_t uid, bool ifFileExist)
     info.sectionMap["KEY_THREAD_INFO"] = "Test Thread Info";
     info.sectionMap["REASON"] = "TestReason";
     info.sectionMap["STACKTRACE"] = "#01 xxxxxx\n#02 xxxxxx\n";
-    info.pipeFd.reset(new int32_t(pipeFd[0]), [] (int32_t *ptr) {
-        if (*ptr > 0) {
-            close(*ptr);
-        }
-            delete ptr;
-        });
+    info.pipeFd = nullptr;
     std::string jsonInfo = R"~({"crash_type":"NativeCrash", "exception":{"frames":
         [{"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":28, "pc":"000ac0a4", "symbol":"test_abc"},
         {"buildId":"12345abcde", "file":"/system/lib/chipset-pub-sdk/libeventhandler.z.so", "offset":278,
@@ -61,8 +56,10 @@ static void GenCppCrashLogTestCommon(int32_t uid, bool ifFileExist)
         "symbol":""}, {"buildId":"", "file":"/system/lib/ld-musl-arm.so.1", "offset":628, "pc":"000ff7f4",
         "symbol":"__pthread_cond_timedwait_time64"}], "thread_name":"OS_SignalHandle", "tid":1608}],
         "time":1701863741296, "uid":20010043, "uuid":""})~";
-    TEMP_FAILURE_RETRY(write(pipeFd[1], jsonInfo.c_str(), jsonInfo.size()));
-    close(pipeFd[1]);
+    std::string tempFilePath = "/data/log/faultlog/temp/crashjsonstack-" + std::to_string(info.pid) + "-" +
+        std::to_string(info.time);
+    FileUtil::SaveStringToFile(tempFilePath, jsonInfo);
+
     FaultLogCppCrash faultlogCppcrash;
     faultlogCppcrash.AddFaultLog(info);
     std::string timeStr = GetFormatedTimeWithMillsec(info.time);

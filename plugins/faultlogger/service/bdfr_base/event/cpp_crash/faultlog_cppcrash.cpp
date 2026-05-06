@@ -120,19 +120,18 @@ void FaultLogCppCrash::CheckHilogTime(FaultLogInfo& info)
     }
 }
 
-std::string FaultLogCppCrash::ReadStackFromPipe(const FaultLogInfo& info)
+std::string FaultLogCppCrash::ReadStackFromFile(const FaultLogInfo& info)
 {
-    if (info.pipeFd == nullptr || *(info.pipeFd) == -1) {
-        HIVIEW_LOGE("invalid fd");
+    std::string path = std::string(FAULTLOG_TEMP_FOLDER) +
+        "crashjsonstack-" + std::to_string(info.pid) + "-" + std::to_string(info.time);
+    std::string realPath;
+    if (!FileUtil::PathToRealPath(path, realPath)) {
+        HIVIEW_LOGE("failed to real crash json path %{public}s err %{public}d", path.c_str(), errno);
         return "";
     }
-    std::vector<char> buffer(MAX_PIPE_SIZE + 1);
-    ssize_t nread = TEMP_FAILURE_RETRY(read(*info.pipeFd, buffer.data(), MAX_PIPE_SIZE));
-    if (nread <= 0) {
-        HIVIEW_LOGE("read pipe failed errno %{public}d", errno);
-        return "";
-    }
-    return std::string(buffer.data(), nread);
+    std::string jsonStackStr;
+    FileUtil::LoadStringFromFile(realPath, jsonStackStr);
+    return jsonStackStr;
 }
 
 std::string FaultLogCppCrash::GetMinidumpPath(const FaultLogInfo& info, uint32_t timeOutUs)
@@ -219,10 +218,10 @@ Json::Value FaultLogCppCrash::FillStackInfo(const FaultLogInfo& info, std::strin
 
 std::string FaultLogCppCrash::GetStackInfo(const FaultLogInfo& info)
 {
-    std::string stackInfoOriginal = ReadStackFromPipe(info);
+    std::string stackInfoOriginal = ReadStackFromFile(info);
     std::string minidumpPath = DealMiniDumpEvent(info); // maybe copy minidump
     if (stackInfoOriginal.empty()) {
-        HIVIEW_LOGE("read stack from pipe failed");
+        HIVIEW_LOGE("read pid %{public}d stack from pipe failed", info.pid);
         return "";
     }
 
