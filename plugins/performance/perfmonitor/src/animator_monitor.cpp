@@ -92,7 +92,7 @@ void AnimatorMonitor::OnAnimatorStart(const std::string& sceneId, PerfActionType
     if (record != nullptr) {
         RemoveRecord(sceneId);
         XperfAsyncTraceEnd(0, sceneId.c_str());
-        HIVIEW_LOGW("Animation has already started, sceneId: %{public}s", sceneId.c_str());
+        HIVIEW_LOGD("Animation has already started, sceneId: %{public}s", sceneId.c_str());
     }
     record = new AnimatorRecord();
     int64_t inputTime = InputMonitor::GetInstance().GetInputTime(sceneId, type, note);
@@ -115,7 +115,7 @@ void AnimatorMonitor::OnAnimatorStop(const std::string& sceneId, bool isRsRender
         RemoveRecord(sceneId);
         XperfAsyncTraceEnd(0, sceneId.c_str());
     } else {
-        HIVIEW_LOGW("Animation has not started, sceneId: %{public}s", sceneId.c_str());
+        HIVIEW_LOGD("Animation has not started, sceneId: %{public}s", sceneId.c_str());
     }
 }
 
