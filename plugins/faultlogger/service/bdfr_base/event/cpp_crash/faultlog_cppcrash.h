@@ -37,7 +37,7 @@ private:
     static int64_t GetLastLineHilogTime(const std::string& lastLineHilog);
     static std::string GetStackInfo(const FaultLogInfo& info);
     static std::string ReadLogFile(const std::string& logPath);
-    static std::string ReadStackFromPipe(const FaultLogInfo& info);
+    static std::string ReadStackFromFile(const FaultLogInfo& info);
     static void AddCppCrashInfo(FaultLogInfo& info);
     static void CheckHilogTime(FaultLogInfo& info);
     static void ReportCppCrashToAppEvent(const FaultLogInfo& info);
