@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "fault_detector_util.h"
+#include "parse_proc_int.h"
 
 #include <cstdio>
 #include <ctime>
@@ -40,11 +41,9 @@ DEFINE_LOG_TAG("FaultLeakDetectorUtil");
 using namespace OHOS::AppExecFwk;
 using std::string;
 using std::vector;
-using std::stoi;
 using std::to_string;
 using std::ifstream;
 using std::istringstream;
-using std::stoull;
 using std::getline;
 using std::list;
 
@@ -191,10 +190,11 @@ vector<int32_t> FaultDetectorUtil::GetAllPids()
     vector<string> allPids = GetSubDir(path, true);
     vector<int32_t> pids;
     for (const auto &pid : allPids) {
-        if (!isdigit(pid[0])) {
+        int32_t parsed = 0;
+        if (!ParseProcInt32(pid, parsed)) {
             continue;
         }
-        pids.push_back(stoi(pid));
+        pids.push_back(parsed);
     }
     return pids;
 }
@@ -301,11 +301,12 @@ time_t FaultDetectorUtil::GetProcessStartTime(int pid)
         return -1;
     }
     string startTime = statInfo[START_TIME_INDEX];
-    if (!isdigit(startTime[0])) {
+    int64_t parsed = 0;
+    if (!ParseProcInt64(startTime, parsed)) {
         HIVIEW_LOGE("failed to get process start time, reason: not digital, pid: %{public}d", pid);
         return -1;
     }
-    return stol(startTime);
+    return static_cast<time_t>(parsed);
 }
 
 uint64_t FaultDetectorUtil::GetProcessRss(int pid)
@@ -318,11 +319,12 @@ uint64_t FaultDetectorUtil::GetProcessRss(int pid)
             rss += c;
         }
     }
-    if (rss.empty()) {
+    uint64_t parsed = 0;
+    if (!ParseProcU64(rss, parsed)) {
         HIVIEW_LOGD("failed to get process rss, reason: not digital, pid: %{public}d", pid);
         return 0;
     }
-    return stoull(rss);
+    return parsed;
 }
 
 int FaultDetectorUtil::GetParentPid(int pid)
@@ -333,11 +335,12 @@ int FaultDetectorUtil::GetParentPid(int pid)
         return 0;
     }
     string ppid = statInfo[PPID_INDEX];
-    if (!isdigit(ppid[0])) {
+    int32_t parsed = 0;
+    if (!ParseProcInt32(ppid, parsed)) {
         HIVIEW_LOGE("failed to get process parent pid, reason: not digital, pid: %{public}d", pid);
         return 0;
     }
-    return stoi(ppid);
+    return parsed;
 }
 
 bool FaultDetectorUtil::IsKernelProcess(int pid)
@@ -423,9 +426,19 @@ void FaultDetectorUtil::GetStatm(int32_t pid, uint64_t &vss, uint64_t &rss)
     list<string> numStrArr = GetDightStrArr(statmLine);
     auto it = numStrArr.begin();
     unsigned long long multiples = 4;
-    vss = multiples * stoull(*it);
+    uint64_t parsedVss = 0;
+    uint64_t parsedRss = 0;
+    if (!ParseProcU64(*it, parsedVss)) {
+        HIVIEW_LOGE("bad statm vss for pid %{public}d", pid);
+        return;
+    }
     it++;
-    rss = multiples * stoull(*it);
+    if (!ParseProcU64(*it, parsedRss)) {
+        HIVIEW_LOGE("bad statm rss for pid %{public}d", pid);
+        return;
+    }
+    vss = multiples * parsedVss;
+    rss = multiples * parsedRss;
 }
 
 void FaultDetectorUtil::GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, uint64_t &totalMem)
@@ -437,11 +450,24 @@ void FaultDetectorUtil::GetMeminfo(uint64_t &avaliableMem, uint64_t &freeMem, ui
     }
     string meminfoLine;
     getline(meminfoStream, meminfoLine);
-    totalMem = stoull(GetDightStrArr(meminfoLine).front());
+    uint64_t parsed = 0;
+    if (!ParseProcU64(GetDightStrArr(meminfoLine).front(), parsed)) {
+        HIVIEW_LOGE("bad meminfo total");
+        return;
+    }
+    totalMem = parsed;
     getline(meminfoStream, meminfoLine);
-    freeMem = stoull(GetDightStrArr(meminfoLine).front());
+    if (!ParseProcU64(GetDightStrArr(meminfoLine).front(), parsed)) {
+        HIVIEW_LOGE("bad meminfo free");
+        return;
+    }
+    freeMem = parsed;
     getline(meminfoStream, meminfoLine);
-    avaliableMem = stoull(GetDightStrArr(meminfoLine).front());
+    if (!ParseProcU64(GetDightStrArr(meminfoLine).front(), parsed)) {
+        HIVIEW_LOGE("bad meminfo available");
+        return;
+    }
+    avaliableMem = parsed;
     meminfoStream.close();
 }
 
